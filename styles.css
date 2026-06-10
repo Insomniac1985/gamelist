@@ -513,12 +513,12 @@ body[data-mobile-section="backlog"] .column:not(#backlog) {
 }
 
 .playing-section .game-card {
-  grid-template-columns: 124px minmax(0, 1fr);
+  grid-template-columns: clamp(148px, 34%, 184px) minmax(0, 1fr);
   min-height: 292px;
 }
 
 .playing-section .cover-button {
-  width: 124px;
+  width: 100%;
   height: auto;
   min-height: 268px;
   align-self: stretch;
