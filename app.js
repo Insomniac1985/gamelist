@@ -27,6 +27,7 @@ const el = {
   loginButton: document.querySelector("#loginButton"),
   addButton: document.querySelector("#addButton"),
   syncButton: document.querySelector("#syncButton"),
+  fetchDataButton: document.querySelector("#fetchDataButton"),
   fetchPricesButton: document.querySelector("#fetchPricesButton"),
   searchInput: document.querySelector("#searchInput"),
   platformFilter: document.querySelector("#platformFilter"),
@@ -84,6 +85,7 @@ function bindEvents() {
   el.loginButton.addEventListener("click", toggleEditMode);
   el.addButton.addEventListener("click", () => openEditor());
   el.syncButton.addEventListener("click", syncNow);
+  el.fetchDataButton.addEventListener("click", refreshAllGameData);
   el.fetchPricesButton.addEventListener("click", refreshAllPrices);
   el.searchInput.addEventListener("input", (event) => {
     state.filters.query = event.target.value.trim().toLowerCase();
@@ -176,6 +178,7 @@ function render() {
   document.body.classList.toggle("can-edit", state.canEdit);
   el.loginButton.textContent = state.canEdit ? "Viewing" : "Edit";
   el.addButton.hidden = !state.canEdit;
+  el.fetchDataButton.hidden = !state.canEdit;
   el.fetchPricesButton.hidden = !state.canEdit;
   renderFilters();
   renderPlayingSection();
@@ -364,8 +367,8 @@ function cardFor(game, options = {}) {
   description.textContent = shortDescription(game.description || "");
   description.hidden = !description.textContent;
   const prices = card.querySelector(".prices");
-  prices.hidden = game.section === "backlog";
-  prices.innerHTML = game.section === "backlog" ? "" : pricesFor(game);
+  if (game.section === "backlog") prices.remove();
+  else prices.innerHTML = pricesFor(game);
   card.querySelector(".edit-action").addEventListener("click", () => openEditor(game.id));
   card.querySelector(".cover-button").addEventListener("click", () => openEditor(game.id));
   card.querySelector(".price-refresh-action").hidden = game.section === "backlog";
@@ -951,26 +954,7 @@ async function refreshUnreleasedGamesOnOpen() {
         game.releaseText = result.releaseText;
         localChanged = true;
       }
-      if (!game.cover && result.cover) {
-        game.cover = result.cover;
-        localChanged = true;
-      }
-      if (!game.description && result.description) {
-        game.description = result.description;
-        localChanged = true;
-      }
-      if ((!game.genres || !game.genres.length) && result.genres?.length) {
-        game.genres = result.genres;
-        localChanged = true;
-      }
-      if (!game.developer && result.developer) {
-        game.developer = result.developer;
-        localChanged = true;
-      }
-      if (!game.publisher && result.publisher) {
-        game.publisher = result.publisher;
-        localChanged = true;
-      }
+      localChanged = applyFetchedGameData(game, result) || localChanged;
       if (localChanged) {
         game.updatedAt = new Date().toISOString();
         changed = true;
@@ -993,9 +977,7 @@ async function refreshMissingDescriptionsOnOpen() {
     try {
       const result = await lookupFirstResult(game.title);
       if (!result?.description) continue;
-      game.description = result.description;
-      game.updatedAt = new Date().toISOString();
-      changed = true;
+      changed = applyFetchedGameData(game, result) || changed;
     } catch {
       return;
     }
@@ -1004,6 +986,66 @@ async function refreshMissingDescriptionsOnOpen() {
     persistLocal();
     persistCloud();
   }
+}
+
+async function refreshAllGameData() {
+  if (!state.canEdit) return;
+  const games = activeGames().filter((game) => game.title);
+  if (!games.length) {
+    alert("No active games to refresh.");
+    return;
+  }
+
+  const originalText = el.fetchDataButton.textContent;
+  el.fetchDataButton.disabled = true;
+  let updated = 0;
+  let failed = 0;
+
+  for (const [index, game] of games.entries()) {
+    el.fetchDataButton.textContent = `Data ${index + 1}/${games.length}`;
+    try {
+      const result = await lookupFirstResult(game.title);
+      if (result && applyFetchedGameData(game, result)) updated += 1;
+    } catch {
+      failed += 1;
+    }
+  }
+
+  if (updated) {
+    persistLocal();
+    persistCloud();
+  } else {
+    render();
+  }
+  el.fetchDataButton.disabled = false;
+  el.fetchDataButton.textContent = originalText;
+  alert(`Updated data for ${updated} games${failed ? `, ${failed} failed` : ""}.`);
+}
+
+function applyFetchedGameData(game, result) {
+  let changed = false;
+  const setIfEmpty = (key, value) => {
+    if (!game[key] && value) {
+      game[key] = value;
+      changed = true;
+    }
+  };
+  setIfEmpty("cover", result.cover);
+  setIfEmpty("description", result.description);
+  setIfEmpty("lengthHours", result.lengthHours);
+  setIfEmpty("developer", result.developer);
+  setIfEmpty("publisher", result.publisher);
+  if (!game.releaseDate && !game.releaseText) {
+    game.releaseDate = result.releaseDate || "";
+    game.releaseText = result.releaseDate ? "" : (result.releaseText || "");
+    if (game.releaseDate || game.releaseText) changed = true;
+  }
+  if ((!game.genres || !game.genres.length) && result.genres?.length) {
+    game.genres = result.genres;
+    changed = true;
+  }
+  if (changed) game.updatedAt = new Date().toISOString();
+  return changed;
 }
 
 function shouldRefreshRelease(game) {
