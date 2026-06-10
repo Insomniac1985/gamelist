@@ -158,7 +158,7 @@ button {
 .eyebrow,
 .column-head p {
   margin: 0 0 6px;
-  color: var(--accent-2);
+  color: var(--accent);
   font-size: 12px;
   font-weight: 760;
   letter-spacing: 0;
