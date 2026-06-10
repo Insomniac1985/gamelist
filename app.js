@@ -1014,7 +1014,7 @@ function renderLookupResults(results) {
     return;
   }
   el.lookupResults.innerHTML = "";
-  results.slice(0, 5).forEach((result) => {
+  results.slice(0, 10).forEach((result) => {
     const row = document.createElement("div");
     row.className = "lookup-result";
     row.innerHTML = `

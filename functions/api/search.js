@@ -42,7 +42,7 @@ async function igdbSearch(query, credentials) {
     "fields name,summary,storyline,first_release_date,cover.image_id,genres.name,hypes,total_rating,total_rating_count,involved_companies.company.name,involved_companies.developer,involved_companies.publisher,platforms.name,release_dates.date,release_dates.platform.name;",
     `search "${escapeIgdbString(searchAlias(query))}";`,
     "where version_parent = null;",
-    "limit 8;",
+    "limit 10;",
   ].join(" ");
   const response = await fetchWithTimeout(`${IGDB_BASE}/games`, {
     method: "POST",
