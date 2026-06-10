@@ -372,8 +372,7 @@ h3 {
 }
 
 .toolbar {
-  position: sticky;
-  top: 73px;
+  position: relative;
   z-index: 12;
   display: grid;
   grid-template-columns: minmax(220px, 1fr) 136px 150px 150px 190px;
@@ -444,18 +443,19 @@ h3 {
 
 .mobile-section-tabs {
   position: sticky;
-  top: 146px;
+  top: 84px;
   z-index: 11;
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 6px;
-  margin-top: 12px;
+  margin: 14px 0 18px;
   padding: 6px;
   background: rgba(9, 10, 13, 0.78);
   border: 1px solid var(--line);
   border-radius: 999px;
   backdrop-filter: blur(18px);
   overflow: hidden;
+  box-shadow: 0 18px 42px rgba(0, 0, 0, 0.28);
 }
 
 .mobile-section-tabs::before {
@@ -1409,6 +1409,7 @@ body.dialog-open .mobile-section-tabs {
 
   .mobile-section-tabs {
     top: 108px;
+    margin: 12px 0 16px;
   }
 
   .stats {
