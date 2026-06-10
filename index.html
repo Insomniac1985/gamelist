@@ -1,0 +1,281 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="color-scheme" content="dark">
+    <title>gamelist</title>
+    <link rel="stylesheet" href="styles.css">
+  </head>
+  <body>
+    <div class="backdrop"></div>
+    <header class="topbar">
+      <a class="brand" href="#wanted" aria-label="gamelist">
+        <span class="brand-mark">GL</span>
+        <span>gamelist</span>
+      </a>
+      <nav class="nav-tabs" aria-label="Sections">
+
+      </nav>
+      <div class="top-actions">
+        <button class="icon-button" id="syncButton" type="button" title="Sync">↻</button>
+        <button class="ghost-button" id="fetchPricesButton" type="button" hidden>Fetch New Prices</button>
+        <button class="ghost-button" id="loginButton" type="button">Edit</button>
+        <button class="primary-button" id="addButton" type="button" hidden>Add Game</button>
+      </div>
+    </header>
+
+    <main class="shell">
+      <section class="playing-section glass" id="playingSection" hidden>
+        <div class="column-head">
+          <div>
+            <p></p>
+            <h2>Playing</h2>
+          </div>
+          <span id="playingCount"></span>
+        </div>
+        <div class="card-list playing-list" data-section="playing"></div>
+      </section>
+
+      <section class="hero">
+        <div class="stats" id="stats" aria-live="polite"></div>
+      </section>
+
+      <section class="toolbar glass">
+        <label class="search">
+          <span>Search</span>
+          <input id="searchInput" type="search" placeholder="Game, platform, store, status...">
+        </label>
+        <label>
+          <span>Platform</span>
+          <select id="platformFilter"></select>
+        </label>
+        <label>
+          <span>Category</span>
+          <select id="tagFilter"></select>
+        </label>
+        <label>
+          <span>Order</span>
+          <select id="sortFilter">
+            <option value="title">Name</option>
+            <option value="platform">Platform</option>
+            <option value="time">Time</option>
+            <option value="custom">Custom backlog</option>
+          </select>
+        </label>
+        <button class="direction-toggle" id="sortDirectionButton" type="button" title="Sort ascending" aria-label="Sort ascending">↑</button>
+        <label class="check-filter toggle-check">
+          <input id="preorderedFilter" type="checkbox">
+          <span>Preordered</span>
+        </label>
+      </section>
+
+      <nav class="mobile-section-tabs" aria-label="Mobile sections">
+        <button type="button" data-mobile-section="wanted">Available now</button>
+        <button type="button" data-mobile-section="upcoming">To Release</button>
+        <button type="button" data-mobile-section="backlog">Backlog</button>
+      </nav>
+
+      <section class="board" aria-live="polite">
+        <article class="column" id="wanted">
+          <div class="column-head">
+            <div>
+              <p></p>
+              <h2>Available now</h2>
+            </div>
+            <span id="wantedCount"></span>
+          </div>
+          <div class="card-list" data-section="wanted"></div>
+        </article>
+
+        <article class="column" id="upcoming">
+          <div class="column-head">
+            <div>
+              <p></p>
+              <h2>To Release</h2>
+            </div>
+            <span id="upcomingCount"></span>
+          </div>
+          <div class="card-list" data-section="upcoming"></div>
+        </article>
+
+        <article class="column" id="backlog">
+          <div class="column-head">
+            <div>
+              <p></p>
+              <h2>Backlog</h2>
+            </div>
+            <span id="backlogCount"></span>
+          </div>
+          <div class="card-list sortable" data-section="backlog"></div>
+        </article>
+      </section>
+
+      <section class="completed glass" id="completed">
+        <div class="column-head">
+          <div>
+            <p></p>
+            <h2>Completed</h2>
+          </div>
+          <span id="completedCount"></span>
+        </div>
+        <div class="completed-list" data-section="completed"></div>
+      </section>
+    </main>
+
+    <dialog id="gameDialog">
+      <form method="dialog" class="modal" id="gameForm">
+        <div class="modal-head">
+          <div>
+            <p class="eyebrow">Game details</p>
+            <h2 id="dialogTitle">Add Game</h2>
+          </div>
+          <button class="icon-button" id="closeDialogButton" type="button" title="Close">×</button>
+        </div>
+
+        <input type="hidden" id="gameId">
+        <div class="lookup-row">
+          <label>
+            <span>Search DB</span>
+            <input id="lookupInput" type="search" placeholder="Type a game name">
+          </label>
+          <button class="ghost-button" id="lookupButton" type="button">Lookup</button>
+        </div>
+        <div class="lookup-results" id="lookupResults"></div>
+
+        <div class="form-grid">
+          <label>
+            <span>Title</span>
+            <input id="titleInput" required>
+          </label>
+          <label>
+            <span>Platform</span>
+            <input id="platformInput" list="platformOptions" required>
+          </label>
+          <label>
+            <span>List</span>
+            <select id="sectionInput">
+              <option value="wanted">Available now</option>
+              <option value="upcoming">To Release</option>
+              <option value="backlog">Backlog</option>
+            </select>
+          </label>
+          <label>
+            <span>Release Date</span>
+            <input id="releaseDateInput" type="date">
+          </label>
+          <label>
+            <span>Release Text</span>
+            <input id="releaseTextInput" placeholder="2026?, 18 June, TBA...">
+          </label>
+          <label>
+            <span>Length</span>
+            <input id="lengthInput" type="number" min="0" step="0.5" placeholder="Hours">
+          </label>
+          <label>
+            <span>Preordered Where</span>
+            <input id="preorderStoreInput" placeholder="Xtralife, Game, Amazon...">
+          </label>
+          <label>
+            <span>Preferred Store</span>
+            <input id="preferredStoreInput" placeholder="Playasia, Limited Run...">
+          </label>
+          <label>
+            <span>Owners</span>
+            <input id="ownersInput" list="ownerOptions" placeholder="Xavi, Jordi, Judy">
+          </label>
+          <label>
+            <span>Status</span>
+            <input id="statusesInput" list="statusOptions" placeholder="To Collect, Scarce, Waiting for Physical">
+          </label>
+          <label class="check-filter toggle-check form-check">
+            <input id="digitalInput" type="checkbox">
+            <span>Digital</span>
+          </label>
+          <label class="check-filter toggle-check form-check">
+            <input id="playingInput" type="checkbox">
+            <span>Playing</span>
+          </label>
+          <label>
+            <span>Game Tags</span>
+            <input id="genresInput" placeholder="Adventure, RPG, FPS">
+          </label>
+          <label>
+            <span>Developer</span>
+            <input id="developerInput" placeholder="Studio">
+          </label>
+          <label>
+            <span>Publisher</span>
+            <input id="publisherInput" placeholder="Publisher">
+          </label>
+          <label class="wide">
+            <span>Cover URL</span>
+            <input id="coverInput" placeholder="https://...">
+          </label>
+          <label class="wide">
+            <span>Upload Cover</span>
+            <input id="coverUpload" type="file" accept="image/*">
+          </label>
+          <label class="wide">
+            <span>Notes</span>
+            <textarea id="notesInput" rows="3"></textarea>
+          </label>
+        </div>
+
+        <datalist id="platformOptions">
+          <option value="Switch"></option>
+          <option value="Switch 2"></option>
+          <option value="PS5"></option>
+          <option value="PS4"></option>
+          <option value="PC"></option>
+          <option value="Xbox"></option>
+        </datalist>
+
+        <datalist id="statusOptions">
+          <option value="To Collect"></option>
+          <option value="Scarce"></option>
+          <option value="Waiting for Physical"></option>
+        </datalist>
+
+        <datalist id="ownerOptions">
+          <option value="Xavi"></option>
+          <option value="Jordi"></option>
+          <option value="Judy"></option>
+        </datalist>
+
+        <div class="modal-actions">
+          <button class="danger-button" id="deleteButton" type="button">Delete</button>
+          <button class="ghost-button" id="pricesButton" type="button">Refresh Prices</button>
+          <button class="primary-button" type="submit">Save</button>
+        </div>
+      </form>
+    </dialog>
+
+    <template id="cardTemplate">
+      <article class="game-card glass" draggable="false">
+        <button class="cover-button" type="button">
+          <img alt="">
+          <span>No cover</span>
+        </button>
+        <div class="game-main">
+          <div class="title-line">
+            <h3></h3>
+            <button class="icon-button edit-action" type="button" title="Edit">✎</button>
+          </div>
+          <div class="meta"></div>
+          <div class="chips"></div>
+          <p class="notes"></p>
+          <div class="prices"></div>
+          <div class="card-actions">
+            <button class="ghost-button price-refresh-action" type="button">Prices</button>
+            <button class="ghost-button bought-action" type="button">Got it</button>
+            <button class="primary-button complete-action" type="button">Completed</button>
+            <button class="danger-button delete-action" type="button">Delete</button>
+          </div>
+        </div>
+      </article>
+    </template>
+
+    <script type="module" src="app.js"></script>
+  </body>
+</html>
