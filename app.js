@@ -422,6 +422,7 @@ function sectionRank(section) {
 function metaFor(game) {
   const values = [];
   if (game.platform) values.push(platformBadge(game.platform));
+  ownerTags(game).filter((owner) => owner !== "Xavi").forEach((owner) => values.push(ownerBadge(owner)));
   const release = releaseStatus(game);
   if (release) values.push(`<span class="release-pill">${escapeHtml(release)}</span>`);
   if (game.lengthHours) values.push(timeBadge(game.lengthHours));
@@ -478,6 +479,10 @@ function platformBadge(platform) {
   `;
 }
 
+function ownerBadge(owner) {
+  return `<span class="owner-pill owner-${escapeHtml(owner.toLowerCase())}">${escapeHtml(owner)}</span>`;
+}
+
 function platformLogo(platform) {
   const value = platform.toLowerCase();
   if (value.includes("switch")) return "assets/platforms/switch.png?v=official";
@@ -514,7 +519,6 @@ function chipsFor(game) {
   if (game.preorderStore) chips.push(chip(`Preordered: ${game.preorderStore}`, "accent"));
   if (game.preferredStore) chips.push(chip(`Buy: ${game.preferredStore}`));
   (game.genres || []).forEach((genre) => chips.push(chip(genre, "genre")));
-  ownerTags(game).filter((owner) => owner !== "Xavi").forEach((owner) => chips.push(chip(owner, owner.toLowerCase())));
   gameStatuses(game).forEach((status) => chips.push(chip(status, statusType(status))));
   return chips;
 }

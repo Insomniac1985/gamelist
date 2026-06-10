@@ -142,6 +142,7 @@ button {
 }
 
 .playing-section .card-list {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   margin-top: 2px;
 }
 
@@ -180,24 +181,20 @@ h2 {
   color: var(--text);
   font-weight: 900;
   letter-spacing: 0;
-  text-shadow: 0 0 18px rgba(255, 0, 57, 0.24);
+  text-shadow:
+    0 0 18px rgba(255, 0, 57, 0.28),
+    0 1px 18px rgba(0, 0, 0, 0.42);
 }
 
 .column-head h2 {
   position: relative;
   display: inline-flex;
   align-items: center;
-  gap: 10px;
-  color: var(--text);
-}
-
-.column-head h2::after {
-  content: "";
-  width: 38px;
-  height: 2px;
-  border-radius: 999px;
-  background: linear-gradient(90deg, var(--accent), rgba(121, 242, 206, 0.88), transparent);
-  box-shadow: 0 0 18px rgba(255, 0, 57, 0.38);
+  padding: 4px 0;
+  color: transparent;
+  background: linear-gradient(135deg, #ffffff 0%, #ffdfe7 46%, var(--accent) 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
 }
 
 h3 {
@@ -510,9 +507,19 @@ body[data-mobile-section="backlog"] .column:not(#backlog) {
 .game-card.playing-card.owner-card-judy.owner-card-jordi,
 .game-card.playing-card.digital-card.owner-card-judy.owner-card-jordi {
   background:
-    linear-gradient(135deg, rgba(97, 244, 157, 0.24), rgba(79, 214, 132, 0.1) 46%, rgba(20, 22, 28, 0.58)),
+    linear-gradient(135deg, rgba(255, 0, 57, 0.24), rgba(255, 0, 57, 0.1) 46%, rgba(20, 22, 28, 0.58)),
     var(--panel);
-  border-color: rgba(97, 244, 157, 0.42);
+  border-color: rgba(255, 0, 57, 0.42);
+}
+
+.playing-section .game-card {
+  grid-template-columns: 124px minmax(0, 1fr);
+  min-height: 292px;
+}
+
+.playing-section .cover-button {
+  width: 124px;
+  height: 168px;
 }
 
 .game-card.dragging {
@@ -592,6 +599,7 @@ body[data-mobile-section="backlog"] .column:not(#backlog) {
 
 .platform-badge,
 .release-pill,
+.owner-pill,
 .time-pill,
 .digital-pill,
 .playing-pill {
@@ -647,10 +655,28 @@ body[data-mobile-section="backlog"] .column:not(#backlog) {
 }
 
 .release-pill,
+.owner-pill,
 .digital-pill,
 .playing-pill {
   padding: 4px 8px;
   color: var(--muted);
+}
+
+.owner-pill {
+  font-weight: 820;
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.owner-pill.owner-judy {
+  color: var(--judy);
+  border-color: rgba(255, 158, 210, 0.45);
+  background: rgba(255, 158, 210, 0.1);
+}
+
+.owner-pill.owner-jordi {
+  color: var(--jordi);
+  border-color: rgba(255, 173, 95, 0.48);
+  background: rgba(255, 173, 95, 0.1);
 }
 
 .digital-pill {
@@ -660,8 +686,8 @@ body[data-mobile-section="backlog"] .column:not(#backlog) {
 }
 
 .playing-pill {
-  color: #024b54;
-  background: #61f49d;
+  color: #ffffff;
+  background: var(--accent);
   border-color: transparent;
   font-weight: 860;
 }
@@ -826,6 +852,10 @@ body[data-mobile-section="backlog"] .column:not(#backlog) {
 .ghost-button,
 .primary-button,
 .danger-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
   min-height: 36px;
   border: 1px solid transparent;
   border-radius: 7px;
@@ -836,9 +866,24 @@ body[data-mobile-section="backlog"] .column:not(#backlog) {
 
 .icon-button {
   display: inline-grid;
+  width: 36px;
+  height: 36px;
+  flex: 0 0 36px;
   min-width: 36px;
   padding: 0;
   place-items: center;
+}
+
+.button-icon {
+  display: inline-grid;
+  width: 17px;
+  height: 17px;
+  place-items: center;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.18);
+  font-size: 15px;
+  font-weight: 900;
+  line-height: 1;
 }
 
 .primary-button {
