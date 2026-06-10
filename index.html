@@ -47,6 +47,10 @@
           <span>Search</span>
           <input id="searchInput" type="search" placeholder="Game, platform, store, status...">
         </label>
+        <label class="check-filter toggle-check toolbar-check">
+          <input id="preorderedFilter" type="checkbox">
+          <span>Preordered</span>
+        </label>
         <label>
           <span>Platform</span>
           <select id="platformFilter"></select>
@@ -57,17 +61,15 @@
         </label>
         <label>
           <span>Order</span>
-          <select id="sortFilter">
-            <option value="title">Name</option>
-            <option value="platform">Platform</option>
-            <option value="time">Time</option>
-            <option value="custom">Custom backlog</option>
-          </select>
-        </label>
-        <button class="direction-toggle" id="sortDirectionButton" type="button" title="Sort ascending" aria-label="Sort ascending">↑</button>
-        <label class="check-filter toggle-check">
-          <input id="preorderedFilter" type="checkbox">
-          <span>Preordered</span>
+          <div class="order-control">
+            <select id="sortFilter">
+              <option value="title">Name</option>
+              <option value="platform">Platform</option>
+              <option value="time">Time</option>
+              <option value="custom">Custom backlog</option>
+            </select>
+            <button class="direction-toggle" id="sortDirectionButton" type="button" title="Sort ascending" aria-label="Sort ascending">↑</button>
+          </div>
         </label>
       </section>
 
@@ -250,6 +252,22 @@
           <button class="primary-button" type="submit">Save</button>
         </div>
       </form>
+    </dialog>
+
+    <dialog id="detailDialog">
+      <article class="detail-modal glass">
+        <button class="icon-button detail-close" id="detailCloseButton" type="button" title="Close">×</button>
+        <div class="detail-cover">
+          <img alt="">
+        </div>
+        <div class="detail-body">
+          <h2 id="detailTitle"></h2>
+          <div class="studio-line" id="detailStudio"></div>
+          <div class="meta" id="detailMeta"></div>
+          <div class="chips" id="detailChips"></div>
+          <p id="detailDescription"></p>
+        </div>
+      </article>
     </dialog>
 
     <template id="cardTemplate">

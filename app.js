@@ -36,6 +36,14 @@ const el = {
   sortDirectionButton: document.querySelector("#sortDirectionButton"),
   preorderedFilter: document.querySelector("#preorderedFilter"),
   mobileTabs: document.querySelectorAll("[data-mobile-section]"),
+  detailDialog: document.querySelector("#detailDialog"),
+  detailCloseButton: document.querySelector("#detailCloseButton"),
+  detailTitle: document.querySelector("#detailTitle"),
+  detailStudio: document.querySelector("#detailStudio"),
+  detailMeta: document.querySelector("#detailMeta"),
+  detailChips: document.querySelector("#detailChips"),
+  detailDescription: document.querySelector("#detailDescription"),
+  detailCover: document.querySelector(".detail-cover img"),
   dialog: document.querySelector("#gameDialog"),
   form: document.querySelector("#gameForm"),
   dialogTitle: document.querySelector("#dialogTitle"),
@@ -110,6 +118,10 @@ function bindEvents() {
   el.preorderedFilter.addEventListener("change", (event) => {
     state.filters.preordered = event.target.checked;
     render();
+  });
+  el.detailCloseButton.addEventListener("click", () => el.detailDialog.close());
+  el.detailDialog.addEventListener("click", (event) => {
+    if (event.target === el.detailDialog) el.detailDialog.close();
   });
   el.mobileTabs.forEach((button) => button.addEventListener("click", () => {
     state.mobileSection = button.dataset.mobileSection;
@@ -378,7 +390,29 @@ function cardFor(game, options = {}) {
   card.querySelector(".complete-action").hidden = game.section !== "backlog";
   card.querySelector(".complete-action").addEventListener("click", () => completeGame(game.id));
   card.querySelector(".delete-action").addEventListener("click", () => deleteGame(game.id));
+  card.addEventListener("click", (event) => {
+    if (event.target.closest("button, a")) return;
+    openDetail(game.id);
+  });
   return card;
+}
+
+function openDetail(id) {
+  const game = getGame(id);
+  if (!game) return;
+  const owners = ownerTags(game);
+  el.detailTitle.textContent = game.title;
+  el.detailTitle.classList.toggle("owner-judy", owners.includes("Judy"));
+  el.detailTitle.classList.toggle("owner-jordi", owners.includes("Jordi"));
+  el.detailStudio.textContent = studioText(game);
+  el.detailStudio.hidden = !el.detailStudio.textContent;
+  el.detailMeta.innerHTML = metaFor(game).join("");
+  el.detailChips.innerHTML = chipsFor(game).join("");
+  el.detailDescription.textContent = game.description || "No description yet.";
+  el.detailCover.hidden = !game.cover;
+  el.detailCover.src = game.cover || "";
+  el.detailCover.alt = game.cover ? `${game.title} cover` : "";
+  el.detailDialog.showModal();
 }
 
 function sectionRank(section) {

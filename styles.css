@@ -239,7 +239,7 @@ h3 {
   top: 73px;
   z-index: 12;
   display: grid;
-  grid-template-columns: minmax(220px, 1fr) 150px 150px 150px 42px auto;
+  grid-template-columns: minmax(220px, 1fr) 136px 150px 150px 190px;
   gap: 10px;
   padding: 12px;
   border-radius: 8px;
@@ -271,9 +271,23 @@ h3 {
   font-weight: 780;
 }
 
-.direction-toggle {
+.toolbar-check {
   align-self: end;
-  width: 42px;
+}
+
+.order-control {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 38px;
+  gap: 6px;
+  margin-bottom: 0;
+}
+
+.order-control select {
+  min-width: 0;
+}
+
+.direction-toggle {
+  width: 38px;
   min-height: 42px;
   padding: 0;
   color: #101114;
@@ -486,11 +500,13 @@ body[data-mobile-section="backlog"] .column:not(#backlog) {
   outline: 1px solid var(--accent);
 }
 
-.game-card h3.owner-judy {
+.game-card h3.owner-judy,
+.detail-body h2.owner-judy {
   color: var(--judy);
 }
 
-.game-card h3.owner-jordi {
+.game-card h3.owner-jordi,
+.detail-body h2.owner-jordi {
   color: var(--jordi);
 }
 
@@ -868,6 +884,10 @@ dialog {
   padding: 0;
 }
 
+#detailDialog {
+  width: min(980px, calc(100vw - 24px));
+}
+
 dialog::backdrop {
   background: rgba(0, 0, 0, 0.62);
   backdrop-filter: blur(12px);
@@ -882,6 +902,55 @@ dialog::backdrop {
   border-radius: 8px;
   box-shadow: var(--shadow);
   backdrop-filter: blur(24px);
+}
+
+.detail-modal {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(170px, 260px) minmax(0, 1fr);
+  gap: 18px;
+  max-height: calc(100vh - 30px);
+  overflow: auto;
+  padding: 18px;
+  background: var(--panel-strong);
+  border-radius: 8px;
+}
+
+.detail-close {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  z-index: 2;
+}
+
+.detail-cover {
+  min-height: 260px;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.detail-cover img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.detail-body {
+  min-width: 0;
+  padding-right: 34px;
+}
+
+.detail-body h2 {
+  margin-bottom: 4px;
+}
+
+.detail-body #detailDescription {
+  margin: 14px 0 0;
+  color: var(--text);
+  font-size: 14px;
+  line-height: 1.55;
 }
 
 .modal-head {
@@ -987,6 +1056,10 @@ dialog::backdrop {
     grid-template-columns: 1fr;
   }
 
+  .order-control {
+    grid-template-columns: minmax(0, 1fr) 42px;
+  }
+
   .toolbar {
     position: static;
     gap: 8px;
@@ -1020,6 +1093,19 @@ dialog::backdrop {
 
   .card-actions button {
     flex: 1;
+  }
+
+  .detail-modal {
+    grid-template-columns: 1fr;
+  }
+
+  .detail-cover {
+    min-height: 220px;
+    max-height: 360px;
+  }
+
+  .detail-body {
+    padding-right: 0;
   }
 
   .stats {
