@@ -7,12 +7,12 @@ const PROVIDERS = [
   {
     store: "Xtralife",
     search: (q) => `https://www.xtralife.com/buscar/${encodeURIComponent(q)}`,
-    parse: parseGeneric,
+    lookup: lookupXtralife,
   },
   {
     store: "GAME.es",
     search: (q) => `https://www.game.es/buscar/${encodeURIComponent(q)}`,
-    parse: parseGeneric,
+    lookup: lookupGameEs,
   },
 ];
 
@@ -29,6 +29,22 @@ export async function onRequestGet({ request }) {
 
 async function findPrice(provider, title, platform, query) {
   const url = provider.search(query);
+  if (provider.lookup) {
+    try {
+      const result = await provider.lookup(title, platform, query);
+      return {
+        store: provider.store,
+        price: result.price || "",
+        numericPrice: parsePrice(result.price || ""),
+        matchedTitle: result.matchedTitle || "",
+        url: result.url || url,
+        checkedAt: new Date().toISOString(),
+      };
+    } catch {
+      return missingPrice(provider.store, url);
+    }
+  }
+
   try {
     const response = await fetch(url, {
       headers: {
@@ -49,14 +65,7 @@ async function findPrice(provider, title, platform, query) {
       checkedAt: new Date().toISOString(),
     };
   } catch {
-    return {
-      store: provider.store,
-      price: "",
-      numericPrice: null,
-      matchedTitle: "",
-      url,
-      checkedAt: new Date().toISOString(),
-    };
+    return missingPrice(provider.store, url);
   }
 }
 
@@ -100,10 +109,151 @@ function parseGeneric(html, title) {
   return { price: match ? `${match[1].replace(".", ",")} €` : "", matchedTitle: "" };
 }
 
+async function lookupGameEs(title, platform, query) {
+  const payload = {
+    Head: retailTitle(query),
+    Page: 0,
+    Order: 7,
+    CategoryFilter: [],
+    Category: null,
+    SKU: null,
+  };
+  const response = await fetch("https://www.game.es/api/search", {
+    method: "POST",
+    headers: {
+      "Accept": "application/json",
+      "Accept-Language": "es-ES,es;q=0.9,en;q=0.6",
+      "Content-Type": "application/json; charset=utf-8",
+      "Origin": "https://www.game.es",
+      "Referer": `https://www.game.es/buscar/${encodeURIComponent(query)}`,
+      "User-Agent": "Mozilla/5.0 (compatible; GameList/1.0)",
+    },
+    body: JSON.stringify(payload),
+  });
+  if (!response.ok) throw new Error("GAME search failed");
+  const data = await response.json();
+  const products = Array.isArray(data.Products) ? data.Products : [];
+  const match = bestProduct(products.map(gameEsProduct), title, platform);
+  return match || { price: "", matchedTitle: "" };
+}
+
+function gameEsProduct(product) {
+  const offers = Array.isArray(product.Offers) ? product.Offers : [];
+  const offer = offers
+    .filter((entry) => Number.isFinite(Number(entry.SellPrice)))
+    .sort((a, b) => Number(a.SellPrice) - Number(b.SellPrice))[0];
+  const price = offer ? euro(Number(offer.SellPrice)) : "";
+  const navigation = product.Navigation ? `https://www.game.es/${String(product.Navigation).replace(/^\/+/, "")}` : "";
+  return {
+    title: product.Name || "",
+    platform: product.FamilyName || product.Family || (product.Platforms || []).map((entry) => entry.Name).join(" "),
+    price,
+    matchedTitle: product.Name || "",
+    url: navigation || "",
+  };
+}
+
+async function lookupXtralife(title, platform, query) {
+  const endpoint = new URL("https://api.xtralife.com/public-api/v1/search-sku");
+  endpoint.searchParams.set("term", xtralifeTerm(title));
+  endpoint.searchParams.set("filters", "[]");
+  endpoint.searchParams.set("storefrontId", "1");
+  endpoint.searchParams.set("page", "1");
+  endpoint.searchParams.set("howMany", "24");
+  const response = await fetch(endpoint.toString(), {
+    headers: {
+      "Accept": "application/json",
+      "Accept-Language": "es-ES,es;q=0.9,en;q=0.6",
+      "Origin": "https://www.xtralife.com",
+      "Referer": "https://www.xtralife.com/",
+      "User-Agent": "Mozilla/5.0 (compatible; GameList/1.0)",
+    },
+  });
+  if (!response.ok) throw new Error("Xtralife search failed");
+  const data = await response.json();
+  const products = Array.isArray(data.body?.results) ? data.body.results : [];
+  const match = bestProduct(products.map(xtralifeProduct), title, platform);
+  return match || { price: "", matchedTitle: "" };
+}
+
+function xtralifeProduct(product) {
+  const priceValue = Number(product.currentPrice?.price ?? product.currentPrice?.normal_price ?? product.currentPrice?.pvp);
+  const url = product.url?.uri || product.url || product.details_uri || "";
+  return {
+    title: product.name || "",
+    platform: product.cc1 || characteristic(product, "platform"),
+    price: Number.isFinite(priceValue) ? euro(priceValue) : "",
+    matchedTitle: product.name || "",
+    url: url ? `https://www.xtralife.com/${String(url).replace(/^\/+/, "")}` : "",
+  };
+}
+
+function bestProduct(products, title, platform) {
+  const normalizedTitle = normalize(retailTitle(title));
+  const normalizedPlatform = normalize(platform);
+  return products
+    .map((product) => ({
+      ...product,
+      score: productScore(product, normalizedTitle, normalizedPlatform),
+    }))
+    .filter((product) => product.score >= 0.45)
+    .sort((a, b) => b.score - a.score || (parsePrice(a.price) ?? 9999) - (parsePrice(b.price) ?? 9999))[0] || null;
+}
+
+function productScore(product, normalizedTitle, normalizedPlatform) {
+  const normalizedProduct = normalize(product.title);
+  const normalizedProductPlatform = normalize(product.platform);
+  if (!normalizedProduct) return 0;
+  let score = 0;
+  if (normalizedProduct === normalizedTitle) score += 0.65;
+  if (normalizedProduct.includes(normalizedTitle) || normalizedTitle.includes(normalizedProduct)) score += 0.35;
+  if (tokenOverlap(normalizedTitle, normalizedProduct)) score += 0.28;
+  if (normalizedPlatform && platformMatches(normalizedPlatform, normalizedProductPlatform)) score += 0.18;
+  if (product.price) score += 0.08;
+  return score;
+}
+
+function platformMatches(wanted, found) {
+  if (!wanted) return true;
+  if (found.includes(wanted)) return true;
+  if (wanted === "switch" && /nintendo switch|switch/.test(found) && !found.includes("switch 2")) return true;
+  if (wanted === "switch 2" && found.includes("switch 2")) return true;
+  if (wanted === "ps5" && /ps5|playstation 5/.test(found)) return true;
+  if (wanted === "ps4" && /ps4|playstation 4/.test(found)) return true;
+  if (wanted === "pc" && /pc|windows|steam/.test(found)) return true;
+  return false;
+}
+
+function characteristic(product, name) {
+  return (product.characteristics || []).find((entry) => entry.name === name)?.value || "";
+}
+
+function xtralifeTerm(query) {
+  return retailTitle(query)
+    .replace(/\bNintendo\s+Switch\b/i, "Switch")
+    .replace(/\bPlayStation\s*(\d)\b/i, "PS$1")
+    .trim();
+}
+
 function parsePrice(price) {
   if (!price) return null;
   const value = Number(price.replace(/[^\d,]/g, "").replace(",", "."));
   return Number.isFinite(value) ? value : null;
+}
+
+function euro(value) {
+  return `${Number(value).toFixed(2).replace(".", ",")} €`;
+}
+
+function missingPrice(store, url) {
+  return {
+    store,
+    price: "",
+    numericPrice: null,
+    matchedTitle: "",
+    url,
+    checkedAt: new Date().toISOString(),
+  };
 }
 
 function normalize(value) {

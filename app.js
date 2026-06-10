@@ -585,6 +585,11 @@ function shortDescription(value) {
   return String(value || "").replace(/\s+/g, " ").trim();
 }
 
+function previewDescription(value, maxLength = 180) {
+  const text = shortDescription(value);
+  return text.length <= maxLength ? text : `${text.slice(0, maxLength - 3).trim()}...`;
+}
+
 function cssUrl(value) {
   return String(value || "").replace(/["\\\n\r]/g, "");
 }
@@ -916,7 +921,7 @@ function renderLookupResults(results) {
         <strong>${escapeHtml(result.title)}</strong>
         <p>${escapeHtml([result.releaseDate || result.releaseText, result.lengthHours ? `${result.lengthHours} hrs` : ""].filter(Boolean).join(" · "))}</p>
         <p>${escapeHtml([...(result.genres || []), result.developer, result.publisher].filter(Boolean).join(" · "))}</p>
-        <p>${escapeHtml(shortDescription(result.description || ""))}</p>
+        <p>${escapeHtml(previewDescription(result.description || ""))}</p>
       </div>
       <button class="ghost-button" type="button">Use</button>
     `;
@@ -1024,9 +1029,9 @@ async function refreshMissingDescriptionsOnOpen() {
 
 async function refreshAllGameData() {
   if (!state.canEdit) return;
-  const games = activeGames().filter((game) => game.title);
+  const games = state.games.filter((game) => !game.deletedAt && game.title);
   if (!games.length) {
-    alert("No active games to refresh.");
+    alert("No games to refresh.");
     return;
   }
 
@@ -1039,7 +1044,7 @@ async function refreshAllGameData() {
     el.fetchDataButton.textContent = `Data ${index + 1}/${games.length}`;
     try {
       const result = await lookupFirstResult(game.title);
-      if (result && applyFetchedGameData(game, result)) updated += 1;
+      if (result && applyFetchedGameData(game, result, { refreshTextAndTags: true })) updated += 1;
     } catch {
       failed += 1;
     }
@@ -1056,8 +1061,9 @@ async function refreshAllGameData() {
   alert(`Updated data for ${updated} games${failed ? `, ${failed} failed` : ""}.`);
 }
 
-function applyFetchedGameData(game, result) {
+function applyFetchedGameData(game, result, options = {}) {
   let changed = false;
+  const refreshTextAndTags = Boolean(options.refreshTextAndTags);
   const setIfEmpty = (key, value) => {
     if (!game[key] && value) {
       game[key] = value;
@@ -1065,17 +1071,36 @@ function applyFetchedGameData(game, result) {
     }
   };
   setIfEmpty("cover", result.cover);
-  setIfEmpty("description", result.description);
   setIfEmpty("lengthHours", result.lengthHours);
   setIfEmpty("developer", result.developer);
   setIfEmpty("publisher", result.publisher);
+  if (refreshTextAndTags && result.description) {
+    const nextDescription = shortDescription(result.description);
+    if (nextDescription && game.description !== nextDescription) {
+      game.description = nextDescription;
+      changed = true;
+    }
+  } else {
+    setIfEmpty("description", result.description);
+  }
   if (!game.releaseDate && !game.releaseText) {
     game.releaseDate = result.releaseDate || "";
     game.releaseText = result.releaseDate ? "" : (result.releaseText || "");
     if (game.releaseDate || game.releaseText) changed = true;
   }
-  if ((!game.genres || !game.genres.length) && result.genres?.length) {
-    game.genres = result.genres;
+  if (result.genres?.length && (refreshTextAndTags || !game.genres || !game.genres.length)) {
+    const nextGenres = [...new Set(result.genres.map((genre) => String(genre || "").trim()).filter(Boolean))];
+    if (nextGenres.join("|") !== (game.genres || []).join("|")) {
+      game.genres = nextGenres;
+      changed = true;
+    }
+  }
+  if (refreshTextAndTags && result.developer && game.developer !== result.developer) {
+    game.developer = result.developer;
+    changed = true;
+  }
+  if (refreshTextAndTags && result.publisher && game.publisher !== result.publisher) {
+    game.publisher = result.publisher;
     changed = true;
   }
   if (changed) game.updatedAt = new Date().toISOString();

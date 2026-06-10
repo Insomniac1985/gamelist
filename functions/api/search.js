@@ -102,21 +102,17 @@ function igdbResult(game, query, hltbResults) {
     genres: cleanGenreLabels((game.genres || []).map((genre) => genre.name).filter(Boolean)),
     developer: companyName(companies, "developer"),
     publisher: companyName(companies, "publisher"),
-    description: shortDescription(game.summary || game.storyline || ""),
+    description: fullDescription(game.summary || game.storyline || ""),
     lengthHours: hltbMatch?.lengthHours || null,
     source: "IGDB",
     score,
   };
 }
 
-function shortDescription(value) {
-  const text = String(value || "")
+function fullDescription(value) {
+  return String(value || "")
     .replace(/\s+/g, " ")
     .trim();
-  if (text.length <= 240) return text;
-  const sentences = text.match(/[^.!?]+[.!?]+/g) || [];
-  const summary = sentences.slice(0, 3).join(" ").trim();
-  return (summary && summary.length <= 280 ? summary : `${text.slice(0, 237).trim()}...`);
 }
 
 function igdbQualityScore(game, hltbMatch) {
