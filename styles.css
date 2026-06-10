@@ -964,6 +964,10 @@ body[data-mobile-section="upcoming"] .column:not(#upcoming) {
   border-radius: 8px;
 }
 
+.prices[hidden] {
+  display: none;
+}
+
 .detail-prices {
   margin-top: 16px;
 }
