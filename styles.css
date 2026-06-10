@@ -888,6 +888,14 @@ body[data-mobile-section="backlog"] .column:not(#backlog) {
   line-height: 1;
 }
 
+.icon-only-button {
+  width: 36px;
+  height: 36px;
+  flex: 0 0 36px;
+  padding: 0;
+  font-size: 16px;
+}
+
 .primary-button {
   color: #ffffff;
   background: var(--accent);

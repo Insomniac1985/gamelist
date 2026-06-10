@@ -22,7 +22,7 @@
         <button class="ghost-button" id="fetchDataButton" type="button" hidden>Fetch Data</button>
         <button class="ghost-button" id="fetchPricesButton" type="button" hidden>Fetch New Prices</button>
         <button class="ghost-button" id="loginButton" type="button">Edit</button>
-        <button class="primary-button" id="addButton" type="button" hidden><span class="button-icon" aria-hidden="true">+</span>Add Game</button>
+        <button class="primary-button" id="addButton" type="button" hidden>Add Game<span class="button-icon" aria-hidden="true">+</span></button>
       </div>
     </header>
 
@@ -247,7 +247,7 @@
         </datalist>
 
         <div class="modal-actions">
-          <button class="danger-button" id="deleteButton" type="button">Delete</button>
+          <button class="danger-button icon-only-button" id="deleteButton" type="button" title="Delete" aria-label="Delete"><span aria-hidden="true">🗑</span></button>
           <button class="ghost-button" id="pricesButton" type="button">Refresh Prices</button>
           <button class="primary-button" type="submit">Save</button>
         </div>
@@ -289,7 +289,7 @@
             <button class="ghost-button price-refresh-action" type="button">Prices</button>
             <button class="ghost-button bought-action" type="button">Got it</button>
             <button class="primary-button complete-action" type="button">Completed</button>
-            <button class="danger-button delete-action" type="button">Delete</button>
+            <button class="danger-button icon-only-button delete-action" type="button" title="Delete" aria-label="Delete"><span aria-hidden="true">🗑</span></button>
           </div>
           <div class="prices"></div>
         </div>
