@@ -536,8 +536,8 @@ body[data-mobile-section="upcoming"] .column:not(#upcoming) {
 .game-card {
   position: relative;
   display: grid;
-  grid-template-rows: auto minmax(0, 1fr);
-  gap: 10px;
+  grid-template-columns: 82px minmax(0, 1fr);
+  gap: 10px 12px;
   min-height: 240px;
   height: 100%;
   padding: 12px;
@@ -620,6 +620,7 @@ body[data-mobile-section="upcoming"] .column:not(#upcoming) {
 
 .playing-section .game-card {
   grid-template-columns: 1fr;
+  grid-template-rows: auto minmax(0, 1fr);
   min-height: 292px;
 }
 
@@ -652,9 +653,8 @@ body[data-mobile-section="upcoming"] .column:not(#upcoming) {
 
 .cover-button {
   position: relative;
-  width: 100%;
-  aspect-ratio: 16 / 9;
-  min-height: 126px;
+  width: 82px;
+  height: 112px;
   padding: 0;
   overflow: hidden;
   color: var(--dim);
@@ -942,14 +942,23 @@ body[data-mobile-section="upcoming"] .column:not(#upcoming) {
 }
 
 .notes {
-  margin: 9px 0 0;
+  grid-column: 1 / -1;
+  margin: 0;
+  padding: 9px 10px;
   color: var(--muted);
   font-size: 12px;
   line-height: 1.35;
+  background: rgba(255, 255, 255, 0.045);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 7px;
   display: -webkit-box;
   overflow: hidden;
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 3;
+}
+
+.playing-section .notes {
+  margin-top: 0;
 }
 
 .prices {
@@ -1438,6 +1447,7 @@ body.dialog-open .mobile-section-tabs {
   .cover-button {
     width: 100%;
     height: auto;
+    aspect-ratio: 16 / 9;
     min-height: 150px;
   }
 
