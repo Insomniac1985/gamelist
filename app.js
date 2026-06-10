@@ -188,7 +188,9 @@ async function persistCloud() {
 
 function render() {
   document.body.classList.toggle("can-edit", state.canEdit);
-  el.loginButton.textContent = state.canEdit ? "Viewing" : "Edit";
+  el.loginButton.innerHTML = state.canEdit ? "View" : pencilIcon();
+  el.loginButton.title = state.canEdit ? "View" : "Edit";
+  el.loginButton.setAttribute("aria-label", el.loginButton.title);
   el.addButton.hidden = !state.canEdit;
   el.fetchDataButton.hidden = !state.canEdit;
   el.fetchPricesButton.hidden = !state.canEdit;
@@ -209,7 +211,7 @@ function render() {
 
 function renderPlayingSection() {
   const games = activeGames().filter((game) => game.playing);
-  games.sort((a, b) => sectionRank(a.section) - sectionRank(b.section) || compareGames(a, b, a.section));
+  games.sort(comparePlayingGames);
   el.playingSection.hidden = !games.length;
   el.playingCount.textContent = `${games.length} ${games.length === 1 ? "game" : "games"}`;
   el.playingList.innerHTML = "";
@@ -306,6 +308,7 @@ function renderCompleted() {
   games.sort((a, b) => String(b.completedAt).localeCompare(String(a.completedAt)));
   list.innerHTML = games.length ? games.map((game) => `
     <div class="completed-row" data-id="${escapeHtml(game.id)}">
+      <img class="completed-cover" src="${escapeHtml(game.cover || "")}" alt="" ${game.cover ? "" : "hidden"}>
       <div>
         <strong>${escapeHtml(game.title)}</strong>
         <span>${escapeHtml(game.platform || "")}</span>
@@ -379,14 +382,19 @@ function cardFor(game, options = {}) {
   description.textContent = shortDescription(game.description || "");
   description.hidden = !description.textContent;
   const prices = card.querySelector(".prices");
-  if (game.section === "backlog") prices.remove();
-  else prices.innerHTML = pricesFor(game);
+  const priceRefreshAction = card.querySelector(".price-refresh-action");
+  const boughtAction = card.querySelector(".bought-action");
+  if (game.section === "backlog") {
+    prices.remove();
+    priceRefreshAction.remove();
+    boughtAction.remove();
+  } else {
+    prices.innerHTML = pricesFor(game);
+    priceRefreshAction.addEventListener("click", () => refreshPricesForGame(game.id));
+    boughtAction.addEventListener("click", () => moveToBacklog(game.id));
+  }
   card.querySelector(".edit-action").addEventListener("click", () => openEditor(game.id));
   card.querySelector(".cover-button").addEventListener("click", () => openEditor(game.id));
-  card.querySelector(".price-refresh-action").hidden = game.section === "backlog";
-  card.querySelector(".price-refresh-action").addEventListener("click", () => refreshPricesForGame(game.id));
-  card.querySelector(".bought-action").hidden = game.section === "backlog";
-  card.querySelector(".bought-action").addEventListener("click", () => moveToBacklog(game.id));
   card.querySelector(".complete-action").hidden = game.section !== "backlog";
   card.querySelector(".complete-action").addEventListener("click", () => completeGame(game.id));
   card.querySelector(".delete-action").addEventListener("click", () => deleteGame(game.id));
@@ -423,11 +431,12 @@ function metaFor(game) {
   const values = [];
   if (game.platform) values.push(platformBadge(game.platform));
   ownerTags(game).filter((owner) => owner !== "Xavi").forEach((owner) => values.push(ownerBadge(owner)));
+  if (game.digital) values.push(`<span class="digital-pill">Digital</span>`);
+  gameStatuses(game).forEach((status) => values.push(statusBadge(status)));
   const release = releaseStatus(game);
   if (release) values.push(`<span class="release-pill">${escapeHtml(release)}</span>`);
   if (game.lengthHours) values.push(timeBadge(game.lengthHours));
   if (game.playing) values.push(`<span class="playing-pill">Playing</span>`);
-  if (game.digital) values.push(`<span class="digital-pill">Digital</span>`);
   return values;
 }
 
@@ -452,6 +461,11 @@ function compareGames(a, b, section) {
       || stringCompare(a.title, b.title));
   }
   return direction * stringCompare(a.title, b.title);
+}
+
+function comparePlayingGames(a, b) {
+  return sectionRank(a.section) - sectionRank(b.section)
+    || stringCompare(a.title, b.title);
 }
 
 function compareReleaseDates(a, b) {
@@ -481,6 +495,19 @@ function platformBadge(platform) {
 
 function ownerBadge(owner) {
   return `<span class="owner-pill owner-${escapeHtml(owner.toLowerCase())}">${escapeHtml(owner)}</span>`;
+}
+
+function statusBadge(status) {
+  return `<span class="status-pill ${escapeHtml(statusType(status))}">${escapeHtml(status)}</span>`;
+}
+
+function pencilIcon() {
+  return `
+    <svg class="pencil-icon" viewBox="0 0 24 24" aria-hidden="true">
+      <path d="M4 20h4l11-11a2.8 2.8 0 0 0-4-4L4 16v4Z"></path>
+      <path d="M13.5 6.5l4 4"></path>
+    </svg>
+  `;
 }
 
 function platformLogo(platform) {
@@ -519,7 +546,6 @@ function chipsFor(game) {
   if (game.preorderStore) chips.push(chip(`Preordered: ${game.preorderStore}`, "accent"));
   if (game.preferredStore) chips.push(chip(`Buy: ${game.preferredStore}`));
   (game.genres || []).forEach((genre) => chips.push(chip(genre, "genre")));
-  gameStatuses(game).forEach((status) => chips.push(chip(status, statusType(status))));
   return chips;
 }
 
@@ -728,9 +754,15 @@ function blankGame() {
 
 async function saveFromForm(event) {
   event.preventDefault();
+  await saveCurrentFormGame();
+  el.dialog.close();
+}
+
+async function saveCurrentFormGame() {
   const id = el.fields.id.value || crypto.randomUUID();
   const existing = state.games.find((game) => game.id === id);
-  const section = el.fields.section.value;
+  const playing = el.fields.playing.checked;
+  const section = playing ? "backlog" : el.fields.section.value;
   const game = {
     ...(existing || blankGame()),
     id,
@@ -745,7 +777,7 @@ async function saveFromForm(event) {
     owners: ownerInputValues(el.fields.owners.value),
     statuses: listFrom(el.fields.statuses.value).map(canonicalStatus).filter(Boolean),
     digital: el.fields.digital.checked,
-    playing: el.fields.playing.checked,
+    playing,
     genres: listFrom(el.fields.genres.value),
     developer: el.fields.developer.value.trim(),
     publisher: el.fields.publisher.value.trim(),
@@ -758,7 +790,10 @@ async function saveFromForm(event) {
   if (game.section === "backlog") game.prices = [];
   await normalizeGameBeforeSave(game);
   upsertGame(game);
-  el.dialog.close();
+  el.fields.id.value = game.id;
+  el.fields.section.value = game.section;
+  syncDialogPriceVisibility();
+  return game;
 }
 
 function syncDialogPriceVisibility() {
@@ -1126,19 +1161,16 @@ async function lookupFirstResult(title) {
 
 async function refreshCurrentPrices() {
   const title = el.fields.title.value.trim();
-  const platform = el.fields.platform.value.trim();
-  if (el.fields.section.value === "backlog") return;
   if (!title) return;
+  const savedGame = await saveCurrentFormGame();
+  if (savedGame.section === "backlog") return;
   el.pricesButton.textContent = "Refreshing...";
   try {
-    const data = await fetchPrices(title, platform);
-    const id = el.fields.id.value;
-    if (id) {
-      const game = getGame(id);
-      if (game) {
-        game.prices = data.prices || [];
-        upsertGame(game);
-      }
+    const data = await fetchPrices(savedGame.title, savedGame.platform);
+    const game = getGame(savedGame.id);
+    if (game) {
+      game.prices = data.prices || [];
+      upsertGame(game);
     }
     alert(`Found ${data.prices?.length || 0} price links.`);
   } catch {
@@ -1151,6 +1183,8 @@ async function refreshCurrentPrices() {
 async function refreshPricesForGame(id) {
   const game = getGame(id);
   if (!game) return;
+  persistLocal();
+  if (state.canEdit) await persistCloud();
   if (game.section === "backlog") {
     game.prices = [];
     upsertGame(game);

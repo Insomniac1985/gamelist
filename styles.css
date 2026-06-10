@@ -307,7 +307,7 @@ h3 {
   width: 38px;
   min-height: 42px;
   padding: 0;
-  color: #101114;
+  color: #ffffff;
   background: var(--accent);
   border: 1px solid transparent;
   border-radius: 7px;
@@ -318,7 +318,7 @@ h3 {
 
 .direction-toggle.desc {
   background: rgba(255, 255, 255, 0.1);
-  color: var(--accent);
+  color: #ffffff;
   border-color: rgba(247, 223, 105, 0.34);
 }
 
@@ -602,6 +602,7 @@ body[data-mobile-section="backlog"] .column:not(#backlog) {
 .platform-badge,
 .release-pill,
 .owner-pill,
+.status-pill,
 .time-pill,
 .digital-pill,
 .playing-pill {
@@ -658,6 +659,7 @@ body[data-mobile-section="backlog"] .column:not(#backlog) {
 
 .release-pill,
 .owner-pill,
+.status-pill,
 .digital-pill,
 .playing-pill {
   padding: 4px 8px;
@@ -679,6 +681,28 @@ body[data-mobile-section="backlog"] .column:not(#backlog) {
   color: var(--jordi);
   border-color: rgba(255, 173, 95, 0.48);
   background: rgba(255, 173, 95, 0.1);
+}
+
+.status-pill {
+  font-weight: 820;
+}
+
+.status-pill.collect {
+  color: #ffffff;
+  border-color: rgba(255, 0, 57, 0.36);
+  background: rgba(255, 0, 57, 0.18);
+}
+
+.status-pill.scarce {
+  color: var(--danger);
+  border-color: rgba(255, 111, 133, 0.42);
+  background: rgba(255, 111, 133, 0.1);
+}
+
+.status-pill.waiting {
+  color: var(--accent-2);
+  border-color: rgba(121, 242, 206, 0.4);
+  background: rgba(121, 242, 206, 0.09);
 }
 
 .digital-pill {
@@ -893,7 +917,32 @@ body[data-mobile-section="backlog"] .column:not(#backlog) {
   height: 36px;
   flex: 0 0 36px;
   padding: 0;
+  color: #ffffff;
   font-size: 16px;
+}
+
+.card-actions .icon-only-button {
+  flex: 0 0 36px;
+}
+
+.trash-icon {
+  width: 18px;
+  height: 18px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.pencil-icon {
+  width: 18px;
+  height: 18px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
 }
 
 .primary-button {
@@ -933,12 +982,25 @@ body:not(.can-edit) #addButton {
 }
 
 .completed-row {
+  display: grid;
+  grid-template-columns: 42px minmax(0, 1fr) auto;
   justify-content: space-between;
+  align-items: center;
+  gap: 10px;
   padding: 11px;
   background: rgba(255, 255, 255, 0.05);
   border: 1px solid var(--line);
   border-radius: 7px;
   color: var(--muted);
+}
+
+.completed-cover {
+  width: 42px;
+  height: 56px;
+  object-fit: cover;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.06);
 }
 
 .completed-row > div {
@@ -1159,6 +1221,10 @@ dialog::backdrop {
   }
 
   .card-list {
+    grid-template-columns: 1fr;
+  }
+
+  .playing-section .card-list {
     grid-template-columns: 1fr;
   }
 
