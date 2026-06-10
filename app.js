@@ -43,6 +43,7 @@ const el = {
   detailMeta: document.querySelector("#detailMeta"),
   detailChips: document.querySelector("#detailChips"),
   detailDescription: document.querySelector("#detailDescription"),
+  detailPrices: document.querySelector("#detailPrices"),
   detailCover: document.querySelector(".detail-cover img"),
   dialog: document.querySelector("#gameDialog"),
   form: document.querySelector("#gameForm"),
@@ -123,6 +124,8 @@ function bindEvents() {
   el.detailDialog.addEventListener("click", (event) => {
     if (event.target === el.detailDialog) el.detailDialog.close();
   });
+  el.detailDialog.addEventListener("close", syncScrollLock);
+  el.dialog.addEventListener("close", syncScrollLock);
   el.mobileTabs.forEach((button) => button.addEventListener("click", () => {
     state.mobileSection = button.dataset.mobileSection;
     render();
@@ -207,6 +210,10 @@ function render() {
   el.sortDirectionButton.setAttribute("aria-label", el.sortDirectionButton.title);
   el.sortDirectionButton.classList.toggle("desc", state.filters.direction === "desc");
   el.preorderedFilter.checked = state.filters.preordered;
+}
+
+function syncScrollLock() {
+  document.body.classList.toggle("dialog-open", el.dialog.open || el.detailDialog.open);
 }
 
 function renderPlayingSection() {
@@ -384,12 +391,11 @@ function cardFor(game, options = {}) {
   const prices = card.querySelector(".prices");
   const priceRefreshAction = card.querySelector(".price-refresh-action");
   const boughtAction = card.querySelector(".bought-action");
+  prices.remove();
   if (game.section === "backlog") {
-    prices.remove();
     priceRefreshAction.remove();
     boughtAction.remove();
   } else {
-    prices.innerHTML = pricesFor(game);
     priceRefreshAction.addEventListener("click", () => refreshPricesForGame(game.id));
     boughtAction.addEventListener("click", () => moveToBacklog(game.id));
   }
@@ -417,10 +423,18 @@ function openDetail(id) {
   el.detailMeta.innerHTML = metaFor(game).join("");
   el.detailChips.innerHTML = chipsFor(game).join("");
   el.detailDescription.textContent = game.description || "No description yet.";
+  if (game.section === "backlog") {
+    el.detailPrices.hidden = true;
+    el.detailPrices.innerHTML = "";
+  } else {
+    el.detailPrices.hidden = false;
+    el.detailPrices.innerHTML = pricesFor(game);
+  }
   el.detailCover.hidden = !game.cover;
   el.detailCover.src = game.cover || "";
   el.detailCover.alt = game.cover ? `${game.title} cover` : "";
   el.detailDialog.showModal();
+  syncScrollLock();
 }
 
 function sectionRank(section) {
@@ -721,6 +735,7 @@ function openEditor(id = "") {
   el.fields.notes.value = game.notes || "";
   syncDialogPriceVisibility();
   el.dialog.showModal();
+  syncScrollLock();
 }
 
 function blankGame() {
@@ -935,7 +950,9 @@ async function verifyPassword(password) {
 async function lookupGame() {
   const query = el.lookupInput.value.trim() || el.fields.title.value.trim();
   if (!query) return;
+  el.lookupResults.classList.remove("loaded");
   el.lookupResults.innerHTML = `<div class="empty">Searching...</div>`;
+  el.lookupResults.classList.add("loaded");
   try {
     const response = await fetch(`/api/search?q=${encodeURIComponent(query)}`);
     const data = await response.json();
@@ -946,8 +963,10 @@ async function lookupGame() {
 }
 
 function renderLookupResults(results) {
+  el.lookupResults.classList.remove("loaded");
   if (!results.length) {
     el.lookupResults.innerHTML = `<div class="empty">No API results yet. You can still fill the game manually.</div>`;
+    requestAnimationFrame(() => el.lookupResults.classList.add("loaded"));
     return;
   }
   el.lookupResults.innerHTML = "";
@@ -967,6 +986,7 @@ function renderLookupResults(results) {
     row.querySelector("button").addEventListener("click", () => applyLookup(result));
     el.lookupResults.appendChild(row);
   });
+  requestAnimationFrame(() => el.lookupResults.classList.add("loaded"));
 }
 
 function applyLookup(result) {
@@ -1016,12 +1036,24 @@ async function normalizeGameBeforeSave(game) {
 }
 
 async function refreshUnreleasedGamesOnOpen() {
-  const games = state.games.filter((game) => !game.deletedAt && !game.completedAt && shouldRefreshRelease(game));
+  const games = state.games.filter((game) => !game.deletedAt && !game.completedAt && (shouldRefreshRelease(game) || shouldMoveReleasedToAvailable(game)));
   if (!games.length) return;
   let changed = false;
   for (const game of games.slice(0, 25)) {
     try {
       let localChanged = false;
+      if (shouldMoveReleasedToAvailable(game)) {
+        game.section = "wanted";
+        game.prices = game.prices || [];
+        localChanged = true;
+      }
+      if (!shouldRefreshRelease(game)) {
+        if (localChanged) {
+          game.updatedAt = new Date().toISOString();
+          changed = true;
+        }
+        continue;
+      }
       const result = await lookupFirstResult(game.title);
       if (!result) continue;
       if (result.releaseDate && result.releaseDate !== game.releaseDate) {
@@ -1033,6 +1065,11 @@ async function refreshUnreleasedGamesOnOpen() {
         localChanged = true;
       }
       localChanged = applyFetchedGameData(game, result) || localChanged;
+      if (shouldMoveReleasedToAvailable(game)) {
+        game.section = "wanted";
+        game.prices = game.prices || [];
+        localChanged = true;
+      }
       if (localChanged) {
         game.updatedAt = new Date().toISOString();
         changed = true;
@@ -1045,6 +1082,15 @@ async function refreshUnreleasedGamesOnOpen() {
     persistLocal();
     persistCloud();
   }
+}
+
+function shouldMoveReleasedToAvailable(game) {
+  if (game.section !== "upcoming" || game.preorderStore) return false;
+  if (!game.releaseDate) return false;
+  const releaseTime = new Date(`${game.releaseDate}T00:00:00`).getTime();
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  return Number.isFinite(releaseTime) && releaseTime <= today.getTime();
 }
 
 async function refreshMissingDescriptionsOnOpen() {
