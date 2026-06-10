@@ -729,7 +729,7 @@ function storeLinksWithFallbacks(game) {
   const q = encodeURIComponent(retailTitle(game.title));
   return {
     playstation: links.playstation || `https://www.playstation.com/es-es/search/?q=${q}`,
-    nintendo: links.nintendo || `https://www.nintendo.com/es-es/search/#q=${q}`,
+    nintendo: links.nintendo || `https://www.nintendo.com/es-es/Buscar/Buscar-299117.html?q=${q}&f=147394-86`,
     steam: links.steam || `https://store.steampowered.com/search/?term=${q}`,
   };
 }
