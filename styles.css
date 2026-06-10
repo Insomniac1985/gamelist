@@ -955,6 +955,7 @@ body[data-mobile-section="upcoming"] .column:not(#upcoming) {
   color: var(--muted);
   font-size: 12px;
   line-height: 1.35;
+  max-height: calc(2em * 1.35);
   display: -webkit-box;
   overflow: hidden;
   -webkit-box-orient: vertical;
