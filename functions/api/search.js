@@ -39,7 +39,7 @@ function igdbCredentials(env) {
 async function igdbSearch(query, credentials) {
   const token = await getIgdbToken(credentials);
   const body = [
-    "fields name,first_release_date,cover.image_id,genres.name,involved_companies.company.name,involved_companies.developer,involved_companies.publisher,platforms.name,release_dates.date,release_dates.platform.name;",
+    "fields name,first_release_date,cover.image_id,genres.name,hypes,total_rating,total_rating_count,involved_companies.company.name,involved_companies.developer,involved_companies.publisher,platforms.name,release_dates.date,release_dates.platform.name;",
     `search "${escapeIgdbString(searchAlias(query))}";`,
     "where version_parent = null;",
     "limit 8;",
@@ -83,11 +83,12 @@ async function getIgdbToken({ clientId, clientSecret }) {
 
 function igdbResult(game, query, hltbResults) {
   const title = game.name || "";
-  const score = matchScore(query, title);
-  if (!title || score < 0.28) return null;
+  const textScore = matchScore(query, title);
+  if (!title || textScore < 0.28) return null;
   const hltbMatch = bestExternalMatch(title, hltbResults);
   const companies = game.involved_companies || [];
   const release = bestIgdbRelease(game.release_dates) || unixDate(game.first_release_date);
+  const score = textScore + igdbQualityScore(game, hltbMatch);
   return {
     id: game.id ? `igdb:${game.id}` : title,
     igdbId: game.id || null,
@@ -105,6 +106,18 @@ function igdbResult(game, query, hltbResults) {
     source: "IGDB",
     score,
   };
+}
+
+function igdbQualityScore(game, hltbMatch) {
+  let score = 0;
+  if (hltbMatch) score += 0.22;
+  if (game.cover?.image_id) score += 0.08;
+  if ((game.platforms || []).length > 1) score += 0.08;
+  if ((game.involved_companies || []).some((entry) => entry.developer || entry.publisher)) score += 0.08;
+  score += Math.min(0.18, Math.log10(Number(game.total_rating_count || 0) + 1) * 0.06);
+  score += Math.min(0.12, Math.log10(Number(game.hypes || 0) + 1) * 0.04);
+  if ((game.platforms || []).length === 1 && /game boy|nes|atari|commodore/i.test(game.platforms[0]?.name || "")) score -= 0.1;
+  return score;
 }
 
 async function safeHltbResults(query) {
