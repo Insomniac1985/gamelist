@@ -377,7 +377,10 @@ function cardFor(game, options = {}) {
   img.src = game.cover || "";
   img.alt = game.cover ? `${game.title} cover` : "";
   card.classList.toggle("has-art", Boolean(game.cover));
-  if (game.cover) card.style.setProperty("--card-art", `url("${cssUrl(game.cover)}")`);
+  if (game.cover) {
+    card.style.setProperty("--card-art", `url("${cssUrl(game.cover)}")`);
+    setupCardParallax(card);
+  }
   card.querySelector(".cover-button span").hidden = Boolean(game.cover);
   card.querySelector("h3").textContent = game.title;
   card.querySelector("h3").classList.toggle("owner-judy", owners.includes("Judy"));
@@ -412,6 +415,21 @@ function cardFor(game, options = {}) {
     openDetail(game.id);
   });
   return card;
+}
+
+function setupCardParallax(card) {
+  card.addEventListener("pointermove", (event) => {
+    if (event.pointerType === "touch") return;
+    const rect = card.getBoundingClientRect();
+    const x = ((event.clientX - rect.left) / rect.width - 0.5) * -18;
+    const y = ((event.clientY - rect.top) / rect.height - 0.5) * -18;
+    card.style.setProperty("--art-x", `${x.toFixed(2)}px`);
+    card.style.setProperty("--art-y", `${y.toFixed(2)}px`);
+  });
+  card.addEventListener("pointerleave", () => {
+    card.style.setProperty("--art-x", "0px");
+    card.style.setProperty("--art-y", "0px");
+  });
 }
 
 function openDetail(id) {

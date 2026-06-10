@@ -51,11 +51,12 @@ button {
   position: fixed;
   inset: 0;
   z-index: -1;
-  background-color: #161619;
-  background-image: url("https://cdn.myportfolio.com/9ec86fd7-b8ae-4899-8de8-a4f0e7b32ebb/1b7d38b0-699d-4024-a8bd-6d8cf8b46e16_rwc_0x0x2480x3355x4096.png?h=994f09e241b33623ff8d952bba77dcb7");
-  background-position: top left;
-  background-repeat: repeat;
-  background-size: auto;
+  background:
+    radial-gradient(circle at 78% 9%, rgba(255, 0, 81, 0.22), transparent 30%),
+    radial-gradient(circle at 11% 84%, rgba(0, 0, 255, 0.14), transparent 34%),
+    linear-gradient(120deg, rgba(255, 255, 255, 0.04), transparent 38%),
+    url("https://cdn.myportfolio.com/9ec86fd7-b8ae-4899-8de8-a4f0e7b32ebb/1b7d38b0-699d-4024-a8bd-6d8cf8b46e16_rwc_0x0x2480x3355x4096.png?h=994f09e241b33623ff8d952bba77dcb7") top left / auto repeat,
+    #161619;
 }
 
 .topbar {
@@ -462,6 +463,9 @@ body[data-mobile-section="backlog"] .column:not(#backlog) {
   padding: 12px;
   border-radius: 8px;
   overflow: hidden;
+  --art-x: 0px;
+  --art-y: 0px;
+  --art-scale: 1.04;
 }
 
 .game-card.has-art::before {
@@ -474,7 +478,14 @@ body[data-mobile-section="backlog"] .column:not(#backlog) {
     var(--card-art) center / cover no-repeat;
   filter: blur(4px) saturate(1.12);
   opacity: 0.24;
-  transform: scale(1.04);
+  transform: translate3d(var(--art-x), var(--art-y), 0) scale(var(--art-scale));
+  transition: transform 180ms ease, opacity 180ms ease;
+  will-change: transform;
+}
+
+.game-card.has-art:hover::before {
+  opacity: 0.32;
+  --art-scale: 1.08;
 }
 
 .game-card > * {
