@@ -278,7 +278,7 @@ h3 {
 }
 
 .stat-wide {
-  grid-column: span 2;
+  grid-column: 1 / -1;
   text-align: left;
 }
 
@@ -292,8 +292,30 @@ h3 {
 .stat-group {
   overflow: hidden;
   background:
-    linear-gradient(135deg, rgba(255, 0, 81, 0.12), rgba(0, 0, 255, 0.08)),
+    linear-gradient(135deg, rgba(255, 0, 81, 0.18), rgba(0, 0, 255, 0.1) 52%, rgba(121, 242, 206, 0.08)),
     rgba(255, 255, 255, 0.06);
+}
+
+.stat-group > strong {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: #ffffff;
+  font-size: 14px;
+  letter-spacing: 0;
+  text-transform: uppercase;
+  text-shadow: 0 0 18px rgba(255, 0, 81, 0.3);
+}
+
+.stat-group > strong::before {
+  content: "";
+  width: 9px;
+  height: 9px;
+  border-radius: 999px;
+  background: var(--accent);
+  box-shadow:
+    0 0 0 4px rgba(255, 0, 81, 0.13),
+    0 0 18px rgba(255, 0, 81, 0.42);
 }
 
 .stat-chip {
@@ -314,12 +336,6 @@ h3 {
 
 .stat-chip-platform {
   padding-left: 7px;
-}
-
-.stat-chip-category {
-  background:
-    linear-gradient(135deg, rgba(121, 242, 206, 0.12), rgba(255, 255, 255, 0.05)),
-    rgba(12, 13, 18, 0.36);
 }
 
 .stat-chip-icon {
@@ -1442,9 +1458,6 @@ body.dialog-open .mobile-section-tabs {
     grid-template-columns: repeat(2, 1fr);
   }
 
-  .stat-wide {
-    grid-column: 1 / -1;
-  }
 }
 
 @media (max-width: 460px) {

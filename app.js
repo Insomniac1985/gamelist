@@ -236,15 +236,13 @@ function renderStats() {
     backlog: active.filter((game) => game.section === "backlog").length,
     completed: state.games.filter((game) => game.completedAt && !game.deletedAt).length,
   };
-  const platformStats = statGroup("Platforms", topCounts(active, (game) => game.platform), total, "platform");
-  const categoryStats = statGroup("Categories", topCounts(active, (game) => game.genres || []), total, "category");
+  const platformStats = statGroup("Platform mix", topCounts(active, (game) => game.platform), total, "platform");
   el.stats.innerHTML = [
     stat("Available", counts.wanted, "available"),
     stat("To Release", counts.upcoming, "release"),
     stat("Backlog", counts.backlog, "backlog"),
     stat("Done", counts.completed, "done"),
     platformStats,
-    categoryStats,
   ].join("");
   for (const [section, count] of Object.entries(counts)) {
     const node = document.querySelector(`#${section}Count`);
