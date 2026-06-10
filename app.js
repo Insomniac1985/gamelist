@@ -16,7 +16,7 @@ const state = {
   pendingDescription: "",
   canEdit: sessionStorage.getItem(SESSION_KEY) === "true",
   draggingId: "",
-  mobileSection: "wanted",
+  mobileSection: "backlog",
 };
 
 const el = {
@@ -201,9 +201,9 @@ function render() {
   renderPlayingSection();
   renderStats();
   renderMobileTabs();
+  renderSection("backlog");
   renderSection("wanted");
   renderSection("upcoming");
-  renderSection("backlog");
   renderCompleted();
   el.sortDirectionButton.textContent = state.filters.direction === "asc" ? "↑" : "↓";
   el.sortDirectionButton.title = state.filters.direction === "asc" ? "Sort ascending" : "Sort descending";
@@ -238,9 +238,9 @@ function renderStats() {
   };
   const platformStats = statGroup("Platforms", topCounts(active, (game) => game.platform), total);
   el.stats.innerHTML = [
+    stat("Backlog", counts.backlog, "backlog"),
     stat("Available", counts.wanted, "available"),
     stat("To Release", counts.upcoming, "release"),
-    stat("Backlog", counts.backlog, "backlog"),
     stat("Done", counts.completed, "done"),
     platformStats,
   ].join("");
@@ -465,7 +465,7 @@ function openDetail(id) {
 }
 
 function sectionRank(section) {
-  return { wanted: 0, upcoming: 1, backlog: 2 }[section] ?? 3;
+  return { backlog: 0, wanted: 1, upcoming: 2 }[section] ?? 3;
 }
 
 function metaFor(game) {

@@ -10,7 +10,7 @@
   <body>
     <div class="backdrop"></div>
     <header class="topbar">
-      <a class="brand" href="#wanted" aria-label="gamelist">
+      <a class="brand" href="#backlog" aria-label="gamelist">
         <span class="brand-mark">GL</span>
         <span>gamelist</span>
       </a>
@@ -78,12 +78,22 @@
       </section>
 
       <nav class="mobile-section-tabs" aria-label="Mobile sections">
+        <button type="button" data-mobile-section="backlog">Backlog</button>
         <button type="button" data-mobile-section="wanted">Available</button>
         <button type="button" data-mobile-section="upcoming">To Release</button>
-        <button type="button" data-mobile-section="backlog">Backlog</button>
       </nav>
 
       <section class="board" aria-live="polite">
+        <article class="column" id="backlog">
+          <div class="column-head">
+            <div>
+              <h2>Backlog</h2>
+            </div>
+            <span id="backlogCount"></span>
+          </div>
+          <div class="card-list sortable" data-section="backlog"></div>
+        </article>
+
         <article class="column" id="wanted">
           <div class="column-head">
             <div>
@@ -102,16 +112,6 @@
             <span id="upcomingCount"></span>
           </div>
           <div class="card-list" data-section="upcoming"></div>
-        </article>
-
-        <article class="column" id="backlog">
-          <div class="column-head">
-            <div>
-              <h2>Backlog</h2>
-            </div>
-            <span id="backlogCount"></span>
-          </div>
-          <div class="card-list sortable" data-section="backlog"></div>
         </article>
       </section>
 

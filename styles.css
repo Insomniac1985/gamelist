@@ -60,8 +60,7 @@ button {
 }
 
 .topbar {
-  position: sticky;
-  top: 0;
+  position: relative;
   z-index: 20;
   display: grid;
   grid-template-columns: auto 1fr auto;
@@ -399,8 +398,8 @@ h3 {
 }
 
 .mobile-section-tabs {
-  position: sticky;
-  top: 84px;
+  position: relative;
+  top: auto;
   z-index: 11;
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -428,11 +427,11 @@ h3 {
   transition: transform 180ms ease;
 }
 
-body[data-mobile-section="upcoming"] .mobile-section-tabs::before {
+body[data-mobile-section="wanted"] .mobile-section-tabs::before {
   transform: translateX(calc(100% + 6px));
 }
 
-body[data-mobile-section="backlog"] .mobile-section-tabs::before {
+body[data-mobile-section="upcoming"] .mobile-section-tabs::before {
   transform: translateX(calc(200% + 12px));
 }
 
@@ -496,9 +495,12 @@ select.is-active {
   margin-top: 18px;
 }
 
-body[data-mobile-section="wanted"] .column:not(#wanted),
-body[data-mobile-section="upcoming"] .column:not(#upcoming),
 body[data-mobile-section="backlog"] .column:not(#backlog) {
+  display: none;
+}
+
+body[data-mobile-section="wanted"] .column:not(#wanted),
+body[data-mobile-section="upcoming"] .column:not(#upcoming) {
   display: none;
 }
 
@@ -1359,7 +1361,7 @@ body.dialog-open .mobile-section-tabs {
   }
 
   .mobile-section-tabs {
-    top: 108px;
+    top: auto;
     margin: 12px 0 16px;
   }
 
