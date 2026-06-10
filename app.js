@@ -601,8 +601,13 @@ function cardFor(game, options = {}) {
   }
   card.querySelector(".edit-action").addEventListener("click", () => openEditor(game.id));
   card.querySelector(".cover-button").addEventListener("click", () => openDetail(game.id));
-  card.querySelector(".complete-action").hidden = game.section !== "backlog";
-  card.querySelector(".complete-action").addEventListener("click", () => completeGame(game.id));
+  const completeAction = card.querySelector(".complete-action");
+  completeAction.hidden = game.section !== "backlog";
+  completeAction.textContent = game.playing ? "Completed" : "Play";
+  completeAction.addEventListener("click", () => {
+    if (game.playing) completeGame(game.id);
+    else startPlaying(game.id);
+  });
   card.querySelector(".delete-action").addEventListener("click", () => deleteGame(game.id));
   card.addEventListener("click", (event) => {
     if (event.target.closest("button, a")) return;
@@ -1155,8 +1160,19 @@ function moveToBacklog(id) {
   upsertGame(game);
 }
 
+function startPlaying(id) {
+  const game = getGame(id);
+  if (!game || game.completedAt) return;
+  game.section = "backlog";
+  game.playing = true;
+  game.startedAt = game.startedAt || todayDate();
+  game.updatedAt = new Date().toISOString();
+  upsertGame(game);
+}
+
 function completeGame(id) {
   const game = getGame(id);
+  if (!game?.playing) return;
   game.startedAt = game.startedAt || todayDate();
   game.completedAt = todayDate();
   game.playing = false;
