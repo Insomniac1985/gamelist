@@ -210,6 +210,8 @@ function render() {
   el.sortDirectionButton.setAttribute("aria-label", el.sortDirectionButton.title);
   el.sortDirectionButton.classList.toggle("desc", state.filters.direction === "desc");
   el.preorderedFilter.checked = state.filters.preordered;
+  el.platformFilter.classList.toggle("is-active", state.filters.platform !== "all");
+  el.tagFilter.classList.toggle("is-active", state.filters.tag !== "all");
 }
 
 function syncScrollLock() {
@@ -391,11 +393,12 @@ function cardFor(game, options = {}) {
   const prices = card.querySelector(".prices");
   const priceRefreshAction = card.querySelector(".price-refresh-action");
   const boughtAction = card.querySelector(".bought-action");
-  prices.remove();
   if (game.section === "backlog") {
+    prices.remove();
     priceRefreshAction.remove();
     boughtAction.remove();
   } else {
+    prices.innerHTML = pricesFor(game);
     priceRefreshAction.addEventListener("click", () => refreshPricesForGame(game.id));
     boughtAction.addEventListener("click", () => moveToBacklog(game.id));
   }
