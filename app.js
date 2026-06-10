@@ -2,6 +2,7 @@ const STORAGE_KEY = "gamelist:v1";
 const LEGACY_STORAGE_KEY = "buylist-tracker:v6";
 const SESSION_KEY = "gamelist-editor";
 const PROVIDERS = ["Amazon.es", "Xtralife", "GAME.es"];
+const PSN_PROFILE_USER = "ShabiiEXE";
 const STATUS_OPTIONS = [
   "To Collect",
   "Scarce",
@@ -24,6 +25,9 @@ const el = {
   playingSection: document.querySelector("#playingSection"),
   playingCount: document.querySelector("#playingCount"),
   playingList: document.querySelector(".playing-list"),
+  achievementSection: document.querySelector("#achievementSection"),
+  achievementPanel: document.querySelector("#achievementPanel"),
+  achievementProfileLink: document.querySelector("#achievementProfileLink"),
   stats: document.querySelector("#stats"),
   loginButton: document.querySelector("#loginButton"),
   addButton: document.querySelector("#addButton"),
@@ -101,6 +105,7 @@ async function init() {
   await loadData();
   await pullCloudData();
   render();
+  refreshAchievements();
   refreshUnreleasedGamesOnOpen();
   refreshMissingDescriptionsOnOpen();
 }
@@ -255,6 +260,47 @@ function renderPlayingSection() {
   el.playingCount.textContent = `${games.length} ${games.length === 1 ? "game" : "games"}`;
   el.playingList.innerHTML = "";
   games.forEach((game) => el.playingList.appendChild(cardFor(game, { staticCard: true })));
+}
+
+async function refreshAchievements() {
+  el.achievementProfileLink.href = `https://psnprofiles.com/${encodeURIComponent(PSN_PROFILE_USER)}`;
+  try {
+    const response = await fetch(`/api/achievements?user=${encodeURIComponent(PSN_PROFILE_USER)}`);
+    const data = await response.json();
+    renderAchievements(data);
+  } catch {
+    renderAchievements({ user: PSN_PROFILE_USER, achievements: [], sourceUrl: `https://psnprofiles.com/${PSN_PROFILE_USER}`, blocked: true });
+  }
+}
+
+function renderAchievements(data = {}) {
+  const user = data.user || PSN_PROFILE_USER;
+  const sourceUrl = data.sourceUrl || `https://psnprofiles.com/${user}`;
+  el.achievementProfileLink.href = sourceUrl;
+  el.achievementProfileLink.textContent = user;
+  const achievements = Array.isArray(data.achievements) ? data.achievements.slice(0, 4) : [];
+  if (!achievements.length) {
+    el.achievementPanel.innerHTML = `
+      <a class="achievement-fallback" href="${escapeHtml(sourceUrl)}" target="_blank" rel="noreferrer">
+        <img src="${escapeHtml(platformLogo("PS5"))}" alt="">
+        <div>
+          <strong>PSN activity</strong>
+          <span>${data.blocked ? "PSNProfiles blocks embedded scraping, but your profile is one click away." : "No recent trophies found yet."}</span>
+        </div>
+      </a>
+    `;
+    return;
+  }
+
+  el.achievementPanel.innerHTML = achievements.map((item, index) => `
+    <a class="achievement-card ${index === 0 ? "latest" : ""}" href="${escapeHtml(item.url || sourceUrl)}" target="_blank" rel="noreferrer">
+      <img class="achievement-icon" src="${escapeHtml(item.icon || platformLogo("PS5"))}" alt="">
+      <div>
+        <strong>${escapeHtml(item.title || "Trophy unlocked")}</strong>
+        <span>${escapeHtml([item.game, item.rarity, item.earnedAt].filter(Boolean).join(" · "))}</span>
+      </div>
+    </a>
+  `).join("");
 }
 
 function renderStats() {

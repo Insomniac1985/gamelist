@@ -1,9 +1,11 @@
 import * as auth from "./functions/api/auth.js";
+import * as achievements from "./functions/api/achievements.js";
 import * as prices from "./functions/api/prices.js";
 import * as search from "./functions/api/search.js";
 import * as sync from "./functions/api/sync.js";
 
 const routes = {
+  "/api/achievements": achievements,
   "/api/auth": auth,
   "/api/prices": prices,
   "/api/search": search,
