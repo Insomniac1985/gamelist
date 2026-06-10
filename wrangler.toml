@@ -1,0 +1,13 @@
+name = "gamelist"
+main = "worker.js"
+compatibility_date = "2026-06-10"
+workers_dev = true
+
+[assets]
+directory = "."
+binding = "ASSETS"
+
+# Create a KV namespace for sync, then uncomment and paste the id:
+# [[kv_namespaces]]
+# binding = "GAMELIST"
+# id = "your-kv-namespace-id"
