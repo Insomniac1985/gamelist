@@ -236,7 +236,7 @@ function renderStats() {
     backlog: active.filter((game) => game.section === "backlog").length,
     completed: state.games.filter((game) => game.completedAt && !game.deletedAt).length,
   };
-  const platformStats = statGroup("Platform mix", topCounts(active, (game) => game.platform), total, "platform");
+  const platformStats = statGroup("Platforms", topCounts(active, (game) => game.platform), total);
   el.stats.innerHTML = [
     stat("Available", counts.wanted, "available"),
     stat("To Release", counts.upcoming, "release"),
@@ -254,22 +254,18 @@ function stat(label, value, tone = "") {
   return `<div class="stat ${tone ? `stat-${tone}` : ""}"><strong>${value}</strong><span>${label}</span></div>`;
 }
 
-function statGroup(label, counts, total, type) {
+function statGroup(label, counts, total) {
   const body = counts.length
     ? counts.map(([name, count]) => {
       const share = Math.round((count / total) * 100);
-      const icon = type === "platform"
-        ? `<img class="stat-chip-icon" src="${escapeHtml(platformLogo(name))}" alt="" loading="lazy">`
-        : "";
       return `
-        <span class="stat-chip stat-chip-${escapeHtml(type)}" title="${escapeHtml(`${name}: ${count} games · ${share}%`)}">
-          ${icon}
-          <b>${escapeHtml(name)}</b>
+        <span class="stat-platform" title="${escapeHtml(`${name}: ${count} games · ${share}%`)}">
+          ${platformBadge(name)}
           <small>${count}</small>
         </span>
       `;
     }).join("")
-    : `<span class="stat-chip stat-chip-${escapeHtml(type)}" title="None: 0 games · 0%"><b>None</b><small>0</small></span>`;
+    : `<span class="stat-platform" title="None: 0 games · 0%"><span class="platform-badge platform-generic"><span class="platform-label">None</span></span><small>0</small></span>`;
   return `<div class="stat stat-wide stat-group"><strong>${escapeHtml(label)}</strong><div>${body}</div></div>`;
 }
 
@@ -392,7 +388,6 @@ function cardFor(game, options = {}) {
     card.style.setProperty("--card-art", `url("${cssUrl(game.cover)}")`);
     setupCardParallax(card);
   }
-  card.querySelector(".cover-button span").hidden = Boolean(game.cover);
   card.querySelector("h3").textContent = game.title;
   card.querySelector("h3").classList.toggle("owner-judy", owners.includes("Judy"));
   card.querySelector("h3").classList.toggle("owner-jordi", owners.includes("Jordi"));
