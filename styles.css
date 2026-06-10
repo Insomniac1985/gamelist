@@ -177,7 +177,27 @@ h1 {
 h2 {
   margin-bottom: 0;
   font-size: 24px;
-  color: var(--accent);
+  color: var(--text);
+  font-weight: 900;
+  letter-spacing: 0;
+  text-shadow: 0 0 18px rgba(255, 0, 57, 0.24);
+}
+
+.column-head h2 {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--text);
+}
+
+.column-head h2::after {
+  content: "";
+  width: 38px;
+  height: 2px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--accent), rgba(121, 242, 206, 0.88), transparent);
+  box-shadow: 0 0 18px rgba(255, 0, 57, 0.38);
 }
 
 h3 {
@@ -354,7 +374,7 @@ body[data-mobile-section="backlog"] .mobile-section-tabs::before {
 }
 
 .mobile-section-tabs button.active {
-  color: #101114;
+  color: #ffffff;
   font-weight: 820;
 }
 
@@ -822,9 +842,10 @@ body[data-mobile-section="backlog"] .column:not(#backlog) {
 }
 
 .primary-button {
-  color: #101114;
+  color: #ffffff;
   background: var(--accent);
   font-weight: 800;
+  text-shadow: 0 1px 8px rgba(0, 0, 0, 0.32);
 }
 
 .ghost-button {
