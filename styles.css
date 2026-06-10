@@ -99,6 +99,10 @@ button {
   gap: 3px;
 }
 
+.nav-tabs:empty {
+  display: none;
+}
+
 .nav-tabs a {
   color: var(--muted);
   text-decoration: none;
@@ -1296,21 +1300,26 @@ body.dialog-open .mobile-section-tabs {
 
 @media (max-width: 760px) {
   .topbar {
-    grid-template-columns: 1fr;
-    gap: 12px;
+    grid-template-columns: auto minmax(0, 1fr);
+    align-items: center;
+    gap: 10px;
+    padding: 12px 14px;
   }
 
   .top-actions {
     display: grid;
     grid-template-columns: 42px 42px;
+    grid-column: 2;
+    justify-self: end;
     justify-content: end;
-    width: 100%;
+    width: auto;
   }
 
   .top-actions .ghost-button,
   .top-actions .primary-button {
     min-width: 0;
-    padding-inline: 10px;
+    min-height: 42px;
+    padding-inline: 9px;
     white-space: nowrap;
   }
 
@@ -1322,22 +1331,35 @@ body.dialog-open .mobile-section-tabs {
     grid-column: 2;
   }
 
+  body.can-edit .topbar {
+    align-items: start;
+  }
+
   body.can-edit .top-actions {
+    grid-column: 1 / -1;
+    justify-self: stretch;
     grid-template-columns: 42px minmax(0, 1fr) minmax(0, 1fr);
+    width: 100%;
   }
 
   #addButton {
     grid-column: 3;
   }
 
-  #fetchDataButton,
-  #fetchPricesButton {
-    grid-column: 1 / -1;
+  body.can-edit #fetchDataButton {
+    grid-column: 1 / span 2;
+  }
+
+  body.can-edit #fetchPricesButton {
+    grid-column: 3;
   }
 
   body.can-edit #fetchDataButton,
   body.can-edit #fetchPricesButton {
     justify-content: center;
+    font-size: 11px;
+    line-height: 1.05;
+    white-space: normal;
   }
 
   .nav-tabs {
