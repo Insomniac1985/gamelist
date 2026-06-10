@@ -95,6 +95,7 @@ const el = {
 init();
 
 async function init() {
+  registerServiceWorker();
   document.body.classList.toggle("can-edit", state.canEdit);
   bindEvents();
   await loadData();
@@ -102,6 +103,15 @@ async function init() {
   render();
   refreshUnreleasedGamesOnOpen();
   refreshMissingDescriptionsOnOpen();
+}
+
+function registerServiceWorker() {
+  if (!("serviceWorker" in navigator)) return;
+  window.addEventListener("load", () => {
+    navigator.serviceWorker.register("/service-worker.js").catch(() => {
+      // Asset caching is optional; the app still works without it.
+    });
+  });
 }
 
 function bindEvents() {
