@@ -400,7 +400,6 @@ h3 {
   border-color: rgba(247, 223, 105, 0.34);
 }
 
-button:hover,
 .ghost-button:hover,
 .primary-button:hover,
 .icon-button:hover,
@@ -463,6 +462,14 @@ body[data-mobile-section="wanted"] .mobile-section-tabs::before {
 .mobile-section-tabs button.active {
   color: #ffffff;
   font-weight: 820;
+}
+
+.mobile-section-tabs button:hover {
+  color: var(--accent);
+}
+
+.mobile-section-tabs button.active:hover {
+  color: #ffffff;
 }
 
 label span {
