@@ -74,7 +74,10 @@ async function findPrice(provider, title, platform, query, env = {}) {
       },
     });
     const html = await response.text();
-    const result = provider.parse(html, title, platform);
+    let result = provider.parse(html, title, platform);
+    if (provider.store === "Playasia" && !result.price) {
+      result = await lookupPlayasiaReader(title, platform, query);
+    }
     const price = result.price || "";
     return {
       store: provider.store,
@@ -87,6 +90,21 @@ async function findPrice(provider, title, platform, query, env = {}) {
   } catch {
     return missingPrice(provider.store, url);
   }
+}
+
+async function lookupPlayasiaReader(title, platform, query) {
+  const url = playasiaSearchUrl(query);
+  const readerUrl = `https://r.jina.ai/http://r.jina.ai/http://${url}`;
+  const response = await fetch(readerUrl, {
+    headers: {
+      "Accept": "text/plain,text/markdown",
+      "User-Agent": "Mozilla/5.0 (compatible; GameList/1.0)",
+    },
+    cf: { cacheTtl: 900, cacheEverything: true },
+  });
+  if (!response.ok) return { price: "", matchedTitle: "" };
+  const markdown = await response.text();
+  return parseGeneric(markdown, title, platform);
 }
 
 function parseAmazon(html, title, platform) {
