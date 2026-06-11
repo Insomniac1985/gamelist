@@ -284,6 +284,7 @@ function renderAchievements(data = {}) {
   state.psnActivity = {
     achievements: Array.isArray(data.achievements) ? data.achievements : [],
     games: Array.isArray(data.games) ? data.games : [],
+    summary: data.summary || null,
     sourceUrl,
   };
   el.achievementProfileLink.href = sourceUrl;
@@ -319,7 +320,7 @@ function renderAchievements(data = {}) {
       </div>
     </a>
   `).join("");
-  const dashboard = achievementDashboard(achievements, games, sourceUrl);
+  const dashboard = achievementDashboard(achievements, games, sourceUrl, data.summary);
   const gameCards = games.length ? `
     <div class="achievement-games">
       <span class="achievement-subtitle">Latest games</span>
@@ -331,12 +332,15 @@ function renderAchievements(data = {}) {
   el.achievementPanel.innerHTML = `${dashboard}${trophyCards}${gameCards}`;
 }
 
-function achievementDashboard(achievements, games, sourceUrl) {
-  const counts = ["Platinum", "Gold", "Silver", "Bronze"].map((type) => [
-    type,
-    achievements.filter((item) => trophyTone(item.rarity) === type.toLowerCase()).length,
-  ]);
-  const total = Math.max(1, achievements.length);
+function achievementDashboard(achievements, games, sourceUrl, summary = null) {
+  const trophies = summary?.trophies || {};
+  const counts = [
+    ["Platinum", Number(trophies.platinum || 0)],
+    ["Gold", Number(trophies.gold || 0)],
+    ["Silver", Number(trophies.silver || 0)],
+    ["Bronze", Number(trophies.bronze || 0)],
+  ];
+  const total = Math.max(1, counts.reduce((sum, [, count]) => sum + count, 0));
   const latestPlatinum = achievements.find((item) => trophyTone(item.rarity) === "platinum");
   const average = games.length
     ? Math.round(games.reduce((sum, game) => sum + progressValue(game.game), 0) / games.length)
@@ -344,16 +348,16 @@ function achievementDashboard(achievements, games, sourceUrl) {
   return `
     <div class="achievement-summary">
       <a class="achievement-kpi" href="${escapeHtml(sourceUrl)}" target="_blank" rel="noreferrer">
-        <strong>${escapeHtml(String(achievements.length))}</strong>
-        <span>latest trophies</span>
+        <strong>${escapeHtml(String(total))}</strong>
+        <span>account trophies</span>
       </a>
       <a class="achievement-kpi platinum-highlight ${latestPlatinum ? "has-platinum" : ""}" href="${escapeHtml(latestPlatinum?.url || sourceUrl)}" target="_blank" rel="noreferrer">
-        <strong>${latestPlatinum ? "Platinum" : "No platinum"}</strong>
-        <span>${escapeHtml(latestPlatinum ? [latestPlatinum.title, latestPlatinum.game].filter(Boolean).join(" · ") : "in latest trophies")}</span>
+        <strong>${escapeHtml(String(trophies.platinum || 0))}</strong>
+        <span>platinums${latestPlatinum ? ` · latest ${escapeHtml(latestPlatinum.game || latestPlatinum.title || "")}` : ""}</span>
       </a>
       <div class="achievement-kpi">
-        <strong>${average}%</strong>
-        <span>latest game avg</span>
+        <strong>${escapeHtml(String(summary?.level || average || 0))}</strong>
+        <span>${summary?.level ? `level · ${summary.progress || 0}% next` : "latest game avg"}</span>
       </div>
       <div class="rarity-graph" aria-label="Trophy rarity graph">
         ${counts.map(([type, count]) => `
@@ -398,7 +402,7 @@ function trophyTone(value) {
 
 function renderStats() {
   const active = activeGames();
-  const total = active.length || 1;
+  const total = active.length;
   const currentYear = String(new Date().getFullYear());
   const completedThisYear = completedGamesForYear(currentYear).length;
   const counts = {
@@ -407,13 +411,11 @@ function renderStats() {
     backlog: active.filter((game) => game.section === "backlog").length,
     completed: state.games.filter((game) => game.completedAt && !game.deletedAt).length,
   };
-  const platformStats = statGroup("Platforms", platformCounts(active), total);
   el.stats.innerHTML = [
-    stat("Backlog", counts.backlog, "backlog"),
-    stat("To Release", counts.upcoming, "release"),
-    stat("Available", counts.wanted, "available"),
+    stat("Backlog", counts.backlog, "backlog", { detail: sectionStatDetail("backlog", active, total) }),
+    stat("To Release", counts.upcoming, "release", { detail: sectionStatDetail("upcoming", active, total) }),
+    stat("Available", counts.wanted, "available", { detail: sectionStatDetail("wanted", active, total) }),
     stat(`Done ${currentYear}`, completedThisYear, "done", { action: "history" }),
-    platformStats,
   ].join("");
   const historyStat = el.stats.querySelector("[data-stat-action='history']");
   historyStat?.addEventListener("click", openHistoryDialog);
@@ -425,27 +427,35 @@ function renderStats() {
   });
   for (const [section, count] of Object.entries(counts)) {
     const node = document.querySelector(`#${section}Count`);
-    if (node) node.textContent = `${count} ${count === 1 ? "game" : "games"}`;
+    if (node) node.innerHTML = sectionCountLabel(section, active, count);
   }
 }
 
 function stat(label, value, tone = "", options = {}) {
-  const attrs = options.action ? ` role="button" tabindex="0" data-stat-action="${escapeHtml(options.action)}"` : "";
-  return `<div class="stat ${tone ? `stat-${tone}` : ""} ${options.action ? "stat-action" : ""}"${attrs}><strong>${value}</strong><span>${label}</span></div>`;
+  const attrs = options.action
+    ? ` role="button" tabindex="0" data-stat-action="${escapeHtml(options.action)}"`
+    : options.detail ? ` tabindex="0"` : "";
+  return `<div class="stat ${tone ? `stat-${tone}` : ""} ${options.action ? "stat-action" : ""}"${attrs}><strong>${value}</strong><span>${label}</span>${options.detail || ""}</div>`;
 }
 
-function statGroup(label, counts, total) {
-  const body = counts.length
-    ? counts.map(([name, count]) => {
-      const share = Math.round((count / total) * 100);
-      return `
-        <span class="stat-platform" title="${escapeHtml(`${name}: ${count} games · ${share}%`)}">
-          ${platformBadge(name, count)}
-        </span>
-      `;
-    }).join("")
-    : `<span class="stat-platform" title="None: 0 games · 0%"><span class="platform-badge platform-generic"><span class="platform-label">None</span></span><small>0</small></span>`;
-  return `<div class="stat stat-wide stat-group"><strong>${escapeHtml(label)}</strong><div>${body}</div></div>`;
+function sectionStatDetail(section, games, total) {
+  const sectionGames = games.filter((game) => game.section === section);
+  const preordered = sectionGames.filter((game) => game.preorderStore).length;
+  return `
+    <div class="stat-detail">
+      <span>${sectionGames.length} ${sectionGames.length === 1 ? "game" : "games"}</span>
+      ${preordered ? `<span class="preorder-count-pill">${preordered} preordered</span>` : ""}
+      <b>Total ${total}</b>
+    </div>
+  `;
+}
+
+function sectionCountLabel(section, games, count) {
+  const preordered = games.filter((game) => game.section === section && game.preorderStore).length;
+  return [
+    `${count} ${count === 1 ? "game" : "games"}`,
+    preordered ? `<span class="preorder-count-pill">${preordered} preordered</span>` : "",
+  ].filter(Boolean).join("");
 }
 
 function topCounts(games, mapper, limit = 0) {
@@ -471,8 +481,8 @@ function renderMobileTabs() {
 }
 
 function syncMobileSectionToResults() {
-  if (!state.filters.query) return;
-  const sections = ["backlog", "upcoming", "wanted"];
+  if (!state.filters.query && !state.filters.preordered) return;
+  const sections = state.filters.preordered ? ["upcoming", "backlog", "wanted"] : ["backlog", "upcoming", "wanted"];
   const hasCurrent = filteredGames().some((game) => (
     game.section === state.mobileSection
     && !game.completedAt
@@ -532,6 +542,7 @@ function renderCompleted() {
         <strong>${escapeHtml(game.title)}</strong>
         <span class="completed-platform">${completedBadges(game)}</span>
         <span class="completed-dates">${escapeHtml(historyRangeText(game))}</span>
+        ${completedDurationLine(game)}
       </div>
       <button class="icon-button completed-edit-action" type="button" title="Edit" aria-label="Edit">${pencilIcon()}</button>
       <button class="ghost-button restore-action" type="button">Backlog</button>
@@ -588,6 +599,7 @@ function renderHistoryDialog() {
         <strong>${escapeHtml(game.title)}</strong>
         <span class="completed-platform">${completedBadges(game)}</span>
         <span>${escapeHtml(historyRangeText(game))}</span>
+        ${completedDurationLine(game)}
       </div>
       <button class="icon-button history-edit-action" type="button" title="Edit" aria-label="Edit">${pencilIcon()}</button>
     </div>
@@ -622,30 +634,51 @@ function completionYear(game) {
 function historyRangeText(game) {
   const start = formatLongDate(game.startedAt);
   const done = formatLongDate(game.completedAt);
-  const duration = finishedDurationText(game.startedAt, game.completedAt);
-  if (start && done) return `${start} -> ${done}${duration ? ` (${duration})` : ""}`;
+  if (start && done) return `${start} -> ${done}`;
   if (done) return `Done ${done}`;
   if (start) return `Started ${start}`;
   return "No dates";
+}
+
+function completedDurationLine(game) {
+  const duration = finishedDurationText(game.startedAt, game.completedAt);
+  return duration ? `<span class="completed-duration">${escapeHtml(duration)}</span>` : "";
 }
 
 function finishedDurationText(startValue, doneValue) {
   const start = dateOnly(startValue);
   const done = dateOnly(doneValue);
   if (!start || !done) return "";
-  const startTime = new Date(`${start}T00:00:00`).getTime();
-  const doneTime = new Date(`${done}T00:00:00`).getTime();
+  const [startYear, startMonth, startDay] = start.split("-").map(Number);
+  const [doneYear, doneMonth, doneDay] = done.split("-").map(Number);
+  const startTime = new Date(startYear, startMonth - 1, startDay).getTime();
+  const doneTime = new Date(doneYear, doneMonth - 1, doneDay).getTime();
   if (!Number.isFinite(startTime) || !Number.isFinite(doneTime) || doneTime < startTime) return "";
-  const days = Math.max(1, Math.floor((doneTime - startTime) / 86400000) + 1);
-  if (days < 60) return plural(days, "day");
-  const months = Math.max(1, Math.round(days / 30.4375));
-  if (months < 24) return plural(months, "month");
-  const years = Math.max(1, Math.round(days / 365.25));
-  return plural(years, "year");
+  let years = doneYear - startYear;
+  let months = doneMonth - startMonth;
+  let days = doneDay - startDay;
+  if (days < 0) {
+    months -= 1;
+    days += daysInMonth(doneYear, doneMonth - 1);
+  }
+  if (months < 0) {
+    years -= 1;
+    months += 12;
+  }
+  if (!years && !months && !days) days = 1;
+  return [
+    years ? plural(years, "year") : "",
+    months ? plural(months, "month") : "",
+    days ? plural(days, "day") : "",
+  ].filter(Boolean).join(" ");
 }
 
 function plural(value, label) {
   return `${value} ${label}${value === 1 ? "" : "s"}`;
+}
+
+function daysInMonth(year, month) {
+  return new Date(year, month, 0).getDate();
 }
 
 function updateCompletedDate(id, key, value) {
@@ -741,7 +774,9 @@ function cardFor(game, options = {}) {
     prices.remove();
     priceRefreshAction.remove();
     boughtAction.remove();
-    completeAction.textContent = game.playing ? "Finished" : "Play";
+    completeAction.innerHTML = game.playing
+      ? `<span class="action-icon checkmark-icon" aria-hidden="true">✓</span><span class="action-label">Finished</span>`
+      : `<span class="action-label">Play</span>`;
     completeAction.addEventListener("click", () => {
       if (game.playing) completeGame(game.id);
       else startPlaying(game.id);

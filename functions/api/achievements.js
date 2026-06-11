@@ -63,13 +63,33 @@ async function getPsnAccessToken(npsso) {
 
 async function getRecentPsnActivity(accessToken, sourceUrl) {
   const requestUrl = `${PSN_TROPHY_BASE}/v1/users/me/trophyTitles?${new URLSearchParams({ limit: "6", offset: "0" })}`;
-  const data = await psnGet(requestUrl, accessToken);
+  const [data, summary] = await Promise.all([
+    psnGet(requestUrl, accessToken),
+    getPsnTrophySummary(accessToken),
+  ]);
   const titles = (data.trophyTitles || []).slice(0, 6);
   const trophies = (await Promise.all(titles.slice(0, 4).map((title) => getRecentTrophiesForTitle(accessToken, title, sourceUrl)))).flat();
   trophies.sort((a, b) => String(b.rawEarnedAt || "").localeCompare(String(a.rawEarnedAt || "")));
   return {
     achievements: trophies.length ? trophies.slice(0, 6) : titles.map((title) => titleSummary(title, sourceUrl)).slice(0, 6),
     games: titles.map((title) => titleSummary(title, sourceUrl)).slice(0, 3),
+    summary,
+  };
+}
+
+async function getPsnTrophySummary(accessToken) {
+  const data = await psnGet(`${PSN_TROPHY_BASE}/v1/users/me/trophySummary`, accessToken);
+  const earned = data.earnedTrophies || {};
+  return {
+    level: data.trophyLevel || "",
+    progress: Number(data.progress || 0),
+    tier: data.tier || "",
+    trophies: {
+      platinum: Number(earned.platinum || 0),
+      gold: Number(earned.gold || 0),
+      silver: Number(earned.silver || 0),
+      bronze: Number(earned.bronze || 0),
+    },
   };
 }
 
