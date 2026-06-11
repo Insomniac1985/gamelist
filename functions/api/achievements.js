@@ -89,7 +89,7 @@ async function getRecentPsnActivity(accessToken, sourceUrl) {
 
 async function getPsnTrophyTitles(accessToken) {
   let lastError = null;
-  for (const limit of ["200", "100", "50"]) {
+  for (const limit of ["999", "200", "100", "50"]) {
     try {
       return await psnGet(`${PSN_TROPHY_BASE}/v1/users/me/trophyTitles?${new URLSearchParams({ limit, offset: "0" })}`, accessToken);
     } catch (error) {
