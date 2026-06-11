@@ -18,8 +18,8 @@ export async function onRequestGet({ request, env = {} }) {
 
   try {
     const accessToken = await getPsnAccessToken(env.PSN_NPSSO);
-    const achievements = await getRecentPsnTitles(accessToken, sourceUrl);
-    return json({ user, sourceUrl, achievements, source: "psn", blocked: false });
+    const activity = await getRecentPsnActivity(accessToken, sourceUrl);
+    return json({ user, sourceUrl, ...activity, source: "psn", blocked: false });
   } catch {
     return json({ user, sourceUrl, achievements: [], source: "psn", authError: true });
   }
@@ -61,14 +61,16 @@ async function getPsnAccessToken(npsso) {
   return token.access_token;
 }
 
-async function getRecentPsnTitles(accessToken, sourceUrl) {
+async function getRecentPsnActivity(accessToken, sourceUrl) {
   const requestUrl = `${PSN_TROPHY_BASE}/v1/users/me/trophyTitles?${new URLSearchParams({ limit: "6", offset: "0" })}`;
   const data = await psnGet(requestUrl, accessToken);
   const titles = (data.trophyTitles || []).slice(0, 6);
   const trophies = (await Promise.all(titles.slice(0, 4).map((title) => getRecentTrophiesForTitle(accessToken, title, sourceUrl)))).flat();
   trophies.sort((a, b) => String(b.rawEarnedAt || "").localeCompare(String(a.rawEarnedAt || "")));
-  if (trophies.length) return trophies.slice(0, 6);
-  return titles.map((title) => titleSummary(title, sourceUrl));
+  return {
+    achievements: trophies.length ? trophies.slice(0, 6) : titles.map((title) => titleSummary(title, sourceUrl)).slice(0, 6),
+    games: titles.map((title) => titleSummary(title, sourceUrl)).slice(0, 3),
+  };
 }
 
 async function getRecentTrophiesForTitle(accessToken, title, sourceUrl) {

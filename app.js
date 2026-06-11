@@ -281,7 +281,8 @@ function renderAchievements(data = {}) {
   const sourceUrl = data.sourceUrl || "https://www.playstation.com/";
   el.achievementProfileLink.href = sourceUrl;
   el.achievementProfileLink.textContent = data.source === "psn" ? "PSN activity" : user;
-  const achievements = Array.isArray(data.achievements) ? data.achievements.slice(0, 4) : [];
+  const achievements = Array.isArray(data.achievements) ? data.achievements.slice(0, 6) : [];
+  const games = Array.isArray(data.games) ? data.games.slice(0, 3) : [];
   if (!achievements.length) {
     const fallbackText = data.needsSetup
       ? "Set PSN_NPSSO in Cloudflare to show recent PSN trophy activity here."
@@ -302,7 +303,7 @@ function renderAchievements(data = {}) {
     return;
   }
 
-  el.achievementPanel.innerHTML = achievements.map((item, index) => `
+  const trophyCards = achievements.map((item, index) => `
     <a class="achievement-card ${index === 0 ? "latest" : ""}" href="${escapeHtml(item.url || sourceUrl)}" target="_blank" rel="noreferrer">
       <img class="achievement-icon" src="${escapeHtml(item.icon || platformLogo("PS5"))}" alt="">
       <div>
@@ -311,6 +312,35 @@ function renderAchievements(data = {}) {
       </div>
     </a>
   `).join("");
+  const gameCards = games.length ? `
+    <div class="achievement-games">
+      <span class="achievement-subtitle">Latest games</span>
+      <div class="achievement-game-list">
+        ${games.map((game) => achievementGameCard(game, sourceUrl)).join("")}
+      </div>
+    </div>
+  ` : "";
+  el.achievementPanel.innerHTML = `${trophyCards}${gameCards}`;
+}
+
+function achievementGameCard(game, sourceUrl) {
+  const progress = progressValue(game.game);
+  return `
+    <a class="achievement-game" href="${escapeHtml(game.url || sourceUrl)}" target="_blank" rel="noreferrer">
+      <img src="${escapeHtml(game.icon || platformLogo("PS5"))}" alt="">
+      <div>
+        <strong>${escapeHtml(game.title || "Recent game")}</strong>
+        <span>${escapeHtml([game.game, game.earnedAt].filter(Boolean).join(" · "))}</span>
+        <em style="--progress:${progress}%"></em>
+      </div>
+    </a>
+  `;
+}
+
+function progressValue(text) {
+  const match = String(text || "").match(/(\d+(?:\.\d+)?)%/);
+  if (!match) return 0;
+  return Math.max(0, Math.min(100, Number(match[1])));
 }
 
 function renderStats() {
