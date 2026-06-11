@@ -364,7 +364,7 @@ function achievementDashboard(achievements, games, sourceUrl, summary = null) {
       <div class="rarity-graph" aria-label="Trophy rarity graph">
         ${counts.map(([type, count]) => `
           <span class="rarity-bar rarity-${escapeHtml(type.toLowerCase())}" title="${escapeHtml(`${type}: ${count}`)}">
-            <em style="--bar:${Math.round((count / total) * 100)}%"></em>
+            <em style="--bar:${trophyBarHeight(count, counts)}%"></em>
             <small>${escapeHtml(type)}</small>
             <strong>${escapeHtml(String(count))}</strong>
           </span>
@@ -372,6 +372,13 @@ function achievementDashboard(achievements, games, sourceUrl, summary = null) {
       </div>
     </div>
   `;
+}
+
+function trophyBarHeight(count, counts) {
+  const max = Math.max(1, ...counts.map(([, value]) => value));
+  if (!count) return 8;
+  const scaled = Math.log1p(count) / Math.log1p(max);
+  return Math.round(18 + scaled * 82);
 }
 
 function achievementGameCard(game, sourceUrl) {

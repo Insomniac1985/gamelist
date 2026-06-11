@@ -252,7 +252,7 @@ button {
   display: grid;
   grid-template-rows: 1fr auto;
   gap: 6px;
-  height: 52px;
+  height: 64px;
   color: var(--muted);
   font-size: 11px;
   font-weight: 900;
@@ -261,9 +261,9 @@ button {
 
 .rarity-bar em {
   align-self: end;
-  min-height: 3px;
+  min-height: 7px;
   height: var(--bar);
-  border-radius: 999px 999px 3px 3px;
+  border-radius: 12px 12px 3px 3px;
   background: rgba(255, 255, 255, 0.18);
 }
 
