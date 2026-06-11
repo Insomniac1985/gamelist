@@ -63,17 +63,18 @@ async function getPsnAccessToken(npsso) {
 }
 
 async function getRecentPsnActivity(accessToken, sourceUrl) {
-  const requestUrl = `${PSN_TROPHY_BASE}/v1/users/me/trophyTitles?${new URLSearchParams({ limit: "6", offset: "0" })}`;
+  const requestUrl = `${PSN_TROPHY_BASE}/v1/users/me/trophyTitles?${new URLSearchParams({ limit: "100", offset: "0" })}`;
   const [data, summary] = await Promise.all([
     psnGet(requestUrl, accessToken),
     getPsnTrophySummary(accessToken),
   ]);
-  const titles = (data.trophyTitles || []).slice(0, 6);
-  const trophies = (await Promise.all(titles.slice(0, 4).map((title) => getRecentTrophiesForTitle(accessToken, title, sourceUrl)))).flat();
+  const titles = data.trophyTitles || [];
+  const recentTitles = titles.slice(0, 6);
+  const trophies = (await Promise.all(recentTitles.slice(0, 4).map((title) => getRecentTrophiesForTitle(accessToken, title, sourceUrl)))).flat();
   trophies.sort((a, b) => String(b.rawEarnedAt || "").localeCompare(String(a.rawEarnedAt || "")));
   return {
-    achievements: trophies.length ? trophies.slice(0, 6) : titles.map((title) => titleSummary(title, sourceUrl)).slice(0, 6),
-    games: titles.map((title) => titleSummary(title, sourceUrl)).slice(0, 3),
+    achievements: trophies.length ? trophies.slice(0, 6) : recentTitles.map((title) => titleSummary(title, sourceUrl)).slice(0, 6),
+    games: titles.map((title) => titleSummary(title, sourceUrl)),
     summary,
   };
 }
