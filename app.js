@@ -350,21 +350,22 @@ function achievementDashboard(achievements, games, sourceUrl, summary = null) {
     <div class="achievement-summary">
       <a class="achievement-kpi" href="${escapeHtml(sourceUrl)}" target="_blank" rel="noreferrer">
         <strong>${escapeHtml(String(total))}</strong>
-        <span>account trophies</span>
+        <span>Trophies</span>
       </a>
       <a class="achievement-kpi platinum-highlight ${latestPlatinum ? "has-platinum" : ""}" href="${escapeHtml(latestPlatinum?.url || sourceUrl)}" target="_blank" rel="noreferrer">
-        <strong>${escapeHtml(String(trophies.platinum || 0))}</strong>
-        <span>platinums${latestPlatinum ? ` · latest ${escapeHtml(latestPlatinum.game || latestPlatinum.title || "")}` : ""}</span>
+        <strong class="kpi-with-icon">${trophyIcon()}${escapeHtml(String(trophies.platinum || 0))}</strong>
+        <span>Platinums${latestPlatinum ? ` · Latest ${escapeHtml(latestPlatinum.game || latestPlatinum.title || "")}` : ""}</span>
       </a>
       <div class="achievement-kpi">
         <strong>${escapeHtml(String(summary?.level || average || 0))}</strong>
-        <span>${summary?.level ? `level · ${summary.progress || 0}% next` : "latest game avg"}</span>
+        <span>${summary?.level ? `Level · ${summary.progress || 0}% Next` : "Latest Game Avg"}</span>
       </div>
       <div class="rarity-graph" aria-label="Trophy rarity graph">
         ${counts.map(([type, count]) => `
           <span class="rarity-bar rarity-${escapeHtml(type.toLowerCase())}" title="${escapeHtml(`${type}: ${count}`)}">
             <em style="--bar:${Math.round((count / total) * 100)}%"></em>
-            <small>${escapeHtml(type[0])}</small>
+            <small>${escapeHtml(type)}</small>
+            <strong>${escapeHtml(String(count))}</strong>
           </span>
         `).join("")}
       </div>
@@ -435,7 +436,7 @@ function renderStats() {
 function stat(label, value, tone = "", options = {}) {
   const attrs = options.action
     ? ` role="button" tabindex="0" data-stat-action="${escapeHtml(options.action)}"`
-    : options.detail ? ` tabindex="0"` : "";
+    : "";
   return `<div class="stat ${tone ? `stat-${tone}` : ""} ${options.action ? "stat-action" : ""}"${attrs}><strong>${value}</strong><span>${label}</span>${options.detail || ""}</div>`;
 }
 
@@ -904,7 +905,7 @@ function psnProgressBadge(game) {
   const progress = progressValue(game.game);
   return `
     <span class="psn-progress-pill" title="${escapeHtml([game.title, game.game].filter(Boolean).join(" · "))}">
-      <img src="${escapeHtml(platformLogo("PS5"))}" alt="">
+      ${trophyIcon()}
       <em style="--progress:${progress}%"></em>
       <strong>${progress}%</strong>
     </span>

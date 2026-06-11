@@ -185,8 +185,8 @@ button {
 .achievement-panel {
   display: grid;
   grid-template-columns: repeat(6, minmax(0, 1fr));
-  gap: 8px;
-  padding: 10px;
+  gap: 10px;
+  padding: 12px;
   border-radius: 8px;
 }
 
@@ -194,13 +194,13 @@ button {
   grid-column: 1 / -1;
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr)) 1.4fr;
-  gap: 8px;
+  gap: 10px;
 }
 
 .achievement-kpi,
 .rarity-graph {
-  min-height: 54px;
-  padding: 8px;
+  min-height: 72px;
+  padding: 11px;
   color: var(--text);
   text-decoration: none;
   background: rgba(255, 255, 255, 0.05);
@@ -210,16 +210,29 @@ button {
 
 .achievement-kpi strong {
   display: block;
-  font-size: 16px;
+  font-size: 24px;
   line-height: 1.05;
 }
 
 .achievement-kpi span {
   display: block;
-  margin-top: 4px;
+  margin-top: 7px;
   color: var(--muted);
-  font-size: 10px;
+  font-size: 13px;
   line-height: 1.25;
+  font-weight: 760;
+}
+
+.kpi-with-icon {
+  display: flex !important;
+  align-items: center;
+  gap: 8px;
+}
+
+.kpi-with-icon .trophy-icon {
+  width: 22px;
+  height: 22px;
+  color: #ffe985;
 }
 
 .platinum-highlight.has-platinum {
@@ -230,17 +243,18 @@ button {
 .rarity-graph {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 6px;
+  gap: 7px;
   align-items: end;
 }
 
 .rarity-bar {
+  position: relative;
   display: grid;
   grid-template-rows: 1fr auto;
-  gap: 4px;
-  height: 38px;
+  gap: 6px;
+  height: 52px;
   color: var(--muted);
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 900;
   text-align: center;
 }
@@ -251,6 +265,28 @@ button {
   height: var(--bar);
   border-radius: 999px 999px 3px 3px;
   background: rgba(255, 255, 255, 0.18);
+}
+
+.rarity-bar small {
+  color: var(--muted);
+  font-size: 10px;
+  line-height: 1;
+}
+
+.rarity-bar strong {
+  position: absolute;
+  inset: auto 0 18px;
+  color: #ffffff;
+  font-size: 13px;
+  line-height: 1;
+  opacity: 0;
+  transform: translateY(3px);
+  transition: opacity 150ms ease, transform 150ms ease;
+}
+
+.rarity-bar:hover strong {
+  opacity: 1;
+  transform: translateY(0);
 }
 
 .rarity-platinum em,
@@ -281,8 +317,8 @@ button {
   grid-template-columns: 42px minmax(0, 1fr);
   gap: 9px;
   align-items: center;
-  min-height: 72px;
-  padding: 9px;
+  min-height: 84px;
+  padding: 10px;
   color: var(--text);
   overflow: hidden;
   background: rgba(255, 255, 255, 0.055);
@@ -316,7 +352,7 @@ button {
 .achievement-card strong,
 .achievement-fallback strong {
   display: block;
-  font-size: 13px;
+  font-size: 14px;
   line-height: 1.2;
 }
 
@@ -324,7 +360,7 @@ button {
 .achievement-fallback span,
 .achievement-loading {
   color: var(--muted);
-  font-size: 11px;
+  font-size: 12px;
   line-height: 1.3;
 }
 
@@ -353,7 +389,7 @@ button {
 
 .achievement-subtitle {
   color: var(--accent-2);
-  font-size: 11px;
+  font-size: 13px;
   font-weight: 850;
   text-transform: uppercase;
 }
@@ -369,8 +405,8 @@ button {
   grid-template-columns: 34px minmax(0, 1fr);
   gap: 8px;
   align-items: center;
-  min-height: 52px;
-  padding: 7px;
+  min-height: 64px;
+  padding: 9px;
   color: var(--text);
   text-decoration: none;
   background: rgba(255, 255, 255, 0.045);
@@ -387,7 +423,7 @@ button {
 
 .achievement-game strong {
   display: block;
-  font-size: 12px;
+  font-size: 13px;
   line-height: 1.15;
 }
 
@@ -395,7 +431,7 @@ button {
   display: block;
   margin-top: 2px;
   color: var(--muted);
-  font-size: 10px;
+  font-size: 11px;
   line-height: 1.25;
 }
 
@@ -414,7 +450,7 @@ button {
   width: var(--progress);
   height: 100%;
   border-radius: inherit;
-  background: linear-gradient(90deg, var(--accent-2), #ffe985);
+  background: linear-gradient(90deg, #b98419, #ffe985);
 }
 
 .achievement-loading {
@@ -486,7 +522,7 @@ h3 {
 .stat {
   position: relative;
   overflow: hidden;
-  padding: 12px;
+  padding: 14px;
   background: rgba(255, 255, 255, 0.06);
   border: 1px solid var(--line);
   border-radius: 8px;
@@ -517,7 +553,8 @@ h3 {
 
 .stat span {
   color: var(--muted);
-  font-size: 11px;
+  font-size: 13px;
+  font-weight: 780;
   text-transform: uppercase;
 }
 
@@ -528,8 +565,8 @@ h3 {
   bottom: 8px;
   z-index: 2;
   display: grid;
-  gap: 4px;
-  padding: 8px;
+  gap: 7px;
+  padding: 10px;
   color: var(--muted);
   background: rgba(10, 12, 16, 0.84);
   border: 1px solid rgba(255, 255, 255, 0.12);
@@ -540,38 +577,40 @@ h3 {
   transition: opacity 150ms ease, transform 150ms ease;
 }
 
-.stat:hover .stat-detail,
-.stat:focus-within .stat-detail,
-.stat:active .stat-detail {
-  opacity: 1;
-  transform: translateY(0);
+@media (hover: hover) {
+  .stat:hover .stat-detail {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .stat-detail span,
 .stat-detail b {
-  font-size: 10px;
-  line-height: 1.15;
+  font-size: 12px;
+  line-height: 1.25;
   text-transform: none;
 }
 
 .stat-detail b {
   color: var(--text);
+  font-size: 13px;
 }
 
 .preorder-count-pill {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-height: 20px;
+  min-height: 22px;
   margin-left: 6px;
-  padding: 3px 6px;
-  color: #15140c;
-  background: #f7df69;
+  padding: 4px 8px;
+  color: #ffffff !important;
+  background: linear-gradient(135deg, rgba(255, 0, 81, 0.94), rgba(255, 123, 163, 0.82));
   border-radius: 999px;
-  font-size: 10px;
-  font-weight: 850;
+  font-size: 11px;
+  font-weight: 900;
   line-height: 1;
   white-space: nowrap;
+  box-shadow: 0 8px 18px rgba(255, 0, 81, 0.18);
 }
 
 .stat-action {
@@ -1164,13 +1203,14 @@ body[data-mobile-section="upcoming"] .column:not(#upcoming) {
 .psn-progress-pill {
   gap: 6px;
   color: #ffffff;
-  border-color: rgba(121, 242, 206, 0.28);
-  background: rgba(121, 242, 206, 0.08);
+  border-color: rgba(255, 225, 101, 0.38);
+  background: rgba(255, 225, 101, 0.1);
 }
 
-.psn-progress-pill img {
+.psn-progress-pill .trophy-icon {
   width: 16px;
   height: 16px;
+  color: #ffe985;
 }
 
 .psn-progress-pill em {
@@ -1187,7 +1227,7 @@ body[data-mobile-section="upcoming"] .column:not(#upcoming) {
   width: var(--progress);
   height: 100%;
   border-radius: inherit;
-  background: linear-gradient(90deg, var(--accent-2), #ffe985);
+  background: linear-gradient(90deg, #b98419, #ffe985);
 }
 
 .psn-progress-pill strong {
@@ -1515,7 +1555,8 @@ body[data-mobile-section="upcoming"] .column:not(#upcoming) {
   flex: 0 0 36px;
 }
 
-.trash-icon {
+.trash-icon,
+.search-icon {
   width: 18px;
   height: 18px;
   fill: none;
