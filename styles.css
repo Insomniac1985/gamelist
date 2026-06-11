@@ -1243,6 +1243,13 @@ body[data-mobile-section="upcoming"] .column:not(#upcoming) {
   color: var(--jordi);
 }
 
+.game-card h3.completed-achievements-title,
+.completed-row strong.completed-achievements-title,
+.history-row strong.completed-achievements-title {
+  color: #f7df69;
+  text-shadow: 0 0 14px rgba(247, 223, 105, 0.26);
+}
+
 .cover-button {
   position: relative;
   width: 104px;
@@ -1526,7 +1533,7 @@ body[data-mobile-section="upcoming"] .column:not(#upcoming) {
 }
 
 .history-date-pill small {
-  color: var(--dim);
+  color: var(--accent-2);
   font-size: 9px;
   font-weight: 820;
   text-transform: uppercase;
@@ -1780,6 +1787,11 @@ body[data-mobile-section="upcoming"] .column:not(#upcoming) {
 }
 
 .complete-action .check-icon {
+  display: none;
+}
+
+#fetchPricesButton .euro-icon,
+body.can-edit #loginButton .pause-icon {
   display: none;
 }
 
@@ -2328,6 +2340,12 @@ body.dialog-open .mobile-section-tabs {
   flex: 1;
 }
 
+#lookupButton {
+  width: 44px;
+  height: 44px;
+  flex: 0 0 44px;
+}
+
 .lookup-results {
   display: grid;
   gap: 8px;
@@ -2497,6 +2515,7 @@ body.dialog-open .mobile-section-tabs {
   .top-actions .euro-icon,
   .top-actions .pencil-icon,
   .top-actions .reload-icon {
+    display: block;
     width: 20px;
     height: 20px;
   }

@@ -699,7 +699,7 @@ function renderCompleted() {
     <div class="completed-row" data-id="${escapeHtml(game.id)}" role="button" tabindex="0" aria-label="${escapeHtml(`Open ${game.title}`)}">
       <img class="completed-cover" src="${escapeHtml(game.cover || "")}" alt="" loading="lazy" decoding="async" ${game.cover ? "" : "hidden"}>
       <div>
-        <strong>${escapeHtml(game.title)}</strong>
+        <strong class="${game.platinum ? "completed-achievements-title" : ""}">${escapeHtml(game.title)}</strong>
         <span class="completed-platform">${completedBadges(game)}</span>
         <span class="completed-dates">${escapeHtml(historyRangeText(game))}</span>
         ${completedDurationLine(game)}
@@ -756,7 +756,7 @@ function renderHistoryDialog() {
     <div class="history-row" data-id="${escapeHtml(game.id)}">
       <img class="completed-cover" src="${escapeHtml(game.cover || "")}" alt="" loading="lazy" decoding="async" ${game.cover ? "" : "hidden"}>
       <div>
-        <strong>${escapeHtml(game.title)}</strong>
+        <strong class="${game.platinum ? "completed-achievements-title" : ""}">${escapeHtml(game.title)}</strong>
         <span class="completed-platform">${completedBadges(game)}</span>
         <span>${escapeHtml(historyRangeText(game))}</span>
         ${completedDurationLine(game)}
@@ -937,6 +937,7 @@ function cardFor(game, options = {}) {
   card.querySelector("h3").textContent = game.title;
   card.querySelector("h3").classList.toggle("owner-judy", owners.includes("Judy"));
   card.querySelector("h3").classList.toggle("owner-jordi", owners.includes("Jordi"));
+  card.querySelector("h3").classList.toggle("completed-achievements-title", Boolean(game.platinum));
   const studioLine = card.querySelector(".studio-line");
   studioLine.textContent = studioText(game);
   studioLine.hidden = !studioLine.textContent;
