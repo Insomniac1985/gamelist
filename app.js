@@ -423,7 +423,7 @@ function trophyTone(value) {
 }
 
 function renderStats() {
-  const active = activeGames();
+  const active = filteredGames().filter((game) => !game.completedAt);
   const total = active.length;
   const currentYear = String(new Date().getFullYear());
   const completedThisYear = completedGamesForYear(currentYear).length;
@@ -540,10 +540,11 @@ function releaseMonthMarkup(monthDate, releases, today) {
     const date = localDateKey(new Date(year, month, day));
     const games = releases.get(date) || [];
     const preordered = games.some((game) => game.preorderStore);
+    const platformTone = releasePlatformTone(games);
     const titles = games.map((game) => game.title).join("\n");
     cells.push(`
       <button
-        class="release-day ${games.length ? "has-release" : ""} ${preordered ? "has-preorder" : ""} ${date === today ? "today" : ""}"
+        class="release-day ${games.length ? "has-release" : ""} ${platformTone} ${preordered ? "has-preorder" : ""} ${date === today ? "today" : ""}"
         type="button"
         data-date="${escapeHtml(date)}"
         data-games="${escapeHtml(games.map((game) => game.title).join(" · "))}"
@@ -567,6 +568,17 @@ function releaseMonthMarkup(monthDate, releases, today) {
       <div class="release-days">${cells.join("")}</div>
     </article>
   `;
+}
+
+function releasePlatformTone(games) {
+  const platforms = unique(games.map((game) => canonicalPlatform(game.platform)).filter(Boolean));
+  if (platforms.length !== 1) return games.length ? "release-platform-mixed" : "";
+  const platform = platforms[0].toLowerCase();
+  if (platform.includes("switch")) return "release-platform-nintendo";
+  if (/\bps\d+\b/.test(platform) || platform.includes("playstation")) return "release-platform-playstation";
+  if (platform.includes("pc")) return "release-platform-pc";
+  if (platform.includes("xbox")) return "release-platform-xbox";
+  return "release-platform-generic";
 }
 
 function openReleaseDialog(date) {
