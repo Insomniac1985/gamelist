@@ -1063,12 +1063,16 @@ function fallbackPriceLinks(game) {
     { store: "Amazon.es", url: `https://www.amazon.es/s?k=${q}` },
     { store: "Xtralife", url: `https://www.xtralife.com/buscar/${q}` },
     { store: "GAME.es", url: `https://www.game.es/buscar/${q}` },
-    { store: "Playasia", url: `https://www.play-asia.com/search/${q}` },
+    { store: "Playasia", url: playasiaSearchUrl(game.title, game.platform) },
   ];
 }
 
 function retailQuery(title, platform) {
   return encodeURIComponent(`${retailTitle(title)} ${platform}`.trim());
+}
+
+function playasiaSearchUrl(title, platform) {
+  return `https://www.play-asia.com/en/search/${retailTitle(`${title} ${platform}`.trim()).split(/\s+/).map(encodeURIComponent).join("+")}`;
 }
 
 function retailTitle(title) {

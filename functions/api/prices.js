@@ -16,24 +16,39 @@ const PROVIDERS = [
   },
   {
     store: "Playasia",
-    search: (q) => `https://www.play-asia.com/search/${encodeURIComponent(q)}`,
+    search: (q) => playasiaSearchUrl(q),
     parse: parseGeneric,
   },
 ];
 
-export async function onRequestGet({ request }) {
+export async function onRequestGet({ request, env = {} }) {
   const url = new URL(request.url);
   const title = url.searchParams.get("title")?.trim();
   const platform = url.searchParams.get("platform")?.trim() || "";
   if (!title) return json({ prices: [] });
 
   const query = `${retailTitle(title)} ${platform}`.trim();
-  const prices = await Promise.all(PROVIDERS.map((provider) => findPrice(provider, title, platform, query)));
+  const prices = await Promise.all(PROVIDERS.map((provider) => findPrice(provider, title, platform, query, env)));
   return json({ prices });
 }
 
-async function findPrice(provider, title, platform, query) {
+async function findPrice(provider, title, platform, query, env = {}) {
   const url = provider.search(query);
+  if (provider.store === "Playasia" && env.PLAYASIA_API_KEY && env.PLAYASIA_USER_ID) {
+    try {
+      const result = await lookupPlayasia(title, platform, query, env);
+      return {
+        store: provider.store,
+        price: result.price || "",
+        numericPrice: parsePrice(result.price || ""),
+        matchedTitle: result.matchedTitle || "",
+        url: result.url || url,
+        checkedAt: new Date().toISOString(),
+      };
+    } catch {
+      // Fall through to the public page parser below.
+    }
+  }
   if (provider.lookup) {
     try {
       const result = await provider.lookup(title, platform, query);
@@ -110,8 +125,17 @@ function parseGeneric(html, title) {
     if (normalizedTitle && !tokenOverlap(normalizedTitle, normalizedContext)) continue;
     return { price: `${candidate[2].replace(".", ",")} €`, matchedTitle: context.trim().slice(0, 160) };
   }
+  const dollarCandidates = [...html.matchAll(/([\s\S]{0,420}?)(?:US\s*)?\$\s*(\d{1,4}(?:[.,]\d{2}))/gi)];
+  for (const candidate of dollarCandidates) {
+    const context = decodeHtml(candidate[1].replace(/<[^>]+>/g, " "));
+    const normalizedContext = normalize(context);
+    if (normalizedTitle && !tokenOverlap(normalizedTitle, normalizedContext)) continue;
+    return { price: `$${candidate[2].replace(",", ".")}`, matchedTitle: context.trim().slice(0, 160) };
+  }
   const match = html.match(/(\d{1,3}(?:[.,]\d{2}))\s*€/i);
-  return { price: match ? `${match[1].replace(".", ",")} €` : "", matchedTitle: "" };
+  if (match) return { price: `${match[1].replace(".", ",")} €`, matchedTitle: "" };
+  const dollarMatch = html.match(/(?:US\s*)?\$\s*(\d{1,4}(?:[.,]\d{2}))/i);
+  return { price: dollarMatch ? `$${dollarMatch[1].replace(",", ".")}` : "", matchedTitle: "" };
 }
 
 async function lookupGameEs(title, platform, query) {
@@ -181,6 +205,59 @@ async function lookupXtralife(title, platform, query) {
   return match || { price: "", matchedTitle: "" };
 }
 
+async function lookupPlayasia(title, platform, query, env) {
+  const endpoint = new URL("https://www.play-asia.com/__api__.php");
+  const params = {
+    query: "listing",
+    quick: "0",
+    mask: "pnl",
+    results: "12",
+    start: "0",
+    onsale: "0",
+    instock: "0",
+    type: "1",
+    compatible: "0",
+    genre: "0",
+    encoding: "0",
+    version: "0",
+    skip_preowned: "1",
+    keyword: retailTitle(query),
+    key: env.PLAYASIA_API_KEY,
+    user: env.PLAYASIA_USER_ID,
+  };
+  Object.entries(params).forEach(([key, value]) => endpoint.searchParams.set(key, value));
+  const response = await fetch(endpoint.toString(), {
+    headers: {
+      "Accept": "application/xml,text/xml",
+      "User-Agent": "Mozilla/5.0 (compatible; GameList/1.0)",
+    },
+  });
+  if (!response.ok) throw new Error("Playasia API failed");
+  const xml = await response.text();
+  const products = playasiaProducts(xml);
+  const match = bestProduct(products, title, platform);
+  return match || { price: "", matchedTitle: "" };
+}
+
+function playasiaProducts(xml) {
+  const items = xml.match(/<item\b[\s\S]*?<\/item>/gi) || [];
+  return items.map((item) => {
+    const price = xmlTag(item, "fxprice") || xmlTag(item, "price");
+    return {
+      title: xmlTag(item, "name"),
+      platform: xmlTag(item, "platform") || xmlTag(item, "compatible") || xmlTag(item, "version"),
+      price: price ? `$${String(price).replace(/[^\d.,]/g, "").replace(",", ".")}` : "",
+      matchedTitle: xmlTag(item, "name"),
+      url: xmlTag(item, "url"),
+    };
+  }).filter((item) => item.title);
+}
+
+function xmlTag(xml, tag) {
+  const match = String(xml || "").match(new RegExp(`<${tag}[^>]*>([\\s\\S]*?)<\\/${tag}>`, "i"));
+  return match ? decodeHtml(match[1].replace(/<!\\[CDATA\\[|\\]\\]>/g, "").trim()) : "";
+}
+
 function xtralifeProduct(product) {
   const priceValue = Number(product.currentPrice?.price ?? product.currentPrice?.normal_price ?? product.currentPrice?.pvp);
   const url = product.url?.uri || product.url || product.details_uri || "";
@@ -244,7 +321,10 @@ function xtralifeTerm(query) {
 
 function parsePrice(price) {
   if (!price) return null;
-  const value = Number(price.replace(/[^\d,]/g, "").replace(",", "."));
+  const cleaned = price.includes(",") && !price.includes(".")
+    ? price.replace(/[^\d,]/g, "").replace(",", ".")
+    : price.replace(/[^\d.]/g, "");
+  const value = Number(cleaned);
   return Number.isFinite(value) ? value : null;
 }
 
@@ -261,6 +341,10 @@ function missingPrice(store, url) {
     url,
     checkedAt: new Date().toISOString(),
   };
+}
+
+function playasiaSearchUrl(query) {
+  return `https://www.play-asia.com/en/search/${retailTitle(query).split(/\s+/).map(encodeURIComponent).join("+")}`;
 }
 
 function normalize(value) {
