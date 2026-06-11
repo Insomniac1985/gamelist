@@ -84,7 +84,7 @@ async function findPrice(provider, title, platform, query, env = {}) {
       price,
       numericPrice: parsePrice(price),
       matchedTitle: result.matchedTitle || "",
-      url,
+      url: result.url || url,
       checkedAt: new Date().toISOString(),
     };
   } catch {
@@ -94,7 +94,7 @@ async function findPrice(provider, title, platform, query, env = {}) {
 
 async function lookupPlayasiaReader(title, platform, query) {
   const url = playasiaSearchUrl(query);
-  const readerUrl = `https://r.jina.ai/http://r.jina.ai/http://${url}`;
+  const readerUrl = `https://r.jina.ai/http://${url}`;
   const response = await fetch(readerUrl, {
     headers: {
       "Accept": "text/plain,text/markdown",
@@ -104,7 +104,8 @@ async function lookupPlayasiaReader(title, platform, query) {
   });
   if (!response.ok) return { price: "", matchedTitle: "" };
   const markdown = await response.text();
-  return parseGeneric(markdown, title, platform);
+  const product = bestProduct(playasiaMarkdownProducts(markdown), title, platform);
+  return product || parseGeneric(markdown, title, platform);
 }
 
 function parseAmazon(html, title, platform) {
@@ -269,6 +270,45 @@ function playasiaProducts(xml) {
       url: xmlTag(item, "url"),
     };
   }).filter((item) => item.title);
+}
+
+function playasiaMarkdownProducts(markdown) {
+  const products = [];
+  const lines = String(markdown || "").split(/\r?\n/);
+  for (let index = 0; index < lines.length; index += 1) {
+    const line = lines[index];
+    if (!/^###\s+\[/.test(line) || !line.includes("play-asia.com/en/")) continue;
+    const urls = [...line.matchAll(/\((https:\/\/www\.play-asia\.com\/en\/[^)\s]+)\)/g)].map((match) => match[1]);
+    const url = urls[urls.length - 1] || "";
+    if (!/\/13\//.test(url)) continue;
+    const title = cleanMarkdownTitle(line);
+    const block = [];
+    for (let lookahead = index + 1; lookahead < Math.min(lines.length, index + 14); lookahead += 1) {
+      if (/^#{2,3}\s+/.test(lines[lookahead])) break;
+      block.push(lines[lookahead]);
+    }
+    const price = block.join("\n").match(/(?:US\s*)?\$\s*(\d{1,4}(?:[.,]\d{2}))/i);
+    if (!title || !price) continue;
+    products.push({
+      title,
+      platform: title,
+      price: `$${price[1].replace(",", ".")}`,
+      matchedTitle: title,
+      url,
+    });
+  }
+  return products;
+}
+
+function cleanMarkdownTitle(value) {
+  return decodeHtml(String(value || "")
+    .replace(/^#+\s*/, "")
+    .replace(/!\[Image \d+:\s*([^\]]*)\]\([^)]+\)/g, "$1 ")
+    .replace(/\]\(https:\/\/www\.play-asia\.com\/en\/[^)]+\)/g, "")
+    .replace(/[\[\]]/g, " ")
+    .replace(/<[^>]+>/g, " ")
+    .replace(/\s+/g, " ")
+    .trim());
 }
 
 function xmlTag(xml, tag) {
