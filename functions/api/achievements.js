@@ -72,9 +72,8 @@ async function getPsnAccessToken(npsso) {
 }
 
 async function getRecentPsnActivity(accessToken, sourceUrl) {
-  const requestUrl = `${PSN_TROPHY_BASE}/v1/users/me/trophyTitles?${new URLSearchParams({ limit: "999", offset: "0" })}`;
   const [data, summary] = await Promise.all([
-    psnGet(requestUrl, accessToken),
+    getPsnTrophyTitles(accessToken),
     getPsnTrophySummary(accessToken),
   ]);
   const titles = data.trophyTitles || [];
@@ -86,6 +85,18 @@ async function getRecentPsnActivity(accessToken, sourceUrl) {
     games: titles.map((title) => titleSummary(title, sourceUrl)),
     summary,
   };
+}
+
+async function getPsnTrophyTitles(accessToken) {
+  let lastError = null;
+  for (const limit of ["999", "200", "100", "50"]) {
+    try {
+      return await psnGet(`${PSN_TROPHY_BASE}/v1/users/me/trophyTitles?${new URLSearchParams({ limit, offset: "0" })}`, accessToken);
+    } catch (error) {
+      lastError = error;
+    }
+  }
+  throw lastError || new Error("PSN trophy titles request failed");
 }
 
 async function getPsnTrophySummary(accessToken) {
@@ -146,7 +157,7 @@ async function psnGet(url, accessToken) {
     },
     cf: { cacheTtl: PSN_CACHE_SECONDS, cacheEverything: true },
   });
-  if (!response.ok) throw new Error("PSN request failed");
+  if (!response.ok) throw new Error(`PSN request failed (${response.status})`);
   return response.json();
 }
 
