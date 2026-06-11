@@ -78,6 +78,7 @@ const el = {
     length: document.querySelector("#lengthInput"),
     startedAt: document.querySelector("#startedAtInput"),
     completedAt: document.querySelector("#completedAtInput"),
+    replayCount: document.querySelector("#replayCountInput"),
     platinum: document.querySelector("#platinumInput"),
     preorderStore: document.querySelector("#preorderStoreInput"),
     preferredStore: document.querySelector("#preferredStoreInput"),
@@ -673,6 +674,28 @@ function finishedDurationText(startValue, doneValue) {
   ].filter(Boolean).join(" ");
 }
 
+function nextReplayCountForTitle(title, currentId = "") {
+  const normalizedTitle = normalizeReplayTitle(title);
+  if (!normalizedTitle) return 0;
+  const matches = state.games.filter((game) => (
+    !game.deletedAt
+    && game.completedAt
+    && game.id !== currentId
+    && normalizeReplayTitle(game.title) === normalizedTitle
+  ));
+  if (!matches.length) return 0;
+  return Math.max(0, ...matches.map((game) => replayCountValue(game.replayCount))) + 1;
+}
+
+function normalizeReplayTitle(value) {
+  return normalizeTag(retailTitle(value));
+}
+
+function replayCountValue(value) {
+  const count = Number(value);
+  return Number.isFinite(count) ? Math.max(0, Math.floor(count)) : 0;
+}
+
 function plural(value, label) {
   return `${value} ${label}${value === 1 ? "" : "s"}`;
 }
@@ -713,6 +736,7 @@ function filteredGames() {
       game.digital ? "digital" : "",
       game.coop ? "coop" : "",
       game.platinum ? "completed trophy platinum" : "",
+      game.replayCount ? `replay replayed ${game.replayCount}` : "",
       game.playing ? "playing" : "",
       game.startedAt,
       game.completedAt,
@@ -861,6 +885,7 @@ function metaFor(game) {
   const psn = matchedPsnGame(game);
   if (psn) values.push(psnProgressBadge(psn));
   if (game.coop) values.push(`<span class="coop-pill">Coop</span>`);
+  if (game.replayCount) values.push(replayBadge(game.replayCount));
   if (game.platinum) values.push(`<span class="platinum-pill">${trophyIcon()} Completed</span>`);
   if (game.playing) values.push(`<span class="playing-pill">Playing</span>`);
   return values;
@@ -890,6 +915,7 @@ function completedBadges(game) {
   return [
     game.platform ? platformBadge(game.platform) : "",
     game.coop ? `<span class="coop-pill">Coop</span>` : "",
+    game.replayCount ? replayBadge(game.replayCount) : "",
     game.platinum ? `<span class="platinum-pill">${trophyIcon()} Completed</span>` : "",
   ].filter(Boolean).join("");
 }
@@ -964,6 +990,10 @@ function ownerBadge(owner) {
 
 function statusBadge(status) {
   return `<span class="status-pill ${escapeHtml(statusType(status))}">${escapeHtml(status)}</span>`;
+}
+
+function replayBadge(count) {
+  return `<span class="replay-pill">Replay ${escapeHtml(count)}</span>`;
 }
 
 function pencilIcon() {
@@ -1098,6 +1128,7 @@ function normalizeGameRecord(game) {
   normalized.coop = Boolean(normalized.coop);
   normalized.platinum = Boolean(normalized.platinum);
   normalized.playing = Boolean(normalized.playing);
+  normalized.replayCount = replayCountValue(normalized.replayCount);
   normalized.startedAt = dateOnly(normalized.startedAt);
   normalized.completedAt = dateOnly(normalized.completedAt);
   normalized.platform = canonicalPlatform(normalized.platform);
@@ -1303,6 +1334,7 @@ async function openEditor(id = "") {
   el.fields.length.value = game.lengthHours || "";
   el.fields.startedAt.value = dateOnly(game.startedAt);
   el.fields.completedAt.value = dateOnly(game.completedAt);
+  el.fields.replayCount.value = game.replayCount || "";
   el.fields.platinum.checked = Boolean(game.platinum);
   el.fields.preorderStore.value = game.preorderStore || "";
   el.fields.preferredStore.value = game.preferredStore || "";
@@ -1342,6 +1374,7 @@ function blankGame() {
     coop: false,
     platinum: false,
     playing: false,
+    replayCount: 0,
     startedAt: "",
     genres: [],
     developer: "",
@@ -1370,6 +1403,7 @@ async function saveCurrentFormGame() {
   const id = el.fields.id.value || crypto.randomUUID();
   const existing = state.games.find((game) => game.id === id);
   const completedAt = el.fields.completedAt.value || "";
+  const replayInput = el.fields.replayCount.value.trim();
   const platinum = el.fields.platinum.checked;
   const effectiveCompletedAt = completedAt || (platinum ? todayDate() : "");
   const playing = el.fields.playing.checked && !effectiveCompletedAt;
@@ -1394,6 +1428,7 @@ async function saveCurrentFormGame() {
     coop: el.fields.coop.checked,
     platinum,
     playing,
+    replayCount: replayInput ? replayCountValue(replayInput) : (!existing ? nextReplayCountForTitle(el.fields.title.value.trim(), id) : 0),
     genres: listFrom(el.fields.genres.value),
     developer: el.fields.developer.value.trim(),
     publisher: el.fields.publisher.value.trim(),
@@ -1647,6 +1682,10 @@ function applyLookup(result) {
   if (result.developer) el.fields.developer.value = result.developer;
   if (result.publisher) el.fields.publisher.value = result.publisher;
   if (result.platform && !el.fields.platform.value) el.fields.platform.value = result.platform;
+  if (!el.fields.id.value && !el.fields.replayCount.value) {
+    const replayCount = nextReplayCountForTitle(el.fields.title.value);
+    if (replayCount) el.fields.replayCount.value = replayCount;
+  }
 }
 
 function queueTitleLookup() {

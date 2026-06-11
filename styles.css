@@ -1078,6 +1078,7 @@ body[data-mobile-section="upcoming"] .column:not(#upcoming) {
 .time-pill,
 .digital-pill,
 .coop-pill,
+.replay-pill,
 .platinum-pill,
 .psn-progress-pill,
 .playing-pill,
@@ -1151,6 +1152,7 @@ body[data-mobile-section="upcoming"] .column:not(#upcoming) {
 .status-pill,
 .digital-pill,
 .coop-pill,
+.replay-pill,
 .platinum-pill,
 .psn-progress-pill,
 .playing-pill,
@@ -1242,6 +1244,13 @@ body[data-mobile-section="upcoming"] .column:not(#upcoming) {
   border-color: rgba(121, 242, 206, 0.32);
   background: rgba(121, 242, 206, 0.1);
   font-weight: 820;
+}
+
+.replay-pill {
+  color: #ffffff;
+  border-color: rgba(255, 255, 255, 0.28);
+  background: linear-gradient(135deg, rgba(255, 0, 57, 0.22), rgba(121, 242, 206, 0.14));
+  font-weight: 860;
 }
 
 .platinum-pill {
@@ -1672,6 +1681,7 @@ body:not(.can-edit) .game-card:focus-within .edit-action {
 }
 
 .completed-platform .coop-pill,
+.completed-platform .replay-pill,
 .completed-platform .platinum-pill {
   min-height: 25px;
   padding: 3px 7px;
