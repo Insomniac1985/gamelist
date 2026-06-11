@@ -849,6 +849,7 @@ body[data-mobile-section="upcoming"] .column:not(#upcoming) {
 .time-pill,
 .digital-pill,
 .coop-pill,
+.platinum-pill,
 .playing-pill,
 .history-pill {
   display: inline-flex;
@@ -920,6 +921,7 @@ body[data-mobile-section="upcoming"] .column:not(#upcoming) {
 .status-pill,
 .digital-pill,
 .coop-pill,
+.platinum-pill,
 .playing-pill,
 .history-pill {
   padding: 5px 9px;
@@ -976,6 +978,14 @@ body[data-mobile-section="upcoming"] .column:not(#upcoming) {
   border-color: rgba(121, 242, 206, 0.32);
   background: rgba(121, 242, 206, 0.1);
   font-weight: 820;
+}
+
+.platinum-pill {
+  gap: 6px;
+  color: #ffe985;
+  border-color: rgba(255, 225, 101, 0.42);
+  background: rgba(255, 225, 101, 0.1);
+  font-weight: 860;
 }
 
 .playing-pill {
@@ -1242,6 +1252,31 @@ body[data-mobile-section="upcoming"] .column:not(#upcoming) {
   stroke-linejoin: round;
 }
 
+.trophy-icon {
+  width: 18px;
+  height: 18px;
+  flex: 0 0 auto;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.trophy-action {
+  min-width: 42px;
+  color: #ffe985;
+  border-color: rgba(255, 225, 101, 0.24);
+  background: rgba(255, 225, 101, 0.08);
+}
+
+.trophy-action.active,
+.trophy-action:hover {
+  color: #101114;
+  border-color: transparent;
+  background: #ffe985;
+}
+
 .pencil-icon {
   width: 18px;
   height: 18px;
@@ -1350,6 +1385,8 @@ body:not(.can-edit) .game-card:focus-within .edit-action {
 
 .completed-platform {
   display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
   margin-top: 2px;
 }
 
@@ -1362,6 +1399,13 @@ body:not(.can-edit) .game-card:focus-within .edit-action {
 .completed-platform .platform-icon {
   width: 17px;
   height: 17px;
+}
+
+.completed-platform .coop-pill,
+.completed-platform .platinum-pill {
+  min-height: 25px;
+  padding: 3px 7px;
+  font-size: 11px;
 }
 
 .completed-row .restore-action {

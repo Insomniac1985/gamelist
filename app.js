@@ -77,6 +77,7 @@ const el = {
     length: document.querySelector("#lengthInput"),
     startedAt: document.querySelector("#startedAtInput"),
     completedAt: document.querySelector("#completedAtInput"),
+    platinum: document.querySelector("#platinumInput"),
     preorderStore: document.querySelector("#preorderStoreInput"),
     preferredStore: document.querySelector("#preferredStoreInput"),
     owners: document.querySelector("#ownersInput"),
@@ -235,6 +236,7 @@ function render() {
   renderFilters();
   renderPlayingSection();
   renderStats();
+  syncMobileSectionToResults();
   renderMobileTabs();
   renderSection("backlog");
   renderSection("upcoming");
@@ -378,6 +380,23 @@ function renderMobileTabs() {
   document.body.dataset.mobileSection = state.mobileSection;
 }
 
+function syncMobileSectionToResults() {
+  if (!state.filters.query) return;
+  const sections = ["backlog", "upcoming", "wanted"];
+  const hasCurrent = filteredGames().some((game) => (
+    game.section === state.mobileSection
+    && !game.completedAt
+    && !game.playing
+  ));
+  if (hasCurrent) return;
+  const next = sections.find((section) => filteredGames().some((game) => (
+    game.section === section
+    && !game.completedAt
+    && !game.playing
+  )));
+  if (next) state.mobileSection = next;
+}
+
 function renderFilters() {
   const active = state.games.filter((game) => !game.deletedAt);
   const platforms = unique(active.map((game) => canonicalPlatform(game.platform)).filter(Boolean));
@@ -421,7 +440,7 @@ function renderCompleted() {
       <img class="completed-cover" src="${escapeHtml(game.cover || "")}" alt="" loading="lazy" decoding="async" ${game.cover ? "" : "hidden"}>
       <div>
         <strong>${escapeHtml(game.title)}</strong>
-        <span class="completed-platform">${game.platform ? platformBadge(game.platform) : ""}</span>
+        <span class="completed-platform">${completedBadges(game)}</span>
         <span class="completed-dates">${escapeHtml(historyRangeText(game))}</span>
       </div>
       <button class="icon-button completed-edit-action" type="button" title="Edit" aria-label="Edit">${pencilIcon()}</button>
@@ -477,7 +496,7 @@ function renderHistoryDialog() {
       <img class="completed-cover" src="${escapeHtml(game.cover || "")}" alt="" loading="lazy" decoding="async" ${game.cover ? "" : "hidden"}>
       <div>
         <strong>${escapeHtml(game.title)}</strong>
-        <span class="completed-platform">${game.platform ? platformBadge(game.platform) : ""}</span>
+        <span class="completed-platform">${completedBadges(game)}</span>
         <span>${escapeHtml(historyRangeText(game))}</span>
       </div>
       <button class="icon-button history-edit-action" type="button" title="Edit" aria-label="Edit">${pencilIcon()}</button>
@@ -513,10 +532,30 @@ function completionYear(game) {
 function historyRangeText(game) {
   const start = formatLongDate(game.startedAt);
   const done = formatLongDate(game.completedAt);
-  if (start && done) return `${start} -> ${done}`;
+  const duration = finishedDurationText(game.startedAt, game.completedAt);
+  if (start && done) return `${start} -> ${done}${duration ? ` (${duration})` : ""}`;
   if (done) return `Done ${done}`;
   if (start) return `Started ${start}`;
   return "No dates";
+}
+
+function finishedDurationText(startValue, doneValue) {
+  const start = dateOnly(startValue);
+  const done = dateOnly(doneValue);
+  if (!start || !done) return "";
+  const startTime = new Date(`${start}T00:00:00`).getTime();
+  const doneTime = new Date(`${done}T00:00:00`).getTime();
+  if (!Number.isFinite(startTime) || !Number.isFinite(doneTime) || doneTime < startTime) return "";
+  const days = Math.max(1, Math.floor((doneTime - startTime) / 86400000) + 1);
+  if (days < 60) return plural(days, "day");
+  const months = Math.max(1, Math.round(days / 30.4375));
+  if (months < 24) return plural(months, "month");
+  const years = Math.max(1, Math.round(days / 365.25));
+  return plural(years, "year");
+}
+
+function plural(value, label) {
+  return `${value} ${label}${value === 1 ? "" : "s"}`;
 }
 
 function updateCompletedDate(id, key, value) {
@@ -526,6 +565,7 @@ function updateCompletedDate(id, key, value) {
   game[key] = value;
   if (key === "completedAt" && !value) {
     game.section = "backlog";
+    game.platinum = false;
   }
   game.updatedAt = new Date().toISOString();
   upsertGame(game);
@@ -549,6 +589,7 @@ function filteredGames() {
       game.publisher,
       game.digital ? "digital" : "",
       game.coop ? "coop" : "",
+      game.platinum ? "completed trophy platinum" : "",
       game.playing ? "playing" : "",
       game.startedAt,
       game.completedAt,
@@ -616,12 +657,16 @@ function cardFor(game, options = {}) {
   card.querySelector(".edit-action").addEventListener("click", () => openEditor(game.id));
   card.querySelector(".cover-button").addEventListener("click", () => openDetail(game.id));
   const completeAction = card.querySelector(".complete-action");
+  const trophyAction = card.querySelector(".trophy-action");
   completeAction.hidden = game.section !== "backlog";
-  completeAction.textContent = game.playing ? "Completed" : "Play";
+  completeAction.textContent = game.playing ? "Finished" : "Play";
   completeAction.addEventListener("click", () => {
     if (game.playing) completeGame(game.id);
     else startPlaying(game.id);
   });
+  trophyAction.hidden = !game.playing;
+  trophyAction.classList.toggle("active", Boolean(game.platinum));
+  trophyAction.addEventListener("click", () => completeGameWithTrophy(game.id));
   card.querySelector(".delete-action").addEventListener("click", () => deleteGame(game.id));
   card.addEventListener("click", (event) => {
     if (event.target.closest("button, a")) return;
@@ -688,8 +733,17 @@ function metaFor(game) {
   if (release) values.push(`<span class="release-pill">${escapeHtml(release)}</span>`);
   if (game.lengthHours) values.push(timeBadge(game.lengthHours));
   if (game.coop) values.push(`<span class="coop-pill">Coop</span>`);
+  if (game.platinum) values.push(`<span class="platinum-pill">${trophyIcon()} Completed</span>`);
   if (game.playing) values.push(`<span class="playing-pill">Playing</span>`);
   return values;
+}
+
+function completedBadges(game) {
+  return [
+    game.platform ? platformBadge(game.platform) : "",
+    game.coop ? `<span class="coop-pill">Coop</span>` : "",
+    game.platinum ? `<span class="platinum-pill">${trophyIcon()} Completed</span>` : "",
+  ].filter(Boolean).join("");
 }
 
 function playDatesFor(game) {
@@ -697,6 +751,8 @@ function playDatesFor(game) {
   const formatDate = game.completedAt ? formatLongDate : formatShortDate;
   if (game.startedAt) values.push(`<span class="history-pill history-date-pill"><small>Started</small><strong>${escapeHtml(formatDate(game.startedAt))}</strong></span>`);
   if (game.completedAt) values.push(`<span class="history-pill history-date-pill"><small>Done</small><strong>${escapeHtml(formatDate(game.completedAt))}</strong></span>`);
+  const duration = finishedDurationText(game.startedAt, game.completedAt);
+  if (duration) values.push(`<span class="history-pill history-date-pill"><small>Time</small><strong>${escapeHtml(duration)}</strong></span>`);
   return values;
 }
 
@@ -767,6 +823,19 @@ function pencilIcon() {
     <svg class="pencil-icon" viewBox="0 0 24 24" aria-hidden="true">
       <path d="M4 20h4l11-11a2.8 2.8 0 0 0-4-4L4 16v4Z"></path>
       <path d="M13.5 6.5l4 4"></path>
+    </svg>
+  `;
+}
+
+function trophyIcon() {
+  return `
+    <svg class="trophy-icon" viewBox="0 0 24 24" aria-hidden="true">
+      <path d="M8 4h8v4a4 4 0 0 1-8 0V4Z"></path>
+      <path d="M8 6H5a3 3 0 0 0 3 3"></path>
+      <path d="M16 6h3a3 3 0 0 1-3 3"></path>
+      <path d="M12 12v4"></path>
+      <path d="M9 20h6"></path>
+      <path d="M10 16h4v4h-4z"></path>
     </svg>
   `;
 }
@@ -879,6 +948,7 @@ function normalizeGameRecord(game) {
   const normalized = { ...game };
   normalized.digital = Boolean(normalized.digital);
   normalized.coop = Boolean(normalized.coop);
+  normalized.platinum = Boolean(normalized.platinum);
   normalized.playing = Boolean(normalized.playing);
   normalized.startedAt = dateOnly(normalized.startedAt);
   normalized.completedAt = dateOnly(normalized.completedAt);
@@ -1081,6 +1151,7 @@ async function openEditor(id = "") {
   el.fields.length.value = game.lengthHours || "";
   el.fields.startedAt.value = dateOnly(game.startedAt);
   el.fields.completedAt.value = dateOnly(game.completedAt);
+  el.fields.platinum.checked = Boolean(game.platinum);
   el.fields.preorderStore.value = game.preorderStore || "";
   el.fields.preferredStore.value = game.preferredStore || "";
   el.fields.owners.value = ownerTags(game).join(", ");
@@ -1117,6 +1188,7 @@ function blankGame() {
     statuses: [],
     digital: false,
     coop: false,
+    platinum: false,
     playing: false,
     startedAt: "",
     genres: [],
@@ -1146,7 +1218,9 @@ async function saveCurrentFormGame() {
   const id = el.fields.id.value || crypto.randomUUID();
   const existing = state.games.find((game) => game.id === id);
   const completedAt = el.fields.completedAt.value || "";
-  const playing = el.fields.playing.checked && !completedAt;
+  const platinum = el.fields.platinum.checked;
+  const effectiveCompletedAt = completedAt || (platinum ? todayDate() : "");
+  const playing = el.fields.playing.checked && !effectiveCompletedAt;
   const section = playing ? "backlog" : el.fields.section.value;
   const startedAt = el.fields.startedAt.value || (playing && !existing?.playing && !existing?.startedAt ? todayDate() : "");
   const game = {
@@ -1159,13 +1233,14 @@ async function saveCurrentFormGame() {
     releaseText: el.fields.releaseText.value.trim(),
     lengthHours: el.fields.length.value ? Number(el.fields.length.value) : null,
     startedAt,
-    completedAt,
+    completedAt: effectiveCompletedAt,
     preorderStore: el.fields.preorderStore.value.trim(),
     preferredStore: el.fields.preferredStore.value.trim(),
     owners: ownerInputValues(el.fields.owners.value),
     statuses: listFrom(el.fields.statuses.value).map(canonicalStatus).filter(Boolean),
     digital: el.fields.digital.checked,
     coop: el.fields.coop.checked,
+    platinum,
     playing,
     genres: listFrom(el.fields.genres.value),
     developer: el.fields.developer.value.trim(),
@@ -1234,10 +1309,22 @@ function completeGame(id) {
   upsertGame(game);
 }
 
+function completeGameWithTrophy(id) {
+  const game = getGame(id);
+  if (!game?.playing) return;
+  game.startedAt = game.startedAt || todayDate();
+  game.completedAt = game.completedAt || todayDate();
+  game.playing = false;
+  game.platinum = true;
+  game.updatedAt = new Date().toISOString();
+  upsertGame(game);
+}
+
 function restoreCompletedToBacklog(id) {
   const game = getGame(id);
   if (!game) return;
   game.completedAt = "";
+  game.platinum = false;
   game.section = "backlog";
   game.prices = [];
   game.order = nextOrder("backlog");
