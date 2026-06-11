@@ -2675,6 +2675,7 @@ body.dialog-open .mobile-section-tabs {
 
   .detail-cover {
     aspect-ratio: 16 / 10;
+    margin-top: 38px;
     min-height: 0;
     max-height: 360px;
   }
