@@ -241,12 +241,13 @@ async function persistCloud() {
 
 function render() {
   document.body.classList.toggle("can-edit", state.canEdit);
-  el.loginButton.innerHTML = state.canEdit ? "Stop Editing" : pencilIcon();
+  el.loginButton.innerHTML = state.canEdit ? `${pauseIcon()}<span class="button-label">Stop Editing</span>` : pencilIcon();
   el.loginButton.title = state.canEdit ? "Stop Editing" : "Edit";
   el.loginButton.setAttribute("aria-label", el.loginButton.title);
   el.addButton.hidden = false;
   if (el.fetchDataButton) el.fetchDataButton.hidden = true;
   el.fetchPricesButton.hidden = !state.canEdit;
+  if (state.canEdit && !el.fetchPricesButton.disabled) el.fetchPricesButton.innerHTML = `${euroIcon()}<span class="button-label">Fetch New Prices</span>`;
   renderFilters();
   renderPlayingSection();
   renderStats();
@@ -1041,7 +1042,6 @@ function metaFor(game) {
   if (game.coop) values.push(`<span class="coop-pill">Coop</span>`);
   if (game.replayCount) values.push(replayBadge(game.replayCount));
   if (game.platinum) values.push(`<span class="platinum-pill">${trophyIcon()} Completed</span>`);
-  if (game.playing) values.push(`<span class="playing-pill">Playing</span>`);
   return values;
 }
 
@@ -1166,6 +1166,25 @@ function pencilIcon() {
     <svg class="pencil-icon" viewBox="0 0 24 24" aria-hidden="true">
       <path d="M4 20h4l11-11a2.8 2.8 0 0 0-4-4L4 16v4Z"></path>
       <path d="M13.5 6.5l4 4"></path>
+    </svg>
+  `;
+}
+
+function pauseIcon() {
+  return `
+    <svg class="pause-icon" viewBox="0 0 24 24" aria-hidden="true">
+      <path d="M8 5v14"></path>
+      <path d="M16 5v14"></path>
+    </svg>
+  `;
+}
+
+function euroIcon() {
+  return `
+    <svg class="euro-icon" viewBox="0 0 24 24" aria-hidden="true">
+      <path d="M19 5.5A7 7 0 0 0 8.2 7.1 7.4 7.4 0 0 0 7 12a7.4 7.4 0 0 0 1.2 4.9A7 7 0 0 0 19 18.5"></path>
+      <path d="M4 10h10"></path>
+      <path d="M4 14h10"></path>
     </svg>
   `;
 }
@@ -2158,13 +2177,13 @@ async function refreshAllPrices() {
     return;
   }
 
-  const originalText = el.fetchPricesButton.textContent;
+  const originalHtml = el.fetchPricesButton.innerHTML;
   el.fetchPricesButton.disabled = true;
   let updated = 0;
   let failed = 0;
 
   for (const [index, game] of games.entries()) {
-    el.fetchPricesButton.textContent = `Prices ${index + 1}/${games.length}`;
+    el.fetchPricesButton.innerHTML = `<span class="button-label">Prices ${index + 1}/${games.length}</span>`;
     game.prices = PROVIDERS.map((store) => ({
       ...fallbackPriceLinks(game).find((item) => item.store === store),
       checkedAt: "",
@@ -2182,7 +2201,7 @@ async function refreshAllPrices() {
   persistLocal();
   persistCloud();
   el.fetchPricesButton.disabled = false;
-  el.fetchPricesButton.textContent = originalText;
+  el.fetchPricesButton.innerHTML = originalHtml;
   alert(`Updated prices for ${updated} games${failed ? `, ${failed} failed` : ""}.`);
 }
 

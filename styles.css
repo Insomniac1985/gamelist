@@ -1756,7 +1756,9 @@ body[data-mobile-section="upcoming"] .column:not(#upcoming) {
 }
 
 .trash-icon,
-.search-icon {
+.search-icon,
+.pause-icon,
+.euro-icon {
   width: 18px;
   height: 18px;
   fill: none;
@@ -2310,96 +2312,93 @@ body.dialog-open .mobile-section-tabs {
 
 @media (max-width: 760px) {
   .topbar {
-    grid-template-columns: auto minmax(0, 1fr);
-    align-items: start;
-    gap: 10px;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 8px;
     padding: 12px 14px;
   }
 
-  .top-actions {
-    display: grid;
-    grid-template-columns: 42px minmax(0, 1fr) 42px;
-    grid-column: 1 / -1;
-    justify-self: stretch;
-    width: 100%;
+  .brand {
+    min-width: 0;
   }
 
-  .top-actions .ghost-button,
-  .top-actions .primary-button {
-    min-width: 0;
-    min-height: 42px;
-    padding-inline: 9px;
+  .brand span:last-child {
+    overflow: hidden;
+    text-overflow: ellipsis;
     white-space: nowrap;
   }
 
+  .top-actions {
+    display: flex;
+    grid-column: 2;
+    justify-self: end;
+    width: auto;
+    gap: 6px;
+  }
+
+  .top-actions .ghost-button,
+  .top-actions .icon-button,
+  .top-actions .primary-button {
+    width: 42px;
+    height: 42px;
+    flex: 0 0 42px;
+    min-width: 0;
+    min-height: 42px;
+    padding: 0;
+  }
+
   #syncButton {
-    grid-column: 1;
+    order: 1;
+  }
+
+  #fetchPricesButton {
+    order: 2;
   }
 
   #loginButton {
-    grid-column: 3;
+    order: 3;
   }
 
-  body.can-edit #loginButton {
-    grid-column: 3;
+  #addButton {
+    order: 4;
   }
 
   body.can-edit .top-actions {
-    grid-column: 1 / -1;
-    justify-self: stretch;
-    grid-template-columns: repeat(4, minmax(0, 1fr));
-    width: 100%;
-  }
-
-  body.can-edit #syncButton {
-    grid-column: 1;
-  }
-
-  body.can-edit #fetchPricesButton {
     grid-column: 2;
+    justify-self: end;
+    width: auto;
   }
 
-  body.can-edit #loginButton {
-    grid-column: 3;
-  }
-
-  body.can-edit #addButton {
-    grid-column: 4;
-  }
-
+  #fetchPricesButton,
   body.can-edit #fetchPricesButton {
     justify-content: center;
-    font-size: 0;
     line-height: 1.15;
     white-space: normal;
   }
 
-  body.can-edit #fetchPricesButton::before {
-    content: "€";
-    color: #ffffff;
-    font-size: 22px;
-    font-weight: 950;
-    line-height: 1;
+  .top-actions .button-label {
+    display: none;
   }
 
   body.can-edit #loginButton {
     font-size: 0;
   }
 
-  body.can-edit #loginButton::before {
-    content: "Ⅱ";
-    color: #ffffff;
-    font-size: 20px;
-    font-weight: 900;
-    line-height: 1;
+  .top-actions .pause-icon,
+  .top-actions .euro-icon,
+  .top-actions .pencil-icon {
+    width: 20px;
+    height: 20px;
   }
 
+  #addButton,
   body.can-edit #addButton {
     min-width: 0;
     padding: 0;
     font-size: 0;
   }
 
+  #addButton .button-icon,
   body.can-edit #addButton .button-icon {
     margin: 0;
     font-size: 22px;
