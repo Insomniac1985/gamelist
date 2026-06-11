@@ -2520,6 +2520,12 @@ body.dialog-open .mobile-section-tabs {
     height: 20px;
   }
 
+  #syncButton .reload-icon,
+  #fetchPricesButton .euro-icon,
+  body.can-edit #loginButton .pause-icon {
+    display: block;
+  }
+
   #addButton,
   body.can-edit #addButton {
     align-items: center;
