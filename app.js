@@ -771,7 +771,7 @@ function renderHistoryDialog() {
 
   const games = completedGamesForYear(state.historyYear);
   el.historyList.innerHTML = games.length ? games.map((game) => `
-    <div class="history-row" data-id="${escapeHtml(game.id)}">
+    <div class="history-row" data-id="${escapeHtml(game.id)}" role="button" tabindex="0" aria-label="${escapeHtml(`Open ${game.title}`)}">
       <img class="completed-cover" src="${escapeHtml(game.cover || "")}" alt="" loading="lazy" decoding="async" ${game.cover ? "" : "hidden"}>
       <div>
         <strong class="${game.platinum ? "completed-achievements-title" : ""}">${escapeHtml(game.title)}</strong>
@@ -786,6 +786,20 @@ function renderHistoryDialog() {
     button.addEventListener("click", () => {
       el.historyDialog.close();
       openEditor(button.closest(".history-row").dataset.id);
+    });
+  });
+  el.historyList.querySelectorAll(".history-row").forEach((row) => {
+    row.addEventListener("click", (event) => {
+      if (event.target.closest("button, input, a")) return;
+      el.historyDialog.close();
+      openDetail(row.dataset.id);
+    });
+    row.addEventListener("keydown", (event) => {
+      if (event.key !== "Enter" && event.key !== " ") return;
+      if (event.target.closest("button, input, a")) return;
+      event.preventDefault();
+      el.historyDialog.close();
+      openDetail(row.dataset.id);
     });
   });
 }
