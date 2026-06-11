@@ -117,8 +117,9 @@ async function init() {
   document.body.classList.toggle("can-edit", state.canEdit);
   bindEvents();
   await loadData();
-  await pullCloudData();
   render();
+  const cloudChanged = await pullCloudData();
+  if (cloudChanged) render();
   refreshAchievements();
   refreshUnreleasedGamesOnOpen();
   refreshMissingDescriptionsOnOpen();
@@ -204,21 +205,26 @@ async function loadData() {
   const response = await fetch("data/seed-games.json");
   const seed = await response.json();
   state.games = normalizeGameRecords(seed.games);
-  persistLocal();
+  persistLocal(false);
 }
 
 async function pullCloudData() {
   try {
     const response = await fetch("/api/sync");
-    if (!response.ok) return;
+    if (!response.ok) return false;
     const data = await response.json();
     if (Array.isArray(data.games) && data.games.length) {
-      state.games = normalizeGameRecords(data.games);
-      persistLocal(false);
+      const nextGames = normalizeGameRecords(data.games);
+      if (JSON.stringify(nextGames) !== JSON.stringify(state.games)) {
+        state.games = nextGames;
+        persistLocal(false);
+        return true;
+      }
     }
   } catch {
     // Static local preview has no Cloudflare function. Local data stays authoritative.
   }
+  return false;
 }
 
 function persistLocal(shouldRender = true) {
@@ -282,7 +288,7 @@ function renderPlayingSection() {
   el.playingSection.hidden = !games.length;
   el.playingCount.textContent = `${games.length} ${games.length === 1 ? "game" : "games"}`;
   el.playingList.innerHTML = "";
-  games.forEach((game) => el.playingList.appendChild(cardFor(game, { staticCard: true })));
+  games.forEach((game) => el.playingList.appendChild(cardFor(game, { staticCard: true, imagePriority: "eager" })));
 }
 
 async function refreshAchievements() {
@@ -686,7 +692,7 @@ function renderSection(section) {
     return;
   }
   const fragment = document.createDocumentFragment();
-  games.forEach((game) => fragment.appendChild(cardFor(game)));
+  games.forEach((game, index) => fragment.appendChild(cardFor(game, { imagePriority: index < 6 ? "eager" : "lazy" })));
   list.appendChild(fragment);
   if (section === "backlog" && state.filters.sort === "custom") setupDrag(list);
 }
@@ -927,7 +933,8 @@ function cardFor(game, options = {}) {
   img.hidden = !game.cover;
   img.src = game.cover ? coverDisplayUrl(game.cover) : "";
   img.alt = game.cover ? `${game.title} cover` : "";
-  img.loading = "eager";
+  img.loading = options.imagePriority || "lazy";
+  img.fetchPriority = options.imagePriority === "eager" ? "high" : "low";
   img.decoding = "async";
   card.classList.toggle("has-art", Boolean(game.cover));
   if (game.cover) {
@@ -1411,7 +1418,7 @@ function cssUrl(value) {
 }
 
 function backgroundCoverUrl(value) {
-  const url = coverDisplayUrl(value, "tiny");
+  const url = coverDisplayUrl(value);
   return url || String(value || "");
 }
 
