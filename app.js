@@ -458,6 +458,16 @@ function renderStats() {
       openHistoryDialog();
     }
   });
+  el.stats.querySelectorAll("[data-stat-detail]").forEach((node) => {
+    node.addEventListener("click", () => {
+      node.classList.toggle("detail-open");
+    });
+    node.addEventListener("keydown", (event) => {
+      if (event.key !== "Enter" && event.key !== " ") return;
+      event.preventDefault();
+      node.classList.toggle("detail-open");
+    });
+  });
   for (const [section, count] of Object.entries(counts)) {
     const node = document.querySelector(`#${section}Count`);
     if (node) node.innerHTML = sectionCountLabel(section, active, count);
@@ -465,10 +475,12 @@ function renderStats() {
 }
 
 function stat(label, value, tone = "", options = {}) {
-  const attrs = options.action
-    ? ` role="button" tabindex="0" data-stat-action="${escapeHtml(options.action)}"`
-    : "";
-  return `<div class="stat ${tone ? `stat-${tone}` : ""} ${options.action ? "stat-action" : ""}"${attrs}><strong>${value}</strong><span>${label}</span>${options.detail || ""}</div>`;
+  const attrs = [
+    options.action ? `data-stat-action="${escapeHtml(options.action)}"` : "",
+    options.detail ? "data-stat-detail" : "",
+    options.action || options.detail ? 'role="button" tabindex="0"' : "",
+  ].filter(Boolean).join(" ");
+  return `<div class="stat ${tone ? `stat-${tone}` : ""} ${options.action ? "stat-action" : ""}"${attrs ? ` ${attrs}` : ""}><strong>${value}</strong><span>${label}</span>${options.detail || ""}</div>`;
 }
 
 function sectionStatDetail(section, games, total) {

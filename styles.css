@@ -586,6 +586,11 @@ h3 {
   }
 }
 
+.stat.detail-open .stat-detail {
+  opacity: 1;
+  transform: scale(1);
+}
+
 .stat-detail span,
 .stat-detail b {
   font-size: 12px;
@@ -2653,6 +2658,11 @@ body.dialog-open .mobile-section-tabs {
 
   .achievement-game-list {
     grid-template-columns: 1fr;
+  }
+
+  .rarity-bar strong {
+    opacity: 1;
+    transform: translateY(0);
   }
 
   .card-actions {
