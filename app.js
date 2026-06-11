@@ -2034,7 +2034,7 @@ async function refreshUnreleasedGamesOnOpen() {
       }
       const result = await lookupFirstResult(game.igdbUrl || game.title);
       if (!result) continue;
-      if (result.releaseDate && result.releaseDate !== game.releaseDate) {
+      if (!game.releaseDate && result.releaseDate) {
         game.releaseDate = result.releaseDate;
         game.releaseText = "";
         localChanged = true;
