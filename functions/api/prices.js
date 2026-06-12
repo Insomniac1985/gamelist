@@ -189,7 +189,7 @@ function parseAmazon(html, title, platform) {
 function parseSteam(html, title) {
   const normalizedTitle = normalize(retailTitle(title));
   const rows = html.split('class="search_result_row').slice(1);
-  let best = null;
+  const products = [];
   for (const row of rows) {
     const titleMatch = row.match(/<span class="title">([^<]+)<\/span>/i);
     const matchedTitle = decodeHtml(titleMatch?.[1] || "");
@@ -201,10 +201,9 @@ function parseSteam(html, title) {
     const url = decodeHtml(row.match(/href="([^"]+)"/i)?.[1] || "");
     const numericPrice = parsePrice(price);
     if (!price && !/free|gratis/i.test(priceText)) continue;
-    const candidate = { price, numericPrice, matchedTitle, url };
-    if (!best || (candidate.numericPrice ?? 9999) < (best.numericPrice ?? 9999)) best = candidate;
+    products.push({ title: matchedTitle, platform: "PC Steam", price, numericPrice, matchedTitle, url });
   }
-  return best || { price: "", matchedTitle: "" };
+  return bestProduct(products, title, "PC") || { price: "", matchedTitle: "" };
 }
 
 function normalizedSteamPrice(value) {
