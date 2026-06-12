@@ -148,21 +148,69 @@ button {
 }
 
 .playing-section {
+  position: relative;
   margin-bottom: 20px;
 }
 
 .playing-section .column-head {
   padding-top: 0;
+  align-items: center;
+}
+
+.playing-section .column-head h2 {
+  font-size: clamp(28px, 3.4vw, 46px);
+  letter-spacing: 0;
+  text-shadow:
+    0 0 18px rgba(255, 0, 57, 0.28),
+    0 10px 32px rgba(0, 0, 0, 0.42);
+}
+
+.playing-section .column-head span {
+  min-height: 31px;
+  padding: 7px 11px;
+  color: #ffffff;
+  font-size: 12px;
+  font-weight: 900;
+  border: 1px solid rgba(255, 0, 57, 0.32);
+  border-radius: 7px;
+  background:
+    linear-gradient(135deg, rgba(255, 0, 57, 0.24), rgba(247, 223, 105, 0.1)),
+    rgba(14, 15, 20, 0.48);
+  box-shadow: 0 0 22px rgba(255, 0, 57, 0.16);
 }
 
 .playing-panel {
-  padding: 14px;
-  border-radius: 8px;
+  position: relative;
+  padding: 16px;
+  overflow: hidden;
+  border-radius: 10px;
+  background:
+    radial-gradient(circle at 12% 0%, rgba(255, 0, 57, 0.18), transparent 34%),
+    radial-gradient(circle at 84% 18%, rgba(247, 223, 105, 0.12), transparent 30%),
+    linear-gradient(135deg, rgba(255, 255, 255, 0.09), rgba(255, 255, 255, 0.035)),
+    rgba(10, 11, 15, 0.48);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.1),
+    0 24px 80px rgba(0, 0, 0, 0.34);
+}
+
+.playing-panel::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    linear-gradient(90deg, rgba(255, 0, 57, 0.22), transparent 18%, transparent 82%, rgba(247, 223, 105, 0.16)),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.08), transparent 38%);
+  opacity: 0.72;
 }
 
 .playing-section .card-list {
+  position: relative;
+  z-index: 1;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  margin-top: 2px;
+  gap: 14px;
+  margin-top: 0;
 }
 
 .playing-section[hidden] {
@@ -1229,20 +1277,57 @@ body[data-mobile-section="upcoming"] .column:not(#upcoming) {
 .game-card.playing-card.owner-card-judy.owner-card-jordi,
 .game-card.playing-card.digital-card.owner-card-judy.owner-card-jordi {
   background:
-    linear-gradient(135deg, rgba(255, 0, 57, 0.24), rgba(255, 0, 57, 0.1) 46%, rgba(20, 22, 28, 0.58)),
+    radial-gradient(circle at 22% 18%, rgba(247, 223, 105, 0.2), transparent 28%),
+    linear-gradient(135deg, rgba(255, 0, 57, 0.34), rgba(255, 0, 57, 0.12) 42%, rgba(12, 14, 19, 0.72)),
     var(--panel);
-  border-color: rgba(255, 0, 57, 0.42);
+  border-color: rgba(255, 0, 57, 0.5);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.12),
+    0 20px 50px rgba(0, 0, 0, 0.28);
+}
+
+.game-card.playing-card.has-art::before {
+  inset: -28px;
+  background:
+    linear-gradient(90deg, rgba(7, 8, 12, 0.46), rgba(7, 8, 12, 0.2) 40%, rgba(7, 8, 12, 0.58)),
+    linear-gradient(0deg, rgba(7, 8, 12, 0.68), transparent 52%),
+    var(--card-art) center / cover no-repeat;
+  filter: blur(1px) saturate(1.22) contrast(1.08);
+  opacity: 0.38;
+}
+
+.game-card.playing-card.has-art:hover::before {
+  opacity: 0.52;
+  --art-scale: 1.1;
+}
+
+.game-card.playing-card::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  border-radius: inherit;
+  background:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.16), transparent 24%),
+    linear-gradient(180deg, transparent 58%, rgba(0, 0, 0, 0.38));
+  opacity: 0.78;
 }
 
 .playing-section .game-card {
   grid-template-columns: auto minmax(0, 1fr);
-  min-height: 292px;
+  min-height: 318px;
   align-items: stretch;
+  padding: 14px;
+  gap: 14px;
 }
 
 .playing-section .game-card h3 {
-  font-size: clamp(20px, 2.6vw, 30px);
-  line-height: 1.04;
+  font-size: clamp(24px, 3vw, 38px);
+  line-height: 1;
+  max-width: 12ch;
+  text-wrap: balance;
+  text-shadow: 0 12px 30px rgba(0, 0, 0, 0.62);
 }
 
 .playing-section .cover-button {
@@ -1250,8 +1335,38 @@ body[data-mobile-section="upcoming"] .column:not(#upcoming) {
   width: auto;
   height: auto;
   aspect-ratio: 104 / 142;
-  max-height: 220px;
+  max-height: 248px;
   min-height: 0;
+  border-color: rgba(255, 255, 255, 0.24);
+  box-shadow:
+    0 18px 42px rgba(0, 0, 0, 0.46),
+    0 0 0 1px rgba(255, 0, 57, 0.12);
+}
+
+.playing-section .cover-button img {
+  transform: scale(1.015);
+}
+
+.playing-section .game-main {
+  padding: 2px 0;
+}
+
+.playing-section .studio-line {
+  margin-top: 7px;
+  color: rgba(246, 247, 251, 0.7);
+  font-size: 13px;
+}
+
+.playing-section .meta,
+.playing-section .chips,
+.playing-section .play-dates {
+  gap: 5px;
+}
+
+.playing-section .card-actions {
+  width: 100%;
+  margin-top: auto;
+  justify-content: flex-start;
 }
 
 .game-card.dragging {
@@ -2694,12 +2809,35 @@ body.dialog-open .mobile-section-tabs {
   }
 
   .playing-section .cover-button {
-    width: auto;
-    height: auto;
+    width: 112px;
+    height: 154px;
+    max-height: none;
   }
 
   .playing-section .game-card {
-    grid-template-columns: auto minmax(0, 1fr);
+    grid-template-columns: 112px minmax(0, 1fr);
+    min-height: 190px;
+    padding: 11px;
+    gap: 11px;
+  }
+
+  .playing-section .game-card h3 {
+    max-width: none;
+    font-size: clamp(19px, 7vw, 25px);
+    line-height: 1.03;
+  }
+
+  .playing-panel {
+    padding: 10px;
+    border-radius: 8px;
+  }
+
+  .playing-section .column-head {
+    align-items: end;
+  }
+
+  .playing-section .column-head h2 {
+    font-size: clamp(26px, 9vw, 34px);
   }
 
   .notes {
