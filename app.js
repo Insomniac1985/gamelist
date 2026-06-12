@@ -353,7 +353,7 @@ function renderAchievements(data = {}) {
       <img class="achievement-icon" src="${escapeHtml(item.icon || platformLogo("PS5"))}" alt="">
       <div>
         <strong>${escapeHtml(item.title || "Trophy unlocked")}</strong>
-        <span>${escapeHtml([item.game, item.rarity, item.earnedAt].filter(Boolean).join(" · "))}</span>
+        <span>${escapeHtml([item.game, item.earnedAt].filter(Boolean).join(" · "))}</span>
       </div>
     </a>
   `).join("");
@@ -366,7 +366,7 @@ function renderAchievements(data = {}) {
       </div>
     </div>
   ` : "";
-  el.achievementPanel.innerHTML = `${dashboard}${trophyCards}${gameCards}`;
+  el.achievementPanel.innerHTML = `${dashboard}<span class="achievement-subtitle trophy-subtitle">Latest Trophies</span>${trophyCards}${gameCards}`;
 }
 
 function achievementDashboard(achievements, games, sourceUrl, summary = null) {
@@ -390,7 +390,7 @@ function achievementDashboard(achievements, games, sourceUrl, summary = null) {
       </a>
       <a class="achievement-kpi platinum-highlight ${latestPlatinum ? "has-platinum" : ""}" href="${escapeHtml(latestPlatinum?.url || sourceUrl)}" target="_blank" rel="noreferrer">
         <strong class="kpi-with-icon">${trophyIcon()}${escapeHtml(String(trophies.platinum || 0))}</strong>
-        <span>Platinums${latestPlatinum ? ` · Latest ${escapeHtml(latestPlatinum.game || latestPlatinum.title || "")}` : ""}</span>
+        <span>Platinums</span>
       </a>
       <div class="achievement-kpi">
         <strong>${escapeHtml(String(summary?.level || average || 0))}</strong>
