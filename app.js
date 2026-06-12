@@ -338,6 +338,8 @@ function updatePlayingSliderControls() {
   el.playingNextButton.hidden = !hasOverflow;
   el.playingPrevButton.disabled = !hasOverflow || el.playingList.scrollLeft <= 2;
   el.playingNextButton.disabled = !hasOverflow || el.playingList.scrollLeft >= maxScroll;
+  el.playingSection.classList.toggle("playing-at-start", !hasOverflow || el.playingList.scrollLeft <= 2);
+  el.playingSection.classList.toggle("playing-at-end", !hasOverflow || el.playingList.scrollLeft >= maxScroll);
 }
 
 async function refreshAchievements() {
@@ -1360,8 +1362,13 @@ function compareGames(a, b, section) {
 }
 
 function comparePlayingGames(a, b) {
-  return sectionRank(a.section) - sectionRank(b.section)
+  return Number(Boolean(a.coop)) - Number(Boolean(b.coop))
+    || playingStartSortValue(a) - playingStartSortValue(b)
     || stringCompare(a.title, b.title);
+}
+
+function playingStartSortValue(game) {
+  return game.startedAt ? new Date(`${game.startedAt}T00:00:00`).getTime() : Number.POSITIVE_INFINITY;
 }
 
 function compareReleaseDates(a, b) {

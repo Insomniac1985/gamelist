@@ -57,6 +57,41 @@ button {
   cursor: pointer;
 }
 
+a[href],
+button:not(:disabled),
+select,
+input[type="checkbox"],
+input[type="file"],
+[role="button"],
+.check-filter,
+.toggle-check,
+.game-card,
+.cover-button,
+.achievement-card,
+.achievement-fallback,
+.card-trophy,
+.release-day.has-release,
+.year-tab,
+.mobile-section-tabs button,
+.stat-action,
+.stat[data-stat-detail],
+.completed-row,
+.history-row {
+  cursor: pointer;
+}
+
+button:disabled {
+  cursor: default;
+}
+
+.sortable .game-card[draggable="true"] {
+  cursor: grab;
+}
+
+.sortable .game-card.dragging {
+  cursor: grabbing;
+}
+
 .backdrop {
   position: fixed;
   inset: 0;
@@ -225,6 +260,11 @@ button {
 .playing-panel::after {
   right: 0;
   background: linear-gradient(270deg, rgba(22, 22, 25, 0.92), rgba(22, 22, 25, 0));
+}
+
+.playing-section.playing-at-start .playing-panel::before,
+.playing-section.playing-at-end .playing-panel::after {
+  opacity: 0;
 }
 
 .playing-section .card-list {
@@ -796,7 +836,25 @@ h3 {
 #closeDialogButton:hover,
 #detailCloseButton:hover,
 #historyCloseButton:hover,
-#releaseCloseButton:hover {
+#releaseCloseButton:hover,
+.ghost-button:not(.trophy-action):hover,
+.primary-button:hover,
+.danger-button:hover,
+#syncButton:hover,
+#loginButton:hover,
+#fetchPricesButton:hover,
+#addButton:hover,
+#lookupButton:hover,
+#pricesButton:hover,
+#deleteButton:hover,
+.edit-action:hover,
+.completed-edit-action:hover,
+.history-edit-action:hover,
+.price-refresh-action:hover,
+.bought-action:hover,
+.complete-action:hover,
+.delete-action:hover,
+.restore-action:hover {
   color: #ffffff;
   border-color: rgba(255, 0, 57, 0.58);
   background: rgba(255, 0, 57, 0.28);
@@ -1371,8 +1429,8 @@ body[data-mobile-section="upcoming"] .column:not(#upcoming) {
 
 .playing-section .game-card {
   grid-template-columns: auto minmax(0, 1fr);
-  flex: 0 0 min(1120px, calc(100vw - clamp(54px, 9vw, 112px)));
-  min-height: 500px;
+  flex: 0 0 min(1220px, calc(100vw - clamp(54px, 9vw, 112px)));
+  min-height: 548px;
   align-items: stretch;
   padding: 18px;
   gap: 20px;
@@ -1393,7 +1451,7 @@ body[data-mobile-section="upcoming"] .column:not(#upcoming) {
   width: auto;
   height: auto;
   aspect-ratio: 104 / 142;
-  max-height: 430px;
+  max-height: 478px;
   min-height: 0;
   border-color: rgba(255, 255, 255, 0.24);
   box-shadow:
@@ -1424,6 +1482,10 @@ body[data-mobile-section="upcoming"] .column:not(#upcoming) {
 .card-trophies {
   width: 100%;
   margin-top: 10px;
+}
+
+.playing-section .card-trophies {
+  margin-top: auto;
 }
 
 .card-trophies[hidden] {
@@ -1509,8 +1571,12 @@ body[data-mobile-section="upcoming"] .column:not(#upcoming) {
 
 .playing-section .card-actions {
   width: 100%;
-  margin-top: auto;
+  margin-top: 10px;
   justify-content: flex-start;
+}
+
+.playing-section .card-trophies[hidden] + .card-actions {
+  margin-top: auto;
 }
 
 .game-card.dragging {
