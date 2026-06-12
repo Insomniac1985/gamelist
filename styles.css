@@ -137,8 +137,8 @@ button:disabled {
   align-items: center;
   gap: 18px;
   padding: 18px clamp(16px, 4vw, 46px);
-  background: rgba(9, 10, 13, 0.64);
-  border-bottom: 1px solid var(--line);
+  background: transparent;
+  border-bottom: 0;
   backdrop-filter: blur(24px);
 }
 
@@ -183,6 +183,10 @@ button:disabled {
   border-color: rgba(255, 0, 81, 0.32);
 }
 
+#achievementProfileLink {
+  display: none;
+}
+
 .top-actions,
 .modal-actions,
 .card-actions,
@@ -195,7 +199,7 @@ button:disabled {
 .shell {
   width: min(1620px, 100%);
   margin: 0 auto;
-  padding: clamp(18px, 4vw, 48px);
+  padding: clamp(8px, 2vw, 24px) clamp(18px, 4vw, 48px) clamp(18px, 4vw, 48px);
 }
 
 .hero {
@@ -1551,11 +1555,11 @@ body[data-mobile-section="upcoming"] .column:not(#upcoming) {
   }
 
   .game-card.playing-card.has-trailer .card-trailer iframe {
-    width: 118%;
-    height: 118%;
+    width: 138%;
+    height: 138%;
     border: 0;
     pointer-events: none;
-    transform: translate3d(-7.5%, -8.5%, 0) scale(1.62);
+    transform: translate3d(-13.8%, -14.5%, 0) scale(1.76);
   }
 
   .game-card.playing-card.has-trailer.has-art::before {
@@ -2278,13 +2282,22 @@ body[data-mobile-section="upcoming"] .column:not(#upcoming) {
 
 .top-actions #syncButton,
 .top-actions #fetchPricesButton,
+.top-actions #addButton,
+body.can-edit #loginButton,
+body:not(.can-edit) #loginButton,
+#loginButton[title="Edit"] {
+  height: 42px;
+  min-height: 42px;
+  padding-block: 0;
+}
+
+.top-actions #syncButton,
+.top-actions #fetchPricesButton,
 body:not(.can-edit) #loginButton,
 #loginButton[title="Edit"] {
   width: 42px;
-  height: 42px;
   flex: 0 0 42px;
   min-width: 42px;
-  min-height: 42px;
   padding: 0;
 }
 
@@ -3062,6 +3075,8 @@ body.dialog-open .mobile-section-tabs {
     align-items: center;
     gap: 8px;
     padding: 12px 14px;
+    background: rgba(9, 10, 13, 0.64);
+    border-bottom: 1px solid var(--line);
   }
 
   .brand {
@@ -3082,6 +3097,7 @@ body.dialog-open .mobile-section-tabs {
     align-self: center;
     width: auto;
     gap: 6px;
+    transform: translateY(2px);
   }
 
   .top-actions .ghost-button,
@@ -3247,20 +3263,22 @@ body.dialog-open .mobile-section-tabs {
   .playing-section .game-card {
     grid-template-columns: 112px minmax(0, 1fr);
     flex-basis: calc(100vw - 54px);
-    min-height: 360px;
+    min-height: 292px;
     align-items: start;
     padding: 11px;
     gap: 11px;
   }
 
   .playing-section .game-main {
-    min-height: 338px;
+    min-height: 270px;
   }
 
   .playing-section .game-card h3 {
     max-width: none;
-    font-size: clamp(19px, 7vw, 25px);
-    line-height: 1.03;
+    overflow-wrap: anywhere;
+    hyphens: auto;
+    font-size: clamp(17px, 5.8vw, 23px);
+    line-height: 1.05;
   }
 
   .card-trophy-list {
@@ -3270,7 +3288,7 @@ body.dialog-open .mobile-section-tabs {
   .playing-section .card-trophies[hidden] {
     display: block;
     visibility: hidden;
-    min-height: 150px;
+    min-height: 92px;
   }
 
   .card-trophy {
@@ -3302,6 +3320,10 @@ body.dialog-open .mobile-section-tabs {
     gap: 10px;
     padding-right: 10px;
     scroll-padding-left: 10px;
+  }
+
+  .playing-finished-game {
+    flex-basis: calc(100vw - 54px);
   }
 
   .achievement-panel {

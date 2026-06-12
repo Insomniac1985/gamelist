@@ -1226,8 +1226,13 @@ function visibleRatio(card, root) {
 
 function playCardTrailer(card) {
   const trailer = card.querySelector(".card-trailer");
-  if (!trailer?.dataset.src || trailer.querySelector("iframe")) return;
+  if (!trailer?.dataset.src) return;
   card.classList.remove("trailer-paused");
+  const iframe = trailer.querySelector("iframe");
+  if (iframe) {
+    commandTrailer(iframe, "playVideo");
+    return;
+  }
   trailer.innerHTML = trailerFrame(trailer.dataset.src);
 }
 
@@ -1235,11 +1240,20 @@ function pauseCardTrailer(card) {
   const trailer = card.querySelector(".card-trailer");
   if (!trailer) return;
   card.classList.add("trailer-paused");
-  trailer.innerHTML = "";
+  const iframe = trailer.querySelector("iframe");
+  if (iframe) commandTrailer(iframe, "pauseVideo");
 }
 
 function pauseAllPlayingTrailers() {
   el.playingList.querySelectorAll(".game-card.has-trailer").forEach(pauseCardTrailer);
+}
+
+function commandTrailer(iframe, command) {
+  iframe.contentWindow?.postMessage(JSON.stringify({
+    event: "command",
+    func: command,
+    args: [],
+  }), "*");
 }
 
 function shouldShowCardTrailer(game) {
@@ -1256,6 +1270,7 @@ function trailerEmbedUrl(value) {
       mute: "1",
       controls: "0",
       disablekb: "1",
+      enablejsapi: "1",
       fs: "0",
       iv_load_policy: "3",
       loop: "1",
@@ -1264,6 +1279,7 @@ function trailerEmbedUrl(value) {
       modestbranding: "1",
       rel: "0",
     });
+    if (window.location.origin) params.set("origin", window.location.origin);
     return `https://www.youtube-nocookie.com/embed/${videoId}?${params.toString()}`;
   }
   return url;
