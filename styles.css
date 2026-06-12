@@ -146,14 +146,15 @@ button:disabled {
   display: inline-flex;
   align-items: center;
   gap: 10px;
+  min-height: 42px;
   color: var(--text);
   text-decoration: none;
   font-weight: 700;
 }
 
 .brand-mark {
-  width: 42px;
-  height: 42px;
+  width: 34px;
+  height: 34px;
   object-fit: contain;
   filter:
     drop-shadow(0 0 10px rgba(255, 0, 81, 0.44))
@@ -1579,8 +1580,8 @@ body[data-mobile-section="upcoming"] .column:not(#upcoming) {
     filter: blur(0.7px) saturate(1.18) contrast(1.1);
     transform: translateY(-50%) scale(1.08);
     pointer-events: none;
-    -webkit-mask-image: linear-gradient(90deg, transparent 0, rgba(0, 0, 0, 0.08) 9%, rgba(0, 0, 0, 0.78) 28%, #000 48%);
-    mask-image: linear-gradient(90deg, transparent 0, rgba(0, 0, 0, 0.08) 9%, rgba(0, 0, 0, 0.78) 28%, #000 48%);
+    -webkit-mask-image: linear-gradient(90deg, transparent 0, rgba(0, 0, 0, 0.03) 14%, rgba(0, 0, 0, 0.34) 32%, rgba(0, 0, 0, 0.82) 52%, #000 70%);
+    mask-image: linear-gradient(90deg, transparent 0, rgba(0, 0, 0, 0.03) 14%, rgba(0, 0, 0, 0.34) 32%, rgba(0, 0, 0, 0.82) 52%, #000 70%);
     -webkit-mask-repeat: no-repeat;
     mask-repeat: no-repeat;
     -webkit-mask-size: 100% 100%;
@@ -3146,7 +3147,6 @@ body.dialog-open .mobile-section-tabs {
     align-self: center;
     width: auto;
     gap: 6px;
-    transform: translateY(2px);
   }
 
   .top-actions .ghost-button,
@@ -3320,6 +3320,7 @@ body.dialog-open .mobile-section-tabs {
 
   .playing-section .game-main {
     min-height: 230px;
+    justify-content: flex-start;
   }
 
   .playing-section .game-card h3 {
