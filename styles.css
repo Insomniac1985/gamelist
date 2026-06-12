@@ -1583,8 +1583,7 @@ body[data-mobile-section="upcoming"] .column:not(#upcoming) {
     top: 50%;
     right: -20px;
     width: min(76%, 900px);
-    aspect-ratio: 16 / 9;
-    height: auto;
+    height: min(58vw, 560px);
     z-index: 0;
     display: block;
     border-radius: 8px;
@@ -1613,12 +1612,12 @@ body[data-mobile-section="upcoming"] .column:not(#upcoming) {
 
   .game-card.playing-card.has-trailer .card-trailer iframe,
   .game-card.playing-card.has-trailer .card-trailer video {
-    width: 112%;
-    height: 112%;
+    width: 114%;
+    height: 118%;
     border: 0;
     pointer-events: none;
     object-fit: cover;
-    transform: translate3d(-5%, -5%, 0) scale(1.08);
+    transform: translate3d(-6%, -8%, 0) scale(1.08);
   }
 
   .game-card.playing-card.has-trailer.has-art::before {
@@ -1891,8 +1890,8 @@ body[data-mobile-section="upcoming"] .column:not(#upcoming) {
 
 .game-card .trailer-toggle {
   position: absolute;
-  top: 10px;
-  right: 54px;
+  top: 28px;
+  right: 74px;
   z-index: 3;
   width: 36px;
   height: 36px;
@@ -3372,7 +3371,7 @@ body.dialog-open .mobile-section-tabs {
   }
 
   .playing-section .game-main {
-    min-height: 230px;
+    min-height: 0;
     justify-content: flex-start;
   }
 
@@ -3391,7 +3390,7 @@ body.dialog-open .mobile-section-tabs {
   .playing-section .card-trophies[hidden] {
     display: block;
     visibility: hidden;
-    min-height: 54px;
+    min-height: 0;
   }
 
   .card-trophy {
