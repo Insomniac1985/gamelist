@@ -1908,6 +1908,7 @@ function normalizeGameRecord(game) {
   normalized.description = String(normalized.description || "");
   normalized.igdbUrl = String(normalized.igdbUrl || "");
   normalized.trailerUrl = String(normalized.trailerUrl || "");
+  normalized.trailerUrlRemoved = Boolean(normalized.trailerUrlRemoved);
   normalized.storeLinks = normalizeStoreLinks(normalized.storeLinks);
   normalized.owners = ownerTags(normalized);
   normalized.statuses = gameStatuses(normalized);
@@ -2226,6 +2227,8 @@ async function saveCurrentFormGame() {
   const playing = el.fields.playing.checked && !effectiveCompletedAt;
   const section = playing || replayCount ? "backlog" : el.fields.section.value;
   const startedAt = el.fields.startedAt.value || (playing && !existing?.playing && !existing?.startedAt ? todayDate() : "");
+  const trailerUrl = el.fields.trailerUrl.value.trim();
+  const trailerUrlRemoved = !trailerUrl && Boolean(existing?.trailerUrl || existing?.trailerUrlRemoved);
   const game = {
     ...(existing || blankGame()),
     id,
@@ -2251,7 +2254,8 @@ async function saveCurrentFormGame() {
     publisher: el.fields.publisher.value.trim(),
     description: el.fields.description.value.trim() || state.pendingDescription || existing?.description || "",
     igdbUrl: el.fields.igdbUrl.value.trim(),
-    trailerUrl: el.fields.trailerUrl.value.trim(),
+    trailerUrl,
+    trailerUrlRemoved,
     storeLinks: {
       playstation: el.fields.playstationUrl.value.trim(),
       nintendo: el.fields.nintendoUrl.value.trim(),
@@ -2537,7 +2541,7 @@ async function normalizeGameBeforeSave(game) {
     game.cover = game.cover || result.cover || "";
     game.description = game.description || result.description || "";
     game.igdbUrl = game.igdbUrl || result.igdbUrl || "";
-    game.trailerUrl = game.trailerUrl || result.trailerUrl || "";
+    if (!game.trailerUrlRemoved) game.trailerUrl = game.trailerUrl || result.trailerUrl || "";
     mergeStoreLinks(game, result.storeLinks);
     game.lengthHours = game.lengthHours || result.lengthHours || null;
     if (!game.genres?.length || game.genres.some((genre) => genre.toLowerCase().includes("video game"))) {
@@ -2697,7 +2701,7 @@ function applyFetchedGameData(game, result, options = {}) {
   setIfEmpty("developer", result.developer);
   setIfEmpty("publisher", result.publisher);
   setIfEmpty("igdbUrl", result.igdbUrl);
-  setIfEmpty("trailerUrl", result.trailerUrl);
+  if (!game.trailerUrlRemoved) setIfEmpty("trailerUrl", result.trailerUrl);
   changed = mergeStoreLinks(game, result.storeLinks) || changed;
   if (refreshTextAndTags && result.description) {
     const nextDescription = shortDescription(result.description);
