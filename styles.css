@@ -1599,7 +1599,7 @@ body[data-mobile-section="upcoming"] .column:not(#upcoming) {
     content: "";
     position: absolute;
     top: -18px;
-    right: -18px;
+    left: -18px;
     bottom: -18px;
     z-index: 1;
     width: min(190px, 28%);
@@ -1607,8 +1607,8 @@ body[data-mobile-section="upcoming"] .column:not(#upcoming) {
     background: var(--card-art) center / cover no-repeat;
     filter: blur(10px) saturate(1.18) contrast(1.05);
     opacity: 0.42;
-    -webkit-mask-image: linear-gradient(270deg, #000 0, rgba(0, 0, 0, 0.84) 48px, rgba(0, 0, 0, 0.22) 108px, transparent 100%);
-    mask-image: linear-gradient(270deg, #000 0, rgba(0, 0, 0, 0.84) 48px, rgba(0, 0, 0, 0.22) 108px, transparent 100%);
+    -webkit-mask-image: linear-gradient(90deg, #000 0, rgba(0, 0, 0, 0.84) 48px, rgba(0, 0, 0, 0.22) 108px, transparent 100%);
+    mask-image: linear-gradient(90deg, #000 0, rgba(0, 0, 0, 0.84) 48px, rgba(0, 0, 0, 0.22) 108px, transparent 100%);
   }
 
   .game-card.playing-card.has-trailer .card-trailer::after {
