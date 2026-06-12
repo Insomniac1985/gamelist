@@ -24,6 +24,8 @@
   --shadow: 0 24px 80px rgba(0, 0, 0, 0.48);
   --grid-x: 0px;
   --grid-y: 0px;
+  --backdrop-x: 0px;
+  --backdrop-y: 0px;
   --grid-texture:
     linear-gradient(rgba(255, 255, 255, 0.038) 1px, transparent 1px),
     linear-gradient(90deg, rgba(255, 255, 255, 0.032) 1px, transparent 1px);
@@ -99,7 +101,7 @@ button:disabled {
 
 .backdrop {
   position: fixed;
-  inset: 0;
+  inset: -26px;
   z-index: -1;
   background:
     radial-gradient(circle at 78% 9%, rgba(255, 0, 81, 0.22), transparent 30%),
@@ -107,6 +109,23 @@ button:disabled {
     linear-gradient(120deg, rgba(255, 255, 255, 0.04), transparent 38%),
     url("https://cdn.myportfolio.com/9ec86fd7-b8ae-4899-8de8-a4f0e7b32ebb/1b7d38b0-699d-4024-a8bd-6d8cf8b46e16_rwc_0x0x2480x3355x4096.png?h=994f09e241b33623ff8d952bba77dcb7") top left / auto repeat,
     #161619;
+  background-position:
+    calc(78% + var(--backdrop-x)) calc(9% + var(--backdrop-y)),
+    calc(11% - var(--backdrop-x)) calc(84% - var(--backdrop-y)),
+    calc(50% + var(--grid-x)) calc(50% + var(--grid-y)),
+    calc(var(--backdrop-x) * 0.45) calc(var(--backdrop-y) * 0.45),
+    center;
+  transform: translate3d(calc(var(--backdrop-x) * -0.35), calc(var(--backdrop-y) * -0.35), 0) scale(1.02);
+  transition: transform 80ms linear, background-position 80ms linear;
+  will-change: transform, background-position;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .backdrop {
+    inset: 0;
+    transform: none;
+    transition: none;
+  }
 }
 
 .topbar {
