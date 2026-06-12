@@ -1642,7 +1642,7 @@ content: "";
   }
 
   .game-card.playing-card.has-trailer.trailer-paused .card-trailer {
-    opacity: 0;
+    opacity: 1;
   }
 }
 
