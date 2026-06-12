@@ -1604,7 +1604,7 @@ content: "";
         z-index: 1;
         width: min(820px, 80%);
         pointer-events: none;
-        background: linear-gradient(90deg, rgb(0 0 0) 0%, rgb(0 0 0 / 0%) 100%);
+        background: linear-gradient(90deg, rgb(0 0 0) 30%, rgb(0 0 0 / 0%) 100%);
     }
 
   .game-card.playing-card.has-trailer .card-trailer::after {
