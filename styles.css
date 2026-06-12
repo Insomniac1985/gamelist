@@ -2983,34 +2983,8 @@ body.dialog-open .mobile-section-tabs {
 
 .detail-trophy-scroller {
   position: relative;
-}
-
-.detail-trophy-scroller::before,
-.detail-trophy-scroller::after {
-  content: "";
-  position: absolute;
-  left: 0;
-  right: 4px;
-  z-index: 3;
-  height: 20px;
-  pointer-events: none;
-  opacity: 0;
-  transition: opacity 140ms ease;
-}
-
-.detail-trophy-scroller::before {
-  top: 0;
-  background: linear-gradient(180deg, rgba(9, 10, 13, 0.96), rgba(9, 10, 13, 0));
-}
-
-.detail-trophy-scroller::after {
-  bottom: 0;
-  background: linear-gradient(0deg, rgba(9, 10, 13, 0.96), rgba(9, 10, 13, 0));
-}
-
-.detail-trophy-scroller.detail-trophy-has-overflow:not(.detail-trophy-at-start)::before,
-.detail-trophy-scroller.detail-trophy-has-overflow:not(.detail-trophy-at-end)::after {
-  opacity: 1;
+  --trophy-mask-top: 0px;
+  --trophy-mask-bottom: 0px;
 }
 
 .detail-trophy-list {
@@ -3020,6 +2994,32 @@ body.dialog-open .mobile-section-tabs {
   max-height: 360px;
   overflow: auto;
   padding-right: 4px;
+  -webkit-mask-image: linear-gradient(
+    180deg,
+    transparent 0,
+    #000 var(--trophy-mask-top),
+    #000 calc(100% - var(--trophy-mask-bottom)),
+    transparent 100%
+  );
+  mask-image: linear-gradient(
+    180deg,
+    transparent 0,
+    #000 var(--trophy-mask-top),
+    #000 calc(100% - var(--trophy-mask-bottom)),
+    transparent 100%
+  );
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  -webkit-mask-size: 100% 100%;
+  mask-size: 100% 100%;
+}
+
+.detail-trophy-scroller.detail-trophy-has-overflow:not(.detail-trophy-at-start) .detail-trophy-list {
+  --trophy-mask-top: 18px;
+}
+
+.detail-trophy-scroller.detail-trophy-has-overflow:not(.detail-trophy-at-end) .detail-trophy-list {
+  --trophy-mask-bottom: 18px;
 }
 
 .detail-trophy-card {
