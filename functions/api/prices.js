@@ -30,12 +30,12 @@ const DIGITAL_PROVIDERS = [
   {
     store: "Nintendo España",
     search: (q) => `https://www.nintendo.com/es-es/Buscar/Buscar-299117.html?q=${encodeURIComponent(q)}&f=147394-86`,
-    parse: parseGeneric,
+    lookup: lookupLinkOnly,
   },
   {
     store: "PlayStation España",
     search: (q) => `https://www.playstation.com/es-es/search/?q=${encodeURIComponent(q)}`,
-    parse: parseGeneric,
+    lookup: lookupLinkOnly,
   },
   {
     store: "Steam",
@@ -117,6 +117,10 @@ async function findPrice(provider, title, platform, query, env = {}, debug = fal
   } catch {
     return missingPrice(provider.store, url);
   }
+}
+
+async function lookupLinkOnly() {
+  return { price: "", matchedTitle: "" };
 }
 
 async function lookupPlayasiaReader(title, platform, query, debug = false) {
