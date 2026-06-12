@@ -1446,6 +1446,7 @@ body[data-mobile-section="upcoming"] .column:not(#upcoming) {
   position: relative;
   display: grid;
   grid-template-columns: 104px minmax(0, 1fr);
+  grid-template-rows: auto minmax(0, 1fr) auto;
   gap: 10px 12px;
   min-height: 240px;
   height: 100%;
@@ -2222,6 +2223,7 @@ body[data-mobile-section="upcoming"] .column:not(#upcoming) {
 
 .notes {
   grid-column: 1 / -1;
+  align-self: start;
   margin: 0;
   padding: 0;
   color: var(--muted);
@@ -2240,6 +2242,7 @@ body[data-mobile-section="upcoming"] .column:not(#upcoming) {
 
 .prices {
   grid-column: 1 / -1;
+  align-self: end;
   display: grid;
   grid-template-columns: repeat(var(--price-columns, 4), minmax(0, 1fr));
   gap: 6px;
@@ -2265,9 +2268,12 @@ body[data-mobile-section="upcoming"] .column:not(#upcoming) {
 }
 
 .price-link {
+  display: inline-flex;
+  align-items: center;
   justify-content: center;
   gap: 8px;
   min-width: 0;
+  height: 32px;
   min-height: 32px;
   padding: 4px 6px;
   background: rgba(10, 12, 16, 0.3);
