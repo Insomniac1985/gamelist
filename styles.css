@@ -1588,7 +1588,7 @@ body[data-mobile-section="upcoming"] .column:not(#upcoming) {
     z-index: 0;
     display: block;
     border-radius: 8px;
-    opacity: 0.68;
+    opacity: 1;
     filter: blur(0.7px) saturate(1.18) contrast(1.1);
     transform: scale(1.02);
     transform-origin: center right;
@@ -1596,16 +1596,16 @@ body[data-mobile-section="upcoming"] .column:not(#upcoming) {
   }
 
   .game-card.playing-card.has-trailer .card-trailer::before {
-    content: "";
-    position: absolute;
-    top: 0;
-    left: -300px;
-    bottom: 0;
-    z-index: 1;
-    width: min(320px, 50%);
-    pointer-events: none;
-    background: linear-gradient(90deg, rgba(5, 6, 10, 0.92), rgba(5, 6, 10, 0.74) 42%, rgba(5, 6, 10, 0));
-  }
+content: "";
+        position: absolute;
+        top: 0;
+        left: -250px;
+        bottom: 0;
+        z-index: 1;
+        width: min(820px, 80%);
+        pointer-events: none;
+        background: linear-gradient(90deg, rgb(0 0 0) 0%, rgb(0 0 0 / 0%) 100%);
+    }
 
   .game-card.playing-card.has-trailer .card-trailer::after {
     content: "";
