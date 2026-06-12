@@ -1707,7 +1707,8 @@ body[data-mobile-section="upcoming"] .column:not(#upcoming) {
 
 .game-card h3.completed-achievements-title,
 .completed-row strong.completed-achievements-title,
-.history-row strong.completed-achievements-title {
+.history-row strong.completed-achievements-title,
+.playing-finished-game strong.completed-achievements-title {
   color: #f7df69;
   text-shadow: 0 0 14px rgba(247, 223, 105, 0.26);
 }
