@@ -1532,14 +1532,18 @@ body[data-mobile-section="upcoming"] .column:not(#upcoming) {
 @media (min-width: 900px) {
   .game-card.playing-card.has-trailer .card-trailer {
     position: absolute;
-    inset: -86px;
+    top: 50%;
+    left: -20px;
+    width: min(76%, 900px);
+    aspect-ratio: 16 / 9;
+    height: auto;
     z-index: 0;
     display: block;
     overflow: hidden;
-    border-radius: inherit;
-    opacity: 0.62;
-    filter: blur(1px) saturate(1.16) contrast(1.1);
-    transform: scale(1.1);
+    border-radius: 8px;
+    opacity: 0.68;
+    filter: blur(0.7px) saturate(1.18) contrast(1.1);
+    transform: translateY(-50%) scale(1.08);
     pointer-events: none;
   }
 
@@ -1550,16 +1554,17 @@ body[data-mobile-section="upcoming"] .column:not(#upcoming) {
     z-index: 1;
     pointer-events: none;
     background:
-      linear-gradient(180deg, rgba(6, 7, 10, 0.36), transparent 24%, transparent 72%, rgba(6, 7, 10, 0.54)),
-      radial-gradient(circle at 50% 50%, transparent 0 30%, rgba(6, 7, 10, 0.14) 72%);
+      linear-gradient(90deg, rgba(6, 7, 10, 0.74), rgba(6, 7, 10, 0.18) 22%, transparent 48%),
+      linear-gradient(180deg, transparent 58%, rgba(255, 0, 57, 0.42) 100%),
+      linear-gradient(180deg, rgba(6, 7, 10, 0.26), transparent 24%, transparent 72%, rgba(6, 7, 10, 0.52));
   }
 
   .game-card.playing-card.has-trailer .card-trailer iframe {
-    width: 138%;
-    height: 138%;
+    width: 122%;
+    height: 122%;
     border: 0;
     pointer-events: none;
-    transform: translate3d(-13.8%, -14.5%, 0) scale(1.76);
+    transform: translate3d(-9%, -9%, 0) scale(1.2);
   }
 
   .game-card.playing-card.has-trailer.has-art::before {
@@ -1790,6 +1795,11 @@ body[data-mobile-section="upcoming"] .column:not(#upcoming) {
   top: 10px;
   right: 10px;
   z-index: 3;
+  width: 36px;
+  height: 36px;
+  min-width: 36px;
+  min-height: 36px;
+  padding: 0;
 }
 
 .game-card .trailer-toggle {

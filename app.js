@@ -1234,6 +1234,11 @@ function playCardTrailer(card) {
     return;
   }
   trailer.innerHTML = trailerFrame(trailer.dataset.src);
+  trailer.querySelector("iframe")?.addEventListener("load", (event) => {
+    if (!card.classList.contains("trailer-paused") && !card.classList.contains("trailer-user-paused")) {
+      commandTrailer(event.currentTarget, "playVideo");
+    }
+  }, { once: true });
 }
 
 function pauseCardTrailer(card) {
