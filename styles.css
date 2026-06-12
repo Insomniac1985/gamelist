@@ -204,28 +204,8 @@ button {
 
 .playing-panel {
   position: relative;
-  padding: 18px 0 18px 18px;
+  padding: 6px 0 10px;
   overflow: hidden;
-  border-radius: 10px;
-  background:
-    radial-gradient(circle at 12% 0%, rgba(255, 0, 57, 0.18), transparent 34%),
-    radial-gradient(circle at 84% 18%, rgba(247, 223, 105, 0.12), transparent 30%),
-    linear-gradient(135deg, rgba(255, 255, 255, 0.09), rgba(255, 255, 255, 0.035)),
-    rgba(10, 11, 15, 0.48);
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.1),
-    0 24px 80px rgba(0, 0, 0, 0.34);
-}
-
-.playing-panel::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  background:
-    linear-gradient(90deg, rgba(255, 0, 57, 0.22), transparent 18%, transparent 82%, rgba(247, 223, 105, 0.16)),
-    linear-gradient(180deg, rgba(255, 255, 255, 0.08), transparent 38%);
-  opacity: 0.72;
 }
 
 .playing-section .card-list {
@@ -235,7 +215,7 @@ button {
   grid-template-columns: none;
   gap: 18px;
   margin-top: 0;
-  padding: 0 18px 4px 0;
+  padding: 4px 18px 8px 0;
   overflow-x: auto;
   overflow-y: hidden;
   scroll-padding-left: 18px;
@@ -1334,13 +1314,13 @@ body[data-mobile-section="upcoming"] .column:not(#upcoming) {
 }
 
 .game-card.playing-card.has-art::before {
-  inset: -28px;
+  inset: -34px;
   background:
     linear-gradient(90deg, rgba(7, 8, 12, 0.46), rgba(7, 8, 12, 0.2) 40%, rgba(7, 8, 12, 0.58)),
     linear-gradient(0deg, rgba(7, 8, 12, 0.68), transparent 52%),
     var(--card-art) center / cover no-repeat;
-  filter: blur(1px) saturate(1.22) contrast(1.08);
-  opacity: 0.38;
+  filter: blur(8px) saturate(1.24) contrast(1.08);
+  opacity: 0.42;
 }
 
 .game-card.playing-card.has-art:hover::before {
@@ -1363,17 +1343,17 @@ body[data-mobile-section="upcoming"] .column:not(#upcoming) {
 
 .playing-section .game-card {
   grid-template-columns: auto minmax(0, 1fr);
-  flex: 0 0 min(880px, calc(100vw - clamp(54px, 9vw, 112px)));
-  min-height: 382px;
+  flex: 0 0 min(1040px, calc(100vw - clamp(54px, 9vw, 112px)));
+  min-height: 456px;
   align-items: stretch;
-  padding: 16px;
-  gap: 16px;
+  padding: 18px;
+  gap: 20px;
   scroll-snap-align: start;
   scroll-snap-stop: always;
 }
 
 .playing-section .game-card h3 {
-  font-size: clamp(24px, 3vw, 38px);
+  font-size: clamp(30px, 3.8vw, 54px);
   line-height: 1;
   max-width: 12ch;
   text-wrap: balance;
@@ -1385,7 +1365,7 @@ body[data-mobile-section="upcoming"] .column:not(#upcoming) {
   width: auto;
   height: auto;
   aspect-ratio: 104 / 142;
-  max-height: 326px;
+  max-height: 390px;
   min-height: 0;
   border-color: rgba(255, 255, 255, 0.24);
   box-shadow:
@@ -2879,8 +2859,7 @@ body.dialog-open .mobile-section-tabs {
   }
 
   .playing-panel {
-    padding: 10px;
-    border-radius: 8px;
+    padding: 4px 0 8px;
   }
 
   .playing-section .column-head {
