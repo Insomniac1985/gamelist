@@ -59,6 +59,7 @@ const el = {
   sortFilter: document.querySelector("#sortFilter"),
   sortDirectionButton: document.querySelector("#sortDirectionButton"),
   preorderedFilter: document.querySelector("#preorderedFilter"),
+  scrollTopButton: document.querySelector("#scrollTopButton"),
   mobileTabs: document.querySelectorAll("[data-mobile-section]"),
   detailDialog: document.querySelector("#detailDialog"),
   detailCloseButton: document.querySelector("#detailCloseButton"),
@@ -194,6 +195,8 @@ function bindEvents() {
     requestAnimationFrame(updateFocusedPlayingTrailer);
   }, { passive: true });
   el.playingFinishedList.addEventListener("scroll", updatePlayingFinishedEdges, { passive: true });
+  el.detailTrophyList.addEventListener("scroll", updateDetailTrophyEdges, { passive: true });
+  window.addEventListener("scroll", updateScrollTopButton, { passive: true });
   window.addEventListener("resize", schedulePlayingCardHeightSync, { passive: true });
   document.addEventListener("visibilitychange", () => {
     if (document.hidden) pauseAllPlayingTrailers();
@@ -222,6 +225,10 @@ function bindEvents() {
   el.preorderedFilter.addEventListener("change", (event) => {
     state.filters.preordered = event.target.checked;
     render();
+  });
+  el.scrollTopButton.addEventListener("click", () => {
+    if (document.body.classList.contains("dialog-open")) return;
+    window.scrollTo({ top: 0, behavior: "smooth" });
   });
   el.detailCloseButton.addEventListener("click", () => el.detailDialog.close());
   el.detailDialog.addEventListener("click", (event) => {
@@ -365,10 +372,12 @@ function render() {
   el.preorderedFilter.checked = state.filters.preordered;
   el.platformFilter.classList.toggle("is-active", state.filters.platform !== "all");
   el.tagFilter.classList.toggle("is-active", state.filters.tag !== "all");
+  updateScrollTopButton();
 }
 
 function syncScrollLock() {
   document.body.classList.toggle("dialog-open", el.dialog.open || el.detailDialog.open || el.historyDialog.open || el.releaseDialog.open);
+  updateScrollTopButton();
 }
 
 function handleDetailClose() {
@@ -750,6 +759,9 @@ function releaseMonthMarkup(monthDate, releases, today) {
         ${games.length > 1 ? `<em>${games.length}</em>` : ""}
       </button>
     `);
+  }
+  while (cells.length < 42) {
+    cells.push(`<span class="release-day empty" aria-hidden="true"></span>`);
   }
   return `
     <article class="release-month">
@@ -1454,6 +1466,7 @@ async function renderDetailTrophies(game) {
     el.detailTrophies.hidden = true;
     el.detailTrophyCount.textContent = "";
     el.detailTrophyList.innerHTML = "";
+    updateDetailTrophyEdges();
     return;
   }
 
@@ -1479,6 +1492,7 @@ async function renderDetailTrophies(game) {
     state.detailTrophiesData = [];
     el.detailTrophyCount.textContent = "";
     el.detailTrophyList.innerHTML = `<div class="detail-trophy-empty">Could not load trophies right now.</div>`;
+    updateDetailTrophyEdges();
   }
 }
 
@@ -1494,6 +1508,22 @@ function renderDetailTrophyList() {
   el.detailTrophyList.innerHTML = trophies.length
     ? trophies.map(detailTrophyCard).join("")
     : `<div class="detail-trophy-empty">No trophies found for this game yet.</div>`;
+  requestAnimationFrame(updateDetailTrophyEdges);
+}
+
+function updateDetailTrophyEdges() {
+  const list = el.detailTrophyList;
+  if (!list) return;
+  const maxScroll = Math.max(0, list.scrollHeight - list.clientHeight - 1);
+  const hasOverflow = maxScroll > 2;
+  list.classList.toggle("detail-trophy-at-start", !hasOverflow || list.scrollTop <= 2);
+  list.classList.toggle("detail-trophy-at-end", !hasOverflow || list.scrollTop >= maxScroll);
+  list.classList.toggle("detail-trophy-has-overflow", hasOverflow);
+}
+
+function updateScrollTopButton() {
+  if (!el.scrollTopButton) return;
+  el.scrollTopButton.classList.toggle("visible", window.scrollY > 560 && !document.body.classList.contains("dialog-open"));
 }
 
 function sortedDetailTrophies() {

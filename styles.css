@@ -969,7 +969,49 @@ h3 {
   color: #ffffff;
 }
 
+.scroll-top-button {
+  position: fixed;
+  right: clamp(14px, 2.4vw, 26px);
+  bottom: clamp(16px, 3vw, 28px);
+  z-index: 16;
+  width: 42px;
+  height: 42px;
+  min-width: 42px;
+  min-height: 42px;
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(10px);
+  transition: opacity 160ms ease, transform 160ms ease, background 140ms ease, border-color 140ms ease;
+}
+
+.scroll-top-button.visible {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translateY(0);
+}
+
+.scroll-top-icon {
+  width: 18px;
+  height: 18px;
+}
+
+.scroll-top-icon polyline,
+.scroll-top-icon line {
+  fill: none;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 2.1;
+}
+
+body.dialog-open .scroll-top-button {
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(10px);
+}
+
 .release-calendar-actions .icon-button:hover,
+.scroll-top-button:hover,
 #closeDialogButton:hover,
 #detailCloseButton:hover,
 #historyCloseButton:hover,
@@ -1005,6 +1047,8 @@ h3 {
 
 .release-month {
   min-width: 0;
+  display: grid;
+  grid-template-rows: auto auto 1fr;
   padding: 10px;
   background: rgba(255, 255, 255, 0.045);
   border: 1px solid rgba(255, 255, 255, 0.1);
@@ -1033,6 +1077,7 @@ h3 {
 
 .release-weekdays,
 .release-days {
+  align-content: start;
   display: grid;
   grid-template-columns: repeat(7, minmax(0, 1fr));
   gap: 4px;
@@ -2322,6 +2367,22 @@ content: "";
   margin-top: 16px;
 }
 
+.release-dialog-list .prices {
+  gap: 4px;
+  padding: 5px;
+}
+
+.release-dialog-list .price-link {
+  gap: 6px;
+  min-height: 28px;
+  height: 28px;
+  padding: 3px 4px;
+}
+
+.release-dialog-list .price-link strong {
+  font-size: 10px;
+}
+
 .price-link.best {
   background: rgba(247, 223, 105, 0.12);
   border-color: rgba(247, 223, 105, 0.38);
@@ -2895,12 +2956,44 @@ body.dialog-open .mobile-section-tabs {
 }
 
 .detail-trophy-list {
+  position: relative;
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 8px;
   max-height: 360px;
   overflow: auto;
   padding-right: 4px;
+}
+
+.detail-trophy-list::before,
+.detail-trophy-list::after {
+  content: "";
+  position: sticky;
+  left: 0;
+  right: 4px;
+  z-index: 2;
+  display: block;
+  height: 18px;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 140ms ease;
+}
+
+.detail-trophy-list::before {
+  top: 0;
+  margin-bottom: -18px;
+  background: linear-gradient(180deg, rgba(9, 10, 13, 0.94), rgba(9, 10, 13, 0));
+}
+
+.detail-trophy-list::after {
+  bottom: 0;
+  margin-top: -18px;
+  background: linear-gradient(0deg, rgba(9, 10, 13, 0.94), rgba(9, 10, 13, 0));
+}
+
+.detail-trophy-list.detail-trophy-has-overflow:not(.detail-trophy-at-start)::before,
+.detail-trophy-list.detail-trophy-has-overflow:not(.detail-trophy-at-end)::after {
+  opacity: 1;
 }
 
 .detail-trophy-card {
@@ -3401,8 +3494,18 @@ body.dialog-open .mobile-section-tabs {
     line-height: 1.05;
   }
 
-  .card-trophy-list {
-    grid-template-columns: 1fr;
+  .playing-section .card-trophy-head {
+    margin-bottom: 5px;
+    font-size: 10px;
+  }
+
+  .playing-section .card-trophies {
+    margin-top: 14px;
+  }
+
+  .playing-section .card-trophy-list {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 4px;
   }
 
   .playing-section .card-trophies[hidden] {
@@ -3411,8 +3514,23 @@ body.dialog-open .mobile-section-tabs {
     min-height: 0;
   }
 
-  .card-trophy {
-    min-height: 42px;
+  .playing-section .card-trophy {
+    grid-template-columns: 1fr;
+    gap: 4px;
+    min-height: 58px;
+    padding: 4px;
+    text-align: center;
+  }
+
+  .playing-section .card-trophy img {
+    width: 22px;
+    height: 22px;
+    margin: 0 auto;
+  }
+
+  .playing-section .card-trophy span {
+    font-size: 9px;
+    line-height: 1.1;
   }
 
   .playing-panel {
