@@ -1153,6 +1153,9 @@ function cardFor(game, options = {}) {
   card.querySelector("h3").classList.toggle("owner-judy", owners.includes("Judy"));
   card.querySelector("h3").classList.toggle("owner-jordi", owners.includes("Jordi"));
   card.querySelector("h3").classList.toggle("completed-achievements-title", Boolean(game.platinum));
+  const titleOwners = card.querySelector(".title-owners");
+  titleOwners.innerHTML = owners.filter((owner) => owner !== "Xavi").map(ownerBadge).join("");
+  titleOwners.hidden = !titleOwners.innerHTML;
   const studioLine = card.querySelector(".studio-line");
   studioLine.textContent = studioText(game);
   studioLine.hidden = !studioLine.textContent;
@@ -1516,7 +1519,6 @@ function sectionRank(section) {
 function metaFor(game) {
   const values = [];
   if (game.platform) values.push(platformBadge(game.platform));
-  ownerTags(game).filter((owner) => owner !== "Xavi").forEach((owner) => values.push(ownerBadge(owner)));
   if (game.digital) values.push(`<span class="digital-pill">Digital</span>`);
   gameStatuses(game).forEach((status) => values.push(statusBadge(status)));
   const release = releaseStatus(game);

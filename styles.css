@@ -209,7 +209,7 @@ button:disabled {
   gap: 10px;
   align-items: end;
   min-height: 160px;
-  padding: 28px 0 26px;
+  padding: 10px 0 26px;
 }
 
 .playing-section {
@@ -1844,6 +1844,35 @@ body[data-mobile-section="upcoming"] .column:not(#upcoming) {
   align-items: start;
   width: 100%;
   padding-right: 42px;
+}
+
+.title-wrap {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 6px;
+  min-width: 0;
+}
+
+.title-wrap h3 {
+  min-width: 0;
+}
+
+.title-owners {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  transform: translateY(-1px);
+}
+
+.title-owners[hidden] {
+  display: none;
+}
+
+.title-owners .owner-pill {
+  font-size: 10px;
+  line-height: 1;
+  padding: 4px 6px;
 }
 
 .game-card .edit-action {
