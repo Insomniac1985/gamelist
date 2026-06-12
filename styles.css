@@ -1621,7 +1621,11 @@ body[data-mobile-section="upcoming"] .column:not(#upcoming) {
   }
 
   .game-card.playing-card.has-trailer.has-art::before {
-    opacity: 0;
+    opacity: 0.36;
+  }
+
+  .game-card.playing-card.has-trailer.has-art:hover::before {
+    opacity: 0.46;
   }
 
   .game-card.playing-card.has-trailer.trailer-paused .card-trailer {
