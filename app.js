@@ -14,6 +14,7 @@ let titleLookupTimer = 0;
 const state = {
   games: [],
   psnActivity: { achievements: [], games: [], sourceUrl: "" },
+  cardTrophies: {},
   filters: { query: "", platform: "all", tag: "all", sort: "time", direction: "asc", preordered: false },
   editingId: "",
   pendingDescription: "",
@@ -317,7 +318,7 @@ function renderPlayingSection() {
   const games = activeGames().filter((game) => game.playing);
   games.sort(comparePlayingGames);
   el.playingSection.hidden = !games.length;
-  el.playingCount.textContent = `${games.length} ${games.length === 1 ? "game" : "games"}`;
+  el.playingCount.textContent = `Playing ${games.length} ${games.length === 1 ? "game" : "games"}`;
   el.playingList.innerHTML = "";
   games.forEach((game) => el.playingList.appendChild(cardFor(game, { staticCard: true, imagePriority: "eager" })));
   requestAnimationFrame(updatePlayingSliderControls);
@@ -360,6 +361,7 @@ function renderAchievements(data = {}) {
     summary: data.summary || null,
     sourceUrl,
   };
+  renderPlayingSection();
   el.achievementProfileLink.href = sourceUrl;
   el.achievementProfileLink.textContent = data.source === "psn" ? "PSN activity" : user;
   const achievements = Array.isArray(data.achievements) ? data.achievements.slice(0, 6) : [];
@@ -1026,6 +1028,9 @@ function cardFor(game, options = {}) {
   playDates.innerHTML = playDatesFor(game).join("");
   playDates.hidden = !playDates.innerHTML;
   card.querySelector(".chips").innerHTML = chipsFor(game).join("");
+  const trophyStrip = card.querySelector(".card-trophies");
+  trophyStrip.innerHTML = game.playing ? cardTrophiesFor(game) : "";
+  trophyStrip.hidden = !trophyStrip.innerHTML;
   const description = card.querySelector(".notes");
   description.textContent = shortDescription(game.description || "");
   description.hidden = !description.textContent;
@@ -1224,6 +1229,70 @@ function matchedPsnGame(game) {
     const psnTitle = normalizeTitleForMatch(psnGame.title);
     return psnTitle && (psnTitle === title || psnTitle.includes(title) || title.includes(psnTitle));
   }) || null;
+}
+
+function latestTrophiesForGame(game, limit = 3) {
+  const title = normalizeTitleForMatch(game.title);
+  if (!title) return [];
+  return (state.psnActivity.achievements || [])
+    .filter((achievement) => {
+      const gameTitle = normalizeTitleForMatch(achievement.game || achievement.title || "");
+      return gameTitle && (gameTitle === title || gameTitle.includes(title) || title.includes(gameTitle));
+    })
+    .slice(0, limit);
+}
+
+function cardTrophiesFor(game) {
+  const psn = matchedPsnGame(game);
+  const cacheKey = psn?.npCommunicationId || "";
+  const cached = cacheKey ? state.cardTrophies[cacheKey] : null;
+  if (psn && !cached) loadCardTrophies(game, psn);
+  const trophies = cached?.trophies?.length ? cached.trophies : latestTrophiesForGame(game, 3);
+  if (!trophies.length && cached?.loading) return `<div class="card-trophy-head">${trophyIcon()}<span>Loading trophies...</span></div>`;
+  if (!trophies.length) return "";
+  return `
+    <div class="card-trophy-head">${trophyIcon()}<span>Latest trophies</span></div>
+    <div class="card-trophy-list">
+      ${trophies.map((trophy) => `
+        <a class="card-trophy trophy-${escapeHtml(trophyTone(trophy.type || trophy.rarity))}" href="${escapeHtml(trophy.url || state.psnActivity.sourceUrl || "#")}" target="_blank" rel="noreferrer" title="${escapeHtml([trophy.title, trophy.earnedAt].filter(Boolean).join(" · "))}">
+          <img src="${escapeHtml(trophy.icon || platformLogo("PS5"))}" alt="">
+          <span>${escapeHtml(trophy.title || "Trophy")}</span>
+        </a>
+      `).join("")}
+    </div>
+  `;
+}
+
+async function loadCardTrophies(game, psn) {
+  const cacheKey = psn?.npCommunicationId;
+  if (!cacheKey || state.cardTrophies[cacheKey]) return;
+  state.cardTrophies[cacheKey] = { loading: true, trophies: [] };
+  try {
+    const params = new URLSearchParams({
+      id: cacheKey,
+      service: psn.npServiceName || "trophy",
+    });
+    const response = await fetch(`/api/trophies?${params}`);
+    if (!response.ok) throw new Error("Card trophies failed");
+    const data = await response.json();
+    const trophies = (Array.isArray(data.trophies) ? data.trophies : [])
+      .filter((trophy) => trophy.earned && trophy.earnedAt)
+      .sort((a, b) => String(b.earnedAt || "").localeCompare(String(a.earnedAt || "")))
+      .slice(0, 3);
+    state.cardTrophies[cacheKey] = { loading: false, trophies };
+  } catch {
+    state.cardTrophies[cacheKey] = { loading: false, trophies: [] };
+  }
+  updateCardTrophyStrips(game.id);
+}
+
+function updateCardTrophyStrips(gameId) {
+  const game = getGame(gameId);
+  if (!game) return;
+  document.querySelectorAll(`.game-card[data-id="${CSS.escape(gameId)}"] .card-trophies`).forEach((node) => {
+    node.innerHTML = game.playing ? cardTrophiesFor(game) : "";
+    node.hidden = !node.innerHTML;
+  });
 }
 
 function normalizeTitleForMatch(value) {
