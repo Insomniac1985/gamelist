@@ -136,11 +136,7 @@ button:disabled {
   align-items: center;
   gap: 18px;
   padding: 18px clamp(16px, 4vw, 46px);
-  background:
-    var(--grid-texture),
-    rgba(9, 10, 13, 0.64);
-  background-size: 22px 22px, 22px 22px, auto;
-  background-position: var(--grid-x) var(--grid-y), var(--grid-x) var(--grid-y), center;
+  background: rgba(9, 10, 13, 0.64);
   border-bottom: 1px solid var(--line);
   backdrop-filter: blur(24px);
 }
@@ -1099,14 +1095,20 @@ h3 {
 
 .glass {
   position: relative;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  box-shadow: var(--shadow);
+  backdrop-filter: blur(20px) saturate(1.15);
+}
+
+.toolbar.glass,
+.stats .glass,
+.achievement-panel.glass {
   background:
     var(--grid-texture),
     var(--panel);
   background-size: 22px 22px, 22px 22px, auto;
   background-position: var(--grid-x) var(--grid-y), var(--grid-x) var(--grid-y), center;
-  border: 1px solid var(--line);
-  box-shadow: var(--shadow);
-  backdrop-filter: blur(20px) saturate(1.15);
 }
 
 .toolbar {
