@@ -384,7 +384,15 @@
           <section class="detail-trophies" id="detailTrophies" hidden>
             <div class="detail-trophies-head">
               <h3>Trophies</h3>
-              <span id="detailTrophyCount"></span>
+              <div class="detail-trophy-tools">
+                <span id="detailTrophyCount"></span>
+                <select id="detailTrophySort" aria-label="Sort trophies">
+                  <option value="order">Order</option>
+                  <option value="name">Name</option>
+                  <option value="completed">Completed</option>
+                </select>
+                <button class="direction-toggle" id="detailTrophyDirection" type="button" title="Sort ascending" aria-label="Sort ascending">↑</button>
+              </div>
             </div>
             <div class="detail-trophy-list" id="detailTrophyList"></div>
           </section>

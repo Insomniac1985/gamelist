@@ -76,16 +76,19 @@ async function getEarnedTrophiesForTitle(accessToken, npCommunicationId, npServi
   ]);
   const metaById = new Map(metaData.map((trophy) => [String(trophy.trophyId), trophy]));
   const earnedById = new Map(earnedData.map((trophy) => [String(trophy.trophyId), trophy]));
-  const trophyIds = new Set([
-    ...metaData.map((trophy) => String(trophy.trophyId)),
-    ...earnedData.map((trophy) => String(trophy.trophyId)),
-  ]);
-  return Array.from(trophyIds)
-    .map((id) => {
+  const metaIds = metaData.map((trophy) => String(trophy.trophyId));
+  const trophyIds = [
+    ...metaIds,
+    ...earnedData.map((trophy) => String(trophy.trophyId)).filter((id) => !metaById.has(id)),
+  ];
+  return trophyIds
+    .map((id, index) => {
       const meta = metaById.get(id) || {};
       const earned = earnedById.get(id) || {};
       const type = trophyTypeLabel(meta.trophyType || earned.trophyType);
       return {
+        trophyId: Number(id),
+        order: index,
         title: meta.trophyName || type,
         description: meta.trophyDetail || "",
         earned: Boolean(earned.earned),
@@ -95,20 +98,7 @@ async function getEarnedTrophiesForTitle(accessToken, npCommunicationId, npServi
         type,
         icon: meta.trophyIconUrl || earned.trophyRewardImageUrl || "",
       };
-    })
-    .sort((a, b) => Number(b.earned) - Number(a.earned)
-      || String(b.rawEarnedAt || "").localeCompare(String(a.rawEarnedAt || ""))
-      || trophyRank(a.type) - trophyRank(b.type)
-      || String(a.title || "").localeCompare(String(b.title || "")));
-}
-
-function trophyRank(value) {
-  const text = String(value || "").toLowerCase();
-  if (text.includes("platinum")) return 0;
-  if (text.includes("gold")) return 1;
-  if (text.includes("silver")) return 2;
-  if (text.includes("bronze")) return 3;
-  return 4;
+    });
 }
 
 async function getPagedTrophies(accessToken, baseUrl, npServiceName) {

@@ -23,6 +23,9 @@ const state = {
   releaseCalendarOffset: 0,
   detailTrophyRequest: "",
   detailReturnToHistory: false,
+  detailTrophiesData: [],
+  detailTrophySort: "order",
+  detailTrophyDirection: "asc",
 };
 
 const el = {
@@ -66,6 +69,8 @@ const el = {
   detailPrices: document.querySelector("#detailPrices"),
   detailTrophies: document.querySelector("#detailTrophies"),
   detailTrophyCount: document.querySelector("#detailTrophyCount"),
+  detailTrophySort: document.querySelector("#detailTrophySort"),
+  detailTrophyDirection: document.querySelector("#detailTrophyDirection"),
   detailTrophyList: document.querySelector("#detailTrophyList"),
   detailCover: document.querySelector(".detail-cover img"),
   dialog: document.querySelector("#gameDialog"),
@@ -170,6 +175,14 @@ function bindEvents() {
     if (event.target === el.detailDialog) el.detailDialog.close();
   });
   el.detailDialog.addEventListener("close", handleDetailClose);
+  el.detailTrophySort.addEventListener("change", (event) => {
+    state.detailTrophySort = event.target.value;
+    renderDetailTrophyList();
+  });
+  el.detailTrophyDirection.addEventListener("click", () => {
+    state.detailTrophyDirection = state.detailTrophyDirection === "asc" ? "desc" : "asc";
+    renderDetailTrophyList();
+  });
   el.historyCloseButton.addEventListener("click", () => el.historyDialog.close());
   el.historyDialog.addEventListener("click", (event) => {
     if (event.target === el.historyDialog) el.historyDialog.close();
@@ -1081,6 +1094,7 @@ async function renderDetailTrophies(game) {
   const trophyId = psn?.npCommunicationId;
   if (!trophyId) {
     state.detailTrophyRequest = "";
+    state.detailTrophiesData = [];
     el.detailTrophies.hidden = true;
     el.detailTrophyCount.textContent = "";
     el.detailTrophyList.innerHTML = "";
@@ -1097,22 +1111,52 @@ async function renderDetailTrophies(game) {
     const params = new URLSearchParams({
       id: trophyId,
       service: psn.npServiceName || "trophy",
-      schema: "2",
+      schema: "3",
     });
     const response = await fetch(`/api/trophies?${params}`);
     const data = await response.json();
     if (state.detailTrophyRequest !== requestKey) return;
-    const trophies = Array.isArray(data.trophies) ? data.trophies : [];
-    const earnedCount = trophies.filter((trophy) => trophy.earned).length;
-    el.detailTrophyCount.textContent = trophies.length ? `${earnedCount}/${trophies.length} earned` : "";
-    el.detailTrophyList.innerHTML = trophies.length
-      ? trophies.map(detailTrophyCard).join("")
-      : `<div class="detail-trophy-empty">No trophies found for this game yet.</div>`;
+    state.detailTrophiesData = Array.isArray(data.trophies) ? data.trophies : [];
+    renderDetailTrophyList();
   } catch {
     if (state.detailTrophyRequest !== requestKey) return;
+    state.detailTrophiesData = [];
     el.detailTrophyCount.textContent = "";
     el.detailTrophyList.innerHTML = `<div class="detail-trophy-empty">Could not load trophies right now.</div>`;
   }
+}
+
+function renderDetailTrophyList() {
+  el.detailTrophySort.value = state.detailTrophySort;
+  el.detailTrophyDirection.textContent = state.detailTrophyDirection === "asc" ? "↑" : "↓";
+  el.detailTrophyDirection.title = state.detailTrophyDirection === "asc" ? "Sort ascending" : "Sort descending";
+  el.detailTrophyDirection.setAttribute("aria-label", el.detailTrophyDirection.title);
+  el.detailTrophyDirection.classList.toggle("desc", state.detailTrophyDirection === "desc");
+  const trophies = sortedDetailTrophies();
+  const earnedCount = trophies.filter((trophy) => trophy.earned).length;
+  el.detailTrophyCount.textContent = trophies.length ? `${earnedCount}/${trophies.length} earned` : "";
+  el.detailTrophyList.innerHTML = trophies.length
+    ? trophies.map(detailTrophyCard).join("")
+    : `<div class="detail-trophy-empty">No trophies found for this game yet.</div>`;
+}
+
+function sortedDetailTrophies() {
+  const direction = state.detailTrophyDirection === "asc" ? 1 : -1;
+  return [...state.detailTrophiesData].sort((a, b) => {
+    if (state.detailTrophySort === "name") {
+      return direction * (stringCompare(a.title, b.title) || trophyOrderCompare(a, b));
+    }
+    if (state.detailTrophySort === "completed") {
+      return direction * ((Number(b.earned) - Number(a.earned))
+        || String(b.rawEarnedAt || "").localeCompare(String(a.rawEarnedAt || ""))
+        || trophyOrderCompare(a, b));
+    }
+    return direction * trophyOrderCompare(a, b);
+  });
+}
+
+function trophyOrderCompare(a, b) {
+  return Number(a.order ?? a.trophyId ?? 0) - Number(b.order ?? b.trophyId ?? 0);
 }
 
 function detailTrophyCard(trophy) {
