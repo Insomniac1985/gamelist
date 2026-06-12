@@ -28,6 +28,9 @@ const state = {
   detailTrophiesData: [],
   detailTrophySort: "order",
   detailTrophyDirection: "asc",
+  playingTrailerObserver: null,
+  playingTrailerVisibility: new Map(),
+  activeTrailerCard: null,
 };
 
 const el = {
@@ -173,7 +176,14 @@ function bindEvents() {
   el.fetchPricesButton.addEventListener("click", refreshAllPrices);
   el.playingPrevButton.addEventListener("click", () => slidePlaying(-1));
   el.playingNextButton.addEventListener("click", () => slidePlaying(1));
-  el.playingList.addEventListener("scroll", updatePlayingSliderControls, { passive: true });
+  el.playingList.addEventListener("scroll", () => {
+    updatePlayingSliderControls();
+    requestAnimationFrame(updateFocusedPlayingTrailer);
+  }, { passive: true });
+  document.addEventListener("visibilitychange", () => {
+    if (document.hidden) pauseAllPlayingTrailers();
+    else requestAnimationFrame(updateFocusedPlayingTrailer);
+  });
   el.searchInput.addEventListener("input", (event) => {
     state.filters.query = event.target.value.trim().toLowerCase();
     render();
@@ -342,7 +352,9 @@ function renderPlayingSection() {
   el.playingCount.textContent = `Playing ${games.length} ${games.length === 1 ? "game" : "games"}`;
   el.playingList.innerHTML = "";
   games.forEach((game) => el.playingList.appendChild(cardFor(game, { staticCard: true, imagePriority: "eager" })));
+  bindPlayingTrailerFocus();
   requestAnimationFrame(updatePlayingSliderControls);
+  requestAnimationFrame(updateFocusedPlayingTrailer);
 }
 
 function slidePlaying(direction) {
@@ -1032,7 +1044,7 @@ function cardFor(game, options = {}) {
   if (trailerUrl) {
     card.classList.add("has-trailer");
     trailer.dataset.src = trailerUrl;
-    trailer.innerHTML = trailerFrame(trailerUrl);
+    trailer.innerHTML = "";
   } else {
     trailer.remove();
   }
@@ -1132,11 +1144,83 @@ function toggleCardTrailer(card) {
   const trailer = card.querySelector(".card-trailer");
   const button = card.querySelector(".trailer-toggle");
   if (!trailer || !button) return;
-  const isPaused = card.classList.toggle("trailer-paused");
+  const isPaused = card.classList.toggle("trailer-user-paused");
+  if (isPaused) pauseCardTrailer(card);
+  else updateFocusedPlayingTrailer();
   button.innerHTML = isPaused ? playIcon() : pauseIcon();
   button.title = isPaused ? "Play trailer" : "Pause trailer";
   button.setAttribute("aria-label", button.title);
-  trailer.innerHTML = isPaused ? "" : trailerFrame(trailer.dataset.src || "");
+}
+
+function bindPlayingTrailerFocus() {
+  state.playingTrailerObserver?.disconnect();
+  state.playingTrailerObserver = null;
+  state.playingTrailerVisibility.clear();
+  state.activeTrailerCard = null;
+  const cards = [...el.playingList.querySelectorAll(".game-card.has-trailer")];
+  if (!cards.length) return;
+  if (!("IntersectionObserver" in window)) {
+    cards.forEach((card) => state.playingTrailerVisibility.set(card, visibleRatio(card, el.playingList)));
+    updateFocusedPlayingTrailer();
+    return;
+  }
+  state.playingTrailerObserver = new IntersectionObserver((entries) => {
+    entries.forEach((entry) => state.playingTrailerVisibility.set(entry.target, entry.intersectionRatio));
+    updateFocusedPlayingTrailer();
+  }, {
+    root: el.playingList,
+    threshold: [0, 0.25, 0.5, 0.7, 0.9, 1],
+  });
+  cards.forEach((card) => {
+    state.playingTrailerVisibility.set(card, 0);
+    state.playingTrailerObserver.observe(card);
+  });
+}
+
+function updateFocusedPlayingTrailer() {
+  if (document.hidden) {
+    pauseAllPlayingTrailers();
+    return;
+  }
+  const cards = [...el.playingList.querySelectorAll(".game-card.has-trailer")];
+  if (!cards.length) return;
+  if (!state.playingTrailerObserver) {
+    cards.forEach((card) => state.playingTrailerVisibility.set(card, visibleRatio(card, el.playingList)));
+  }
+  const focused = cards
+    .map((card) => ({ card, ratio: state.playingTrailerVisibility.get(card) || visibleRatio(card, el.playingList) }))
+    .filter((entry) => entry.ratio >= 0.58)
+    .sort((a, b) => b.ratio - a.ratio)[0]?.card || null;
+  cards.forEach((card) => {
+    if (card === focused && !card.classList.contains("trailer-user-paused")) playCardTrailer(card);
+    else pauseCardTrailer(card);
+  });
+  state.activeTrailerCard = focused;
+}
+
+function visibleRatio(card, root) {
+  const cardRect = card.getBoundingClientRect();
+  const rootRect = root.getBoundingClientRect();
+  const visibleWidth = Math.max(0, Math.min(cardRect.right, rootRect.right) - Math.max(cardRect.left, rootRect.left));
+  return cardRect.width ? Math.min(1, visibleWidth / cardRect.width) : 0;
+}
+
+function playCardTrailer(card) {
+  const trailer = card.querySelector(".card-trailer");
+  if (!trailer?.dataset.src || trailer.querySelector("iframe")) return;
+  card.classList.remove("trailer-paused");
+  trailer.innerHTML = trailerFrame(trailer.dataset.src);
+}
+
+function pauseCardTrailer(card) {
+  const trailer = card.querySelector(".card-trailer");
+  if (!trailer) return;
+  card.classList.add("trailer-paused");
+  trailer.innerHTML = "";
+}
+
+function pauseAllPlayingTrailers() {
+  el.playingList.querySelectorAll(".game-card.has-trailer").forEach(pauseCardTrailer);
 }
 
 function shouldShowCardTrailer(game) {
