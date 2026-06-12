@@ -496,7 +496,8 @@ function renderAchievements(data = {}) {
       <img class="achievement-icon" src="${escapeHtml(item.icon || platformLogo("PS5"))}" alt="">
       <div>
         <strong>${escapeHtml(item.title || "Trophy unlocked")}</strong>
-        <span>${escapeHtml([item.game, item.earnedAt].filter(Boolean).join(" · "))}</span>
+        ${item.game ? `<span class="achievement-game-name">${escapeHtml(item.game)}</span>` : ""}
+        ${item.earnedAt ? `<span class="achievement-earned-date">${escapeHtml(item.earnedAt)}</span>` : ""}
       </div>
     </a>
   `).join("");
