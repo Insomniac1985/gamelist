@@ -219,7 +219,7 @@ button:disabled {
 
 .playing-section .column-head {
   padding-top: 0;
-  align-items: center;
+  align-items: end;
 }
 
 .playing-section .column-head h2 {
@@ -240,6 +240,8 @@ button:disabled {
   border-radius: 0;
   background: transparent;
   box-shadow: none;
+  margin-bottom: -10px;
+  margin-right: 10px;
 }
 
 .playing-head-actions {
@@ -1446,6 +1448,7 @@ body[data-mobile-section="upcoming"] .column:not(#upcoming) {
 
 .column-head span {
   color: var(--muted);
+  margin-bottom: 7px;
 }
 
 .card-list {
