@@ -33,6 +33,8 @@ const el = {
   playingSection: document.querySelector("#playingSection"),
   playingCount: document.querySelector("#playingCount"),
   playingList: document.querySelector(".playing-list"),
+  playingPrevButton: document.querySelector("#playingPrevButton"),
+  playingNextButton: document.querySelector("#playingNextButton"),
   achievementSection: document.querySelector("#achievementSection"),
   achievementPanel: document.querySelector("#achievementPanel"),
   achievementProfileLink: document.querySelector("#achievementProfileLink"),
@@ -147,6 +149,9 @@ function bindEvents() {
   el.syncButton.addEventListener("click", syncNow);
   el.fetchDataButton?.addEventListener("click", refreshAllGameData);
   el.fetchPricesButton.addEventListener("click", refreshAllPrices);
+  el.playingPrevButton.addEventListener("click", () => slidePlaying(-1));
+  el.playingNextButton.addEventListener("click", () => slidePlaying(1));
+  el.playingList.addEventListener("scroll", updatePlayingSliderControls, { passive: true });
   el.searchInput.addEventListener("input", (event) => {
     state.filters.query = event.target.value.trim().toLowerCase();
     render();
@@ -315,6 +320,23 @@ function renderPlayingSection() {
   el.playingCount.textContent = `${games.length} ${games.length === 1 ? "game" : "games"}`;
   el.playingList.innerHTML = "";
   games.forEach((game) => el.playingList.appendChild(cardFor(game, { staticCard: true, imagePriority: "eager" })));
+  requestAnimationFrame(updatePlayingSliderControls);
+}
+
+function slidePlaying(direction) {
+  const card = el.playingList.querySelector(".game-card");
+  const gap = Number.parseFloat(getComputedStyle(el.playingList).columnGap) || 0;
+  const distance = card ? card.getBoundingClientRect().width + gap : el.playingList.clientWidth;
+  el.playingList.scrollBy({ left: direction * distance, behavior: "smooth" });
+}
+
+function updatePlayingSliderControls() {
+  const maxScroll = Math.max(0, el.playingList.scrollWidth - el.playingList.clientWidth - 1);
+  const hasOverflow = maxScroll > 2;
+  el.playingPrevButton.hidden = !hasOverflow;
+  el.playingNextButton.hidden = !hasOverflow;
+  el.playingPrevButton.disabled = !hasOverflow || el.playingList.scrollLeft <= 2;
+  el.playingNextButton.disabled = !hasOverflow || el.playingList.scrollLeft >= maxScroll;
 }
 
 async function refreshAchievements() {
@@ -535,7 +557,6 @@ function renderReleaseCalendar() {
   const today = localDateKey(new Date());
   el.releaseCalendar.innerHTML = `
     <div class="release-calendar-head">
-      <h2>Next Releases</h2>
       <div class="release-calendar-actions">
         <button class="icon-button" type="button" data-calendar-shift="-1" title="Previous month" aria-label="Previous month">←</button>
         <button class="icon-button" type="button" data-calendar-shift="1" title="Next month" aria-label="Next month">→</button>

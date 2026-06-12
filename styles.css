@@ -141,7 +141,7 @@ button {
 .hero {
   display: grid;
   grid-template-columns: 1fr;
-  gap: 22px;
+  gap: 10px;
   align-items: end;
   min-height: 160px;
   padding: 34px 0 26px;
@@ -179,9 +179,32 @@ button {
   box-shadow: 0 0 22px rgba(255, 0, 57, 0.16);
 }
 
+.playing-head-actions {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.playing-slider-button {
+  color: #ffffff;
+  border-color: rgba(255, 0, 57, 0.28);
+  background: rgba(255, 255, 255, 0.09);
+}
+
+.playing-slider-button:hover {
+  color: #ffffff;
+  border-color: rgba(255, 0, 57, 0.58);
+  background: rgba(255, 0, 57, 0.28);
+}
+
+.playing-slider-button:disabled {
+  cursor: default;
+  opacity: 0.35;
+}
+
 .playing-panel {
   position: relative;
-  padding: 16px;
+  padding: 18px 0 18px 18px;
   overflow: hidden;
   border-radius: 10px;
   background:
@@ -208,9 +231,31 @@ button {
 .playing-section .card-list {
   position: relative;
   z-index: 1;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 14px;
+  display: flex;
+  grid-template-columns: none;
+  gap: 18px;
   margin-top: 0;
+  padding: 0 18px 4px 0;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scroll-padding-left: 18px;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 0, 57, 0.54) rgba(255, 255, 255, 0.08);
+}
+
+.playing-section .card-list::-webkit-scrollbar {
+  height: 8px;
+}
+
+.playing-section .card-list::-webkit-scrollbar-track {
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.playing-section .card-list::-webkit-scrollbar-thumb {
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--accent), #f7df69);
 }
 
 .playing-section[hidden] {
@@ -722,15 +767,16 @@ h3 {
 
 .release-calendar {
   display: grid;
-  gap: 12px;
-  padding: 12px;
+  gap: 8px;
+  padding: 9px 12px 12px;
   border-radius: 8px;
+  margin-top: -2px;
 }
 
 .release-calendar-head {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: flex-end;
   gap: 12px;
 }
 
@@ -741,6 +787,7 @@ h3 {
 .release-calendar-actions {
   display: flex;
   gap: 7px;
+  margin-bottom: -2px;
 }
 
 .release-calendar-actions .icon-button {
@@ -1316,10 +1363,13 @@ body[data-mobile-section="upcoming"] .column:not(#upcoming) {
 
 .playing-section .game-card {
   grid-template-columns: auto minmax(0, 1fr);
-  min-height: 318px;
+  flex: 0 0 min(880px, calc(100vw - clamp(54px, 9vw, 112px)));
+  min-height: 382px;
   align-items: stretch;
-  padding: 14px;
-  gap: 14px;
+  padding: 16px;
+  gap: 16px;
+  scroll-snap-align: start;
+  scroll-snap-stop: always;
 }
 
 .playing-section .game-card h3 {
@@ -1335,7 +1385,7 @@ body[data-mobile-section="upcoming"] .column:not(#upcoming) {
   width: auto;
   height: auto;
   aspect-ratio: 104 / 142;
-  max-height: 248px;
+  max-height: 326px;
   min-height: 0;
   border-color: rgba(255, 255, 255, 0.24);
   box-shadow:
@@ -1354,7 +1404,7 @@ body[data-mobile-section="upcoming"] .column:not(#upcoming) {
 .playing-section .studio-line {
   margin-top: 7px;
   color: rgba(246, 247, 251, 0.7);
-  font-size: 13px;
+  font-size: 14px;
 }
 
 .playing-section .meta,
@@ -2816,6 +2866,7 @@ body.dialog-open .mobile-section-tabs {
 
   .playing-section .game-card {
     grid-template-columns: 112px minmax(0, 1fr);
+    flex-basis: calc(100vw - 54px);
     min-height: 190px;
     padding: 11px;
     gap: 11px;
@@ -2850,6 +2901,9 @@ body.dialog-open .mobile-section-tabs {
 
   .playing-section .card-list {
     grid-template-columns: 1fr;
+    gap: 10px;
+    padding-right: 10px;
+    scroll-padding-left: 10px;
   }
 
   .achievement-panel {

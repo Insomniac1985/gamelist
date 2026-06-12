@@ -62,7 +62,11 @@
           <div>
             <h2>Currently Playing</h2>
           </div>
-          <span id="playingCount"></span>
+          <div class="playing-head-actions">
+            <span id="playingCount"></span>
+            <button class="icon-button playing-slider-button" id="playingPrevButton" type="button" title="Previous playing game" aria-label="Previous playing game">←</button>
+            <button class="icon-button playing-slider-button" id="playingNextButton" type="button" title="Next playing game" aria-label="Next playing game">→</button>
+          </div>
         </div>
         <div class="playing-panel glass">
           <div class="card-list playing-list" data-section="playing"></div>
