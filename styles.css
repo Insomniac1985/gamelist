@@ -3145,13 +3145,14 @@ body.dialog-open .mobile-section-tabs {
     grid-template-columns: minmax(0, 1fr) auto;
     align-items: center;
     gap: 8px;
-    padding: 12px 14px;
+    padding: 18px 14px 12px;
     background: rgba(9, 10, 13, 0.64);
     border-bottom: 1px solid var(--line);
   }
 
   .brand {
     min-width: 0;
+    margin-left: 10px;
   }
 
   .brand span:last-child {
