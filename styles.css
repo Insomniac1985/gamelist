@@ -1652,7 +1652,7 @@ content: "";
   min-height: 548px;
   align-items: stretch;
   padding: 18px;
-  gap: 20px;
+  row-gap: 0px;
   scroll-snap-align: start;
   scroll-snap-stop: always;
 }
@@ -3378,7 +3378,7 @@ body.dialog-open .mobile-section-tabs {
   .playing-section .game-card {
     grid-template-columns: 112px minmax(0, 1fr);
     flex-basis: calc(100vw - 54px);
-    min-height: var(--mobile-playing-card-height, 252px);
+    min-height: var(--mobile-playing-card-height, 152px);
     align-items: start;
     padding: 11px;
     gap: 11px;
