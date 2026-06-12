@@ -209,7 +209,7 @@ button:disabled {
   gap: 10px;
   align-items: end;
   min-height: 160px;
-  padding: 34px 0 26px;
+  padding: 28px 0 26px;
 }
 
 .playing-section {
@@ -422,7 +422,7 @@ button:disabled {
 
 .achievement-section {
   margin: 0 0 20px;
-  padding-bottom: 20px;
+  padding-bottom: 30px;
   border-bottom: 1px solid rgba(255, 255, 255, 0.12);
 }
 
