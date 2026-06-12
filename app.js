@@ -32,6 +32,7 @@ const state = {
   playingTrailerVisibility: new Map(),
   activeTrailerCard: null,
   playingHeightFrame: 0,
+  paintRefreshFrame: 0,
 };
 
 const el = {
@@ -132,6 +133,7 @@ init();
 
 async function init() {
   registerServiceWorker();
+  syncDisplayMode();
   document.body.classList.toggle("can-edit", state.canEdit);
   bindEvents();
   bindTextureParallax();
@@ -258,6 +260,27 @@ function bindEvents() {
   el.fields.title.addEventListener("input", queueTitleLookup);
   el.pricesButton.addEventListener("click", refreshCurrentPrices);
   el.coverUpload.addEventListener("change", handleCoverUpload);
+  window.addEventListener("resize", syncDisplayMode, { passive: true });
+  window.matchMedia("(display-mode: standalone)").addEventListener?.("change", syncDisplayMode);
+}
+
+function syncDisplayMode() {
+  const standalone = window.matchMedia("(display-mode: standalone)").matches || window.navigator.standalone === true;
+  const mobile = window.matchMedia("(max-width: 760px)").matches;
+  document.body.classList.toggle("mobile-app-mode", standalone && mobile);
+  scheduleMobilePaintRefresh();
+}
+
+function scheduleMobilePaintRefresh() {
+  if (!document.body.classList.contains("mobile-app-mode")) return;
+  cancelAnimationFrame(state.paintRefreshFrame);
+  state.paintRefreshFrame = requestAnimationFrame(() => {
+    state.paintRefreshFrame = requestAnimationFrame(() => {
+      document.body.classList.add("paint-refresh");
+      void document.body.offsetHeight;
+      window.setTimeout(() => document.body.classList.remove("paint-refresh"), 120);
+    });
+  });
 }
 
 async function loadData() {
@@ -333,6 +356,7 @@ function render() {
   renderSection("upcoming");
   renderSection("wanted");
   renderCompleted();
+  scheduleMobilePaintRefresh();
   el.sortFilter.value = state.filters.sort;
   el.sortDirectionButton.textContent = state.filters.direction === "asc" ? "↑" : "↓";
   el.sortDirectionButton.title = state.filters.direction === "asc" ? "Sort ascending" : "Sort descending";
@@ -503,6 +527,7 @@ function renderAchievements(data = {}) {
   `).join("");
   const dashboard = achievementDashboard(achievements, games, sourceUrl, data.summary);
   el.achievementPanel.innerHTML = `${dashboard}<span class="achievement-subtitle trophy-subtitle">Latest Trophies</span>${trophyCards}`;
+  scheduleMobilePaintRefresh();
 }
 
 function achievementDashboard(achievements, games, sourceUrl, summary = null) {

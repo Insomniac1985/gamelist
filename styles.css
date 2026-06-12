@@ -3430,6 +3430,34 @@ body.dialog-open .mobile-section-tabs {
     grid-template-columns: 1fr;
   }
 
+  body.mobile-app-mode .game-card {
+    contain: none;
+  }
+
+  body.mobile-app-mode .stats,
+  body.mobile-app-mode .achievement-panel,
+  body.mobile-app-mode .playing-section .card-list,
+  body.mobile-app-mode .playing-finished-list,
+  body.mobile-app-mode .game-card,
+  body.mobile-app-mode .stat,
+  body.mobile-app-mode .achievement-card {
+    transform: translateZ(0);
+    backface-visibility: hidden;
+  }
+
+  body.mobile-app-mode .stats .glass,
+  body.mobile-app-mode .achievement-panel.glass,
+  body.mobile-app-mode .game-card.glass {
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
+
+  body.mobile-app-mode.paint-refresh .stats,
+  body.mobile-app-mode.paint-refresh .achievement-panel,
+  body.mobile-app-mode.paint-refresh .playing-section {
+    transform: translate3d(0, 0, 0.01px);
+  }
+
   .rarity-bar strong {
     opacity: 1;
     transform: translateY(0);
