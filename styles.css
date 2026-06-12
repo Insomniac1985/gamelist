@@ -1111,6 +1111,8 @@ body.dialog-open .scroll-top-button {
 
 .release-day.empty {
   background: transparent;
+  opacity: 0;
+  pointer-events: none;
 }
 
 .release-day:disabled {
@@ -2369,6 +2371,30 @@ content: "";
 
 .release-dialog-list .prices {
   gap: 4px;
+  padding: 4px;
+}
+
+.release-dialog-list .price-link {
+  gap: 4px;
+  min-height: 26px;
+  height: 26px;
+  padding: 2px 3px;
+  overflow: hidden;
+}
+
+.release-dialog-list .price-link strong {
+  font-size: 9px;
+  line-height: 1;
+  white-space: normal;
+}
+
+.release-dialog-list .store-icon {
+  width: 13px;
+  height: 13px;
+}
+
+.release-dialog-list .prices {
+  gap: 4px;
   padding: 5px;
 }
 
@@ -2955,45 +2981,45 @@ body.dialog-open .mobile-section-tabs {
   padding: 0;
 }
 
-.detail-trophy-list {
+.detail-trophy-scroller {
   position: relative;
+}
+
+.detail-trophy-scroller::before,
+.detail-trophy-scroller::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 4px;
+  z-index: 3;
+  height: 20px;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 140ms ease;
+}
+
+.detail-trophy-scroller::before {
+  top: 0;
+  background: linear-gradient(180deg, rgba(9, 10, 13, 0.96), rgba(9, 10, 13, 0));
+}
+
+.detail-trophy-scroller::after {
+  bottom: 0;
+  background: linear-gradient(0deg, rgba(9, 10, 13, 0.96), rgba(9, 10, 13, 0));
+}
+
+.detail-trophy-scroller.detail-trophy-has-overflow:not(.detail-trophy-at-start)::before,
+.detail-trophy-scroller.detail-trophy-has-overflow:not(.detail-trophy-at-end)::after {
+  opacity: 1;
+}
+
+.detail-trophy-list {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 8px;
   max-height: 360px;
   overflow: auto;
   padding-right: 4px;
-}
-
-.detail-trophy-list::before,
-.detail-trophy-list::after {
-  content: "";
-  position: sticky;
-  left: 0;
-  right: 4px;
-  z-index: 2;
-  display: block;
-  height: 18px;
-  pointer-events: none;
-  opacity: 0;
-  transition: opacity 140ms ease;
-}
-
-.detail-trophy-list::before {
-  top: 0;
-  margin-bottom: -18px;
-  background: linear-gradient(180deg, rgba(9, 10, 13, 0.94), rgba(9, 10, 13, 0));
-}
-
-.detail-trophy-list::after {
-  bottom: 0;
-  margin-top: -18px;
-  background: linear-gradient(0deg, rgba(9, 10, 13, 0.94), rgba(9, 10, 13, 0));
-}
-
-.detail-trophy-list.detail-trophy-has-overflow:not(.detail-trophy-at-start)::before,
-.detail-trophy-list.detail-trophy-has-overflow:not(.detail-trophy-at-end)::after {
-  opacity: 1;
 }
 
 .detail-trophy-card {
@@ -3467,7 +3493,7 @@ body.dialog-open .mobile-section-tabs {
   .playing-section .cover-button {
     align-self: start;
     width: 112px;
-    height: 154px;
+    height: 146px;
     max-height: none;
   }
 

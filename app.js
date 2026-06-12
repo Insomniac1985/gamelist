@@ -84,6 +84,7 @@ const el = {
   detailTrophyCount: document.querySelector("#detailTrophyCount"),
   detailTrophySort: document.querySelector("#detailTrophySort"),
   detailTrophyDirection: document.querySelector("#detailTrophyDirection"),
+  detailTrophyScroller: document.querySelector("#detailTrophyScroller"),
   detailTrophyList: document.querySelector("#detailTrophyList"),
   detailCover: document.querySelector(".detail-cover img"),
   dialog: document.querySelector("#gameDialog"),
@@ -1513,12 +1514,13 @@ function renderDetailTrophyList() {
 
 function updateDetailTrophyEdges() {
   const list = el.detailTrophyList;
-  if (!list) return;
+  const scroller = el.detailTrophyScroller;
+  if (!list || !scroller) return;
   const maxScroll = Math.max(0, list.scrollHeight - list.clientHeight - 1);
   const hasOverflow = maxScroll > 2;
-  list.classList.toggle("detail-trophy-at-start", !hasOverflow || list.scrollTop <= 2);
-  list.classList.toggle("detail-trophy-at-end", !hasOverflow || list.scrollTop >= maxScroll);
-  list.classList.toggle("detail-trophy-has-overflow", hasOverflow);
+  scroller.classList.toggle("detail-trophy-at-start", !hasOverflow || list.scrollTop <= 2);
+  scroller.classList.toggle("detail-trophy-at-end", !hasOverflow || list.scrollTop >= maxScroll);
+  scroller.classList.toggle("detail-trophy-has-overflow", hasOverflow);
 }
 
 function updateScrollTopButton() {
