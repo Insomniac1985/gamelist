@@ -1005,12 +1005,7 @@ h3 {
   padding: 9px 12px 12px;
   border-radius: 8px;
   margin-top: -2px;
-  background:
-    var(--grid-fade),
-    var(--grid-texture),
-    rgba(255, 255, 255, 0.035) !important;
-  background-size: auto, 22px 22px, auto;
-  background-position: center, var(--grid-x) var(--grid-y), center;
+  background: transparent !important;
 }
 
 .release-calendar-head {
@@ -1125,10 +1120,10 @@ body.dialog-open .scroll-top-button {
 
 .floating-edit-actions {
   position: fixed;
-  left: clamp(14px, 2.4vw, 26px);
-  bottom: clamp(16px, 3vw, 28px);
+  right: clamp(14px, 2.4vw, 26px);
+  bottom: calc(clamp(16px, 3vw, 28px) + 58px);
   z-index: 16;
-  display: flex;
+  display: grid;
   gap: 10px;
 }
 
@@ -1165,6 +1160,18 @@ body.dialog-open .floating-edit-actions {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 10px;
+}
+
+.release-months-frame {
+  padding: 10px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background:
+    var(--grid-fade),
+    var(--grid-texture),
+    rgba(255, 255, 255, 0.035);
+  background-size: auto, 22px 22px, auto;
+  background-position: center, var(--grid-x) var(--grid-y), center;
 }
 
 .release-month {
@@ -4329,6 +4336,10 @@ body.dialog-open .mobile-section-tabs {
     hyphens: auto;
     font-size: clamp(17px, 5.8vw, 23px);
     line-height: 1.05;
+  }
+
+  .playing-section .game-card.playing-card .play-dates {
+    display: none;
   }
 
   .playing-section .card-trophy-head {

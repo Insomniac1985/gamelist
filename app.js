@@ -91,7 +91,6 @@ const el = {
   preorderedFilter: document.querySelector("#preorderedFilter"),
   scrollTopButton: document.querySelector("#scrollTopButton"),
   floatingEditActions: document.querySelector("#floatingEditActions"),
-  floatingEditButton: document.querySelector("#floatingEditButton"),
   floatingAddButton: document.querySelector("#floatingAddButton"),
   mobileTabs: document.querySelectorAll("[data-mobile-section]"),
   board: document.querySelector(".board"),
@@ -234,7 +233,6 @@ function bindEvents() {
   });
   el.loginButton.addEventListener("click", toggleEditMode);
   el.addButton.addEventListener("click", quickAddGame);
-  el.floatingEditButton.addEventListener("click", toggleEditMode);
   el.floatingAddButton.addEventListener("click", quickAddGame);
   el.syncButton.addEventListener("click", syncNow);
   el.fetchDataButton?.addEventListener("click", refreshAllGameData);
@@ -442,7 +440,6 @@ function render() {
   el.syncButton.hidden = !state.canEdit;
   if (el.fetchDataButton) el.fetchDataButton.hidden = true;
   el.fetchPricesButton.hidden = !state.canEdit;
-  el.floatingEditButton.hidden = state.canEdit;
   if (state.canEdit && !el.fetchPricesButton.disabled) el.fetchPricesButton.innerHTML = `${euroIcon()}<span class="button-label">Fetch New Prices</span>`;
   renderFilters();
   renderPlayingSection();
@@ -977,8 +974,10 @@ function renderReleaseCalendar() {
   const months = releaseCalendarMonths(4);
   const today = localDateKey(new Date());
   el.releaseCalendar.innerHTML = `
-  <div class="release-months">
-      ${months.map((month) => releaseMonthMarkup(month, releases, today)).join("")}
+    <div class="release-months-frame">
+      <div class="release-months">
+        ${months.map((month) => releaseMonthMarkup(month, releases, today)).join("")}
+      </div>
     </div>
     <div class="release-calendar-head">
       <div class="release-calendar-actions">
@@ -1586,7 +1585,7 @@ function cardFor(game, options = {}) {
   const studioLine = card.querySelector(".studio-line");
   studioLine.textContent = studioText(game);
   studioLine.hidden = !studioLine.textContent;
-  card.querySelector(".meta").innerHTML = metaFor(game).join("");
+  card.querySelector(".meta").innerHTML = metaFor(game, { includePsn: !game.playing }).join("");
   const playDates = card.querySelector(".play-dates");
   playDates.innerHTML = playDatesFor(game).join("");
   playDates.hidden = !playDates.innerHTML;
@@ -1595,6 +1594,10 @@ function cardFor(game, options = {}) {
   trophyStrip.innerHTML = game.playing ? cardTrophiesFor(game) : "";
   trophyStrip.hidden = !trophyStrip.innerHTML;
   trophyStrip.addEventListener("click", (event) => {
+    if (event.target.closest("a")) {
+      event.stopPropagation();
+      return;
+    }
     event.preventDefault();
     openDetail(game.id);
   }, true);
