@@ -96,7 +96,9 @@ const el = {
   platinumDialog: document.querySelector("#platinumDialog"),
   platinumCloseButton: document.querySelector("#platinumCloseButton"),
   platinumTitle: document.querySelector("#platinumTitle"),
+  platinumCount: document.querySelector("#platinumCount"),
   platinumYearTabs: document.querySelector("#platinumYearTabs"),
+  platinumYearSelect: document.querySelector("#platinumYearSelect"),
   platinumList: document.querySelector("#platinumList"),
   releaseCalendar: document.querySelector("#releaseCalendar"),
   releaseDialog: document.querySelector("#releaseDialog"),
@@ -436,7 +438,7 @@ function render() {
   renderCompleted();
   scheduleMobilePaintRefresh();
   el.sortFilter.value = state.filters.sort;
-  el.sortDirectionButton.textContent = state.filters.direction === "asc" ? "↑" : "↓";
+  el.sortDirectionButton.innerHTML = sortArrowIcon(state.filters.direction === "desc");
   el.sortDirectionButton.title = state.filters.direction === "asc" ? "Sort ascending" : "Sort descending";
   el.sortDirectionButton.setAttribute("aria-label", el.sortDirectionButton.title);
   el.sortDirectionButton.classList.toggle("desc", state.filters.direction === "desc");
@@ -677,7 +679,8 @@ function openPlatinumDialog() {
 function renderPlatinumDialog(platinums = platinumItems(), years = platinumYears(platinums)) {
   const selected = state.platinumYear;
   const visible = selected === "all" ? platinums : platinums.filter((item) => platinumYearFor(item) === selected);
-  el.platinumTitle.innerHTML = `${trophyIcon()} <span>Platinums</span> <small>${escapeHtml(String(platinums.length))}</small>`;
+  el.platinumTitle.innerHTML = `${trophyIcon()} <span>Platinums</span>`;
+  el.platinumCount.textContent = `${platinums.length} ${platinums.length === 1 ? "platinum" : "platinums"}`;
   el.platinumYearTabs.innerHTML = platinums.length ? [
     `<button class="year-tab ${selected === "all" ? "active" : ""}" type="button" data-year="all">All<span>${escapeHtml(String(platinums.length))}</span></button>`,
     ...years.map((year) => `
@@ -693,20 +696,40 @@ function renderPlatinumDialog(platinums = platinumItems(), years = platinumYears
       renderPlatinumDialog(platinums, years);
     });
   });
+  el.platinumYearSelect.innerHTML = platinums.length ? [
+    `<option value="all">All (${escapeHtml(String(platinums.length))})</option>`,
+    ...years.map((year) => `<option value="${escapeHtml(year)}">${escapeHtml(year)} (${escapeHtml(String(platinums.filter((item) => platinumYearFor(item) === year).length))})</option>`),
+  ].join("") : `<option value="all">No platinums</option>`;
+  el.platinumYearSelect.value = selected;
+  el.platinumYearSelect.onchange = () => {
+    state.platinumYear = el.platinumYearSelect.value || "all";
+    renderPlatinumDialog(platinums, years);
+  };
   el.platinumList.innerHTML = visible.length ? visible.map(platinumCard).join("") : `<div class="empty">No platinums tracked yet.</div>`;
+  el.platinumList.querySelectorAll("[data-game-id]").forEach((button) => {
+    button.addEventListener("click", () => {
+      const gameId = button.dataset.gameId;
+      el.platinumDialog.close();
+      openDetail(gameId);
+    });
+  });
 }
 
 function platinumItems() {
-  const psnPlatinums = (state.psnActivity.platinums || []).map((item) => ({
-    title: item.title || "Platinum game",
-    cover: platinumCoverFor(item.title) || item.cover || platformLogo("PS5"),
-    trophyName: item.trophyName || "Platinum",
-    trophyIcon: item.icon || platformLogo("PS5"),
-    earnedAt: item.earnedAt || "",
-    rawEarnedAt: item.rawEarnedAt || "",
-    platform: item.platform || "",
-    url: item.url || state.psnActivity.sourceUrl || "",
-  }));
+  const psnPlatinums = (state.psnActivity.platinums || []).map((item) => {
+    const localGame = localGameForTitle(item.title);
+    return {
+      title: item.title || "Platinum game",
+      cover: platinumCoverFor(item.title) || item.cover || platformLogo("PS5"),
+      trophyName: item.trophyName || "Platinum",
+      trophyIcon: item.icon || platformLogo("PS5"),
+      earnedAt: item.earnedAt || "",
+      rawEarnedAt: item.rawEarnedAt || "",
+      platform: item.platform || localGame?.platform || "",
+      url: item.url || state.psnActivity.sourceUrl || "",
+      gameId: localGame?.completedAt ? localGame.id : "",
+    };
+  });
   if (psnPlatinums.length) return psnPlatinums;
   return state.games
     .filter((game) => !game.deletedAt && game.platinum)
@@ -720,16 +743,21 @@ function platinumItems() {
       rawEarnedAt: game.completedAt || "",
       platform: game.platform || "",
       url: matchedPsnGame(game)?.url || "",
+      gameId: game.id,
     }));
 }
 
-function localCoverForTitle(title) {
+function localGameForTitle(title) {
   const normalized = normalizeTitleForMatch(title);
-  if (!normalized) return "";
-  const match = state.games.find((game) => {
+  if (!normalized) return null;
+  return state.games.find((game) => {
     const gameTitle = normalizeTitleForMatch(game.title);
-    return game.cover && gameTitle && (gameTitle === normalized || gameTitle.includes(normalized) || normalized.includes(gameTitle));
-  });
+    return gameTitle && (gameTitle === normalized || gameTitle.includes(normalized) || normalized.includes(gameTitle));
+  }) || null;
+}
+
+function localCoverForTitle(title) {
+  const match = localGameForTitle(title);
   return match?.cover ? coverDisplayUrl(match.cover, "tiny") : "";
 }
 
@@ -772,14 +800,19 @@ function platinumYearFor(item) {
 
 function platinumCard(item) {
   const content = `
-    <img class="platinum-cover" src="${escapeHtml(item.cover)}" alt="">
+    <span class="platinum-icon-wrap">
+      <img class="platinum-icon" src="${escapeHtml(item.trophyIcon)}" alt="${escapeHtml(item.trophyName || "Platinum")}">
+      <img class="platinum-cover-preview" src="${escapeHtml(item.cover)}" alt="">
+    </span>
     <div class="platinum-main">
       <strong>${escapeHtml(item.trophyName || "Platinum")}</strong>
       <span class="platinum-game">${escapeHtml(item.title)}</span>
       <span class="platinum-earned">${escapeHtml([item.platform, item.earnedAt].filter(Boolean).join(" · "))}</span>
     </div>
-    <img class="platinum-icon" src="${escapeHtml(item.trophyIcon)}" alt="${escapeHtml(item.trophyName || "Platinum")}">
   `;
+  if (item.gameId) {
+    return `<button class="platinum-card platinum-card-button" type="button" data-game-id="${escapeHtml(item.gameId)}">${content}</button>`;
+  }
   if (item.url) {
     return `<a class="platinum-card" href="${escapeHtml(item.url)}" target="_blank" rel="noreferrer">${content}</a>`;
   }
@@ -1815,7 +1848,7 @@ async function renderDetailTrophies(game) {
 
 function renderDetailTrophyList() {
   el.detailTrophySort.value = state.detailTrophySort;
-  el.detailTrophyDirection.textContent = state.detailTrophyDirection === "asc" ? "↑" : "↓";
+  el.detailTrophyDirection.innerHTML = sortArrowIcon(state.detailTrophyDirection === "desc");
   el.detailTrophyDirection.title = state.detailTrophyDirection === "asc" ? "Sort ascending" : "Sort descending";
   el.detailTrophyDirection.setAttribute("aria-label", el.detailTrophyDirection.title);
   el.detailTrophyDirection.classList.toggle("desc", state.detailTrophyDirection === "desc");
@@ -2123,6 +2156,15 @@ function gridIcon() {
       <rect x="14" y="4.5" width="5.5" height="5.5"></rect>
       <rect x="4.5" y="14" width="5.5" height="5.5"></rect>
       <rect x="14" y="14" width="5.5" height="5.5"></rect>
+    </svg>
+  `;
+}
+
+function sortArrowIcon(desc = false) {
+  return `
+    <svg class="sort-arrow-icon" viewBox="0 0 24 24" aria-hidden="true">
+      <path d="${desc ? "M12 5v14" : "M12 19V5"}"></path>
+      <path d="${desc ? "M7 14l5 5 5-5" : "M7 10l5-5 5 5"}"></path>
     </svg>
   `;
 }

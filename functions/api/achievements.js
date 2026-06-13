@@ -94,14 +94,26 @@ async function getRecentPsnActivity(accessToken, sourceUrl) {
 
 async function getPsnTrophyTitles(accessToken) {
   let lastError = null;
-  for (const limit of ["999", "200", "100", "50"]) {
+  for (const limit of [999, 200, 100, 50]) {
     try {
-      return await psnGet(`${PSN_TROPHY_BASE}/v1/users/me/trophyTitles?${new URLSearchParams({ limit, offset: "0" })}`, accessToken);
+      const titles = await getPagedTrophyTitles(accessToken, limit);
+      return { trophyTitles: titles };
     } catch (error) {
       lastError = error;
     }
   }
   throw lastError || new Error("PSN trophy titles request failed");
+}
+
+async function getPagedTrophyTitles(accessToken, limit) {
+  const titles = [];
+  for (let offset = 0; offset < 5000; offset += limit) {
+    const data = await psnGet(`${PSN_TROPHY_BASE}/v1/users/me/trophyTitles?${new URLSearchParams({ limit: String(limit), offset: String(offset) })}`, accessToken);
+    const page = data.trophyTitles || [];
+    titles.push(...page);
+    if (page.length < limit || titles.length >= Number(data.totalItemCount || 0)) break;
+  }
+  return titles;
 }
 
 async function getPsnTrophySummary(accessToken) {
@@ -158,7 +170,17 @@ async function getAllPlatinums(accessToken, titles, sourceUrl) {
     const platinums = await Promise.all(chunk.map((title) => getPlatinumsForTitle(accessToken, title, sourceUrl)));
     results.push(...platinums.flat());
   }
-  return results.sort((a, b) => String(b.rawEarnedAt || "").localeCompare(String(a.rawEarnedAt || "")));
+  return uniquePlatinums(results).sort((a, b) => String(b.rawEarnedAt || "").localeCompare(String(a.rawEarnedAt || "")));
+}
+
+function uniquePlatinums(platinums) {
+  const seen = new Set();
+  return platinums.filter((item) => {
+    const key = [item.npCommunicationId, item.trophyName, item.rawEarnedAt].join("|");
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
 }
 
 async function getPlatinumsForTitle(accessToken, title, sourceUrl) {
@@ -172,9 +194,10 @@ async function getPlatinumsForTitle(accessToken, title, sourceUrl) {
     ]);
     const metaById = new Map(metaData.map((trophy) => [String(trophy.trophyId), trophy]));
     return earnedData
-      .filter((trophy) => trophy.earned && trophy.earnedDateTime && trophyTypeLabel(trophy.trophyType) === "Platinum")
       .map((earned) => {
         const meta = metaById.get(String(earned.trophyId)) || {};
+        const type = trophyTypeLabel(earned.trophyType || meta.trophyType);
+        if (!earned.earned || !earned.earnedDateTime || type !== "Platinum") return null;
         return {
           title: title.trophyTitleName || "Platinum game",
           cover: title.trophyTitleIconUrl || "",
@@ -187,7 +210,8 @@ async function getPlatinumsForTitle(accessToken, title, sourceUrl) {
           npServiceName: title.npServiceName || serviceNameFor(title),
           url: sourceUrl,
         };
-      });
+      })
+      .filter(Boolean);
   } catch {
     return [];
   }

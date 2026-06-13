@@ -403,6 +403,8 @@ button:disabled {
   padding: 7px;
   text-align: left;
   scroll-snap-align: start;
+  transform-style: preserve-3d;
+  transition: transform 180ms ease, border-color 160ms ease, box-shadow 180ms ease, background 160ms ease;
 }
 
 .playing-finished-game img {
@@ -410,6 +412,7 @@ button:disabled {
   height: 56px;
   object-fit: cover;
   border-radius: 5px;
+  transition: transform 180ms ease;
 }
 
 .playing-finished-game strong {
@@ -650,6 +653,11 @@ button.achievement-kpi {
   text-decoration: none;
 }
 
+.achievement-card {
+  transform-style: preserve-3d;
+  transition: transform 180ms ease, border-color 160ms ease, box-shadow 180ms ease, background 160ms ease;
+}
+
 .achievement-card.latest {
   border-color: rgba(255, 0, 57, 0.38);
   background: linear-gradient(135deg, rgba(255, 0, 57, 0.16), rgba(255, 255, 255, 0.055));
@@ -705,6 +713,7 @@ button.achievement-kpi {
   width: 42px;
   height: 42px;
   object-fit: contain;
+  transition: transform 180ms ease;
   /*border-radius: 8px;
   background: rgba(255, 255, 255, 0.08);
   border: 1px solid rgba(255, 255, 255, 0.12);*/
@@ -1003,7 +1012,12 @@ h3 {
   padding: 9px 12px 12px;
   border-radius: 8px;
   margin-top: -2px;
-  background: unset !important;
+  background:
+    var(--grid-fade),
+    var(--grid-texture),
+    rgba(255, 255, 255, 0.035) !important;
+  background-size: auto, 22px 22px, auto;
+  background-position: center, var(--grid-x) var(--grid-y), center;
 }
 
 .release-calendar-head {
@@ -1449,19 +1463,27 @@ body.dialog-open .scroll-top-button {
   width: 38px;
   min-height: 42px;
   padding: 0;
-  color: #ffffff;
-  background: var(--accent);
-  border: 1px solid transparent;
+  color: var(--muted);
+  background: rgba(255, 255, 255, 0.07);
+  border: 1px solid rgba(255, 255, 255, 0.14);
   border-radius: 7px;
-  font-size: 22px;
-  font-weight: 900;
   line-height: 1;
 }
 
+.sort-arrow-icon {
+  width: 18px;
+  height: 18px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
 .direction-toggle.desc {
-  background: rgba(255, 255, 255, 0.1);
-  color: #ffffff;
-  border-color: rgba(247, 223, 105, 0.34);
+  color: var(--text);
+  background: rgba(255, 255, 255, 0.09);
+  border-color: rgba(255, 255, 255, 0.18);
 }
 
 .ghost-button:not(.trophy-action):hover,
@@ -1472,6 +1494,13 @@ body.dialog-open .scroll-top-button {
 .check-filter:hover {
   border-color: rgba(255, 0, 81, 0.48);
   box-shadow: 0 0 0 3px rgba(255, 0, 81, 0.12), 0 10px 28px rgba(255, 0, 81, 0.12);
+}
+
+.direction-toggle:hover {
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.11);
+  border-color: rgba(255, 255, 255, 0.24);
+  box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.06);
 }
 
 .mobile-section-tabs {
@@ -1924,6 +1953,26 @@ body[data-mobile-section="upcoming"] .column:not(#upcoming) {
   box-shadow: unset;
 }
 
+.game-card.playing-card {
+  transform-style: preserve-3d;
+  transition: transform 180ms ease, border-color 160ms ease, box-shadow 180ms ease, background 160ms ease;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .achievement-card:hover,
+  .playing-finished-game:hover,
+  .game-card.playing-card:hover {
+    transform: perspective(900px) rotateX(2deg) rotateY(-3deg) translateY(-3px);
+    box-shadow: 0 18px 36px rgba(0, 0, 0, 0.28);
+  }
+
+  .achievement-card:hover img,
+  .playing-finished-game:hover img,
+  .game-card.playing-card:hover .cover-button img {
+    transform: translateZ(14px) scale(1.025);
+  }
+}
+
 .game-card.playing-card.has-art::before {
   inset: -34px;
   background:
@@ -2208,7 +2257,7 @@ content: "";
 }
 
 .card-trophy-progress {
-  min-height: 18px;
+  min-height: 20px !important;
   margin-left: 8px;
   padding: 1px 6px;
   gap: 4px;
@@ -2291,6 +2340,7 @@ content: "";
   height: 100%;
   object-fit: cover;
   transform: translateZ(0);
+  transition: transform 180ms ease;
   backface-visibility: hidden;
 }
 
@@ -2643,17 +2693,28 @@ content: "";
 }
 
 .time-pill {
-  gap: 4px;
-  padding: 4px 10px;
-  color: #101114;
-  border-color: transparent;
+  position: relative;
+  gap: 5px;
+  overflow: hidden;
+  padding: 4px 9px;
+  color: var(--text);
+  border-color: color-mix(in srgb, var(--time-color) 46%, rgba(255, 255, 255, 0.16));
   background:
-    radial-gradient(circle at 20% 12%, rgba(255, 255, 255, 0.72), transparent 32%),
-    linear-gradient(135deg, var(--time-light), var(--time-color) 48%, var(--time-dark));
+    linear-gradient(135deg, color-mix(in srgb, var(--time-color) 22%, rgba(255, 255, 255, 0.08)), rgba(255, 255, 255, 0.07)),
+    rgba(255, 255, 255, 0.055);
   box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.38),
-    0 0 18px var(--time-glow);
+    inset 0 1px 0 rgba(255, 255, 255, 0.12),
+    0 0 16px color-mix(in srgb, var(--time-glow) 62%, transparent);
   text-decoration: none;
+}
+
+.time-pill::before {
+  content: "";
+  width: 5px;
+  height: 18px;
+  border-radius: 999px;
+  background: linear-gradient(180deg, var(--time-light), var(--time-dark));
+  box-shadow: 0 0 12px var(--time-glow);
 }
 
 a.time-pill {
@@ -2661,13 +2722,13 @@ a.time-pill {
 }
 
 .time-pill strong {
-  color: #101114;
-  font-size: 17px;
+  color: var(--text);
+  font-size: 16px;
   line-height: 1;
 }
 
 .time-pill span {
-  color: #101114;
+  color: var(--muted);
   font-size: 10px;
   font-weight: 900;
   text-transform: uppercase;
@@ -3635,19 +3696,6 @@ body.dialog-open .mobile-section-tabs {
   color: #ffe985;
 }
 
-#platinumTitle small {
-  display: inline-grid;
-  min-width: 28px;
-  height: 24px;
-  place-items: center;
-  padding: 0 7px;
-  color: #ffffff;
-  background: rgba(255, 255, 255, 0.12);
-  border: 1px solid rgba(255, 255, 255, 0.14);
-  border-radius: 6px;
-  font-size: 12px;
-}
-
 #platinumYearTabs {
   width: 100%;
   margin: 14px 0;
@@ -3658,6 +3706,26 @@ body.dialog-open .mobile-section-tabs {
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05);
 }
 
+.platinum-year-select {
+  display: none;
+  margin: 14px 0;
+}
+
+.platinum-count-pill {
+  display: inline-flex;
+  align-items: center;
+  min-height: 30px;
+  margin-left: auto;
+  padding: 6px 9px;
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.09);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 7px;
+  font-size: 12px;
+  font-weight: 820;
+  white-space: nowrap;
+}
+
 .platinum-list {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -3666,7 +3734,7 @@ body.dialog-open .mobile-section-tabs {
 
 .platinum-card {
   display: grid;
-  grid-template-columns: 60px minmax(0, 1fr) 34px;
+  grid-template-columns: 42px minmax(0, 1fr);
   gap: 11px;
   align-items: center;
   min-width: 0;
@@ -3679,16 +3747,25 @@ body.dialog-open .mobile-section-tabs {
   border-radius: 7px;
 }
 
+.platinum-card-button {
+  appearance: none;
+  width: 100%;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
 .platinum-card:hover {
   border-color: rgba(229, 232, 255, 0.42);
   background: rgba(229, 232, 255, 0.12);
 }
 
-.platinum-cover {
-  width: 60px;
-  height: 80px;
-  object-fit: cover;
-  border-radius: 5px;
+.platinum-icon-wrap {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 42px;
+  height: 42px;
 }
 
 .platinum-main {
@@ -3728,15 +3805,30 @@ body.dialog-open .mobile-section-tabs {
   height: 34px;
   object-fit: contain;
   border-radius: 6px;
-  transition: transform 160ms ease, box-shadow 160ms ease;
   z-index: 1;
 }
 
-.platinum-icon:hover {
-  transform: scale(2.7);
-  transform-origin: right center;
+.platinum-cover-preview {
+  position: absolute;
+  left: 0;
+  top: 50%;
+  width: 76px;
+  height: 102px;
+  object-fit: cover;
+  border: 1px solid var(--line);
+  border-radius: 7px;
   box-shadow: 0 18px 40px rgba(0, 0, 0, 0.48);
-  z-index: 8;
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(-50%) scale(0.82);
+  transform-origin: left center;
+  transition: opacity 160ms ease, transform 160ms ease;
+  z-index: 9;
+}
+
+.platinum-icon-wrap:hover .platinum-cover-preview {
+  opacity: 1;
+  transform: translateY(-50%) scale(1);
 }
 
 .store-playstation {
@@ -4463,18 +4555,26 @@ body.dialog-open .mobile-section-tabs {
     grid-template-columns: 1fr;
   }
 
+  #platinumYearTabs {
+    display: none;
+  }
+
+  .platinum-year-select {
+    display: grid;
+  }
+
   .platinum-card {
-    grid-template-columns: 46px minmax(0, 1fr) 30px;
+    grid-template-columns: 38px minmax(0, 1fr);
   }
 
-  .platinum-cover {
-    width: 46px;
-    height: 62px;
+  .platinum-icon-wrap {
+    width: 38px;
+    height: 38px;
   }
 
-  .platinum-icon {
-    width: 30px;
-    height: 30px;
+  .platinum-cover-preview {
+    width: 64px;
+    height: 86px;
   }
 
   .detail-trophies-head {
