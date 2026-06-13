@@ -1132,13 +1132,13 @@ body.dialog-open .scroll-top-button {
 
 .release-month header strong {
   color: var(--text);
-  font-size: 15px;
+  font-size: 20px;
   line-height: 1;
 }
 
 .release-month header span {
   color: var(--dim);
-  font-size: 20px;
+  font-size: 15px;
   font-weight: 780;
 }
 
