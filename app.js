@@ -1195,11 +1195,12 @@ function cardFor(game, options = {}) {
   }
   const img = card.querySelector("img");
   img.hidden = !game.cover;
-  img.src = game.cover ? coverDisplayUrl(game.cover, game.playing ? "playing" : "card") : "";
+  img.src = game.cover ? coverDisplayUrl(game.cover) : "";
   img.alt = game.cover ? `${game.title} cover` : "";
   img.loading = options.imagePriority || "lazy";
   img.fetchPriority = options.imagePriority === "eager" ? "high" : "low";
   img.decoding = "async";
+  if (game.playing && game.cover) upgradeCoverIfFast(img, game.cover, "playing");
   if (game.playing && game.cover) img.addEventListener("load", schedulePlayingCardHeightSync, { once: true });
   card.classList.toggle("has-art", Boolean(game.cover));
   if (game.cover) {
@@ -1497,8 +1498,9 @@ function openDetail(id, options = {}) {
     el.detailPrices.innerHTML = pricesFor(game);
   }
   el.detailCover.hidden = !game.cover;
-  el.detailCover.src = game.cover ? coverDisplayUrl(game.cover, "detail") : "";
+  el.detailCover.src = game.cover ? coverDisplayUrl(game.cover) : "";
   el.detailCover.alt = game.cover ? `${game.title} cover` : "";
+  if (game.cover) upgradeCoverIfFast(el.detailCover, game.cover, "detail");
   renderDetailTrophies(game);
   el.detailDialog.showModal();
   syncScrollLock();
@@ -2033,6 +2035,27 @@ function coverDisplayUrl(value, size = "card") {
     /images\.igdb\.com\/igdb\/image\/upload\/[^/]+\//,
     `images.igdb.com/igdb/image/upload/${replacement}/`
   );
+}
+
+function upgradeCoverIfFast(target, value, size, timeoutMs = 900) {
+  const highResUrl = coverDisplayUrl(value, size);
+  const currentUrl = coverDisplayUrl(value);
+  if (!target || !highResUrl || highResUrl === currentUrl) return;
+  const requestKey = `${size}:${highResUrl}`;
+  target.dataset.coverUpgrade = requestKey;
+  const preload = new Image();
+  let expired = false;
+  const timer = setTimeout(() => {
+    expired = true;
+  }, timeoutMs);
+  preload.onload = () => {
+    clearTimeout(timer);
+    if (expired || target.dataset.coverUpgrade !== requestKey) return;
+    target.src = highResUrl;
+  };
+  preload.onerror = () => clearTimeout(timer);
+  preload.decoding = "async";
+  preload.src = highResUrl;
 }
 
 function normalizeStoreLinks(links) {
