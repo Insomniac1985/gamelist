@@ -3212,6 +3212,56 @@ body.dialog-open .mobile-section-tabs {
   background: rgba(121, 242, 206, 0.12);
 }
 
+.detail-guides {
+  display: grid;
+  gap: 9px;
+  margin-top: 14px;
+}
+
+.detail-guides[hidden] {
+  display: none;
+}
+
+.detail-guides h3 {
+  margin: 0;
+  color: var(--accent-2);
+  font-size: 13px;
+  font-weight: 850;
+  text-transform: uppercase;
+}
+
+.guide-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.guide-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  min-height: 32px;
+  padding: 6px 10px;
+  color: #ffffff;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 7px;
+  text-decoration: none;
+  font-size: 12px;
+  font-weight: 820;
+}
+
+.guide-button img {
+  width: 18px;
+  height: 18px;
+  border-radius: 4px;
+}
+
+.guide-button:hover {
+  border-color: rgba(255, 0, 81, 0.5);
+  box-shadow: 0 0 0 3px rgba(255, 0, 81, 0.12);
+}
+
 .guide-psnprofiles {
   background: rgba(90, 110, 255, 0.18);
 }

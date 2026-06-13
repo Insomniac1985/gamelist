@@ -94,6 +94,8 @@ const el = {
   detailStoreLinks: document.querySelector("#detailStoreLinks"),
   detailDescription: document.querySelector("#detailDescription"),
   detailPrices: document.querySelector("#detailPrices"),
+  detailGuides: document.querySelector("#detailGuides"),
+  detailGuideLinks: document.querySelector("#detailGuideLinks"),
   detailTrophies: document.querySelector("#detailTrophies"),
   detailTrophyCount: document.querySelector("#detailTrophyCount"),
   detailTrophySort: document.querySelector("#detailTrophySort"),
@@ -1193,7 +1195,7 @@ function cardFor(game, options = {}) {
   }
   const img = card.querySelector("img");
   img.hidden = !game.cover;
-  img.src = game.cover ? coverDisplayUrl(game.cover) : "";
+  img.src = game.cover ? coverDisplayUrl(game.cover, game.playing ? "playing" : "card") : "";
   img.alt = game.cover ? `${game.title} cover` : "";
   img.loading = options.imagePriority || "lazy";
   img.fetchPriority = options.imagePriority === "eager" ? "high" : "low";
@@ -1485,6 +1487,7 @@ function openDetail(id, options = {}) {
   el.detailChips.innerHTML = chipsFor(game).join("");
   el.detailStoreLinks.innerHTML = storeLinksFor(game);
   el.detailDescription.textContent = game.description || "No description yet.";
+  renderDetailGuides(game);
   if (game.section === "backlog") {
     el.detailPrices.hidden = true;
     el.detailPrices.innerHTML = "";
@@ -1494,7 +1497,7 @@ function openDetail(id, options = {}) {
     el.detailPrices.innerHTML = pricesFor(game);
   }
   el.detailCover.hidden = !game.cover;
-  el.detailCover.src = game.cover ? coverDisplayUrl(game.cover, "large") : "";
+  el.detailCover.src = game.cover ? coverDisplayUrl(game.cover, "detail") : "";
   el.detailCover.alt = game.cover ? `${game.title} cover` : "";
   renderDetailTrophies(game);
   el.detailDialog.showModal();
@@ -2019,7 +2022,13 @@ function backgroundCoverUrl(value) {
 }
 
 function coverDisplayUrl(value, size = "card") {
-  const replacement = size === "tiny" ? "t_thumb" : "t_cover_big";
+  const sizes = {
+    tiny: "t_thumb",
+    card: "t_cover_big",
+    playing: "t_1080p",
+    detail: "t_1080p",
+  };
+  const replacement = sizes[size] || sizes.card;
   return String(value || "").replace(
     /images\.igdb\.com\/igdb\/image\/upload\/[^/]+\//,
     `images.igdb.com/igdb/image/upload/${replacement}/`
@@ -2041,7 +2050,6 @@ function storeLinksFor(game) {
     storeButton("PlayStation", links.playstation, "store-playstation", platformLogo("PS5")),
     storeButton("Nintendo", links.nintendo, "store-nintendo", platformLogo("Switch")),
     storeButton("Steam", links.steam, "store-steam", platformLogo("PC")),
-    ...guideLinksFor(game),
   ].join("");
 }
 
@@ -2064,27 +2072,89 @@ function storeLinksWithFallbacks(game) {
   };
 }
 
+function renderDetailGuides(game) {
+  const links = guideLinksFor(game);
+  el.detailGuides.hidden = !links.length;
+  el.detailGuideLinks.innerHTML = links.join("");
+}
+
 function guideLinksFor(game) {
   const title = retailTitle(game.title);
   if (!title) return [];
   const links = [];
   if (["PS4", "PS5"].includes(canonicalPlatform(game.platform))) {
-    links.push(storeButton(
+    links.push(guideButton(
       "PSN Guide",
-      siteSearchUrl("psnprofiles.com/guide", `${title} trophy guide`),
+      psnProfilesGuideUrl(game, title),
       "guide-psnprofiles",
-      platformLogo("PS5")
+      "https://www.google.com/s2/favicons?domain=psnprofiles.com&sz=64"
     ));
   }
   links.push(
-    storeButton("Neoseeker", siteSearchUrl("neoseeker.com", `${title} walkthrough guide`), "guide-neoseeker", ""),
-    storeButton("RPG Site", `https://www.rpgsite.net/search?terms=${encodeURIComponent(`${title} guide`)}`, "guide-rpgsite", "")
+    guideButton("Neoseeker", neoseekerGuideUrl(game, title), "guide-neoseeker", "https://www.google.com/s2/favicons?domain=neoseeker.com&sz=64"),
+    guideButton("RPG Site", rpgSiteGuideUrl(game, title), "guide-rpgsite", "https://www.google.com/s2/favicons?domain=rpgsite.net&sz=64")
   );
   return links;
 }
 
+function guideButton(label, url, cls, icon) {
+  return `
+    <a class="guide-button ${cls}" href="${escapeHtml(url)}" target="_blank" rel="noreferrer">
+      <img src="${escapeHtml(icon)}" alt="" width="18" height="18" decoding="async">
+      <span>${escapeHtml(label)}</span>
+    </a>
+  `;
+}
+
+function psnProfilesGuideUrl(game, title) {
+  const known = knownGuideLinksFor(title).psnprofiles;
+  if (known) return known;
+  const direct = normalizeGuideUrl(game.guideLinks?.psnprofiles);
+  if (direct) return direct;
+  const guideId = String(game.psnprofilesGuideId || game.psnGuideId || "").trim();
+  if (guideId) return `https://psnprofiles.com/guide/${encodeURIComponent(guideId)}-${guideSlug(title)}-trophy-guide`;
+  return siteSearchUrl("psnprofiles.com/guide", `${title} trophy guide`);
+}
+
+function neoseekerGuideUrl(game, title) {
+  const known = knownGuideLinksFor(title).neoseeker;
+  if (known) return known;
+  const direct = normalizeGuideUrl(game.guideLinks?.neoseeker);
+  return direct || `https://www.neoseeker.com/${guideSlug(title)}/walkthrough`;
+}
+
+function rpgSiteGuideUrl(game, title) {
+  const known = knownGuideLinksFor(title).rpgsite;
+  if (known) return known;
+  const direct = normalizeGuideUrl(game.guideLinks?.rpgsite);
+  if (direct) return direct;
+  const gameId = String(game.rpgsiteGameId || "").trim();
+  if (gameId) return `https://www.rpgsite.net/games/${encodeURIComponent(gameId)}-${guideSlug(title)}/guides`;
+  return `https://www.rpgsite.net/search?terms=${encodeURIComponent(`${title} guide`)}`;
+}
+
 function siteSearchUrl(site, query) {
   return `https://www.google.com/search?q=${encodeURIComponent(`site:${site} ${query}`)}`;
+}
+
+function normalizeGuideUrl(value) {
+  const url = String(value || "").trim();
+  return /^https?:\/\//i.test(url) ? url : "";
+}
+
+function knownGuideLinksFor(title) {
+  const guides = {
+    pragmata: {
+      neoseeker: "https://www.neoseeker.com/pragmata/walkthrough",
+      psnprofiles: "https://psnprofiles.com/guide/24998-pragmata-trophy-guide",
+      rpgsite: "https://www.rpgsite.net/games/2464-pragmata/guides",
+    },
+  };
+  return guides[guideSlug(title)] || {};
+}
+
+function guideSlug(title) {
+  return retailTitle(title).toLowerCase().replace(/[^\p{L}\p{N}]+/gu, "-").replace(/^-+|-+$/g, "");
 }
 
 function pricesFor(game) {
