@@ -1044,14 +1044,12 @@ h3 {
   transition: opacity 160ms ease, transform 160ms ease, background 140ms ease, border-color 140ms ease;
 }
 
-scroll-top-button.visible {
-    opacity: 1;
-    pointer-events: auto;
-    transform: translateY(0);
-    background: var(--accent);
+.scroll-top-button.visible {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translateY(0);
+  background: var(--accent);
 }
-
-
 
 .scroll-top-icon {
   width: 25px;
@@ -2076,7 +2074,7 @@ content: "";
   align-items: center;
   gap: 6px;
   margin-bottom: 7px;
-  color: #ffe985;
+  color: var(--accent-2);
   font-size: 11px;
   font-weight: 900;
   text-transform: uppercase;
@@ -2085,6 +2083,28 @@ content: "";
 .card-trophy-head .trophy-icon {
   width: 15px;
   height: 15px;
+}
+
+.card-guide-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  min-height: 21px;
+  margin-left: 2px;
+  padding: 3px 6px;
+  color: #ffffff;
+  background: rgba(90, 110, 255, 0.18);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 5px;
+  font-size: 10px;
+  text-decoration: none;
+  text-transform: none;
+}
+
+.card-guide-link img {
+  width: 14px;
+  height: 14px;
+  border-radius: 3px;
 }
 
 .card-trophy-list {
@@ -2560,6 +2580,11 @@ content: "";
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.38),
     0 0 18px var(--time-glow);
+  text-decoration: none;
+}
+
+a.time-pill {
+  cursor: pointer;
 }
 
 .time-pill strong {
@@ -3304,12 +3329,28 @@ body.dialog-open .mobile-section-tabs {
 .detail-trophy-percent {
   display: inline-flex;
   align-items: center;
+}
+
+.detail-trophy-percent .psn-progress-pill {
   min-height: 25px;
-  padding: 4px 7px;
-  color: #ffe985;
-  border: 1px solid rgba(255, 225, 101, 0.34);
-  border-radius: 6px;
-  background: rgba(255, 225, 101, 0.09);
+  padding: 3px 7px;
+  gap: 5px;
+  color: #ffffff;
+  font-size: 11px;
+}
+
+.detail-trophy-percent .psn-progress-pill .trophy-icon {
+  width: 14px;
+  height: 14px;
+}
+
+.detail-trophy-percent .psn-progress-pill em {
+  width: 28px;
+  height: 4px;
+}
+
+.detail-trophy-percent .psn-progress-pill strong {
+  font-size: 10px;
 }
 
 .detail-trophy-percent:empty {
@@ -3497,6 +3538,10 @@ body.dialog-open .mobile-section-tabs {
 
 .store-steam {
   background: rgba(121, 242, 206, 0.12);
+}
+
+.store-hltb {
+  background: rgba(255, 225, 101, 0.12);
 }
 
 .detail-guides {

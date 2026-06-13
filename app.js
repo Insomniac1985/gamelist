@@ -16,6 +16,13 @@ const UI_ICON_URLS = [
   "/assets/platforms/steam.png",
   "/assets/platforms/switch.png",
   "/assets/platforms/xbox.png",
+  "/assets/sites/howlongtobeat.png",
+  "/assets/sites/neoseeker.png",
+  "/assets/sites/nintendo.png",
+  "/assets/sites/playstation.png",
+  "/assets/sites/psnprofiles.png",
+  "/assets/sites/rpgsite.png",
+  "/assets/sites/steam.png",
   "/assets/stores/amazon.ico",
   "/assets/stores/game.ico",
   "/assets/stores/playasia.ico",
@@ -398,6 +405,7 @@ function render() {
   el.loginButton.title = state.canEdit ? "Stop Editing" : "Edit";
   el.loginButton.setAttribute("aria-label", el.loginButton.title);
   el.addButton.hidden = false;
+  el.syncButton.hidden = !state.canEdit;
   if (el.fetchDataButton) el.fetchDataButton.hidden = true;
   el.fetchPricesButton.hidden = !state.canEdit;
   if (state.canEdit && !el.fetchPricesButton.disabled) el.fetchPricesButton.innerHTML = `${euroIcon()}<span class="button-label">Fetch New Prices</span>`;
@@ -470,7 +478,7 @@ function renderPlayingFinished() {
   el.playingFinishedList.innerHTML = games.map((game) => {
     const psn = matchedPsnGame(game);
     const progress = psn ? progressValue(psn.game) : 0;
-    const badges = completedBadges(game);
+    const badges = completedBadges(game, { includePsn: false });
     return `
       <button class="achievement-game playing-finished-game" type="button" data-id="${escapeHtml(game.id)}" aria-label="${escapeHtml(`Open ${game.title}`)}">
         <img src="${escapeHtml(game.cover || platformLogo(game.platform || "PS5"))}" alt="" loading="lazy" decoding="async">
@@ -686,10 +694,10 @@ function renderStats() {
     completed: state.games.filter((game) => game.completedAt && !game.deletedAt).length,
   };
   el.stats.innerHTML = [
+    stat("Done", completedThisYear, "done", { action: "history" }),
     stat("Backlog", counts.backlog, "backlog", { detail: sectionStatDetail("backlog", active, total) }),
     stat("To Release", counts.upcoming, "release", { detail: sectionStatDetail("upcoming", active, total) }),
     stat("Available", counts.wanted, "available", { detail: sectionStatDetail("wanted", active, total) }),
-    stat(`Finished ${currentYear}`, completedThisYear, "done", { action: "history" }),
   ].join("");
   const historyStat = el.stats.querySelector("[data-stat-action='history']");
   historyStat?.addEventListener("click", openHistoryDialog);
@@ -1017,7 +1025,7 @@ function rowCoreStats(game) {
   return [
     game.platform ? platformBadge(game.platform) : "",
     game.digital ? `<span class="digital-pill">Digital</span>` : "",
-    game.lengthHours ? timeBadge(game.lengthHours) : "",
+    game.lengthHours ? timeBadge(game.lengthHours, hltbUrlFor(game)) : "",
     releaseStatus(game) ? `<span class="release-pill">${escapeHtml(releaseStatus(game))}</span>` : "",
     ...ownerTags(game).filter((owner) => owner !== "Xavi").map(ownerBadge),
     ...gameStatuses(game).map(statusBadge),
@@ -1343,7 +1351,7 @@ function cardFor(game, options = {}) {
   const boughtAction = card.querySelector(".bought-action");
   const completeAction = card.querySelector(".complete-action");
   const trophyAction = card.querySelector(".trophy-action");
-  if (game.section === "backlog") {
+  if (game.section === "backlog" || game.completedAt) {
     prices.remove();
     priceRefreshAction.remove();
     boughtAction.remove();
@@ -1620,7 +1628,7 @@ async function renderDetailTrophies(game) {
     state.detailTrophiesData = [];
     el.detailTrophies.hidden = true;
     el.detailTrophyCount.textContent = "";
-    el.detailTrophyPercent.textContent = "";
+    el.detailTrophyPercent.innerHTML = "";
     el.detailTrophyList.innerHTML = "";
     updateDetailTrophyEdges();
     return;
@@ -1630,7 +1638,7 @@ async function renderDetailTrophies(game) {
   state.detailTrophyRequest = requestKey;
   el.detailTrophies.hidden = false;
   el.detailTrophyCount.textContent = "Loading...";
-  el.detailTrophyPercent.textContent = "";
+  el.detailTrophyPercent.innerHTML = psnProgressBadge(psn);
   el.detailTrophyList.innerHTML = `<div class="detail-trophy-empty">Loading earned trophies...</div>`;
 
   try {
@@ -1648,7 +1656,7 @@ async function renderDetailTrophies(game) {
     if (state.detailTrophyRequest !== requestKey) return;
     state.detailTrophiesData = [];
     el.detailTrophyCount.textContent = "";
-    el.detailTrophyPercent.textContent = "";
+    el.detailTrophyPercent.innerHTML = "";
     el.detailTrophyList.innerHTML = `<div class="detail-trophy-empty">Could not load trophies right now.</div>`;
     updateDetailTrophyEdges();
   }
@@ -1663,7 +1671,7 @@ function renderDetailTrophyList() {
   const trophies = sortedDetailTrophies();
   const earnedCount = trophies.filter((trophy) => trophy.earned).length;
   el.detailTrophyCount.textContent = trophies.length ? `${earnedCount}/${trophies.length} earned` : "";
-  el.detailTrophyPercent.textContent = trophies.length ? `${Math.round((earnedCount / trophies.length) * 100)}%` : "";
+  if (!trophies.length) el.detailTrophyPercent.innerHTML = "";
   el.detailTrophyList.innerHTML = trophies.length
     ? trophies.map(detailTrophyCard).join("")
     : `<div class="detail-trophy-empty">No trophies found for this game yet.</div>`;
@@ -1683,7 +1691,7 @@ function updateDetailTrophyEdges() {
 
 function updateScrollTopButton() {
   if (!el.scrollTopButton) return;
-  el.scrollTopButton.classList.toggle("visible", window.scrollY > 560 && !document.body.classList.contains("dialog-open"));
+  el.scrollTopButton.classList.toggle("visible", window.scrollY > 180 && !document.body.classList.contains("dialog-open"));
 }
 
 function sortedDetailTrophies() {
@@ -1729,7 +1737,7 @@ function metaFor(game, options = {}) {
   gameStatuses(game).forEach((status) => values.push(statusBadge(status)));
   const release = releaseStatus(game);
   if (release) values.push(`<span class="release-pill">${escapeHtml(release)}</span>`);
-  if (game.lengthHours) values.push(timeBadge(game.lengthHours));
+  if (game.lengthHours) values.push(timeBadge(game.lengthHours, hltbUrlFor(game)));
   const psn = matchedPsnGame(game);
   if (options.includePsn !== false && psn) values.push(psnProgressBadge(psn));
   if (game.coop) values.push(`<span class="coop-pill">Coop</span>`);
@@ -1767,7 +1775,7 @@ function cardTrophiesFor(game) {
   if (!trophies.length && cached?.loading) return `<div class="card-trophy-head">${trophyIcon()}<span>Loading trophies...</span></div>`;
   if (!trophies.length) return "";
   return `
-    <div class="card-trophy-head">${trophyIcon()}<span>Latest trophies</span></div>
+    <div class="card-trophy-head">${trophyIcon()}<span>TROPHIES</span>${playingGuideLinksFor(game).join("")}</div>
     <div class="card-trophy-list">
       ${trophies.map((trophy) => `
         <a class="card-trophy trophy-${escapeHtml(trophyTone(trophy.type || trophy.rarity))}" href="${escapeHtml(trophy.url || state.psnActivity.sourceUrl || "#")}" target="_blank" rel="noreferrer" title="${escapeHtml([trophy.title, trophy.earnedAt].filter(Boolean).join(" · "))}">
@@ -1777,6 +1785,17 @@ function cardTrophiesFor(game) {
       `).join("")}
     </div>
   `;
+}
+
+function playingGuideLinksFor(game) {
+  const title = retailTitle(game.title);
+  if (!title || !["PS4", "PS5"].includes(canonicalPlatform(game.platform))) return [];
+  return [`
+    <a class="card-guide-link" href="${escapeHtml(psnProfilesGuideUrl(game, title))}" target="_blank" rel="noreferrer" title="PSNProfiles trophy guide">
+      <img src="assets/sites/psnprofiles.png" alt="" width="14" height="14" decoding="async">
+      <span>Guide</span>
+    </a>
+  `];
 }
 
 async function loadCardTrophies(game, psn) {
@@ -1834,7 +1853,7 @@ function psnProgressBadge(game) {
   `;
 }
 
-function completedBadges(game) {
+function completedBadges(game, options = {}) {
   const psn = matchedPsnGame(game);
   return [
     game.platform ? platformBadge(game.platform) : "",
@@ -1842,7 +1861,7 @@ function completedBadges(game) {
     game.coop ? `<span class="coop-pill">Coop</span>` : "",
     game.replayCount ? replayBadge(game.replayCount) : "",
     game.platinum ? `<span class="platinum-pill">${trophyIcon()} Completed</span>` : "",
-    psn ? psnProgressBadge(psn) : "",
+    options.includePsn === false ? "" : (psn ? psnProgressBadge(psn) : ""),
   ].filter(Boolean).join("");
 }
 
@@ -2023,8 +2042,13 @@ function platformClass(platform) {
   return "platform-generic";
 }
 
-function timeBadge(hours) {
-  return `<span class="time-pill" style="${timeStyle(hours)}"><strong>${escapeHtml(hours)}</strong><span>hrs</span></span>`;
+function timeBadge(hours, url = "") {
+  const content = `<strong>${escapeHtml(hours)}</strong><span>hrs</span>`;
+  const style = timeStyle(hours);
+  if (url) {
+    return `<a class="time-pill" style="${style}" href="${escapeHtml(url)}" target="_blank" rel="noreferrer" title="HowLongToBeat">${content}</a>`;
+  }
+  return `<span class="time-pill" style="${style}">${content}</span>`;
 }
 
 function timeStyle(hours) {
@@ -2202,15 +2226,18 @@ function normalizeStoreLinks(links) {
 
 function storeLinksFor(game) {
   const links = storeLinksWithFallbacks(game);
+  const hltbUrl = hltbUrlFor(game);
   const stores = [
-    { key: "playstation", label: "PlayStation", cls: "store-playstation", icon: platformLogo("PS5"), provider: "PlayStation España" },
-    { key: "nintendo", label: "Nintendo", cls: "store-nintendo", icon: platformLogo("Switch"), provider: "Nintendo España" },
-    { key: "steam", label: "Steam", cls: "store-steam", icon: platformLogo("PC"), provider: "Steam" },
+    { key: "playstation", label: "PlayStation", cls: "store-playstation", icon: "assets/sites/playstation.png", provider: "PlayStation España" },
+    { key: "nintendo", label: "Nintendo", cls: "store-nintendo", icon: "assets/sites/nintendo.png", provider: "Nintendo España" },
+    { key: "steam", label: "Steam", cls: "store-steam", icon: "assets/sites/steam.png", provider: "Steam" },
   ];
-  return stores
+  return [
+    ...stores
     .filter((store) => platformStoreProvidersForGame(game).includes(store.provider))
-    .map((store) => storeButton(store.label, links[store.key], store.cls, store.icon))
-    .join("");
+    .map((store) => storeButton(store.label, links[store.key], store.cls, store.icon)),
+    hltbUrl ? storeButton("HowLongToBeat", hltbUrl, "store-hltb", "assets/sites/howlongtobeat.png") : "",
+  ].filter(Boolean).join("");
 }
 
 function storeButton(label, url, cls, icon) {
@@ -2232,6 +2259,15 @@ function storeLinksWithFallbacks(game) {
   };
 }
 
+function hltbUrlFor(game) {
+  const direct = normalizeGuideUrl(game.hltbUrl || game.howLongToBeatUrl);
+  if (direct) return direct;
+  const id = String(game.hltbId || game.howLongToBeatId || "").trim();
+  if (/^\d+$/.test(id)) return `https://howlongtobeat.com/game/${encodeURIComponent(id)}`;
+  const query = retailTitle(game.title);
+  return query ? `https://howlongtobeat.com/?q=${encodeURIComponent(query)}` : "";
+}
+
 function renderDetailGuides(game) {
   const links = guideLinksFor(game);
   el.detailGuides.hidden = !links.length;
@@ -2247,12 +2283,12 @@ function guideLinksFor(game) {
       "PSN Guide",
       psnProfilesGuideUrl(game, title),
       "guide-psnprofiles",
-      "https://www.google.com/s2/favicons?domain=psnprofiles.com&sz=64"
+      "assets/sites/psnprofiles.png"
     ));
   }
   links.push(
-    guideButton("Neoseeker", neoseekerGuideUrl(game, title), "guide-neoseeker", "https://www.google.com/s2/favicons?domain=neoseeker.com&sz=64"),
-    guideButton("RPG Site", rpgSiteGuideUrl(game, title), "guide-rpgsite", "https://www.google.com/s2/favicons?domain=rpgsite.net&sz=64")
+    guideButton("Neoseeker", neoseekerGuideUrl(game, title), "guide-neoseeker", "assets/sites/neoseeker.png"),
+    guideButton("RPG Site", rpgSiteGuideUrl(game, title), "guide-rpgsite", "assets/sites/rpgsite.png")
   );
   return links;
 }
@@ -2401,9 +2437,9 @@ function storeIcon(store) {
   if (store === "Xtralife") return "assets/stores/xtralife.ico";
   if (store === "GAME.es") return "assets/stores/game.ico";
   if (store === "Playasia") return "assets/stores/playasia.ico";
-  if (store === "Nintendo España") return platformLogo("Switch");
-  if (store === "PlayStation España") return platformLogo("PS5");
-  if (store === "Steam") return platformLogo("PC");
+  if (store === "Nintendo España") return "assets/sites/nintendo.png";
+  if (store === "PlayStation España") return "assets/sites/playstation.png";
+  if (store === "Steam") return "assets/sites/steam.png";
   return "";
 }
 
