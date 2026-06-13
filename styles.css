@@ -1002,10 +1002,15 @@ h3 {
 .release-calendar {
   display: grid;
   gap: 8px;
-  padding: 9px 12px 12px;
+  padding: 12px;
   border-radius: 8px;
   margin-top: -2px;
-  background: transparent !important;
+  background:
+    var(--grid-fade),
+    var(--grid-texture),
+    var(--panel) !important;
+  background-size: auto, 22px 22px, auto;
+  background-position: center, var(--grid-x) var(--grid-y), center;
 }
 
 .release-calendar-head {
@@ -1125,9 +1130,20 @@ body.dialog-open .scroll-top-button {
   z-index: 16;
   display: grid;
   gap: 10px;
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(10px);
+  transition: opacity 160ms ease, transform 160ms ease;
 }
 
-.floating-action-button {
+.floating-edit-actions.visible {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translateY(0);
+}
+
+.floating-action-button,
+.floating-action-button.visible {
   width: 48px;
   height: 48px;
   min-width: 48px;
@@ -1135,6 +1151,7 @@ body.dialog-open .scroll-top-button {
   color: #ffffff;
   background: var(--accent);
   border-color: rgba(255, 255, 255, 0.2);
+  border-radius: 14px;
   box-shadow: 0 14px 32px rgba(0, 0, 0, 0.38);
   font-size: 24px;
   font-weight: 900;
@@ -1160,18 +1177,7 @@ body.dialog-open .floating-edit-actions {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 10px;
-}
-
-.release-months-frame {
-  padding: 10px;
-  border-radius: 8px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  background:
-    var(--grid-fade),
-    var(--grid-texture),
-    rgba(255, 255, 255, 0.035);
-  background-size: auto, 22px 22px, auto;
-  background-position: center, var(--grid-x) var(--grid-y), center;
+  padding: 0;
 }
 
 .release-month {
@@ -1509,11 +1515,11 @@ body.dialog-open .floating-edit-actions {
 }
 
 .sort-arrow-icon {
-  width: 18px;
-  height: 18px;
+  width: 19px;
+  height: 19px;
   fill: none;
   stroke: currentColor;
-  stroke-width: 1.8;
+  stroke-width: 2;
   stroke-linecap: round;
   stroke-linejoin: round;
 }
@@ -3504,8 +3510,8 @@ body.dialog-open .mobile-section-tabs {
 }
 
 .detail-trophy-percent .psn-progress-pill {
-  min-height: 25px;
-  padding: 3px 7px;
+  min-height: 32px;
+  padding: 5px 9px;
   gap: 5px;
   color: #ffffff;
   font-size: 11px;

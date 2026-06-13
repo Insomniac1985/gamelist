@@ -974,10 +974,8 @@ function renderReleaseCalendar() {
   const months = releaseCalendarMonths(4);
   const today = localDateKey(new Date());
   el.releaseCalendar.innerHTML = `
-    <div class="release-months-frame">
-      <div class="release-months">
-        ${months.map((month) => releaseMonthMarkup(month, releases, today)).join("")}
-      </div>
+    <div class="release-months">
+      ${months.map((month) => releaseMonthMarkup(month, releases, today)).join("")}
     </div>
     <div class="release-calendar-head">
       <div class="release-calendar-actions">
@@ -1953,8 +1951,9 @@ function updateDetailTrophyEdges() {
 }
 
 function updateScrollTopButton() {
-  if (!el.scrollTopButton) return;
-  el.scrollTopButton.classList.toggle("visible", window.scrollY > 180 && !document.body.classList.contains("dialog-open"));
+  const visible = window.scrollY > 180 && !document.body.classList.contains("dialog-open");
+  el.scrollTopButton?.classList.toggle("visible", visible);
+  el.floatingEditActions?.classList.toggle("visible", visible);
 }
 
 function sortedDetailTrophies() {
@@ -2243,8 +2242,8 @@ function gridIcon() {
 function sortArrowIcon(desc = false) {
   return `
     <svg class="sort-arrow-icon" viewBox="0 0 24 24" aria-hidden="true">
-      <path d="${desc ? "M12 5v14" : "M12 19V5"}"></path>
-      <path d="${desc ? "M7 14l5 5 5-5" : "M7 10l5-5 5 5"}"></path>
+      <path d="${desc ? "M12 3.5v17" : "M12 20.5v-17"}"></path>
+      <path d="${desc ? "M6.5 15l5.5 5.5 5.5-5.5" : "M6.5 9l5.5-5.5L17.5 9"}"></path>
     </svg>
   `;
 }
