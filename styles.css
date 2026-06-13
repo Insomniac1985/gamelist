@@ -696,7 +696,7 @@ button:disabled {
 .achievement-fallback img {
   width: 42px;
   height: 42px;
-  object-fit: cover;
+  object-fit: contain;
   border-radius: 8px;
   background: rgba(255, 255, 255, 0.08);
   border: 1px solid rgba(255, 255, 255, 0.12);
@@ -794,7 +794,7 @@ button:disabled {
 .eyebrow,
 .column-head p {
   margin: 0 0 6px;
-  color: var(--accent);
+  color: var(--accent-2);
   font-size: 12px;
   font-weight: 760;
   letter-spacing: 0;
@@ -980,8 +980,8 @@ h3 {
 }
 
 .stat-backlog {
-  --stat-color: #6fa8ff;
-  --stat-glow: rgba(111, 168, 255, 0.27);
+    --stat-color: var(--accent);
+    --stat-glow: rgb(247 105 105 / 26%);
 }
 
 .stat-done {
@@ -1136,7 +1136,7 @@ body.dialog-open .scroll-top-button {
 
 .release-month header span {
   color: var(--dim);
-  font-size: 11px;
+  font-size: 20px;
   font-weight: 780;
 }
 
@@ -1485,7 +1485,7 @@ body.dialog-open .scroll-top-button {
   inset: 6px auto 6px 6px;
   z-index: 0;
   width: calc((100% - 24px) / 3);
-  border-radius: 12px;
+  border-radius: 7px;
   background: var(--accent);
   box-shadow: 0px 3px 24px 3px rgb(255 0 0 / 40%);
   transform: translateX(0);
@@ -3996,7 +3996,7 @@ body.dialog-open .mobile-section-tabs {
   .game-row {
     grid-template-columns: 42px minmax(0, 1fr) auto;
     column-gap: 8px;
-    row-gap:0px;
+    row-gap: 3px;
     min-height: 64px;
     padding: 8px;
   }
