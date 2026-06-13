@@ -403,8 +403,6 @@ button:disabled {
   padding: 7px;
   text-align: left;
   scroll-snap-align: start;
-  transform-style: preserve-3d;
-  transition: transform 180ms ease, border-color 160ms ease, box-shadow 180ms ease, background 160ms ease;
 }
 
 .playing-finished-game img {
@@ -651,11 +649,6 @@ button.achievement-kpi {
   border: 1px solid rgba(255, 255, 255, 0.12);
   border-radius: 8px;
   text-decoration: none;
-}
-
-.achievement-card {
-  transform-style: preserve-3d;
-  transition: transform 180ms ease, border-color 160ms ease, box-shadow 180ms ease, background 160ms ease;
 }
 
 .achievement-card.latest {
@@ -1951,26 +1944,6 @@ body[data-mobile-section="upcoming"] .column:not(#upcoming) {
     var(--panel);
   border-color: rgba(255, 0, 57, 0.5);
   box-shadow: unset;
-}
-
-.game-card.playing-card {
-  transform-style: preserve-3d;
-  transition: transform 180ms ease, border-color 160ms ease, box-shadow 180ms ease, background 160ms ease;
-}
-
-@media (hover: hover) and (pointer: fine) {
-  .achievement-card:hover,
-  .playing-finished-game:hover,
-  .game-card.playing-card:hover {
-    transform: perspective(900px) rotateX(2deg) rotateY(-3deg) translateY(-3px);
-    box-shadow: 0 18px 36px rgba(0, 0, 0, 0.28);
-  }
-
-  .achievement-card:hover img,
-  .playing-finished-game:hover img,
-  .game-card.playing-card:hover .cover-button img {
-    transform: translateZ(14px) scale(1.025);
-  }
 }
 
 .game-card.playing-card.has-art::before {
@@ -3712,18 +3685,32 @@ body.dialog-open .mobile-section-tabs {
 }
 
 .platinum-count-pill {
-  display: inline-flex;
-  align-items: center;
-  min-height: 30px;
   margin-left: auto;
-  padding: 6px 9px;
-  color: #ffffff;
-  background: rgba(255, 255, 255, 0.09);
-  border: 1px solid rgba(255, 255, 255, 0.14);
-  border-radius: 7px;
-  font-size: 12px;
-  font-weight: 820;
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 760;
   white-space: nowrap;
+}
+
+.platinum-order-control {
+  display: flex;
+  align-items: stretch;
+  gap: 6px;
+}
+
+.platinum-order-control select {
+  width: auto;
+  min-width: 96px;
+  height: 34px;
+  padding: 5px 28px 5px 9px;
+  font-size: 12px;
+}
+
+.platinum-order-control .direction-toggle {
+  width: 34px;
+  min-width: 34px;
+  min-height: 34px;
+  height: 34px;
 }
 
 .platinum-list {
@@ -3734,7 +3721,7 @@ body.dialog-open .mobile-section-tabs {
 
 .platinum-card {
   display: grid;
-  grid-template-columns: 42px minmax(0, 1fr);
+  grid-template-columns: 52px minmax(0, 1fr);
   gap: 11px;
   align-items: center;
   min-width: 0;
@@ -3764,8 +3751,8 @@ body.dialog-open .mobile-section-tabs {
   position: relative;
   display: grid;
   place-items: center;
-  width: 42px;
-  height: 42px;
+  width: 52px;
+  height: 52px;
 }
 
 .platinum-main {
@@ -3801,8 +3788,8 @@ body.dialog-open .mobile-section-tabs {
 }
 
 .platinum-icon {
-  width: 34px;
-  height: 34px;
+  width: 46px;
+  height: 46px;
   object-fit: contain;
   border-radius: 6px;
   z-index: 1;
@@ -4563,13 +4550,35 @@ body.dialog-open .mobile-section-tabs {
     display: grid;
   }
 
+  .platinum-modal .modal-head {
+    align-items: flex-start;
+  }
+
+  .platinum-count-pill {
+    margin-left: 0;
+  }
+
+  .platinum-order-control {
+    order: 3;
+    width: 100%;
+  }
+
+  .platinum-order-control select {
+    flex: 1;
+  }
+
   .platinum-card {
-    grid-template-columns: 38px minmax(0, 1fr);
+    grid-template-columns: 46px minmax(0, 1fr);
   }
 
   .platinum-icon-wrap {
-    width: 38px;
-    height: 38px;
+    width: 46px;
+    height: 46px;
+  }
+
+  .platinum-icon {
+    width: 40px;
+    height: 40px;
   }
 
   .platinum-cover-preview {

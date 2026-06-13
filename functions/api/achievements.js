@@ -80,7 +80,7 @@ async function getRecentPsnActivity(accessToken, sourceUrl) {
   const recentTitles = titles.slice(0, 6);
   const [trophies, platinums] = await Promise.all([
     Promise.all(recentTitles.slice(0, 4).map((title) => getRecentTrophiesForTitle(accessToken, title, sourceUrl))),
-    getAllPlatinums(accessToken, titles, sourceUrl),
+    getAllPlatinums(accessToken, titles, sourceUrl, Number(summary?.trophies?.platinum || 0)),
   ]);
   const recentTrophies = trophies.flat();
   recentTrophies.sort((a, b) => String(b.rawEarnedAt || "").localeCompare(String(a.rawEarnedAt || "")));
@@ -161,8 +161,9 @@ async function getRecentTrophiesForTitle(accessToken, title, sourceUrl) {
   }
 }
 
-async function getAllPlatinums(accessToken, titles, sourceUrl) {
+async function getAllPlatinums(accessToken, titles, sourceUrl, expectedCount = 0) {
   const platinumTitles = titles.filter((title) => Number(title?.earnedTrophies?.platinum || 0) > 0);
+  const remainingTitles = titles.filter((title) => Number(title?.earnedTrophies?.platinum || 0) <= 0);
   const results = [];
   const chunkSize = 6;
   for (let index = 0; index < platinumTitles.length; index += chunkSize) {
@@ -170,7 +171,14 @@ async function getAllPlatinums(accessToken, titles, sourceUrl) {
     const platinums = await Promise.all(chunk.map((title) => getPlatinumsForTitle(accessToken, title, sourceUrl)));
     results.push(...platinums.flat());
   }
-  return uniquePlatinums(results).sort((a, b) => String(b.rawEarnedAt || "").localeCompare(String(a.rawEarnedAt || "")));
+  let unique = uniquePlatinums(results);
+  for (let index = 0; expectedCount && unique.length < expectedCount && index < remainingTitles.length; index += chunkSize) {
+    const chunk = remainingTitles.slice(index, index + chunkSize);
+    const platinums = await Promise.all(chunk.map((title) => getPlatinumsForTitle(accessToken, title, sourceUrl)));
+    results.push(...platinums.flat());
+    unique = uniquePlatinums(results);
+  }
+  return unique.sort((a, b) => String(b.rawEarnedAt || "").localeCompare(String(a.rawEarnedAt || "")));
 }
 
 function uniquePlatinums(platinums) {
@@ -184,37 +192,59 @@ function uniquePlatinums(platinums) {
 }
 
 async function getPlatinumsForTitle(accessToken, title, sourceUrl) {
-  try {
-    const npServiceName = title.npServiceName || serviceNameFor(title);
-    const earnedUrl = `${PSN_TROPHY_BASE}/v1/users/me/npCommunicationIds/${encodeURIComponent(title.npCommunicationId)}/trophyGroups/all/trophies`;
-    const metaUrl = `${PSN_TROPHY_BASE}/v1/npCommunicationIds/${encodeURIComponent(title.npCommunicationId)}/trophyGroups/all/trophies`;
-    const [earnedData, metaData] = await Promise.all([
-      getPagedTrophies(accessToken, earnedUrl, npServiceName),
-      getPagedTrophies(accessToken, metaUrl, npServiceName),
-    ]);
-    const metaById = new Map(metaData.map((trophy) => [String(trophy.trophyId), trophy]));
-    return earnedData
-      .map((earned) => {
-        const meta = metaById.get(String(earned.trophyId)) || {};
-        const type = trophyTypeLabel(earned.trophyType || meta.trophyType);
-        if (!earned.earned || !earned.earnedDateTime || type !== "Platinum") return null;
-        return {
-          title: title.trophyTitleName || "Platinum game",
-          cover: title.trophyTitleIconUrl || "",
-          trophyName: meta.trophyName || "Platinum",
-          earnedAt: formatPsnDate(earned.earnedDateTime),
-          rawEarnedAt: earned.earnedDateTime,
-          icon: meta.trophyIconUrl || earned.trophyRewardImageUrl || title.trophyTitleIconUrl || "",
-          platform: title.trophyTitlePlatform || "",
-          npCommunicationId: title.npCommunicationId || "",
-          npServiceName: title.npServiceName || serviceNameFor(title),
-          url: sourceUrl,
-        };
-      })
-      .filter(Boolean);
-  } catch {
-    return [];
+  const services = trophyServiceCandidates(title);
+  for (const npServiceName of services) {
+    try {
+      const platinums = await getPlatinumsForTitleService(accessToken, title, sourceUrl, npServiceName);
+      if (platinums.length) return platinums;
+    } catch {
+      // Some mixed-platform titles only respond to one trophy service.
+    }
   }
+  return [];
+}
+
+async function getPlatinumsForTitleService(accessToken, title, sourceUrl, npServiceName) {
+  const earnedUrl = `${PSN_TROPHY_BASE}/v1/users/me/npCommunicationIds/${encodeURIComponent(title.npCommunicationId)}/trophyGroups/all/trophies`;
+  const metaUrl = `${PSN_TROPHY_BASE}/v1/npCommunicationIds/${encodeURIComponent(title.npCommunicationId)}/trophyGroups/all/trophies`;
+  const [earnedData, metaData] = await Promise.all([
+    getPagedTrophies(accessToken, earnedUrl, npServiceName),
+    getPagedTrophies(accessToken, metaUrl, npServiceName),
+  ]);
+  const metaById = new Map(metaData.map((trophy) => [String(trophy.trophyId), trophy]));
+  return earnedData
+    .map((earned) => {
+      const meta = metaById.get(String(earned.trophyId)) || {};
+      const type = trophyTypeLabel(earned.trophyType || meta.trophyType);
+      if (!earned.earned || !earned.earnedDateTime || type !== "Platinum") return null;
+      return {
+        title: title.trophyTitleName || "Platinum game",
+        cover: title.trophyTitleIconUrl || "",
+        trophyName: meta.trophyName || "Platinum",
+        earnedAt: formatPsnDate(earned.earnedDateTime),
+        rawEarnedAt: earned.earnedDateTime,
+        icon: meta.trophyIconUrl || earned.trophyRewardImageUrl || title.trophyTitleIconUrl || "",
+        platform: title.trophyTitlePlatform || "",
+        npCommunicationId: title.npCommunicationId || "",
+        npServiceName,
+        url: sourceUrl,
+      };
+    })
+    .filter(Boolean);
+}
+
+function trophyServiceCandidates(title) {
+  const platform = String(title?.trophyTitlePlatform || "").toUpperCase();
+  return uniqueValues([
+    title?.npServiceName,
+    serviceNameFor(title),
+    platform.includes("PS5") ? "trophy" : "",
+    platform.includes("PS4") ? "trophy2" : "",
+  ].filter(Boolean));
+}
+
+function uniqueValues(values) {
+  return [...new Set(values)];
 }
 
 async function getPagedTrophies(accessToken, baseUrl, npServiceName) {

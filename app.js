@@ -47,6 +47,8 @@ const state = {
   mobileSection: "backlog",
   historyYear: String(new Date().getFullYear()),
   platinumYear: "all",
+  platinumSort: "time",
+  platinumDirection: "desc",
   releaseCalendarOffset: 0,
   detailTrophyRequest: "",
   detailReturnToHistory: false,
@@ -97,6 +99,8 @@ const el = {
   platinumCloseButton: document.querySelector("#platinumCloseButton"),
   platinumTitle: document.querySelector("#platinumTitle"),
   platinumCount: document.querySelector("#platinumCount"),
+  platinumSortSelect: document.querySelector("#platinumSortSelect"),
+  platinumSortDirection: document.querySelector("#platinumSortDirection"),
   platinumYearTabs: document.querySelector("#platinumYearTabs"),
   platinumYearSelect: document.querySelector("#platinumYearSelect"),
   platinumList: document.querySelector("#platinumList"),
@@ -678,9 +682,22 @@ function openPlatinumDialog() {
 
 function renderPlatinumDialog(platinums = platinumItems(), years = platinumYears(platinums)) {
   const selected = state.platinumYear;
-  const visible = selected === "all" ? platinums : platinums.filter((item) => platinumYearFor(item) === selected);
+  const visible = sortedPlatinums(selected === "all" ? platinums : platinums.filter((item) => platinumYearFor(item) === selected));
   el.platinumTitle.innerHTML = `${trophyIcon()} <span>Platinums</span>`;
   el.platinumCount.textContent = `${platinums.length} ${platinums.length === 1 ? "platinum" : "platinums"}`;
+  el.platinumSortSelect.value = state.platinumSort;
+  el.platinumSortDirection.innerHTML = sortArrowIcon(state.platinumDirection === "desc");
+  el.platinumSortDirection.title = state.platinumDirection === "asc" ? "Sort ascending" : "Sort descending";
+  el.platinumSortDirection.setAttribute("aria-label", el.platinumSortDirection.title);
+  el.platinumSortDirection.classList.toggle("desc", state.platinumDirection === "desc");
+  el.platinumSortSelect.onchange = () => {
+    state.platinumSort = el.platinumSortSelect.value || "time";
+    renderPlatinumDialog(platinums, years);
+  };
+  el.platinumSortDirection.onclick = () => {
+    state.platinumDirection = state.platinumDirection === "asc" ? "desc" : "asc";
+    renderPlatinumDialog(platinums, years);
+  };
   el.platinumYearTabs.innerHTML = platinums.length ? [
     `<button class="year-tab ${selected === "all" ? "active" : ""}" type="button" data-year="all">All<span>${escapeHtml(String(platinums.length))}</span></button>`,
     ...years.map((year) => `
@@ -713,6 +730,22 @@ function renderPlatinumDialog(platinums = platinumItems(), years = platinumYears
       openDetail(gameId);
     });
   });
+}
+
+function sortedPlatinums(platinums) {
+  const direction = state.platinumDirection === "asc" ? 1 : -1;
+  return [...platinums].sort((a, b) => {
+    if (state.platinumSort === "name") {
+      return direction * (stringCompare(a.trophyName || "Platinum", b.trophyName || "Platinum") || stringCompare(a.title, b.title));
+    }
+    return direction * (platinumTimeValue(a) - platinumTimeValue(b) || stringCompare(a.title, b.title));
+  });
+}
+
+function platinumTimeValue(item) {
+  const raw = item.rawEarnedAt || item.earnedAt || "";
+  const time = new Date(raw).getTime();
+  return Number.isNaN(time) ? 0 : time;
 }
 
 function platinumItems() {
@@ -1958,12 +1991,12 @@ function cardTrophiesFor(game) {
   const guideLinks = guideLinksFor(game);
   const trophies = cached?.trophies?.length ? cached.trophies : latestTrophiesForGame(game, 3);
   if (!trophies.length && cached?.loading) {
-    return `${guideLinks.length ? `<div class="guide-links card-guide-row">${guideLinks.join("")}</div>` : ""}<div class="card-trophy-head">${trophyIcon()}<span>Loading trophies...</span></div>`;
+    return `<div class="card-trophy-head">${trophyIcon()}<span>Loading trophies...</span></div>${guideLinks.length ? `<div class="guide-links card-guide-row">${guideLinks.join("")}</div>` : ""}`;
   }
   if (!trophies.length) return guideLinks.length ? `<div class="guide-links card-guide-row">${guideLinks.join("")}</div>` : "";
   return `
-    ${guideLinks.length ? `<div class="guide-links card-guide-row">${guideLinks.join("")}</div>` : ""}
     <div class="card-trophy-head">${trophyIcon()}<span>Latest trophies</span>${psn ? psnProgressBadge(psn, { includeIcon: false, className: "card-trophy-progress" }) : ""}</div>
+    ${guideLinks.length ? `<div class="guide-links card-guide-row">${guideLinks.join("")}</div>` : ""}
     <div class="card-trophy-list">
       ${trophies.map((trophy) => `
         <a class="card-trophy trophy-${escapeHtml(trophyTone(trophy.type || trophy.rarity))}" href="${escapeHtml(trophy.url || state.psnActivity.sourceUrl || "#")}" target="_blank" rel="noreferrer" title="${escapeHtml([trophy.title, trophy.earnedAt].filter(Boolean).join(" · "))}">
