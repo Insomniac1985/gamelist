@@ -399,15 +399,17 @@ button:disabled {
 
 .playing-finished-game {
   flex: 0 0 min(290px, 72vw);
-  min-height: 52px;
+  min-height: 66px;
   padding: 7px;
   text-align: left;
   scroll-snap-align: start;
 }
 
 .playing-finished-game img {
-  width: 30px;
-  height: 30px;
+  width: 34px;
+  height: 48px;
+  object-fit: cover;
+  border-radius: 5px;
 }
 
 .playing-finished-game strong {
@@ -1405,15 +1407,16 @@ body.dialog-open .scroll-top-button {
   min-height: 42px;
   padding: 0;
   color: #ffffff;
-  background: rgba(255, 255, 255, 0.1);
-  border-color: rgba(247, 223, 105, 0.34);
+  background: var(--accent);
+  border-color: transparent;
   border-radius: 7px;
+  font-weight: 900;
 }
 
 .view-toggle.active {
   color: #ffffff;
-  border-color: rgba(255, 0, 81, 0.48);
-  background: rgba(255, 0, 81, 0.14);
+  border-color: rgba(247, 223, 105, 0.34);
+  background: rgba(255, 255, 255, 0.1);
 }
 
 .view-icon {
@@ -1639,6 +1642,7 @@ body[data-mobile-section="upcoming"] .column:not(#upcoming) {
 }
 
 .game-row-identity {
+  position: relative;
   grid-column: 2 / 3;
   grid-row: 1 / -1;
   display: grid;
@@ -1647,6 +1651,7 @@ body[data-mobile-section="upcoming"] .column:not(#upcoming) {
 }
 
 .game-row-identity strong {
+  position: relative;
   min-width: 0;
   overflow: hidden;
   color: var(--text);
@@ -1654,6 +1659,20 @@ body[data-mobile-section="upcoming"] .column:not(#upcoming) {
   line-height: 1.2;
   text-overflow: ellipsis;
   white-space: nowrap;
+  z-index: 1;
+}
+
+.game-row-identity strong:hover,
+.game-row-identity strong:focus-visible {
+  overflow: visible;
+  width: max-content;
+  max-width: min(58vw, 520px);
+  padding: 4px 7px;
+  border-radius: 6px;
+  background: #17181d;
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.34);
+  white-space: normal;
+  z-index: 4;
 }
 
 .game-row-identity span {
@@ -1683,6 +1702,7 @@ body[data-mobile-section="upcoming"] .column:not(#upcoming) {
 .game-row-tags {
   grid-column: 3 / 5;
   grid-row: 2;
+  gap: 2px 4px;
 }
 
 .game-row-prices {
@@ -3010,10 +3030,29 @@ body:not(.can-edit) .game-card:focus-within .edit-action {
 .completed-platform .coop-pill,
 .completed-platform .digital-pill,
 .completed-platform .replay-pill,
-.completed-platform .platinum-pill {
+.completed-platform .platinum-pill,
+.completed-platform .psn-progress-pill {
   min-height: 25px;
   padding: 3px 7px;
   font-size: 11px;
+}
+
+.completed-platform .psn-progress-pill {
+  gap: 5px;
+}
+
+.completed-platform .psn-progress-pill .trophy-icon {
+  width: 14px;
+  height: 14px;
+}
+
+.completed-platform .psn-progress-pill em {
+  width: 28px;
+  height: 4px;
+}
+
+.completed-platform .psn-progress-pill strong {
+  font-size: 10px;
 }
 
 .completed-platform .digital-pill {
@@ -3257,6 +3296,21 @@ body.dialog-open .mobile-section-tabs {
   font-size: 12px;
   font-weight: 800;
   white-space: nowrap;
+}
+
+.detail-trophy-percent {
+  display: inline-flex;
+  align-items: center;
+  min-height: 25px;
+  padding: 4px 7px;
+  color: #ffe985;
+  border: 1px solid rgba(255, 225, 101, 0.34);
+  border-radius: 6px;
+  background: rgba(255, 225, 101, 0.09);
+}
+
+.detail-trophy-percent:empty {
+  display: none;
 }
 
 .detail-trophy-tools select {

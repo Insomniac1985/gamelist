@@ -101,6 +101,7 @@ const el = {
   detailGuideLinks: document.querySelector("#detailGuideLinks"),
   detailTrophies: document.querySelector("#detailTrophies"),
   detailTrophyCount: document.querySelector("#detailTrophyCount"),
+  detailTrophyPercent: document.querySelector("#detailTrophyPercent"),
   detailTrophySort: document.querySelector("#detailTrophySort"),
   detailTrophyDirection: document.querySelector("#detailTrophyDirection"),
   detailTrophyScroller: document.querySelector("#detailTrophyScroller"),
@@ -977,7 +978,7 @@ function rowFor(game, section, options = {}) {
   row.innerHTML = `
     <img class="game-row-cover" src="${escapeHtml(game.cover ? coverDisplayUrl(game.cover, "tiny") : "")}" alt="" loading="${escapeHtml(options.imagePriority || "lazy")}" decoding="async" ${game.cover ? "" : "hidden"}>
     <div class="game-row-identity">
-      <strong class="${game.platinum ? "completed-achievements-title" : ""} ${owners.includes("Judy") ? "owner-judy" : ""} ${owners.includes("Jordi") ? "owner-jordi" : ""}">${escapeHtml(game.title)}</strong>
+      <strong class="${game.platinum ? "completed-achievements-title" : ""} ${owners.includes("Judy") ? "owner-judy" : ""} ${owners.includes("Jordi") ? "owner-jordi" : ""}" tabindex="0">${escapeHtml(game.title)}</strong>
       ${studioText(game) ? `<span>${escapeHtml(studioText(game))}</span>` : ""}
     </div>
     <div class="game-row-core">${rowCoreStats(game)}</div>
@@ -1587,7 +1588,7 @@ function openDetail(id, options = {}) {
   el.detailTitle.classList.toggle("owner-jordi", owners.includes("Jordi"));
   el.detailStudio.textContent = studioText(game);
   el.detailStudio.hidden = !el.detailStudio.textContent;
-  el.detailMeta.innerHTML = metaFor(game).join("");
+  el.detailMeta.innerHTML = metaFor(game, { includePsn: false }).join("");
   el.detailDates.innerHTML = playDatesFor(game).join("");
   el.detailDates.hidden = !el.detailDates.innerHTML;
   el.detailChips.innerHTML = chipsFor(game).join("");
@@ -1619,6 +1620,7 @@ async function renderDetailTrophies(game) {
     state.detailTrophiesData = [];
     el.detailTrophies.hidden = true;
     el.detailTrophyCount.textContent = "";
+    el.detailTrophyPercent.textContent = "";
     el.detailTrophyList.innerHTML = "";
     updateDetailTrophyEdges();
     return;
@@ -1628,6 +1630,7 @@ async function renderDetailTrophies(game) {
   state.detailTrophyRequest = requestKey;
   el.detailTrophies.hidden = false;
   el.detailTrophyCount.textContent = "Loading...";
+  el.detailTrophyPercent.textContent = "";
   el.detailTrophyList.innerHTML = `<div class="detail-trophy-empty">Loading earned trophies...</div>`;
 
   try {
@@ -1645,6 +1648,7 @@ async function renderDetailTrophies(game) {
     if (state.detailTrophyRequest !== requestKey) return;
     state.detailTrophiesData = [];
     el.detailTrophyCount.textContent = "";
+    el.detailTrophyPercent.textContent = "";
     el.detailTrophyList.innerHTML = `<div class="detail-trophy-empty">Could not load trophies right now.</div>`;
     updateDetailTrophyEdges();
   }
@@ -1659,6 +1663,7 @@ function renderDetailTrophyList() {
   const trophies = sortedDetailTrophies();
   const earnedCount = trophies.filter((trophy) => trophy.earned).length;
   el.detailTrophyCount.textContent = trophies.length ? `${earnedCount}/${trophies.length} earned` : "";
+  el.detailTrophyPercent.textContent = trophies.length ? `${Math.round((earnedCount / trophies.length) * 100)}%` : "";
   el.detailTrophyList.innerHTML = trophies.length
     ? trophies.map(detailTrophyCard).join("")
     : `<div class="detail-trophy-empty">No trophies found for this game yet.</div>`;
@@ -1717,7 +1722,7 @@ function sectionRank(section) {
   return { backlog: 0, upcoming: 1, wanted: 2 }[section] ?? 3;
 }
 
-function metaFor(game) {
+function metaFor(game, options = {}) {
   const values = [];
   if (game.platform) values.push(platformBadge(game.platform));
   if (game.digital) values.push(`<span class="digital-pill">Digital</span>`);
@@ -1726,7 +1731,7 @@ function metaFor(game) {
   if (release) values.push(`<span class="release-pill">${escapeHtml(release)}</span>`);
   if (game.lengthHours) values.push(timeBadge(game.lengthHours));
   const psn = matchedPsnGame(game);
-  if (psn) values.push(psnProgressBadge(psn));
+  if (options.includePsn !== false && psn) values.push(psnProgressBadge(psn));
   if (game.coop) values.push(`<span class="coop-pill">Coop</span>`);
   if (game.replayCount) values.push(replayBadge(game.replayCount));
   if (game.platinum) values.push(`<span class="platinum-pill">${trophyIcon()} Completed</span>`);
@@ -1830,12 +1835,14 @@ function psnProgressBadge(game) {
 }
 
 function completedBadges(game) {
+  const psn = matchedPsnGame(game);
   return [
     game.platform ? platformBadge(game.platform) : "",
     game.digital ? `<span class="digital-pill">Digital</span>` : "",
     game.coop ? `<span class="coop-pill">Coop</span>` : "",
     game.replayCount ? replayBadge(game.replayCount) : "",
     game.platinum ? `<span class="platinum-pill">${trophyIcon()} Completed</span>` : "",
+    psn ? psnProgressBadge(psn) : "",
   ].filter(Boolean).join("");
 }
 
@@ -2195,11 +2202,15 @@ function normalizeStoreLinks(links) {
 
 function storeLinksFor(game) {
   const links = storeLinksWithFallbacks(game);
-  return [
-    storeButton("PlayStation", links.playstation, "store-playstation", platformLogo("PS5")),
-    storeButton("Nintendo", links.nintendo, "store-nintendo", platformLogo("Switch")),
-    storeButton("Steam", links.steam, "store-steam", platformLogo("PC")),
-  ].join("");
+  const stores = [
+    { key: "playstation", label: "PlayStation", cls: "store-playstation", icon: platformLogo("PS5"), provider: "PlayStation España" },
+    { key: "nintendo", label: "Nintendo", cls: "store-nintendo", icon: platformLogo("Switch"), provider: "Nintendo España" },
+    { key: "steam", label: "Steam", cls: "store-steam", icon: platformLogo("PC"), provider: "Steam" },
+  ];
+  return stores
+    .filter((store) => platformStoreProvidersForGame(game).includes(store.provider))
+    .map((store) => storeButton(store.label, links[store.key], store.cls, store.icon))
+    .join("");
 }
 
 function storeButton(label, url, cls, icon) {
@@ -2330,11 +2341,13 @@ function pricesFor(game) {
 function fallbackPriceLinks(game) {
   const q = retailQuery(game.title, game.platform);
   if (game.digital) {
-    return [
+    const links = [
       { store: "Nintendo España", url: `https://www.nintendo.com/es-es/Buscar/Buscar-299117.html?q=${q}&f=147394-86` },
       { store: "PlayStation España", url: `https://www.playstation.com/es-es/search/?q=${q}` },
       { store: "Steam", url: `https://store.steampowered.com/search/?term=${q}` },
     ];
+    const providers = platformStoreProvidersForGame(game);
+    return links.filter((link) => providers.includes(link.store));
   }
   return [
     { store: "Amazon.es", url: `https://www.amazon.es/s?k=${q}` },
@@ -2372,7 +2385,15 @@ function normalizedPrices(game) {
 }
 
 function priceProvidersForGame(game) {
-  return game.digital ? DIGITAL_PROVIDERS : PHYSICAL_PROVIDERS;
+  return game.digital ? platformStoreProvidersForGame(game) : PHYSICAL_PROVIDERS;
+}
+
+function platformStoreProvidersForGame(game) {
+  const platform = canonicalPlatform(game.platform);
+  if (platform === "Switch" || platform === "Switch 2") return ["Nintendo España"];
+  if (platform === "PS4" || platform === "PS5") return ["PlayStation España"];
+  if (platform === "PC") return ["Steam"];
+  return game.digital ? [] : DIGITAL_PROVIDERS;
 }
 
 function storeIcon(store) {

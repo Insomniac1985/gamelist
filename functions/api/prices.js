@@ -52,9 +52,23 @@ export async function onRequestGet({ request, env = {} }) {
   if (!title) return json({ prices: [] });
 
   const query = digital ? retailTitle(title) : `${retailTitle(title)} ${platform}`.trim();
-  const providers = digital ? DIGITAL_PROVIDERS : PHYSICAL_PROVIDERS;
+  const providers = digital ? digitalProvidersForPlatform(platform) : PHYSICAL_PROVIDERS;
   const prices = await Promise.all(providers.map((provider) => findPrice(provider, title, platform, query, env, debug)));
   return json({ prices });
+}
+
+function digitalProvidersForPlatform(platform) {
+  const normalized = normalizePlatform(platform);
+  if (normalized === "switch" || normalized === "switch2") return DIGITAL_PROVIDERS.filter((provider) => provider.store === "Nintendo España");
+  if (normalized === "ps4" || normalized === "ps5" || normalized === "playstation4" || normalized === "playstation5") {
+    return DIGITAL_PROVIDERS.filter((provider) => provider.store === "PlayStation España");
+  }
+  if (normalized === "pc" || normalized === "steam") return DIGITAL_PROVIDERS.filter((provider) => provider.store === "Steam");
+  return [];
+}
+
+function normalizePlatform(platform) {
+  return String(platform || "").toLowerCase().replace(/[^a-z0-9]+/g, "");
 }
 
 async function findPrice(provider, title, platform, query, env = {}, debug = false) {
