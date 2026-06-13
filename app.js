@@ -35,7 +35,7 @@ const searchInflight = new Map();
 
 const state = {
   games: [],
-  psnActivity: { achievements: [], games: [], sourceUrl: "" },
+  psnActivity: { achievements: [], games: [], platinums: [], sourceUrl: "" },
   cardTrophies: {},
   filters: { query: "", platform: "all", tag: "all", sort: "time", direction: "asc", preordered: false },
   viewMode: localStorage.getItem(VIEW_MODE_KEY) === "list" ? "list" : "grid",
@@ -45,6 +45,7 @@ const state = {
   draggingId: "",
   mobileSection: "backlog",
   historyYear: String(new Date().getFullYear()),
+  platinumYear: "all",
   releaseCalendarOffset: 0,
   detailTrophyRequest: "",
   detailReturnToHistory: false,
@@ -93,6 +94,8 @@ const el = {
   historyList: document.querySelector("#historyList"),
   platinumDialog: document.querySelector("#platinumDialog"),
   platinumCloseButton: document.querySelector("#platinumCloseButton"),
+  platinumTitle: document.querySelector("#platinumTitle"),
+  platinumYearTabs: document.querySelector("#platinumYearTabs"),
   platinumList: document.querySelector("#platinumList"),
   releaseCalendar: document.querySelector("#releaseCalendar"),
   releaseDialog: document.querySelector("#releaseDialog"),
@@ -571,6 +574,7 @@ function renderAchievements(data = {}) {
   state.psnActivity = {
     achievements: Array.isArray(data.achievements) ? data.achievements : [],
     games: Array.isArray(data.games) ? data.games : [],
+    platinums: Array.isArray(data.platinums) ? data.platinums : [],
     summary: data.summary || null,
     sourceUrl,
   };
@@ -656,28 +660,82 @@ function achievementDashboard(achievements, games, sourceUrl, summary = null) {
 }
 
 function openPlatinumDialog() {
-  const localPlatinums = state.games
+  const platinums = platinumItems();
+  const years = platinumYears(platinums);
+  if (state.platinumYear !== "all" && !years.includes(state.platinumYear)) state.platinumYear = "all";
+  renderPlatinumDialog(platinums, years);
+  el.platinumDialog.showModal();
+}
+
+function renderPlatinumDialog(platinums = platinumItems(), years = platinumYears(platinums)) {
+  const selected = state.platinumYear;
+  const visible = selected === "all" ? platinums : platinums.filter((item) => platinumYearFor(item) === selected);
+  el.platinumTitle.innerHTML = `${trophyIcon()} <span>Platinums</span> <small>${escapeHtml(String(platinums.length))}</small>`;
+  el.platinumYearTabs.innerHTML = platinums.length ? [
+    `<button class="year-tab ${selected === "all" ? "active" : ""}" type="button" data-year="all">All<span>${escapeHtml(String(platinums.length))}</span></button>`,
+    ...years.map((year) => `
+      <button class="year-tab ${year === selected ? "active" : ""}" type="button" data-year="${escapeHtml(year)}">
+        ${escapeHtml(year)}
+        <span>${escapeHtml(String(platinums.filter((item) => platinumYearFor(item) === year).length))}</span>
+      </button>
+    `),
+  ].join("") : "";
+  el.platinumYearTabs.querySelectorAll(".year-tab").forEach((button) => {
+    button.addEventListener("click", () => {
+      state.platinumYear = button.dataset.year || "all";
+      renderPlatinumDialog(platinums, years);
+    });
+  });
+  el.platinumList.innerHTML = visible.length ? visible.map(platinumCard).join("") : `<div class="empty">No platinums tracked yet.</div>`;
+}
+
+function platinumItems() {
+  const psnPlatinums = (state.psnActivity.platinums || []).map((item) => ({
+    title: item.title || "Platinum game",
+    cover: localCoverForTitle(item.title) || item.cover || platformLogo("PS5"),
+    trophyName: item.trophyName || "Platinum",
+    trophyIcon: item.icon || platformLogo("PS5"),
+    earnedAt: item.earnedAt || "",
+    rawEarnedAt: item.rawEarnedAt || "",
+    platform: item.platform || "",
+    url: item.url || state.psnActivity.sourceUrl || "",
+  }));
+  if (psnPlatinums.length) return psnPlatinums;
+  return state.games
     .filter((game) => !game.deletedAt && game.platinum)
     .sort((a, b) => String(b.completedAt || "").localeCompare(String(a.completedAt || "")) || stringCompare(a.title, b.title))
     .map((game) => ({
       title: game.title,
       cover: game.cover ? coverDisplayUrl(game.cover, "tiny") : platformLogo(game.platform || "PS5"),
-      meta: [game.platform, formatLongDate(game.completedAt)].filter(Boolean).join(" · "),
+      trophyName: "Platinum",
+      trophyIcon: platformLogo("PS5"),
+      earnedAt: formatLongDate(game.completedAt),
+      rawEarnedAt: game.completedAt || "",
+      platform: game.platform || "",
       url: matchedPsnGame(game)?.url || "",
     }));
-  const localTitles = new Set(localPlatinums.map((item) => normalizeTitleForMatch(item.title)));
-  const recentPsnPlatinums = (state.psnActivity.achievements || [])
-    .filter((item) => trophyTone(item.rarity) === "platinum")
-    .filter((item) => !localTitles.has(normalizeTitleForMatch(item.game || item.title || "")))
-    .map((item) => ({
-      title: item.game || item.title || "Platinum trophy",
-      cover: item.icon || platformLogo("PS5"),
-      meta: [item.title, item.earnedAt].filter(Boolean).join(" · "),
-      url: item.url || state.psnActivity.sourceUrl || "",
-    }));
-  const platinums = [...localPlatinums, ...recentPsnPlatinums];
-  el.platinumList.innerHTML = platinums.length ? platinums.map(platinumCard).join("") : `<div class="empty">No platinums tracked yet.</div>`;
-  el.platinumDialog.showModal();
+}
+
+function localCoverForTitle(title) {
+  const normalized = normalizeTitleForMatch(title);
+  if (!normalized) return "";
+  const match = state.games.find((game) => {
+    const gameTitle = normalizeTitleForMatch(game.title);
+    return game.cover && gameTitle && (gameTitle === normalized || gameTitle.includes(normalized) || normalized.includes(gameTitle));
+  });
+  return match?.cover ? coverDisplayUrl(match.cover, "tiny") : "";
+}
+
+function platinumYears(platinums) {
+  return [...new Set(platinums.map(platinumYearFor).filter(Boolean))].sort((a, b) => b.localeCompare(a));
+}
+
+function platinumYearFor(item) {
+  const raw = item.rawEarnedAt || item.earnedAt || "";
+  const date = new Date(raw);
+  if (!Number.isNaN(date.getTime())) return String(date.getFullYear());
+  const match = String(raw).match(/\b(20\d{2}|19\d{2})\b/);
+  return match ? match[1] : "";
 }
 
 function platinumCard(item) {
@@ -685,7 +743,8 @@ function platinumCard(item) {
     <img src="${escapeHtml(item.cover)}" alt="">
     <div>
       <strong>${escapeHtml(item.title)}</strong>
-      ${item.meta ? `<span>${escapeHtml(item.meta)}</span>` : ""}
+      <span class="platinum-earned">${escapeHtml([item.platform, item.earnedAt].filter(Boolean).join(" · "))}</span>
+      <span class="platinum-trophy"><img src="${escapeHtml(item.trophyIcon)}" alt="">${escapeHtml(item.trophyName || "Platinum")}</span>
     </div>
   `;
   if (item.url) {
@@ -1662,7 +1721,7 @@ function openDetail(id, options = {}) {
   el.detailStoreLinks.innerHTML = storeLinksFor(game);
   el.detailDescription.textContent = game.description || "No description yet.";
   renderDetailGuides(game);
-  if (game.section === "backlog") {
+  if (game.section === "backlog" || game.completedAt || game.platinum) {
     el.detailPrices.hidden = true;
     el.detailPrices.innerHTML = "";
   } else {
@@ -1830,15 +1889,15 @@ function cardTrophiesFor(game) {
   const cacheKey = psn?.npCommunicationId || "";
   const cached = cacheKey ? state.cardTrophies[cacheKey] : null;
   if (psn && !cached) loadCardTrophies(game, psn);
-  const guideLinks = playingGuideLinksFor(game);
+  const guideLinks = guideLinksFor(game);
   const trophies = cached?.trophies?.length ? cached.trophies : latestTrophiesForGame(game, 3);
   if (!trophies.length && cached?.loading) {
-    return `${guideLinks.length ? `<div class="card-guide-row">${guideLinks.join("")}</div>` : ""}<div class="card-trophy-head">${trophyIcon()}<span>Loading trophies...</span></div>`;
+    return `${guideLinks.length ? `<div class="guide-links card-guide-row">${guideLinks.join("")}</div>` : ""}<div class="card-trophy-head">${trophyIcon()}<span>Loading trophies...</span></div>`;
   }
-  if (!trophies.length) return guideLinks.length ? `<div class="card-guide-row">${guideLinks.join("")}</div>` : "";
+  if (!trophies.length) return guideLinks.length ? `<div class="guide-links card-guide-row">${guideLinks.join("")}</div>` : "";
   return `
-    ${guideLinks.length ? `<div class="card-guide-row">${guideLinks.join("")}</div>` : ""}
-    <div class="card-trophy-head">${trophyIcon()}<span>Latest trophies</span></div>
+    ${guideLinks.length ? `<div class="guide-links card-guide-row">${guideLinks.join("")}</div>` : ""}
+    <div class="card-trophy-head">${trophyIcon()}<span>Latest trophies</span>${psn ? psnProgressBadge(psn, { includeIcon: false, className: "card-trophy-progress" }) : ""}</div>
     <div class="card-trophy-list">
       ${trophies.map((trophy) => `
         <a class="card-trophy trophy-${escapeHtml(trophyTone(trophy.type || trophy.rarity))}" href="${escapeHtml(trophy.url || state.psnActivity.sourceUrl || "#")}" target="_blank" rel="noreferrer" title="${escapeHtml([trophy.title, trophy.earnedAt].filter(Boolean).join(" · "))}">
@@ -1854,17 +1913,6 @@ function cardTrophiesFor(game) {
 function cardTrophyMeta(trophy) {
   const meta = [trophy.rarity || trophy.type, trophy.earnedAt].filter(Boolean).join(" · ");
   return meta ? `<small class="card-trophy-meta">${escapeHtml(meta)}</small>` : "";
-}
-
-function playingGuideLinksFor(game) {
-  const title = retailTitle(game.title);
-  if (!title || !["PS4", "PS5"].includes(canonicalPlatform(game.platform))) return [];
-  return [`
-    <a class="card-guide-link" href="${escapeHtml(psnProfilesGuideUrl(game, title))}" target="_blank" rel="noreferrer" title="PSNProfiles trophy guide">
-      <img src="assets/sites/psnprofiles.png" alt="" width="14" height="14" decoding="async">
-      <span>Guide</span>
-    </a>
-  `];
 }
 
 async function loadCardTrophies(game, psn) {
@@ -1911,11 +1959,12 @@ function normalizeTitleForMatch(value) {
     .replace(/\bII\b/gi, "2"));
 }
 
-function psnProgressBadge(game) {
+function psnProgressBadge(game, options = {}) {
   const progress = progressValue(game.game);
+  const className = ["psn-progress-pill", options.className || ""].filter(Boolean).join(" ");
   return `
-    <span class="psn-progress-pill" title="${escapeHtml([game.title, game.game].filter(Boolean).join(" · "))}">
-      ${trophyIcon()}
+    <span class="${escapeHtml(className)}" title="${escapeHtml([game.title, game.game].filter(Boolean).join(" · "))}">
+      ${options.includeIcon === false ? "" : trophyIcon()}
       <em style="--progress:${progress}%"></em>
       <strong>${progress}%</strong>
     </span>
@@ -2349,7 +2398,7 @@ function guideLinksFor(game) {
   const links = [];
   if (["PS4", "PS5"].includes(canonicalPlatform(game.platform))) {
     links.push(guideButton(
-      "PSN Guide",
+      "PSNProfiles",
       psnProfilesGuideUrl(game, title),
       "guide-psnprofiles",
       "assets/sites/psnprofiles.png"

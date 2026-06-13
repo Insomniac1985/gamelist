@@ -2110,8 +2110,19 @@ content: "";
 .card-guide-row {
   display: flex;
   flex-wrap: wrap;
-  gap: 5px;
-  margin-bottom: 6px;
+  gap: 6px;
+  margin-bottom: 7px;
+}
+
+.playing-section .card-guide-row .guide-button {
+  min-height: 28px;
+  padding: 5px 8px;
+  font-size: 11px;
+}
+
+.playing-section .card-guide-row .guide-button img {
+  width: 15px;
+  height: 15px;
 }
 
 .card-guide-link {
@@ -2185,9 +2196,26 @@ content: "";
   display: none;
   grid-column: 2;
   color: var(--muted);
-  font-size: 9px;
+  font-size: 8px;
   font-weight: 760;
-  line-height: 1.15;
+  line-height: 1.1;
+}
+
+.card-trophy-progress {
+  min-height: 20px;
+  padding: 2px 6px;
+  gap: 4px;
+  color: #ffffff;
+  font-size: 10px;
+}
+
+.card-trophy-progress em {
+  width: 24px;
+  height: 4px;
+}
+
+.card-trophy-progress strong {
+  font-size: 9px;
 }
 
 .card-trophy.trophy-platinum {
@@ -2280,7 +2308,7 @@ content: "";
   display: flex;
   flex-wrap: wrap;
   align-items: baseline;
-  gap: 6px;
+  gap: 10px;
   min-width: 0;
 }
 
@@ -2292,7 +2320,7 @@ content: "";
   display: inline-flex;
   flex-wrap: wrap;
   gap: 4px;
-  transform: translateY(-1px);
+  transform: translateY(-2px);
 }
 
 .title-owners[hidden] {
@@ -2610,9 +2638,14 @@ content: "";
 .time-pill {
   gap: 4px;
   padding: 4px 10px;
-  color: var(--muted);
-  border-color: rgba(225, 230, 240, 0.24);
-  background: rgba(225, 230, 240, 0.08);
+  color: #101114;
+  border-color: transparent;
+  background:
+    radial-gradient(circle at 20% 12%, rgba(255, 255, 255, 0.72), transparent 32%),
+    linear-gradient(135deg, var(--time-light), var(--time-color) 48%, var(--time-dark));
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.38),
+    0 0 18px var(--time-glow);
   text-decoration: none;
 }
 
@@ -2621,13 +2654,13 @@ a.time-pill {
 }
 
 .time-pill strong {
-  color: var(--muted);
+  color: #101114;
   font-size: 17px;
   line-height: 1;
 }
 
 .time-pill span {
-  color: var(--dim);
+  color: #101114;
   font-size: 10px;
   font-weight: 900;
   text-transform: uppercase;
@@ -3158,6 +3191,10 @@ dialog {
   width: min(1160px, calc(100vw - 24px));
 }
 
+#platinumDialog {
+  width: min(920px, calc(100vw - 24px));
+}
+
 dialog::backdrop {
   background: rgba(0, 0, 0, 0.62);
   backdrop-filter: blur(12px);
@@ -3190,7 +3227,7 @@ body.dialog-open .mobile-section-tabs {
   display: grid;
   grid-template-columns: minmax(170px, 260px) minmax(0, 1fr);
   gap: 18px;
-  max-height: calc(100vh - 30px);
+  max-height: calc(100vh - 70px);
   overflow: auto;
   padding: 18px;
   background:
@@ -3203,7 +3240,8 @@ body.dialog-open .mobile-section-tabs {
 }
 
 .history-modal,
-.release-modal {
+.release-modal,
+.platinum-modal {
   max-height: calc(100vh - 30px);
   overflow: auto;
   padding: 18px;
@@ -3574,26 +3612,49 @@ body.dialog-open .mobile-section-tabs {
 }
 
 .platinum-modal {
-  width: min(760px, calc(100vw - 28px));
-  max-height: min(720px, calc(100vh - 28px));
-  overflow: auto;
-  padding: 16px;
+  border: 1px solid var(--line);
+  box-shadow: var(--shadow);
+}
+
+#platinumTitle {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+#platinumTitle .trophy-icon {
+  width: 24px;
+  height: 24px;
+  color: #ffe985;
+}
+
+#platinumTitle small {
+  display: inline-grid;
+  min-width: 28px;
+  height: 24px;
+  place-items: center;
+  padding: 0 7px;
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 6px;
+  font-size: 12px;
 }
 
 .platinum-list {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 10px;
-  margin-top: 14px;
 }
 
 .platinum-card {
   display: grid;
-  grid-template-columns: 54px minmax(0, 1fr);
-  gap: 10px;
+  grid-template-columns: 60px minmax(0, 1fr);
+  gap: 11px;
   align-items: center;
   min-width: 0;
-  padding: 8px;
+  min-height: 98px;
+  padding: 10px;
   color: var(--text);
   text-decoration: none;
   background: rgba(229, 232, 255, 0.08);
@@ -3607,8 +3668,8 @@ body.dialog-open .mobile-section-tabs {
 }
 
 .platinum-card img {
-  width: 54px;
-  height: 72px;
+  width: 60px;
+  height: 80px;
   object-fit: cover;
   border-radius: 5px;
 }
@@ -3622,12 +3683,37 @@ body.dialog-open .mobile-section-tabs {
   -webkit-line-clamp: 2;
 }
 
-.platinum-card span {
+.platinum-earned {
   display: block;
   margin-top: 5px;
   color: var(--muted);
   font-size: 11px;
   line-height: 1.25;
+}
+
+.platinum-trophy {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  width: fit-content;
+  max-width: 100%;
+  min-height: 24px;
+  margin-top: 7px;
+  padding: 3px 7px 3px 4px;
+  color: #ffffff;
+  background: rgba(255, 225, 101, 0.1);
+  border: 1px solid rgba(255, 225, 101, 0.3);
+  border-radius: 6px;
+  font-size: 10px;
+  font-weight: 820;
+}
+
+.platinum-trophy img {
+  width: 18px;
+  height: 18px;
+  object-fit: contain;
+  border: 0;
+  border-radius: 4px;
 }
 
 .store-playstation {

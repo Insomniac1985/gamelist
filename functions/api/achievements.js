@@ -78,11 +78,16 @@ async function getRecentPsnActivity(accessToken, sourceUrl) {
   ]);
   const titles = data.trophyTitles || [];
   const recentTitles = titles.slice(0, 6);
-  const trophies = (await Promise.all(recentTitles.slice(0, 4).map((title) => getRecentTrophiesForTitle(accessToken, title, sourceUrl)))).flat();
-  trophies.sort((a, b) => String(b.rawEarnedAt || "").localeCompare(String(a.rawEarnedAt || "")));
+  const [trophies, platinums] = await Promise.all([
+    Promise.all(recentTitles.slice(0, 4).map((title) => getRecentTrophiesForTitle(accessToken, title, sourceUrl))),
+    getAllPlatinums(accessToken, titles, sourceUrl),
+  ]);
+  const recentTrophies = trophies.flat();
+  recentTrophies.sort((a, b) => String(b.rawEarnedAt || "").localeCompare(String(a.rawEarnedAt || "")));
   return {
-    achievements: trophies.length ? trophies.slice(0, 6) : recentTitles.map((title) => titleSummary(title, sourceUrl)).slice(0, 6),
+    achievements: recentTrophies.length ? recentTrophies.slice(0, 6) : recentTitles.map((title) => titleSummary(title, sourceUrl)).slice(0, 6),
     games: titles.map((title) => titleSummary(title, sourceUrl)),
+    platinums,
     summary,
   };
 }
@@ -117,19 +122,15 @@ async function getPsnTrophySummary(accessToken) {
 
 async function getRecentTrophiesForTitle(accessToken, title, sourceUrl) {
   try {
-    const params = new URLSearchParams({
-      npServiceName: title.npServiceName || serviceNameFor(title),
-      limit: "200",
-      offset: "0",
-    });
-    const earnedUrl = `${PSN_TROPHY_BASE}/v1/users/me/npCommunicationIds/${encodeURIComponent(title.npCommunicationId)}/trophyGroups/all/trophies?${params}`;
-    const metaUrl = `${PSN_TROPHY_BASE}/v1/npCommunicationIds/${encodeURIComponent(title.npCommunicationId)}/trophyGroups/all/trophies?${params}`;
+    const npServiceName = title.npServiceName || serviceNameFor(title);
+    const earnedUrl = `${PSN_TROPHY_BASE}/v1/users/me/npCommunicationIds/${encodeURIComponent(title.npCommunicationId)}/trophyGroups/all/trophies`;
+    const metaUrl = `${PSN_TROPHY_BASE}/v1/npCommunicationIds/${encodeURIComponent(title.npCommunicationId)}/trophyGroups/all/trophies`;
     const [earnedData, metaData] = await Promise.all([
-      psnGet(earnedUrl, accessToken),
-      psnGet(metaUrl, accessToken),
+      getPagedTrophies(accessToken, earnedUrl, npServiceName),
+      getPagedTrophies(accessToken, metaUrl, npServiceName),
     ]);
-    const metaById = new Map((metaData.trophies || []).map((trophy) => [String(trophy.trophyId), trophy]));
-    return (earnedData.trophies || [])
+    const metaById = new Map(metaData.map((trophy) => [String(trophy.trophyId), trophy]));
+    return earnedData
       .filter((trophy) => trophy.earned && trophy.earnedDateTime)
       .map((earned) => {
         const meta = metaById.get(String(earned.trophyId)) || {};
@@ -146,6 +147,63 @@ async function getRecentTrophiesForTitle(accessToken, title, sourceUrl) {
   } catch {
     return [titleSummary(title, sourceUrl)];
   }
+}
+
+async function getAllPlatinums(accessToken, titles, sourceUrl) {
+  const platinumTitles = titles.filter((title) => Number(title?.earnedTrophies?.platinum || 0) > 0);
+  const results = [];
+  const chunkSize = 6;
+  for (let index = 0; index < platinumTitles.length; index += chunkSize) {
+    const chunk = platinumTitles.slice(index, index + chunkSize);
+    const platinums = await Promise.all(chunk.map((title) => getPlatinumsForTitle(accessToken, title, sourceUrl)));
+    results.push(...platinums.flat());
+  }
+  return results.sort((a, b) => String(b.rawEarnedAt || "").localeCompare(String(a.rawEarnedAt || "")));
+}
+
+async function getPlatinumsForTitle(accessToken, title, sourceUrl) {
+  try {
+    const npServiceName = title.npServiceName || serviceNameFor(title);
+    const earnedUrl = `${PSN_TROPHY_BASE}/v1/users/me/npCommunicationIds/${encodeURIComponent(title.npCommunicationId)}/trophyGroups/all/trophies`;
+    const metaUrl = `${PSN_TROPHY_BASE}/v1/npCommunicationIds/${encodeURIComponent(title.npCommunicationId)}/trophyGroups/all/trophies`;
+    const [earnedData, metaData] = await Promise.all([
+      getPagedTrophies(accessToken, earnedUrl, npServiceName),
+      getPagedTrophies(accessToken, metaUrl, npServiceName),
+    ]);
+    const metaById = new Map(metaData.map((trophy) => [String(trophy.trophyId), trophy]));
+    return earnedData
+      .filter((trophy) => trophy.earned && trophy.earnedDateTime && trophyTypeLabel(trophy.trophyType) === "Platinum")
+      .map((earned) => {
+        const meta = metaById.get(String(earned.trophyId)) || {};
+        return {
+          title: title.trophyTitleName || "Platinum game",
+          cover: title.trophyTitleIconUrl || "",
+          trophyName: meta.trophyName || "Platinum",
+          earnedAt: formatPsnDate(earned.earnedDateTime),
+          rawEarnedAt: earned.earnedDateTime,
+          icon: meta.trophyIconUrl || earned.trophyRewardImageUrl || title.trophyTitleIconUrl || "",
+          platform: title.trophyTitlePlatform || "",
+          npCommunicationId: title.npCommunicationId || "",
+          npServiceName: title.npServiceName || serviceNameFor(title),
+          url: sourceUrl,
+        };
+      });
+  } catch {
+    return [];
+  }
+}
+
+async function getPagedTrophies(accessToken, baseUrl, npServiceName) {
+  const trophies = [];
+  const limit = 200;
+  for (let offset = 0; offset < 1000; offset += limit) {
+    const params = new URLSearchParams({ npServiceName, limit: String(limit), offset: String(offset) });
+    const data = await psnGet(`${baseUrl}?${params}`, accessToken);
+    const page = data.trophies || [];
+    trophies.push(...page);
+    if (page.length < limit || trophies.length >= Number(data.totalItemCount || 0)) break;
+  }
+  return trophies;
 }
 
 async function psnGet(url, accessToken) {
