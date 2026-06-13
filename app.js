@@ -1,6 +1,7 @@
 const STORAGE_KEY = "gamelist:v1";
 const LEGACY_STORAGE_KEY = "buylist-tracker:v6";
 const SESSION_KEY = "gamelist-editor";
+const VIEW_MODE_KEY = "gamelist:view-mode";
 const PHYSICAL_PROVIDERS = ["Amazon.es", "Xtralife", "GAME.es", "Playasia"];
 const DIGITAL_PROVIDERS = ["Nintendo España", "PlayStation España", "Steam"];
 const PSN_PROFILE_USER = "ShabiiEXE";
@@ -30,6 +31,7 @@ const state = {
   psnActivity: { achievements: [], games: [], sourceUrl: "" },
   cardTrophies: {},
   filters: { query: "", platform: "all", tag: "all", sort: "time", direction: "asc", preordered: false },
+  viewMode: localStorage.getItem(VIEW_MODE_KEY) === "list" ? "list" : "grid",
   editingId: "",
   pendingDescription: "",
   canEdit: sessionStorage.getItem(SESSION_KEY) === "true",
@@ -72,6 +74,7 @@ const el = {
   tagFilter: document.querySelector("#tagFilter"),
   sortFilter: document.querySelector("#sortFilter"),
   sortDirectionButton: document.querySelector("#sortDirectionButton"),
+  viewToggleButton: document.querySelector("#viewToggleButton"),
   preorderedFilter: document.querySelector("#preorderedFilter"),
   scrollTopButton: document.querySelector("#scrollTopButton"),
   mobileTabs: document.querySelectorAll("[data-mobile-section]"),
@@ -239,6 +242,11 @@ function bindEvents() {
     state.filters.direction = state.filters.direction === "asc" ? "desc" : "asc";
     render();
   });
+  el.viewToggleButton.addEventListener("click", () => {
+    state.viewMode = state.viewMode === "grid" ? "list" : "grid";
+    localStorage.setItem(VIEW_MODE_KEY, state.viewMode);
+    render();
+  });
   el.preorderedFilter.addEventListener("change", (event) => {
     state.filters.preordered = event.target.checked;
     render();
@@ -384,6 +392,7 @@ async function persistCloud() {
 
 function render() {
   document.body.classList.toggle("can-edit", state.canEdit);
+  document.body.classList.toggle("list-view-mode", state.viewMode === "list");
   el.loginButton.innerHTML = state.canEdit ? `${pauseIcon()}<span class="button-label">Stop Editing</span>` : pencilIcon();
   el.loginButton.title = state.canEdit ? "Stop Editing" : "Edit";
   el.loginButton.setAttribute("aria-label", el.loginButton.title);
@@ -407,10 +416,19 @@ function render() {
   el.sortDirectionButton.title = state.filters.direction === "asc" ? "Sort ascending" : "Sort descending";
   el.sortDirectionButton.setAttribute("aria-label", el.sortDirectionButton.title);
   el.sortDirectionButton.classList.toggle("desc", state.filters.direction === "desc");
+  renderViewToggle();
   el.preorderedFilter.checked = state.filters.preordered;
   el.platformFilter.classList.toggle("is-active", state.filters.platform !== "all");
   el.tagFilter.classList.toggle("is-active", state.filters.tag !== "all");
   updateScrollTopButton();
+}
+
+function renderViewToggle() {
+  const showingGrid = state.viewMode === "grid";
+  el.viewToggleButton.innerHTML = showingGrid ? linesIcon() : gridIcon();
+  el.viewToggleButton.title = showingGrid ? "Show as list" : "Show as grid";
+  el.viewToggleButton.setAttribute("aria-label", el.viewToggleButton.title);
+  el.viewToggleButton.classList.toggle("active", state.viewMode === "list");
 }
 
 function syncScrollLock() {
@@ -928,14 +946,73 @@ function renderSection(section) {
   const games = filteredGames().filter((game) => game.section === section && !game.completedAt && !game.playing);
   games.sort((a, b) => compareGames(a, b, section));
   list.innerHTML = "";
+  list.classList.toggle("list-view", state.viewMode === "list");
   if (!games.length) {
     list.innerHTML = `<div class="empty">No games here.</div>`;
     return;
   }
   const fragment = document.createDocumentFragment();
-  games.forEach((game, index) => fragment.appendChild(cardFor(game, { imagePriority: index < 6 ? "eager" : "lazy" })));
+  games.forEach((game, index) => {
+    fragment.appendChild(state.viewMode === "list"
+      ? rowFor(game, section, { imagePriority: index < 10 ? "eager" : "lazy" })
+      : cardFor(game, { imagePriority: index < 6 ? "eager" : "lazy" }));
+  });
   list.appendChild(fragment);
-  if (section === "backlog" && state.filters.sort === "custom") setupDrag(list);
+  if (state.viewMode === "grid" && section === "backlog" && state.filters.sort === "custom") setupDrag(list);
+}
+
+function rowFor(game, section, options = {}) {
+  const row = document.createElement("article");
+  const statuses = gameStatuses(game);
+  const owners = ownerTags(game);
+  row.className = "game-row";
+  row.dataset.id = game.id;
+  row.dataset.owner = statuses.join(" ");
+  row.setAttribute("role", "button");
+  row.tabIndex = 0;
+  row.setAttribute("aria-label", `Open ${game.title}`);
+  row.classList.toggle("owner-card-judy", owners.includes("Judy"));
+  row.classList.toggle("owner-card-jordi", owners.includes("Jordi"));
+  row.classList.toggle("digital-card", Boolean(game.digital));
+  row.innerHTML = `
+    <img class="game-row-cover" src="${escapeHtml(game.cover ? coverDisplayUrl(game.cover, "tiny") : "")}" alt="" loading="${escapeHtml(options.imagePriority || "lazy")}" decoding="async" ${game.cover ? "" : "hidden"}>
+    <div class="game-row-main">
+      <div class="game-row-title">
+        <strong class="${game.platinum ? "completed-achievements-title" : ""} ${owners.includes("Judy") ? "owner-judy" : ""} ${owners.includes("Jordi") ? "owner-jordi" : ""}">${escapeHtml(game.title)}</strong>
+        <span class="title-owners">${owners.filter((owner) => owner !== "Xavi").map(ownerBadge).join("")}</span>
+      </div>
+      ${studioText(game) ? `<span class="studio-line">${escapeHtml(studioText(game))}</span>` : ""}
+      <span class="meta">${metaFor(game).join("")}</span>
+      <span class="play-dates">${playDatesFor(game).join("")}</span>
+      <span class="chips">${chipsFor(game).join("")}</span>
+      ${section === "backlog" ? "" : `<span class="prices game-row-prices" style="--price-columns:${priceProvidersForGame(game).length}">${pricesFor(game)}</span>`}
+    </div>
+    <div class="game-row-actions">
+      <button class="icon-button row-edit-action" type="button" title="Edit" aria-label="Edit">${pencilIcon()}</button>
+      ${rowPrimaryAction(game, section)}
+    </div>
+  `;
+  row.addEventListener("click", (event) => {
+    if (event.target.closest("button, input, a")) return;
+    openDetail(game.id);
+  });
+  row.addEventListener("keydown", (event) => {
+    if (event.key !== "Enter" && event.key !== " ") return;
+    if (event.target.closest("button, input, a")) return;
+    event.preventDefault();
+    openDetail(game.id);
+  });
+  row.querySelector(".row-edit-action").addEventListener("click", () => openEditor(game.id));
+  row.querySelector(".row-primary-action")?.addEventListener("click", () => {
+    if (section === "backlog") startPlaying(game.id);
+    else moveToBacklog(game.id);
+  });
+  return row;
+}
+
+function rowPrimaryAction(game, section) {
+  if (section === "backlog") return `<button class="primary-button row-primary-action" type="button">Play</button>`;
+  return `<button class="ghost-button row-primary-action" type="button">Got it</button>`;
 }
 
 function renderCompleted() {
@@ -1824,6 +1901,27 @@ function pencilIcon() {
   `;
 }
 
+function linesIcon() {
+  return `
+    <svg class="view-icon" viewBox="0 0 24 24" aria-hidden="true">
+      <path d="M5 7h14"></path>
+      <path d="M5 12h14"></path>
+      <path d="M5 17h14"></path>
+    </svg>
+  `;
+}
+
+function gridIcon() {
+  return `
+    <svg class="view-icon" viewBox="0 0 24 24" aria-hidden="true">
+      <rect x="4" y="5" width="6" height="6"></rect>
+      <rect x="14" y="5" width="6" height="6"></rect>
+      <rect x="4" y="13" width="6" height="6"></rect>
+      <rect x="14" y="13" width="6" height="6"></rect>
+    </svg>
+  `;
+}
+
 function pauseIcon() {
   return `
     <svg class="pause-icon" viewBox="0 0 24 24" aria-hidden="true">
@@ -2134,8 +2232,10 @@ function psnProfilesGuideUrl(game, title) {
   if (known) return known;
   const direct = normalizeGuideUrl(game.guideLinks?.psnprofiles);
   if (direct) return direct;
+  const exact = normalizeGuideUrl(game.psnprofilesGuideUrl || game.psnGuideUrl);
+  if (exact) return exact;
   const guideId = String(game.psnprofilesGuideId || game.psnGuideId || "").trim();
-  if (guideId) return `https://psnprofiles.com/guide/${encodeURIComponent(guideId)}-${guideSlug(title)}-trophy-guide`;
+  if (/^\d+$/.test(guideId)) return `https://psnprofiles.com/guide/${encodeURIComponent(guideId)}`;
   return siteSearchUrl("psnprofiles.com/guide", `${title} trophy guide`);
 }
 
@@ -2167,6 +2267,9 @@ function normalizeGuideUrl(value) {
 
 function knownGuideLinksFor(title) {
   const guides = {
+    control: {
+      psnprofiles: "https://psnprofiles.com/guide/9040-control-trophy-guide",
+    },
     pragmata: {
       neoseeker: "https://www.neoseeker.com/pragmata/walkthrough",
       psnprofiles: "https://psnprofiles.com/guide/24998-pragmata-trophy-guide",

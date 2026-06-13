@@ -84,6 +84,7 @@ input[type="file"],
 .mobile-section-tabs button,
 .stat-action,
 .stat[data-stat-detail],
+.game-row,
 .completed-row,
 .history-row {
   cursor: pointer;
@@ -1330,7 +1331,7 @@ body.dialog-open .scroll-top-button {
   top: 10px;
   z-index: 12;
   display: grid;
-  grid-template-columns: minmax(220px, 1fr) 136px 150px 150px 190px;
+  grid-template-columns: minmax(220px, 1fr) 136px 150px 150px 190px 42px;
   gap: 10px;
   padding: 12px;
   border-radius: 8px;
@@ -1384,6 +1385,34 @@ body.dialog-open .scroll-top-button {
 
 .order-control select {
   min-width: 0;
+}
+
+.view-toggle {
+  align-self: end;
+  width: 42px;
+  height: 42px;
+  min-width: 42px;
+  min-height: 42px;
+}
+
+.view-toggle.active {
+  color: #ffffff;
+  border-color: rgba(255, 0, 81, 0.48);
+  background: rgba(255, 0, 81, 0.14);
+}
+
+.view-icon {
+  width: 19px;
+  height: 19px;
+}
+
+.view-icon path,
+.view-icon rect {
+  fill: none;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 2;
 }
 
 .direction-toggle {
@@ -1557,6 +1586,99 @@ body[data-mobile-section="upcoming"] .column:not(#upcoming) {
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 12px;
   align-items: stretch;
+}
+
+.card-list.list-view {
+  grid-template-columns: 1fr;
+  gap: 8px;
+}
+
+.game-row {
+  display: grid;
+  grid-template-columns: 58px minmax(0, 1fr) auto;
+  gap: 11px;
+  align-items: center;
+  min-height: 104px;
+  padding: 10px;
+  color: var(--muted);
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--line);
+  border-radius: 7px;
+}
+
+.game-row:hover {
+  border-color: rgba(255, 0, 57, 0.32);
+  background: rgba(255, 255, 255, 0.07);
+}
+
+.game-row-cover {
+  width: 58px;
+  height: 78px;
+  object-fit: cover;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.game-row-main {
+  display: grid;
+  gap: 5px;
+  min-width: 0;
+}
+
+.game-row-title {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+}
+
+.game-row-title strong {
+  min-width: 0;
+  overflow: hidden;
+  color: var(--text);
+  font-size: 14px;
+  line-height: 1.2;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.game-row-title .title-owners:empty {
+  display: none;
+}
+
+.game-row .studio-line {
+  margin-top: 0;
+}
+
+.game-row .meta,
+.game-row .play-dates,
+.game-row .chips,
+.game-row .prices {
+  margin-top: 0;
+}
+
+.game-row-prices {
+  max-width: 620px;
+}
+
+.game-row-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.game-row-actions .icon-button {
+  width: 34px;
+  height: 34px;
+  min-width: 34px;
+  min-height: 34px;
+}
+
+.game-row-actions .primary-button,
+.game-row-actions .ghost-button {
+  min-height: 34px;
+  padding: 7px 10px;
 }
 
 .game-card {
@@ -2676,6 +2798,7 @@ body.can-edit #loginButton .pause-icon {
 }
 
 body:not(.can-edit) .card-actions,
+body:not(.can-edit) .game-row-actions,
 body:not(.can-edit) .restore-action,
 body:not(.can-edit) .completed-edit-action,
 body:not(.can-edit) .completed-date-edit,
@@ -3702,6 +3825,100 @@ body.dialog-open .mobile-section-tabs {
 
   .card-list {
     grid-template-columns: 1fr;
+  }
+
+  .card-list.list-view {
+    gap: 7px;
+  }
+
+  .game-row {
+    grid-template-columns: 46px minmax(0, 1fr) auto;
+    gap: 8px;
+    min-height: 78px;
+    padding: 8px;
+  }
+
+  .game-row-cover {
+    width: 46px;
+    height: 62px;
+    border-radius: 5px;
+  }
+
+  .game-row-main {
+    gap: 4px;
+  }
+
+  .game-row-title {
+    align-items: flex-start;
+    gap: 4px;
+  }
+
+  .game-row-title strong {
+    font-size: 13px;
+    white-space: normal;
+  }
+
+  .game-row .studio-line,
+  .game-row .chips,
+  .game-row-prices {
+    display: none;
+  }
+
+  .game-row .meta,
+  .game-row .play-dates {
+    gap: 3px;
+  }
+
+  .game-row .platform-badge,
+  .game-row .release-pill,
+  .game-row .owner-pill,
+  .game-row .status-pill,
+  .game-row .time-pill,
+  .game-row .digital-pill,
+  .game-row .coop-pill,
+  .game-row .replay-pill,
+  .game-row .platinum-pill,
+  .game-row .psn-progress-pill,
+  .game-row .playing-pill,
+  .game-row .history-pill {
+    min-height: 22px;
+    padding: 3px 6px;
+    border-radius: 5px;
+    font-size: 10px;
+  }
+
+  .game-row .platform-badge {
+    gap: 4px;
+    padding-left: 3px;
+  }
+
+  .game-row .platform-icon {
+    width: 16px;
+    height: 16px;
+    border-radius: 4px;
+  }
+
+  .game-row .history-pill small {
+    display: none;
+  }
+
+  .game-row-actions {
+    gap: 4px;
+  }
+
+  .game-row-actions .icon-button {
+    min-width: 34px;
+    width: 34px;
+    height: 34px;
+    min-height: 34px;
+    padding: 0;
+  }
+
+  .game-row-actions .primary-button,
+  .game-row-actions .ghost-button {
+    min-height: 34px;
+    padding: 6px 8px;
+    font-size: 11px;
   }
 
   .playing-section .card-list {
