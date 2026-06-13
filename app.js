@@ -324,6 +324,7 @@ function bindEvents() {
   }));
   el.board.addEventListener("touchstart", handleBoardSwipeStart, { passive: true });
   el.board.addEventListener("touchend", handleBoardSwipeEnd, { passive: true });
+  window.addEventListener("touchend", handleBoardSwipeEnd, { passive: true });
   el.fields.section.addEventListener("change", syncDialogPriceVisibility);
   el.fields.replayCount.addEventListener("input", syncReplaySection);
   el.form.addEventListener("submit", saveFromForm);
@@ -1148,7 +1149,7 @@ function handleBoardSwipeEnd(event) {
   if (!touch) return;
   const dx = touch.clientX - start.x;
   const dy = touch.clientY - start.y;
-  if (Math.abs(dx) < 52 || Math.abs(dx) < Math.abs(dy) * 1.35) return;
+  if (Math.abs(dx) < 34 || Math.abs(dx) < Math.abs(dy) * 1.15) return;
   const sections = ["backlog", "upcoming", "wanted"];
   const index = sections.indexOf(state.mobileSection);
   const next = dx < 0 ? sections[index + 1] : sections[index - 1];
@@ -1892,7 +1893,7 @@ async function renderDetailTrophies(game) {
   state.detailGameId = game.id;
   state.detailTrophyRequest = requestKey;
   el.detailTrophies.hidden = false;
-  el.detailTrophyCount.textContent = "Loading...";
+  el.detailTrophyCount.textContent = "";
   el.detailTrophyPercent.innerHTML = psnProgressBadge(psn, { includeIcon: false });
   el.detailTrophyList.innerHTML = `<div class="detail-trophy-empty">Loading earned trophies...</div>`;
 
@@ -1927,9 +1928,9 @@ function renderDetailTrophyList() {
   const earnedCount = trophies.filter((trophy) => trophy.earned).length;
   const game = getGame(state.detailGameId);
   const psn = game ? matchedPsnGame(game) : null;
-  el.detailTrophyCount.textContent = trophies.length ? `${earnedCount}/${trophies.length} earned` : "";
+  el.detailTrophyCount.textContent = "";
   el.detailTrophyPercent.innerHTML = trophies.length && psn
-    ? psnProgressBadge(psn, { includeIcon: false, label: `${earnedCount}/${trophies.length} earned` })
+    ? psnProgressBadge(psn, { includeIcon: false, label: `${earnedCount}/${trophies.length} earned`, separator: true })
     : "";
   el.detailTrophyList.innerHTML = trophies.length
     ? trophies.map(detailTrophyCard).join("")
@@ -2108,7 +2109,7 @@ function psnProgressBadge(game, options = {}) {
       ${options.includeIcon === false ? "" : trophyIcon()}
       <em style="--progress:${progress}%"></em>
       <strong>${progress}%</strong>
-      ${options.label ? `<span>${escapeHtml(options.label)}</span>` : ""}
+      ${options.label ? `<span>${options.separator ? "<b>·</b>" : ""}${escapeHtml(options.label)}</span>` : ""}
     </span>
   `;
 }

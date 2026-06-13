@@ -1465,7 +1465,7 @@ body.dialog-open .floating-edit-actions {
   padding: 0;
   color: #ffffff;
   background: var(--accent);
-  border-color: rgba(255, 255, 255, 0.18);
+  border: 1px solid rgba(255, 255, 255, 0.24);
   border-radius: 7px;
   font-weight: 900;
 }
@@ -3519,9 +3519,17 @@ body.dialog-open .mobile-section-tabs {
 }
 
 .detail-trophy-percent .psn-progress-pill span {
-  color: var(--muted);
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  color: #ffffff;
   font-size: 10px;
   font-weight: 820;
+}
+
+.detail-trophy-percent .psn-progress-pill span b {
+  color: rgba(255, 255, 255, 0.62);
+  font-weight: 900;
 }
 
 .detail-trophy-percent:empty {
@@ -4604,6 +4612,10 @@ body.dialog-open .mobile-section-tabs {
     display: grid;
   }
 
+  .board {
+    touch-action: pan-y;
+  }
+
   .platinum-modal .modal-head {
     align-items: flex-start;
   }
@@ -4650,18 +4662,18 @@ body.dialog-open .mobile-section-tabs {
     justify-content: space-between;
   }
 
-  .detail-guides .guide-links {
+  .playing-section .card-guide-row {
     flex-wrap: nowrap;
   }
 
-  .detail-guides .guide-button {
+  .playing-section .card-guide-row .guide-button {
     width: 38px;
     min-width: 38px;
     min-height: 34px;
     padding: 6px;
   }
 
-  .detail-guides .guide-button span {
+  .playing-section .card-guide-row .guide-button span {
     display: none;
   }
 
