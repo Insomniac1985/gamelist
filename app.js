@@ -2041,13 +2041,14 @@ function storeLinksFor(game) {
     storeButton("PlayStation", links.playstation, "store-playstation", platformLogo("PS5")),
     storeButton("Nintendo", links.nintendo, "store-nintendo", platformLogo("Switch")),
     storeButton("Steam", links.steam, "store-steam", platformLogo("PC")),
+    ...guideLinksFor(game),
   ].join("");
 }
 
 function storeButton(label, url, cls, icon) {
   return `
     <a class="store-button ${cls}" href="${escapeHtml(url)}" target="_blank" rel="noreferrer">
-      <img src="${escapeHtml(icon)}" alt="" width="18" height="18" decoding="async">
+      ${icon ? `<img src="${escapeHtml(icon)}" alt="" width="18" height="18" decoding="async">` : ""}
       ${escapeHtml(label)}
     </a>
   `;
@@ -2061,6 +2062,29 @@ function storeLinksWithFallbacks(game) {
     nintendo: links.nintendo || `https://www.nintendo.com/es-es/Buscar/Buscar-299117.html?q=${q}&f=147394-86`,
     steam: links.steam || `https://store.steampowered.com/search/?term=${q}`,
   };
+}
+
+function guideLinksFor(game) {
+  const title = retailTitle(game.title);
+  if (!title) return [];
+  const links = [];
+  if (["PS4", "PS5"].includes(canonicalPlatform(game.platform))) {
+    links.push(storeButton(
+      "PSN Guide",
+      siteSearchUrl("psnprofiles.com/guide", `${title} trophy guide`),
+      "guide-psnprofiles",
+      platformLogo("PS5")
+    ));
+  }
+  links.push(
+    storeButton("Neoseeker", siteSearchUrl("neoseeker.com", `${title} walkthrough guide`), "guide-neoseeker", ""),
+    storeButton("RPG Site", `https://www.rpgsite.net/search?terms=${encodeURIComponent(`${title} guide`)}`, "guide-rpgsite", "")
+  );
+  return links;
+}
+
+function siteSearchUrl(site, query) {
+  return `https://www.google.com/search?q=${encodeURIComponent(`site:${site} ${query}`)}`;
 }
 
 function pricesFor(game) {

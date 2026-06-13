@@ -3212,6 +3212,18 @@ body.dialog-open .mobile-section-tabs {
   background: rgba(121, 242, 206, 0.12);
 }
 
+.guide-psnprofiles {
+  background: rgba(90, 110, 255, 0.18);
+}
+
+.guide-neoseeker {
+  background: rgba(255, 225, 101, 0.12);
+}
+
+.guide-rpgsite {
+  background: rgba(255, 0, 81, 0.14);
+}
+
 .modal-head {
   display: flex;
   align-items: start;
