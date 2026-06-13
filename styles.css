@@ -417,6 +417,25 @@ button:disabled {
   font-size: 10px;
 }
 
+.playing-finished-game .playing-finished-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 3px;
+  margin-top: 3px;
+}
+
+.playing-finished-tags .platform-badge,
+.playing-finished-tags .digital-pill,
+.playing-finished-tags .coop-pill,
+.playing-finished-tags .replay-pill,
+.playing-finished-tags .platinum-pill {
+  min-height: 19px;
+  padding: 3px 5px;
+  border-radius: 5px;
+  font-size: 9px;
+  line-height: 1;
+}
+
 .playing-section[hidden] {
   display: none;
 }
@@ -967,6 +986,13 @@ h3 {
 
 .release-calendar-actions .icon-button {
   color: #ffffff;
+}
+
+.calendar-today-action {
+  min-height: 32px;
+  padding: 0 12px;
+  border-radius: 7px;
+  font-size: 12px;
 }
 
 .scroll-top-button {
@@ -3504,7 +3530,8 @@ body.dialog-open .mobile-section-tabs {
     grid-template-columns: 112px minmax(0, 1fr);
     flex-basis: calc(100vw - 54px);
     grid-template-rows: max-content;
-    /*min-height: var(--mobile-playing-card-height, 152px);*/
+    height: auto;
+    min-height: 0;
     align-items: start;
     padding: 11px;
     gap: 11px;
@@ -3538,9 +3565,7 @@ body.dialog-open .mobile-section-tabs {
   }
 
   .playing-section .card-trophies[hidden] {
-    display: block;
-    visibility: hidden;
-    min-height: 0;
+    display: none;
   }
 
   .playing-section .card-trophy {

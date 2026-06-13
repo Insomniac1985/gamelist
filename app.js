@@ -449,11 +449,13 @@ function renderPlayingFinished() {
   el.playingFinishedList.innerHTML = games.map((game) => {
     const psn = matchedPsnGame(game);
     const progress = psn ? progressValue(psn.game) : 0;
+    const badges = completedBadges(game);
     return `
       <button class="achievement-game playing-finished-game" type="button" data-id="${escapeHtml(game.id)}" aria-label="${escapeHtml(`Open ${game.title}`)}">
         <img src="${escapeHtml(game.cover || platformLogo(game.platform || "PS5"))}" alt="" loading="lazy" decoding="async">
         <div>
           <strong class="${game.platinum ? "completed-achievements-title" : ""}">${escapeHtml(game.title)}</strong>
+          ${badges ? `<span class="playing-finished-tags">${badges}</span>` : ""}
           <span>${escapeHtml([formatLongDate(game.completedAt), finishedDurationText(game.startedAt, game.completedAt)].filter(Boolean).join(" · "))}</span>
           ${psn ? `<em style="--progress:${progress}%"></em>` : ""}
         </div>
@@ -732,6 +734,7 @@ function renderReleaseCalendar() {
     <div class="release-calendar-head">
       <div class="release-calendar-actions">
         <button class="icon-button" type="button" data-calendar-shift="-1" title="Previous month" aria-label="Previous month">←</button>
+        <button class="ghost-button calendar-today-action" type="button" data-calendar-today>Today</button>
         <button class="icon-button" type="button" data-calendar-shift="1" title="Next month" aria-label="Next month">→</button>
       </div>
     </div>
@@ -741,6 +744,10 @@ function renderReleaseCalendar() {
       state.releaseCalendarOffset += Number(button.dataset.calendarShift || 0);
       renderReleaseCalendar();
     });
+  });
+  el.releaseCalendar.querySelector("[data-calendar-today]")?.addEventListener("click", () => {
+    state.releaseCalendarOffset = 0;
+    renderReleaseCalendar();
   });
   el.releaseCalendar.querySelectorAll(".release-day.has-release").forEach((button) => {
     button.addEventListener("click", () => openReleaseDialog(button.dataset.date));
@@ -1715,6 +1722,7 @@ function psnProgressBadge(game) {
 function completedBadges(game) {
   return [
     game.platform ? platformBadge(game.platform) : "",
+    game.digital ? `<span class="digital-pill">Digital</span>` : "",
     game.coop ? `<span class="coop-pill">Coop</span>` : "",
     game.replayCount ? replayBadge(game.replayCount) : "",
     game.platinum ? `<span class="platinum-pill">${trophyIcon()} Completed</span>` : "",
