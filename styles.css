@@ -1057,6 +1057,10 @@ h3 {
   pointer-events: auto;
   transform: translateY(0);
   background: var(--accent);
+  width: 48px;
+  height: 48px;
+  min-width: 48px;
+  min-height: 48px;
 }
 
 .scroll-top-icon {
@@ -3242,7 +3246,7 @@ body.dialog-open .mobile-section-tabs {
 .history-modal,
 .release-modal,
 .platinum-modal {
-  max-height: calc(100vh - 30px);
+  max-height: calc(100vh - 70px);
   overflow: auto;
   padding: 18px;
   background:
