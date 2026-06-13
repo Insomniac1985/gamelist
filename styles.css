@@ -1131,7 +1131,7 @@ body.dialog-open .scroll-top-button {
 }
 
 .release-month header strong {
-  color: var(--text);
+  color: var(--muted);
   font-size: 20px;
   line-height: 1;
 }
