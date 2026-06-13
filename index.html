@@ -59,7 +59,15 @@
             <path d="M13.5 6.5l4 4"></path>
           </svg>
         </button>
-        <button class="primary-button" id="addButton" type="button" hidden><span class="button-label">Add Game</span><span class="button-icon" aria-hidden="true">+</span></button>
+        <button class="primary-button" id="addButton" type="button" hidden>
+          <span class="button-label">Add Game</span>
+          <span class="button-icon" aria-hidden="true">
+            <svg class="plus-icon" viewBox="0 0 24 24">
+              <path d="M12 5v14"></path>
+              <path d="M5 12h14"></path>
+            </svg>
+          </span>
+        </button>
       </div>
     </header>
 
@@ -190,7 +198,12 @@
       </svg>
     </button>
     <div class="floating-edit-actions" id="floatingEditActions" aria-label="Quick actions">
-      <button class="icon-button floating-action-button" id="floatingAddButton" type="button" title="Add Game" aria-label="Add Game">+</button>
+      <button class="icon-button floating-action-button" id="floatingAddButton" type="button" title="Add Game" aria-label="Add Game">
+        <svg class="plus-icon" viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M12 5v14"></path>
+          <path d="M5 12h14"></path>
+        </svg>
+      </button>
     </div>
 
     <dialog id="gameDialog">

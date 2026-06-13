@@ -3012,6 +3012,34 @@ a.time-pill {
   box-shadow: 0 14px 32px rgba(0, 0, 0, 0.38);
 }
 
+.icon-button.view-toggle {
+  align-self: end;
+  width: 38px;
+  height: auto;
+  min-width: 38px;
+  min-height: 42px;
+  flex: 0 0 38px;
+  padding: 0;
+  color: var(--muted);
+  background: rgba(255, 255, 255, 0.07);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 7px;
+  box-shadow: none;
+}
+
+.icon-button.view-toggle.active {
+  color: var(--text);
+  background: rgba(255, 255, 255, 0.09);
+  border-color: rgba(255, 255, 255, 0.18);
+}
+
+.icon-button.view-toggle:hover {
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.11);
+  border-color: rgba(255, 255, 255, 0.24);
+  box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.06);
+}
+
 .top-actions #syncButton,
 .top-actions #fetchPricesButton,
 .top-actions #addButton,
@@ -3050,6 +3078,22 @@ body:not(.can-edit) #loginButton,
   font-size: 15px;
   font-weight: 900;
   line-height: 1;
+}
+
+.plus-icon {
+  width: 18px;
+  height: 18px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.floating-action-button .plus-icon {
+  width: 24px;
+  height: 24px;
+  stroke-width: 2.6;
 }
 
 .icon-only-button {
