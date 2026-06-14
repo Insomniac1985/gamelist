@@ -1598,7 +1598,7 @@ function sortedCompletedGames(games) {
     if (state.filters.sort === "playtime") {
       return direction * (completedPlaytimeValue(a) - completedPlaytimeValue(b) || String(b.completedAt).localeCompare(String(a.completedAt)) || stringCompare(a.title, b.title));
     }
-    return direction * (completionTimeValue(a) - completionTimeValue(b) || stringCompare(a.title, b.title));
+    return direction * (completionTimeValue(b) - completionTimeValue(a) || stringCompare(a.title, b.title));
   });
 }
 
@@ -2327,8 +2327,20 @@ function latestTrophiesForGame(game, limit = 3) {
       const gameTitle = normalizeTitleForMatch(achievement.game || achievement.title || "");
       return gameTitle && (gameTitle === title || gameTitle.includes(title) || title.includes(gameTitle));
     })
-    .sort((a, b) => String(b.earnedAt || "").localeCompare(String(a.earnedAt || "")))
+    .sort(compareEarnedTrophies)
     .slice(0, limit);
+}
+
+function compareEarnedTrophies(a, b) {
+  return earnedTrophyTime(b) - earnedTrophyTime(a)
+    || String(b.rawEarnedAt || b.earnedAt || "").localeCompare(String(a.rawEarnedAt || a.earnedAt || ""))
+    || stringCompare(a.title, b.title);
+}
+
+function earnedTrophyTime(trophy) {
+  const value = trophy?.rawEarnedAt || trophy?.earnedAt || "";
+  const time = Date.parse(value);
+  return Number.isNaN(time) ? 0 : time;
 }
 
 function cardTrophiesFor(game) {
@@ -2378,7 +2390,7 @@ async function loadCardTrophies(game, psn) {
     if (!response.ok) throw new Error(`Card trophies failed (${response.status})`);
     const trophies = (Array.isArray(data.trophies) ? data.trophies : [])
       .filter((trophy) => trophy.earned && trophy.earnedAt)
-      .sort((a, b) => String(b.earnedAt || "").localeCompare(String(a.earnedAt || "")))
+      .sort(compareEarnedTrophies)
       .slice(0, 3);
     state.cardTrophies[cacheKey] = { loading: false, trophies };
   } catch (error) {
