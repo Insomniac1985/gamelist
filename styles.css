@@ -3032,7 +3032,7 @@ a.time-pill {
   color: #ffffff;
   background: var(--accent);
   border-color: transparent;
-  border-radius: 18px;
+  border-radius: 12px;
   box-shadow: 0 14px 32px rgba(0, 0, 0, 0.38);
   font-size: 24px;
   font-weight: 900;
@@ -4446,7 +4446,9 @@ body.dialog-open .mobile-section-tabs {
     width: 100%;
   }
 
-  .playing-form-grid > label {
+  .playing-form-grid > label,
+  .playing-form-grid > label:nth-child(-n + 3),
+  .playing-form-grid > label:nth-child(n + 4) {
     grid-column: 1 / -1;
   }
 
