@@ -3832,10 +3832,10 @@ async function refreshCurrentPrices() {
     const data = await fetchPrices(savedGame.title, savedGame.platform, savedGame.digital);
     const game = getGame(savedGame.id);
     if (game) {
-      game.prices = data.prices || [];
+      game.prices = mergeFetchedPrices(game, data.prices);
       upsertGame(game);
     }
-    alert(`Found ${data.prices?.length || 0} price links.`);
+    alert(`Found ${game?.prices?.length || data.prices?.length || 0} price links.`);
   } catch {
     alert("Price refresh will work once the Cloudflare function is hosted.");
   } finally {
@@ -3860,7 +3860,7 @@ async function refreshPricesForGame(id) {
   persistLocal();
   try {
     const data = await fetchPrices(game.title, game.platform, game.digital);
-    game.prices = data.prices || game.prices;
+    game.prices = mergeFetchedPrices(game, data.prices);
     game.updatedAt = new Date().toISOString();
     upsertGame(game);
   } catch {
@@ -3891,7 +3891,7 @@ async function refreshAllPrices() {
     }));
     try {
       const data = await fetchPrices(game.title, game.platform, game.digital);
-      game.prices = data.prices || game.prices;
+      game.prices = mergeFetchedPrices(game, data.prices);
       game.updatedAt = new Date().toISOString();
       updated += 1;
     } catch {
@@ -3906,6 +3906,18 @@ async function refreshAllPrices() {
   el.fetchPricesButton.title = "Fetch New Prices";
   el.fetchPricesButton.setAttribute("aria-label", "Fetch New Prices");
   alert(`Updated prices for ${updated} games${failed ? `, ${failed} failed` : ""}.`);
+}
+
+function mergeFetchedPrices(game, fetchedPrices = []) {
+  const fetchedByStore = new Map((Array.isArray(fetchedPrices) ? fetchedPrices : []).map((price) => [price.store, price]));
+  return priceProvidersForGame(game).map((store) => {
+    const fallback = fallbackPriceLinks(game).find((price) => price.store === store) || { store, url: "" };
+    return {
+      ...fallback,
+      ...(fetchedByStore.get(store) || {}),
+      store,
+    };
+  });
 }
 
 async function fetchPrices(title, platform, digital = false) {
