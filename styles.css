@@ -103,6 +103,10 @@ input[type="file"],
   cursor: pointer;
 }
 
+input[type="checkbox"] {
+  border-radius: 6px;
+}
+
 button:disabled {
   cursor: default;
 }
@@ -572,9 +576,12 @@ button.achievement-kpi {
   color: #ffe985;
 }
 
-.platinum-highlight.has-platinum {
+.platinum-highlight {
   border-color: rgba(229, 232, 255, 0.34);
-  background: linear-gradient(135deg, rgba(229, 232, 255, 0.18), rgba(255, 255, 255, 0.05));
+  background:
+    radial-gradient(circle at 50% 28%, rgba(255, 225, 101, 0.28), transparent 66%),
+    linear-gradient(135deg, rgba(229, 232, 255, 0.18), rgba(255, 255, 255, 0.05));
+  box-shadow: inset 0 0 24px rgba(255, 225, 101, 0.12);
 }
 
 .rarity-graph {
@@ -3287,6 +3294,7 @@ body:not(.can-edit) #loginButton,
   width: 18px;
   height: 18px;
   fill: none;
+  border-radius: 6px;
   stroke: currentColor;
   stroke-width: 2.6;
   stroke-linecap: round;
@@ -4451,6 +4459,18 @@ body.dialog-open .mobile-section-tabs {
   grid-column: span 3;
 }
 
+.playing-form-grid > .playing-replay-field {
+  grid-column: span 2;
+}
+
+.playing-form-grid > .stream-check {
+  grid-column: span 1;
+}
+
+.playing-form-grid > .playing-achievements-check {
+  grid-column: span 3;
+}
+
 .playing-form-grid input,
 .playing-form-grid .check-filter {
   height: 44px;
@@ -4481,6 +4501,11 @@ body.dialog-open .mobile-section-tabs {
   border-color: rgba(183, 116, 255, 0.46);
   background: rgba(132, 64, 255, 0.18);
   box-shadow: inset 0 0 0 1px rgba(183, 116, 255, 0.1);
+}
+
+.stream-check:hover {
+  border-color: rgba(183, 116, 255, 0.5);
+  box-shadow: 0 0 0 3px rgba(132, 64, 255, 0.13), 0 10px 28px rgba(132, 64, 255, 0.13);
 }
 
 .stream-check:has(input:checked) span {
@@ -4744,6 +4769,10 @@ body.dialog-open .mobile-section-tabs {
   .playing-form-grid > label:nth-child(-n + 3),
   .playing-form-grid > label:nth-child(n + 4) {
     grid-column: 1 / -1;
+  }
+
+  .form-grid-spacer {
+    display: none;
   }
 
   .toolbar {
