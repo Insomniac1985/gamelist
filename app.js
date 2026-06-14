@@ -29,6 +29,10 @@ const UI_ICON_URLS = [
   "/assets/stores/playasia.ico",
   "/assets/stores/xtralife.ico",
 ];
+const MANUAL_PLATINUM_COVER_OVERRIDES = [
+  { match: ["nier", "automata"], cover: "https://howlongtobeat.com/games/38029_Nier_Automata.jpg?width=250" },
+  { match: ["persona", "3", "reload"], cover: "https://howlongtobeat.com/games/129805_Persona_3_Reload.jpg?width=250" },
+];
 const SEARCH_CACHE_TTL = 1000 * 60 * 60;
 let titleLookupTimer = 0;
 const searchCache = new Map();
@@ -799,7 +803,13 @@ function platinumCoverFor(title) {
   const normalized = normalizeTitleForMatch(title);
   if (!normalized) return "";
   const cached = state.platinumCoverCache[normalized];
-  return localCoverForTitle(title, "card") || (cached === "__missing" ? "" : cached || "");
+  return manualPlatinumCoverForTitle(title) || localCoverForTitle(title, "card") || (cached === "__missing" ? "" : cached || "");
+}
+
+function manualPlatinumCoverForTitle(title) {
+  const normalized = normalizeTitleForMatch(title);
+  if (!normalized) return "";
+  return MANUAL_PLATINUM_COVER_OVERRIDES.find((entry) => entry.match.every((term) => normalized.includes(term)))?.cover || "";
 }
 
 function loadPlatinumMetaCache() {

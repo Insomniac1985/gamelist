@@ -765,6 +765,17 @@ button.achievement-kpi {
   border-radius: 6px;
 }
 
+.playing-finished-game.achievement-game {
+  grid-template-columns: 54px minmax(0, 1fr);
+}
+
+.playing-finished-game.achievement-game img {
+  width: 54px;
+  height: 74px;
+  aspect-ratio: 54 / 74;
+  object-fit: cover;
+}
+
 .achievement-game strong {
   display: block;
   font-size: 13px;
@@ -3826,7 +3837,7 @@ body.dialog-open .mobile-section-tabs {
 }
 
 .platinum-modal .modal-head {
-  align-items: flex-end;
+  align-items: flex-start;
 }
 
 #platinumTitle {
@@ -3873,7 +3884,7 @@ body.dialog-open .mobile-section-tabs {
   display: block;
   width: max-content;
   margin-left: auto;
-  align-self: center;
+  align-self: end;
   color: var(--muted);
   font-size: 13px;
   font-weight: 760;
@@ -4672,9 +4683,15 @@ body.dialog-open .mobile-section-tabs {
     flex-basis: calc(100vw - 54px);
   }
 
-  .playing-finished-game img {
+  .playing-finished-game.achievement-game {
+    grid-template-columns: 58px minmax(0, 1fr);
+  }
+
+  .playing-finished-game img,
+  .playing-finished-game.achievement-game img {
     width: 58px;
     height: 80px;
+    aspect-ratio: 58 / 80;
   }
 
   .achievement-panel {
