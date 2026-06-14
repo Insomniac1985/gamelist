@@ -35,6 +35,7 @@ const MANUAL_PLATINUM_COVER_OVERRIDES = [
 ];
 const SEARCH_CACHE_TTL = 1000 * 60 * 60;
 let titleLookupTimer = 0;
+let selectMeasureContext = null;
 const searchCache = new Map();
 const searchInflight = new Map();
 const platinumMetaCache = loadPlatinumMetaCache();
@@ -265,6 +266,8 @@ function bindEvents() {
     if (document.hidden) pauseAllPlayingTrailers();
     else requestAnimationFrame(updateFocusedPlayingTrailer);
   });
+  document.addEventListener("pointerover", handleSelectOverflowTitle);
+  document.addEventListener("focusin", handleSelectOverflowTitle);
   el.searchInput.addEventListener("input", (event) => {
     state.filters.query = event.target.value.trim().toLowerCase();
     render();
@@ -1226,12 +1229,48 @@ function renderFilters() {
 function fillSelect(select, values, selected, allLabel) {
   const current = [...select.options].map((option) => option.value).join("|");
   const next = values.join("|");
-  if (current === next) return;
+  if (current === next) {
+    select.value = values.includes(selected) ? selected : "all";
+    updateSelectOverflowTitle(select);
+    return;
+  }
   select.innerHTML = values.map((value) => {
     const label = value === "all" ? allLabel : value;
     return `<option value="${escapeHtml(value)}">${escapeHtml(label)}</option>`;
   }).join("");
   select.value = values.includes(selected) ? selected : "all";
+  updateSelectOverflowTitle(select);
+}
+
+function handleSelectOverflowTitle(event) {
+  const select = event.target.closest?.("select");
+  if (!select) return;
+  updateSelectOverflowTitle(select);
+}
+
+function updateSelectOverflowTitle(select) {
+  const text = select.selectedOptions?.[0]?.textContent?.trim() || "";
+  if (!text) {
+    select.removeAttribute("title");
+    return;
+  }
+  if (!selectMeasureContext) {
+    selectMeasureContext = document.createElement("canvas").getContext("2d");
+  }
+  const style = getComputedStyle(select);
+  selectMeasureContext.font = [
+    style.fontStyle,
+    style.fontVariant,
+    style.fontWeight,
+    style.fontSize,
+    style.fontFamily,
+  ].join(" ");
+  const paddingLeft = parseFloat(style.paddingLeft) || 0;
+  const paddingRight = parseFloat(style.paddingRight) || 0;
+  const availableWidth = select.clientWidth - paddingLeft - paddingRight - 4;
+  const isClipped = selectMeasureContext.measureText(text).width > availableWidth;
+  if (isClipped) select.title = text;
+  else select.removeAttribute("title");
 }
 
 function renderSection(section) {
