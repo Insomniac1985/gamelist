@@ -432,10 +432,13 @@ async function lookupRetroIslandNy(title, platform, query) {
   endpoint.searchParams.set("q", query);
   endpoint.searchParams.set("resources[type]", "product");
   endpoint.searchParams.set("resources[limit]", "12");
+  endpoint.searchParams.set("country", "US");
+  endpoint.searchParams.set("currency", "USD");
   const response = await fetch(endpoint.toString(), {
     headers: {
       "Accept": "application/json",
       "Accept-Language": "en-US,en;q=0.9",
+      "Cookie": "cart_currency=USD; localization=US",
       "User-Agent": "Mozilla/5.0 (compatible; GameList/1.0)",
     },
   });
@@ -451,7 +454,7 @@ function retroIslandProduct(product) {
   return {
     title: product.title || "",
     platform: [product.type, ...(Array.isArray(product.tags) ? product.tags : [])].filter(Boolean).join(" "),
-    price: price ? `$${String(price).replace(/[^\d.,]/g, "").replace(",", ".")}` : "",
+    price: usd(price),
     matchedTitle: product.title || "",
     url,
   };
@@ -519,6 +522,12 @@ function euro(value) {
   return `${Number(value).toFixed(2).replace(".", ",")} €`;
 }
 
+function usd(value) {
+  if (!value) return "";
+  const amount = parsePrice(String(value).replace(/USD/i, "$"));
+  return Number.isFinite(amount) ? `$${amount.toFixed(2)}` : "";
+}
+
 function missingPrice(store, url) {
   return {
     store,
@@ -531,7 +540,11 @@ function missingPrice(store, url) {
 }
 
 function retroIslandSearchUrl(query) {
-  return `https://retroislandny.com/search?q=${encodeURIComponent(retailTitle(query))}`;
+  const endpoint = new URL("https://retroislandny.com/search");
+  endpoint.searchParams.set("q", retailTitle(query));
+  endpoint.searchParams.set("country", "US");
+  endpoint.searchParams.set("currency", "USD");
+  return endpoint.toString();
 }
 
 function normalize(value) {
