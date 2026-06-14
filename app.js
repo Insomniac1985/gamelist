@@ -61,6 +61,9 @@ const state = {
   mobileSection: "backlog",
   mobileSwipeStart: null,
   historyYear: String(new Date().getFullYear()),
+  completedYear: "all",
+  completedSort: "time",
+  completedDirection: "desc",
   platinumYear: "all",
   platinumSort: "time",
   platinumDirection: "desc",
@@ -114,6 +117,9 @@ const el = {
   historyCloseButton: document.querySelector("#historyCloseButton"),
   historyYearTabs: document.querySelector("#historyYearTabs"),
   historyList: document.querySelector("#historyList"),
+  completedYearSelect: document.querySelector("#completedYearSelect"),
+  completedSortSelect: document.querySelector("#completedSortSelect"),
+  completedSortDirection: document.querySelector("#completedSortDirection"),
   platinumDialog: document.querySelector("#platinumDialog"),
   platinumCloseButton: document.querySelector("#platinumCloseButton"),
   platinumTitle: document.querySelector("#platinumTitle"),
@@ -342,6 +348,10 @@ function bindEvents() {
   });
   el.releaseDialog.addEventListener("close", syncScrollLock);
   el.dialog.addEventListener("close", syncScrollLock);
+  el.completedSortDirection.addEventListener("click", () => {
+    state.completedDirection = state.completedDirection === "asc" ? "desc" : "asc";
+    renderCompleted();
+  });
   el.mobileTabs.forEach((button) => button.addEventListener("click", () => {
     state.mobileSection = button.dataset.mobileSection;
     render();
@@ -1003,20 +1013,20 @@ function renderStats() {
     completed: state.games.filter((game) => game.completedAt && !game.deletedAt).length,
   };
   el.stats.innerHTML = [
-    stat("Finished", completedThisYear, "done", { action: "history" }),
+    stat("Finished", completedThisYear, "done", { action: "completed", detail: completedStatDetail(currentYear, completedThisYear, counts.completed) }),
     stat("Backlog", counts.backlog, "backlog", { detail: sectionStatDetail("backlog", active, total) }),
     stat("To Release", counts.upcoming, "release", { detail: sectionStatDetail("upcoming", active, total) }),
     stat("Available", counts.wanted, "available", { detail: sectionStatDetail("wanted", active, total) }),
   ].join("");
-  const historyStat = el.stats.querySelector("[data-stat-action='history']");
-  historyStat?.addEventListener("click", openHistoryDialog);
-  historyStat?.addEventListener("keydown", (event) => {
+  const completedStat = el.stats.querySelector("[data-stat-action='completed']");
+  completedStat?.addEventListener("click", scrollToCompletedSection);
+  completedStat?.addEventListener("keydown", (event) => {
     if (event.key === "Enter" || event.key === " ") {
       event.preventDefault();
-      openHistoryDialog();
+      scrollToCompletedSection();
     }
   });
-  el.stats.querySelectorAll("[data-stat-detail]").forEach((node) => {
+  el.stats.querySelectorAll("[data-stat-detail]:not([data-stat-action])").forEach((node) => {
     node.addEventListener("click", () => {
       node.classList.toggle("detail-open");
     });
@@ -1051,6 +1061,19 @@ function sectionStatDetail(section, games, total) {
       <b>Total ${total}</b>
     </div>
   `;
+}
+
+function completedStatDetail(year, yearCount, total) {
+  return `
+    <div class="stat-detail">
+      <span>${yearCount} ${yearCount === 1 ? "game" : "games"} in ${escapeHtml(year)}</span>
+      <b>Total ${total}</b>
+    </div>
+  `;
+}
+
+function scrollToCompletedSection() {
+  document.querySelector("#completed")?.scrollIntoView({ behavior: "smooth", block: "start" });
 }
 
 function sectionCountLabel(section, games, count) {
@@ -1473,8 +1496,31 @@ function rowPrices(game) {
 
 function renderCompleted() {
   const list = document.querySelector(".completed-list");
-  const games = filteredGames().filter((game) => game.completedAt);
-  games.sort((a, b) => String(b.completedAt).localeCompare(String(a.completedAt)));
+  const baseGames = filteredGames().filter((game) => game.completedAt);
+  const years = completedYears(baseGames);
+  if (state.completedYear !== "all" && !years.includes(state.completedYear)) state.completedYear = "all";
+  el.completedYearSelect.innerHTML = baseGames.length ? [
+    `<option value="all">All</option>`,
+    ...years.map((year) => `<option value="${escapeHtml(year)}">${escapeHtml(year)}</option>`),
+  ].join("") : `<option value="all">No finished games</option>`;
+  el.completedYearSelect.value = state.completedYear;
+  el.completedYearSelect.onchange = () => {
+    state.completedYear = el.completedYearSelect.value || "all";
+    renderCompleted();
+  };
+  el.completedSortSelect.value = state.completedSort;
+  el.completedSortSelect.onchange = () => {
+    state.completedSort = el.completedSortSelect.value || "time";
+    renderCompleted();
+  };
+  el.completedSortDirection.innerHTML = sortArrowIcon(state.completedDirection === "desc");
+  el.completedSortDirection.title = state.completedDirection === "asc" ? "Sort ascending" : "Sort descending";
+  el.completedSortDirection.setAttribute("aria-label", el.completedSortDirection.title);
+  el.completedSortDirection.classList.toggle("desc", state.completedDirection === "desc");
+  const games = sortedCompletedGames(state.completedYear === "all"
+    ? baseGames
+    : baseGames.filter((game) => completionYear(game) === state.completedYear));
+  el.completedCount.innerHTML = `${games.length} ${games.length === 1 ? "game" : "games"}`;
   list.innerHTML = games.length ? games.map((game) => `
     <div class="completed-row" data-id="${escapeHtml(game.id)}" role="button" tabindex="0" aria-label="${escapeHtml(`Open ${game.title}`)}">
       <img class="completed-cover" src="${escapeHtml(game.cover || "")}" alt="" loading="lazy" decoding="async" ${game.cover ? "" : "hidden"}>
@@ -1484,8 +1530,10 @@ function renderCompleted() {
         <span class="completed-dates">${escapeHtml(historyRangeText(game))}</span>
         ${completedDurationLine(game)}
       </div>
-      <button class="icon-button completed-edit-action" type="button" title="Edit" aria-label="Edit">${pencilIcon()}</button>
-      <button class="ghost-button restore-action" type="button">Backlog</button>
+      <div class="completed-actions">
+        <button class="icon-button completed-edit-action" type="button" title="Edit" aria-label="Edit">${pencilIcon()}</button>
+        <button class="ghost-button restore-action" type="button">Backlog</button>
+      </div>
     </div>
   `).join("") : `<div class="empty">Finished games will stay saved here.</div>`;
   list.querySelectorAll(".completed-edit-action").forEach((button) => {
@@ -1505,6 +1553,19 @@ function renderCompleted() {
       event.preventDefault();
       openDetail(row.dataset.id);
     });
+  });
+}
+
+function sortedCompletedGames(games) {
+  const direction = state.completedDirection === "asc" ? 1 : -1;
+  return [...games].sort((a, b) => {
+    if (state.completedSort === "name") {
+      return direction * (stringCompare(a.title, b.title) || String(b.completedAt).localeCompare(String(a.completedAt)));
+    }
+    if (state.completedSort === "playtime") {
+      return direction * (completedPlaytimeValue(a) - completedPlaytimeValue(b) || String(b.completedAt).localeCompare(String(a.completedAt)) || stringCompare(a.title, b.title));
+    }
+    return direction * (completionTimeValue(a) - completionTimeValue(b) || stringCompare(a.title, b.title));
   });
 }
 
@@ -1566,8 +1627,8 @@ function renderHistoryDialog() {
   });
 }
 
-function completedYears() {
-  return unique(state.games
+function completedYears(games = state.games) {
+  return unique(games
     .filter((game) => game.completedAt && !game.deletedAt)
     .map((game) => completionYear(game))
     .filter(Boolean))
@@ -1578,6 +1639,18 @@ function completedGamesForYear(year) {
   return state.games
     .filter((game) => !game.deletedAt && game.completedAt && completionYear(game) === String(year))
     .sort((a, b) => String(b.completedAt).localeCompare(String(a.completedAt)) || stringCompare(a.title, b.title));
+}
+
+function completionTimeValue(game) {
+  const time = Date.parse(game.completedAt || "");
+  return Number.isNaN(time) ? 0 : time;
+}
+
+function completedPlaytimeValue(game) {
+  const start = Date.parse(dateOnly(game.startedAt));
+  const done = Date.parse(dateOnly(game.completedAt));
+  if (Number.isNaN(start) || Number.isNaN(done)) return 0;
+  return Math.max(0, done - start);
 }
 
 function completionYear(game) {

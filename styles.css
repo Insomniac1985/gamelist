@@ -3328,6 +3328,7 @@ body:not(.can-edit) .card-actions,
 body:not(.can-edit) .game-row-actions,
 body:not(.can-edit) .restore-action,
 body:not(.can-edit) .completed-edit-action,
+body:not(.can-edit) .completed-actions,
 body:not(.can-edit) .completed-date-edit,
 body:not(.can-edit) .history-edit-action,
 body:not(.can-edit) #syncButton,
@@ -3358,6 +3359,54 @@ body:not(.can-edit) .game-card:focus-within .edit-action {
   border-radius: 8px;
 }
 
+.completed-filter-bar {
+  display: grid;
+  grid-template-columns: minmax(132px, auto) auto minmax(0, 1fr);
+  align-items: end;
+  gap: 8px;
+  width: 100%;
+  margin: 0 0 14px;
+  padding: 7px 8px;
+  background: rgba(255, 255, 255, 0.055);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05);
+}
+
+.completed-year-select {
+  display: grid;
+  min-width: 132px;
+  margin: 0;
+}
+
+.completed-year-select select {
+  height: 34px;
+  min-height: 34px;
+  padding: 5px 34px 5px 9px;
+  font-size: 12px;
+}
+
+.completed-order-control {
+  display: flex;
+  align-items: stretch;
+  gap: 6px;
+}
+
+.completed-order-control select {
+  width: auto;
+  min-width: 116px;
+  height: 34px;
+  padding: 5px 34px 5px 9px;
+  font-size: 12px;
+}
+
+.completed-order-control .direction-toggle {
+  width: 34px;
+  min-width: 34px;
+  min-height: 34px;
+  height: 34px;
+}
+
 .completed-list {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -3367,7 +3416,7 @@ body:not(.can-edit) .game-card:focus-within .edit-action {
 
 .completed-row {
   display: grid;
-  grid-template-columns: 56px minmax(0, 1fr) auto auto;
+  grid-template-columns: 56px minmax(0, 1fr) auto;
   justify-content: space-between;
   align-items: center;
   gap: 10px;
@@ -3379,6 +3428,13 @@ body:not(.can-edit) .game-card:focus-within .edit-action {
   border-radius: 7px;
   color: var(--muted);
   cursor: pointer;
+}
+
+.completed-actions {
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 6px;
 }
 
 .completed-row:hover {
@@ -4422,19 +4478,13 @@ body.dialog-open .mobile-section-tabs {
     grid-template-columns: 56px minmax(0, 1fr);
   }
 
-  .completed-row .completed-edit-action,
-  .completed-row .restore-action {
-    grid-column: auto;
-  }
-
-  .completed-row .completed-edit-action {
-    grid-column: 1;
-    justify-self: end;
-  }
-
-  .completed-row .restore-action {
+  .completed-actions {
     grid-column: 2;
-    justify-self: start;
+    justify-self: end;
+    align-self: end;
+  }
+
+  .completed-row .restore-action {
     min-height: 32px;
     padding: 5px 8px;
     font-size: 11px;
@@ -5031,7 +5081,8 @@ body.dialog-open .mobile-section-tabs {
     touch-action: pan-y;
   }
 
-  .platinum-filter-bar {
+  .platinum-filter-bar,
+  .completed-filter-bar {
     display: grid;
     grid-template-columns: minmax(0, 1fr);
     align-items: end;
@@ -5047,15 +5098,19 @@ body.dialog-open .mobile-section-tabs {
   }
 
   .platinum-year-select,
-  .platinum-order-control {
+  .platinum-order-control,
+  .completed-year-select,
+  .completed-order-control {
     min-width: 0;
   }
 
-  .platinum-order-control {
+  .platinum-order-control,
+  .completed-order-control {
     grid-column: 1 / -1;
   }
 
-  .platinum-order-control select {
+  .platinum-order-control select,
+  .completed-order-control select {
     flex: 1;
   }
 

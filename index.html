@@ -187,6 +187,19 @@
           <span id="completedCount"></span>
         </div>
         <div class="completed-panel glass">
+          <div class="completed-filter-bar">
+            <label class="completed-year-select">
+              <select id="completedYearSelect" aria-label="Filter finished games by year"></select>
+            </label>
+            <div class="completed-order-control">
+              <select id="completedSortSelect" aria-label="Sort finished games">
+                <option value="time">Time</option>
+                <option value="name">Name</option>
+                <option value="playtime">Playtime</option>
+              </select>
+              <button class="direction-toggle" id="completedSortDirection" type="button" title="Sort descending" aria-label="Sort descending"></button>
+            </div>
+          </div>
           <div class="completed-list" data-section="completed"></div>
         </div>
       </section>
