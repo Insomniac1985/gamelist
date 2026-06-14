@@ -4029,13 +4029,22 @@ body.dialog-open .mobile-section-tabs {
   background: rgba(229, 232, 255, 0.08);
   border: 1px solid rgba(229, 232, 255, 0.24);
   border-radius: 7px;
-  overflow: hidden;
+  overflow: visible;
   --platinum-art-x: 0px;
   --platinum-art-y: 0px;
   transition: border-color 160ms ease, background 160ms ease, box-shadow 160ms ease;
 }
 
-.platinum-card.has-platinum-art::before {
+.platinum-art-layer {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  border-radius: inherit;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.platinum-art-layer::before {
   content: "";
   position: absolute;
   top: -18px;
@@ -4043,7 +4052,7 @@ body.dialog-open .mobile-section-tabs {
   bottom: -18px;
   width: 58%;
   background: var(--platinum-art) right center / cover no-repeat;
-  filter: blur(5px) saturate(1.12);
+  filter: blur(1px) saturate(1.12);
   opacity: 0.38;
   pointer-events: none;
   transform: translate3d(var(--platinum-art-x), var(--platinum-art-y), 0) scale(1.08);
@@ -4053,7 +4062,7 @@ body.dialog-open .mobile-section-tabs {
   z-index: 0;
 }
 
-.platinum-card.has-platinum-art::after {
+.platinum-art-layer::after {
   content: "";
   position: absolute;
   inset: 0;
@@ -4062,7 +4071,7 @@ body.dialog-open .mobile-section-tabs {
   z-index: 0;
 }
 
-.platinum-card.has-platinum-art:hover::before {
+.platinum-card.has-platinum-art:hover .platinum-art-layer::before {
   opacity: 0.5;
 }
 
@@ -4086,7 +4095,7 @@ body.dialog-open .mobile-section-tabs {
   place-items: center;
   width: 66px;
   height: 66px;
-  z-index: 1;
+  z-index: 2;
 }
 
 .platinum-main {
@@ -4153,7 +4162,7 @@ body.dialog-open .mobile-section-tabs {
   transform: translateY(-50%) scale(0.82);
   transform-origin: left center;
   transition: opacity 160ms ease, transform 160ms ease;
-  z-index: 9;
+  z-index: 20;
 }
 
 .platinum-icon-wrap:hover .platinum-cover-preview {

@@ -907,6 +907,7 @@ function platinumCard(item) {
     ? `<img class="platinum-cover-preview" src="${escapeHtml(item.cover)}" alt="">`
     : "";
   const content = `
+    ${item.cover ? `<span class="platinum-art-layer" aria-hidden="true"></span>` : ""}
     <span class="platinum-icon-wrap">
       <img class="platinum-icon" src="${escapeHtml(item.trophyIcon)}" alt="${escapeHtml(item.trophyName || "Platinum")}">
       ${coverPreview}
