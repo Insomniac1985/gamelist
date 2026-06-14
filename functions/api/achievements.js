@@ -9,7 +9,8 @@ const PSN_CACHE_SECONDS = 60 * 60;
 const MANUAL_PLATINUM_OVERRIDES = [
   { match: ["miles", "morales"], trophyName: "Be Yourself", icon: "https://img.psnprofiles.com/trophy/m/11805/8739f0e6-486a-458b-97a2-f3c9d7914492.png" },
   { match: ["persona", "4", "dancing"], trophyName: "Dancing All Night", icon: "https://img.psnprofiles.com/trophy/m/8508/d370e2bc-56f7-4b36-884c-de3565686c1b.png" },
-  { match: ["spider", "man"], exclude: ["miles"], trophyName: "Be Greater", icon: "https://img.psnprofiles.com/trophy/m/8143/ccb3b536-eaae-4c03-beb5-4d9b3f8cb72c.png" },
+  { match: ["spider", "man", "2"], exclude: ["miles"], trophyName: "Dedicated", icon: "https://img.psnprofiles.com/trophy/m/23918/c6620db1-4320-4a50-99af-fce3f5be2b41.png" },
+  { match: ["spider", "man"], exclude: ["miles", "2"], trophyName: "Be Greater", icon: "https://img.psnprofiles.com/trophy/m/8143/ccb3b536-eaae-4c03-beb5-4d9b3f8cb72c.png" },
   { match: ["13", "sentinels"], trophyName: "13 Sentinels: Aegis Rim", icon: "https://img.psnprofiles.com/trophy/m/10041/d68a865e-66a8-407c-8b43-2852b95f54d3.png" },
   { match: ["elden", "ring"], trophyName: "Elden Ring", icon: "https://img.psnprofiles.com/trophy/m/15539/b0d9a703-d112-4415-b64e-b7093cabe18c.png" },
   { match: ["persona", "5"], trophyName: "The Phenomenal Phantom Thief", icon: "https://img.psnprofiles.com/trophy/m/10572/aa5d2bda-ce7e-40e8-aff1-bab61e4cfcf3.png" },
@@ -375,9 +376,11 @@ function applyManualPlatinumOverride(title, item) {
 function manualPlatinumOverrideForTitle(title) {
   const normalized = normalizePlatinumTitle(title);
   if (!normalized) return null;
+  const terms = normalized.split(" ").filter(Boolean);
   return MANUAL_PLATINUM_OVERRIDES.find((entry) => {
-    const hasMatches = entry.match.every((term) => normalized.includes(term));
-    const hasExcluded = (entry.exclude || []).some((term) => normalized.includes(term));
+    const includesTerm = (term) => terms.includes(term) || (term.length > 2 && normalized.includes(term));
+    const hasMatches = entry.match.every(includesTerm);
+    const hasExcluded = (entry.exclude || []).some(includesTerm);
     return hasMatches && !hasExcluded;
   }) || null;
 }

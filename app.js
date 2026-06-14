@@ -32,6 +32,11 @@ const UI_ICON_URLS = [
 const MANUAL_PLATINUM_COVER_OVERRIDES = [
   { match: ["nier", "automata"], cover: "https://howlongtobeat.com/games/38029_Nier_Automata.jpg?width=250" },
   { match: ["persona", "3", "reload"], cover: "https://howlongtobeat.com/games/129805_Persona_3_Reload.jpg?width=250" },
+  { match: ["spider", "man"], exclude: ["2", "miles"], cover: "https://howlongtobeat.com/games/44852_Spider-Man_(2017).jpg?width=250" },
+];
+const MANUAL_PLATINUM_META_OVERRIDES = [
+  { match: ["spider", "man", "2"], exclude: ["miles"], trophyName: "Dedicated", icon: "https://img.psnprofiles.com/trophy/m/23918/c6620db1-4320-4a50-99af-fce3f5be2b41.png" },
+  { match: ["spider", "man"], exclude: ["2", "miles"], trophyName: "Be Greater", icon: "https://img.psnprofiles.com/trophy/m/8143/ccb3b536-eaae-4c03-beb5-4d9b3f8cb72c.png" },
 ];
 const SEARCH_CACHE_TTL = 1000 * 60 * 60;
 let titleLookupTimer = 0;
@@ -744,7 +749,6 @@ function renderPlatinumDialog(platinums = platinumItems(), years = platinumYears
     renderPlatinumDialog(platinums, years);
   };
   el.platinumList.innerHTML = visible.length ? visible.map(platinumCard).join("") : `<div class="empty">No platinums tracked yet.</div>`;
-  setupPlatinumCardParallax();
   el.platinumList.querySelectorAll("[data-game-id]").forEach((button) => {
     button.addEventListener("click", () => {
       const gameId = button.dataset.gameId;
@@ -774,11 +778,12 @@ function platinumItems() {
   const psnPlatinums = (state.psnActivity.platinums || []).map((item) => {
     const localGame = localGameForTitle(item.title);
     const cachedMeta = cachedPlatinumMetadata(item.title);
+    const manualMeta = manualPlatinumMetaForTitle(item.title);
     return {
       title: item.title || "Platinum game",
       cover: platinumCoverFor(item.title),
-      trophyName: item.trophyName && item.trophyName !== "Platinum" ? item.trophyName : (cachedMeta?.trophyName || item.trophyName || "Platinum"),
-      trophyIcon: item.icon || cachedMeta?.icon || platformLogo("PS5"),
+      trophyName: manualMeta?.trophyName || (item.trophyName && item.trophyName !== "Platinum" ? item.trophyName : (cachedMeta?.trophyName || item.trophyName || "Platinum")),
+      trophyIcon: manualMeta?.icon || item.icon || cachedMeta?.icon || platformLogo("PS5"),
       earnedAt: item.earnedAt || "",
       rawEarnedAt: item.rawEarnedAt || "",
       platform: item.platform || localGame?.platform || "",
@@ -806,10 +811,19 @@ function platinumItems() {
 function localGameForTitle(title) {
   const normalized = normalizeTitleForMatch(title);
   if (!normalized) return null;
-  return state.games.find((game) => {
-    const gameTitle = normalizeTitleForMatch(game.title);
-    return gameTitle && (gameTitle === normalized || gameTitle.includes(normalized) || normalized.includes(gameTitle));
-  }) || null;
+  const candidates = state.games
+    .map((game) => ({ game, gameTitle: normalizeTitleForMatch(game.title) }))
+    .filter((entry) => entry.gameTitle && (
+      entry.gameTitle === normalized
+      || entry.gameTitle.includes(normalized)
+      || normalized.includes(entry.gameTitle)
+    ));
+  return candidates
+    .sort((a, b) => {
+      if (a.gameTitle === normalized && b.gameTitle !== normalized) return -1;
+      if (b.gameTitle === normalized && a.gameTitle !== normalized) return 1;
+      return b.gameTitle.length - a.gameTitle.length;
+    })[0]?.game || null;
 }
 
 function localCoverForTitle(title, size = "card") {
@@ -827,7 +841,21 @@ function platinumCoverFor(title) {
 function manualPlatinumCoverForTitle(title) {
   const normalized = normalizeTitleForMatch(title);
   if (!normalized) return "";
-  return MANUAL_PLATINUM_COVER_OVERRIDES.find((entry) => entry.match.every((term) => normalized.includes(term)))?.cover || "";
+  return MANUAL_PLATINUM_COVER_OVERRIDES.find((entry) => manualPlatinumEntryMatches(entry, normalized))?.cover || "";
+}
+
+function manualPlatinumMetaForTitle(title) {
+  const normalized = normalizeTitleForMatch(title);
+  if (!normalized) return null;
+  return MANUAL_PLATINUM_META_OVERRIDES.find((entry) => manualPlatinumEntryMatches(entry, normalized)) || null;
+}
+
+function manualPlatinumEntryMatches(entry, normalized) {
+  const terms = normalized.split(" ").filter(Boolean);
+  const includesTerm = (term) => terms.includes(term) || (term.length > 2 && normalized.includes(term));
+  const hasMatches = entry.match.every(includesTerm);
+  const hasExcluded = (entry.exclude || []).some(includesTerm);
+  return hasMatches && !hasExcluded;
 }
 
 function loadPlatinumMetaCache() {
@@ -925,23 +953,6 @@ function platinumCard(item) {
     return `<a class="platinum-card${artClass}" href="${escapeHtml(item.url)}" target="_blank" rel="noreferrer"${artStyle}>${content}</a>`;
   }
   return `<article class="platinum-card${artClass}"${artStyle}>${content}</article>`;
-}
-
-function setupPlatinumCardParallax() {
-  el.platinumList.querySelectorAll(".platinum-card.has-platinum-art").forEach((card) => {
-    card.addEventListener("pointermove", (event) => {
-      if (event.pointerType === "touch") return;
-      const rect = card.getBoundingClientRect();
-      const x = ((event.clientX - rect.left) / rect.width - 0.5) * -12;
-      const y = ((event.clientY - rect.top) / rect.height - 0.5) * -8;
-      card.style.setProperty("--platinum-art-x", `${x.toFixed(2)}px`);
-      card.style.setProperty("--platinum-art-y", `${y.toFixed(2)}px`);
-    });
-    card.addEventListener("pointerleave", () => {
-      card.style.setProperty("--platinum-art-x", "0px");
-      card.style.setProperty("--platinum-art-y", "0px");
-    });
-  });
 }
 
 function trophyBarHeight(count, counts) {

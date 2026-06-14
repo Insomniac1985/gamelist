@@ -4030,8 +4030,6 @@ body.dialog-open .mobile-section-tabs {
   border: 1px solid rgba(229, 232, 255, 0.24);
   border-radius: 7px;
   overflow: visible;
-  --platinum-art-x: 0px;
-  --platinum-art-y: 0px;
   transition: border-color 160ms ease, background 160ms ease, box-shadow 160ms ease;
 }
 
@@ -4055,7 +4053,7 @@ body.dialog-open .mobile-section-tabs {
   filter: blur(1px) saturate(1.12);
   opacity: 0.38;
   pointer-events: none;
-  transform: translate3d(var(--platinum-art-x), var(--platinum-art-y), 0) scale(1.08);
+  transform: scale(1.08);
   transition: opacity 160ms ease, transform 160ms ease;
   -webkit-mask-image: linear-gradient(90deg, transparent 0%, rgba(0, 0, 0, 0.18) 22%, #000 58%);
   mask-image: linear-gradient(90deg, transparent 0%, rgba(0, 0, 0, 0.18) 22%, #000 58%);
