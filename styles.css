@@ -4461,6 +4461,25 @@ body.dialog-open .mobile-section-tabs {
   min-height: 44px;
 }
 
+.stream-check {
+  border-color: rgba(183, 116, 255, 0.24);
+}
+
+.stream-check input {
+  accent-color: #b774ff;
+}
+
+.stream-check:has(input:checked) {
+  color: #d7b8ff;
+  border-color: rgba(183, 116, 255, 0.46);
+  background: rgba(132, 64, 255, 0.18);
+  box-shadow: inset 0 0 0 1px rgba(183, 116, 255, 0.1);
+}
+
+.stream-check:has(input:checked) span {
+  color: #d7b8ff;
+}
+
 .wide {
   grid-column: 1 / -1;
 }
