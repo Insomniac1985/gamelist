@@ -37,6 +37,7 @@ const SEARCH_CACHE_TTL = 1000 * 60 * 60;
 let titleLookupTimer = 0;
 let selectMeasureContext = null;
 let selectOverflowPopover = null;
+let playingTrailerFrame = 0;
 const searchCache = new Map();
 const searchInflight = new Map();
 const platinumMetaCache = loadPlatinumMetaCache();
@@ -249,7 +250,7 @@ function bindEvents() {
   el.playingNextButton.addEventListener("click", () => slidePlaying(1));
   el.playingList.addEventListener("scroll", () => {
     updatePlayingSliderControls();
-    requestAnimationFrame(updateFocusedPlayingTrailer);
+    scheduleFocusedPlayingTrailerUpdate();
   }, { passive: true });
   el.playingFinishedList.addEventListener("scroll", updatePlayingFinishedEdges, { passive: true });
   el.detailTrophyList.addEventListener("scroll", updateDetailTrophyEdges, { passive: true });
@@ -258,14 +259,18 @@ function bindEvents() {
     if (event.target === el.platinumDialog) el.platinumDialog.close();
   });
   el.platinumDialog.addEventListener("close", syncScrollLock);
-  window.addEventListener("scroll", updateScrollTopButton, { passive: true });
+  window.addEventListener("scroll", () => {
+    updateScrollTopButton();
+    scheduleFocusedPlayingTrailerUpdate();
+  }, { passive: true });
   window.addEventListener("resize", () => {
     schedulePlayingCardHeightSync();
     requestAnimationFrame(updateAllRowTitleOverflow);
+    scheduleFocusedPlayingTrailerUpdate();
   }, { passive: true });
   document.addEventListener("visibilitychange", () => {
     if (document.hidden) pauseAllPlayingTrailers();
-    else requestAnimationFrame(updateFocusedPlayingTrailer);
+    else scheduleFocusedPlayingTrailerUpdate();
   });
   document.addEventListener("pointerover", handleSelectOverflowTitle);
   document.addEventListener("focusin", handleSelectOverflowTitle);
@@ -490,6 +495,8 @@ function renderViewToggle() {
 
 function syncScrollLock() {
   document.body.classList.toggle("dialog-open", el.dialog.open || el.detailDialog.open || el.historyDialog.open || el.releaseDialog.open || el.platinumDialog.open);
+  if (document.body.classList.contains("dialog-open")) pauseAllPlayingTrailers();
+  else scheduleFocusedPlayingTrailerUpdate();
   updateScrollTopButton();
 }
 
@@ -515,7 +522,7 @@ function renderPlayingSection() {
   renderPlayingFinished();
   schedulePlayingCardHeightSync();
   requestAnimationFrame(updatePlayingSliderControls);
-  requestAnimationFrame(updateFocusedPlayingTrailer);
+  scheduleFocusedPlayingTrailerUpdate();
 }
 
 function renderPlayingFinished() {
@@ -964,7 +971,7 @@ function renderStats() {
     completed: state.games.filter((game) => game.completedAt && !game.deletedAt).length,
   };
   el.stats.innerHTML = [
-    stat("Done", completedThisYear, "done", { action: "history" }),
+    stat("Finished", completedThisYear, "done", { action: "history" }),
     stat("Backlog", counts.backlog, "backlog", { detail: sectionStatDetail("backlog", active, total) }),
     stat("To Release", counts.upcoming, "release", { detail: sectionStatDetail("upcoming", active, total) }),
     stat("Available", counts.wanted, "available", { detail: sectionStatDetail("wanted", active, total) }),
@@ -1825,8 +1832,16 @@ function bindPlayingTrailerFocus() {
   });
 }
 
+function scheduleFocusedPlayingTrailerUpdate() {
+  if (playingTrailerFrame) return;
+  playingTrailerFrame = requestAnimationFrame(() => {
+    playingTrailerFrame = 0;
+    updateFocusedPlayingTrailer();
+  });
+}
+
 function updateFocusedPlayingTrailer() {
-  if (document.hidden) {
+  if (document.hidden || document.body.classList.contains("dialog-open") || !isPlayingCarouselInView()) {
     pauseAllPlayingTrailers();
     return;
   }
@@ -1844,6 +1859,14 @@ function updateFocusedPlayingTrailer() {
     else pauseCardTrailer(card);
   });
   state.activeTrailerCard = focused;
+}
+
+function isPlayingCarouselInView() {
+  if (el.playingSection.hidden) return false;
+  const rect = el.playingSection.getBoundingClientRect();
+  const viewportHeight = window.innerHeight || document.documentElement.clientHeight || 0;
+  const visibleHeight = Math.max(0, Math.min(rect.bottom, viewportHeight) - Math.max(rect.top, 0));
+  return visibleHeight >= Math.min(90, rect.height * 0.18);
 }
 
 function visibleRatio(card, root) {
@@ -1888,6 +1911,7 @@ function pauseCardTrailer(card) {
 
 function pauseAllPlayingTrailers() {
   el.playingList.querySelectorAll(".game-card.has-trailer").forEach(pauseCardTrailer);
+  state.activeTrailerCard = null;
 }
 
 function commandTrailer(iframe, command) {
@@ -1970,6 +1994,7 @@ function setupCardParallax(card) {
 function openDetail(id, options = {}) {
   const game = getGame(id);
   if (!game) return;
+  pauseAllPlayingTrailers();
   state.detailReturnToHistory = Boolean(options.returnToHistory);
   const owners = ownerTags(game);
   el.detailTitle.textContent = game.title;
@@ -2944,6 +2969,7 @@ async function openEditor(id = "") {
   el.fields.cover.value = game.cover || "";
   el.fields.notes.value = game.notes || "";
   syncDialogPriceVisibility();
+  pauseAllPlayingTrailers();
   el.dialog.showModal();
   syncScrollLock();
 }
