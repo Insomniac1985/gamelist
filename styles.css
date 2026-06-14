@@ -3381,7 +3381,7 @@ body:not(.can-edit) .game-card:focus-within .edit-action {
 
 .completed-filter-bar {
   display: grid;
-  grid-template-columns: minmax(132px, auto) auto 34px;
+  grid-template-columns: minmax(132px, auto) auto minmax(0, 1fr);
   align-items: end;
   gap: 8px;
   width: 100%;
@@ -3394,8 +3394,8 @@ body:not(.can-edit) .game-card:focus-within .edit-action {
 }
 
 .icon-button.section-view-toggle {
-  align-self: end;
-  justify-self: start;
+  align-self: stretch;
+  justify-self: auto;
   width: 34px;
   height: 34px;
   min-width: 34px;
@@ -4082,7 +4082,7 @@ body.dialog-open .mobile-section-tabs {
 
 .platinum-filter-bar {
   display: grid;
-  grid-template-columns: minmax(132px, auto) auto 34px;
+  grid-template-columns: minmax(132px, auto) auto minmax(0, 1fr);
   align-items: end;
   gap: 8px;
   width: 100%;
