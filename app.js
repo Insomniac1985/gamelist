@@ -1400,7 +1400,10 @@ function rowFor(game, section, options = {}) {
   row.classList.toggle("owner-card-jordi", owners.includes("Jordi"));
   row.classList.toggle("digital-card", Boolean(game.digital));
   row.innerHTML = `
-    <img class="game-row-cover" src="${escapeHtml(game.cover ? coverDisplayUrl(game.cover, "tiny") : "")}" alt="" loading="${escapeHtml(options.imagePriority || "lazy")}" decoding="async" ${game.cover ? "" : "hidden"}>
+    <span class="game-row-cover-wrap" ${game.cover ? "" : "hidden"}>
+      <img class="game-row-cover" src="${escapeHtml(game.cover ? coverDisplayUrl(game.cover, "tiny") : "")}" alt="" loading="${escapeHtml(options.imagePriority || "lazy")}" decoding="async">
+      <img class="game-row-cover-preview" src="${escapeHtml(game.cover ? coverDisplayUrl(game.cover, "card") : "")}" alt="" loading="lazy" decoding="async" aria-hidden="true">
+    </span>
     <div class="game-row-identity">
       <strong class="${game.platinum ? "completed-achievements-title" : ""} ${owners.includes("Judy") ? "owner-judy" : ""} ${owners.includes("Jordi") ? "owner-jordi" : ""}" tabindex="0">${escapeHtml(game.title)}</strong>
       ${studioText(game) ? `<span>${escapeHtml(studioText(game))}</span>` : ""}
