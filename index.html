@@ -213,10 +213,6 @@
             <p class="eyebrow">Game details</p>
             <h2 id="dialogTitle">Add Game</h2>
           </div>
-          <label class="check-filter toggle-check modal-playing-check">
-            <input id="playingInput" type="checkbox">
-            <span>Playing</span>
-          </label>
           <button class="icon-button" id="closeDialogButton" type="button" title="Close">×</button>
         </div>
 
@@ -237,7 +233,7 @@
 
         <section class="form-group">
           <h3>Playing</h3>
-          <div class="form-grid">
+          <div class="form-grid playing-form-grid">
             <label>
               <span>Started</span>
               <input id="startedAtInput" type="date">
@@ -245,6 +241,10 @@
             <label>
               <span>Finished</span>
               <input id="completedAtInput" type="date">
+            </label>
+            <label class="check-filter toggle-check modal-playing-check">
+              <input id="playingInput" type="checkbox">
+              <span>Playing</span>
             </label>
             <label>
               <span>Replay Count</span>
@@ -480,9 +480,9 @@
             <p class="eyebrow">Trophies</p>
             <h2 id="platinumTitle"></h2>
           </div>
+          <span class="platinum-count-pill" id="platinumCount"></span>
           <button class="icon-button" id="platinumCloseButton" type="button" title="Close">×</button>
         </div>
-        <span class="platinum-count-pill" id="platinumCount"></span>
         <div class="platinum-filter-bar" id="platinumYearTabs">
           <label class="platinum-year-select">
             <select id="platinumYearSelect"></select>
