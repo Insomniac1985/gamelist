@@ -3843,7 +3843,7 @@ body.dialog-open .mobile-section-tabs {
 .platinum-head-actions {
   display: grid;
   justify-items: end;
-  gap: 5px;
+  gap: 18px;
   margin-left: auto;
 }
 
@@ -3866,7 +3866,7 @@ body.dialog-open .mobile-section-tabs {
   align-items: end;
   gap: 8px;
   width: 100%;
-  margin: 14px 0;
+  margin: 6px 0 14px;
   padding: 7px 8px;
   background: rgba(255, 255, 255, 0.055);
   border: 1px solid var(--line);
@@ -4532,13 +4532,13 @@ body.dialog-open .mobile-section-tabs {
     flex: 0 0 auto;
     min-height: 18px !important;
     margin-left: auto;
-    padding: 1px 5px;
+    padding: 1px 6px;
     gap: 3px;
     font-size: 9px;
   }
 
   .playing-section .card-trophy-progress em {
-    width: 18px;
+    width: 24px;
   }
 
   .playing-section .card-trophy-progress strong {
