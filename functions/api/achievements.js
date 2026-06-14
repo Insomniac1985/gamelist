@@ -217,25 +217,18 @@ async function getPlatinumsForTitleService(accessToken, title, sourceUrl, npServ
     getPagedTrophies(accessToken, metaUrl, npServiceName),
   ]);
   const metaById = new Map(metaData.map((trophy) => [String(trophy.trophyId), trophy]));
-  return earnedData
+  const platinums = earnedData
     .map((earned) => {
       const meta = metaById.get(String(earned.trophyId)) || {};
-      const type = trophyTypeLabel(earned.trophyType || meta.trophyType);
-      if (!earned.earned || !earned.earnedDateTime || type !== "Platinum") return null;
-      return {
-        title: title.trophyTitleName || "Platinum game",
-        cover: title.trophyTitleIconUrl || "",
-        trophyName: meta.trophyName || "Platinum",
-        earnedAt: formatPsnDate(earned.earnedDateTime),
-        rawEarnedAt: earned.earnedDateTime,
-        icon: meta.trophyIconUrl || earned.trophyRewardImageUrl || title.trophyTitleIconUrl || "",
-        platform: title.trophyTitlePlatform || "",
-        npCommunicationId: title.npCommunicationId || "",
-        npServiceName,
-        url: sourceUrl,
-      };
+      if (!earned.earned || !earned.earnedDateTime || !isPlatinumTrophy(earned, meta)) return null;
+      return platinumFromTitleTrophy(title, sourceUrl, npServiceName, earned, meta);
     })
     .filter(Boolean);
+  if (platinums.length) return platinums;
+  if (Number(title?.earnedTrophies?.platinum || 0) <= 0) return [];
+  const metaPlatinum = metaData.find((trophy) => isPlatinumTrophy({}, trophy));
+  if (!metaPlatinum) return [];
+  return [platinumFromTitleTrophy(title, sourceUrl, npServiceName, {}, metaPlatinum, true)];
 }
 
 function trophyServiceCandidates(title) {
@@ -319,6 +312,28 @@ function fallbackPlatinumForTitle(title, sourceUrl) {
     url: sourceUrl,
     fallback: true,
   };
+}
+
+function platinumFromTitleTrophy(title, sourceUrl, npServiceName, earned = {}, meta = {}, fallback = false) {
+  const rawEarnedAt = earned.earnedDateTime || title?.lastUpdatedDateTime || "";
+  return {
+    title: title?.trophyTitleName || "Platinum game",
+    cover: title?.trophyTitleIconUrl || "",
+    trophyName: meta.trophyName || "Platinum",
+    earnedAt: rawEarnedAt ? formatPsnDate(rawEarnedAt) : "",
+    rawEarnedAt,
+    icon: meta.trophyIconUrl || earned.trophyRewardImageUrl || title?.trophyTitleIconUrl || "",
+    platform: title?.trophyTitlePlatform || "",
+    npCommunicationId: title?.npCommunicationId || "",
+    npServiceName,
+    url: sourceUrl,
+    ...(fallback ? { fallback: true } : {}),
+  };
+}
+
+function isPlatinumTrophy(earned = {}, meta = {}) {
+  return trophyTypeLabel(earned.trophyType || meta.trophyType) === "Platinum"
+    || /\bplatinum\b/i.test([earned.trophyName, meta.trophyName, earned.trophyDetail, meta.trophyDetail].filter(Boolean).join(" "));
 }
 
 function trophyTypeLabel(value) {
