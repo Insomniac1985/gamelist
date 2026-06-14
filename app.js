@@ -348,7 +348,7 @@ function bindEvents() {
   });
   el.releaseDialog.addEventListener("close", syncScrollLock);
   el.dialog.addEventListener("close", syncScrollLock);
-  el.completedSortDirection.addEventListener("click", () => {
+  el.completedSortDirection?.addEventListener("click", () => {
     state.completedDirection = state.completedDirection === "asc" ? "desc" : "asc";
     renderCompleted();
   });
@@ -1496,31 +1496,38 @@ function rowPrices(game) {
 
 function renderCompleted() {
   const list = document.querySelector(".completed-list");
+  if (!list) return;
   const baseGames = filteredGames().filter((game) => game.completedAt);
   const years = completedYears(baseGames);
   if (state.completedYear !== "all" && !years.includes(state.completedYear)) state.completedYear = "all";
-  el.completedYearSelect.innerHTML = baseGames.length ? [
-    `<option value="all">All</option>`,
-    ...years.map((year) => `<option value="${escapeHtml(year)}">${escapeHtml(year)}</option>`),
-  ].join("") : `<option value="all">No finished games</option>`;
-  el.completedYearSelect.value = state.completedYear;
-  el.completedYearSelect.onchange = () => {
-    state.completedYear = el.completedYearSelect.value || "all";
-    renderCompleted();
-  };
-  el.completedSortSelect.value = state.completedSort;
-  el.completedSortSelect.onchange = () => {
-    state.completedSort = el.completedSortSelect.value || "time";
-    renderCompleted();
-  };
-  el.completedSortDirection.innerHTML = sortArrowIcon(state.completedDirection === "desc");
-  el.completedSortDirection.title = state.completedDirection === "asc" ? "Sort ascending" : "Sort descending";
-  el.completedSortDirection.setAttribute("aria-label", el.completedSortDirection.title);
-  el.completedSortDirection.classList.toggle("desc", state.completedDirection === "desc");
+  if (el.completedYearSelect) {
+    el.completedYearSelect.innerHTML = baseGames.length ? [
+      `<option value="all">All</option>`,
+      ...years.map((year) => `<option value="${escapeHtml(year)}">${escapeHtml(year)}</option>`),
+    ].join("") : `<option value="all">No finished games</option>`;
+    el.completedYearSelect.value = state.completedYear;
+    el.completedYearSelect.onchange = () => {
+      state.completedYear = el.completedYearSelect.value || "all";
+      renderCompleted();
+    };
+  }
+  if (el.completedSortSelect) {
+    el.completedSortSelect.value = state.completedSort;
+    el.completedSortSelect.onchange = () => {
+      state.completedSort = el.completedSortSelect.value || "time";
+      renderCompleted();
+    };
+  }
+  if (el.completedSortDirection) {
+    el.completedSortDirection.innerHTML = sortArrowIcon(state.completedDirection === "desc");
+    el.completedSortDirection.title = state.completedDirection === "asc" ? "Sort ascending" : "Sort descending";
+    el.completedSortDirection.setAttribute("aria-label", el.completedSortDirection.title);
+    el.completedSortDirection.classList.toggle("desc", state.completedDirection === "desc");
+  }
   const games = sortedCompletedGames(state.completedYear === "all"
     ? baseGames
     : baseGames.filter((game) => completionYear(game) === state.completedYear));
-  el.completedCount.innerHTML = `${games.length} ${games.length === 1 ? "game" : "games"}`;
+  if (el.completedCount) el.completedCount.innerHTML = `${games.length} ${games.length === 1 ? "game" : "games"}`;
   list.innerHTML = games.length ? games.map((game) => `
     <div class="completed-row" data-id="${escapeHtml(game.id)}" role="button" tabindex="0" aria-label="${escapeHtml(`Open ${game.title}`)}">
       <img class="completed-cover" src="${escapeHtml(game.cover || "")}" alt="" loading="lazy" decoding="async" ${game.cover ? "" : "hidden"}>
