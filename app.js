@@ -695,7 +695,7 @@ function renderPlatinumDialog(platinums = platinumItems(), years = platinumYears
   const selected = state.platinumYear;
   const visible = sortedPlatinums(selected === "all" ? platinums : platinums.filter((item) => platinumYearFor(item) === selected));
   el.platinumTitle.innerHTML = `${trophyIcon()} <span>Platinums</span>`;
-  el.platinumCount.textContent = `${platinums.length} ${platinums.length === 1 ? "platinum" : "platinums"}`;
+  el.platinumCount.textContent = `${visible.length} ${visible.length === 1 ? "platinum" : "platinums"}`;
   el.platinumSortSelect.value = state.platinumSort;
   el.platinumSortDirection.innerHTML = sortArrowIcon(state.platinumDirection === "desc");
   el.platinumSortDirection.title = state.platinumDirection === "asc" ? "Sort ascending" : "Sort descending";
@@ -709,24 +709,9 @@ function renderPlatinumDialog(platinums = platinumItems(), years = platinumYears
     state.platinumDirection = state.platinumDirection === "asc" ? "desc" : "asc";
     renderPlatinumDialog(platinums, years);
   };
-  el.platinumYearTabs.innerHTML = platinums.length ? [
-    `<button class="year-tab ${selected === "all" ? "active" : ""}" type="button" data-year="all">All<span>${escapeHtml(String(platinums.length))}</span></button>`,
-    ...years.map((year) => `
-      <button class="year-tab ${year === selected ? "active" : ""}" type="button" data-year="${escapeHtml(year)}">
-        ${escapeHtml(year)}
-        <span>${escapeHtml(String(platinums.filter((item) => platinumYearFor(item) === year).length))}</span>
-      </button>
-    `),
-  ].join("") : "";
-  el.platinumYearTabs.querySelectorAll(".year-tab").forEach((button) => {
-    button.addEventListener("click", () => {
-      state.platinumYear = button.dataset.year || "all";
-      renderPlatinumDialog(platinums, years);
-    });
-  });
   el.platinumYearSelect.innerHTML = platinums.length ? [
-    `<option value="all">All (${escapeHtml(String(platinums.length))})</option>`,
-    ...years.map((year) => `<option value="${escapeHtml(year)}">${escapeHtml(year)} (${escapeHtml(String(platinums.filter((item) => platinumYearFor(item) === year).length))})</option>`),
+    `<option value="all">All</option>`,
+    ...years.map((year) => `<option value="${escapeHtml(year)}">${escapeHtml(year)}</option>`),
   ].join("") : `<option value="all">No platinums</option>`;
   el.platinumYearSelect.value = selected;
   el.platinumYearSelect.onchange = () => {

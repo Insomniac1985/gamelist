@@ -88,6 +88,11 @@ async function getRecentPsnActivity(accessToken, sourceUrl) {
     achievements: recentTrophies.length ? recentTrophies.slice(0, 6) : recentTitles.map((title) => titleSummary(title, sourceUrl)).slice(0, 6),
     games: titles.map((title) => titleSummary(title, sourceUrl)),
     platinums,
+    platinumStatus: {
+      expected: Number(summary?.trophies?.platinum || 0),
+      returned: platinums.length,
+      fallback: platinums.filter((item) => item.fallback).length,
+    },
     summary,
   };
 }
@@ -201,7 +206,7 @@ async function getPlatinumsForTitle(accessToken, title, sourceUrl) {
       // Some mixed-platform titles only respond to one trophy service.
     }
   }
-  return [];
+  return Number(title?.earnedTrophies?.platinum || 0) > 0 ? [fallbackPlatinumForTitle(title, sourceUrl)] : [];
 }
 
 async function getPlatinumsForTitleService(accessToken, title, sourceUrl, npServiceName) {
@@ -238,8 +243,10 @@ function trophyServiceCandidates(title) {
   return uniqueValues([
     title?.npServiceName,
     serviceNameFor(title),
-    platform.includes("PS5") ? "trophy" : "",
-    platform.includes("PS4") ? "trophy2" : "",
+    platform.includes("PS5") ? "trophy2" : "",
+    platform.includes("PS4") ? "trophy" : "",
+    "trophy2",
+    "trophy",
   ].filter(Boolean));
 }
 
@@ -296,6 +303,22 @@ function titleSummary(title, sourceUrl) {
 
 function serviceNameFor(title) {
   return String(title.trophyTitlePlatform || "").toUpperCase().includes("PS5") ? "trophy2" : "trophy";
+}
+
+function fallbackPlatinumForTitle(title, sourceUrl) {
+  return {
+    title: title?.trophyTitleName || "Platinum game",
+    cover: title?.trophyTitleIconUrl || "",
+    trophyName: "Platinum",
+    earnedAt: title?.lastUpdatedDateTime ? formatPsnDate(title.lastUpdatedDateTime) : "",
+    rawEarnedAt: title?.lastUpdatedDateTime || "",
+    icon: title?.trophyTitleIconUrl || "",
+    platform: title?.trophyTitlePlatform || "",
+    npCommunicationId: title?.npCommunicationId || "",
+    npServiceName: title?.npServiceName || serviceNameFor(title || {}),
+    url: sourceUrl,
+    fallback: true,
+  };
 }
 
 function trophyTypeLabel(value) {

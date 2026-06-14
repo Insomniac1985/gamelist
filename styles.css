@@ -3822,12 +3822,15 @@ body.dialog-open .mobile-section-tabs {
 }
 
 #platinumTitle .trophy-icon {
-  width: 24px;
-  height: 24px;
+  width: 32px;
+  height: 32px;
   color: #ffe985;
 }
 
-#platinumYearTabs {
+.platinum-filter-bar {
+  display: flex;
+  align-items: end;
+  gap: 8px;
   width: 100%;
   margin: 14px 0;
   padding: 10px;
@@ -3838,12 +3841,29 @@ body.dialog-open .mobile-section-tabs {
 }
 
 .platinum-year-select {
-  display: none;
-  margin: 14px 0;
+  display: grid;
+  gap: 4px;
+  min-width: 132px;
+  margin: 0;
+}
+
+.platinum-year-select span {
+  color: var(--muted);
+  font-size: 10px;
+  font-weight: 780;
+  text-transform: uppercase;
+}
+
+.platinum-year-select select {
+  height: 34px;
+  min-height: 34px;
+  padding: 5px 28px 5px 9px;
+  font-size: 12px;
 }
 
 .platinum-count-pill {
   margin-left: auto;
+  align-self: center;
   color: var(--muted);
   font-size: 13px;
   font-weight: 760;
@@ -4721,14 +4741,6 @@ body.dialog-open .mobile-section-tabs {
     grid-template-columns: 1fr;
   }
 
-  #platinumYearTabs {
-    display: none;
-  }
-
-  .platinum-year-select {
-    display: grid;
-  }
-
   .board {
     touch-action: pan-y;
   }
@@ -4737,17 +4749,28 @@ body.dialog-open .mobile-section-tabs {
     align-items: flex-start;
   }
 
-  .platinum-count-pill {
-    margin-left: 0;
+  .platinum-filter-bar {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: end;
+  }
+
+  .platinum-year-select,
+  .platinum-order-control {
+    min-width: 0;
   }
 
   .platinum-order-control {
-    order: 3;
-    width: 100%;
+    grid-column: 1 / -1;
   }
 
   .platinum-order-control select {
     flex: 1;
+  }
+
+  .platinum-count-pill {
+    justify-self: end;
+    margin-left: 0;
   }
 
   .platinum-card {
