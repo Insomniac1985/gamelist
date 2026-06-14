@@ -1,4 +1,4 @@
-const CACHE_VERSION = "gamelist-cache-v45";
+const CACHE_VERSION = "gamelist-cache-v46";
 const STATIC_CACHE = `${CACHE_VERSION}:static`;
 const MEDIA_CACHE = `${CACHE_VERSION}:media`;
 const STATIC_ASSETS = [
@@ -26,11 +26,15 @@ const STATIC_ASSETS = [
   "/assets/stores/playasia.ico",
   "/assets/stores/xtralife.ico",
 ];
+const OPTIONAL_STATIC_ASSETS = [
+  "/assets/fonts/AntiqueOliveNord.woff2",
+];
 
 self.addEventListener("install", (event) => {
   event.waitUntil(
     caches.open(STATIC_CACHE)
       .then((cache) => cache.addAll(STATIC_ASSETS))
+      .then(() => cacheOptionalStaticAssets())
       .then(() => self.skipWaiting())
   );
 });
@@ -125,4 +129,16 @@ async function safePut(cache, request, response) {
   } catch {
     // Some opaque or redirected responses may be refused by Cache Storage.
   }
+}
+
+async function cacheOptionalStaticAssets() {
+  const cache = await caches.open(STATIC_CACHE);
+  await Promise.all(OPTIONAL_STATIC_ASSETS.map(async (asset) => {
+    try {
+      const response = await fetch(asset);
+      await safePut(cache, asset, response);
+    } catch {
+      // Optional licensed assets may not be present in every checkout.
+    }
+  }));
 }

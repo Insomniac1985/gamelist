@@ -6,6 +6,18 @@
   font-display: swap;
 }
 
+@font-face {
+  font-family: "Antique Olive Nord";
+  src:
+    local("Antique Olive Nord"),
+    local("Antique Olive Std Nord"),
+    local("AntiqueOlive-Nord"),
+    url("assets/fonts/AntiqueOliveNord.woff2") format("woff2");
+  font-weight: 800 950;
+  font-style: normal;
+  font-display: swap;
+}
+
 :root {
   --bg: #161619;
   --panel: rgba(20, 22, 28, 0.58);
@@ -23,6 +35,7 @@
   --switch: #ff0002;
   --playstation: #0043ff;
   --shadow: 0 24px 80px rgba(0, 0, 0, 0.48);
+  --display-title-font: "Antique Olive Nord", "Arial Black", Impact, "Cascadia Code", sans-serif;
   --grid-x: 0px;
   --grid-y: 0px;
   --backdrop-x: 0px;
@@ -855,6 +868,16 @@ h2 {
   background: linear-gradient(135deg, #ee32b3 0%, var(--accent) 100%);
   -webkit-background-clip: text;
   background-clip: text;
+}
+
+.playing-section .column-head h2,
+.achievement-section > .column-head h2,
+#backlog > .column-head h2,
+#wanted > .column-head h2,
+.completed > .column-head h2,
+.detail-trophies h3 {
+  font-family: var(--display-title-font);
+  font-weight: 900;
 }
 
 .modal-head h2,
@@ -3103,7 +3126,7 @@ a.time-pill {
   min-height: var(--toolbar-control-height);
   flex: 0 0 var(--toolbar-control-height);
   padding: 0;
-  color: var(--muted);
+  color: #ffffff;
   background: rgba(255, 255, 255, 0.07);
   border: 1px solid rgba(255, 255, 255, 0.14);
   border-radius: 7px;
@@ -3111,7 +3134,7 @@ a.time-pill {
 }
 
 .icon-button.view-toggle.active {
-  color: var(--text);
+  color: #ffffff;
   background: rgba(255, 255, 255, 0.09);
   border-color: rgba(255, 255, 255, 0.18);
 }
