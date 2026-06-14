@@ -92,6 +92,7 @@ async function getRecentPsnActivity(accessToken, sourceUrl) {
       expected: Number(summary?.trophies?.platinum || 0),
       returned: platinums.length,
       fallback: platinums.filter((item) => item.fallback).length,
+      genericFallback: platinums.filter((item) => item.fallback && item.trophyName === "Platinum").length,
     },
     summary,
   };
@@ -183,17 +184,23 @@ async function getAllPlatinums(accessToken, titles, sourceUrl, expectedCount = 0
     results.push(...platinums.flat());
     unique = uniquePlatinums(results);
   }
-  return unique.sort((a, b) => String(b.rawEarnedAt || "").localeCompare(String(a.rawEarnedAt || "")));
+  unique.sort(comparePlatinumRecords);
+  return expectedCount ? unique.slice(0, expectedCount) : unique;
 }
 
 function uniquePlatinums(platinums) {
   const seen = new Set();
   return platinums.filter((item) => {
-    const key = [item.npCommunicationId, item.trophyName, item.rawEarnedAt].join("|");
+    const key = item.npCommunicationId || [item.title, item.trophyName, item.rawEarnedAt].join("|");
     if (seen.has(key)) return false;
     seen.add(key);
     return true;
   });
+}
+
+function comparePlatinumRecords(a, b) {
+  if (Boolean(a.fallback) !== Boolean(b.fallback)) return a.fallback ? 1 : -1;
+  return String(b.rawEarnedAt || "").localeCompare(String(a.rawEarnedAt || ""));
 }
 
 async function getPlatinumsForTitle(accessToken, title, sourceUrl) {
@@ -206,7 +213,9 @@ async function getPlatinumsForTitle(accessToken, title, sourceUrl) {
       // Some mixed-platform titles only respond to one trophy service.
     }
   }
-  return Number(title?.earnedTrophies?.platinum || 0) > 0 ? [fallbackPlatinumForTitle(title, sourceUrl)] : [];
+  if (Number(title?.earnedTrophies?.platinum || 0) <= 0) return [];
+  const fallback = await getFallbackPlatinumForTitle(accessToken, title, sourceUrl, services);
+  return fallback ? [fallback] : [fallbackPlatinumForTitle(title, sourceUrl)];
 }
 
 async function getPlatinumsForTitleService(accessToken, title, sourceUrl, npServiceName) {
@@ -296,6 +305,20 @@ function titleSummary(title, sourceUrl) {
 
 function serviceNameFor(title) {
   return String(title.trophyTitlePlatform || "").toUpperCase().includes("PS5") ? "trophy2" : "trophy";
+}
+
+async function getFallbackPlatinumForTitle(accessToken, title, sourceUrl, services) {
+  const metaUrl = `${PSN_TROPHY_BASE}/v1/npCommunicationIds/${encodeURIComponent(title.npCommunicationId)}/trophyGroups/all/trophies`;
+  for (const npServiceName of services) {
+    try {
+      const metaData = await getPagedTrophies(accessToken, metaUrl, npServiceName);
+      const metaPlatinum = metaData.find((trophy) => isPlatinumTrophy({}, trophy));
+      if (metaPlatinum) return platinumFromTitleTrophy(title, sourceUrl, npServiceName, {}, metaPlatinum, true);
+    } catch {
+      // Keep trying the other trophy service before falling back to title data.
+    }
+  }
+  return null;
 }
 
 function fallbackPlatinumForTitle(title, sourceUrl) {

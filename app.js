@@ -749,7 +749,7 @@ function platinumItems() {
     const localGame = localGameForTitle(item.title);
     return {
       title: item.title || "Platinum game",
-      cover: platinumCoverFor(item.title) || item.cover || platformLogo("PS5"),
+      cover: platinumCoverFor(item.title),
       trophyName: item.trophyName || "Platinum",
       trophyIcon: item.icon || platformLogo("PS5"),
       earnedAt: item.earnedAt || "",
@@ -765,7 +765,7 @@ function platinumItems() {
     .sort((a, b) => String(b.completedAt || "").localeCompare(String(a.completedAt || "")) || stringCompare(a.title, b.title))
     .map((game) => ({
       title: game.title,
-      cover: game.cover ? coverDisplayUrl(game.cover, "tiny") : platformLogo(game.platform || "PS5"),
+      cover: game.cover ? coverDisplayUrl(game.cover, "card") : "",
       trophyName: "Platinum",
       trophyIcon: platformLogo("PS5"),
       earnedAt: formatLongDate(game.completedAt),
@@ -785,29 +785,29 @@ function localGameForTitle(title) {
   }) || null;
 }
 
-function localCoverForTitle(title) {
+function localCoverForTitle(title, size = "card") {
   const match = localGameForTitle(title);
-  return match?.cover ? coverDisplayUrl(match.cover, "tiny") : "";
+  return match?.cover ? coverDisplayUrl(match.cover, size) : "";
 }
 
 function platinumCoverFor(title) {
   const normalized = normalizeTitleForMatch(title);
   if (!normalized) return "";
   const cached = state.platinumCoverCache[normalized];
-  return localCoverForTitle(title) || (cached === "__missing" ? "" : cached || "");
+  return localCoverForTitle(title, "card") || (cached === "__missing" ? "" : cached || "");
 }
 
 async function hydratePlatinumCovers(platinums) {
   const missing = platinums
     .filter((item) => !localCoverForTitle(item.title) && !state.platinumCoverCache[normalizeTitleForMatch(item.title)])
-    .slice(0, 12);
+    .slice(0, 32);
   if (!missing.length) return;
   await Promise.all(missing.map(async (item) => {
     const key = normalizeTitleForMatch(item.title);
     if (!key) return;
     try {
       const result = await lookupFirstResult(item.title);
-      state.platinumCoverCache[key] = result?.cover ? coverDisplayUrl(result.cover, "tiny") : "__missing";
+      state.platinumCoverCache[key] = result?.cover ? coverDisplayUrl(result.cover, "card") : "__missing";
     } catch {
       state.platinumCoverCache[key] = "__missing";
     }
@@ -828,10 +828,13 @@ function platinumYearFor(item) {
 }
 
 function platinumCard(item) {
+  const coverPreview = item.cover
+    ? `<img class="platinum-cover-preview" src="${escapeHtml(item.cover)}" alt="">`
+    : "";
   const content = `
     <span class="platinum-icon-wrap">
       <img class="platinum-icon" src="${escapeHtml(item.trophyIcon)}" alt="${escapeHtml(item.trophyName || "Platinum")}">
-      <img class="platinum-cover-preview" src="${escapeHtml(item.cover)}" alt="">
+      ${coverPreview}
     </span>
     <div class="platinum-main">
       <strong>${escapeHtml(item.trophyName || "Platinum")}</strong>

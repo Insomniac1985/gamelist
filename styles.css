@@ -3829,7 +3829,8 @@ body.dialog-open .mobile-section-tabs {
 }
 
 .platinum-filter-bar {
-  display: flex;
+  display: grid;
+  grid-template-columns: minmax(132px, auto) auto minmax(0, 1fr);
   align-items: end;
   gap: 8px;
   width: 100%;
@@ -3855,6 +3856,8 @@ body.dialog-open .mobile-section-tabs {
 }
 
 .platinum-count-pill {
+  grid-column: 1 / -1;
+  justify-self: end;
   margin-left: auto;
   align-self: center;
   color: var(--muted);
@@ -3980,7 +3983,7 @@ body.dialog-open .mobile-section-tabs {
   top: 50%;
   width: 116px;
   height: 156px;
-  object-fit: contain;
+  object-fit: cover;
   background: rgba(8, 9, 12, 0.92);
   border: 1px solid rgba(255, 225, 101, 0.26);
   border-radius: 7px;
@@ -4756,6 +4759,12 @@ body.dialog-open .mobile-section-tabs {
     display: grid;
     grid-template-columns: minmax(0, 1fr);
     align-items: end;
+  }
+
+  .platinum-count-pill {
+    grid-column: 1 / -1;
+    justify-self: end;
+    margin-left: 0;
   }
 
   .platinum-year-select,
