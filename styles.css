@@ -3834,7 +3834,7 @@ body.dialog-open .mobile-section-tabs {
   align-items: end;
   gap: 8px;
   width: 100%;
-  margin: 14px 0;
+  margin: 5px 0 14px;
   padding: 7px 8px;
   background: rgba(255, 255, 255, 0.055);
   border: 1px solid var(--line);
@@ -3856,10 +3856,10 @@ body.dialog-open .mobile-section-tabs {
 }
 
 .platinum-count-pill {
-  grid-column: 1 / -1;
-  justify-self: end;
+  display: block;
+  width: max-content;
   margin-left: auto;
-  align-self: center;
+  margin-bottom: 6px;
   color: var(--muted);
   font-size: 13px;
   font-weight: 760;
@@ -4762,9 +4762,8 @@ body.dialog-open .mobile-section-tabs {
   }
 
   .platinum-count-pill {
-    grid-column: 1 / -1;
-    justify-self: end;
     margin-left: 0;
+    justify-self: end;
   }
 
   .platinum-year-select,

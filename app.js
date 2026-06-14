@@ -2,6 +2,7 @@ const STORAGE_KEY = "gamelist:v1";
 const LEGACY_STORAGE_KEY = "buylist-tracker:v6";
 const SESSION_KEY = "gamelist-editor";
 const VIEW_MODE_KEY = "gamelist:view-mode";
+const PLATINUM_META_CACHE_KEY = "gamelist:platinum-meta:v1";
 const PHYSICAL_PROVIDERS = ["Amazon.es", "Xtralife", "GAME.es", "Playasia"];
 const DIGITAL_PROVIDERS = ["Nintendo España", "PlayStation España", "Steam"];
 const PSN_PROFILE_USER = "ShabiiEXE";
@@ -32,6 +33,7 @@ const SEARCH_CACHE_TTL = 1000 * 60 * 60;
 let titleLookupTimer = 0;
 const searchCache = new Map();
 const searchInflight = new Map();
+const platinumMetaCache = loadPlatinumMetaCache();
 
 const state = {
   games: [],
@@ -593,10 +595,12 @@ async function refreshAchievements() {
 function renderAchievements(data = {}) {
   const user = data.user || PSN_PROFILE_USER;
   const sourceUrl = data.sourceUrl || "https://www.playstation.com/";
+  const platinums = Array.isArray(data.platinums) ? data.platinums : [];
+  cachePlatinumMetadata(platinums);
   state.psnActivity = {
     achievements: Array.isArray(data.achievements) ? data.achievements : [],
     games: Array.isArray(data.games) ? data.games : [],
-    platinums: Array.isArray(data.platinums) ? data.platinums : [],
+    platinums,
     summary: data.summary || null,
     sourceUrl,
   };
@@ -747,11 +751,12 @@ function platinumTimeValue(item) {
 function platinumItems() {
   const psnPlatinums = (state.psnActivity.platinums || []).map((item) => {
     const localGame = localGameForTitle(item.title);
+    const cachedMeta = cachedPlatinumMetadata(item.title);
     return {
       title: item.title || "Platinum game",
       cover: platinumCoverFor(item.title),
-      trophyName: item.trophyName || "Platinum",
-      trophyIcon: item.icon || platformLogo("PS5"),
+      trophyName: item.trophyName && item.trophyName !== "Platinum" ? item.trophyName : (cachedMeta?.trophyName || item.trophyName || "Platinum"),
+      trophyIcon: item.icon || cachedMeta?.icon || platformLogo("PS5"),
       earnedAt: item.earnedAt || "",
       rawEarnedAt: item.rawEarnedAt || "",
       platform: item.platform || localGame?.platform || "",
@@ -795,6 +800,46 @@ function platinumCoverFor(title) {
   if (!normalized) return "";
   const cached = state.platinumCoverCache[normalized];
   return localCoverForTitle(title, "card") || (cached === "__missing" ? "" : cached || "");
+}
+
+function loadPlatinumMetaCache() {
+  try {
+    const parsed = JSON.parse(localStorage.getItem(PLATINUM_META_CACHE_KEY) || "{}");
+    return parsed && typeof parsed === "object" && !Array.isArray(parsed) ? parsed : {};
+  } catch {
+    return {};
+  }
+}
+
+function cachePlatinumMetadata(platinums = []) {
+  let changed = false;
+  platinums.forEach((item) => {
+    const key = normalizeTitleForMatch(item.title);
+    const icon = String(item.icon || "").trim();
+    const trophyName = String(item.trophyName || "").trim();
+    if (!key || !icon) return;
+    const current = platinumMetaCache[key] || {};
+    const next = {
+      trophyName: trophyName && trophyName !== "Platinum" ? trophyName : current.trophyName || trophyName,
+      icon,
+    };
+    if (next.trophyName !== current.trophyName || next.icon !== current.icon) {
+      platinumMetaCache[key] = next;
+      changed = true;
+    }
+  });
+  if (changed) {
+    try {
+      localStorage.setItem(PLATINUM_META_CACHE_KEY, JSON.stringify(platinumMetaCache));
+    } catch {
+      // Platinum metadata cache is optional.
+    }
+  }
+}
+
+function cachedPlatinumMetadata(title) {
+  const key = normalizeTitleForMatch(title);
+  return key ? platinumMetaCache[key] || null : null;
 }
 
 async function hydratePlatinumCovers(platinums) {

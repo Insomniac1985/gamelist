@@ -6,6 +6,14 @@ const PSN_CLIENT_ID = "09515159-7237-4370-9b40-3806e67c0891";
 const PSN_REDIRECT_URI = "com.scee.psxandroid.scecompcall://redirect";
 const PSN_BASIC_AUTH = "Basic MDk1MTUxNTktNzIzNy00MzcwLTliNDAtMzgwNmU2N2MwODkxOnVjUGprYTV0bnRCMktxc1A=";
 const PSN_CACHE_SECONDS = 60 * 60;
+const MANUAL_PLATINUM_OVERRIDES = [
+  { match: ["miles", "morales"], trophyName: "Be Yourself", icon: "https://img.psnprofiles.com/trophy/m/11805/8739f0e6-486a-458b-97a2-f3c9d7914492.png" },
+  { match: ["persona", "4", "dancing"], trophyName: "Dancing All Night", icon: "https://img.psnprofiles.com/trophy/m/8508/d370e2bc-56f7-4b36-884c-de3565686c1b.png" },
+  { match: ["spider", "man"], exclude: ["miles"], trophyName: "Be Greater", icon: "https://img.psnprofiles.com/trophy/m/8143/ccb3b536-eaae-4c03-beb5-4d9b3f8cb72c.png" },
+  { match: ["13", "sentinels"], trophyName: "13 Sentinels: Aegis Rim", icon: "https://img.psnprofiles.com/trophy/m/10041/d68a865e-66a8-407c-8b43-2852b95f54d3.png" },
+  { match: ["elden", "ring"], trophyName: "Elden Ring", icon: "https://img.psnprofiles.com/trophy/m/15539/b0d9a703-d112-4415-b64e-b7093cabe18c.png" },
+  { match: ["persona", "5"], trophyName: "The Phenomenal Phantom Thief", icon: "https://img.psnprofiles.com/trophy/m/10572/aa5d2bda-ce7e-40e8-aff1-bab61e4cfcf3.png" },
+];
 
 export async function onRequestGet({ request, env = {} }) {
   const url = new URL(request.url);
@@ -322,7 +330,7 @@ async function getFallbackPlatinumForTitle(accessToken, title, sourceUrl, servic
 }
 
 function fallbackPlatinumForTitle(title, sourceUrl) {
-  return {
+  return applyManualPlatinumOverride(title?.trophyTitleName, {
     title: title?.trophyTitleName || "Platinum game",
     cover: title?.trophyTitleIconUrl || "",
     trophyName: "Platinum",
@@ -334,12 +342,12 @@ function fallbackPlatinumForTitle(title, sourceUrl) {
     npServiceName: title?.npServiceName || serviceNameFor(title || {}),
     url: sourceUrl,
     fallback: true,
-  };
+  });
 }
 
 function platinumFromTitleTrophy(title, sourceUrl, npServiceName, earned = {}, meta = {}, fallback = false) {
   const rawEarnedAt = earned.earnedDateTime || title?.lastUpdatedDateTime || "";
-  return {
+  return applyManualPlatinumOverride(title?.trophyTitleName, {
     title: title?.trophyTitleName || "Platinum game",
     cover: title?.trophyTitleIconUrl || "",
     trophyName: meta.trophyName || "Platinum",
@@ -351,12 +359,31 @@ function platinumFromTitleTrophy(title, sourceUrl, npServiceName, earned = {}, m
     npServiceName,
     url: sourceUrl,
     ...(fallback ? { fallback: true } : {}),
-  };
+  });
 }
 
 function isPlatinumTrophy(earned = {}, meta = {}) {
   return trophyTypeLabel(earned.trophyType || meta.trophyType) === "Platinum"
     || /\bplatinum\b/i.test([earned.trophyName, meta.trophyName, earned.trophyDetail, meta.trophyDetail].filter(Boolean).join(" "));
+}
+
+function applyManualPlatinumOverride(title, item) {
+  const override = manualPlatinumOverrideForTitle(title || item?.title);
+  return override ? { ...item, trophyName: override.trophyName, icon: override.icon, manualOverride: true } : item;
+}
+
+function manualPlatinumOverrideForTitle(title) {
+  const normalized = normalizePlatinumTitle(title);
+  if (!normalized) return null;
+  return MANUAL_PLATINUM_OVERRIDES.find((entry) => {
+    const hasMatches = entry.match.every((term) => normalized.includes(term));
+    const hasExcluded = (entry.exclude || []).some((term) => normalized.includes(term));
+    return hasMatches && !hasExcluded;
+  }) || null;
+}
+
+function normalizePlatinumTitle(value) {
+  return String(value || "").toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
 }
 
 function trophyTypeLabel(value) {

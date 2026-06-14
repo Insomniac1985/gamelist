@@ -1,4 +1,4 @@
-const CACHE_VERSION = "gamelist-cache-v44";
+const CACHE_VERSION = "gamelist-cache-v45";
 const STATIC_CACHE = `${CACHE_VERSION}:static`;
 const MEDIA_CACHE = `${CACHE_VERSION}:media`;
 const STATIC_ASSETS = [
@@ -73,6 +73,7 @@ function shouldCacheMedia(request, url) {
     "howlongtobeat.com",
     "images.igdb.com",
     "cdn.cloudflare.steamstatic.com",
+    "img.psnprofiles.com",
     "www.amazon.es",
     "www.xtralife.com",
     "www.game.es",
