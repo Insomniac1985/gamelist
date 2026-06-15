@@ -4626,6 +4626,20 @@ body.dialog-open .mobile-section-tabs {
     margin-bottom: 0px;
   }
 
+  .column-head > span {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    justify-self: end;
+    max-width: 58%;
+    margin-left: auto;
+    text-align: right;
+  }
+
+  .column-head .preorder-count-pill {
+    margin-left: 4px;
+  }
+
   .brand {
     min-width: 0;
     margin-left: 10px;

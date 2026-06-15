@@ -3008,7 +3008,7 @@ function fallbackPriceLinks(game) {
     { store: "Amazon.es", url: `https://www.amazon.es/s?k=${q}` },
     { store: "Xtralife", url: `https://www.xtralife.com/buscar/${q}` },
     { store: "GAME.es", url: `https://www.game.es/buscar/${q}` },
-    { store: "Retro Island NY", url: `https://retroislandny.com/search?q=${q}&country=US&currency=USD` },
+    { store: "Retro Island NY", url: `https://retroislandny.com/search?q=${q}&country=ES&currency=EUR` },
   ];
 }
 

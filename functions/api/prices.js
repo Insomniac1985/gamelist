@@ -432,13 +432,13 @@ async function lookupRetroIslandNy(title, platform, query) {
   endpoint.searchParams.set("q", query);
   endpoint.searchParams.set("resources[type]", "product");
   endpoint.searchParams.set("resources[limit]", "12");
-  endpoint.searchParams.set("country", "US");
-  endpoint.searchParams.set("currency", "USD");
+  endpoint.searchParams.set("country", "ES");
+  endpoint.searchParams.set("currency", "EUR");
   const response = await fetch(endpoint.toString(), {
     headers: {
       "Accept": "application/json",
-      "Accept-Language": "en-US,en;q=0.9",
-      "Cookie": "cart_currency=USD; localization=US",
+      "Accept-Language": "es-ES,es;q=0.9,en;q=0.8",
+      "Cookie": "cart_currency=EUR; localization=ES",
       "User-Agent": "Mozilla/5.0 (compatible; GameList/1.0)",
     },
   });
@@ -450,11 +450,12 @@ async function lookupRetroIslandNy(title, platform, query) {
 
 function retroIslandProduct(product) {
   const price = product.price_min || product.price || product.price_max || "";
+  const numericPrice = parsePrice(price);
   const url = product.url ? `https://retroislandny.com/${String(product.url).replace(/^\/+/, "")}` : "";
   return {
     title: product.title || "",
     platform: [product.type, ...(Array.isArray(product.tags) ? product.tags : [])].filter(Boolean).join(" "),
-    price: usd(price),
+    price: Number.isFinite(numericPrice) ? euro(numericPrice) : "",
     matchedTitle: product.title || "",
     url,
   };
@@ -522,12 +523,6 @@ function euro(value) {
   return `${Number(value).toFixed(2).replace(".", ",")} €`;
 }
 
-function usd(value) {
-  if (!value) return "";
-  const amount = parsePrice(String(value).replace(/USD/i, "$"));
-  return Number.isFinite(amount) ? `$${amount.toFixed(2)}` : "";
-}
-
 function missingPrice(store, url) {
   return {
     store,
@@ -542,8 +537,8 @@ function missingPrice(store, url) {
 function retroIslandSearchUrl(query) {
   const endpoint = new URL("https://retroislandny.com/search");
   endpoint.searchParams.set("q", retailTitle(query));
-  endpoint.searchParams.set("country", "US");
-  endpoint.searchParams.set("currency", "USD");
+  endpoint.searchParams.set("country", "ES");
+  endpoint.searchParams.set("currency", "EUR");
   return endpoint.toString();
 }
 
