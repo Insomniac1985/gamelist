@@ -3338,6 +3338,7 @@ body:not(.can-edit) #loginButton,
 .pause-icon,
 .play-icon,
 .euro-icon,
+.dollar-icon,
 .reload-icon,
 .settings-icon,
 .check-icon {
@@ -3352,6 +3353,7 @@ body:not(.can-edit) #loginButton,
 }
 
 .euro-icon,
+.dollar-icon,
 .pause-icon,
 .play-icon {
   stroke-width: 3;
@@ -3710,6 +3712,10 @@ body.dialog-open .mobile-section-tabs {
   font-size: 12px;
   font-weight: 860;
   text-transform: uppercase;
+}
+
+.settings-detail-title {
+  margin: 2px 0 -6px;
 }
 
 .settings-layout {
@@ -4826,6 +4832,7 @@ body.dialog-open .mobile-section-tabs {
 
   .top-actions .pause-icon,
   .top-actions .euro-icon,
+  .top-actions .dollar-icon,
   .top-actions .pencil-icon,
   .top-actions .settings-icon,
   .top-actions .reload-icon {
@@ -4837,6 +4844,7 @@ body.dialog-open .mobile-section-tabs {
   #syncButton .reload-icon,
   #settingsButton .settings-icon,
   #fetchPricesButton .euro-icon,
+  #fetchPricesButton .dollar-icon,
   body.can-edit #loginButton .pause-icon {
     display: block;
   }

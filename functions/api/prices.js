@@ -1,5 +1,6 @@
 const DEFAULT_STORES = ["Amazon", "Xtralife", "GAME.es", "Retro Island NY"];
 const STORE_OPTIONS = ["Amazon", "GAME.es", "Xtralife", "Retro Island NY", "GameStop", "Walmart"];
+const PRICE_LOOKUP_TIMEOUT_MS = 6500;
 
 const PLAYSTATION_CATALOG_ID = "28c9c2b2-cecc-415c-9a08-482a605cb104";
 const PLAYSTATION_CATALOG_HASH = "4ce7d410a4db2c8b635a48c1dcec375906ff63b19dadd87e073f8fd0c0481d35";
@@ -18,8 +19,12 @@ export async function onRequestGet({ request, env = {} }) {
 
   const query = digital ? retailTitle(title) : `${retailTitle(title)} ${platform}`.trim();
   const providers = digital ? digitalProvidersForPlatform(platform, region) : physicalProviders(stores, region, currency);
-  const prices = await Promise.all(providers.map((provider) => findPrice(provider, title, platform, query, env, debug, { region, currency })));
-  return json({ prices });
+  try {
+    const prices = await Promise.all(providers.map((provider) => findPrice(provider, title, platform, query, env, debug, { region, currency })));
+    return json({ prices });
+  } catch {
+    return json({ prices: providers.map((provider) => missingPrice(provider.store, provider.search(query))) });
+  }
 }
 
 function physicalProviders(stores, region, currency) {
@@ -34,7 +39,7 @@ function physicalProviders(stores, region, currency) {
     if (store === "Xtralife") return { store: "Xtralife", search: (q) => `https://www.xtralife.com/buscar/${encodeURIComponent(q)}`, lookup: lookupXtralife };
     if (store === "GAME.es") return { store: "GAME.es", search: (q) => `https://www.game.es/buscar/${encodeURIComponent(q)}`, lookup: lookupGameEs };
     if (store === "Retro Island NY") return { store: "Retro Island NY", search: (q) => retroIslandSearchUrl(q, region, currency), lookup: lookupRetroIslandNy };
-    if (store === "GameStop") return { store: "GameStop", search: (q) => `https://www.gamestop.com/search/?q=${encodeURIComponent(q)}`, parse: parseGeneric };
+    if (store === "GameStop") return { store: "GameStop", search: gamestopSearchUrl, lookup: lookupGameStop };
     if (store === "Walmart") return { store: "Walmart", search: (q) => `https://www.walmart.com/search?q=${encodeURIComponent(q)}`, parse: parseGeneric };
     return null;
   }).filter(Boolean);
@@ -84,6 +89,10 @@ function cleanStores(value) {
   return stores.slice(0, 4);
 }
 
+function unique(values) {
+  return [...new Set(values)];
+}
+
 function amazonStoreName(region) {
   if (region === "US") return "Amazon.com";
   if (region === "UK") return "Amazon.co.uk";
@@ -120,11 +129,15 @@ function playStationSearchUrl(query, region) {
   return `https://www.playstation.com/es-es/search/?q=${encodeURIComponent(query)}`;
 }
 
+function gamestopSearchUrl(query) {
+  return `https://www.gamestop.com/search/?q=${encodeURIComponent(query)}&start=0&sz=24&format=ajax`;
+}
+
 async function findPrice(provider, title, platform, query, env = {}, debug = false, options = {}) {
   const url = provider.search(query);
   if (provider.lookup) {
     try {
-      const result = await provider.lookup(title, platform, query, options);
+      const result = await withTimeout(provider.lookup(title, platform, query, options), PRICE_LOOKUP_TIMEOUT_MS);
       return {
         store: provider.store,
         price: result.price || "",
@@ -139,13 +152,13 @@ async function findPrice(provider, title, platform, query, env = {}, debug = fal
   }
 
   try {
-    const response = await fetch(url, {
+    const response = await fetchWithTimeout(url, {
       headers: {
         "Accept": "text/html",
         "Accept-Language": "es-ES,es;q=0.9,en;q=0.6",
         "User-Agent": "Mozilla/5.0 (compatible; GameList/1.0)",
       },
-    });
+    }, PRICE_LOOKUP_TIMEOUT_MS);
     const html = await response.text();
     const result = provider.parse(html, title, platform);
     const price = result.price || "";
@@ -160,6 +173,25 @@ async function findPrice(provider, title, platform, query, env = {}, debug = fal
   } catch {
     return missingPrice(provider.store, url);
   }
+}
+
+async function fetchWithTimeout(url, options = {}, timeoutMs = PRICE_LOOKUP_TIMEOUT_MS) {
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    return await fetch(url, { ...options, signal: controller.signal });
+  } finally {
+    clearTimeout(timeout);
+  }
+}
+
+function withTimeout(promise, timeoutMs = PRICE_LOOKUP_TIMEOUT_MS) {
+  return Promise.race([
+    promise,
+    new Promise((_, reject) => {
+      setTimeout(() => reject(new Error("Price lookup timed out")), timeoutMs);
+    }),
+  ]);
 }
 
 async function lookupLinkOnly() {
@@ -471,6 +503,52 @@ function xtralifeProduct(product) {
     price: Number.isFinite(priceValue) ? euro(priceValue) : "",
     matchedTitle: product.name || "",
     url: url ? `https://www.xtralife.com/${String(url).replace(/^\/+/, "")}` : "",
+  };
+}
+
+async function lookupGameStop(title, platform, query) {
+  const searchUrl = gamestopSearchUrl(query);
+  const response = await fetchWithTimeout(searchUrl, {
+    headers: gamestopHeaders(searchUrl, "text/html,*/*"),
+  });
+  if (!response.ok) throw new Error("GameStop search failed");
+  const html = await response.text();
+  const ids = unique([...html.matchAll(/data-pid="([^"]+)"/gi)].map((match) => match[1]).filter(Boolean)).slice(0, 8);
+  const products = [];
+  for (const id of ids) {
+    const product = await gamestopProduct(id, searchUrl);
+    if (product) products.push(product);
+  }
+  return bestProduct(products, title, platform) || { price: "", matchedTitle: "" };
+}
+
+async function gamestopProduct(id, referer) {
+  const url = `https://www.gamestop.com/on/demandware.store/Sites-gamestop-us-Site/default/Product-Variation?pid=${encodeURIComponent(id)}`;
+  const response = await fetchWithTimeout(url, {
+    headers: gamestopHeaders(referer, "application/json,text/javascript,*/*;q=0.01"),
+  });
+  if (!response.ok) return null;
+  const data = await response.json();
+  const product = data.product || {};
+  const productUrl = product.selectedProductUrl
+    ? `https://www.gamestop.com${String(product.selectedProductUrl).startsWith("/") ? "" : "/"}${product.selectedProductUrl}`
+    : referer;
+  return {
+    title: product.productName || product.pageTitle || "",
+    platform: product.productPlatform || "",
+    price: product.price?.sales?.formatted || product.price?.salePriceExcludingPro?.formatted || "",
+    matchedTitle: product.productName || product.pageTitle || "",
+    url: productUrl,
+  };
+}
+
+function gamestopHeaders(referer, accept) {
+  return {
+    "Accept": accept,
+    "Accept-Language": "en-US,en;q=0.9",
+    "Referer": referer,
+    "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125 Safari/537.36",
+    "X-Requested-With": "XMLHttpRequest",
   };
 }
 

@@ -549,7 +549,7 @@ function render() {
   if (el.settingsButton) el.settingsButton.hidden = !state.canEdit;
   if (el.fetchDataButton) el.fetchDataButton.hidden = true;
   el.fetchPricesButton.hidden = !state.canEdit;
-  if (state.canEdit && !el.fetchPricesButton.disabled) el.fetchPricesButton.innerHTML = `${euroIcon()}<span class="button-label">Fetch New Prices</span>`;
+  if (state.canEdit && !el.fetchPricesButton.disabled) el.fetchPricesButton.innerHTML = `${currencyIcon()}<span class="button-label">Fetch New Prices</span>`;
   renderFilters();
   renderPlayingSection();
   renderStats();
@@ -662,6 +662,7 @@ function moveSettingsLayoutItem(key, delta) {
 
 async function saveSettingsFromForm(event) {
   event.preventDefault();
+  const previousCurrency = state.settings.currency;
   const stores = [...el.settingsStores.querySelectorAll("input[type='checkbox']:checked")]
     .map((input) => input.value)
     .filter((store) => STORE_OPTIONS.includes(store))
@@ -680,6 +681,7 @@ async function saveSettingsFromForm(event) {
   state.cardTrophies = {};
   refreshAchievements();
   render();
+  if (previousCurrency !== state.settings.currency) await refreshAllPrices();
 }
 
 function renderModeToggle(button, mode) {
@@ -2806,6 +2808,19 @@ function euroIcon() {
   `;
 }
 
+function dollarIcon() {
+  return `
+    <svg class="dollar-icon" viewBox="0 0 24 24" aria-hidden="true">
+      <path d="M12 3v18"></path>
+      <path d="M17.2 7.2A5.8 5.8 0 0 0 12.8 6H11a4 4 0 0 0 0 8h2a4 4 0 0 1 0 8h-1.8a5.8 5.8 0 0 1-4.4-1.2"></path>
+    </svg>
+  `;
+}
+
+function currencyIcon() {
+  return state.settings.currency === "USD" ? dollarIcon() : euroIcon();
+}
+
 function checkIcon() {
   return `
     <svg class="check-icon" viewBox="0 0 24 24" aria-hidden="true">
@@ -4093,13 +4108,12 @@ async function refreshAllPrices() {
     return;
   }
 
-  const originalHtml = el.fetchPricesButton.innerHTML;
   el.fetchPricesButton.disabled = true;
   let updated = 0;
   let failed = 0;
 
   for (const [index, game] of games.entries()) {
-    el.fetchPricesButton.innerHTML = `${euroIcon()}<span class="button-label">Prices ${index + 1}/${games.length}</span>`;
+    el.fetchPricesButton.innerHTML = `${currencyIcon()}<span class="button-label">Prices ${index + 1}/${games.length}</span>`;
     el.fetchPricesButton.title = `Prices ${index + 1}/${games.length}`;
     el.fetchPricesButton.setAttribute("aria-label", el.fetchPricesButton.title);
     game.prices = priceProvidersForGame(game).map((store) => ({
@@ -4119,7 +4133,7 @@ async function refreshAllPrices() {
   persistLocal();
   persistCloud();
   el.fetchPricesButton.disabled = false;
-  el.fetchPricesButton.innerHTML = originalHtml;
+  el.fetchPricesButton.innerHTML = `${currencyIcon()}<span class="button-label">Fetch New Prices</span>`;
   el.fetchPricesButton.title = "Fetch New Prices";
   el.fetchPricesButton.setAttribute("aria-label", "Fetch New Prices");
   alert(`Updated prices for ${updated} games${failed ? `, ${failed} failed` : ""}.`);
