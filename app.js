@@ -4,9 +4,17 @@ const SESSION_KEY = "gamelist-editor";
 const VIEW_MODE_KEY = "gamelist:view-mode";
 const PLATINUM_VIEW_MODE_KEY = "gamelist:platinum-view-mode";
 const PLATINUM_META_CACHE_KEY = "gamelist:platinum-meta:v1";
-const PHYSICAL_PROVIDERS = ["Amazon.es", "Xtralife", "GAME.es", "Retro Island NY"];
-const DIGITAL_PROVIDERS = ["Nintendo España", "PlayStation España", "Steam"];
-const PSN_PROFILE_USER = "ShabiiEXE";
+const SETTINGS_KEY = "gamelist:settings:v1";
+const DEFAULT_PAGE_ORDER = ["trophies", "dashboard", "search", "gamelist", "finished"];
+const STORE_OPTIONS = ["Amazon", "GAME.es", "Xtralife", "Retro Island NY", "GameStop", "Walmart"];
+const DEFAULT_SETTINGS = {
+  pageOrder: DEFAULT_PAGE_ORDER,
+  psnUser: "ShabiiEXE",
+  currency: "EUR",
+  region: "ES",
+  stores: ["Amazon", "Xtralife", "GAME.es", "Retro Island NY"],
+  defaultOwner: "Xavi",
+};
 const STATUS_OPTIONS = [
   "To Collect",
   "Scarce",
@@ -54,6 +62,7 @@ const state = {
   psnActivity: { achievements: [], games: [], platinums: [], sourceUrl: "" },
   cardTrophies: {},
   platinumCoverCache: {},
+  settings: loadLocalSettings(),
   filters: { query: "", platform: "all", tag: "all", sort: "time", direction: "asc", preordered: false },
   viewMode: localStorage.getItem(VIEW_MODE_KEY) === "list" ? "list" : "grid",
   editingId: "",
@@ -97,6 +106,7 @@ const el = {
   loginButton: document.querySelector("#loginButton"),
   addButton: document.querySelector("#addButton"),
   syncButton: document.querySelector("#syncButton"),
+  settingsButton: document.querySelector("#settingsButton"),
   fetchDataButton: document.querySelector("#fetchDataButton"),
   fetchPricesButton: document.querySelector("#fetchPricesButton"),
   searchInput: document.querySelector("#searchInput"),
@@ -132,6 +142,15 @@ const el = {
   releaseCloseButton: document.querySelector("#releaseCloseButton"),
   releaseDialogTitle: document.querySelector("#releaseDialogTitle"),
   releaseDialogList: document.querySelector("#releaseDialogList"),
+  settingsDialog: document.querySelector("#settingsDialog"),
+  settingsForm: document.querySelector("#settingsForm"),
+  settingsCloseButton: document.querySelector("#settingsCloseButton"),
+  settingsLayoutList: document.querySelector("#settingsLayoutList"),
+  settingsPsnUser: document.querySelector("#settingsPsnUser"),
+  settingsCurrency: document.querySelector("#settingsCurrency"),
+  settingsRegion: document.querySelector("#settingsRegion"),
+  settingsStores: document.querySelector("#settingsStores"),
+  settingsDefaultOwner: document.querySelector("#settingsDefaultOwner"),
   detailTitle: document.querySelector("#detailTitle"),
   detailStudio: document.querySelector("#detailStudio"),
   detailMeta: document.querySelector("#detailMeta"),
@@ -255,6 +274,7 @@ function bindEvents() {
   el.addButton.addEventListener("click", quickAddGame);
   el.floatingAddButton.addEventListener("click", quickAddGame);
   el.syncButton.addEventListener("click", syncNow);
+  el.settingsButton?.addEventListener("click", openSettingsDialog);
   el.fetchDataButton?.addEventListener("click", refreshAllGameData);
   el.fetchPricesButton.addEventListener("click", refreshAllPrices);
   el.playingPrevButton.addEventListener("click", () => slidePlaying(-1));
@@ -353,6 +373,12 @@ function bindEvents() {
   });
   el.releaseDialog.addEventListener("close", syncScrollLock);
   el.dialog.addEventListener("close", syncScrollLock);
+  el.settingsCloseButton?.addEventListener("click", () => el.settingsDialog.close());
+  el.settingsDialog?.addEventListener("click", (event) => {
+    if (event.target === el.settingsDialog) el.settingsDialog.close();
+  });
+  el.settingsDialog?.addEventListener("close", syncScrollLock);
+  el.settingsForm?.addEventListener("submit", saveSettingsFromForm);
   el.mobileTabs.forEach((button) => button.addEventListener("click", () => {
     state.mobileSection = button.dataset.mobileSection;
     render();
@@ -361,6 +387,8 @@ function bindEvents() {
   el.board.addEventListener("touchend", handleBoardSwipeEnd, { passive: true });
   window.addEventListener("touchend", handleBoardSwipeEnd, { passive: true });
   el.fields.section.addEventListener("change", syncDialogPriceVisibility);
+  el.fields.platform.addEventListener("input", syncDialogPriceVisibility);
+  el.fields.digital.addEventListener("change", syncDialogPriceVisibility);
   el.fields.replayCount.addEventListener("input", syncReplaySection);
   el.form.addEventListener("submit", saveFromForm);
   el.deleteButton.addEventListener("click", deleteCurrentGame);
@@ -414,6 +442,7 @@ function scheduleMobilePaintRefresh() {
 }
 
 async function loadData() {
+  state.settings = loadLocalSettings();
   const saved = localStorage.getItem(STORAGE_KEY) || localStorage.getItem(LEGACY_STORAGE_KEY);
   if (saved) {
     state.games = normalizeGameRecords(JSON.parse(saved));
@@ -431,14 +460,24 @@ async function pullCloudData() {
     const response = await fetch("/api/sync");
     if (!response.ok) return false;
     const data = await response.json();
+    let changed = false;
+    if (data.settings && typeof data.settings === "object") {
+      const nextSettings = normalizeSettings(data.settings);
+      if (JSON.stringify(nextSettings) !== JSON.stringify(state.settings)) {
+        state.settings = nextSettings;
+        persistLocalSettings();
+        changed = true;
+      }
+    }
     if (Array.isArray(data.games) && data.games.length) {
       const nextGames = normalizeGameRecords(data.games);
       if (JSON.stringify(nextGames) !== JSON.stringify(state.games)) {
         state.games = nextGames;
         persistLocal(false);
-        return true;
+        changed = true;
       }
     }
+    return changed;
   } catch {
     // Static local preview has no Cloudflare function. Local data stays authoritative.
   }
@@ -448,7 +487,39 @@ async function pullCloudData() {
 function persistLocal(shouldRender = true) {
   state.games = normalizeGameRecords(state.games);
   localStorage.setItem(STORAGE_KEY, JSON.stringify(state.games));
+  persistLocalSettings();
   if (shouldRender) render();
+}
+
+function loadLocalSettings() {
+  try {
+    return normalizeSettings(JSON.parse(localStorage.getItem(SETTINGS_KEY) || "{}"));
+  } catch {
+    return normalizeSettings({});
+  }
+}
+
+function persistLocalSettings() {
+  localStorage.setItem(SETTINGS_KEY, JSON.stringify(state.settings));
+}
+
+function normalizeSettings(settings = {}) {
+  const pageOrder = Array.isArray(settings.pageOrder)
+    ? settings.pageOrder.filter((item) => DEFAULT_PAGE_ORDER.includes(item))
+    : [];
+  const stores = Array.isArray(settings.stores)
+    ? settings.stores.filter((store) => STORE_OPTIONS.includes(store))
+    : DEFAULT_SETTINGS.stores;
+  return {
+    ...DEFAULT_SETTINGS,
+    ...settings,
+    pageOrder: [...pageOrder, ...DEFAULT_PAGE_ORDER.filter((item) => !pageOrder.includes(item))],
+    psnUser: cleanPsnUser(settings.psnUser) || DEFAULT_SETTINGS.psnUser,
+    currency: settings.currency === "USD" ? "USD" : "EUR",
+    region: ["ES", "US", "UK"].includes(settings.region) ? settings.region : DEFAULT_SETTINGS.region,
+    stores: stores.slice(0, 4),
+    defaultOwner: cleanOwnerLabel(settings.defaultOwner) || DEFAULT_SETTINGS.defaultOwner,
+  };
 }
 
 async function persistCloud() {
@@ -460,7 +531,7 @@ async function persistCloud() {
         "Content-Type": "application/json",
         "x-edit-password": password,
       },
-      body: JSON.stringify({ games: state.games }),
+      body: JSON.stringify({ games: state.games, settings: state.settings }),
     });
   } catch {
     // Local-only mode is expected before Cloudflare hosting.
@@ -475,6 +546,7 @@ function render() {
   el.loginButton.setAttribute("aria-label", el.loginButton.title);
   el.addButton.hidden = false;
   el.syncButton.hidden = !state.canEdit;
+  if (el.settingsButton) el.settingsButton.hidden = !state.canEdit;
   if (el.fetchDataButton) el.fetchDataButton.hidden = true;
   el.fetchPricesButton.hidden = !state.canEdit;
   if (state.canEdit && !el.fetchPricesButton.disabled) el.fetchPricesButton.innerHTML = `${euroIcon()}<span class="button-label">Fetch New Prices</span>`;
@@ -495,6 +567,7 @@ function render() {
   el.sortDirectionButton.setAttribute("aria-label", el.sortDirectionButton.title);
   el.sortDirectionButton.classList.toggle("desc", state.filters.direction === "desc");
   renderViewToggle();
+  applyPageOrder();
   el.preorderedFilter.checked = state.filters.preordered;
   el.platformFilter.classList.toggle("is-active", state.filters.platform !== "all");
   el.tagFilter.classList.toggle("is-active", state.filters.tag !== "all");
@@ -503,6 +576,110 @@ function render() {
 
 function renderViewToggle() {
   renderModeToggle(el.viewToggleButton, state.viewMode);
+}
+
+function applyPageOrder() {
+  const order = normalizeSettings(state.settings).pageOrder;
+  const orderMap = new Map(order.map((key, index) => [key, index + 1]));
+  el.playingSection.style.order = "0";
+  el.achievementSection.style.order = String(orderMap.get("trophies") || 1);
+  document.querySelector(".hero").style.order = String(orderMap.get("dashboard") || 2);
+  document.querySelector(".toolbar").style.order = String(orderMap.get("search") || 3);
+  document.querySelector(".mobile-section-tabs").style.order = String(orderMap.get("gamelist") || 4);
+  el.board.style.order = String(orderMap.get("gamelist") || 4);
+  document.querySelector("#completed").style.order = String(orderMap.get("finished") || 5);
+}
+
+function openSettingsDialog() {
+  if (!state.canEdit || window.matchMedia("(max-width: 760px)").matches) return;
+  renderSettingsDialog();
+  el.settingsDialog.showModal();
+  syncScrollLock();
+}
+
+function renderSettingsDialog() {
+  state.settings = normalizeSettings(state.settings);
+  el.settingsPsnUser.value = state.settings.psnUser;
+  el.settingsCurrency.value = state.settings.currency;
+  el.settingsRegion.value = state.settings.region;
+  el.settingsDefaultOwner.value = state.settings.defaultOwner;
+  el.settingsLayoutList.innerHTML = state.settings.pageOrder.map((key, index) => settingsLayoutItem(key, index)).join("");
+  el.settingsStores.innerHTML = STORE_OPTIONS.map((store) => `
+    <label class="check-filter toggle-check settings-store-check">
+      <input type="checkbox" value="${escapeHtml(store)}" ${state.settings.stores.includes(store) ? "checked" : ""}>
+      <span>${escapeHtml(store)}</span>
+    </label>
+  `).join("");
+  el.settingsStores.querySelectorAll("input[type='checkbox']").forEach((input) => {
+    input.addEventListener("change", () => {
+      const checked = [...el.settingsStores.querySelectorAll("input[type='checkbox']:checked")];
+      if (checked.length <= 4) return;
+      input.checked = false;
+    });
+  });
+  el.settingsLayoutList.querySelectorAll("[data-layout-move]").forEach((button) => {
+    button.addEventListener("click", () => moveSettingsLayoutItem(button.dataset.layoutKey, Number(button.dataset.layoutMove)));
+  });
+}
+
+function settingsLayoutItem(key, index) {
+  const title = {
+    trophies: "Trophies",
+    dashboard: "Highlights + Calendar",
+    search: "Search",
+    gamelist: "Game List",
+    finished: "Finished Games",
+  }[key] || key;
+  const wireClass = {
+    trophies: "wire-trophies",
+    dashboard: "wire-dashboard",
+    search: "wire-search",
+    gamelist: "wire-list",
+    finished: "wire-finished",
+  }[key] || "";
+  return `
+    <article class="settings-layout-card" data-layout-key="${escapeHtml(key)}">
+      <div class="settings-wire ${wireClass}" aria-hidden="true"><span></span><span></span><span></span></div>
+      <strong>${escapeHtml(title)}</strong>
+      <div class="settings-layout-actions">
+        <button class="icon-button" type="button" data-layout-key="${escapeHtml(key)}" data-layout-move="-1" ${index === 0 ? "disabled" : ""} title="Move up" aria-label="Move ${escapeHtml(title)} up">↑</button>
+        <button class="icon-button" type="button" data-layout-key="${escapeHtml(key)}" data-layout-move="1" ${index === state.settings.pageOrder.length - 1 ? "disabled" : ""} title="Move down" aria-label="Move ${escapeHtml(title)} down">↓</button>
+      </div>
+    </article>
+  `;
+}
+
+function moveSettingsLayoutItem(key, delta) {
+  const order = [...state.settings.pageOrder];
+  const index = order.indexOf(key);
+  const nextIndex = index + delta;
+  if (index < 0 || nextIndex < 0 || nextIndex >= order.length) return;
+  [order[index], order[nextIndex]] = [order[nextIndex], order[index]];
+  state.settings.pageOrder = order;
+  renderSettingsDialog();
+  applyPageOrder();
+}
+
+async function saveSettingsFromForm(event) {
+  event.preventDefault();
+  const stores = [...el.settingsStores.querySelectorAll("input[type='checkbox']:checked")]
+    .map((input) => input.value)
+    .filter((store) => STORE_OPTIONS.includes(store))
+    .slice(0, 4);
+  state.settings = normalizeSettings({
+    ...state.settings,
+    psnUser: el.settingsPsnUser.value,
+    currency: el.settingsCurrency.value,
+    region: el.settingsRegion.value,
+    stores,
+    defaultOwner: el.settingsDefaultOwner.value,
+  });
+  persistLocalSettings();
+  await persistCloud();
+  el.settingsDialog.close();
+  state.cardTrophies = {};
+  refreshAchievements();
+  render();
 }
 
 function renderModeToggle(button, mode) {
@@ -515,7 +692,7 @@ function renderModeToggle(button, mode) {
 }
 
 function syncScrollLock() {
-  document.body.classList.toggle("dialog-open", el.dialog.open || el.detailDialog.open || el.historyDialog.open || el.releaseDialog.open || el.platinumDialog.open);
+  document.body.classList.toggle("dialog-open", el.dialog.open || el.detailDialog.open || el.historyDialog.open || el.releaseDialog.open || el.platinumDialog.open || Boolean(el.settingsDialog?.open));
   if (document.body.classList.contains("dialog-open")) pauseAllPlayingTrailers();
   else scheduleFocusedPlayingTrailerUpdate();
   updateScrollTopButton();
@@ -623,19 +800,20 @@ function equalizeMobilePlayingCards() {
 }
 
 async function refreshAchievements() {
-  el.achievementProfileLink.href = `https://psnprofiles.com/${encodeURIComponent(PSN_PROFILE_USER)}`;
+  const psnUser = state.settings.psnUser || DEFAULT_SETTINGS.psnUser;
+  el.achievementProfileLink.href = `https://psnprofiles.com/${encodeURIComponent(psnUser)}`;
   try {
-    const response = await fetch(`/api/achievements?user=${encodeURIComponent(PSN_PROFILE_USER)}&schema=2`);
+    const response = await fetch(`/api/achievements?user=${encodeURIComponent(psnUser)}&schema=2`);
     const data = await response.json();
     renderAchievements(data);
     render();
   } catch {
-    renderAchievements({ user: PSN_PROFILE_USER, achievements: [], sourceUrl: "https://www.playstation.com/", source: "psn", authError: true });
+    renderAchievements({ user: psnUser, achievements: [], sourceUrl: "https://www.playstation.com/", source: "psn", authError: true });
   }
 }
 
 function renderAchievements(data = {}) {
-  const user = data.user || PSN_PROFILE_USER;
+  const user = data.user || state.settings.psnUser || DEFAULT_SETTINGS.psnUser;
   const sourceUrl = data.sourceUrl || "https://www.playstation.com/";
   const platinums = Array.isArray(data.platinums) ? data.platinums : [];
   cachePlatinumMetadata(platinums);
@@ -1455,6 +1633,7 @@ function rowFor(game, section, options = {}) {
   const row = document.createElement("article");
   const statuses = gameStatuses(game);
   const owners = ownerTags(game);
+  const showRowPrices = section !== "backlog" && priceProvidersForGame(game).length;
   row.className = "game-row";
   row.dataset.id = game.id;
   row.dataset.owner = statuses.join(" ");
@@ -1475,7 +1654,7 @@ function rowFor(game, section, options = {}) {
     </div>
     <div class="game-row-core">${rowCoreStats(game)}</div>
     <div class="game-row-tags">${rowTags(game).join("")}</div>
-    ${section === "backlog" ? `<div class="game-row-prices"></div>` : `<div class="game-row-prices">${rowPrices(game)}</div>`}
+    ${showRowPrices ? `<div class="game-row-prices">${rowPrices(game)}</div>` : ""}
     <div class="game-row-actions">
       <button class="icon-button row-edit-action" type="button" title="Edit" aria-label="Edit">${pencilIcon()}</button>
       ${rowPrimaryAction(game, section)}
@@ -1514,7 +1693,7 @@ function rowCoreStats(game) {
     game.lengthHours ? timeBadge(game.lengthHours, hltbUrlFor(game)) : "",
     game.stream ? `<span class="stream-pill">Stream</span>` : "",
     release ? `<span class="release-pill">${escapeHtml(release)}</span>` : "",
-    ...ownerTags(game).filter((owner) => owner !== "Xavi").map(ownerBadge),
+    ...ownerTags(game).filter((owner) => owner !== (state.settings.defaultOwner || DEFAULT_SETTINGS.defaultOwner)).map(ownerBadge),
     ...gameStatuses(game).map(statusBadge),
     game.coop ? `<span class="coop-pill">Coop</span>` : "",
     game.replayCount ? replayBadge(game.replayCount) : "",
@@ -1852,7 +2031,7 @@ function cardFor(game, options = {}) {
   card.querySelector("h3").classList.toggle("owner-jordi", owners.includes("Jordi"));
   card.querySelector("h3").classList.toggle("completed-achievements-title", Boolean(game.platinum));
   const titleOwners = card.querySelector(".title-owners");
-  titleOwners.innerHTML = owners.filter((owner) => owner !== "Xavi").map(ownerBadge).join("");
+  titleOwners.innerHTML = owners.filter((owner) => owner !== (state.settings.defaultOwner || DEFAULT_SETTINGS.defaultOwner)).map(ownerBadge).join("");
   titleOwners.hidden = !titleOwners.innerHTML;
   const studioLine = card.querySelector(".studio-line");
   studioLine.textContent = studioText(game);
@@ -1898,9 +2077,15 @@ function cardFor(game, options = {}) {
   } else {
     completeAction.remove();
     trophyAction.remove();
-    prices.style.setProperty("--price-columns", priceProvidersForGame(game).length);
-    prices.innerHTML = pricesFor(game);
-    priceRefreshAction.addEventListener("click", () => refreshPricesForGame(game.id));
+    const providers = priceProvidersForGame(game);
+    if (providers.length) {
+      prices.style.setProperty("--price-columns", providers.length);
+      prices.innerHTML = pricesFor(game);
+      priceRefreshAction.addEventListener("click", () => refreshPricesForGame(game.id));
+    } else {
+      prices.remove();
+      priceRefreshAction.remove();
+    }
     boughtAction.addEventListener("click", () => moveToBacklog(game.id));
   }
   card.querySelector(".edit-action").addEventListener("click", () => openEditor(game.id));
@@ -2151,12 +2336,13 @@ function openDetail(id, options = {}) {
   el.detailStoreLinks.innerHTML = storeLinksFor(game);
   el.detailDescription.textContent = game.description || "No description yet.";
   renderDetailGuides(game);
-  if (game.section === "backlog" || game.completedAt || game.platinum) {
+  const priceProviders = priceProvidersForGame(game);
+  if (game.section === "backlog" || game.completedAt || game.platinum || !priceProviders.length) {
     el.detailPrices.hidden = true;
     el.detailPrices.innerHTML = "";
   } else {
     el.detailPrices.hidden = false;
-    el.detailPrices.style.setProperty("--price-columns", priceProvidersForGame(game).length);
+    el.detailPrices.style.setProperty("--price-columns", priceProviders.length);
     el.detailPrices.innerHTML = pricesFor(game);
   }
   el.detailCover.hidden = !game.cover;
@@ -2543,7 +2729,7 @@ function platformBadge(platform, count = null) {
 }
 
 function ownerBadge(owner) {
-  return `<span class="owner-pill owner-${escapeHtml(owner.toLowerCase())}">${escapeHtml(owner)}</span>`;
+  return `<span class="owner-pill owner-${escapeHtml(normalizeTag(owner))}">${escapeHtml(owner)}</span>`;
 }
 
 function statusBadge(status) {
@@ -2695,7 +2881,7 @@ function gameStatuses(game) {
 
 function ownerTags(game) {
   const owners = unique((game.owners || []).map(canonicalOwner).filter(Boolean));
-  return owners.length ? owners : ["Xavi"];
+  return owners.length ? owners : [state.settings.defaultOwner || DEFAULT_SETTINGS.defaultOwner];
 }
 
 function canonicalStatus(status) {
@@ -2712,16 +2898,17 @@ function canonicalStatus(status) {
 }
 
 function canonicalOwner(owner) {
+  const cleaned = cleanOwnerLabel(owner);
   const normalized = normalizeTag(owner);
   if (normalized === "xavi") return "Xavi";
   if (normalized === "judy") return "Judy";
   if (normalized === "jordi") return "Jordi";
-  return "";
+  return cleaned;
 }
 
 function ownerInputValues(value) {
   const owners = listFrom(value).map(canonicalOwner).filter(Boolean);
-  return owners.length ? owners : ["Xavi"];
+  return owners.length ? owners : [state.settings.defaultOwner || DEFAULT_SETTINGS.defaultOwner];
 }
 
 function canonicalPlatform(value) {
@@ -2847,8 +3034,8 @@ function storeLinksFor(game) {
   const links = storeLinksWithFallbacks(game);
   const hltbUrl = hltbUrlFor(game);
   const stores = [
-    { key: "playstation", label: "PlayStation", cls: "store-playstation", icon: "assets/sites/playstation.png", provider: "PlayStation España" },
-    { key: "nintendo", label: "Nintendo", cls: "store-nintendo", icon: "assets/sites/nintendo.png", provider: "Nintendo España" },
+    { key: "playstation", label: "PlayStation", cls: "store-playstation", icon: "assets/sites/playstation.png", provider: playStationStoreName() },
+    { key: "nintendo", label: "Nintendo", cls: "store-nintendo", icon: "assets/sites/nintendo.png", provider: nintendoStoreName() },
     { key: "steam", label: "Steam", cls: "store-steam", icon: "assets/sites/steam.png", provider: "Steam" },
   ];
   return [
@@ -2982,7 +3169,7 @@ function pricesFor(game) {
   const best = prices.filter((price) => price.numericPrice).sort((a, b) => a.numericPrice - b.numericPrice)[0];
   return prices.map((price) => {
     const hasPrice = Boolean(price.price);
-    const label = hasPrice ? price.price : "- €";
+    const label = hasPrice ? price.price : `- ${currencySymbol()}`;
     const cls = ["price-link", best?.store === price.store && hasPrice ? "best" : "", hasPrice ? "has-price" : "missing-price"].filter(Boolean).join(" ");
     return `
       <a class="${cls}" href="${escapeHtml(price.url)}" target="_blank" rel="noreferrer" title="${escapeHtml(price.store)}" aria-label="${escapeHtml(`${price.store}: ${label}`)}">
@@ -2996,19 +3183,22 @@ function pricesFor(game) {
 function fallbackPriceLinks(game) {
   const q = retailQuery(game.title, game.platform);
   if (game.digital) {
+    const region = state.settings.region;
     const links = [
-      { store: "Nintendo España", url: `https://www.nintendo.com/es-es/Buscar/Buscar-299117.html?q=${q}&f=147394-86` },
-      { store: "PlayStation España", url: `https://www.playstation.com/es-es/search/?q=${q}` },
+      { store: nintendoStoreName(), url: nintendoSearchUrl(q, region) },
+      { store: playStationStoreName(), url: playStationSearchUrl(q, region) },
       { store: "Steam", url: `https://store.steampowered.com/search/?term=${q}` },
     ];
     const providers = platformStoreProvidersForGame(game);
     return links.filter((link) => providers.includes(link.store));
   }
   return [
-    { store: "Amazon.es", url: `https://www.amazon.es/s?k=${q}` },
+    { store: amazonStoreName(), url: amazonSearchUrl(q, state.settings.region) },
     { store: "Xtralife", url: `https://www.xtralife.com/buscar/${q}` },
     { store: "GAME.es", url: `https://www.game.es/buscar/${q}` },
-    { store: "Retro Island NY", url: `https://retroislandny.com/search?q=${q}&country=ES&currency=EUR` },
+    { store: "Retro Island NY", url: `https://retroislandny.com/search?q=${q}&country=${state.settings.region}&currency=${state.settings.currency}` },
+    { store: "GameStop", url: `https://www.gamestop.com/search/?q=${q}` },
+    { store: "Walmart", url: `https://www.walmart.com/search?q=${q}` },
   ];
 }
 
@@ -3036,24 +3226,73 @@ function normalizedPrices(game) {
 }
 
 function priceProvidersForGame(game) {
-  return game.digital ? platformStoreProvidersForGame(game) : PHYSICAL_PROVIDERS;
+  return game.digital ? platformStoreProvidersForGame(game) : physicalStoreProviders();
+}
+
+function physicalStoreProviders() {
+  return (state.settings.stores || []).slice(0, 4).map((store) => {
+    if (store === "Amazon") return amazonStoreName();
+    return store;
+  });
 }
 
 function platformStoreProvidersForGame(game) {
   const platform = canonicalPlatform(game.platform);
-  if (platform === "Switch" || platform === "Switch 2") return ["Nintendo España"];
-  if (platform === "PS4" || platform === "PS5") return ["PlayStation España"];
+  if (platform === "Switch" || platform === "Switch 2") return [nintendoStoreName()];
+  if (platform === "PS4" || platform === "PS5") return [playStationStoreName()];
   if (platform === "PC") return ["Steam"];
-  return game.digital ? [] : DIGITAL_PROVIDERS;
+  return game.digital ? [] : [nintendoStoreName(), playStationStoreName(), "Steam"];
+}
+
+function currencySymbol() {
+  return state.settings.currency === "USD" ? "$" : "€";
+}
+
+function amazonStoreName(region = state.settings.region) {
+  if (region === "US") return "Amazon.com";
+  if (region === "UK") return "Amazon.co.uk";
+  return "Amazon.es";
+}
+
+function nintendoStoreName(region = state.settings.region) {
+  if (region === "US") return "Nintendo US";
+  if (region === "UK") return "Nintendo UK";
+  return "Nintendo España";
+}
+
+function playStationStoreName(region = state.settings.region) {
+  if (region === "US") return "PlayStation US";
+  if (region === "UK") return "PlayStation UK";
+  return "PlayStation España";
+}
+
+function amazonSearchUrl(query, region = state.settings.region) {
+  if (region === "US") return `https://www.amazon.com/s?k=${query}`;
+  if (region === "UK") return `https://www.amazon.co.uk/s?k=${query}`;
+  return `https://www.amazon.es/s?k=${query}`;
+}
+
+function nintendoSearchUrl(query, region = state.settings.region) {
+  if (region === "US") return `https://www.nintendo.com/us/search/?q=${query}`;
+  if (region === "UK") return `https://www.nintendo.com/en-gb/Search/Search-299117.html?q=${query}`;
+  return `https://www.nintendo.com/es-es/Buscar/Buscar-299117.html?q=${query}&f=147394-86`;
+}
+
+function playStationSearchUrl(query, region = state.settings.region) {
+  if (region === "US") return `https://www.playstation.com/en-us/search/?q=${query}`;
+  if (region === "UK") return `https://www.playstation.com/en-gb/search/?q=${query}`;
+  return `https://www.playstation.com/es-es/search/?q=${query}`;
 }
 
 function storeIcon(store) {
-  if (store === "Amazon.es") return "assets/stores/amazon.ico";
+  if (store.startsWith("Amazon")) return "assets/stores/amazon.ico";
   if (store === "Xtralife") return "assets/stores/xtralife.ico";
   if (store === "GAME.es") return "assets/stores/game.ico";
   if (store === "Retro Island NY") return "assets/stores/retroisland.png";
-  if (store === "Nintendo España") return "assets/sites/nintendo.png";
-  if (store === "PlayStation España") return "assets/sites/playstation.png";
+  if (store === "GameStop") return "https://www.gamestop.com/favicon.ico";
+  if (store === "Walmart") return "https://www.walmart.com/favicon.ico";
+  if (store.startsWith("Nintendo")) return "assets/sites/nintendo.png";
+  if (store.startsWith("PlayStation")) return "assets/sites/playstation.png";
   if (store === "Steam") return "assets/sites/steam.png";
   return "";
 }
@@ -3199,7 +3438,7 @@ function blankGame() {
     igdbUrl: "",
     trailerUrl: "",
     storeLinks: { playstation: "", nintendo: "", steam: "" },
-    owners: ["Xavi"],
+    owners: [state.settings.defaultOwner || DEFAULT_SETTINGS.defaultOwner],
     preorderStore: "",
     preferredStore: "",
     cover: "",
@@ -3283,7 +3522,12 @@ async function saveCurrentFormGame() {
 }
 
 function syncDialogPriceVisibility() {
-  el.pricesButton.hidden = el.fields.section.value === "backlog";
+  const draft = {
+    section: el.fields.section.value,
+    platform: el.fields.platform.value,
+    digital: el.fields.digital.checked,
+  };
+  el.pricesButton.hidden = draft.section === "backlog" || !priceProvidersForGame(draft).length;
 }
 
 function syncReplaySection() {
@@ -3794,6 +4038,7 @@ async function refreshCurrentPrices() {
   if (!title) return;
   const savedGame = await saveCurrentFormGame();
   if (savedGame.section === "backlog") return;
+  if (!priceProvidersForGame(savedGame).length) return;
   el.pricesButton.textContent = "Refreshing...";
   try {
     const data = await fetchPrices(savedGame.title, savedGame.platform, savedGame.digital);
@@ -3820,6 +4065,11 @@ async function refreshPricesForGame(id) {
     upsertGame(game);
     return;
   }
+  if (!priceProvidersForGame(game).length) {
+    game.prices = [];
+    upsertGame(game);
+    return;
+  }
   game.prices = priceProvidersForGame(game).map((store) => ({
     ...fallbackPriceLinks(game).find((item) => item.store === store),
     checkedAt: "",
@@ -3837,7 +4087,7 @@ async function refreshPricesForGame(id) {
 
 async function refreshAllPrices() {
   if (!state.canEdit) return;
-  const games = activeGames().filter((game) => game.section !== "backlog" && game.title);
+  const games = activeGames().filter((game) => game.section !== "backlog" && game.title && priceProvidersForGame(game).length);
   if (!games.length) {
     alert("No Available now or To Release games to refresh.");
     return;
@@ -3890,6 +4140,9 @@ function mergeFetchedPrices(game, fetchedPrices = []) {
 async function fetchPrices(title, platform, digital = false) {
   const params = new URLSearchParams({ title, platform });
   if (digital) params.set("digital", "1");
+  params.set("currency", state.settings.currency);
+  params.set("region", state.settings.region);
+  params.set("stores", state.settings.stores.join(","));
   const response = await fetch(`/api/prices?${params}`);
   if (!response.ok) throw new Error("Price fetch failed");
   return response.json();
@@ -3930,6 +4183,14 @@ async function syncNow() {
 
 function listFrom(value) {
   return unique(value.split(",").map((item) => item.trim()).filter(Boolean));
+}
+
+function cleanPsnUser(value) {
+  return String(value || "").trim().replace(/[^A-Za-z0-9_-]/g, "").slice(0, 32);
+}
+
+function cleanOwnerLabel(value) {
+  return String(value || "").trim().replace(/[<>]/g, "").slice(0, 32);
 }
 
 function normalizeTag(value) {

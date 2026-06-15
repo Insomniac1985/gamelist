@@ -1,43 +1,5 @@
-const PHYSICAL_PROVIDERS = [
-  {
-    store: "Amazon.es",
-    search: (q) => `https://www.amazon.es/s?k=${encodeURIComponent(q)}`,
-    parse: parseAmazon,
-  },
-  {
-    store: "Xtralife",
-    search: (q) => `https://www.xtralife.com/buscar/${encodeURIComponent(q)}`,
-    lookup: lookupXtralife,
-  },
-  {
-    store: "GAME.es",
-    search: (q) => `https://www.game.es/buscar/${encodeURIComponent(q)}`,
-    lookup: lookupGameEs,
-  },
-  {
-    store: "Retro Island NY",
-    search: (q) => retroIslandSearchUrl(q),
-    lookup: lookupRetroIslandNy,
-  },
-];
-
-const DIGITAL_PROVIDERS = [
-  {
-    store: "Nintendo España",
-    search: (q) => `https://www.nintendo.com/es-es/Buscar/Buscar-299117.html?q=${encodeURIComponent(q)}&f=147394-86`,
-    lookup: lookupNintendoEs,
-  },
-  {
-    store: "PlayStation España",
-    search: (q) => `https://www.playstation.com/es-es/search/?q=${encodeURIComponent(q)}`,
-    lookup: lookupPlayStationEs,
-  },
-  {
-    store: "Steam",
-    search: (q) => `https://store.steampowered.com/search/?term=${encodeURIComponent(q)}`,
-    parse: parseSteam,
-  },
-];
+const DEFAULT_STORES = ["Amazon", "Xtralife", "GAME.es", "Retro Island NY"];
+const STORE_OPTIONS = ["Amazon", "GAME.es", "Xtralife", "Retro Island NY", "GameStop", "Walmart"];
 
 const PLAYSTATION_CATALOG_ID = "28c9c2b2-cecc-415c-9a08-482a605cb104";
 const PLAYSTATION_CATALOG_HASH = "4ce7d410a4db2c8b635a48c1dcec375906ff63b19dadd87e073f8fd0c0481d35";
@@ -49,21 +11,54 @@ export async function onRequestGet({ request, env = {} }) {
   const platform = url.searchParams.get("platform")?.trim() || "";
   const digital = url.searchParams.get("digital") === "1";
   const debug = url.searchParams.has("debug");
+  const region = cleanRegion(url.searchParams.get("region"));
+  const currency = cleanCurrency(url.searchParams.get("currency"));
+  const stores = cleanStores(url.searchParams.get("stores"));
   if (!title) return json({ prices: [] });
 
   const query = digital ? retailTitle(title) : `${retailTitle(title)} ${platform}`.trim();
-  const providers = digital ? digitalProvidersForPlatform(platform) : PHYSICAL_PROVIDERS;
-  const prices = await Promise.all(providers.map((provider) => findPrice(provider, title, platform, query, env, debug)));
+  const providers = digital ? digitalProvidersForPlatform(platform, region) : physicalProviders(stores, region, currency);
+  const prices = await Promise.all(providers.map((provider) => findPrice(provider, title, platform, query, env, debug, { region, currency })));
   return json({ prices });
 }
 
-function digitalProvidersForPlatform(platform) {
+function physicalProviders(stores, region, currency) {
+  return stores.slice(0, 4).map((store) => {
+    if (store === "Amazon") {
+      return {
+        store: amazonStoreName(region),
+        search: (q) => amazonSearchUrl(q, region),
+        parse: (html, title, platform) => parseAmazon(html, title, platform, currency),
+      };
+    }
+    if (store === "Xtralife") return { store: "Xtralife", search: (q) => `https://www.xtralife.com/buscar/${encodeURIComponent(q)}`, lookup: lookupXtralife };
+    if (store === "GAME.es") return { store: "GAME.es", search: (q) => `https://www.game.es/buscar/${encodeURIComponent(q)}`, lookup: lookupGameEs };
+    if (store === "Retro Island NY") return { store: "Retro Island NY", search: (q) => retroIslandSearchUrl(q, region, currency), lookup: lookupRetroIslandNy };
+    if (store === "GameStop") return { store: "GameStop", search: (q) => `https://www.gamestop.com/search/?q=${encodeURIComponent(q)}`, parse: parseGeneric };
+    if (store === "Walmart") return { store: "Walmart", search: (q) => `https://www.walmart.com/search?q=${encodeURIComponent(q)}`, parse: parseGeneric };
+    return null;
+  }).filter(Boolean);
+}
+
+function digitalProvidersForPlatform(platform, region) {
   const normalized = normalizePlatform(platform);
-  if (normalized === "switch" || normalized === "switch2") return DIGITAL_PROVIDERS.filter((provider) => provider.store === "Nintendo España");
+  if (normalized === "switch" || normalized === "switch2") return [{
+    store: nintendoStoreName(region),
+    search: (q) => nintendoSearchUrl(q, region),
+    lookup: region === "ES" ? lookupNintendoEs : lookupLinkOnly,
+  }];
   if (normalized === "ps4" || normalized === "ps5" || normalized === "playstation4" || normalized === "playstation5") {
-    return DIGITAL_PROVIDERS.filter((provider) => provider.store === "PlayStation España");
+    return [{
+      store: playStationStoreName(region),
+      search: (q) => playStationSearchUrl(q, region),
+      lookup: region === "ES" ? lookupPlayStationEs : lookupLinkOnly,
+    }];
   }
-  if (normalized === "pc" || normalized === "steam") return DIGITAL_PROVIDERS.filter((provider) => provider.store === "Steam");
+  if (normalized === "pc" || normalized === "steam") return [{
+    store: "Steam",
+    search: (q) => `https://store.steampowered.com/search/?term=${encodeURIComponent(q)}`,
+    parse: parseSteam,
+  }];
   return [];
 }
 
@@ -71,11 +66,65 @@ function normalizePlatform(platform) {
   return String(platform || "").toLowerCase().replace(/[^a-z0-9]+/g, "");
 }
 
-async function findPrice(provider, title, platform, query, env = {}, debug = false) {
+function cleanRegion(value) {
+  const region = String(value || "").toUpperCase();
+  return ["ES", "US", "UK"].includes(region) ? region : "ES";
+}
+
+function cleanCurrency(value) {
+  return String(value || "").toUpperCase() === "USD" ? "USD" : "EUR";
+}
+
+function cleanStores(value) {
+  if (value === null) return DEFAULT_STORES;
+  const stores = String(value || "")
+    .split(",")
+    .map((store) => store.trim())
+    .filter((store) => STORE_OPTIONS.includes(store));
+  return stores.slice(0, 4);
+}
+
+function amazonStoreName(region) {
+  if (region === "US") return "Amazon.com";
+  if (region === "UK") return "Amazon.co.uk";
+  return "Amazon.es";
+}
+
+function amazonSearchUrl(query, region) {
+  if (region === "US") return `https://www.amazon.com/s?k=${encodeURIComponent(query)}`;
+  if (region === "UK") return `https://www.amazon.co.uk/s?k=${encodeURIComponent(query)}`;
+  return `https://www.amazon.es/s?k=${encodeURIComponent(query)}`;
+}
+
+function nintendoStoreName(region) {
+  if (region === "US") return "Nintendo US";
+  if (region === "UK") return "Nintendo UK";
+  return "Nintendo España";
+}
+
+function nintendoSearchUrl(query, region) {
+  if (region === "US") return `https://www.nintendo.com/us/search/?q=${encodeURIComponent(query)}`;
+  if (region === "UK") return `https://www.nintendo.com/en-gb/Search/Search-299117.html?q=${encodeURIComponent(query)}`;
+  return `https://www.nintendo.com/es-es/Buscar/Buscar-299117.html?q=${encodeURIComponent(query)}&f=147394-86`;
+}
+
+function playStationStoreName(region) {
+  if (region === "US") return "PlayStation US";
+  if (region === "UK") return "PlayStation UK";
+  return "PlayStation España";
+}
+
+function playStationSearchUrl(query, region) {
+  if (region === "US") return `https://www.playstation.com/en-us/search/?q=${encodeURIComponent(query)}`;
+  if (region === "UK") return `https://www.playstation.com/en-gb/search/?q=${encodeURIComponent(query)}`;
+  return `https://www.playstation.com/es-es/search/?q=${encodeURIComponent(query)}`;
+}
+
+async function findPrice(provider, title, platform, query, env = {}, debug = false, options = {}) {
   const url = provider.search(query);
   if (provider.lookup) {
     try {
-      const result = await provider.lookup(title, platform, query);
+      const result = await provider.lookup(title, platform, query, options);
       return {
         store: provider.store,
         price: result.price || "",
@@ -270,7 +319,7 @@ function normalizePlayStationPrice(value) {
     .trim();
 }
 
-function parseAmazon(html, title, platform) {
+function parseAmazon(html, title, platform, currency = "EUR") {
   const cards = html.split('data-component-type="s-search-result"').slice(1);
   const normalizedTitle = normalize(title);
   const normalizedPlatform = normalize(platform);
@@ -283,12 +332,10 @@ function parseAmazon(html, title, platform) {
     if (!normalizedMatch.includes(normalizedTitle.split(" ")[0])) continue;
     if (normalizedPlatform && !normalizedMatch.includes(normalizedPlatform.replace("ps", "playstation"))) continue;
 
-    const priceMatch = card.match(/<span class="a-offscreen">([\d.,]+\s*(?:€|EUR))/i)
+    const priceMatch = card.match(/<span class="a-offscreen">((?:US\s*)?\$?\s*[\d.,]+\s*(?:€|EUR|USD)?)<\/span>/i)
       || card.match(/data-csa-c-price-to-pay="([\d.]+)"/i);
     if (!priceMatch) continue;
-    const price = priceMatch[1].includes("€") || priceMatch[1].includes("EUR")
-      ? priceMatch[1].replace("EUR", "€").replace(/\s+/g, " ")
-      : `${priceMatch[1].replace(".", ",")} €`;
+    const price = formatPriceLabel(priceMatch[1], currency);
     const numericPrice = parsePrice(price);
     if (!best || numericPrice < best.numericPrice) {
       best = { price, numericPrice, matchedTitle };
@@ -427,35 +474,37 @@ function xtralifeProduct(product) {
   };
 }
 
-async function lookupRetroIslandNy(title, platform, query) {
+async function lookupRetroIslandNy(title, platform, query, options = {}) {
+  const region = options.region || "ES";
+  const currency = options.currency || "EUR";
   const endpoint = new URL("https://retroislandny.com/search/suggest.json");
   endpoint.searchParams.set("q", query);
   endpoint.searchParams.set("resources[type]", "product");
   endpoint.searchParams.set("resources[limit]", "12");
-  endpoint.searchParams.set("country", "ES");
-  endpoint.searchParams.set("currency", "EUR");
+  endpoint.searchParams.set("country", region);
+  endpoint.searchParams.set("currency", currency);
   const response = await fetch(endpoint.toString(), {
     headers: {
       "Accept": "application/json",
-      "Accept-Language": "es-ES,es;q=0.9,en;q=0.8",
-      "Cookie": "cart_currency=EUR; localization=ES",
+      "Accept-Language": region === "ES" ? "es-ES,es;q=0.9,en;q=0.8" : "en-US,en;q=0.9",
+      "Cookie": `cart_currency=${currency}; localization=${region}`,
       "User-Agent": "Mozilla/5.0 (compatible; GameList/1.0)",
     },
   });
   if (!response.ok) throw new Error("Retro Island search failed");
   const data = await response.json();
   const products = Array.isArray(data.resources?.results?.products) ? data.resources.results.products : [];
-  return bestProduct(products.map(retroIslandProduct), title, platform) || { price: "", matchedTitle: "" };
+  return bestProduct(products.map((product) => retroIslandProduct(product, currency)), title, platform) || { price: "", matchedTitle: "" };
 }
 
-function retroIslandProduct(product) {
+function retroIslandProduct(product, currency = "EUR") {
   const price = product.price_min || product.price || product.price_max || "";
   const numericPrice = parsePrice(price);
   const url = product.url ? `https://retroislandny.com/${String(product.url).replace(/^\/+/, "")}` : "";
   return {
     title: product.title || "",
     platform: [product.type, ...(Array.isArray(product.tags) ? product.tags : [])].filter(Boolean).join(" "),
-    price: Number.isFinite(numericPrice) ? euro(numericPrice) : "",
+    price: Number.isFinite(numericPrice) ? money(numericPrice, currency) : "",
     matchedTitle: product.title || "",
     url,
   };
@@ -523,6 +572,22 @@ function euro(value) {
   return `${Number(value).toFixed(2).replace(".", ",")} €`;
 }
 
+function usd(value) {
+  return `$${Number(value).toFixed(2)}`;
+}
+
+function money(value, currency = "EUR") {
+  return currency === "USD" ? usd(value) : euro(value);
+}
+
+function formatPriceLabel(value, currency = "EUR") {
+  const text = String(value || "").replace(/\u00a0/g, " ").replace(/\s+/g, " ").trim();
+  const amount = parsePrice(text);
+  if (!Number.isFinite(amount)) return "";
+  if (text.includes("$") || /USD/i.test(text) || currency === "USD") return usd(amount);
+  return euro(amount);
+}
+
 function missingPrice(store, url) {
   return {
     store,
@@ -534,11 +599,11 @@ function missingPrice(store, url) {
   };
 }
 
-function retroIslandSearchUrl(query) {
+function retroIslandSearchUrl(query, region = "ES", currency = "EUR") {
   const endpoint = new URL("https://retroislandny.com/search");
   endpoint.searchParams.set("q", retailTitle(query));
-  endpoint.searchParams.set("country", "ES");
-  endpoint.searchParams.set("currency", "EUR");
+  endpoint.searchParams.set("country", region);
+  endpoint.searchParams.set("currency", currency);
   return endpoint.toString();
 }
 

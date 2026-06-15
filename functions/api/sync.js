@@ -15,10 +15,11 @@ export async function onRequestPut({ request, env }) {
   }
   const body = await request.json().catch(() => null);
   if (!body || !Array.isArray(body.games)) {
-    return json({ error: "Expected { games: [] }" }, 400);
+    return json({ error: "Expected { games: [], settings?: {} }" }, 400);
   }
   await env.GAMELIST.put(KV_KEY, JSON.stringify({
     games: body.games,
+    settings: body.settings && typeof body.settings === "object" ? body.settings : {},
     updatedAt: new Date().toISOString(),
   }));
   return json({ ok: true });
