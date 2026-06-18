@@ -150,11 +150,7 @@ button:disabled {
 
 body.theme-kash .backdrop {
   background:
-    radial-gradient(circle at 78% 9%, rgba(0, 92, 255, 0.24), transparent 30%),
-    radial-gradient(circle at 11% 84%, rgba(255, 184, 220, 0.16), transparent 34%),
-    linear-gradient(120deg, rgba(255, 255, 255, 0.04), transparent 38%),
-    url("assets/backdrop.png") top left / auto repeat,
-    #111723;
+    radial-gradient(circle at 78% 9%, rgba(0, 92, 255, 0.24), transparent 30%), radial-gradient(circle at 11% 84%, rgb(0 89 255 / 16%), transparent 34%), linear-gradient(120deg, rgba(255, 255, 255, 0.04), transparent 38%), url(assets/backdrop.png) top left / auto repeat, #111723
 }
 
 @media (prefers-reduced-motion: reduce) {
