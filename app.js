@@ -685,7 +685,7 @@ function settingsLayoutItem(key, index, options = {}) {
           <button class="icon-button" type="button" data-layout-key="${escapeHtml(key)}" data-layout-move="-1" ${index === 0 ? "disabled" : ""} title="Move up" aria-label="Move ${escapeHtml(title)} up">↑</button>
           <button class="icon-button" type="button" data-layout-key="${escapeHtml(key)}" data-layout-move="1" ${index === state.settings.pageOrder.length - 1 ? "disabled" : ""} title="Move down" aria-label="Move ${escapeHtml(title)} down">↓</button>
         `}
-        <label class="settings-visible-check" title="${visible ? "Visible" : "Hidden"}">
+        <label class="check-filter toggle-check settings-visible-check" title="${visible ? "Visible" : "Hidden"}">
           <input type="checkbox" value="${escapeHtml(key)}" data-layout-hidden ${visible ? "checked" : ""}>
           <span>${visible ? "Show" : "Hide"}</span>
         </label>
