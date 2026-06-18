@@ -2882,8 +2882,8 @@ function euroIcon() {
 function dollarIcon() {
   return `
     <svg class="dollar-icon" viewBox="0 0 24 24" aria-hidden="true">
-      <path d="M12 3v18"></path>
-      <path d="M17.2 7.2A5.8 5.8 0 0 0 12.8 6H11a4 4 0 0 0 0 8h2a4 4 0 0 1 0 8h-1.8a5.8 5.8 0 0 1-4.4-1.2"></path>
+      <path d="M12 4.5v15"></path>
+      <path d="M16.4 7.4c-.9-.8-2.2-1.2-3.8-1.2h-1.1c-2.2 0-3.7 1.2-3.7 2.9 0 1.8 1.4 2.6 3.7 3.1l1.4.3c2.2.5 3.5 1.3 3.5 3.1 0 1.7-1.5 2.9-3.8 2.9h-1.1c-1.7 0-3-.4-4-1.3"></path>
     </svg>
   `;
 }
@@ -3144,11 +3144,22 @@ function storeButton(label, url, cls, icon) {
 function storeLinksWithFallbacks(game) {
   const links = normalizeStoreLinks(game.storeLinks);
   const q = encodeURIComponent(retailTitle(game.title));
+  const region = state.settings.region;
   return {
-    playstation: links.playstation || `https://www.playstation.com/es-es/search/?q=${q}`,
-    nintendo: links.nintendo || `https://www.nintendo.com/es-es/Buscar/Buscar-299117.html?q=${q}&f=147394-86`,
+    playstation: regionalStoreLink(links.playstation, "playstation", q, region),
+    nintendo: regionalStoreLink(links.nintendo, "nintendo", q, region),
     steam: links.steam || `https://store.steampowered.com/search/?term=${q}`,
   };
+}
+
+function regionalStoreLink(url, store, query, region = state.settings.region) {
+  const fallback = store === "playstation"
+    ? playStationSearchUrl(query, region)
+    : nintendoSearchUrl(query, region);
+  if (!url) return fallback;
+  if (store === "playstation" && /playstation\.com\/(?:en-us|en-gb|es-es)\/search\?/i.test(url)) return fallback;
+  if (store === "nintendo" && /nintendo\.com\/(?:us\/search|en-gb\/Search|es-es\/Buscar)\//i.test(url)) return fallback;
+  return url;
 }
 
 function hltbUrlFor(game) {
