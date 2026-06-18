@@ -8,9 +8,28 @@ const SETTINGS_KEY = "gamelist:settings:v1";
 const DEFAULT_PAGE_ORDER = ["trophies", "dashboard", "search", "gamelist", "finished"];
 const LAYOUT_SECTION_KEYS = ["playing", ...DEFAULT_PAGE_ORDER, "latestFinished"];
 const STORE_OPTIONS = ["Amazon", "GAME.es", "Xtralife", "Retro Island NY", "GameStop", "Walmart"];
+const THEMES = {
+  shabii: {
+    name: "Shabii",
+    title: "Shabii's Gamelist",
+    shortName: "Gamelist",
+    icon: "assets/Icon.png",
+    appIcon: "assets/app-Icon.png",
+    themeColor: "#ff0039",
+  },
+  kash: {
+    name: "Kash",
+    title: "Kash's Gamelist",
+    shortName: "Kash",
+    icon: "assets/kh_icon.png",
+    appIcon: "assets/kh_app-icon.png",
+    themeColor: "#005cff",
+  },
+};
 const DEFAULT_SETTINGS = {
   pageOrder: DEFAULT_PAGE_ORDER,
   hiddenSections: [],
+  theme: "shabii",
   psnUser: "ShabiiEXE",
   currency: "EUR",
   region: "ES",
@@ -24,6 +43,8 @@ const STATUS_OPTIONS = [
 ];
 const UI_ICON_URLS = [
   "/assets/Icon.png",
+  "/assets/kh_icon.png",
+  "/assets/kh_app-icon.png",
   "/assets/platforms/playstation.png",
   "/assets/platforms/steam.png",
   "/assets/platforms/switch.png",
@@ -523,6 +544,7 @@ function normalizeSettings(settings = {}) {
     ...settings,
     pageOrder: [...pageOrder, ...DEFAULT_PAGE_ORDER.filter((item) => !pageOrder.includes(item))],
     hiddenSections,
+    theme: THEMES[settings.theme] ? settings.theme : DEFAULT_SETTINGS.theme,
     psnUser: cleanPsnUser(settings.psnUser) || DEFAULT_SETTINGS.psnUser,
     currency: settings.currency === "USD" ? "USD" : "EUR",
     region: ["ES", "US", "UK"].includes(settings.region) ? settings.region : DEFAULT_SETTINGS.region,
@@ -548,6 +570,7 @@ async function persistCloud() {
 }
 
 function render() {
+  applyTheme();
   document.body.classList.toggle("can-edit", state.canEdit);
   document.body.classList.toggle("list-view-mode", state.viewMode === "list");
   el.loginButton.innerHTML = state.canEdit ? `${pauseIcon()}<span class="button-label">Stop Editing</span>` : pencilIcon();
@@ -581,6 +604,44 @@ function render() {
   el.platformFilter.classList.toggle("is-active", state.filters.platform !== "all");
   el.tagFilter.classList.toggle("is-active", state.filters.tag !== "all");
   updateScrollTopButton();
+}
+
+function applyTheme() {
+  const themeKey = normalizeSettings(state.settings).theme;
+  const theme = THEMES[themeKey] || THEMES.shabii;
+  document.body.classList.toggle("theme-kash", themeKey === "kash");
+  document.title = theme.title;
+  document.querySelector("meta[name='theme-color']")?.setAttribute("content", theme.themeColor);
+  document.querySelector("meta[name='apple-mobile-web-app-title']")?.setAttribute("content", theme.shortName);
+  document.querySelector("link[rel='icon']")?.setAttribute("href", theme.icon);
+  document.querySelector("link[rel='apple-touch-icon']")?.setAttribute("href", theme.appIcon);
+  const manifest = document.querySelector("link[rel='manifest']");
+  if (manifest) manifest.setAttribute("href", themedManifestUrl(theme));
+  const brandMark = document.querySelector(".brand-mark");
+  const brandText = document.querySelector(".brand span:last-child");
+  if (brandMark) brandMark.src = theme.icon;
+  if (brandText) brandText.textContent = theme.title;
+  el.brandLink?.setAttribute("aria-label", theme.title);
+}
+
+function themedManifestUrl(theme) {
+  const manifest = {
+    name: theme.title,
+    short_name: theme.shortName,
+    description: `${theme.title} backlog and preorder tracker.`,
+    start_url: "/",
+    scope: "/",
+    display: "standalone",
+    background_color: "#0a0b0f",
+    theme_color: theme.themeColor,
+    icons: [{
+      src: `/${theme.appIcon}`,
+      sizes: "400x400",
+      type: "image/png",
+      purpose: "any maskable",
+    }],
+  };
+  return `data:application/manifest+json,${encodeURIComponent(JSON.stringify(manifest))}`;
 }
 
 function renderViewToggle() {
@@ -627,6 +688,7 @@ function renderSettingsDialog() {
     settingsLayoutItem("playing", -1, { fixed: true }),
     settingsLayoutItem("latestFinished", -1, { fixed: true }),
     ...state.settings.pageOrder.map((key) => settingsLayoutItem(key, pageIndex.get(key) ?? 0)),
+    settingsThemeItem(),
   ].join("");
   el.settingsStores.innerHTML = STORE_OPTIONS.map((store) => `
     <label class="check-filter toggle-check settings-store-check">
@@ -652,6 +714,10 @@ function renderSettingsDialog() {
       state.settings.hiddenSections = [...hidden].filter((key) => LAYOUT_SECTION_KEYS.includes(key));
       renderSettingsDialog();
     });
+  });
+  el.settingsLayoutList.querySelector("[data-theme-select]")?.addEventListener("change", (event) => {
+    state.settings.theme = event.target.value;
+    applyTheme();
   });
 }
 
@@ -705,6 +771,21 @@ function moveSettingsLayoutItem(key, delta) {
   applyPageOrder();
 }
 
+function settingsThemeItem() {
+  return `
+    <article class="settings-layout-card settings-theme-card" data-layout-key="theme">
+      <div class="settings-wire wire-theme" aria-hidden="true"><span></span><span></span><span></span><span></span><span></span><span></span></div>
+      <strong>Theme</strong>
+      <label class="settings-theme-select">
+        <span>Theme</span>
+        <select data-theme-select aria-label="Theme">
+          ${Object.entries(THEMES).map(([key, theme]) => `<option value="${escapeHtml(key)}" ${state.settings.theme === key ? "selected" : ""}>${escapeHtml(theme.name)}</option>`).join("")}
+        </select>
+      </label>
+    </article>
+  `;
+}
+
 async function saveSettingsFromForm(event) {
   event.preventDefault();
   const previousCurrency = state.settings.currency;
@@ -716,6 +797,7 @@ async function saveSettingsFromForm(event) {
   state.settings = normalizeSettings({
     ...state.settings,
     hiddenSections: LAYOUT_SECTION_KEYS.filter((key) => !visibleSections.has(key)),
+    theme: el.settingsLayoutList.querySelector("[data-theme-select]")?.value || state.settings.theme,
     psnUser: el.settingsPsnUser.value,
     currency: el.settingsCurrency.value,
     region: el.settingsRegion.value,

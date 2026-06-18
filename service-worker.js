@@ -1,4 +1,4 @@
-const CACHE_VERSION = "gamelist-cache-v73";
+const CACHE_VERSION = "gamelist-cache-v74";
 const STATIC_CACHE = `${CACHE_VERSION}:static`;
 const MEDIA_CACHE = `${CACHE_VERSION}:media`;
 const STATIC_ASSETS = [
@@ -9,6 +9,8 @@ const STATIC_ASSETS = [
   "/app.js",
   "/assets/Icon.png",
   "/assets/app-Icon.png",
+  "/assets/kh_icon.png",
+  "/assets/kh_app-icon.png",
   "/assets/fonts/CascadiaCode.woff2",
   "/assets/platforms/playstation.png",
   "/assets/platforms/steam.png",

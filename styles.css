@@ -46,6 +46,14 @@
   --grid-fade: linear-gradient(135deg, rgba(255, 255, 255, 0.055), transparent 34%, rgba(255, 0, 57, 0.026) 100%);
 }
 
+body.theme-kash {
+  --accent: #005cff;
+  --accent-2: #ffb8dc;
+  --display-title-font: "Cascadia Code", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  --grid-fade: linear-gradient(135deg, rgba(255, 255, 255, 0.055), transparent 34%, rgba(0, 92, 255, 0.05) 100%);
+  --shadow: 0 24px 80px rgba(0, 28, 88, 0.46);
+}
+
 * {
   box-sizing: border-box;
 }
@@ -140,6 +148,15 @@ button:disabled {
   will-change: transform, background-position;
 }
 
+body.theme-kash .backdrop {
+  background:
+    radial-gradient(circle at 78% 9%, rgba(0, 92, 255, 0.24), transparent 30%),
+    radial-gradient(circle at 11% 84%, rgba(255, 184, 220, 0.16), transparent 34%),
+    linear-gradient(120deg, rgba(255, 255, 255, 0.04), transparent 38%),
+    url("https://cdn.myportfolio.com/9ec86fd7-b8ae-4899-8de8-a4f0e7b32ebb/1b7d38b0-699d-4024-a8bd-6d8cf8b46e16_rwc_0x0x2480x3355x4096.png?h=994f09e241b33623ff8d952bba77dcb7") top left / auto repeat,
+    #111723;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .backdrop {
     inset: 0;
@@ -181,6 +198,13 @@ button:disabled {
     drop-shadow(0 7px 18px rgba(0, 0, 0, 0.32));
 }
 
+body.theme-kash .brand-mark {
+  filter:
+    drop-shadow(0 0 10px rgba(0, 92, 255, 0.5))
+    drop-shadow(0 0 16px rgba(255, 184, 220, 0.22))
+    drop-shadow(0 7px 18px rgba(0, 0, 0, 0.32));
+}
+
 .nav-tabs {
   display: flex;
   justify-content: center;
@@ -202,6 +226,11 @@ button:disabled {
   color: var(--text);
   background: rgba(255, 0, 81, 0.16);
   border-color: rgba(255, 0, 81, 0.32);
+}
+
+body.theme-kash .nav-tabs a:hover {
+  background: rgba(0, 92, 255, 0.18);
+  border-color: rgba(0, 92, 255, 0.36);
 }
 
 #achievementProfileLink {
@@ -900,6 +929,12 @@ h2 {
   background-clip: text;
 }
 
+body.theme-kash .column-head h2 {
+  background: linear-gradient(135deg, var(--accent-2) 0%, var(--accent) 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+}
+
 .playing-section .column-head h2,
 .achievement-section > .column-head h2,
 #backlog > .column-head h2,
@@ -1181,6 +1216,21 @@ body.dialog-open .scroll-top-button {
   background: rgba(255, 0, 57, 0.28);
 }
 
+body.theme-kash #lookupButton:hover,
+body.theme-kash #pricesButton:hover,
+body.theme-kash #deleteButton:hover,
+body.theme-kash .edit-action:hover,
+body.theme-kash .completed-edit-action:hover,
+body.theme-kash .history-edit-action:hover,
+body.theme-kash .price-refresh-action:hover,
+body.theme-kash .bought-action:hover,
+body.theme-kash .complete-action:hover,
+body.theme-kash .delete-action:hover,
+body.theme-kash .restore-action:hover {
+  border-color: rgba(0, 92, 255, 0.58);
+  background: rgba(0, 92, 255, 0.28);
+}
+
 .scroll-top-button:hover {
   color: #ffffff;
   border-color: rgba(255, 255, 255, 0.28);
@@ -1227,6 +1277,10 @@ body.dialog-open .scroll-top-button {
   color: #ffffff;
   border-color: rgba(255, 255, 255, 0.28);
   background: #ff0039;
+}
+
+body.theme-kash .floating-action-button:hover {
+  background: var(--accent);
 }
 
 .floating-action-button .pencil-icon {
@@ -1547,6 +1601,10 @@ body.dialog-open .floating-edit-actions {
   box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.14);
 }
 
+body.theme-kash .check-filter input[type="checkbox"]:checked {
+  border-color: rgba(0, 92, 255, 0.72);
+}
+
 .check-filter input[type="checkbox"]:focus-visible {
   outline: 2px solid rgba(255, 255, 255, 0.6);
   outline-offset: 2px;
@@ -1658,6 +1716,16 @@ body.dialog-open .floating-edit-actions {
   box-shadow: 0 0 0 3px rgba(255, 0, 81, 0.12), 0 10px 28px rgba(255, 0, 81, 0.12);
 }
 
+body.theme-kash .ghost-button:not(.trophy-action):hover,
+body.theme-kash .primary-button:hover,
+body.theme-kash .icon-button:hover,
+body.theme-kash .danger-button:hover,
+body.theme-kash .direction-toggle:hover,
+body.theme-kash .check-filter:hover {
+  border-color: rgba(0, 92, 255, 0.5);
+  box-shadow: 0 0 0 3px rgba(0, 92, 255, 0.13), 0 10px 28px rgba(0, 92, 255, 0.14);
+}
+
 .direction-toggle:hover {
   color: #ffffff;
   background: rgba(255, 255, 255, 0.11);
@@ -1700,6 +1768,10 @@ body.dialog-open .floating-edit-actions {
   box-shadow: 0px 3px 24px 3px rgb(255 0 0 / 40%);
   transform: translateX(0);
   transition: transform 180ms ease;
+}
+
+body.theme-kash .mobile-section-tabs::before {
+  box-shadow: 0 3px 24px 3px rgba(0, 92, 255, 0.42);
 }
 
 body[data-mobile-section="upcoming"] .mobile-section-tabs::before {
@@ -2205,6 +2277,21 @@ body[data-mobile-section="upcoming"] .column:not(#upcoming) {
   box-shadow: unset;
 }
 
+body.theme-kash .game-card.playing-card,
+body.theme-kash .game-card.playing-card.owner-card-judy,
+body.theme-kash .game-card.playing-card.owner-card-jordi,
+body.theme-kash .game-card.playing-card.digital-card,
+body.theme-kash .game-card.playing-card.digital-card.owner-card-judy,
+body.theme-kash .game-card.playing-card.digital-card.owner-card-jordi,
+body.theme-kash .game-card.playing-card.owner-card-judy.owner-card-jordi,
+body.theme-kash .game-card.playing-card.digital-card.owner-card-judy.owner-card-jordi {
+  background:
+    radial-gradient(circle at 22% 18%, rgba(255, 184, 220, 0.2), transparent 28%),
+    linear-gradient(135deg, rgba(0, 92, 255, 0.34), rgba(0, 92, 255, 0.12) 42%, rgba(12, 14, 19, 0.72)),
+    var(--panel);
+  border-color: rgba(0, 92, 255, 0.5);
+}
+
 .game-card.playing-card.has-art::before {
   inset: -34px;
   background:
@@ -2277,6 +2364,12 @@ content: "";
     pointer-events: none;
     background:
       linear-gradient(180deg, transparent 62%, rgba(255, 0, 57, 0.38) 100%),
+      linear-gradient(180deg, rgba(255, 255, 255, 0.08), transparent 26%, transparent 74%, rgba(6, 7, 10, 0.18));
+  }
+
+  body.theme-kash .game-card.playing-card.has-trailer .card-trailer::after {
+    background:
+      linear-gradient(180deg, transparent 62%, rgba(0, 92, 255, 0.38) 100%),
       linear-gradient(180deg, rgba(255, 255, 255, 0.08), transparent 26%, transparent 74%, rgba(6, 7, 10, 0.18));
   }
 
@@ -3410,6 +3503,10 @@ body.can-edit #loginButton .pause-icon {
   text-shadow: 0 1px 8px rgba(0, 0, 0, 0.32);
 }
 
+body.theme-kash .primary-button {
+  box-shadow: 0 3px 24px rgba(0, 92, 255, 0.26);
+}
+
 .ghost-button {
   /*border-color: var(--line);*/
 }
@@ -3913,6 +4010,34 @@ body.dialog-open .mobile-section-tabs {
   right: 0;
 }
 
+.settings-wire.wire-theme span:nth-child(1) {
+  display: block;
+  left: 9%;
+  right: 9%;
+  top: 10px;
+  height: 20px;
+}
+
+.settings-wire.wire-theme span:nth-child(2) {
+  display: block;
+  left: 20%;
+  right: 20%;
+  bottom: 13px;
+  height: 24px;
+  border-color: rgba(255, 255, 255, 0.5);
+}
+
+.settings-wire.wire-theme span:nth-child(3) {
+  display: block;
+  right: 24%;
+  bottom: 23px;
+  width: 8px;
+  height: 8px;
+  border-width: 0 1px 1px 0;
+  transform: rotate(45deg);
+  background: transparent;
+}
+
 .settings-layout-actions {
   display: flex;
   align-items: center;
@@ -3941,7 +4066,7 @@ body.dialog-open .mobile-section-tabs {
   min-height: 30px;
   padding: 0 9px 0 7px;
   margin-left: auto;
-  border-radius: 999px;
+  border-radius: 7px;
   gap: 6px;
 }
 
@@ -3959,6 +4084,32 @@ body.dialog-open .mobile-section-tabs {
   font-weight: 800;
   line-height: 1;
   text-transform: uppercase;
+}
+
+.settings-theme-card {
+  align-content: start;
+}
+
+.settings-theme-select {
+  display: grid;
+  gap: 5px;
+}
+
+.settings-theme-select span {
+  color: var(--muted);
+  font-size: 10px;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.settings-theme-select select {
+  width: 100%;
+  min-height: 30px;
+  padding: 0 30px 0 10px;
+  color: var(--text);
+  background-color: rgba(255, 255, 255, 0.075);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 7px;
 }
 
 .settings-grid {
