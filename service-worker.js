@@ -7,6 +7,7 @@ const STATIC_ASSETS = [
   "/manifest.webmanifest",
   "/styles.css",
   "/app.js",
+  "/assets/backdrop.png",
   "/assets/Icon.png",
   "/assets/app-Icon.png",
   "/assets/kh_icon.png",

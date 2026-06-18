@@ -135,7 +135,7 @@ button:disabled {
     radial-gradient(circle at 78% 9%, rgba(255, 0, 81, 0.22), transparent 30%),
     radial-gradient(circle at 11% 84%, rgba(0, 0, 255, 0.14), transparent 34%),
     linear-gradient(120deg, rgba(255, 255, 255, 0.04), transparent 38%),
-    url("https://cdn.myportfolio.com/9ec86fd7-b8ae-4899-8de8-a4f0e7b32ebb/1b7d38b0-699d-4024-a8bd-6d8cf8b46e16_rwc_0x0x2480x3355x4096.png?h=994f09e241b33623ff8d952bba77dcb7") top left / auto repeat,
+    url("assets/backdrop.png") top left / auto repeat,
     #161619;
   background-position:
     calc(78% + var(--backdrop-x)) calc(9% + var(--backdrop-y)),
@@ -153,7 +153,7 @@ body.theme-kash .backdrop {
     radial-gradient(circle at 78% 9%, rgba(0, 92, 255, 0.24), transparent 30%),
     radial-gradient(circle at 11% 84%, rgba(255, 184, 220, 0.16), transparent 34%),
     linear-gradient(120deg, rgba(255, 255, 255, 0.04), transparent 38%),
-    url("https://cdn.myportfolio.com/9ec86fd7-b8ae-4899-8de8-a4f0e7b32ebb/1b7d38b0-699d-4024-a8bd-6d8cf8b46e16_rwc_0x0x2480x3355x4096.png?h=994f09e241b33623ff8d952bba77dcb7") top left / auto repeat,
+    url("assets/backdrop.png") top left / auto repeat,
     #111723;
 }
 
@@ -313,6 +313,11 @@ body.theme-kash .nav-tabs a:hover {
   color: #ffffff;
   border-color: rgba(255, 0, 57, 0.58);
   background: rgba(255, 0, 57, 0.28);
+}
+
+body.theme-kash .playing-slider-button:hover {
+  border-color: rgba(0, 92, 255, 0.58);
+  background: rgba(0, 92, 255, 0.28);
 }
 
 .playing-slider-button:disabled {
@@ -1079,6 +1084,13 @@ h3 {
   box-shadow: 0 0 0 3px rgba(255, 0, 81, 0.12), 0 14px 34px rgba(255, 0, 81, 0.16);
 }
 
+body.theme-kash .stat-action:hover,
+body.theme-kash .stat-action:focus-visible,
+body.theme-kash .stat[data-stat-detail]:focus-visible {
+  border-color: rgba(0, 92, 255, 0.44);
+  box-shadow: 0 0 0 3px rgba(0, 92, 255, 0.12), 0 14px 34px rgba(0, 92, 255, 0.16);
+}
+
 .stat-done.stat-action:hover,
 .stat-done.stat-action:focus-visible {
   border-color: rgba(255, 255, 255, 0.18);
@@ -1098,6 +1110,10 @@ h3 {
 .stat-backlog {
     --stat-color: var(--accent);
     --stat-glow: rgb(247 105 105 / 26%);
+}
+
+body.theme-kash .stat-backlog {
+  --stat-glow: rgba(0, 92, 255, 0.28);
 }
 
 .stat-done {
@@ -1216,6 +1232,18 @@ body.dialog-open .scroll-top-button {
   background: rgba(255, 0, 57, 0.28);
 }
 
+body.theme-kash .release-calendar-actions .icon-button:hover,
+body.theme-kash #closeDialogButton:hover,
+body.theme-kash #detailCloseButton:hover,
+body.theme-kash #historyCloseButton:hover,
+body.theme-kash #releaseCloseButton:hover,
+body.theme-kash .ghost-button:not(.trophy-action):hover,
+body.theme-kash .primary-button:hover,
+body.theme-kash .danger-button:hover,
+body.theme-kash #syncButton:hover,
+body.theme-kash #loginButton:hover,
+body.theme-kash #fetchPricesButton:hover,
+body.theme-kash #addButton:hover,
 body.theme-kash #lookupButton:hover,
 body.theme-kash #pricesButton:hover,
 body.theme-kash #deleteButton:hover,
@@ -1965,6 +1993,10 @@ body[data-mobile-section="upcoming"] .column:not(#upcoming) {
 .game-row:hover {
   border-color: rgba(255, 0, 57, 0.32);
   background: rgba(255, 255, 255, 0.07);
+}
+
+body.theme-kash .game-row:hover {
+  border-color: rgba(0, 92, 255, 0.32);
 }
 
 .game-row:has(.game-row-cover-wrap:hover),
@@ -3327,6 +3359,10 @@ a.time-pill {
   box-shadow: 0 14px 32px rgba(0, 0, 0, 0.38);
 }
 
+body.theme-kash .icon-button.floating-action-button:hover {
+  background: var(--accent);
+}
+
 .icon-button.view-toggle {
   align-self: end;
   width: var(--toolbar-control-height);
@@ -3610,6 +3646,10 @@ body:not(.can-edit) .game-card:focus-within .edit-action {
 .completed-row:hover {
   border-color: rgba(255, 0, 57, 0.32);
   background: rgba(255, 255, 255, 0.07);
+}
+
+body.theme-kash .completed-row:hover {
+  border-color: rgba(0, 92, 255, 0.32);
 }
 
 .completed-cover {
@@ -4506,6 +4546,11 @@ body.dialog-open .mobile-section-tabs {
   box-shadow: 0 0 0 3px rgba(255, 0, 81, 0.12);
 }
 
+body.theme-kash .store-button:hover {
+  border-color: rgba(0, 92, 255, 0.5);
+  box-shadow: 0 0 0 3px rgba(0, 92, 255, 0.12);
+}
+
 @media (min-width: 761px) {
   .playing-section .card-trophy-meta {
     display: block;
@@ -4836,6 +4881,11 @@ body.dialog-open .mobile-section-tabs {
 .guide-button:hover {
   border-color: rgba(255, 0, 81, 0.5);
   box-shadow: 0 0 0 3px rgba(255, 0, 81, 0.12);
+}
+
+body.theme-kash .guide-button:hover {
+  border-color: rgba(0, 92, 255, 0.5);
+  box-shadow: 0 0 0 3px rgba(0, 92, 255, 0.12);
 }
 
 .guide-psnprofiles {
