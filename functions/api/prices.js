@@ -40,7 +40,7 @@ function physicalProviders(stores, region, currency) {
     if (store === "GAME.es") return { store: "GAME.es", search: (q) => `https://www.game.es/buscar/${encodeURIComponent(q)}`, lookup: lookupGameEs };
     if (store === "Retro Island NY") return { store: "Retro Island NY", search: (q) => retroIslandSearchUrl(q, region, currency), lookup: lookupRetroIslandNy };
     if (store === "GameStop") return { store: "GameStop", search: gamestopSearchUrl, lookup: lookupGameStop };
-    if (store === "Walmart") return { store: "Walmart", search: (q) => `https://www.walmart.com/search?q=${encodeURIComponent(q)}`, parse: parseGeneric };
+    if (store === "Walmart") return { store: "Walmart", search: walmartSearchUrl, lookup: lookupWalmart };
     return null;
   }).filter(Boolean);
 }
@@ -131,6 +131,10 @@ function playStationSearchUrl(query, region) {
 
 function gamestopSearchUrl(query) {
   return `https://www.gamestop.com/search/?q=${encodeURIComponent(query)}&start=0&sz=24&format=ajax`;
+}
+
+function walmartSearchUrl(query) {
+  return `https://www.walmart.com/search?q=${encodeURIComponent(query)}`;
 }
 
 async function findPrice(provider, title, platform, query, env = {}, debug = false, options = {}) {
@@ -552,6 +556,52 @@ function gamestopHeaders(referer, accept) {
   };
 }
 
+async function lookupWalmart(title, platform, query) {
+  const searchUrl = walmartSearchUrl(query);
+  const response = await fetchWithTimeout(searchUrl, {
+    headers: {
+      "Accept": "text/html",
+      "Accept-Language": "en-US,en;q=0.9",
+      "User-Agent": "Mozilla/5.0 (compatible; GameList/1.0)",
+    },
+  });
+  if (!response.ok) throw new Error("Walmart search failed");
+  const html = await response.text();
+  if (/Robot or human\?|\/blocked\?/i.test(html)) return { price: "", matchedTitle: "", url: searchUrl };
+  const data = parseNextData(html);
+  const stacks = data?.props?.pageProps?.initialData?.searchResult?.itemStacks || [];
+  const products = stacks
+    .flatMap((stack) => Array.isArray(stack.items) ? stack.items : [])
+    .map((item, index) => walmartProduct(item, index))
+    .filter((product) => product.price);
+  return bestProduct(products, title, platform) || { price: "", matchedTitle: "", url: searchUrl };
+}
+
+function walmartProduct(item, index = 0) {
+  const priceInfo = item.priceInfo || {};
+  const url = item.canonicalUrl
+    ? `https://www.walmart.com${String(item.canonicalUrl).startsWith("/") ? "" : "/"}${item.canonicalUrl}`
+    : "";
+  return {
+    title: item.name || "",
+    platform: [item.catalogProductType, item.type, item.conditionV2?.groupCode, item.sellerName].filter(Boolean).join(" "),
+    price: priceInfo.linePrice || priceInfo.itemPrice || priceInfo.minPriceForVariant || "",
+    matchedTitle: item.name || "",
+    url,
+    scoreBoost: Math.max(0, 0.3 - (index * 0.015)),
+  };
+}
+
+function parseNextData(html) {
+  const match = String(html || "").match(/<script[^>]+id=["']__NEXT_DATA__["'][^>]*>([\s\S]*?)<\/script>/i);
+  if (!match) return null;
+  try {
+    return JSON.parse(decodeHtml(match[1]));
+  } catch {
+    return null;
+  }
+}
+
 async function lookupRetroIslandNy(title, platform, query, options = {}) {
   const region = options.region || "ES";
   const currency = options.currency || "EUR";
@@ -594,7 +644,7 @@ function bestProduct(products, title, platform) {
   return products
     .map((product) => ({
       ...product,
-      score: productScore(product, normalizedTitle, normalizedPlatform),
+      score: productScore(product, normalizedTitle, normalizedPlatform) + (Number(product.scoreBoost) || 0),
     }))
     .filter((product) => product.score >= 0.45)
     .sort((a, b) => b.score - a.score || (parsePrice(a.price) ?? 9999) - (parsePrice(b.price) ?? 9999))[0] || null;
@@ -606,11 +656,32 @@ function productScore(product, normalizedTitle, normalizedPlatform) {
   if (!normalizedProduct) return 0;
   let score = 0;
   if (normalizedProduct === normalizedTitle) score += 0.65;
-  if (normalizedProduct.includes(normalizedTitle) || normalizedTitle.includes(normalizedProduct)) score += 0.35;
+  else if (normalizedProduct.includes(normalizedTitle) || normalizedTitle.includes(normalizedProduct)) score += 0.35;
   if (tokenOverlap(normalizedTitle, normalizedProduct)) score += 0.28;
-  if (normalizedPlatform && platformMatches(normalizedPlatform, normalizedProductPlatform)) score += 0.18;
+  const matchesPlatform = normalizedPlatform && (platformMatches(normalizedPlatform, normalizedProductPlatform) || platformMatches(normalizedPlatform, normalizedProduct));
+  if (matchesPlatform) score += 0.18;
+  else if (normalizedPlatform) score -= 0.28;
   if (product.price) score += 0.08;
+  score -= productNoisePenalty(normalizedProduct, normalizedTitle);
+  score -= Math.min(0.18, extraTokenCount(normalizedProduct, normalizedTitle) * 0.018);
   return score;
+}
+
+function productNoisePenalty(productTitle, wantedTitle) {
+  let penalty = 0;
+  const penalizeUnlessWanted = (pattern, amount) => {
+    if (pattern.test(productTitle) && !pattern.test(wantedTitle)) penalty += amount;
+  };
+  penalizeUnlessWanted(/\b(dlc|booster|course pass|expansion|add on|season pass|downloadable content)\b/, 0.42);
+  penalizeUnlessWanted(/\b(bundle|pack|set)\b/, 0.18);
+  penalizeUnlessWanted(/\b(controller|wheel|steering|case|skin|amiibo|accessory|accessories)\b/, 0.36);
+  penalizeUnlessWanted(/\b(restored|refurbished|renewed|pre owned|used)\b/, 0.1);
+  return penalty;
+}
+
+function extraTokenCount(productTitle, wantedTitle) {
+  const wanted = new Set(wantedTitle.split(" ").filter(Boolean));
+  return productTitle.split(" ").filter((token) => token && !wanted.has(token)).length;
 }
 
 function platformMatches(wanted, found) {

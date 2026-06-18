@@ -625,8 +625,8 @@ function renderSettingsDialog() {
   const pageIndex = new Map(state.settings.pageOrder.map((key, index) => [key, index]));
   el.settingsLayoutList.innerHTML = [
     settingsLayoutItem("playing", -1, { fixed: true }),
-    ...state.settings.pageOrder.map((key) => settingsLayoutItem(key, pageIndex.get(key) ?? 0)),
     settingsLayoutItem("latestFinished", -1, { fixed: true }),
+    ...state.settings.pageOrder.map((key) => settingsLayoutItem(key, pageIndex.get(key) ?? 0)),
   ].join("");
   el.settingsStores.innerHTML = STORE_OPTIONS.map((store) => `
     <label class="check-filter toggle-check settings-store-check">
