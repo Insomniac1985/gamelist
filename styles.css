@@ -4701,6 +4701,17 @@ body.dialog-open .mobile-section-tabs {
   border-radius: 8px;
 }
 
+.empty-with-action {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.empty-with-action .ghost-button {
+  flex: 0 0 auto;
+}
+
 @media (max-width: 1120px) {
   .completed-list {
     grid-template-columns: 1fr;

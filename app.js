@@ -39,6 +39,8 @@ const UI_ICON_URLS = [
   "/assets/stores/xtralife.ico",
 ];
 const MANUAL_PLATINUM_COVER_OVERRIDES = [
+  { match: ["we", "were", "here", "too"], cover: "https://m.media-amazon.com/images/M/MV5BODY0YzhlZTgtMTE1OS00NzI4LTk4YjktYjliNGYyMDU0NmUzXkEyXkFqcGc@._V1_.jpg" },
+  { match: ["we", "were", "here"], exclude: ["too"], cover: "https://store-images.s-microsoft.com/image/apps.35419.14623959840279805.b70e315b-f457-43e0-ae70-9c5caadb7e59.6f028cbc-8306-4423-b49b-43e1f6e75ee8" },
   { match: ["nier", "automata"], cover: "https://howlongtobeat.com/games/38029_Nier_Automata.jpg?width=250" },
   { match: ["persona", "3", "reload"], cover: "https://howlongtobeat.com/games/129805_Persona_3_Reload.jpg?width=250" },
   { match: ["spider", "man", "2"], ids: ["23918"], exclude: ["miles"], cover: "https://howlongtobeat.com/games/79769_Marvels_Spider-Man_2.jpg?width=250" },
@@ -1607,7 +1609,9 @@ function renderSection(section) {
   list.innerHTML = "";
   list.classList.toggle("list-view", state.viewMode === "list");
   if (!games.length) {
-    list.innerHTML = `<div class="empty">No games here.</div>`;
+    const query = el.searchInput.value.trim();
+    list.innerHTML = emptyGamesMarkup(query);
+    list.querySelector("[data-add-search]")?.addEventListener("click", () => addGameFromSearch(query, section));
     return;
   }
   const fragment = document.createDocumentFragment();
@@ -1619,6 +1623,16 @@ function renderSection(section) {
   list.appendChild(fragment);
   if (state.viewMode === "list") requestAnimationFrame(() => updateRowTitleOverflow(list));
   if (state.viewMode === "grid" && section === "backlog" && state.filters.sort === "custom") setupDrag(list);
+}
+
+function emptyGamesMarkup(query) {
+  if (!query) return `<div class="empty">No games here.</div>`;
+  return `
+    <div class="empty empty-with-action">
+      <span>No games found for "${escapeHtml(query)}".</span>
+      <button class="ghost-button" type="button" data-add-search>Add Game</button>
+    </div>
+  `;
 }
 
 function updateRowTitleOverflow(list) {
@@ -3427,6 +3441,17 @@ async function openEditor(id = "") {
   syncScrollLock();
 }
 
+async function addGameFromSearch(query, section = "wanted") {
+  const title = String(query || "").trim();
+  if (!title) return openEditor("");
+  await openEditor("");
+  el.lookupInput.value = title;
+  el.fields.title.value = title;
+  if (["wanted", "released", "backlog"].includes(section)) el.fields.section.value = section;
+  syncDialogPriceVisibility();
+  queueTitleLookup();
+}
+
 function blankGame() {
   return {
     id: crypto.randomUUID(),
@@ -3473,6 +3498,7 @@ async function saveFromForm(event) {
     createPreorderCalendarEvent(game);
   }
   el.dialog.close();
+  refreshPricesForGame(game.id, { silent: true });
 }
 
 async function saveCurrentFormGame() {
@@ -4048,12 +4074,15 @@ async function fetchSearchResults(query) {
   return request;
 }
 
+function shouldFetchPricesForGame(game) {
+  return Boolean(game?.title && game.section !== "backlog" && !game.completedAt && !game.platinum && priceProvidersForGame(game).length);
+}
+
 async function refreshCurrentPrices() {
   const title = el.fields.title.value.trim();
   if (!title) return;
   const savedGame = await saveCurrentFormGame();
-  if (savedGame.section === "backlog") return;
-  if (!priceProvidersForGame(savedGame).length) return;
+  if (!shouldFetchPricesForGame(savedGame)) return;
   el.pricesButton.textContent = "Refreshing...";
   try {
     const data = await fetchPrices(savedGame.title, savedGame.platform, savedGame.digital);
@@ -4070,12 +4099,13 @@ async function refreshCurrentPrices() {
   }
 }
 
-async function refreshPricesForGame(id) {
+async function refreshPricesForGame(id, options = {}) {
+  const silent = Boolean(options.silent);
   const game = getGame(id);
   if (!game) return;
   persistLocal();
   if (state.canEdit) await persistCloud();
-  if (game.section === "backlog") {
+  if (game.section === "backlog" || game.completedAt || game.platinum) {
     game.prices = [];
     upsertGame(game);
     return;
@@ -4096,7 +4126,7 @@ async function refreshPricesForGame(id) {
     game.updatedAt = new Date().toISOString();
     upsertGame(game);
   } catch {
-    alert("Price refresh needs the Cloudflare function or the local fetch script.");
+    if (!silent) alert("Price refresh needs the Cloudflare function or the local fetch script.");
   }
 }
 
