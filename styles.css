@@ -3110,7 +3110,7 @@ body.theme-kash .status-pill.collect {
 }
 
 .status-pill.waiting {
-  color: var(--accent-2);
+  color: #79f2ce;
   border-color: rgba(121, 242, 206, 0.4);
   background: rgba(121, 242, 206, 0.09);
 }
