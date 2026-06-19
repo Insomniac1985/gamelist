@@ -11,6 +11,14 @@ binding = "ASSETS"
 binding = "GAMELIST"
 id = "e09b01c417e4454594500b70978f2521"
 
+[env.github]
+name = "gamelist"
+workers_dev = true
+
+[[env.github.kv_namespaces]]
+binding = "GAMELIST"
+id = "e09b01c417e4454594500b70978f2521"
+
 [env.gitlab]
 name = "gamelist"
 workers_dev = true
