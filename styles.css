@@ -275,6 +275,10 @@ body.theme-kash .nav-tabs a:hover {
   padding: 10px 0 26px;
 }
 
+.highlights-section {
+  margin-bottom: 22px;
+}
+
 .playing-section {
   position: relative;
   margin-bottom: 20px;
@@ -543,6 +547,10 @@ body.theme-kash .playing-slider-button:hover {
   margin: 0 0 20px;
   padding-bottom: 30px;
   border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.shell > :not(.playing-section) + .achievement-section {
+  margin-top: 18px;
 }
 
 .achievement-section .column-head {
