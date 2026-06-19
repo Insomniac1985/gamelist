@@ -126,6 +126,22 @@ npx wrangler secret put IGDB_CLIENT_ID
 npx wrangler secret put IGDB_CLIENT_SECRET
 ```
 
+IGDB authentication uses Twitch developer credentials. To get them:
+
+1. Open the Twitch Developer Console: `https://dev.twitch.tv/console`
+2. Log in with a Twitch account.
+3. Make sure the Twitch account has email verification and 2FA enabled.
+4. Go to **Applications**.
+5. Click **Register Your Application**.
+6. Use any name, for example `Gamelist`.
+7. Use `http://localhost` as the OAuth Redirect URL. The app only needs server-to-server credentials, but Twitch requires a redirect URL when registering.
+8. Set the category to **Website Integration** or the closest available app category.
+9. Create the app.
+10. Copy the **Client ID** into the `IGDB_CLIENT_ID` Cloudflare secret.
+11. Click **New Secret** / **Manage** for the app secret, then copy that value into `IGDB_CLIENT_SECRET`.
+
+The app does not need you to manually create an access token. The Worker uses the Client ID and Client Secret to request an app access token from Twitch when it calls IGDB.
+
 Without IGDB credentials, lookup falls back where possible, but results may be weaker.
 
 ### PSN Trophy Activity
