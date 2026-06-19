@@ -79,7 +79,7 @@ npx wrangler secret put EDIT_PASSWORD
 7. Deploy:
 
 ```bash
-npx wrangler deploy --env github
+npx wrangler deploy
 ```
 
 The app should be live on the `workers.dev` URL unless you attach a custom domain in Cloudflare.
@@ -92,6 +92,20 @@ This repo has two KV bindings configured so the GitHub and GitLab Cloudflare dep
 - GitLab copy deploy command: `npx wrangler deploy --env gitlab`
 
 Set each Cloudflare site's deploy command to the matching environment. The top-level/default config is kept on the GitHub KV namespace so GitHub can also use Cloudflare's default `npx wrangler deploy` command. This keeps each site connected to its own `GAMELIST` KV namespace instead of one deploy overwriting the other's binding.
+
+If the GitLab Cloudflare project cannot change its deploy command, add this plaintext environment variable in that Cloudflare project's **Settings > Variables and Secrets**:
+
+```text
+CLOUDFLARE_ENV=gitlab
+```
+
+Use a normal variable, not a secret. With that variable set, Cloudflare can keep running:
+
+```bash
+npx wrangler deploy
+```
+
+and Wrangler will deploy the `gitlab` environment.
 
 ## Required Cloudflare Pieces
 
