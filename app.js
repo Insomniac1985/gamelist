@@ -5,6 +5,7 @@ const VIEW_MODE_KEY = "gamelist:view-mode";
 const PLATINUM_VIEW_MODE_KEY = "gamelist:platinum-view-mode";
 const PLATINUM_META_CACHE_KEY = "gamelist:platinum-meta:v1";
 const SETTINGS_KEY = "gamelist:settings:v1";
+const KASH_TWITCH_URL = "https://www.twitch.tv/kashhoward";
 const DEFAULT_PAGE_ORDER = ["trophies", "calendar", "highlights", "search", "gamelist", "finished"];
 const LAYOUT_SECTION_KEYS = ["playing", ...DEFAULT_PAGE_ORDER, "latestFinished"];
 const STORE_OPTIONS = ["Amazon", "GAME.es", "Xtralife", "Retro Island NY", "GameStop", "Walmart"];
@@ -309,6 +310,10 @@ function registerServiceWorker() {
 function bindEvents() {
   el.brandLink.addEventListener("click", (event) => {
     event.preventDefault();
+    if (normalizeSettings(state.settings).theme === "kash") {
+      window.open(KASH_TWITCH_URL, "_blank", "noopener,noreferrer");
+      return;
+    }
     scrollToSearchArea();
   });
   el.loginButton.addEventListener("click", toggleEditMode);
@@ -644,6 +649,13 @@ function applyTheme() {
   if (brandMark) brandMark.src = theme.icon;
   if (brandText) brandText.textContent = theme.title;
   el.brandLink?.setAttribute("aria-label", theme.title);
+  el.brandLink?.setAttribute("href", themeKey === "kash" ? KASH_TWITCH_URL : "#backlog");
+  el.brandLink?.toggleAttribute("target", themeKey === "kash");
+  if (themeKey === "kash") {
+    el.brandLink?.setAttribute("rel", "noreferrer");
+  } else {
+    el.brandLink?.removeAttribute("rel");
+  }
 }
 
 function themedManifestUrl(theme) {
