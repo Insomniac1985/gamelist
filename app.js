@@ -1901,11 +1901,10 @@ function renderCompleted() {
   const years = completedYears();
   if (state.completedYear !== "all" && !years.includes(state.completedYear)) state.completedYear = "all";
   renderCompletedYearFilter(years);
-  const selectedGames = filteredGames({ applyPreorder: false })
-    .filter((game) => game.completedAt)
-    .filter((game) => state.completedYear === "all" || completionYear(game) === state.completedYear);
-  const games = sortedCompletedGames(selectedGames);
-  updateCompletedCount(selectedGames.length);
+  const filteredFinishedGames = filteredGames({ applyPreorder: false }).filter((game) => game.completedAt);
+  const visibleFinishedGames = filteredFinishedGames.filter((game) => state.completedYear === "all" || completionYear(game) === state.completedYear);
+  const games = sortedCompletedGames(visibleFinishedGames);
+  updateCompletedCount(visibleFinishedGames.length);
   list.innerHTML = games.length ? games.map((game) => `
     <div class="completed-row ${game.stream ? "stream-card" : ""}" data-id="${escapeHtml(game.id)}" role="button" tabindex="0" aria-label="${escapeHtml(`Open ${game.title}`)}">
       <img class="completed-cover" src="${escapeHtml(game.cover || "")}" alt="" loading="lazy" decoding="async" ${game.cover ? "" : "hidden"}>
@@ -1951,6 +1950,10 @@ function renderCompletedYearFilter(years) {
     ...years.map((year) => `<option value="${escapeHtml(year)}">${escapeHtml(year)}</option>`),
   ].join("");
   el.completedYearFilter.value = state.completedYear;
+  el.completedYearFilter.onchange = () => {
+    state.completedYear = el.completedYearFilter.value || "all";
+    renderCompleted();
+  };
 }
 
 function updateCompletedCount(count) {

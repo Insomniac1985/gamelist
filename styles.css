@@ -3851,14 +3851,13 @@ body:not(.can-edit) .game-card:focus-within .edit-action {
   display: inline-flex;
   align-items: center;
   justify-content: flex-end;
-  gap: 8px;
+  gap: 7px;
   margin-left: auto;
 }
 
 .completed-year-control {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
   min-height: 34px;
   padding: 0;
   color: var(--muted);
@@ -3872,6 +3871,11 @@ body:not(.can-edit) .game-card:focus-within .edit-action {
   min-height: 34px;
   padding-top: 7px;
   padding-bottom: 7px;
+}
+
+.completed-head-actions #completedCount {
+  align-self: center;
+  line-height: 34px;
 }
 
 .completed-row {
