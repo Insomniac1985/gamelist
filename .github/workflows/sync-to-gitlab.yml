@@ -27,5 +27,11 @@ jobs:
             exit 1
           fi
 
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          sed -i '0,/id = "97e3869a3cfc407bb25e7470d3942f5e"/s/id = "97e3869a3cfc407bb25e7470d3942f5e"/id = "e09b01c417e4454594500b70978f2521"/' wrangler.toml
+          git add wrangler.toml
+          git diff --cached --quiet || git commit -m "Configure GitLab deployment defaults"
+
           git remote add gitlab "https://${GITLAB_USERNAME}:${GITLAB_TOKEN}@gitlab.com/${GITLAB_REPOSITORY}.git"
-          git push gitlab main --force
+          git push gitlab HEAD:main --force
