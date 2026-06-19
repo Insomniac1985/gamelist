@@ -47,22 +47,11 @@
 }
 
 body.theme-kash {
-  --bg: #ffffff;
-  --panel: rgba(255, 255, 255, 0.74);
-  --panel-dark: rgba(245, 247, 252, 0.86);
-  --panel-strong: rgba(255, 255, 255, 0.92);
-  --line: rgba(16, 28, 54, 0.14);
-  --text: #111827;
-  --muted: #5f6f8c;
-  --dim: #8a96aa;
   --accent: #005cff;
   --accent-2: #ffb8dc;
   --display-title-font: "Cascadia Code", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-  --grid-texture:
-    linear-gradient(rgba(0, 92, 255, 0.035) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255, 184, 220, 0.045) 1px, transparent 1px);
-  --grid-fade: linear-gradient(135deg, rgba(0, 92, 255, 0.07), transparent 34%, rgba(255, 184, 220, 0.1) 100%);
-  --shadow: 0 24px 80px rgba(35, 69, 132, 0.18);
+  --grid-fade: linear-gradient(135deg, rgba(255, 255, 255, 0.055), transparent 34%, rgba(0, 92, 255, 0.05) 100%);
+  --shadow: 0 24px 80px rgba(0, 28, 88, 0.46);
 }
 
 * {
@@ -165,11 +154,7 @@ button:disabled {
 
 body.theme-kash .backdrop {
   background:
-    radial-gradient(circle at 78% 9%, rgba(0, 92, 255, 0.14), transparent 30%),
-    radial-gradient(circle at 11% 84%, rgba(255, 184, 220, 0.18), transparent 34%),
-    linear-gradient(120deg, rgba(255, 255, 255, 0.72), transparent 38%),
-    url("assets/backdrop.png") top left / auto repeat,
-    #ffffff;
+    radial-gradient(circle at 78% 9%, rgba(0, 92, 255, 0.24), transparent 30%), radial-gradient(circle at 11% 84%, rgb(0 89 255 / 16%), transparent 34%), linear-gradient(120deg, rgba(255, 255, 255, 0.04), transparent 38%), url(assets/backdrop.png) top left / auto repeat, #111723
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -2079,6 +2064,16 @@ body.theme-kash .game-row:hover {
   border-color: rgba(0, 92, 255, 0.32);
 }
 
+.game-row.stream-card,
+.game-row.stream-card:hover,
+body.theme-kash .game-row.stream-card,
+body.theme-kash .game-row.stream-card:hover {
+  border-color: rgba(183, 116, 255, 0.72) !important;
+  box-shadow:
+    0 0 0 1px rgba(183, 116, 255, 0.18),
+    0 0 24px rgba(183, 116, 255, 0.24) !important;
+}
+
 .game-row:has(.game-row-cover-wrap:hover),
 .game-row:has(.game-row-cover-wrap:focus-within) {
   z-index: 30;
@@ -2371,6 +2366,32 @@ body.theme-kash .game-row:hover {
     linear-gradient(135deg, rgba(238, 240, 245, 0.2), rgba(170, 178, 194, 0.1) 48%, rgba(20, 22, 28, 0.58)),
     var(--panel);
   border-color: rgba(225, 230, 240, 0.34);
+}
+
+.game-card.stream-card,
+.game-card.stream-card.owner-card-judy,
+.game-card.stream-card.owner-card-jordi,
+.game-card.stream-card.owner-card-judy.owner-card-jordi,
+.game-card.stream-card.digital-card,
+.game-card.stream-card.digital-card.owner-card-judy,
+.game-card.stream-card.digital-card.owner-card-jordi,
+.game-card.stream-card.digital-card.owner-card-judy.owner-card-jordi,
+.game-card.stream-card.playing-card,
+.game-card.stream-card.playing-card.owner-card-judy,
+.game-card.stream-card.playing-card.owner-card-jordi,
+.game-card.stream-card.playing-card.digital-card,
+.game-card.stream-card.playing-card.digital-card.owner-card-judy,
+.game-card.stream-card.playing-card.digital-card.owner-card-jordi,
+body.theme-kash .game-card.stream-card,
+body.theme-kash .game-card.stream-card.owner-card-judy,
+body.theme-kash .game-card.stream-card.owner-card-jordi,
+body.theme-kash .game-card.stream-card.digital-card,
+body.theme-kash .game-card.stream-card.playing-card,
+body.theme-kash .game-card.stream-card.playing-card.digital-card {
+  border: 1px solid rgba(183, 116, 255, 0.72) !important;
+  box-shadow:
+    0 0 0 1px rgba(183, 116, 255, 0.18),
+    0 0 28px rgba(183, 116, 255, 0.26) !important;
 }
 
 .game-card.playing-card,
@@ -3822,6 +3843,16 @@ body:not(.can-edit) .game-card:focus-within .edit-action {
 
 body.theme-kash .completed-row:hover {
   border-color: rgba(0, 92, 255, 0.32);
+}
+
+.completed-row.stream-card,
+.completed-row.stream-card:hover,
+body.theme-kash .completed-row.stream-card,
+body.theme-kash .completed-row.stream-card:hover {
+  border-color: rgba(183, 116, 255, 0.72) !important;
+  box-shadow:
+    0 0 0 1px rgba(183, 116, 255, 0.18),
+    0 0 24px rgba(183, 116, 255, 0.24) !important;
 }
 
 .completed-cover {

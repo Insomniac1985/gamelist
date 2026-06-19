@@ -1811,6 +1811,7 @@ function rowFor(game, section, options = {}) {
   row.classList.toggle("owner-card-judy", owners.includes("Judy"));
   row.classList.toggle("owner-card-jordi", owners.includes("Jordi"));
   row.classList.toggle("digital-card", Boolean(game.digital));
+  row.classList.toggle("stream-card", Boolean(game.stream));
   row.innerHTML = `
     <span class="game-row-cover-wrap" ${game.cover ? "" : "hidden"}>
       <img class="game-row-cover" src="${escapeHtml(game.cover ? coverDisplayUrl(game.cover, "tiny") : "")}" alt="" loading="${escapeHtml(options.imagePriority || "lazy")}" decoding="async">
@@ -1894,7 +1895,7 @@ function renderCompleted() {
   const games = sortedCompletedGames(selectedGames);
   updateCompletedCount(selectedGames.length);
   list.innerHTML = games.length ? games.map((game) => `
-    <div class="completed-row" data-id="${escapeHtml(game.id)}" role="button" tabindex="0" aria-label="${escapeHtml(`Open ${game.title}`)}">
+    <div class="completed-row ${game.stream ? "stream-card" : ""}" data-id="${escapeHtml(game.id)}" role="button" tabindex="0" aria-label="${escapeHtml(`Open ${game.title}`)}">
       <img class="completed-cover" src="${escapeHtml(game.cover || "")}" alt="" loading="lazy" decoding="async" ${game.cover ? "" : "hidden"}>
       <div class="completed-main">
         <strong class="${game.platinum ? "completed-achievements-title" : ""}">${escapeHtml(game.title)}</strong>
@@ -1936,6 +1937,8 @@ function updateCompletedCount(count) {
 function sortedCompletedGames(games) {
   const direction = state.filters.direction === "asc" ? 1 : -1;
   return [...games].sort((a, b) => {
+    const streamSort = compareStreamFirst(a, b);
+    if (streamSort) return streamSort;
     if (state.filters.sort === "title") {
       return direction * (stringCompare(a.title, b.title) || String(b.completedAt).localeCompare(String(a.completedAt)));
     }
@@ -2179,6 +2182,7 @@ function cardFor(game, options = {}) {
   card.classList.toggle("owner-card-jordi", owners.includes("Jordi"));
   card.classList.toggle("digital-card", Boolean(game.digital));
   card.classList.toggle("playing-card", Boolean(game.playing));
+  card.classList.toggle("stream-card", Boolean(game.stream));
   const trailer = card.querySelector(".card-trailer");
   const trailerUrl = shouldShowCardTrailer(game) ? trailerEmbedUrl(game.trailerUrl) : "";
   if (trailerUrl) {
@@ -2851,6 +2855,8 @@ function studioText(game) {
 
 function compareGames(a, b, section) {
   const direction = state.filters.direction === "desc" ? -1 : 1;
+  const streamSort = compareStreamFirst(a, b);
+  if (streamSort) return streamSort;
   if (Boolean(a.playing) !== Boolean(b.playing)) return a.playing ? -1 : 1;
   if (section === "upcoming") {
     return compareReleaseDates(a, b) || stringCompare(a.title, b.title);
@@ -2872,9 +2878,14 @@ function compareGames(a, b, section) {
 }
 
 function comparePlayingGames(a, b) {
-  return Number(Boolean(a.coop)) - Number(Boolean(b.coop))
+  return compareStreamFirst(a, b)
+    || Number(Boolean(a.coop)) - Number(Boolean(b.coop))
     || playingStartSortValue(a) - playingStartSortValue(b)
     || stringCompare(a.title, b.title);
+}
+
+function compareStreamFirst(a, b) {
+  return Number(Boolean(b.stream)) - Number(Boolean(a.stream));
 }
 
 function playingStartSortValue(game) {
