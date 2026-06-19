@@ -84,6 +84,15 @@ npx wrangler deploy
 
 The app should be live on the `workers.dev` URL unless you attach a custom domain in Cloudflare.
 
+### Deploying Both GitHub And GitLab Copies
+
+This repo has two KV bindings configured so the GitHub and GitLab Cloudflare deploys can use different saved-data namespaces:
+
+- Default deploy command: `npx wrangler deploy`
+- GitLab copy deploy command: `npx wrangler deploy --env gitlab`
+
+Use the default command for the site whose KV namespace is configured at the top of `wrangler.toml`. Use the `gitlab` command for the second site. This keeps each site connected to its own `GAMELIST` KV namespace instead of one deploy overwriting the other's binding.
+
 ## Required Cloudflare Pieces
 
 `GAMELIST` KV namespace:
