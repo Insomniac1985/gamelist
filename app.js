@@ -1916,7 +1916,7 @@ function renderCompleted() {
   const filteredFinishedGames = filteredGames({ applyPreorder: false }).filter((game) => game.completedAt);
   const visibleFinishedGames = filteredFinishedGames.filter((game) => state.completedYear === "all" || completionYear(game) === state.completedYear);
   const games = sortedCompletedGames(visibleFinishedGames);
-  updateCompletedCount(visibleFinishedGames.length);
+  updateCompletedCount(completedCountForSelectedYear());
   list.innerHTML = games.length ? games.map((game) => `
     <div class="completed-row ${game.stream ? "stream-card" : ""}" data-id="${escapeHtml(game.id)}" role="button" tabindex="0" aria-label="${escapeHtml(`Open ${game.title}`)}">
       <img class="completed-cover" src="${escapeHtml(game.cover || "")}" alt="" loading="lazy" decoding="async" ${game.cover ? "" : "hidden"}>
@@ -1971,6 +1971,12 @@ function renderCompletedYearFilter(years) {
 function updateCompletedCount(count) {
   if (!el.completedCount) return;
   el.completedCount.innerHTML = `${count} ${count === 1 ? "game" : "games"}`;
+}
+
+function completedCountForSelectedYear() {
+  return state.games.filter((game) => !game.deletedAt
+    && game.completedAt
+    && (state.completedYear === "all" || completionYear(game) === state.completedYear)).length;
 }
 
 function sortedCompletedGames(games) {

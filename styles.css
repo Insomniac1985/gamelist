@@ -5466,9 +5466,9 @@ body.theme-kash .guide-button:hover {
 
   .completed-head-actions {
     justify-self: end;
-    flex-wrap: wrap;
-    row-gap: 5px;
-    max-width: 62%;
+    flex-wrap: nowrap;
+    max-width: none;
+    white-space: nowrap;
   }
 
   .column-head .preorder-count-pill {
