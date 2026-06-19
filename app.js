@@ -156,6 +156,7 @@ const el = {
   sortDirectionButton: document.querySelector("#sortDirectionButton"),
   viewToggleButton: document.querySelector("#viewToggleButton"),
   preorderedFilter: document.querySelector("#preorderedFilter"),
+  completedCount: document.querySelector("#completedCount"),
   completedYearControl: document.querySelector("#completedYearControl"),
   completedYearFilter: document.querySelector("#completedYearFilter"),
   scrollTopButton: document.querySelector("#scrollTopButton"),
