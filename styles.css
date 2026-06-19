@@ -2425,6 +2425,29 @@ body.theme-kash .game-card.playing-card.digital-card.owner-card-judy.owner-card-
   border-color: rgba(0, 92, 255, 0.5);
 }
 
+.game-card.stream-card.playing-card,
+.game-card.stream-card.playing-card.owner-card-judy,
+.game-card.stream-card.playing-card.owner-card-jordi,
+.game-card.stream-card.playing-card.digital-card,
+.game-card.stream-card.playing-card.digital-card.owner-card-judy,
+.game-card.stream-card.playing-card.digital-card.owner-card-jordi,
+.game-card.stream-card.playing-card.owner-card-judy.owner-card-jordi,
+.game-card.stream-card.playing-card.digital-card.owner-card-judy.owner-card-jordi,
+body.theme-kash .game-card.stream-card.playing-card,
+body.theme-kash .game-card.stream-card.playing-card.owner-card-judy,
+body.theme-kash .game-card.stream-card.playing-card.owner-card-jordi,
+body.theme-kash .game-card.stream-card.playing-card.digital-card,
+body.theme-kash .game-card.stream-card.playing-card.digital-card.owner-card-judy,
+body.theme-kash .game-card.stream-card.playing-card.digital-card.owner-card-jordi,
+body.theme-kash .game-card.stream-card.playing-card.owner-card-judy.owner-card-jordi,
+body.theme-kash .game-card.stream-card.playing-card.digital-card.owner-card-judy.owner-card-jordi {
+  background:
+    radial-gradient(circle at 22% 18%, rgba(220, 184, 255, 0.22), transparent 28%),
+    linear-gradient(135deg, rgba(183, 116, 255, 0.38), rgba(183, 116, 255, 0.14) 42%, rgba(12, 14, 19, 0.72)),
+    var(--panel) !important;
+  border-color: rgba(183, 116, 255, 0.72) !important;
+}
+
 .game-card.playing-card.has-art::before {
   inset: -34px;
   background:
