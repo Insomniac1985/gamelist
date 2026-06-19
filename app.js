@@ -49,6 +49,16 @@ const UI_ICON_URLS = [
   "/assets/platforms/steam.png",
   "/assets/platforms/switch.png",
   "/assets/platforms/xbox.png",
+  "/assets/platforms/wii.png",
+  "/assets/platforms/wiiu.png",
+  "/assets/platforms/n64.png",
+  "/assets/platforms/gc.png",
+  "/assets/platforms/nes.png",
+  "/assets/platforms/snes.png",
+  "/assets/platforms/nds.png",
+  "/assets/platforms/3ds.png",
+  "/assets/platforms/sega.png",
+  "/assets/platforms/dreamcast.png",
   "/assets/sites/howlongtobeat.png",
   "/assets/sites/neoseeker.png",
   "/assets/sites/nintendo.png",
@@ -351,6 +361,7 @@ function bindEvents() {
   });
   el.sortFilter.addEventListener("change", (event) => {
     state.filters.sort = event.target.value;
+    if (state.filters.sort === "added") state.filters.direction = "desc";
     render();
   });
   el.sortDirectionButton.addEventListener("click", () => {
@@ -1536,8 +1547,9 @@ function releasePlatformTone(games) {
   const platforms = unique(games.map((game) => canonicalPlatform(game.platform)).filter(Boolean));
   if (platforms.length !== 1) return games.length ? "release-platform-mixed" : "";
   const platform = platforms[0].toLowerCase();
-  if (platform.includes("switch")) return "release-platform-nintendo";
-  if (/\bps\d+\b/.test(platform) || platform.includes("playstation")) return "release-platform-playstation";
+  const cls = platformClass(platform);
+  if (["platform-nintendo", "platform-wii", "platform-wiiu", "platform-n64", "platform-gamecube", "platform-nes", "platform-snes", "platform-ds", "platform-3ds"].includes(cls)) return "release-platform-nintendo";
+  if (cls === "platform-playstation") return "release-platform-playstation";
   if (platform.includes("pc")) return "release-platform-pc";
   if (platform.includes("xbox")) return "release-platform-xbox";
   return "release-platform-generic";
@@ -1920,6 +1932,9 @@ function sortedCompletedGames(games) {
     if (state.filters.sort === "platform") {
       return direction * (stringCompare(canonicalPlatform(a.platform), canonicalPlatform(b.platform)) || stringCompare(a.title, b.title));
     }
+    if (state.filters.sort === "added") {
+      return direction * (addedTimeValue(a) - addedTimeValue(b) || stringCompare(a.title, b.title));
+    }
     if (state.filters.sort === "playtime") {
       return direction * (completedPlaytimeValue(a) - completedPlaytimeValue(b) || String(b.completedAt).localeCompare(String(a.completedAt)) || stringCompare(a.title, b.title));
     }
@@ -2001,6 +2016,11 @@ function completedGamesForYear(year) {
 
 function completionTimeValue(game) {
   const time = Date.parse(game.completedAt || "");
+  return Number.isNaN(time) ? 0 : time;
+}
+
+function addedTimeValue(game) {
+  const time = Date.parse(game.createdAt || game.updatedAt || "");
   return Number.isNaN(time) ? 0 : time;
 }
 
@@ -2831,6 +2851,9 @@ function compareGames(a, b, section) {
   if (state.filters.sort === "platform") {
     return direction * (stringCompare(canonicalPlatform(a.platform), canonicalPlatform(b.platform)) || stringCompare(a.title, b.title));
   }
+  if (state.filters.sort === "added") {
+    return direction * (addedTimeValue(a) - addedTimeValue(b) || stringCompare(a.title, b.title));
+  }
   if (state.filters.sort === "time" || state.filters.sort === "playtime") {
     return direction * (((a.lengthHours ?? Number.POSITIVE_INFINITY) - (b.lengthHours ?? Number.POSITIVE_INFINITY))
       || stringCompare(a.title, b.title));
@@ -3016,8 +3039,18 @@ function trophyIcon() {
 
 function platformLogo(platform) {
   const value = platform.toLowerCase();
+  if (value === "wii") return "assets/platforms/wii.png";
+  if (value === "wii u" || value === "wiiu") return "assets/platforms/wiiu.png";
+  if (value === "n64") return "assets/platforms/n64.png";
+  if (value === "gc" || value.includes("gamecube")) return "assets/platforms/gc.png";
+  if (value === "nes") return "assets/platforms/nes.png";
+  if (value === "snes") return "assets/platforms/snes.png";
+  if (value === "ds") return "assets/platforms/nds.png";
+  if (value === "3ds") return "assets/platforms/3ds.png";
+  if (value === "dc" || value.includes("dreamcast")) return "assets/platforms/dreamcast.png";
+  if (isSegaPlatform(value)) return "assets/platforms/sega.png";
   if (value.includes("switch")) return "assets/platforms/switch.png";
-  if (/\bps\d+\b/.test(value) || value.includes("playstation")) return "assets/platforms/playstation.png";
+  if (/\bps\d*\b/.test(value) || value.includes("playstation") || value.includes("psp") || value.includes("vita")) return "assets/platforms/playstation.png";
   if (value.includes("xbox")) return "assets/platforms/xbox.png";
   if (value.includes("pc")) return "assets/platforms/steam.png";
   return "assets/Icon.png";
@@ -3025,11 +3058,25 @@ function platformLogo(platform) {
 
 function platformClass(platform) {
   const value = platform.toLowerCase();
+  if (value === "wii") return "platform-wii";
+  if (value === "wii u" || value === "wiiu") return "platform-wiiu";
+  if (value === "n64") return "platform-n64";
+  if (value === "gc" || value.includes("gamecube")) return "platform-gamecube";
+  if (value === "nes") return "platform-nes";
+  if (value === "snes") return "platform-snes";
+  if (value === "ds") return "platform-ds";
+  if (value === "3ds") return "platform-3ds";
+  if (value === "dc" || value.includes("dreamcast")) return "platform-dreamcast";
+  if (isSegaPlatform(value)) return "platform-sega";
   if (value.includes("switch")) return "platform-nintendo";
-  if (/\bps\d+\b/.test(value) || value.includes("playstation")) return "platform-playstation";
+  if (/\bps\d*\b/.test(value) || value.includes("playstation") || value.includes("psp") || value.includes("vita")) return "platform-playstation";
   if (value.includes("xbox")) return "platform-xbox";
   if (value.includes("pc")) return "platform-pc";
   return "platform-generic";
+}
+
+function isSegaPlatform(value) {
+  return /\b(gen|genesis|mega drive|megadrive|sega|saturn|cd|32x|master system|game gear)\b/i.test(value);
 }
 
 function timeBadge(hours, url = "") {
@@ -3102,10 +3149,20 @@ function canonicalPlatform(value) {
   const text = String(value || "").trim();
   const normalized = normalizeTag(text);
   const aliases = {
+    playstation: "PS1",
+    playstation1: "PS1",
+    psone: "PS1",
+    psx: "PS1",
+    ps1: "PS1",
     playstation2: "PS2",
     ps2: "PS2",
     playstation3: "PS3",
     ps3: "PS3",
+    playstationportable: "PSP",
+    psp: "PSP",
+    playstationvita: "PSVita",
+    psvita: "PSVita",
+    vita: "PSVita",
     playstation4: "PS4",
     ps4: "PS4",
     playstation5: "PS5",
@@ -3116,6 +3173,53 @@ function canonicalPlatform(value) {
     switch2: "Switch 2",
     steam: "PC",
     pc: "PC",
+    xbox360: "Xbox 360",
+    x360: "Xbox 360",
+    xboxone: "Xbox",
+    xboxseries: "Xbox",
+    xboxseriesx: "Xbox",
+    xboxseriess: "Xbox",
+    xboxseriesxs: "Xbox",
+    xbox: "Xbox",
+    wii: "Wii",
+    nintendowii: "Wii",
+    wiiu: "Wii U",
+    nintendowiiu: "Wii U",
+    nintendo64: "N64",
+    n64: "N64",
+    gamecube: "GC",
+    nintendogamecube: "GC",
+    gc: "GC",
+    nintendoentertainmentsystem: "NES",
+    nes: "NES",
+    supernintendo: "SNES",
+    supernintendoentertainmentsystem: "SNES",
+    snes: "SNES",
+    nintendods: "DS",
+    nds: "DS",
+    ds: "DS",
+    nintendo3ds: "3DS",
+    n3ds: "3DS",
+    threeds: "3DS",
+    "3ds": "3DS",
+    genesis: "Gen",
+    sega: "Sega",
+    segagenesis: "Gen",
+    megadrive: "Gen",
+    segamegadrive: "Gen",
+    dreamcast: "DC",
+    segadreamcast: "DC",
+    dc: "DC",
+    segacd: "Sega CD",
+    cd: "Sega CD",
+    saturn: "Saturn",
+    segasaturn: "Saturn",
+    mastersystem: "Master System",
+    segamastersystem: "Master System",
+    gamegear: "Game Gear",
+    segagamegear: "Game Gear",
+    sega32x: "32X",
+    "32x": "32X",
   };
   return aliases[normalized] || text;
 }

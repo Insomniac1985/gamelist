@@ -2920,6 +2920,31 @@ body.theme-kash .playing-section .cover-button {
   color: var(--playstation);
 }
 
+.platform-wii .platform-label,
+.platform-nes .platform-label,
+.platform-ds .platform-label {
+  color: #d9dde6;
+}
+
+.platform-wiiu .platform-label {
+  color: #9bd7ff;
+}
+
+.platform-n64 .platform-label,
+.platform-3ds .platform-label {
+  color: #ff5a66;
+}
+
+.platform-gamecube .platform-label,
+.platform-snes .platform-label,
+.platform-sega .platform-label {
+  color: #c9a7ff;
+}
+
+.platform-dreamcast .platform-label {
+  color: #ffad5f;
+}
+
 .platform-nintendo {
   background: rgba(255, 59, 69, 0.13);
   border-color: rgba(255, 59, 69, 0.28);
@@ -2928,6 +2953,40 @@ body.theme-kash .playing-section .cover-button {
 .platform-playstation {
     background: rgb(111 120 255 / 22%);
     border-color: rgb(75 73 225 / 86%);
+}
+
+.platform-wii,
+.platform-nes {
+  background: rgba(217, 221, 230, 0.12);
+  border-color: rgba(217, 221, 230, 0.28);
+}
+
+.platform-wiiu {
+  background: rgba(155, 215, 255, 0.14);
+  border-color: rgba(155, 215, 255, 0.34);
+}
+
+.platform-n64,
+.platform-3ds {
+  background: rgba(255, 90, 102, 0.14);
+  border-color: rgba(255, 90, 102, 0.34);
+}
+
+.platform-gamecube,
+.platform-snes,
+.platform-sega {
+  background: rgba(150, 112, 255, 0.16);
+  border-color: rgba(190, 160, 255, 0.36);
+}
+
+.platform-ds {
+  background: rgba(160, 168, 184, 0.13);
+  border-color: rgba(160, 168, 184, 0.3);
+}
+
+.platform-dreamcast {
+  background: rgba(255, 132, 45, 0.15);
+  border-color: rgba(255, 173, 95, 0.36);
 }
 
 .platform-icon {
