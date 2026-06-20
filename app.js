@@ -2745,8 +2745,22 @@ function matchedPsnGame(game) {
 
 function latestTrophiesForGame(game, limit = 3) {
   if (!isPlayStationGame(game)) return [];
+  const psn = matchedPsnGame(game);
+  const trophyId = psn?.npCommunicationId || "";
+  if (trophyId) {
+    const exact = (state.psnActivity.achievements || [])
+      .filter((achievement) => achievement.npCommunicationId === trophyId)
+      .sort(compareEarnedTrophies)
+      .slice(0, limit);
+    if (exact.length) return exact;
+  }
   return (state.psnActivity.achievements || [])
-    .filter((achievement) => psnTitleMatchScore(game.title, achievement.game || achievement.title || "") >= 75)
+    .filter((achievement) => {
+      const titleScore = psnTitleMatchScore(game.title, achievement.game || achievement.title || "");
+      if (!titleScore) return false;
+      const platformScore = psnPlatformMatchScore(game.platform, achievement.platform || achievement.rarity || "");
+      return platformScore !== null;
+    })
     .sort(compareEarnedTrophies)
     .slice(0, limit);
 }
@@ -3086,12 +3100,12 @@ function replayBadge(count) {
 function achievementProviderForGame(game) {
   const platform = String(game?.platform || "").toLowerCase();
   if (platform.includes("pc") || platform.includes("steam")) {
-    return { key: "playstation", label: "Trophies", icon: "" };
+    return { key: "playstation", label: "Completed", icon: "" };
   }
   if (platform.includes("xbox")) {
-    return { key: "playstation", label: "Trophies", icon: "" };
+    return { key: "playstation", label: "Completed", icon: "" };
   }
-  return { key: "playstation", label: "Trophies", icon: "" };
+  return { key: "playstation", label: "Completed", icon: "" };
 }
 
 function completionPill(game) {

@@ -168,6 +168,9 @@ async function getRecentTrophiesForTitle(accessToken, title, sourceUrl) {
           rawEarnedAt: earned.earnedDateTime,
           rarity: [trophyTypeLabel(earned.trophyType), earned.trophyEarnedRate ? `${earned.trophyEarnedRate}%` : ""].filter(Boolean).join(" · "),
           icon: meta.trophyIconUrl || earned.trophyRewardImageUrl || title.trophyTitleIconUrl || "",
+          npCommunicationId: title.npCommunicationId || "",
+          npServiceName,
+          platform: title.trophyTitlePlatform || "",
           url: sourceUrl,
         };
       });
