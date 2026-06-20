@@ -8,8 +8,8 @@ const SETTINGS_KEY = "gamelist:settings:v1";
 const KASH_TWITCH_URL = "https://www.twitch.tv/kashhoward";
 const DEFAULT_PAGE_ORDER = ["trophies", "calendar", "highlights", "search", "gamelist", "finished"];
 const LAYOUT_SECTION_KEYS = ["playing", ...DEFAULT_PAGE_ORDER, "latestFinished"];
-const SITE_VERSION = "v116";
-const SITE_UPDATED_AT = "2026-06-20T19:34:15Z";
+const SITE_VERSION = "v117";
+const SITE_UPDATED_AT = "2026-06-20T19:37:51Z";
 const VERSION_STORAGE_KEY = "gamelist:site-version";
 const STORE_OPTIONS = ["Amazon", "GAME.es", "Xtralife", "Retro Island NY", "GameStop", "Walmart"];
 const THEMES = {
@@ -125,7 +125,7 @@ const platinumMetaCache = loadPlatinumMetaCache();
 const state = {
   games: [],
   psnActivity: { achievements: [], games: [], platinums: [], sourceUrl: "" },
-  steamActivity: { achievements: [], games: [], completed: [], sourceUrl: "" },
+  steamActivity: { achievements: [], games: [], completed: [], totalEarned: 0, sourceUrl: "" },
   steamOwnedAppIds: null,
   cardTrophies: {},
   platinumCoverCache: {},
@@ -1284,7 +1284,9 @@ function renderAchievements(data = {}, steamData = state.steamActivity || emptyS
 
 function achievementDashboard(achievements, games, sourceUrl, summary = null, steamActivity = emptySteamActivity()) {
   const trophies = summary?.trophies || {};
-  const completedCount = Number(trophies.platinum || 0) + Number(steamActivity.completed?.length || 0);
+  const playStationCompleted = Number(trophies.platinum || 0);
+  const pcCompleted = Number(steamActivity.completed?.length || 0);
+  const completedCount = playStationCompleted + pcCompleted;
   const counts = [
     ["Platinum", Number(trophies.platinum || 0)],
     ["Gold", Number(trophies.gold || 0)],
@@ -1303,10 +1305,18 @@ function achievementDashboard(achievements, games, sourceUrl, summary = null, st
       <button class="achievement-kpi platinum-highlight ${latestPlatinum ? "has-platinum" : ""}" type="button" data-action="platinums">
         <strong class="kpi-with-icon">${trophyIcon()}${escapeHtml(String(completedCount))}</strong>
         <span>COMPLETED</span>
+        ${achievementKpiBreakdown([
+          [pcCompleted, completedCount, "PC"],
+          [playStationCompleted, completedCount, "PlayStation"],
+        ])}
       </button>
-      <a class="achievement-kpi" href="${escapeHtml(sourceUrl)}" target="_blank" rel="noreferrer">
+      <a class="achievement-kpi trophy-kpi" href="${escapeHtml(sourceUrl)}" target="_blank" rel="noreferrer">
         <strong>${escapeHtml(String(achievementTotal))}</strong>
         <span>TROPHIES</span>
+        ${achievementKpiBreakdown([
+          [steamActivity.totalEarned || 0, achievementTotal, "PC"],
+          [psnTrophyTotal, achievementTotal, "PlayStation"],
+        ])}
       </a>
       <a class="achievement-kpi" href="${escapeHtml(sourceUrl)}" target="_blank" rel="noreferrer">
         <strong>${escapeHtml(String(summary?.level || average || 0))}</strong>
@@ -1323,6 +1333,12 @@ function achievementDashboard(achievements, games, sourceUrl, summary = null, st
       </div>
     </div>
   `;
+}
+
+function achievementKpiBreakdown(rows) {
+  return `<span class="kpi-breakdown" aria-hidden="true">${rows.map(([value, totalValue, platform]) => `
+    <small class="kpi-breakdown-pill"><strong>${escapeHtml(String(value))}</strong> out of ${escapeHtml(String(totalValue))} on ${escapeHtml(platform)}</small>
+  `).join("")}</span>`;
 }
 
 function openPlatinumDialog() {
