@@ -8,8 +8,8 @@ const SETTINGS_KEY = "gamelist:settings:v1";
 const KASH_TWITCH_URL = "https://www.twitch.tv/kashhoward";
 const DEFAULT_PAGE_ORDER = ["trophies", "calendar", "highlights", "search", "gamelist", "finished"];
 const LAYOUT_SECTION_KEYS = ["playing", ...DEFAULT_PAGE_ORDER, "latestFinished"];
-const SITE_VERSION = "v113";
-const SITE_UPDATED_AT = "2026-06-20T13:36:12Z";
+const SITE_VERSION = "v114";
+const SITE_UPDATED_AT = "2026-06-20T13:48:22Z";
 const VERSION_STORAGE_KEY = "gamelist:site-version";
 const STORE_OPTIONS = ["Amazon", "GAME.es", "Xtralife", "Retro Island NY", "GameStop", "Walmart"];
 const THEMES = {
@@ -64,7 +64,7 @@ const UI_ICON_URLS = [
   "/assets/platforms/3ds.png",
   "/assets/platforms/gba.png",
   "/assets/platforms/gbc.png",
-  "/assets/platforms/gb",
+  "/assets/platforms/gb.png",
   "/assets/platforms/sega.png",
   "/assets/platforms/dreamcast.png",
   "/assets/sites/howlongtobeat.png",
@@ -126,6 +126,7 @@ const state = {
   games: [],
   psnActivity: { achievements: [], games: [], platinums: [], sourceUrl: "" },
   steamActivity: { achievements: [], games: [], completed: [], sourceUrl: "" },
+  steamOwnedAppIds: null,
   cardTrophies: {},
   platinumCoverCache: {},
   settings: loadLocalSettings(),
@@ -1094,7 +1095,10 @@ async function refreshAchievements() {
 
 async function fetchSteamActivity() {
   const steamUser = state.settings.steamUser || "";
-  const games = steamAchievementGames();
+  const ownedGames = await fetchSteamOwnedGames(steamUser);
+  const ownedAppIds = new Set(ownedGames.map((game) => game.appId));
+  state.steamOwnedAppIds = ownedAppIds;
+  const games = steamAchievementGames().filter((game) => ownedAppIds.has(steamAppIdFor(game)));
   if (!games.length) return emptySteamActivity();
   const results = await Promise.all(games.map(async (game) => {
     const appId = steamAppIdFor(game);
@@ -1159,6 +1163,32 @@ async function fetchSteamActivity() {
 
 function steamAchievementGames() {
   return state.games.filter((game) => !game.deletedAt && isPcGame(game) && steamAppIdFor(game));
+}
+
+async function fetchSteamOwnedGames(steamUser = state.settings.steamUser || "") {
+  try {
+    const params = new URLSearchParams({ owned: "1", debug: "1" });
+    if (steamUser) params.set("user", steamUser);
+    const response = await fetch(`/api/steam-achievements?${params}`);
+    const data = await response.json().catch(() => ({ ownedGames: [] }));
+    if (!response.ok || data.needsSetup || data.authError || data.error) {
+      console.warn("[trophies] Steam owned games unavailable", {
+        status: response.status,
+        ok: response.ok,
+        error: data.error || "",
+        debug: data.debug || "",
+        needsSetup: Boolean(data.needsSetup),
+        authError: Boolean(data.authError),
+      });
+      return [];
+    }
+    return Array.isArray(data.ownedGames)
+      ? data.ownedGames.map((game) => ({ ...game, appId: cleanSteamAppId(game.appId) })).filter((game) => game.appId)
+      : [];
+  } catch (error) {
+    console.warn("[trophies] Steam owned games unavailable", error);
+    return [];
+  }
 }
 
 function steamProfileUrl(user) {
@@ -2909,7 +2939,7 @@ async function renderDetailTrophies(game) {
 async function renderDetailSteamAchievements(game) {
   const appId = steamAppIdFor(game);
   const steamUser = state.settings.steamUser || "";
-  if (!appId) {
+  if (!appId || (state.steamOwnedAppIds && !state.steamOwnedAppIds.has(appId))) {
     state.detailTrophyRequest = "";
     state.detailTrophiesData = [];
     state.detailTrophyProvider = "steam";
@@ -3102,11 +3132,17 @@ function steamAchievementsForGame(game) {
   return cacheKey ? state.cardTrophies[cacheKey] : null;
 }
 
+function steamGameIsOwned(game) {
+  const appId = steamAppIdFor(game);
+  return Boolean(appId && state.steamOwnedAppIds?.has(appId));
+}
+
 function steamProgressForGame(game) {
   if (!isPcGame(game)) return null;
   const appId = steamAppIdFor(game);
   if (!appId) return null;
   const cached = steamAchievementsForGame(game);
+  if (!cached && !steamGameIsOwned(game)) return null;
   if (!cached) loadCardSteamAchievements(game);
   if (!cached?.achievements?.length) return null;
   const total = cached.total ?? cached.achievements.length;
@@ -3293,7 +3329,7 @@ function cardTrophiesFor(game) {
 function cardSteamAchievementsFor(game) {
   const cacheKey = steamAchievementCacheKey(game);
   const cached = cacheKey ? state.cardTrophies[cacheKey] : null;
-  if (cacheKey && !cached) loadCardSteamAchievements(game);
+  if (cacheKey && !cached && steamGameIsOwned(game)) loadCardSteamAchievements(game);
   const guideLinks = guideLinksFor(game);
   if (cached?.loading) {
     return `<div class="card-trophy-head">${trophyIcon()}<span>Loading achievements...</span></div>${guideLinks.length ? `<div class="guide-links card-guide-row">${guideLinks.join("")}</div>` : ""}`;
@@ -3358,7 +3394,7 @@ async function loadCardSteamAchievements(game) {
   const cacheKey = steamAchievementCacheKey(game);
   const appId = steamAppIdFor(game);
   const steamUser = state.settings.steamUser || "";
-  if (!cacheKey || !appId || state.cardTrophies[cacheKey]) return;
+  if (!cacheKey || !appId || state.cardTrophies[cacheKey] || !steamGameIsOwned(game)) return;
   state.cardTrophies[cacheKey] = { loading: true, achievements: [], trophies: [] };
   try {
     const params = steamAchievementParams(appId, steamUser);

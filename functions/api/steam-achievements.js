@@ -5,16 +5,26 @@ export async function onRequestGet({ request, env = {} }) {
   const url = new URL(request.url);
   const appId = cleanSteamAppId(url.searchParams.get("appId"));
   const user = cleanSteamUser(url.searchParams.get("user") || env.STEAM_PROFILE_USER || "");
+  const ownedOnly = url.searchParams.get("owned") === "1";
   const debug = url.searchParams.has("debug");
   const apiKey = String(env.STEAM_API_KEY || globalThis.process?.env?.STEAM_API_KEY || "").trim();
 
-  if (!appId) return json({ achievements: [], error: "Missing Steam app id" }, 400, { cache: false });
   if (!user) return json({ achievements: [], needsSetup: true, error: "Missing Steam profile" }, 200, { cache: false });
   if (!apiKey) return json({ achievements: [], needsSetup: true, error: "Missing STEAM_API_KEY" }, 200, { cache: false });
 
   try {
     const steamId = await resolveSteamId(user, apiKey);
     if (!steamId) return json({ achievements: [], error: "Could not resolve Steam profile" }, 200, { cache: false });
+    if (ownedOnly) {
+      const ownedGames = await getOwnedGames(steamId, apiKey);
+      return json({
+        source: "steam",
+        steamId,
+        ownedGames,
+        ownedAppIds: ownedGames.map((game) => game.appId),
+      });
+    }
+    if (!appId) return json({ achievements: [], error: "Missing Steam app id" }, 400, { cache: false });
     const achievements = await getSteamAchievements(appId, steamId, apiKey);
     const earnedCount = achievements.filter((achievement) => achievement.earned).length;
     return json({
@@ -34,6 +44,21 @@ export async function onRequestGet({ request, env = {} }) {
       ...(debug ? { debug: error?.message || "Steam achievements request failed" } : {}),
     }, 200, { cache: false });
   }
+}
+
+async function getOwnedGames(steamId, apiKey) {
+  const data = await steamGet(`${STEAM_API_BASE}/IPlayerService/GetOwnedGames/v0001/?${new URLSearchParams({
+    key: apiKey,
+    steamid: steamId,
+    include_appinfo: "1",
+    include_played_free_games: "1",
+  })}`);
+  return (data?.response?.games || []).map((game) => ({
+    appId: String(game.appid || ""),
+    name: String(game.name || ""),
+    playtimeForever: Number(game.playtime_forever || 0),
+    imgIconUrl: String(game.img_icon_url || ""),
+  })).filter((game) => game.appId);
 }
 
 async function resolveSteamId(user, apiKey) {

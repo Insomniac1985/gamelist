@@ -182,6 +182,8 @@ Get a Steam Web API key from `https://steamcommunity.com/dev/apikey`.
 
 Set `STEAM_PROFILE_USER` to a SteamID64, Steam profile URL, or vanity name, for example `shabii_`. The site's Settings overlay also has a **Steam profile** field; if filled, it overrides the Cloudflare value for that browser/account. For each PC game, add a Steam store URL or Steam App ID in the game editor.
 
+Steam achievements are only fetched for Steam app IDs owned by the configured Steam account. Make sure the account's game details/library visibility allows Steam Web API access, otherwise the owned-games list can come back empty.
+
 ### Google Calendar Preorder Events
 
 When a game is newly marked as preordered and has a release date, the Worker can create an all-day Google Calendar event named `Preorder Game Name`.

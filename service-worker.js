@@ -1,4 +1,4 @@
-const CACHE_VERSION = "gamelist-cache-v113";
+const CACHE_VERSION = "gamelist-cache-v114";
 const STATIC_CACHE = `${CACHE_VERSION}:static`;
 const MEDIA_CACHE = `${CACHE_VERSION}:media`;
 const STATIC_ASSETS = [
@@ -27,7 +27,7 @@ const STATIC_ASSETS = [
   "/assets/platforms/3ds.png",
   "/assets/platforms/gba.png",
   "/assets/platforms/gbc.png",
-  "/assets/platforms/gb",
+  "/assets/platforms/gb.png",
   "/assets/platforms/sega.png",
   "/assets/platforms/dreamcast.png",
   "/assets/sites/howlongtobeat.png",
