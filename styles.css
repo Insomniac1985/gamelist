@@ -5037,7 +5037,7 @@ body.theme-kash .store-button:hover {
 
 .platinum-filter-bar {
   display: grid;
-  grid-template-columns: minmax(132px, auto) auto minmax(0, 1fr);
+  grid-template-columns: minmax(112px, 0.75fr) minmax(132px, 0.9fr) minmax(190px, 1.35fr);
   align-items: end;
   gap: 8px;
   width: 100%;
@@ -5049,13 +5049,16 @@ body.theme-kash .store-button:hover {
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05);
 }
 
-.platinum-year-select {
+.platinum-year-select,
+.platinum-platform-select,
+.platinum-order-label {
   display: grid;
-  min-width: 132px;
+  min-width: 0;
   margin: 0;
 }
 
-.platinum-year-select select {
+.platinum-year-select select,
+.platinum-platform-select select {
   height: 34px;
   min-height: 34px;
   padding: 5px 34px 5px 9px;
@@ -6209,7 +6212,7 @@ body.theme-kash .guide-button:hover {
 
   .platinum-filter-bar {
     display: grid;
-    grid-template-columns: minmax(86px, 0.92fr) minmax(138px, 1.08fr);
+    grid-template-columns: minmax(64px, 0.7fr) minmax(82px, 0.9fr) minmax(130px, 1.3fr);
     align-items: end;
     gap: 6px;
     padding: 7px;
@@ -6225,6 +6228,8 @@ body.theme-kash .guide-button:hover {
   }
 
   .platinum-year-select,
+  .platinum-platform-select,
+  .platinum-order-label,
   .platinum-order-control {
     min-width: 0;
   }
@@ -6239,11 +6244,13 @@ body.theme-kash .guide-button:hover {
   }
 
   .platinum-year-select select,
+  .platinum-platform-select select,
   .platinum-order-control select {
     flex: 1;
   }
 
   .platinum-year-select select,
+  .platinum-platform-select select,
   .platinum-order-control select {
     width: 100%;
     min-width: 0;

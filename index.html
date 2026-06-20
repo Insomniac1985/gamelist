@@ -540,16 +540,24 @@
         </div>
         <div class="platinum-filter-bar" id="platinumYearTabs">
           <label class="platinum-year-select">
+            <span>Year</span>
             <select id="platinumYearSelect"></select>
           </label>
-          <div class="platinum-order-control">
-            <select id="platinumSortSelect" aria-label="Sort completed games">
-              <option value="time">Time</option>
-              <option value="name">Name</option>
-            </select>
-            <button class="direction-toggle" id="platinumSortDirection" type="button" title="Sort descending" aria-label="Sort descending"></button>
-            <button class="icon-button view-toggle section-view-toggle" id="platinumViewToggleButton" type="button" title="Grid view" aria-label="Grid view"></button>
-          </div>
+          <label class="platinum-platform-select">
+            <span>Platform</span>
+            <select id="platinumPlatformSelect"></select>
+          </label>
+          <label class="platinum-order-label">
+            <span>Order</span>
+            <div class="platinum-order-control">
+              <select id="platinumSortSelect" aria-label="Sort completed games">
+                <option value="time">Time</option>
+                <option value="name">Name</option>
+              </select>
+              <button class="direction-toggle" id="platinumSortDirection" type="button" title="Sort descending" aria-label="Sort descending"></button>
+              <button class="icon-button view-toggle section-view-toggle" id="platinumViewToggleButton" type="button" title="Grid view" aria-label="Grid view"></button>
+            </div>
+          </label>
         </div>
         <div class="platinum-list" id="platinumList"></div>
       </article>

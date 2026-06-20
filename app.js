@@ -8,8 +8,8 @@ const SETTINGS_KEY = "gamelist:settings:v1";
 const KASH_TWITCH_URL = "https://www.twitch.tv/kashhoward";
 const DEFAULT_PAGE_ORDER = ["trophies", "calendar", "highlights", "search", "gamelist", "finished"];
 const LAYOUT_SECTION_KEYS = ["playing", ...DEFAULT_PAGE_ORDER, "latestFinished"];
-const SITE_VERSION = "v114";
-const SITE_UPDATED_AT = "2026-06-20T13:48:22Z";
+const SITE_VERSION = "v115";
+const SITE_UPDATED_AT = "2026-06-20T19:27:47Z";
 const VERSION_STORAGE_KEY = "gamelist:site-version";
 const STORE_OPTIONS = ["Amazon", "GAME.es", "Xtralife", "Retro Island NY", "GameStop", "Walmart"];
 const THEMES = {
@@ -142,6 +142,7 @@ const state = {
   completedVisiblePages: 1,
   historyYear: String(new Date().getFullYear()),
   platinumYear: "all",
+  platinumPlatform: "all",
   platinumSort: "time",
   platinumDirection: "desc",
   platinumViewMode: localStorage.getItem(PLATINUM_VIEW_MODE_KEY) === "list" ? "list" : "grid",
@@ -214,6 +215,7 @@ const el = {
   platinumViewToggleButton: document.querySelector("#platinumViewToggleButton"),
   platinumYearTabs: document.querySelector("#platinumYearTabs"),
   platinumYearSelect: document.querySelector("#platinumYearSelect"),
+  platinumPlatformSelect: document.querySelector("#platinumPlatformSelect"),
   platinumList: document.querySelector("#platinumList"),
   releaseCalendar: document.querySelector("#releaseCalendar"),
   releaseDialog: document.querySelector("#releaseDialog"),
@@ -1335,7 +1337,12 @@ function openPlatinumDialog() {
 
 function renderPlatinumDialog(platinums = platinumItems(), years = platinumYears(platinums)) {
   const selected = state.platinumYear;
-  const visible = sortedPlatinums(selected === "all" ? platinums : platinums.filter((item) => platinumYearFor(item) === selected));
+  const platforms = platinumPlatforms(platinums);
+  if (state.platinumPlatform !== "all" && !platforms.includes(state.platinumPlatform)) state.platinumPlatform = "all";
+  const visible = sortedPlatinums(platinums.filter((item) => (
+    (selected === "all" || platinumYearFor(item) === selected)
+    && (state.platinumPlatform === "all" || platinumPlatformFor(item) === state.platinumPlatform)
+  )));
   el.platinumTitle.innerHTML = `${trophyIcon()} <span>COMPLETED</span>`;
   el.platinumCount.textContent = `${visible.length} completed`;
   el.platinumList.classList.toggle("list-view", state.platinumViewMode === "list");
@@ -1360,6 +1367,15 @@ function renderPlatinumDialog(platinums = platinumItems(), years = platinumYears
   el.platinumYearSelect.value = selected;
   el.platinumYearSelect.onchange = () => {
     state.platinumYear = el.platinumYearSelect.value || "all";
+    renderPlatinumDialog(platinums, years);
+  };
+  el.platinumPlatformSelect.innerHTML = [
+    `<option value="all">All</option>`,
+    ...platforms.map((platform) => `<option value="${escapeHtml(platform)}">${escapeHtml(platformDisplayName(platform))}</option>`),
+  ].join("");
+  el.platinumPlatformSelect.value = state.platinumPlatform;
+  el.platinumPlatformSelect.onchange = () => {
+    state.platinumPlatform = el.platinumPlatformSelect.value || "all";
     renderPlatinumDialog(platinums, years);
   };
   el.platinumList.innerHTML = visible.length ? visible.map(platinumCard).join("") : `<div class="empty">No completed games tracked yet.</div>`;
@@ -1571,6 +1587,14 @@ async function hydratePlatinumCovers(platinums) {
 
 function platinumYears(platinums) {
   return [...new Set(platinums.map(platinumYearFor).filter(Boolean))].sort((a, b) => b.localeCompare(a));
+}
+
+function platinumPlatforms(platinums) {
+  return [...new Set(platinums.map(platinumPlatformFor).filter(Boolean))].sort((a, b) => stringCompare(platformDisplayName(a), platformDisplayName(b)));
+}
+
+function platinumPlatformFor(item) {
+  return canonicalPlatform(item.platform) || String(item.platform || "").trim();
 }
 
 function platinumYearFor(item) {
