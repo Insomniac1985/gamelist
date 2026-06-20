@@ -3181,7 +3181,7 @@ function normalizeTitleForMatch(value) {
 function psnProgressBadge(game, options = {}) {
   const explicitProgress = Number(game?.progress ?? options.progress);
   const progress = Number.isFinite(explicitProgress) ? Math.max(0, Math.min(100, Math.round(explicitProgress))) : progressValue(game.game);
-  const label = options.label ?? game?.label ?? "";
+  const label = options.label ?? "";
   const className = ["psn-progress-pill", options.className || ""].filter(Boolean).join(" ");
   return `
     <span class="${escapeHtml(className)}" title="${escapeHtml([game.title, game.game].filter(Boolean).join(" · "))}">
