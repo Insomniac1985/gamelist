@@ -3932,9 +3932,7 @@ body.theme-kash .completed-row:hover {
 body.theme-kash .completed-row.stream-card,
 body.theme-kash .completed-row.stream-card:hover {
   border-color: rgba(183, 116, 255, 0.72) !important;
-  box-shadow:
-    0 0 0 1px rgba(183, 116, 255, 0.18),
-    0 0 24px rgba(183, 116, 255, 0.24) !important;
+  box-shadow: none !important;
 }
 
 .completed-cover {
