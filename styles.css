@@ -279,8 +279,24 @@ body.theme-kash .nav-tabs a:hover {
   text-transform: uppercase;
 }
 
-.site-footer span:last-child {
+.site-footer span:last-child,
+.site-footer button:last-child {
   text-align: right;
+}
+
+.site-footer button {
+  appearance: none;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--dim);
+  font: inherit;
+  text-transform: inherit;
+  cursor: pointer;
+}
+
+.site-footer button:hover {
+  color: var(--text);
 }
 
 .hero {
@@ -5256,6 +5272,14 @@ body.theme-kash .store-button:hover {
   background: rgba(121, 242, 206, 0.12);
 }
 
+.store-xbox {
+  background: rgba(70, 190, 96, 0.16);
+}
+
+.store-wikipedia {
+  background: rgba(210, 216, 226, 0.12);
+}
+
 .store-hltb {
   background: rgba(78, 82, 92, 0.32);
 }
@@ -5533,7 +5557,8 @@ body.theme-kash .guide-button:hover {
     text-align: center;
   }
 
-  .site-footer span:last-child {
+  .site-footer span:last-child,
+  .site-footer button:last-child {
     text-align: center;
   }
 

@@ -8,8 +8,8 @@ const SETTINGS_KEY = "gamelist:settings:v1";
 const KASH_TWITCH_URL = "https://www.twitch.tv/kashhoward";
 const DEFAULT_PAGE_ORDER = ["trophies", "calendar", "highlights", "search", "gamelist", "finished"];
 const LAYOUT_SECTION_KEYS = ["playing", ...DEFAULT_PAGE_ORDER, "latestFinished"];
-const SITE_VERSION = "v109";
-const SITE_UPDATED_AT = "2026-06-20T13:18:35Z";
+const SITE_VERSION = "v112";
+const SITE_UPDATED_AT = "2026-06-20T13:25:39Z";
 const VERSION_STORAGE_KEY = "gamelist:site-version";
 const STORE_OPTIONS = ["Amazon", "GAME.es", "Xtralife", "Retro Island NY", "GameStop", "Walmart"];
 const THEMES = {
@@ -125,6 +125,7 @@ const platinumMetaCache = loadPlatinumMetaCache();
 const state = {
   games: [],
   psnActivity: { achievements: [], games: [], platinums: [], sourceUrl: "" },
+  steamActivity: { achievements: [], games: [], completed: [], sourceUrl: "" },
   cardTrophies: {},
   platinumCoverCache: {},
   settings: loadLocalSettings(),
@@ -389,6 +390,12 @@ async function clearSiteCaches() {
   }
 }
 
+async function clearSiteCachesAndReload() {
+  await clearSiteCaches();
+  localStorage.setItem(VERSION_STORAGE_KEY, SITE_VERSION);
+  window.location.reload();
+}
+
 function bindEvents() {
   el.brandLink.addEventListener("click", (event) => {
     event.preventDefault();
@@ -487,6 +494,7 @@ function bindEvents() {
     state.completedVisiblePages += 1;
     renderCompleted();
   });
+  el.footerVersion?.addEventListener("click", clearSiteCachesAndReload);
   el.scrollTopButton.addEventListener("click", () => {
     if (document.body.classList.contains("dialog-open")) return;
     window.scrollTo({ top: 0, behavior: "smooth" });
@@ -860,7 +868,7 @@ function renderSettingsDialog() {
 function settingsLayoutItem(key, index, options = {}) {
   const title = {
     playing: "Currently Playing",
-    trophies: "Trophies",
+    trophies: "Achievements",
     calendar: "Calendar",
     highlights: "Highlights",
     search: "Search",
@@ -1072,17 +1080,99 @@ function equalizeMobilePlayingCards() {
 async function refreshAchievements() {
   const psnUser = state.settings.psnUser || DEFAULT_SETTINGS.psnUser;
   el.achievementProfileLink.href = `https://psnprofiles.com/${encodeURIComponent(psnUser)}`;
-  try {
+  const psnRequest = (async () => {
     const response = await fetch(`/api/achievements?user=${encodeURIComponent(psnUser)}&schema=3`);
-    const data = await response.json();
-    renderAchievements(data);
-    render();
-  } catch {
-    renderAchievements({ user: psnUser, achievements: [], sourceUrl: "https://www.playstation.com/", source: "psn", authError: true });
-  }
+    return response.json();
+  })();
+  const [psnResult, steamResult] = await Promise.allSettled([psnRequest, fetchSteamActivity()]);
+  const psnData = psnResult.status === "fulfilled"
+    ? psnResult.value
+    : { user: psnUser, achievements: [], sourceUrl: "https://www.playstation.com/", source: "psn", authError: true };
+  renderAchievements(psnData, steamResult.status === "fulfilled" ? steamResult.value : emptySteamActivity());
+  render();
 }
 
-function renderAchievements(data = {}) {
+async function fetchSteamActivity() {
+  const steamUser = state.settings.steamUser || "";
+  const games = steamAchievementGames();
+  if (!steamUser || !games.length) return emptySteamActivity();
+  const results = await Promise.all(games.map(async (game) => {
+    const appId = steamAppIdFor(game);
+    try {
+      const response = await fetch(`/api/steam-achievements?${new URLSearchParams({ appId, user: steamUser, debug: "1" })}`);
+      const data = await response.json().catch(() => ({ achievements: [] }));
+      const achievements = Array.isArray(data.achievements) ? data.achievements : [];
+      const earned = Number.isFinite(Number(data.earnedCount))
+        ? Number(data.earnedCount)
+        : achievements.filter((achievement) => achievement.earned).length;
+      const total = Number.isFinite(Number(data.count)) ? Number(data.count) : achievements.length;
+      state.cardTrophies[steamAchievementCacheKey(game)] = { loading: false, achievements, trophies: achievements, earned, total };
+      return { game, achievements, earned, total };
+    } catch {
+      return { game, achievements: [], earned: 0, total: 0 };
+    }
+  }));
+  const achievements = results.flatMap(({ game, achievements }) => achievements
+    .filter((achievement) => achievement.earned && achievement.earnedAt)
+    .map((achievement) => ({
+      title: achievement.title || "Achievement unlocked",
+      game: game.title,
+      earnedAt: achievement.earnedAt,
+      rawEarnedAt: achievement.rawEarnedAt || achievement.earnedAt,
+      rarity: "Steam",
+      type: "achievement",
+      icon: achievement.icon || platformLogo("PC"),
+      url: game.storeLinks?.steam || hltbUrlFor(game) || "",
+      source: "steam",
+      platform: "PC",
+    })));
+  achievements.sort(compareEarnedTrophies);
+  const completed = results
+    .filter(({ earned, total }) => total > 0 && earned >= total)
+    .map(({ game, achievements, earned, total }) => {
+      const latest = achievements.filter((achievement) => achievement.earned).sort(compareEarnedTrophies)[0];
+      return {
+        title: game.title,
+        cover: game.cover ? coverDisplayUrl(game.cover, "card") : "",
+        trophyName: "100% Achievements",
+        trophyIcon: game.cover ? coverDisplayUrl(game.cover, "tiny") : platformLogo("PC"),
+        earnedAt: latest?.earnedAt || formatLongDate(game.completedAt),
+        rawEarnedAt: latest?.rawEarnedAt || game.completedAt || "",
+        platform: "PC",
+        url: game.storeLinks?.steam || hltbUrlFor(game) || "",
+        gameId: game.id,
+        source: "steam",
+        earned,
+        total,
+      };
+    });
+  const totalEarned = results.reduce((sum, result) => sum + result.earned, 0);
+  return {
+    achievements,
+    games: results.map(({ game, earned, total }) => ({ title: game.title, game: `${total ? Math.round((earned / total) * 100) : 0}% · ${earned}/${total} achievements` })),
+    completed,
+    totalEarned,
+    sourceUrl: steamProfileUrl(steamUser),
+  };
+}
+
+function steamAchievementGames() {
+  return state.games.filter((game) => !game.deletedAt && isPcGame(game) && steamAppIdFor(game));
+}
+
+function steamProfileUrl(user) {
+  const value = String(user || "").trim();
+  if (!value) return "";
+  if (/^https?:\/\//i.test(value)) return value;
+  if (/^\d{17}$/.test(value)) return `https://steamcommunity.com/profiles/${encodeURIComponent(value)}/games/?tab=all`;
+  return `https://steamcommunity.com/id/${encodeURIComponent(value)}/games/?tab=all`;
+}
+
+function emptySteamActivity() {
+  return { achievements: [], games: [], completed: [], totalEarned: 0, sourceUrl: "" };
+}
+
+function renderAchievements(data = {}, steamData = state.steamActivity || emptySteamActivity()) {
   const user = data.user || state.settings.psnUser || DEFAULT_SETTINGS.psnUser;
   const sourceUrl = data.sourceUrl || "https://www.playstation.com/";
   const platinums = Array.isArray(data.platinums) ? data.platinums : [];
@@ -1094,10 +1184,18 @@ function renderAchievements(data = {}) {
     summary: data.summary || null,
     sourceUrl,
   };
+  state.steamActivity = {
+    achievements: Array.isArray(steamData.achievements) ? steamData.achievements : [],
+    games: Array.isArray(steamData.games) ? steamData.games : [],
+    completed: Array.isArray(steamData.completed) ? steamData.completed : [],
+    totalEarned: Number(steamData.totalEarned || 0),
+    sourceUrl: steamData.sourceUrl || "",
+  };
   renderPlayingSection();
   el.achievementProfileLink.href = sourceUrl;
-  el.achievementProfileLink.textContent = data.source === "psn" ? "PSN activity" : user;
-  const achievements = Array.isArray(data.achievements) ? data.achievements.slice(0, 6) : [];
+  el.achievementProfileLink.textContent = state.steamActivity.achievements.length ? "PSN + Steam activity" : (data.source === "psn" ? "PSN activity" : user);
+  const combinedAchievements = [...state.psnActivity.achievements, ...state.steamActivity.achievements].sort(compareEarnedTrophies);
+  const achievements = combinedAchievements.slice(0, 6);
   const games = Array.isArray(data.games) ? data.games.slice(0, 3) : [];
   if (!achievements.length) {
     const fallbackText = data.needsSetup
@@ -1106,12 +1204,12 @@ function renderAchievements(data = {}) {
         ? "PSN token needs refreshing. Update PSN_NPSSO in Cloudflare."
         : data.blocked
           ? "The public tracker is blocking embedded scraping, but your profile is one click away."
-          : "No recent trophy activity found yet.";
+          : "No recent achievement activity found yet.";
     el.achievementPanel.innerHTML = `
       <a class="achievement-fallback" href="${escapeHtml(sourceUrl)}" target="_blank" rel="noreferrer">
         <img src="${escapeHtml(platformLogo("PS5"))}" alt="">
         <div>
-          <strong>PSN activity</strong>
+          <strong>Achievement activity</strong>
           <span>${escapeHtml(fallbackText)}</span>
         </div>
       </a>
@@ -1121,41 +1219,44 @@ function renderAchievements(data = {}) {
 
   const trophyCards = achievements.map((item, index) => `
     <a class="achievement-card ${index === 0 ? "latest" : ""} trophy-${escapeHtml(trophyTone(item.rarity))}" href="${escapeHtml(item.url || sourceUrl)}" target="_blank" rel="noreferrer">
-      <img class="achievement-icon" src="${escapeHtml(item.icon || platformLogo("PS5"))}" alt="">
+      <img class="achievement-icon" src="${escapeHtml(item.icon || platformLogo(item.source === "steam" ? "PC" : "PS5"))}" alt="">
       <div>
-        <strong>${escapeHtml(item.title || "Trophy unlocked")}</strong>
+        <strong>${escapeHtml(item.title || (item.source === "steam" ? "Achievement unlocked" : "Trophy unlocked"))}</strong>
         ${item.game ? `<span class="achievement-game-name">${escapeHtml(item.game)}</span>` : ""}
         ${item.earnedAt ? `<span class="achievement-earned-date">${escapeHtml(item.earnedAt)}</span>` : ""}
       </div>
     </a>
   `).join("");
-  const dashboard = achievementDashboard(achievements, games, sourceUrl, data.summary);
-  el.achievementPanel.innerHTML = `${dashboard}<span class="achievement-subtitle trophy-subtitle">Latest Trophies</span>${trophyCards}`;
+  const dashboard = achievementDashboard(achievements, games, sourceUrl, data.summary, state.steamActivity);
+  el.achievementPanel.innerHTML = `${dashboard}<span class="achievement-subtitle trophy-subtitle">Latest Achievements</span>${trophyCards}`;
   el.achievementPanel.querySelector("[data-action='platinums']")?.addEventListener("click", openPlatinumDialog);
   scheduleMobilePaintRefresh();
 }
 
-function achievementDashboard(achievements, games, sourceUrl, summary = null) {
+function achievementDashboard(achievements, games, sourceUrl, summary = null, steamActivity = emptySteamActivity()) {
   const trophies = summary?.trophies || {};
+  const completedCount = Number(trophies.platinum || 0) + Number(steamActivity.completed?.length || 0);
   const counts = [
     ["Platinum", Number(trophies.platinum || 0)],
     ["Gold", Number(trophies.gold || 0)],
     ["Silver", Number(trophies.silver || 0)],
     ["Bronze", Number(trophies.bronze || 0)],
   ];
-  const total = Math.max(1, counts.reduce((sum, [, count]) => sum + count, 0));
-  const latestPlatinum = achievements.find((item) => trophyTone(item.rarity) === "platinum");
+  const psnTrophyTotal = counts.reduce((sum, [, count]) => sum + count, 0);
+  const total = Math.max(1, psnTrophyTotal);
+  const achievementTotal = psnTrophyTotal + Number(steamActivity.totalEarned || 0);
+  const latestPlatinum = achievements.find((item) => trophyTone(item.rarity) === "platinum") || steamActivity.completed?.[0];
   const average = games.length
     ? Math.round(games.reduce((sum, game) => sum + progressValue(game.game), 0) / games.length)
     : 0;
   return `
     <div class="achievement-summary">
       <button class="achievement-kpi platinum-highlight ${latestPlatinum ? "has-platinum" : ""}" type="button" data-action="platinums">
-        <strong class="kpi-with-icon">${trophyIcon()}${escapeHtml(String(trophies.platinum || 0))}</strong>
-        <span>PLATINUMS</span>
+        <strong class="kpi-with-icon">${trophyIcon()}${escapeHtml(String(completedCount))}</strong>
+        <span>COMPLETED</span>
       </button>
       <a class="achievement-kpi" href="${escapeHtml(sourceUrl)}" target="_blank" rel="noreferrer">
-        <strong>${escapeHtml(String(total))}</strong>
+        <strong>${escapeHtml(String(achievementTotal))}</strong>
         <span>TROPHIES</span>
       </a>
       <a class="achievement-kpi" href="${escapeHtml(sourceUrl)}" target="_blank" rel="noreferrer">
@@ -1188,8 +1289,8 @@ function openPlatinumDialog() {
 function renderPlatinumDialog(platinums = platinumItems(), years = platinumYears(platinums)) {
   const selected = state.platinumYear;
   const visible = sortedPlatinums(selected === "all" ? platinums : platinums.filter((item) => platinumYearFor(item) === selected));
-  el.platinumTitle.innerHTML = `${trophyIcon()} <span>Platinums</span>`;
-  el.platinumCount.textContent = `${visible.length} ${visible.length === 1 ? "platinum" : "platinums"}`;
+  el.platinumTitle.innerHTML = `${trophyIcon()} <span>COMPLETED</span>`;
+  el.platinumCount.textContent = `${visible.length} completed`;
   el.platinumList.classList.toggle("list-view", state.platinumViewMode === "list");
   renderModeToggle(el.platinumViewToggleButton, state.platinumViewMode);
   el.platinumSortSelect.value = state.platinumSort;
@@ -1208,13 +1309,13 @@ function renderPlatinumDialog(platinums = platinumItems(), years = platinumYears
   el.platinumYearSelect.innerHTML = platinums.length ? [
     `<option value="all">All</option>`,
     ...years.map((year) => `<option value="${escapeHtml(year)}">${escapeHtml(year)}</option>`),
-  ].join("") : `<option value="all">No platinums</option>`;
+  ].join("") : `<option value="all">No completed</option>`;
   el.platinumYearSelect.value = selected;
   el.platinumYearSelect.onchange = () => {
     state.platinumYear = el.platinumYearSelect.value || "all";
     renderPlatinumDialog(platinums, years);
   };
-  el.platinumList.innerHTML = visible.length ? visible.map(platinumCard).join("") : `<div class="empty">No platinums tracked yet.</div>`;
+  el.platinumList.innerHTML = visible.length ? visible.map(platinumCard).join("") : `<div class="empty">No completed games tracked yet.</div>`;
   el.platinumList.querySelectorAll("[data-game-id]").forEach((button) => {
     button.addEventListener("click", () => {
       const gameId = button.dataset.gameId;
@@ -1257,7 +1358,14 @@ function platinumItems() {
       gameId: localGame?.completedAt ? localGame.id : "",
     };
   });
-  if (psnPlatinums.length) return psnPlatinums;
+  const steamCompleted = (state.steamActivity.completed || []).map((item) => ({
+    ...item,
+    cover: item.cover || localCoverForTitle(item.title, "card"),
+    trophyIcon: item.trophyIcon || platformLogo("PC"),
+    trophyName: item.trophyName || "100% Achievements",
+    platform: item.platform || "PC",
+  }));
+  if (psnPlatinums.length || steamCompleted.length) return [...psnPlatinums, ...steamCompleted];
   return state.games
     .filter((game) => !game.deletedAt && game.platinum)
     .sort((a, b) => String(b.completedAt || "").localeCompare(String(a.completedAt || "")) || stringCompare(a.title, b.title))
@@ -1795,7 +1903,7 @@ function fillSelect(select, values, selected, allLabel) {
     return;
   }
   select.innerHTML = values.map((value) => {
-    const label = value === "all" ? allLabel : value;
+    const label = value === "all" ? allLabel : platformDisplayName(value);
     return `<option value="${escapeHtml(value)}">${escapeHtml(label)}</option>`;
   }).join("");
   select.value = values.includes(selected) ? selected : "all";
@@ -3433,12 +3541,13 @@ function stringCompare(a = "", b = "") {
 function platformBadge(platform, count = null) {
   const cls = platformClass(platform);
   const logo = platformLogo(platform);
+  const label = canonicalPlatform(platform) || platform;
   return `
-    <span class="platform-badge ${cls}" title="${escapeHtml(platform)}">
+    <span class="platform-badge ${cls}" title="${escapeHtml(platformDisplayName(label))}">
       <span class="platform-icon">
         <img src="${escapeHtml(logo)}" alt="" width="18" height="18" decoding="async">
       </span>
-      <span class="platform-label">${escapeHtml(platform)}</span>
+      <span class="platform-label">${escapeHtml(label)}</span>
       ${count == null ? "" : `<span class="platform-count">${count}</span>`}
     </span>
   `;
@@ -3603,7 +3712,7 @@ function platformLogo(platform) {
   if (isSegaPlatform(value)) return "assets/platforms/sega.png";
   if (value.includes("switch")) return "assets/platforms/switch.png";
   if (/\bps\d*\b/.test(value) || value.includes("playstation") || value.includes("psp") || value.includes("vita")) return "assets/platforms/playstation.png";
-  if (value.includes("xbox")) return "assets/platforms/xbox.png";
+  if (value.includes("xbox") || value === "x360" || value === "xone") return "assets/platforms/xbox.png";
   if (value.includes("pc")) return "assets/platforms/steam.png";
   return "assets/Icon.png";
 }
@@ -3625,7 +3734,7 @@ function platformClass(platform) {
   if (isSegaPlatform(value)) return "platform-sega";
   if (value.includes("switch")) return "platform-nintendo";
   if (/\bps\d*\b/.test(value) || value.includes("playstation") || value.includes("psp") || value.includes("vita")) return "platform-playstation";
-  if (value.includes("xbox")) return "platform-xbox";
+  if (value.includes("xbox") || value === "x360" || value === "xone") return "platform-xbox";
   if (value.includes("pc")) return "platform-pc";
   return "platform-generic";
 }
@@ -3728,9 +3837,10 @@ function canonicalPlatform(value) {
     switch2: "Switch 2",
     steam: "PC",
     pc: "PC",
-    xbox360: "Xbox 360",
-    x360: "Xbox 360",
-    xboxone: "Xbox",
+    xbox360: "X360",
+    x360: "X360",
+    xboxone: "XOne",
+    xone: "XOne",
     xboxseries: "Xbox",
     xboxseriesx: "Xbox",
     xboxseriess: "Xbox",
@@ -3764,10 +3874,10 @@ function canonicalPlatform(value) {
     gameboy: "GB",
     gb: "GB",
     genesis: "Gen",
-    sega: "Sega",
-    segagenesis: "Gen",
     megadrive: "Gen",
     segamegadrive: "Gen",
+    segagenesis: "Gen",
+    sega: "Sega",
     dreamcast: "DC",
     segadreamcast: "DC",
     dc: "DC",
@@ -3783,6 +3893,18 @@ function canonicalPlatform(value) {
     "32x": "32X",
   };
   return aliases[normalized] || text;
+}
+
+function platformDisplayName(platform) {
+  const labels = {
+    X360: "Xbox 360",
+    XOne: "Xbox One",
+    GBC: "GameBoy Color",
+    GB: "GameBoy",
+    GC: "GameCube",
+    Gen: "Sega Genesis",
+  };
+  return labels[canonicalPlatform(platform) || platform] || platform;
 }
 
 function normalizeGameRecords(games) {
@@ -3909,11 +4031,14 @@ function storeLinksFor(game) {
     { key: "playstation", label: "PlayStation", cls: "store-playstation", icon: "assets/sites/playstation.png", provider: playStationStoreName() },
     { key: "nintendo", label: "Nintendo", cls: "store-nintendo", icon: "assets/sites/nintendo.png", provider: nintendoStoreName() },
     { key: "steam", label: "Steam", cls: "store-steam", icon: "assets/sites/steam.png", provider: "Steam" },
+    { key: "xbox", label: "Xbox", cls: "store-xbox", icon: "assets/platforms/xbox.png", provider: "Xbox" },
   ];
+  const providers = platformStoreProvidersForGame(game);
   return [
     ...stores
-    .filter((store) => platformStoreProvidersForGame(game).includes(store.provider))
+    .filter((store) => providers.includes(store.provider))
     .map((store) => storeButton(store.label, links[store.key], store.cls, store.icon)),
+    providers.length ? "" : storeButton("Wikipedia", wikipediaUrlFor(game), "store-wikipedia", ""),
     hltbUrl ? storeButton("HowLongToBeat", hltbUrl, "store-hltb", "assets/sites/howlongtobeat.png") : "",
   ].filter(Boolean).join("");
 }
@@ -3935,7 +4060,12 @@ function storeLinksWithFallbacks(game) {
     playstation: regionalStoreLink(links.playstation, "playstation", q, region),
     nintendo: regionalStoreLink(links.nintendo, "nintendo", q, region),
     steam: links.steam || `https://store.steampowered.com/search/?term=${q}`,
+    xbox: `https://www.xbox.com/search?q=${q}`,
   };
+}
+
+function wikipediaUrlFor(game) {
+  return `https://en.wikipedia.org/wiki/Special:Search?search=${encodeURIComponent(retailTitle(game.title))}`;
 }
 
 function regionalStoreLink(url, store, query, region = state.settings.region) {
@@ -4124,7 +4254,8 @@ function platformStoreProvidersForGame(game) {
   if (platform === "Switch" || platform === "Switch 2") return [nintendoStoreName()];
   if (platform === "PS4" || platform === "PS5") return [playStationStoreName()];
   if (platform === "PC") return ["Steam"];
-  return game.digital ? [] : [nintendoStoreName(), playStationStoreName(), "Steam"];
+  if (["Xbox", "X360", "XOne"].includes(platform)) return ["Xbox"];
+  return [];
 }
 
 function currencySymbol() {
