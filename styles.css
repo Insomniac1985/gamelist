@@ -3899,12 +3899,6 @@ body:not(.can-edit) .game-card:focus-within .edit-action {
   background: rgba(255, 255, 255, 0.06);
 }
 
-.completed-more-button small {
-  color: var(--muted);
-  font-size: 10px;
-  font-weight: 760;
-}
-
 .completed-list.list-view {
   grid-template-columns: 1fr;
 }

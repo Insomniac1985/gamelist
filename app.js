@@ -8,8 +8,8 @@ const SETTINGS_KEY = "gamelist:settings:v1";
 const KASH_TWITCH_URL = "https://www.twitch.tv/kashhoward";
 const DEFAULT_PAGE_ORDER = ["trophies", "calendar", "highlights", "search", "gamelist", "finished"];
 const LAYOUT_SECTION_KEYS = ["playing", ...DEFAULT_PAGE_ORDER, "latestFinished"];
-const SITE_VERSION = "v108";
-const SITE_UPDATED_AT = "2026-06-20T13:17:01Z";
+const SITE_VERSION = "v109";
+const SITE_UPDATED_AT = "2026-06-20T13:18:35Z";
 const VERSION_STORAGE_KEY = "gamelist:site-version";
 const STORE_OPTIONS = ["Amazon", "GAME.es", "Xtralife", "Retro Island NY", "GameStop", "Walmart"];
 const THEMES = {
@@ -2038,7 +2038,7 @@ function renderCompleted() {
   `).join("") : `<div class="empty">Finished games will stay saved here.</div>`;
   if (el.completedMoreButton) {
     el.completedMoreButton.hidden = !hasMore;
-    el.completedMoreButton.innerHTML = `See more <small>(${Math.min(pageSize * 10, games.length - shownGames.length)} more)</small>`;
+    el.completedMoreButton.textContent = "See more";
   }
   list.querySelectorAll(".completed-edit-action").forEach((button) => {
     button.addEventListener("click", () => openEditor(button.closest(".completed-row").dataset.id));
