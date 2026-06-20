@@ -4,6 +4,7 @@ import * as calendar from "./functions/api/calendar.js";
 import * as prices from "./functions/api/prices.js";
 import * as search from "./functions/api/search.js";
 import * as sync from "./functions/api/sync.js";
+import * as steamAchievements from "./functions/api/steam-achievements.js";
 import * as trophies from "./functions/api/trophies.js";
 
 const routes = {
@@ -12,6 +13,7 @@ const routes = {
   "/api/calendar": calendar,
   "/api/prices": prices,
   "/api/search": search,
+  "/api/steam-achievements": steamAchievements,
   "/api/sync": sync,
   "/api/trophies": trophies,
 };
