@@ -626,6 +626,10 @@ body.theme-kash .playing-slider-button:hover {
   border-radius: 8px;
 }
 
+.achievement-kpi {
+  overflow: hidden;
+}
+
 button.achievement-kpi {
   appearance: none;
   width: 100%;
@@ -658,46 +662,63 @@ button.achievement-kpi {
 
 .achievement-kpi .kpi-breakdown {
   position: absolute;
-  z-index: 8;
-  top: calc(100% + 6px);
-  left: 0;
-  display: flex;
-  gap: 5px;
-  width: max-content;
-  max-width: min(360px, 86vw);
+  inset: 0;
+  z-index: 3;
+  display: grid;
+  place-content: center;
+  justify-items: stretch;
+  gap: 6px;
+  width: auto;
+  max-width: none;
   margin: 0;
-  padding: 5px;
+  padding: 9px;
   color: var(--text);
-  background: rgba(12, 13, 17, 0.94);
-  border: 1px solid var(--line-strong);
-  border-radius: 7px;
-  box-shadow: var(--shadow);
+  background:
+    radial-gradient(circle at 50% 0%, var(--kpi-glow, rgba(255, 255, 255, 0.13)), transparent 76%),
+    rgba(10, 12, 16, 0.94);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: inherit;
   opacity: 0;
   visibility: hidden;
   pointer-events: none;
-  transform: translateY(-3px);
+  transform: scale(0.985);
   transition: opacity 150ms ease, transform 150ms ease, visibility 150ms ease;
 }
 
-.achievement-kpi:hover .kpi-breakdown,
 .achievement-kpi:focus-visible .kpi-breakdown {
   opacity: 1;
   visibility: visible;
-  transform: translateY(0);
+  transform: scale(1);
+}
+
+@media (hover: hover) {
+  .achievement-kpi:hover .kpi-breakdown {
+    opacity: 1;
+    visibility: visible;
+    transform: scale(1);
+  }
 }
 
 .achievement-kpi .kpi-breakdown-pill {
   display: block;
   margin: 0;
-  padding: 5px 7px;
-  color: var(--muted);
+  padding: 5px 8px;
+  color: #dbeaff;
   font-size: 10px;
   line-height: 1.15;
   font-weight: 760;
   white-space: nowrap;
-  background: rgba(255, 255, 255, 0.065);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  text-align: center;
+  background: rgba(30, 78, 124, 0.86);
+  border: 1px solid rgba(112, 180, 255, 0.34);
   border-radius: 5px;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+.achievement-kpi .kpi-breakdown-playstation {
+  color: #ffffff;
+  background: rgba(38, 91, 198, 0.9);
+  border-color: rgba(127, 170, 255, 0.44);
 }
 
 .achievement-kpi .kpi-breakdown-pill strong {
@@ -722,6 +743,10 @@ button.achievement-kpi {
 .platinum-highlight {
   --kpi-color: #f7df69;
   --kpi-glow: rgba(247, 223, 105, 0.26);
+}
+
+.trophy-kpi {
+  --kpi-glow: rgba(67, 136, 255, 0.24);
 }
 
 .platinum-highlight strong,

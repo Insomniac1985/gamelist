@@ -8,8 +8,8 @@ const SETTINGS_KEY = "gamelist:settings:v1";
 const KASH_TWITCH_URL = "https://www.twitch.tv/kashhoward";
 const DEFAULT_PAGE_ORDER = ["trophies", "calendar", "highlights", "search", "gamelist", "finished"];
 const LAYOUT_SECTION_KEYS = ["playing", ...DEFAULT_PAGE_ORDER, "latestFinished"];
-const SITE_VERSION = "v117";
-const SITE_UPDATED_AT = "2026-06-20T19:37:51Z";
+const SITE_VERSION = "v118";
+const SITE_UPDATED_AT = "2026-06-20T19:42:55Z";
 const VERSION_STORAGE_KEY = "gamelist:site-version";
 const STORE_OPTIONS = ["Amazon", "GAME.es", "Xtralife", "Retro Island NY", "GameStop", "Walmart"];
 const THEMES = {
@@ -1337,7 +1337,7 @@ function achievementDashboard(achievements, games, sourceUrl, summary = null, st
 
 function achievementKpiBreakdown(rows) {
   return `<span class="kpi-breakdown" aria-hidden="true">${rows.map(([value, totalValue, platform]) => `
-    <small class="kpi-breakdown-pill"><strong>${escapeHtml(String(value))}</strong> out of ${escapeHtml(String(totalValue))} on ${escapeHtml(platform)}</small>
+    <small class="kpi-breakdown-pill kpi-breakdown-${escapeHtml(normalizeTag(platform))}"><strong>${escapeHtml(String(value))}</strong> out of ${escapeHtml(String(totalValue))} on ${escapeHtml(platform)}</small>
   `).join("")}</span>`;
 }
 
