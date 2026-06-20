@@ -58,6 +58,9 @@ const UI_ICON_URLS = [
   "/assets/platforms/snes.png",
   "/assets/platforms/nds.png",
   "/assets/platforms/3ds.png",
+  "/assets/platforms/gba.png",
+  "/assets/platforms/gbc.png",
+  "/assets/platforms/gb",
   "/assets/platforms/sega.png",
   "/assets/platforms/dreamcast.png",
   "/assets/sites/howlongtobeat.png",
@@ -2723,24 +2726,86 @@ function metaFor(game, options = {}) {
 }
 
 function matchedPsnGame(game) {
-  const title = normalizeTitleForMatch(game.title);
-  if (!title) return null;
-  return (state.psnActivity.games || []).find((psnGame) => {
-    const psnTitle = normalizeTitleForMatch(psnGame.title);
-    return psnTitle && (psnTitle === title || psnTitle.includes(title) || title.includes(psnTitle));
-  }) || null;
+  if (!isPlayStationGame(game)) return null;
+  let bestMatch = null;
+  let bestScore = 0;
+  (state.psnActivity.games || []).forEach((psnGame) => {
+    const score = psnTitleMatchScore(game.title, psnGame.title);
+    if (score > bestScore) {
+      bestMatch = psnGame;
+      bestScore = score;
+    }
+  });
+  return bestScore >= 75 ? bestMatch : null;
 }
 
 function latestTrophiesForGame(game, limit = 3) {
-  const title = normalizeTitleForMatch(game.title);
-  if (!title) return [];
+  if (!isPlayStationGame(game)) return [];
   return (state.psnActivity.achievements || [])
-    .filter((achievement) => {
-      const gameTitle = normalizeTitleForMatch(achievement.game || achievement.title || "");
-      return gameTitle && (gameTitle === title || gameTitle.includes(title) || title.includes(gameTitle));
-    })
+    .filter((achievement) => psnTitleMatchScore(game.title, achievement.game || achievement.title || "") >= 75)
     .sort(compareEarnedTrophies)
     .slice(0, limit);
+}
+
+function isPlayStationGame(game) {
+  return isPlayStationPlatform(game?.platform);
+}
+
+function isPlayStationPlatform(platform) {
+  return ["PS1", "PS2", "PS3", "PS4", "PS5", "PSP", "PSVita"].includes(canonicalPlatform(platform));
+}
+
+function psnTitleMatchScore(localTitle, psnTitle) {
+  const local = titleMatchParts(localTitle);
+  const psn = titleMatchParts(psnTitle);
+  if (!local.compact || !psn.compact) return 0;
+  if (local.compact === psn.compact) return 100;
+  if (local.phrase === psn.phrase) return 100;
+  if (local.compact === psn.acronym || local.acronym === psn.compact) return 96;
+  if (sameTitleTokens(local.tokens, psn.tokens)) return 92;
+  if (local.tokens.length >= 2 && containsAllTitleTokens(psn.tokens, local.tokens) && psnExtraTitleTokens(local.tokens, psn.tokens).length === 0) return 82;
+  if (psn.tokens.length >= 2 && containsAllTitleTokens(local.tokens, psn.tokens) && psnExtraTitleTokens(psn.tokens, local.tokens).length === 0) return 80;
+  return 0;
+}
+
+function titleMatchParts(value) {
+  const phrase = normalizeTitlePhrase(value);
+  const tokens = phrase ? phrase.split(" ").filter(Boolean) : [];
+  return {
+    phrase,
+    tokens,
+    compact: tokens.join(""),
+    acronym: tokens.map((token) => token[0]).join(""),
+  };
+}
+
+function normalizeTitlePhrase(value) {
+  return String(value || "")
+    .toLowerCase()
+    .replace(/&/g, " and ")
+    .replace(/\bVIII\b/gi, "8")
+    .replace(/\bVII\b/gi, "7")
+    .replace(/\bVI\b/gi, "6")
+    .replace(/\bIV\b/gi, "4")
+    .replace(/\bIX\b/gi, "9")
+    .replace(/\bIII\b/gi, "3")
+    .replace(/\bII\b/gi, "2")
+    .replace(/[^a-z0-9]+/g, " ")
+    .trim()
+    .replace(/\s+/g, " ");
+}
+
+function sameTitleTokens(a, b) {
+  return a.length === b.length && a.every((token, index) => token === b[index]);
+}
+
+function containsAllTitleTokens(haystack, needles) {
+  return needles.every((token) => haystack.includes(token));
+}
+
+function psnExtraTitleTokens(localTokens, psnTokens) {
+  const allowedExtras = new Set(["ps4", "ps5", "version", "edition", "remastered", "remaster", "complete", "ultimate"]);
+  return psnTokens.filter((token) => !localTokens.includes(token) && !allowedExtras.has(token));
 }
 
 function compareEarnedTrophies(a, b) {
@@ -2979,16 +3044,17 @@ function replayBadge(count) {
 function achievementProviderForGame(game) {
   const platform = String(game?.platform || "").toLowerCase();
   if (platform.includes("pc") || platform.includes("steam")) {
-    return { key: "steam", label: "Steam Achievements", icon: platformLogo("PC") };
+    return { key: "playstation", label: "Trophies", icon: "" };
   }
   if (platform.includes("xbox")) {
-    return { key: "xbox", label: "Xbox Achievements", icon: platformLogo("Xbox") };
+    return { key: "playstation", label: "Trophies", icon: "" };
   }
-  return { key: "playstation", label: "Completed", icon: "" };
+  return { key: "playstation", label: "Trophies", icon: "" };
 }
 
 function completionPill(game) {
   const provider = achievementProviderForGame(game);
+  if (!provider) return "";
   const icon = provider.icon
     ? `<img class="achievement-platform-icon" src="${escapeHtml(provider.icon)}" alt="" width="16" height="16" decoding="async">`
     : trophyIcon();
@@ -3114,6 +3180,9 @@ function platformLogo(platform) {
   if (value === "snes") return "assets/platforms/snes.png";
   if (value === "ds") return "assets/platforms/nds.png";
   if (value === "3ds") return "assets/platforms/3ds.png";
+  if (value === "gba") return "assets/platforms/gba.png";
+  if (value === "gbc") return "assets/platforms/gbc.png";
+  if (value === "gb") return "assets/platforms/gb";
   if (value === "dc" || value.includes("dreamcast")) return "assets/platforms/dreamcast.png";
   if (isSegaPlatform(value)) return "assets/platforms/sega.png";
   if (value.includes("switch")) return "assets/platforms/switch.png";
@@ -3133,6 +3202,9 @@ function platformClass(platform) {
   if (value === "snes") return "platform-snes";
   if (value === "ds") return "platform-ds";
   if (value === "3ds") return "platform-3ds";
+  if (value === "gba") return "platform-gba";
+  if (value === "gbc") return "platform-gbc";
+  if (value === "gb") return "platform-gb";
   if (value === "dc" || value.includes("dreamcast")) return "platform-dreamcast";
   if (isSegaPlatform(value)) return "platform-sega";
   if (value.includes("switch")) return "platform-nintendo";
@@ -3269,6 +3341,12 @@ function canonicalPlatform(value) {
     n3ds: "3DS",
     threeds: "3DS",
     "3ds": "3DS",
+    gameboyadvance: "GBA",
+    gba: "GBA",
+    gameboycolor: "GBC",
+    gbc: "GBC",
+    gameboy: "GB",
+    gb: "GB",
     genesis: "Gen",
     sega: "Sega",
     segagenesis: "Gen",
