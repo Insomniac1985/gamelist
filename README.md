@@ -169,6 +169,18 @@ npx wrangler secret put PSN_PROFILE_USER
 
 Treat the NPSSO token like a password. Do not commit it, paste it in chat, or put it in `wrangler.toml`. If trophies stop loading, refresh the token and redeploy if needed.
 
+### Steam Achievements
+
+PC game overlays can show Steam achievements when these are configured:
+
+```bash
+npx wrangler secret put STEAM_API_KEY
+```
+
+Get a Steam Web API key from `https://steamcommunity.com/dev/apikey`.
+
+In the site's Settings overlay, set **Steam profile** to a SteamID64, Steam profile URL, or vanity name. For each PC game, add a Steam store URL or Steam App ID in the game editor.
+
 ### Google Calendar Preorder Events
 
 When a game is newly marked as preordered and has a release date, the Worker can create an all-day Google Calendar event named `Preorder Game Name`.

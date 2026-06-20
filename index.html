@@ -384,6 +384,10 @@
               <span>Steam URL</span>
               <input id="steamUrlInput" placeholder="https://store.steampowered.com/app/...">
             </label>
+            <label>
+              <span>Steam App ID</span>
+              <input id="steamAppIdInput" inputmode="numeric" placeholder="123456">
+            </label>
             <label class="wide">
               <span>Cover URL</span>
               <input id="coverInput" placeholder="https://...">
@@ -481,7 +485,7 @@
                   <path d="M9 20h6"></path>
                   <path d="M10 16h4v4h-4z"></path>
                 </svg>
-                <span>TROPHIES</span>
+                <span id="detailTrophyTitle">TROPHIES</span>
               </h3>
               <div class="detail-trophy-tools">
                 <span id="detailTrophyCount"></span>
@@ -580,6 +584,10 @@
             <input id="settingsPsnUser" autocomplete="off">
           </label>
           <label>
+            <span>Steam profile</span>
+            <input id="settingsSteamUser" autocomplete="off" placeholder="SteamID64, profile URL, or vanity name">
+          </label>
+          <label>
             <span>Currency</span>
             <select id="settingsCurrency">
               <option value="EUR">EUR</option>
@@ -607,6 +615,27 @@
 
         <div class="modal-actions">
           <button class="primary-button" type="submit">Save Settings</button>
+        </div>
+      </form>
+    </dialog>
+
+    <dialog id="authDialog">
+      <form method="dialog" class="auth-modal glass" id="authForm">
+        <div class="modal-head">
+          <div>
+            <p class="eyebrow">Editor</p>
+            <h2>Password</h2>
+          </div>
+          <button class="icon-button" id="authCloseButton" type="button" title="Close">×</button>
+        </div>
+        <label>
+          <span>Editor password</span>
+          <input id="authPasswordInput" type="password" autocomplete="current-password" autofocus>
+        </label>
+        <p class="auth-error" id="authError" hidden>Wrong password.</p>
+        <div class="modal-actions">
+          <button class="ghost-button" id="authCancelButton" type="button">Cancel</button>
+          <button class="primary-button" type="submit">Unlock</button>
         </div>
       </form>
     </dialog>

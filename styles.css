@@ -4055,6 +4055,10 @@ dialog {
   width: min(920px, calc(100vw - 24px));
 }
 
+#authDialog {
+  width: min(420px, calc(100vw - 24px));
+}
+
 dialog::backdrop {
   background: rgba(0, 0, 0, 0.62);
   backdrop-filter: blur(4px);
@@ -4080,6 +4084,29 @@ body.dialog-open .mobile-section-tabs {
   border-radius: 8px;
   box-shadow: var(--shadow);
   backdrop-filter: blur(8px) saturate(1.08);
+}
+
+.auth-modal {
+  display: grid;
+  gap: 14px;
+  padding: 18px;
+  background:
+    var(--grid-fade),
+    var(--grid-texture),
+    var(--panel-strong);
+  background-size: auto, 22px 22px, 22px 22px, auto;
+  background-position: center, var(--grid-x) var(--grid-y), var(--grid-x) var(--grid-y), center;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  box-shadow: var(--shadow);
+  backdrop-filter: blur(8px) saturate(1.08);
+}
+
+.auth-error {
+  margin: -4px 0 0;
+  color: var(--danger);
+  font-size: 12px;
+  font-weight: 800;
 }
 
 .detail-modal {

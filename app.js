@@ -32,6 +32,7 @@ const DEFAULT_SETTINGS = {
   hiddenSections: [],
   theme: "shabii",
   psnUser: "ShabiiEXE",
+  steamUser: "",
   currency: "EUR",
   region: "ES",
   stores: ["Amazon", "Xtralife", "GAME.es", "Retro Island NY"],
@@ -122,6 +123,7 @@ const state = {
   detailReturnToHistory: false,
   detailGameId: "",
   detailTrophiesData: [],
+  detailTrophyProvider: "psn",
   detailTrophySort: "order",
   detailTrophyDirection: "asc",
   playingTrailerObserver: null,
@@ -191,8 +193,15 @@ const el = {
   settingsDialog: document.querySelector("#settingsDialog"),
   settingsForm: document.querySelector("#settingsForm"),
   settingsCloseButton: document.querySelector("#settingsCloseButton"),
+  authDialog: document.querySelector("#authDialog"),
+  authForm: document.querySelector("#authForm"),
+  authCloseButton: document.querySelector("#authCloseButton"),
+  authCancelButton: document.querySelector("#authCancelButton"),
+  authPasswordInput: document.querySelector("#authPasswordInput"),
+  authError: document.querySelector("#authError"),
   settingsLayoutList: document.querySelector("#settingsLayoutList"),
   settingsPsnUser: document.querySelector("#settingsPsnUser"),
+  settingsSteamUser: document.querySelector("#settingsSteamUser"),
   settingsCurrency: document.querySelector("#settingsCurrency"),
   settingsRegion: document.querySelector("#settingsRegion"),
   settingsStores: document.querySelector("#settingsStores"),
@@ -208,6 +217,7 @@ const el = {
   detailGuides: document.querySelector("#detailGuides"),
   detailGuideLinks: document.querySelector("#detailGuideLinks"),
   detailTrophies: document.querySelector("#detailTrophies"),
+  detailTrophyTitle: document.querySelector("#detailTrophyTitle"),
   detailTrophyCount: document.querySelector("#detailTrophyCount"),
   detailTrophyPercent: document.querySelector("#detailTrophyPercent"),
   detailTrophySort: document.querySelector("#detailTrophySort"),
@@ -256,6 +266,7 @@ const el = {
     playstationUrl: document.querySelector("#playstationUrlInput"),
     nintendoUrl: document.querySelector("#nintendoUrlInput"),
     steamUrl: document.querySelector("#steamUrlInput"),
+    steamAppId: document.querySelector("#steamAppIdInput"),
     cover: document.querySelector("#coverInput"),
     notes: document.querySelector("#notesInput"),
   },
@@ -325,6 +336,8 @@ function bindEvents() {
   el.floatingAddButton.addEventListener("click", quickAddGame);
   el.syncButton.addEventListener("click", syncNow);
   el.settingsButton?.addEventListener("click", openSettingsDialog);
+  el.authCloseButton?.addEventListener("click", () => el.authDialog.close("cancel"));
+  el.authCancelButton?.addEventListener("click", () => el.authDialog.close("cancel"));
   el.fetchDataButton?.addEventListener("click", refreshAllGameData);
   el.fetchPricesButton.addEventListener("click", refreshAllPrices);
   el.playingPrevButton.addEventListener("click", () => slidePlaying(-1));
@@ -430,6 +443,10 @@ function bindEvents() {
     if (event.target === el.settingsDialog) el.settingsDialog.close();
   });
   el.settingsDialog?.addEventListener("close", syncScrollLock);
+  el.authDialog?.addEventListener("click", (event) => {
+    if (event.target === el.authDialog) el.authDialog.close("cancel");
+  });
+  el.authDialog?.addEventListener("close", syncScrollLock);
   el.settingsForm?.addEventListener("submit", saveSettingsFromForm);
   el.mobileTabs.forEach((button) => button.addEventListener("click", () => {
     state.mobileSection = button.dataset.mobileSection;
@@ -574,6 +591,7 @@ function normalizeSettings(settings = {}) {
     hiddenSections,
     theme: THEMES[settings.theme] ? settings.theme : DEFAULT_SETTINGS.theme,
     psnUser: cleanPsnUser(settings.psnUser) || DEFAULT_SETTINGS.psnUser,
+    steamUser: cleanSteamUser(settings.steamUser),
     currency: settings.currency === "USD" ? "USD" : "EUR",
     region: ["ES", "US", "UK"].includes(settings.region) ? settings.region : DEFAULT_SETTINGS.region,
     stores: stores.slice(0, 4),
@@ -719,6 +737,7 @@ function openSettingsDialog() {
 function renderSettingsDialog() {
   state.settings = normalizeSettings(state.settings);
   el.settingsPsnUser.value = state.settings.psnUser;
+  el.settingsSteamUser.value = state.settings.steamUser;
   el.settingsCurrency.value = state.settings.currency;
   el.settingsRegion.value = state.settings.region;
   el.settingsDefaultOwner.value = state.settings.defaultOwner;
@@ -840,6 +859,7 @@ async function saveSettingsFromForm(event) {
     hiddenSections: LAYOUT_SECTION_KEYS.filter((key) => !visibleSections.has(key)),
     theme: el.settingsLayoutList.querySelector("[data-theme-select]")?.value || state.settings.theme,
     psnUser: el.settingsPsnUser.value,
+    steamUser: el.settingsSteamUser.value,
     currency: el.settingsCurrency.value,
     region: el.settingsRegion.value,
     stores,
@@ -864,7 +884,7 @@ function renderModeToggle(button, mode) {
 }
 
 function syncScrollLock() {
-  document.body.classList.toggle("dialog-open", el.dialog.open || el.detailDialog.open || el.historyDialog.open || el.releaseDialog.open || el.platinumDialog.open || Boolean(el.settingsDialog?.open));
+  document.body.classList.toggle("dialog-open", el.dialog.open || el.detailDialog.open || el.historyDialog.open || el.releaseDialog.open || el.platinumDialog.open || Boolean(el.settingsDialog?.open) || Boolean(el.authDialog?.open));
   if (document.body.classList.contains("dialog-open")) pauseAllPlayingTrailers();
   else scheduleFocusedPlayingTrailerUpdate();
   updateScrollTopButton();
@@ -2584,6 +2604,10 @@ function openDetail(id, options = {}) {
 }
 
 async function renderDetailTrophies(game) {
+  if (isPcGame(game)) {
+    await renderDetailSteamAchievements(game);
+    return;
+  }
   const psn = matchedPsnGame(game);
   const trophyId = psn?.npCommunicationId;
   if (!trophyId) {
@@ -2594,6 +2618,8 @@ async function renderDetailTrophies(game) {
     });
     state.detailTrophyRequest = "";
     state.detailTrophiesData = [];
+    state.detailTrophyProvider = "psn";
+    if (el.detailTrophyTitle) el.detailTrophyTitle.textContent = "TROPHIES";
     el.detailTrophies.hidden = true;
     el.detailTrophyCount.textContent = "";
     el.detailTrophyPercent.innerHTML = "";
@@ -2604,8 +2630,10 @@ async function renderDetailTrophies(game) {
 
   const requestKey = `${game.id}:${trophyId}:${Date.now()}`;
   state.detailGameId = game.id;
+  state.detailTrophyProvider = "psn";
   state.detailTrophyRequest = requestKey;
   el.detailTrophies.hidden = false;
+  if (el.detailTrophyTitle) el.detailTrophyTitle.textContent = "TROPHIES";
   el.detailTrophyCount.textContent = "";
   el.detailTrophyPercent.innerHTML = psnProgressBadge(psn, { includeIcon: false });
   el.detailTrophyList.innerHTML = `<div class="detail-trophy-empty">Loading earned trophies...</div>`;
@@ -2634,6 +2662,55 @@ async function renderDetailTrophies(game) {
   }
 }
 
+async function renderDetailSteamAchievements(game) {
+  const appId = steamAppIdFor(game);
+  const steamUser = state.settings.steamUser || "";
+  if (!appId || !steamUser) {
+    state.detailTrophyRequest = "";
+    state.detailTrophiesData = [];
+    state.detailTrophyProvider = "steam";
+    if (el.detailTrophyTitle) el.detailTrophyTitle.textContent = "ACHIEVEMENTS";
+    el.detailTrophies.hidden = true;
+    el.detailTrophyCount.textContent = "";
+    el.detailTrophyPercent.innerHTML = "";
+    el.detailTrophyList.innerHTML = "";
+    updateDetailTrophyEdges();
+    return;
+  }
+
+  const requestKey = `${game.id}:steam:${appId}:${Date.now()}`;
+  state.detailGameId = game.id;
+  state.detailTrophyProvider = "steam";
+  state.detailTrophyRequest = requestKey;
+  el.detailTrophies.hidden = false;
+  if (el.detailTrophyTitle) el.detailTrophyTitle.textContent = "ACHIEVEMENTS";
+  el.detailTrophyCount.textContent = "";
+  el.detailTrophyPercent.innerHTML = "";
+  el.detailTrophyList.innerHTML = `<div class="detail-trophy-empty">Loading earned achievements...</div>`;
+
+  try {
+    const params = new URLSearchParams({
+      appId,
+      user: steamUser,
+      debug: "1",
+    });
+    const response = await fetch(`/api/steam-achievements?${params}`);
+    const data = await response.json().catch(() => ({ error: "Invalid Steam achievements API JSON response" }));
+    if (state.detailTrophyRequest !== requestKey) return;
+    logTrophyLoadIssue("steam-detail", game, { npCommunicationId: appId, npServiceName: "steam" }, response, { trophies: data.achievements, ...data });
+    state.detailTrophiesData = Array.isArray(data.achievements) ? data.achievements : [];
+    renderDetailTrophyList();
+  } catch (error) {
+    if (state.detailTrophyRequest !== requestKey) return;
+    logTrophyLoadIssue("steam-detail", game, { npCommunicationId: appId, npServiceName: "steam" }, null, null, error);
+    state.detailTrophiesData = [];
+    el.detailTrophyCount.textContent = "";
+    el.detailTrophyPercent.innerHTML = "";
+    el.detailTrophyList.innerHTML = `<div class="detail-trophy-empty">Could not load achievements right now.</div>`;
+    updateDetailTrophyEdges();
+  }
+}
+
 function renderDetailTrophyList() {
   el.detailTrophySort.value = state.detailTrophySort;
   el.detailTrophyDirection.innerHTML = sortArrowIcon(state.detailTrophyDirection === "desc");
@@ -2645,12 +2722,15 @@ function renderDetailTrophyList() {
   const game = getGame(state.detailGameId);
   const psn = game ? matchedPsnGame(game) : null;
   el.detailTrophyCount.textContent = "";
-  el.detailTrophyPercent.innerHTML = trophies.length && psn
-    ? psnProgressBadge(psn, { includeIcon: false, label: `${earnedCount}/${trophies.length} earned`, separator: true })
+  const progressSource = state.detailTrophyProvider === "steam"
+    ? { progress: trophies.length ? Math.round((earnedCount / trophies.length) * 100) : 0, game: "" }
+    : psn;
+  el.detailTrophyPercent.innerHTML = trophies.length && progressSource
+    ? psnProgressBadge(progressSource, { includeIcon: false, label: `${earnedCount}/${trophies.length} earned`, separator: true })
     : "";
   el.detailTrophyList.innerHTML = trophies.length
     ? trophies.map(detailTrophyCard).join("")
-    : `<div class="detail-trophy-empty">No trophies found for this game yet.</div>`;
+    : `<div class="detail-trophy-empty">No ${state.detailTrophyProvider === "steam" ? "achievements" : "trophies"} found for this game yet.</div>`;
   requestAnimationFrame(updateDetailTrophyEdges);
 }
 
@@ -2691,9 +2771,10 @@ function trophyOrderCompare(a, b) {
 }
 
 function detailTrophyCard(trophy) {
+  const fallbackIcon = trophy.source === "steam" ? platformLogo("PC") : platformLogo("PS5");
   return `
     <article class="detail-trophy-card trophy-${escapeHtml(trophyTone(trophy.type))} ${trophy.earned ? "earned" : "missing"}">
-      <img src="${escapeHtml(trophy.icon || platformLogo("PS5"))}" alt="">
+      <img src="${escapeHtml(trophy.icon || fallbackIcon)}" alt="">
       <div>
         <strong>${escapeHtml(trophy.title || "Trophy")}</strong>
         <span>${escapeHtml([trophy.earned ? trophy.earnedAt : "Missing", trophy.rarity].filter(Boolean).join(" · "))}</span>
@@ -2771,6 +2852,10 @@ function isPlayStationGame(game) {
 
 function isPlayStationPlatform(platform) {
   return ["PS1", "PS2", "PS3", "PS4", "PS5", "PSP", "PSVita"].includes(canonicalPlatform(platform));
+}
+
+function isPcGame(game) {
+  return canonicalPlatform(game?.platform) === "PC";
 }
 
 function psnTitleMatchScore(localTitle, psnTitle) {
@@ -3447,6 +3532,7 @@ function normalizeGameRecord(game) {
   normalized.trailerUrl = String(normalized.trailerUrl || "");
   normalized.trailerUrlRemoved = Boolean(normalized.trailerUrlRemoved);
   normalized.storeLinks = normalizeStoreLinks(normalized.storeLinks);
+  normalized.steamAppId = cleanSteamAppId(normalized.steamAppId) || steamAppIdFromUrl(normalized.storeLinks.steam);
   normalized.owners = ownerTags(normalized);
   normalized.statuses = gameStatuses(normalized);
   normalized.genres = unique((Array.isArray(normalized.genres) ? normalized.genres : []).map((genre) => String(genre || "").trim()).filter(Boolean));
@@ -3521,6 +3607,25 @@ function normalizeStoreLinks(links) {
     nintendo: String(value.nintendo || ""),
     steam: String(value.steam || ""),
   };
+}
+
+function cleanSteamAppId(value) {
+  return String(value || "").replace(/\D/g, "").slice(0, 12);
+}
+
+function steamAppIdFor(game) {
+  return cleanSteamAppId(game?.steamAppId) || steamAppIdFromUrl(game?.storeLinks?.steam || "");
+}
+
+function steamAppIdFromUrl(value) {
+  const text = String(value || "").trim();
+  const direct = text.match(/(?:^|[^\d])(\d{2,12})(?:[^\d]|$)/);
+  try {
+    const url = new URL(text);
+    const appIndex = url.pathname.split("/").filter(Boolean).indexOf("app");
+    if (appIndex >= 0) return cleanSteamAppId(url.pathname.split("/").filter(Boolean)[appIndex + 1] || "");
+  } catch {}
+  return direct ? cleanSteamAppId(direct[1]) : "";
 }
 
 function storeLinksFor(game) {
@@ -3908,6 +4013,7 @@ async function openEditor(id = "") {
   el.fields.playstationUrl.value = game.storeLinks?.playstation || "";
   el.fields.nintendoUrl.value = game.storeLinks?.nintendo || "";
   el.fields.steamUrl.value = game.storeLinks?.steam || "";
+  el.fields.steamAppId.value = game.steamAppId || steamAppIdFromUrl(game.storeLinks?.steam || "");
   el.fields.cover.value = game.cover || "";
   el.fields.notes.value = game.notes || "";
   syncDialogPriceVisibility();
@@ -3952,6 +4058,7 @@ function blankGame() {
     publisher: "",
     igdbUrl: "",
     trailerUrl: "",
+    steamAppId: "",
     storeLinks: { playstation: "", nintendo: "", steam: "" },
     owners: [state.settings.defaultOwner || DEFAULT_SETTINGS.defaultOwner],
     preorderStore: "",
@@ -4018,6 +4125,7 @@ async function saveCurrentFormGame() {
     igdbUrl: el.fields.igdbUrl.value.trim(),
     trailerUrl,
     trailerUrlRemoved,
+    steamAppId: cleanSteamAppId(el.fields.steamAppId.value) || steamAppIdFromUrl(el.fields.steamUrl.value),
     storeLinks: {
       playstation: el.fields.playstationUrl.value.trim(),
       nintendo: el.fields.nintendoUrl.value.trim(),
@@ -4188,18 +4296,50 @@ async function toggleEditMode() {
 
 async function ensureEditMode() {
   if (state.canEdit) return true;
-  const password = prompt("Editor password");
-  if (!password) return false;
-  const ok = await verifyPassword(password);
-  if (!ok) {
-    alert("Wrong password.");
-    return false;
+  let showError = false;
+  while (!state.canEdit) {
+    const password = await requestEditorPassword({ error: showError });
+    if (!password) return false;
+    const ok = await verifyPassword(password);
+    if (!ok) {
+      showError = true;
+      continue;
+    }
+    state.canEdit = true;
+    sessionStorage.setItem(SESSION_KEY, "true");
+    sessionStorage.setItem(`${SESSION_KEY}:password`, password);
+    render();
+    return true;
   }
-  state.canEdit = true;
-  sessionStorage.setItem(SESSION_KEY, "true");
-  sessionStorage.setItem(`${SESSION_KEY}:password`, password);
-  render();
-  return true;
+  return false;
+}
+
+function requestEditorPassword(options = {}) {
+  if (!el.authDialog || !el.authForm || !el.authPasswordInput) return Promise.resolve("");
+  el.authPasswordInput.value = "";
+  if (el.authError) el.authError.hidden = !options.error;
+  return new Promise((resolve) => {
+    const cleanup = () => {
+      el.authForm.removeEventListener("submit", handleSubmit);
+      el.authDialog.removeEventListener("close", handleClose);
+    };
+    const handleSubmit = (event) => {
+      event.preventDefault();
+      const password = el.authPasswordInput.value;
+      cleanup();
+      el.authDialog.close("submit");
+      resolve(password);
+    };
+    const handleClose = () => {
+      cleanup();
+      resolve("");
+    };
+    el.authForm.addEventListener("submit", handleSubmit);
+    el.authDialog.addEventListener("close", handleClose, { once: true });
+    el.authDialog.showModal();
+    syncScrollLock();
+    requestAnimationFrame(() => el.authPasswordInput.focus());
+  });
 }
 
 async function verifyPassword(password) {
@@ -4270,6 +4410,7 @@ function applyLookup(result) {
   el.fields.playstationUrl.value = links.playstation || el.fields.playstationUrl.value;
   el.fields.nintendoUrl.value = links.nintendo || el.fields.nintendoUrl.value;
   el.fields.steamUrl.value = links.steam || el.fields.steamUrl.value;
+  el.fields.steamAppId.value = steamAppIdFromUrl(el.fields.steamUrl.value) || el.fields.steamAppId.value;
   const current = state.games.find((game) => game.id === el.fields.id.value);
   if (current && !current.description && result.description) current.description = result.description;
   if (!current) state.pendingDescription = result.description || "";
@@ -4706,6 +4847,10 @@ function listFrom(value) {
 
 function cleanPsnUser(value) {
   return String(value || "").trim().replace(/[^A-Za-z0-9_-]/g, "").slice(0, 32);
+}
+
+function cleanSteamUser(value) {
+  return String(value || "").trim().replace(/[<>]/g, "").slice(0, 96);
 }
 
 function cleanOwnerLabel(value) {
