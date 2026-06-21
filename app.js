@@ -4,12 +4,13 @@ const SESSION_KEY = "gamelist-editor";
 const VIEW_MODE_KEY = "gamelist:view-mode";
 const PLATINUM_VIEW_MODE_KEY = "gamelist:platinum-view-mode";
 const PLATINUM_META_CACHE_KEY = "gamelist:platinum-meta:v1";
+const PLATINUM_COVER_CACHE_KEY = "gamelist:platinum-covers:v1";
 const SETTINGS_KEY = "gamelist:settings:v1";
 const KASH_TWITCH_URL = "https://www.twitch.tv/kashhoward";
 const DEFAULT_PAGE_ORDER = ["trophies", "calendar", "highlights", "search", "gamelist", "finished"];
 const LAYOUT_SECTION_KEYS = ["playing", ...DEFAULT_PAGE_ORDER, "latestFinished"];
-const SITE_VERSION = "v143";
-const SITE_UPDATED_AT = "2026-06-21T15:03:36Z";
+const SITE_VERSION = "v148";
+const SITE_UPDATED_AT = "2026-06-21T21:12:00Z";
 const VERSION_STORAGE_KEY = "gamelist:site-version";
 const STORE_OPTIONS = ["Amazon", "GAME.es", "Xtralife", "Retro Island NY", "GameStop", "Walmart"];
 const THEMES = {
@@ -136,7 +137,7 @@ const state = {
   xboxActivity: { achievements: [], games: [], completed: [], totalEarned: 0, sourceUrl: "" },
   steamOwnedAppIds: null,
   cardTrophies: {},
-  platinumCoverCache: {},
+  platinumCoverCache: loadPlatinumCoverCache(),
   settings: initialSettings,
   filters: { query: "", platform: "all", tag: "all", sort: mainSortForDefault(initialSettings.defaultOrder), direction: "asc", preordered: false },
   sortTouched: false,
@@ -1162,8 +1163,9 @@ async function refreshAchievements() {
 
 async function fetchXboxActivity() {
   const params = new URLSearchParams();
+  params.set("schema", "2");
   if (state.settings.microsoftUser) params.set("user", state.settings.microsoftUser);
-  const response = await fetch(`/api/xbox-achievements${params.size ? `?${params}` : ""}`);
+  const response = await fetch(`/api/xbox-achievements?${params}`, { cache: "no-store" });
   const data = await response.json().catch(() => emptyXboxActivity());
   if (!response.ok || data.authError || data.error) {
     if (!data.needsSetup) console.warn("[trophies] Xbox activity unavailable", data.error || response.status);
@@ -1552,7 +1554,7 @@ function platinumItems() {
     const localGame = localXboxGameForTitle(item.title);
     return {
       ...item,
-      cover: item.cover || localGame?.cover || "",
+      cover: item.cover || (localGame?.cover ? coverDisplayUrl(localGame.cover, "card") : "") || platinumCoverFor(item),
       trophyIcon: item.trophyIcon || platformLogo("Xbox"),
       trophyName: item.trophyName || "100% Achievements",
       platform: item.platform || "Xbox",
@@ -1706,6 +1708,25 @@ function cachedPlatinumMetadata(title) {
   return key ? platinumMetaCache[key] || null : null;
 }
 
+function loadPlatinumCoverCache() {
+  try {
+    const parsed = JSON.parse(localStorage.getItem(PLATINUM_COVER_CACHE_KEY) || "{}");
+    if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) return {};
+    return Object.fromEntries(Object.entries(parsed).filter(([key, value]) => key && typeof value === "string" && value && value !== "__missing"));
+  } catch {
+    return {};
+  }
+}
+
+function savePlatinumCoverCache() {
+  try {
+    const covers = Object.fromEntries(Object.entries(state.platinumCoverCache).filter(([, value]) => value && value !== "__missing"));
+    localStorage.setItem(PLATINUM_COVER_CACHE_KEY, JSON.stringify(covers));
+  } catch {
+    // Cover caching is an optional enhancement.
+  }
+}
+
 async function hydratePlatinumCovers(platinums) {
   const missing = platinums
     .filter((item) => !localCoverForTitle(item.title) && !state.platinumCoverCache[normalizeTitleForMatch(item.title)])
@@ -1721,6 +1742,7 @@ async function hydratePlatinumCovers(platinums) {
       state.platinumCoverCache[key] = "__missing";
     }
   }));
+  savePlatinumCoverCache();
   if (el.platinumDialog.open) renderPlatinumDialog(platinumItems(), platinumYears(platinumItems()));
 }
 
