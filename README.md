@@ -180,7 +180,7 @@ npx wrangler secret put STEAM_PROFILE_USER
 
 Get a Steam Web API key from `https://steamcommunity.com/dev/apikey`.
 
-Set `STEAM_PROFILE_USER` to a SteamID64, Steam profile URL, or vanity name, for example `shabii_`. The site's Settings overlay also has a **Steam profile** field; if filled, it overrides the Cloudflare value for that browser/account. For each PC game, add a Steam store URL or Steam App ID in the game editor.
+Set `STEAM_PROFILE_USER` to a SteamID64, Steam profile URL, or vanity name, for example `shabii_`. The site's Settings overlay also has a **Steam account** field; if filled, it overrides the Cloudflare value for that browser/account. For each PC game, add a Steam store URL or Steam App ID in the game editor.
 
 Steam achievements are only fetched for Steam app IDs owned by the configured Steam account. Make sure the account's game details/library visibility allows Steam Web API access, otherwise the owned-games list can come back empty. Legacy games saved with the platform `PC` are treated as `Steam`; use `Xbox PC` for Microsoft Store or PC Game Pass games.
 

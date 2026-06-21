@@ -4676,8 +4676,20 @@ body.dialog-open .mobile-section-tabs {
 
 .settings-grid {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: repeat(6, minmax(0, 1fr));
   gap: 10px;
+}
+
+.settings-account-field {
+  grid-column: span 3;
+}
+
+.settings-account-field-wide {
+  grid-column: 1 / -1;
+}
+
+.settings-detail-compact {
+  grid-column: span 2;
 }
 
 .settings-store-list {
