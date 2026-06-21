@@ -64,7 +64,7 @@ function digitalProvidersForPlatform(platform, region) {
     search: (q) => `https://store.steampowered.com/search/?term=${encodeURIComponent(q)}`,
     parse: parseSteam,
   }];
-  if (["xboxpc", "microsoft", "microsoftpc", "xbox", "xbox360", "x360", "xboxone", "xone", "xboxseries", "xboxseriesx", "xboxseriess", "xboxseriesxs"].includes(normalized)) return [{
+  if (["xboxpc", "microsoft", "microsoftpc", "xbox360", "x360", "xboxone", "xone", "xboxseries", "xboxseriesx", "xboxseriess", "xboxseriesxs"].includes(normalized)) return [{
     store: "Xbox",
     search: (q) => xboxSearchUrl(q, region),
     lookup: lookupXboxStore,
@@ -248,16 +248,38 @@ async function lookupXboxStore(title, platform, query, options = {}) {
     .map((product) => {
       const productId = String(product.ProductId || "").trim();
       const matchedTitle = String(product.Title || "").trim();
+      const pricing = xboxProductPrice(product);
       return {
         title: matchedTitle,
         platform: "Xbox Xbox Series Xbox PC Xbox One Xbox 360",
-        price: String(product.DisplayPrice || "").trim(),
-        numericPrice: Number.isFinite(Number(product.Price)) ? Number(product.Price) : null,
+        price: pricing.price,
+        numericPrice: pricing.numericPrice,
         matchedTitle,
         url: productId ? `https://www.xbox.com/${xboxLocale(region)}/games/store/${encodeURIComponent(matchedTitle || "game")}/${encodeURIComponent(productId)}` : "",
       };
     });
   return bestProduct(products, title, platform) || { price: "", matchedTitle: "" };
+}
+
+function xboxProductPrice(product = {}) {
+  const skus = Array.isArray(product.SkusSummary) ? product.SkusSummary : [];
+  const salePrices = skus.flatMap((sku) => Array.isArray(sku.SalePrices) ? sku.SalePrices : []);
+  const unconditional = salePrices
+    .filter((price) => !price.Conditions && Number(price.Price) > 0 && isMoneyLabel(price.DisplayPrice))
+    .sort((a, b) => Number(a.Price) - Number(b.Price))[0];
+  if (unconditional) return { price: String(unconditional.DisplayPrice).trim(), numericPrice: Number(unconditional.Price) };
+  const msrp = skus
+    .filter((sku) => Number(sku.MSRP) > 0 && isMoneyLabel(sku.DisplayMSRP))
+    .sort((a, b) => Number(a.MSRP) - Number(b.MSRP))[0];
+  if (msrp) return { price: String(msrp.DisplayMSRP).trim(), numericPrice: Number(msrp.MSRP) };
+  if (Number(product.Price) > 0 && isMoneyLabel(product.DisplayPrice)) {
+    return { price: String(product.DisplayPrice).trim(), numericPrice: Number(product.Price) };
+  }
+  return { price: "", numericPrice: null };
+}
+
+function isMoneyLabel(value) {
+  return /[$€£]/.test(String(value || ""));
 }
 
 async function lookupNintendoEs(title, platform, query) {

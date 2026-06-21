@@ -8,8 +8,8 @@ const SETTINGS_KEY = "gamelist:settings:v1";
 const KASH_TWITCH_URL = "https://www.twitch.tv/kashhoward";
 const DEFAULT_PAGE_ORDER = ["trophies", "calendar", "highlights", "search", "gamelist", "finished"];
 const LAYOUT_SECTION_KEYS = ["playing", ...DEFAULT_PAGE_ORDER, "latestFinished"];
-const SITE_VERSION = "v129";
-const SITE_UPDATED_AT = "2026-06-21T09:00:38Z";
+const SITE_VERSION = "v130";
+const SITE_UPDATED_AT = "2026-06-21T09:02:50Z";
 const VERSION_STORAGE_KEY = "gamelist:site-version";
 const STORE_OPTIONS = ["Amazon", "GAME.es", "Xtralife", "Retro Island NY", "GameStop", "Walmart"];
 const THEMES = {
@@ -3393,7 +3393,7 @@ function isMicrosoftAchievementGame(game) {
 }
 
 function isXboxStoreGame(game) {
-  return ["Xbox PC", "Xbox Series", "Xbox", "X360", "XOne"].includes(canonicalPlatform(game?.platform));
+  return ["Xbox PC", "Xbox Series", "X360", "XOne"].includes(canonicalPlatform(game?.platform));
 }
 
 function psnTitleMatchScore(localTitle, psnTitle) {
@@ -4536,7 +4536,7 @@ function platformStoreProvidersForGame(game) {
   if (platform === "Switch" || platform === "Switch 2") return [nintendoStoreName()];
   if (platform === "PS4" || platform === "PS5") return [playStationStoreName()];
   if (platform === "Steam") return ["Steam"];
-  if (["Xbox PC", "Xbox Series", "Xbox", "X360", "XOne"].includes(platform)) return ["Xbox"];
+  if (["Xbox PC", "Xbox Series", "X360", "XOne"].includes(platform)) return ["Xbox"];
   return [];
 }
 
@@ -5492,7 +5492,7 @@ function mergeFetchedPrices(game, fetchedPrices = []) {
 
 async function fetchPrices(title, platform, digital = false) {
   const params = new URLSearchParams({ title, platform });
-  if (digital || ["Xbox PC", "Xbox Series", "Xbox", "X360", "XOne"].includes(canonicalPlatform(platform))) params.set("digital", "1");
+  if (digital || ["Xbox PC", "Xbox Series", "X360", "XOne"].includes(canonicalPlatform(platform))) params.set("digital", "1");
   params.set("currency", state.settings.currency);
   params.set("region", state.settings.region);
   params.set("stores", state.settings.stores.join(","));
