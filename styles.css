@@ -1205,6 +1205,19 @@ h3 {
   font-size: 13px;
 }
 
+.stat-detail .completed-year-count-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 24px;
+  padding: 5px 9px;
+  color: #15170f;
+  background: #d8ed78;
+  border-radius: 6px;
+  font-size: 10px;
+  font-weight: 850;
+}
+
 .preorder-count-pill {
   display: inline-flex;
   align-items: center;

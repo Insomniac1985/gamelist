@@ -8,8 +8,8 @@ const SETTINGS_KEY = "gamelist:settings:v1";
 const KASH_TWITCH_URL = "https://www.twitch.tv/kashhoward";
 const DEFAULT_PAGE_ORDER = ["trophies", "calendar", "highlights", "search", "gamelist", "finished"];
 const LAYOUT_SECTION_KEYS = ["playing", ...DEFAULT_PAGE_ORDER, "latestFinished"];
-const SITE_VERSION = "v135";
-const SITE_UPDATED_AT = "2026-06-21T09:24:11Z";
+const SITE_VERSION = "v136";
+const SITE_UPDATED_AT = "2026-06-21T14:43:50Z";
 const VERSION_STORAGE_KEY = "gamelist:site-version";
 const STORE_OPTIONS = ["Amazon", "GAME.es", "Xtralife", "Retro Island NY", "GameStop", "Walmart"];
 const THEMES = {
@@ -1834,6 +1834,7 @@ function completedStatDetail(year, yearCount, total) {
   return `
     <div class="stat-detail">
       <span>${yearCount} ${yearCount === 1 ? "game" : "games"} in ${escapeHtml(year)}</span>
+      ${yearCount ? `<span class="completed-year-count-pill">${yearCount} completed of ${total} this year</span>` : ""}
       <b>Total ${total} finished ${total === 1 ? "game" : "games"}</b>
     </div>
   `;
@@ -2368,7 +2369,7 @@ function renderFooter() {
 
 function latestGameUpdateDate() {
   const times = state.games
-    .flatMap((game) => [game.updatedAt, game.createdAt, game.deletedAt].filter(Boolean))
+    .flatMap((game) => [game.editedAt, game.createdAt].filter(Boolean))
     .map((value) => Date.parse(value))
     .filter((time) => Number.isFinite(time));
   if (!times.length) return "";
@@ -2605,7 +2606,7 @@ function updateCompletedDate(id, key, value) {
     game.section = "backlog";
     game.platinum = false;
   }
-  game.updatedAt = new Date().toISOString();
+  markGameEdited(game);
   upsertGame(game);
 }
 
@@ -3331,7 +3332,8 @@ function xboxPlatformMatchScore(localPlatform, remotePlatform) {
   const local = canonicalPlatform(localPlatform);
   const remote = canonicalPlatform(remotePlatform);
   if (local === remote) return 18;
-  if (["XOne", "Xbox Series"].includes(local) && ["XOne", "Xbox Series"].includes(remote)) return 10;
+  const modernXbox = ["Xbox PC", "XOne", "Xbox Series"];
+  if (modernXbox.includes(local) && modernXbox.includes(remote)) return 8;
   return null;
 }
 
@@ -4269,6 +4271,7 @@ function normalizeGameRecords(games) {
 
 function normalizeGameRecord(game) {
   const normalized = { ...game };
+  normalized.editedAt = String(normalized.editedAt || normalized.updatedAt || normalized.createdAt || "");
   normalized.cover = MANUAL_GAME_COVER_OVERRIDES[normalizeTag(normalized.title)] || normalized.cover || "";
   normalized.digital = Boolean(normalized.digital);
   normalized.emulator = Boolean(normalized.emulator);
@@ -4803,6 +4806,7 @@ async function addGameFromSearch(query, section = "wanted") {
 }
 
 function blankGame() {
+  const createdAt = new Date().toISOString();
   return {
     id: crypto.randomUUID(),
     title: "",
@@ -4836,8 +4840,9 @@ function blankGame() {
     prices: [],
     order: nextOrder("wanted"),
     completedAt: "",
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
+    createdAt,
+    editedAt: createdAt,
+    updatedAt: createdAt,
   };
 }
 
@@ -4865,6 +4870,7 @@ async function saveCurrentFormGame() {
   const startedAt = el.fields.startedAt.value || (playing && !existing?.playing && !existing?.startedAt ? todayDate() : "");
   const trailerUrl = el.fields.trailerUrl.value.trim();
   const trailerUrlRemoved = !trailerUrl && Boolean(existing?.trailerUrl || existing?.trailerUrlRemoved);
+  const editedAt = new Date().toISOString();
   const game = {
     ...(existing || blankGame()),
     id,
@@ -4903,7 +4909,8 @@ async function saveCurrentFormGame() {
     cover: el.fields.cover.value.trim(),
     notes: el.fields.notes.value.trim(),
     order: existing?.section === section ? existing.order : nextOrder(section),
-    updatedAt: new Date().toISOString(),
+    editedAt,
+    updatedAt: editedAt,
   };
   if (game.section === "backlog") game.prices = [];
   await normalizeGameBeforeSave(game);
@@ -4938,13 +4945,19 @@ function upsertGame(game) {
   persistCloud();
 }
 
+function markGameEdited(game, timestamp = new Date().toISOString()) {
+  game.editedAt = timestamp;
+  game.updatedAt = timestamp;
+  return game;
+}
+
 function moveToBacklog(id) {
   const game = getGame(id);
   game.section = "backlog";
   game.preorderStore = "";
   game.prices = [];
   game.order = nextOrder("backlog");
-  game.updatedAt = new Date().toISOString();
+  markGameEdited(game);
   upsertGame(game);
 }
 
@@ -4961,7 +4974,7 @@ function startPlaying(id) {
   game.section = "backlog";
   game.playing = true;
   game.startedAt = game.startedAt || todayDate();
-  game.updatedAt = new Date().toISOString();
+  markGameEdited(game);
   upsertGame(game);
 }
 
@@ -4971,7 +4984,7 @@ function completeGame(id) {
   game.startedAt = game.startedAt || todayDate();
   game.completedAt = todayDate();
   game.playing = false;
-  game.updatedAt = new Date().toISOString();
+  markGameEdited(game);
   upsertGame(game);
 }
 
@@ -4982,7 +4995,7 @@ function completeGameWithTrophy(id) {
   game.completedAt = game.completedAt || todayDate();
   game.playing = false;
   game.platinum = true;
-  game.updatedAt = new Date().toISOString();
+  markGameEdited(game);
   upsertGame(game);
 }
 
@@ -4994,7 +5007,7 @@ function restoreCompletedToBacklog(id) {
   game.section = "backlog";
   game.prices = [];
   game.order = nextOrder("backlog");
-  game.updatedAt = new Date().toISOString();
+  markGameEdited(game);
   upsertGame(game);
 }
 
@@ -5005,8 +5018,9 @@ function deleteCurrentGame() {
 
 function deleteGame(id) {
   const game = getGame(id);
-  game.deletedAt = new Date().toISOString();
-  game.updatedAt = game.deletedAt;
+  const deletedAt = new Date().toISOString();
+  game.deletedAt = deletedAt;
+  markGameEdited(game, deletedAt);
   upsertGame(game);
 }
 
@@ -5051,10 +5065,16 @@ function getDragAfterElement(container, y) {
 }
 
 function saveBacklogOrder(list) {
+  const editedAt = new Date().toISOString();
+  let changed = false;
   [...list.querySelectorAll(".game-card")].forEach((card, index) => {
     const game = getGame(card.dataset.id);
-    if (game) game.order = index;
+    if (!game || game.order === index) return;
+    game.order = index;
+    markGameEdited(game, editedAt);
+    changed = true;
   });
+  if (!changed) return;
   persistLocal();
   persistCloud();
 }
