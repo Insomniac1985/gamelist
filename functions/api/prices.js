@@ -64,6 +64,11 @@ function digitalProvidersForPlatform(platform, region) {
     search: (q) => `https://store.steampowered.com/search/?term=${encodeURIComponent(q)}`,
     parse: parseSteam,
   }];
+  if (["xboxpc", "microsoft", "microsoftpc", "xbox", "xbox360", "x360", "xboxone", "xone"].includes(normalized)) return [{
+    store: "Xbox",
+    search: (q) => xboxSearchUrl(q, region),
+    lookup: lookupXboxStore,
+  }];
   return [];
 }
 
@@ -127,6 +132,20 @@ function playStationSearchUrl(query, region) {
   if (region === "US") return `https://www.playstation.com/en-us/search/?q=${encodeURIComponent(query)}`;
   if (region === "UK") return `https://www.playstation.com/en-gb/search/?q=${encodeURIComponent(query)}`;
   return `https://www.playstation.com/es-es/search/?q=${encodeURIComponent(query)}`;
+}
+
+function xboxSearchUrl(query, region) {
+  return `https://www.xbox.com/${xboxLocale(region)}/search?q=${encodeURIComponent(query)}`;
+}
+
+function xboxLocale(region) {
+  if (region === "US") return "en-US";
+  if (region === "UK") return "en-GB";
+  return "es-ES";
+}
+
+function xboxMarket(region) {
+  return region === "UK" ? "GB" : region;
 }
 
 function gamestopSearchUrl(query) {
@@ -200,6 +219,45 @@ function withTimeout(promise, timeoutMs = PRICE_LOOKUP_TIMEOUT_MS) {
 
 async function lookupLinkOnly() {
   return { price: "", matchedTitle: "" };
+}
+
+async function lookupXboxStore(title, platform, query, options = {}) {
+  const region = cleanRegion(options.region);
+  const endpoint = new URL("https://storeedgefd.dsx.mp.microsoft.com/v9.0/pages/searchResults");
+  endpoint.searchParams.set("appVersion", "22203.1401.0.0");
+  endpoint.searchParams.set("market", xboxMarket(region));
+  endpoint.searchParams.set("locale", xboxLocale(region));
+  endpoint.searchParams.set("deviceFamily", "windows.desktop");
+  endpoint.searchParams.set("mediaType", "games");
+  endpoint.searchParams.set("query", retailTitle(title || query));
+  const response = await fetch(endpoint.toString(), {
+    headers: {
+      "Accept": "application/json",
+      "Accept-Language": xboxLocale(region),
+      "User-Agent": "Mozilla/5.0 (compatible; GameList/1.0)",
+    },
+    cf: { cacheTtl: 900, cacheEverything: true },
+  });
+  if (!response.ok) throw new Error("Xbox Store search failed");
+  const data = await response.json();
+  const results = Array.isArray(data)
+    ? data.flatMap((entry) => Array.isArray(entry?.Payload?.SearchResults) ? entry.Payload.SearchResults : [])
+    : [];
+  const products = results
+    .filter((product) => !product.ProductFamilyName || product.ProductFamilyName === "Games")
+    .map((product) => {
+      const productId = String(product.ProductId || "").trim();
+      const matchedTitle = String(product.Title || "").trim();
+      return {
+        title: matchedTitle,
+        platform: "Xbox Xbox PC Xbox One Xbox 360",
+        price: String(product.DisplayPrice || "").trim(),
+        numericPrice: Number.isFinite(Number(product.Price)) ? Number(product.Price) : null,
+        matchedTitle,
+        url: productId ? `https://www.xbox.com/${xboxLocale(region)}/games/store/${encodeURIComponent(matchedTitle || "game")}/${encodeURIComponent(productId)}` : "",
+      };
+    });
+  return bestProduct(products, title, platform) || { price: "", matchedTitle: "" };
 }
 
 async function lookupNintendoEs(title, platform, query) {

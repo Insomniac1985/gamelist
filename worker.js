@@ -6,6 +6,7 @@ import * as search from "./functions/api/search.js";
 import * as sync from "./functions/api/sync.js";
 import * as steamAchievements from "./functions/api/steam-achievements.js";
 import * as trophies from "./functions/api/trophies.js";
+import * as xboxAchievements from "./functions/api/xbox-achievements.js";
 
 const routes = {
   "/api/achievements": achievements,
@@ -16,6 +17,7 @@ const routes = {
   "/api/steam-achievements": steamAchievements,
   "/api/sync": sync,
   "/api/trophies": trophies,
+  "/api/xbox-achievements": xboxAchievements,
 };
 
 export default {

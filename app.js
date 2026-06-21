@@ -8,8 +8,8 @@ const SETTINGS_KEY = "gamelist:settings:v1";
 const KASH_TWITCH_URL = "https://www.twitch.tv/kashhoward";
 const DEFAULT_PAGE_ORDER = ["trophies", "calendar", "highlights", "search", "gamelist", "finished"];
 const LAYOUT_SECTION_KEYS = ["playing", ...DEFAULT_PAGE_ORDER, "latestFinished"];
-const SITE_VERSION = "v125";
-const SITE_UPDATED_AT = "2026-06-21T08:33:18Z";
+const SITE_VERSION = "v126";
+const SITE_UPDATED_AT = "2026-06-21T08:37:40Z";
 const VERSION_STORAGE_KEY = "gamelist:site-version";
 const STORE_OPTIONS = ["Amazon", "GAME.es", "Xtralife", "Retro Island NY", "GameStop", "Walmart"];
 const THEMES = {
@@ -130,6 +130,7 @@ const state = {
   games: [],
   psnActivity: { achievements: [], games: [], platinums: [], sourceUrl: "" },
   steamActivity: { achievements: [], games: [], completed: [], totalEarned: 0, sourceUrl: "" },
+  xboxActivity: { achievements: [], games: [], completed: [], totalEarned: 0, sourceUrl: "" },
   steamOwnedAppIds: null,
   cardTrophies: {},
   platinumCoverCache: {},
@@ -1095,12 +1096,30 @@ async function refreshAchievements() {
     const response = await fetch(`/api/achievements?user=${encodeURIComponent(psnUser)}&schema=3`);
     return response.json();
   })();
-  const [psnResult, steamResult] = await Promise.allSettled([psnRequest, fetchSteamActivity()]);
+  const [psnResult, steamResult, xboxResult] = await Promise.allSettled([psnRequest, fetchSteamActivity(), fetchXboxActivity()]);
   const psnData = psnResult.status === "fulfilled"
     ? psnResult.value
     : { user: psnUser, achievements: [], sourceUrl: "https://www.playstation.com/", source: "psn", authError: true };
-  renderAchievements(psnData, steamResult.status === "fulfilled" ? steamResult.value : emptySteamActivity());
+  renderAchievements(
+    psnData,
+    steamResult.status === "fulfilled" ? steamResult.value : emptySteamActivity(),
+    xboxResult.status === "fulfilled" ? xboxResult.value : emptyXboxActivity()
+  );
   render();
+}
+
+async function fetchXboxActivity() {
+  const response = await fetch("/api/xbox-achievements");
+  const data = await response.json().catch(() => emptyXboxActivity());
+  if (!response.ok || data.authError || data.error) {
+    if (!data.needsSetup) console.warn("[trophies] Xbox activity unavailable", data.error || response.status);
+    return emptyXboxActivity();
+  }
+  return data;
+}
+
+function emptyXboxActivity() {
+  return { achievements: [], games: [], completed: [], totalEarned: 0, sourceUrl: "" };
 }
 
 async function fetchSteamActivity() {
@@ -1124,10 +1143,10 @@ async function fetchSteamActivity() {
       rawEarnedAt: achievement.rawEarnedAt || achievement.earnedAt,
       rarity: "Steam",
       type: "achievement",
-      icon: achievement.icon || platformLogo("PC"),
+      icon: achievement.icon || platformLogo("Steam"),
       url: game.storeLinks?.steam || hltbUrlFor(game) || "",
       source: "steam",
-      platform: "PC",
+      platform: "Steam",
     })));
   achievements.sort(compareEarnedTrophies);
   const completed = results
@@ -1138,10 +1157,10 @@ async function fetchSteamActivity() {
         title: game.title,
         cover: game.cover ? coverDisplayUrl(game.cover, "card") : steamLibraryCoverUrl(game.steamAppId),
         trophyName: "100% Achievements",
-        trophyIcon: game.steamIcon || platformLogo("PC"),
+        trophyIcon: game.steamIcon || platformLogo("Steam"),
         earnedAt: latest?.earnedAt || formatLongDate(game.completedAt),
         rawEarnedAt: latest?.rawEarnedAt || game.completedAt || "",
-        platform: "PC",
+        platform: "Steam",
         url: game.storeLinks?.steam || hltbUrlFor(game) || "",
         gameId: game.localGameId || "",
         source: "steam",
@@ -1192,7 +1211,7 @@ function steamActivityGame(steamGame) {
     id: localGame?.id || `steam-${appId}`,
     localGameId: localGame?.completedAt ? localGame.id : "",
     title: localGame?.title || steamGame.name || `Steam game ${appId}`,
-    platform: "PC",
+    platform: "Steam",
     steamAppId: appId,
     steamIcon: steamGameIconUrl(steamGame),
     cover: localGame?.cover || steamLibraryCoverUrl(appId),
@@ -1203,7 +1222,7 @@ function steamActivityGame(steamGame) {
 function steamGameIconUrl(game) {
   const appId = cleanSteamAppId(game?.appId);
   const hash = String(game?.imgIconUrl || "").trim();
-  return appId && hash ? `https://media.steampowered.com/steamcommunity/public/images/apps/${appId}/${hash}.jpg` : platformLogo("PC");
+  return appId && hash ? `https://media.steampowered.com/steamcommunity/public/images/apps/${appId}/${hash}.jpg` : platformLogo("Steam");
 }
 
 function steamLibraryCoverUrl(appId) {
@@ -1229,7 +1248,7 @@ function steamAchievementParams(appId, steamUser = state.settings.steamUser || "
   return params;
 }
 
-function renderAchievements(data = {}, steamData = state.steamActivity || emptySteamActivity()) {
+function renderAchievements(data = {}, steamData = state.steamActivity || emptySteamActivity(), xboxData = state.xboxActivity || emptyXboxActivity()) {
   const user = data.user || state.settings.psnUser || DEFAULT_SETTINGS.psnUser;
   const sourceUrl = data.sourceUrl || "https://www.playstation.com/";
   const platinums = Array.isArray(data.platinums) ? data.platinums : [];
@@ -1248,10 +1267,18 @@ function renderAchievements(data = {}, steamData = state.steamActivity || emptyS
     totalEarned: Number(steamData.totalEarned || 0),
     sourceUrl: steamData.sourceUrl || "",
   };
+  state.xboxActivity = {
+    achievements: Array.isArray(xboxData.achievements) ? xboxData.achievements : [],
+    games: Array.isArray(xboxData.games) ? xboxData.games : [],
+    completed: Array.isArray(xboxData.completed) ? xboxData.completed : [],
+    totalEarned: Number(xboxData.totalEarned || 0),
+    sourceUrl: xboxData.sourceUrl || "",
+  };
   renderPlayingSection();
   el.achievementProfileLink.href = sourceUrl;
-  el.achievementProfileLink.textContent = state.steamActivity.achievements.length ? "PSN + Steam activity" : (data.source === "psn" ? "PSN activity" : user);
-  const achievements = [...state.psnActivity.achievements, ...state.steamActivity.achievements]
+  const activitySources = ["PSN", state.steamActivity.achievements.length ? "Steam" : "", state.xboxActivity.achievements.length ? "Xbox" : ""].filter(Boolean);
+  el.achievementProfileLink.textContent = `${activitySources.join(" + ")} activity`;
+  const achievements = [...state.psnActivity.achievements, ...state.steamActivity.achievements, ...state.xboxActivity.achievements]
     .sort(compareEarnedTrophies)
     .slice(0, 6);
   const games = Array.isArray(data.games) ? data.games.slice(0, 3) : [];
@@ -1279,7 +1306,7 @@ function renderAchievements(data = {}, steamData = state.steamActivity || emptyS
     const platform = achievementPlatformLabel(item);
     return `
       <a class="achievement-card ${index === 0 ? "latest" : ""} trophy-${escapeHtml(trophyTone(item.rarity))}" href="${escapeHtml(item.url || sourceUrl)}" target="_blank" rel="noreferrer">
-        <img class="achievement-icon" src="${escapeHtml(item.icon || platformLogo(item.source === "steam" ? "PC" : "PS5"))}" alt="">
+        <img class="achievement-icon" src="${escapeHtml(item.icon || platformLogo(item.source === "steam" ? "Steam" : item.source === "xbox" ? "Xbox" : "PS5"))}" alt="">
         <div>
           <strong>${escapeHtml(item.title || (item.source === "steam" ? "Achievement unlocked" : "Trophy unlocked"))}</strong>
           ${item.game ? `<span class="achievement-game-name">${escapeHtml(item.game)}</span>` : ""}
@@ -1291,17 +1318,18 @@ function renderAchievements(data = {}, steamData = state.steamActivity || emptyS
       </a>
     `;
   }).join("");
-  const dashboard = achievementDashboard(achievements, games, sourceUrl, data.summary, state.steamActivity);
+  const dashboard = achievementDashboard(achievements, games, sourceUrl, data.summary, state.steamActivity, state.xboxActivity);
   el.achievementPanel.innerHTML = `${dashboard}<span class="achievement-subtitle trophy-subtitle">Latest Achievements</span>${trophyCards}`;
   el.achievementPanel.querySelector("[data-action='platinums']")?.addEventListener("click", openPlatinumDialog);
   scheduleMobilePaintRefresh();
 }
 
-function achievementDashboard(achievements, games, sourceUrl, summary = null, steamActivity = emptySteamActivity()) {
+function achievementDashboard(achievements, games, sourceUrl, summary = null, steamActivity = emptySteamActivity(), xboxActivity = emptyXboxActivity()) {
   const trophies = summary?.trophies || {};
   const playStationCompleted = Number(trophies.platinum || 0);
   const pcCompleted = Number(steamActivity.completed?.length || 0);
-  const completedCount = playStationCompleted + pcCompleted;
+  const xboxCompleted = Number(xboxActivity.completed?.length || 0);
+  const completedCount = playStationCompleted + pcCompleted + xboxCompleted;
   const counts = [
     ["Platinum", Number(trophies.platinum || 0)],
     ["Gold", Number(trophies.gold || 0)],
@@ -1310,8 +1338,8 @@ function achievementDashboard(achievements, games, sourceUrl, summary = null, st
   ];
   const psnTrophyTotal = counts.reduce((sum, [, count]) => sum + count, 0);
   const total = Math.max(1, psnTrophyTotal);
-  const achievementTotal = psnTrophyTotal + Number(steamActivity.totalEarned || 0);
-  const latestPlatinum = achievements.find((item) => trophyTone(item.rarity) === "platinum") || steamActivity.completed?.[0];
+  const achievementTotal = psnTrophyTotal + Number(steamActivity.totalEarned || 0) + Number(xboxActivity.totalEarned || 0);
+  const latestPlatinum = achievements.find((item) => trophyTone(item.rarity) === "platinum") || steamActivity.completed?.[0] || xboxActivity.completed?.[0];
   const average = games.length
     ? Math.round(games.reduce((sum, game) => sum + progressValue(game.game), 0) / games.length)
     : 0;
@@ -1322,6 +1350,7 @@ function achievementDashboard(achievements, games, sourceUrl, summary = null, st
         <span>COMPLETED</span>
         ${achievementKpiBreakdown([
           [pcCompleted, completedCount, "PC"],
+          [xboxCompleted, completedCount, "Xbox"],
           [playStationCompleted, completedCount, "PlayStation"],
         ])}
       </button>
@@ -1330,6 +1359,7 @@ function achievementDashboard(achievements, games, sourceUrl, summary = null, st
         <span>TROPHIES</span>
         ${achievementKpiBreakdown([
           [steamActivity.totalEarned || 0, achievementTotal, "PC"],
+          [xboxActivity.totalEarned || 0, achievementTotal, "Xbox"],
           [psnTrophyTotal, achievementTotal, "PlayStation"],
         ])}
       </a>
@@ -1351,7 +1381,7 @@ function achievementDashboard(achievements, games, sourceUrl, summary = null, st
 }
 
 function achievementPlatformLabel(item) {
-  if (item?.source === "steam") return "PC";
+  if (item?.source === "steam") return "Steam";
   return String(item?.platform || "PlayStation").trim() || "PlayStation";
 }
 
@@ -1460,11 +1490,22 @@ function platinumItems() {
   const steamCompleted = (state.steamActivity.completed || []).map((item) => ({
     ...item,
     cover: item.cover || localCoverForTitle(item.title, "card"),
-    trophyIcon: item.trophyIcon || platformLogo("PC"),
+    trophyIcon: item.trophyIcon || platformLogo("Steam"),
     trophyName: item.trophyName || "100% Achievements",
-    platform: item.platform || "PC",
+    platform: item.platform || "Steam",
   }));
-  if (psnPlatinums.length || steamCompleted.length) return [...psnPlatinums, ...steamCompleted];
+  const xboxCompleted = (state.xboxActivity.completed || []).map((item) => {
+    const localGame = localXboxGameForTitle(item.title);
+    return {
+      ...item,
+      cover: item.cover || localGame?.cover || "",
+      trophyIcon: item.trophyIcon || platformLogo("Xbox"),
+      trophyName: item.trophyName || "100% Achievements",
+      platform: item.platform || "Xbox",
+      gameId: localGame?.completedAt ? localGame.id : "",
+    };
+  });
+  if (psnPlatinums.length || steamCompleted.length || xboxCompleted.length) return [...psnPlatinums, ...steamCompleted, ...xboxCompleted];
   return state.games
     .filter((game) => !game.deletedAt && game.platinum)
     .sort((a, b) => String(b.completedAt || "").localeCompare(String(a.completedAt || "")) || stringCompare(a.title, b.title))
@@ -1497,6 +1538,14 @@ function localGameForTitle(title) {
       if (b.gameTitle === normalized && a.gameTitle !== normalized) return 1;
       return b.gameTitle.length - a.gameTitle.length;
     })[0]?.game || null;
+}
+
+function localXboxGameForTitle(title) {
+  return state.games
+    .filter((game) => !game.deletedAt && isMicrosoftAchievementGame(game))
+    .map((game) => ({ game, score: psnTitleMatchScore(game.title, title) }))
+    .filter((entry) => entry.score > 0)
+    .sort((a, b) => b.score - a.score || stringCompare(a.game.title, b.game.title))[0]?.game || null;
 }
 
 function compatibleTitleNumbers(a, b) {
@@ -1633,7 +1682,7 @@ function platinumPlatformFor(item) {
   const raw = String(item.platform || "").trim();
   const platform = canonicalPlatform(raw);
   if (isPlayStationPlatform(platform) || /(playstation|ps[1-5]|psp|psvita|pspc)/.test(normalizeTag(raw))) return "PlayStation";
-  if (["Microsoft", "Xbox", "X360", "XOne"].includes(platform)) return "Xbox";
+  if (["Xbox PC", "Xbox", "X360", "XOne"].includes(platform)) return "Xbox";
   return platform || raw;
 }
 
@@ -1901,8 +1950,8 @@ function releasePlatformTone(games) {
   const cls = platformClass(platform);
   if (["platform-nintendo", "platform-wii", "platform-wiiu", "platform-n64", "platform-gamecube", "platform-nes", "platform-snes", "platform-ds", "platform-3ds"].includes(cls)) return "release-platform-nintendo";
   if (cls === "platform-playstation") return "release-platform-playstation";
-  if (platform.includes("pc")) return "release-platform-pc";
-  if (platform.includes("xbox") || platform.includes("microsoft")) return "release-platform-xbox";
+  if (cls === "platform-xbox") return "release-platform-xbox";
+  if (platform.includes("steam") || platform.includes("pc")) return "release-platform-pc";
   return "release-platform-generic";
 }
 
@@ -2960,15 +3009,7 @@ async function renderDetailTrophies(game) {
     return;
   }
   if (isMicrosoftAchievementGame(game)) {
-    state.detailTrophyRequest = "";
-    state.detailTrophiesData = [];
-    state.detailTrophyProvider = "xbox";
-    if (el.detailTrophyTitle) el.detailTrophyTitle.textContent = "ACHIEVEMENTS";
-    el.detailTrophies.hidden = true;
-    el.detailTrophyCount.textContent = "";
-    el.detailTrophyPercent.innerHTML = "";
-    el.detailTrophyList.innerHTML = "";
-    updateDetailTrophyEdges();
+    renderDetailXboxAchievements(game);
     return;
   }
   const psn = matchedPsnGame(game);
@@ -3071,6 +3112,21 @@ async function renderDetailSteamAchievements(game) {
   }
 }
 
+function renderDetailXboxAchievements(game) {
+  const xboxGame = matchedXboxGame(game);
+  state.detailGameId = game.id;
+  state.detailTrophyRequest = "";
+  state.detailTrophyProvider = "xbox";
+  state.detailTrophiesData = Array.isArray(xboxGame?.achievements) ? xboxGame.achievements : [];
+  if (el.detailTrophyTitle) el.detailTrophyTitle.textContent = "ACHIEVEMENTS";
+  el.detailTrophies.hidden = !xboxGame;
+  el.detailTrophyCount.textContent = "";
+  el.detailTrophyPercent.innerHTML = "";
+  el.detailTrophyList.innerHTML = "";
+  if (xboxGame) renderDetailTrophyList();
+  else updateDetailTrophyEdges();
+}
+
 function renderDetailTrophyList() {
   el.detailTrophySort.value = state.detailTrophySort;
   el.detailTrophyDirection.innerHTML = sortArrowIcon(state.detailTrophyDirection === "desc");
@@ -3082,7 +3138,7 @@ function renderDetailTrophyList() {
   const game = getGame(state.detailGameId);
   const psn = game ? matchedPsnGame(game) : null;
   el.detailTrophyCount.textContent = "";
-  const progressSource = state.detailTrophyProvider === "steam"
+  const progressSource = state.detailTrophyProvider === "steam" || state.detailTrophyProvider === "xbox"
     ? { progress: trophies.length ? Math.round((earnedCount / trophies.length) * 100) : 0, game: "" }
     : psn;
   el.detailTrophyPercent.innerHTML = trophies.length && progressSource
@@ -3090,7 +3146,7 @@ function renderDetailTrophyList() {
     : "";
   el.detailTrophyList.innerHTML = trophies.length
     ? trophies.map(detailTrophyCard).join("")
-    : `<div class="detail-trophy-empty">No ${state.detailTrophyProvider === "steam" ? "achievements" : "trophies"} found for this game yet.</div>`;
+    : `<div class="detail-trophy-empty">No ${state.detailTrophyProvider === "psn" ? "trophies" : "achievements"} found for this game yet.</div>`;
   requestAnimationFrame(updateDetailTrophyEdges);
 }
 
@@ -3131,7 +3187,9 @@ function trophyOrderCompare(a, b) {
 }
 
 function detailTrophyCard(trophy) {
-  const fallbackIcon = trophy.source === "steam" ? platformLogo("PC") : platformLogo("PS5");
+  const fallbackIcon = trophy.source === "steam"
+    ? platformLogo("Steam")
+    : trophy.source === "xbox" ? platformLogo("Xbox") : platformLogo("PS5");
   return `
     <article class="detail-trophy-card trophy-${escapeHtml(trophyTone(trophy.type))} ${trophy.earned ? "earned" : "missing"}">
       <img src="${escapeHtml(trophy.icon || fallbackIcon)}" alt="">
@@ -3209,8 +3267,50 @@ function manualTitleTermMatches(values, haystack, term) {
 function achievementProgressForGame(game) {
   if (game?.emulator) return null;
   if (isPcGame(game)) return steamProgressForGame(game);
-  if (isMicrosoftAchievementGame(game)) return null;
+  if (isMicrosoftAchievementGame(game)) return xboxProgressForGame(game);
   return matchedPsnGame(game);
+}
+
+function matchedXboxGame(game) {
+  if (!isMicrosoftAchievementGame(game)) return null;
+  let bestMatch = null;
+  let bestScore = 0;
+  (state.xboxActivity.games || []).forEach((xboxGame) => {
+    const titleScore = psnTitleMatchScore(game.title, xboxGame.title);
+    const platformScore = xboxPlatformMatchScore(game.platform, xboxGame.platform);
+    if (!titleScore || platformScore === null) return;
+    const score = titleScore + platformScore;
+    if (score > bestScore) {
+      bestMatch = xboxGame;
+      bestScore = score;
+    }
+  });
+  return bestScore >= 75 ? bestMatch : null;
+}
+
+function xboxPlatformMatchScore(localPlatform, remotePlatform) {
+  const local = canonicalPlatform(localPlatform);
+  const remote = canonicalPlatform(remotePlatform);
+  if (local === remote) return 18;
+  if (["XOne", "Xbox"].includes(local) && ["XOne", "Xbox"].includes(remote)) return 10;
+  return null;
+}
+
+function xboxProgressForGame(game) {
+  const match = matchedXboxGame(game);
+  if (!match?.total) return null;
+  const earned = Number(match.earned || 0);
+  const total = Number(match.total || 0);
+  const progress = Number.isFinite(Number(match.progress))
+    ? Number(match.progress)
+    : Math.round((earned / Math.max(total, 1)) * 100);
+  return {
+    title: match.title || game.title,
+    game: `${progress}%`,
+    progress,
+    label: `${earned}/${total} earned`,
+    provider: "xbox",
+  };
 }
 
 function steamAchievementCacheKey(game) {
@@ -3278,11 +3378,11 @@ function isPlayStationPlatform(platform) {
 }
 
 function isPcGame(game) {
-  return canonicalPlatform(game?.platform) === "PC";
+  return canonicalPlatform(game?.platform) === "Steam";
 }
 
 function isMicrosoftAchievementGame(game) {
-  return ["Microsoft", "Xbox", "X360", "XOne"].includes(canonicalPlatform(game?.platform));
+  return ["Xbox PC", "Xbox", "X360", "XOne"].includes(canonicalPlatform(game?.platform));
 }
 
 function psnTitleMatchScore(localTitle, psnTitle) {
@@ -3396,10 +3496,7 @@ function earnedTrophyTime(trophy) {
 
 function cardTrophiesFor(game) {
   if (isPcGame(game)) return cardSteamAchievementsFor(game);
-  if (isMicrosoftAchievementGame(game)) {
-    const guideLinks = guideLinksFor(game);
-    return guideLinks.length ? `<div class="guide-links card-guide-row">${guideLinks.join("")}</div>` : "";
-  }
+  if (isMicrosoftAchievementGame(game)) return cardXboxAchievementsFor(game);
   const psn = matchedPsnGame(game);
   const cacheKey = psn?.npCommunicationId || "";
   const cached = cacheKey ? state.cardTrophies[cacheKey] : null;
@@ -3448,7 +3545,35 @@ function cardSteamAchievementsFor(game) {
     <div class="card-trophy-list">
       ${achievements.map((achievement) => `
         <a class="card-trophy trophy-${escapeHtml(trophyTone(achievement.type || achievement.rarity))}" href="${escapeHtml(game.storeLinks?.steam || hltbUrlFor(game) || "#")}" target="_blank" rel="noreferrer" title="${escapeHtml([achievement.title, achievement.earnedAt].filter(Boolean).join(" · "))}">
-          <img src="${escapeHtml(achievement.icon || platformLogo("PC"))}" alt="">
+          <img src="${escapeHtml(achievement.icon || platformLogo("Steam"))}" alt="">
+          <span>${escapeHtml(achievement.title || "Achievement")}</span>
+          ${cardTrophyMeta(achievement)}
+        </a>
+      `).join("")}
+    </div>
+  `;
+}
+
+function cardXboxAchievementsFor(game) {
+  const xboxGame = matchedXboxGame(game);
+  const guideLinks = guideLinksFor(game);
+  if (!xboxGame) return guideLinks.length ? `<div class="guide-links card-guide-row">${guideLinks.join("")}</div>` : "";
+  const achievements = (xboxGame.achievements || [])
+    .filter((achievement) => achievement.earned && achievement.earnedAt)
+    .sort(compareEarnedTrophies)
+    .slice(0, 3);
+  const progress = xboxProgressForGame(game);
+  const heading = progress
+    ? `<div class="card-trophy-head">${trophyIcon()}<span>Latest achievements</span>${psnProgressBadge(progress, { includeIcon: false, className: "card-trophy-progress" })}</div>`
+    : "";
+  if (!achievements.length) return `${heading}${guideLinks.length ? `<div class="guide-links card-guide-row">${guideLinks.join("")}</div>` : ""}`;
+  return `
+    ${heading}
+    ${guideLinks.length ? `<div class="guide-links card-guide-row">${guideLinks.join("")}</div>` : ""}
+    <div class="card-trophy-list">
+      ${achievements.map((achievement) => `
+        <a class="card-trophy trophy-${escapeHtml(trophyTone(achievement.type || achievement.rarity))}" href="${escapeHtml(state.xboxActivity.sourceUrl || "https://www.xbox.com/")}" target="_blank" rel="noreferrer" title="${escapeHtml([achievement.title, achievement.earnedAt].filter(Boolean).join(" · "))}">
+          <img src="${escapeHtml(achievement.icon || platformLogo("Xbox"))}" alt="">
           <span>${escapeHtml(achievement.title || "Achievement")}</span>
           ${cardTrophyMeta(achievement)}
         </a>
@@ -3847,7 +3972,7 @@ function platformLogo(platform) {
   if (value.includes("switch")) return "assets/platforms/switch.png";
   if (/\bps\d*\b/.test(value) || value.includes("playstation") || value.includes("psp") || value.includes("vita")) return "assets/platforms/playstation.png";
   if (value.includes("xbox") || value.includes("microsoft") || value === "x360" || value === "xone") return "assets/platforms/xbox.png";
-  if (value.includes("pc")) return "assets/platforms/steam.png";
+  if (value.includes("steam") || value.includes("pc")) return "assets/platforms/steam.png";
   return "assets/Icon.png";
 }
 
@@ -3869,7 +3994,7 @@ function platformClass(platform) {
   if (value.includes("switch")) return "platform-nintendo";
   if (/\bps\d*\b/.test(value) || value.includes("playstation") || value.includes("psp") || value.includes("vita")) return "platform-playstation";
   if (value.includes("xbox") || value.includes("microsoft") || value === "x360" || value === "xone") return "platform-xbox";
-  if (value.includes("pc")) return "platform-pc";
+  if (value.includes("steam") || value.includes("pc")) return "platform-pc";
   return "platform-generic";
 }
 
@@ -3969,13 +4094,13 @@ function canonicalPlatform(value) {
     switch: "Switch",
     nintendoswitch2: "Switch 2",
     switch2: "Switch 2",
-    steam: "PC",
-    pc: "PC",
-    microsoft: "Microsoft",
-    microsoftpc: "Microsoft",
-    xboxpc: "Microsoft",
-    windowsstore: "Microsoft",
-    microsoftstore: "Microsoft",
+    steam: "Steam",
+    pc: "Steam",
+    microsoft: "Xbox PC",
+    microsoftpc: "Xbox PC",
+    xboxpc: "Xbox PC",
+    windowsstore: "Xbox PC",
+    microsoftstore: "Xbox PC",
     xbox360: "X360",
     x360: "X360",
     xboxone: "XOne",
@@ -4036,7 +4161,7 @@ function canonicalPlatform(value) {
 
 function platformFilterGroup(platform) {
   const value = canonicalPlatform(platform);
-  return value === "Microsoft" ? "PC" : value;
+  return ["Steam", "Xbox PC"].includes(value) ? "PC" : value;
 }
 
 function platformDisplayName(platform) {
@@ -4340,12 +4465,13 @@ function pricesFor(game) {
 
 function fallbackPriceLinks(game) {
   const q = retailQuery(game.title, game.platform);
-  if (game.digital) {
+  if (game.digital || isMicrosoftAchievementGame(game)) {
     const region = state.settings.region;
     const links = [
       { store: nintendoStoreName(), url: nintendoSearchUrl(q, region) },
       { store: playStationStoreName(), url: playStationSearchUrl(q, region) },
       { store: "Steam", url: `https://store.steampowered.com/search/?term=${q}` },
+      { store: "Xbox", url: xboxSearchUrl(q, region) },
     ];
     const providers = platformStoreProvidersForGame(game);
     return links.filter((link) => providers.includes(link.store));
@@ -4384,7 +4510,7 @@ function normalizedPrices(game) {
 }
 
 function priceProvidersForGame(game) {
-  return game.digital ? platformStoreProvidersForGame(game) : physicalStoreProviders();
+  return game.digital || isMicrosoftAchievementGame(game) ? platformStoreProvidersForGame(game) : physicalStoreProviders();
 }
 
 function physicalStoreProviders() {
@@ -4398,8 +4524,8 @@ function platformStoreProvidersForGame(game) {
   const platform = canonicalPlatform(game.platform);
   if (platform === "Switch" || platform === "Switch 2") return [nintendoStoreName()];
   if (platform === "PS4" || platform === "PS5") return [playStationStoreName()];
-  if (platform === "PC") return ["Steam"];
-  if (["Microsoft", "Xbox", "X360", "XOne"].includes(platform)) return ["Xbox"];
+  if (platform === "Steam") return ["Steam"];
+  if (["Xbox PC", "Xbox", "X360", "XOne"].includes(platform)) return ["Xbox"];
   return [];
 }
 
@@ -4443,6 +4569,11 @@ function playStationSearchUrl(query, region = state.settings.region) {
   return `https://www.playstation.com/es-es/search/?q=${query}`;
 }
 
+function xboxSearchUrl(query, region = state.settings.region) {
+  const locale = region === "US" ? "en-US" : region === "UK" ? "en-GB" : "es-ES";
+  return `https://www.xbox.com/${locale}/search?q=${query}`;
+}
+
 function storeIcon(store) {
   if (store.startsWith("Amazon")) return "assets/stores/amazon.ico";
   if (store === "Xtralife") return "assets/stores/xtralife.ico";
@@ -4453,6 +4584,7 @@ function storeIcon(store) {
   if (store.startsWith("Nintendo")) return "assets/sites/nintendo.png";
   if (store.startsWith("PlayStation")) return "assets/sites/playstation.png";
   if (store === "Steam") return "assets/sites/steam.png";
+  if (store === "Xbox") return "assets/platforms/xbox.png";
   return "";
 }
 
@@ -5349,7 +5481,7 @@ function mergeFetchedPrices(game, fetchedPrices = []) {
 
 async function fetchPrices(title, platform, digital = false) {
   const params = new URLSearchParams({ title, platform });
-  if (digital) params.set("digital", "1");
+  if (digital || ["Xbox PC", "Xbox", "X360", "XOne"].includes(canonicalPlatform(platform))) params.set("digital", "1");
   params.set("currency", state.settings.currency);
   params.set("region", state.settings.region);
   params.set("stores", state.settings.stores.join(","));

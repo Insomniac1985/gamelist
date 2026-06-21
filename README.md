@@ -182,7 +182,23 @@ Get a Steam Web API key from `https://steamcommunity.com/dev/apikey`.
 
 Set `STEAM_PROFILE_USER` to a SteamID64, Steam profile URL, or vanity name, for example `shabii_`. The site's Settings overlay also has a **Steam profile** field; if filled, it overrides the Cloudflare value for that browser/account. For each PC game, add a Steam store URL or Steam App ID in the game editor.
 
-Steam achievements are only fetched for Steam app IDs owned by the configured Steam account. Make sure the account's game details/library visibility allows Steam Web API access, otherwise the owned-games list can come back empty.
+Steam achievements are only fetched for Steam app IDs owned by the configured Steam account. Make sure the account's game details/library visibility allows Steam Web API access, otherwise the owned-games list can come back empty. Legacy games saved with the platform `PC` are treated as `Steam`; use `Xbox PC` for Microsoft Store or PC Game Pass games.
+
+### Xbox Achievements
+
+Xbox 360, Xbox One, Xbox Series, and Xbox PC games can show achievements through OpenXBL. Create a personal API key in the [OpenXBL dashboard](https://xbl.io/dashboard), then add it as a Cloudflare secret:
+
+```bash
+npx wrangler secret put OPENXBL_API_KEY
+```
+
+The personal key reads the Xbox profile connected to that OpenXBL account. You can optionally set its gamertag so achievement links open the correct Xbox profile:
+
+```bash
+npx wrangler secret put XBOX_GAMERTAG
+```
+
+Use `Xbox PC` for Microsoft Store or PC Game Pass releases, `X360` for Xbox 360, `XOne` for Xbox One, and `Xbox` for current Xbox releases. Xbox Store prices are fetched automatically for those platforms and follow the region selected in Settings.
 
 ### Google Calendar Preorder Events
 
