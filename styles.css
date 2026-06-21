@@ -1211,11 +1211,12 @@ h3 {
   justify-content: center;
   min-height: 24px;
   padding: 5px 9px;
-  color: #15170f;
-  background: #d8ed78;
+  color: #15140c;
+  background: #f7df69;
   border-radius: 6px;
   font-size: 10px;
   font-weight: 850;
+  box-shadow: 0 8px 18px rgba(247, 223, 105, 0.22);
 }
 
 .preorder-count-pill {

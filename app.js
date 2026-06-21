@@ -8,8 +8,8 @@ const SETTINGS_KEY = "gamelist:settings:v1";
 const KASH_TWITCH_URL = "https://www.twitch.tv/kashhoward";
 const DEFAULT_PAGE_ORDER = ["trophies", "calendar", "highlights", "search", "gamelist", "finished"];
 const LAYOUT_SECTION_KEYS = ["playing", ...DEFAULT_PAGE_ORDER, "latestFinished"];
-const SITE_VERSION = "v136";
-const SITE_UPDATED_AT = "2026-06-21T14:43:50Z";
+const SITE_VERSION = "v137";
+const SITE_UPDATED_AT = "2026-06-21T14:47:01Z";
 const VERSION_STORAGE_KEY = "gamelist:site-version";
 const STORE_OPTIONS = ["Amazon", "GAME.es", "Xtralife", "Retro Island NY", "GameStop", "Walmart"];
 const THEMES = {
@@ -1772,12 +1772,13 @@ function renderStats() {
   const active = filteredGames({ applyPreorder: false }).filter((game) => !game.completedAt);
   const total = active.length;
   const currentYear = String(new Date().getFullYear());
-  const completedThisYear = completedGamesForYear(currentYear).length;
+  const listedCompleted = state.games.filter((game) => !game.deletedAt && Boolean(game.completedAt));
+  const completedThisYear = listedCompleted.filter((game) => completionYear(game) === currentYear).length;
   const counts = {
     wanted: active.filter((game) => game.section === "wanted").length,
     upcoming: active.filter((game) => game.section === "upcoming").length,
     backlog: active.filter((game) => game.section === "backlog").length,
-    completed: state.games.filter((game) => game.completedAt && !game.deletedAt).length,
+    completed: listedCompleted.length,
   };
   el.stats.innerHTML = [
     stat(`Finished ${currentYear}`, completedThisYear, "done", { action: "completed", detail: completedStatDetail(currentYear, completedThisYear, counts.completed) }),
