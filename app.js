@@ -8,8 +8,8 @@ const SETTINGS_KEY = "gamelist:settings:v1";
 const KASH_TWITCH_URL = "https://www.twitch.tv/kashhoward";
 const DEFAULT_PAGE_ORDER = ["trophies", "calendar", "highlights", "search", "gamelist", "finished"];
 const LAYOUT_SECTION_KEYS = ["playing", ...DEFAULT_PAGE_ORDER, "latestFinished"];
-const SITE_VERSION = "v122";
-const SITE_UPDATED_AT = "2026-06-20T23:50:01Z";
+const SITE_VERSION = "v123";
+const SITE_UPDATED_AT = "2026-06-21T08:28:10Z";
 const VERSION_STORAGE_KEY = "gamelist:site-version";
 const STORE_OPTIONS = ["Amazon", "GAME.es", "Xtralife", "Retro Island NY", "GameStop", "Walmart"];
 const THEMES = {
@@ -1181,7 +1181,7 @@ async function fetchSteamAccountActivity(steamUser = state.settings.steamUser ||
 
 function steamActivityGame(steamGame) {
   const appId = cleanSteamAppId(steamGame.appId);
-  const localGame = state.games.find((game) => !game.deletedAt && steamAppIdFor(game) === appId);
+  const localGame = state.games.find((game) => !game.deletedAt && isPcGame(game) && steamAppIdFor(game) === appId);
   const storeUrl = `https://store.steampowered.com/app/${encodeURIComponent(appId)}`;
   return {
     ...(localGame || {}),
@@ -1629,6 +1629,7 @@ function platinumPlatformFor(item) {
   const raw = String(item.platform || "").trim();
   const platform = canonicalPlatform(raw);
   if (isPlayStationPlatform(platform) || /(playstation|ps[1-5]|psp|psvita|pspc)/.test(normalizeTag(raw))) return "PlayStation";
+  if (["Microsoft", "Xbox", "X360", "XOne"].includes(platform)) return "Xbox";
   return platform || raw;
 }
 
@@ -1897,7 +1898,7 @@ function releasePlatformTone(games) {
   if (["platform-nintendo", "platform-wii", "platform-wiiu", "platform-n64", "platform-gamecube", "platform-nes", "platform-snes", "platform-ds", "platform-3ds"].includes(cls)) return "release-platform-nintendo";
   if (cls === "platform-playstation") return "release-platform-playstation";
   if (platform.includes("pc")) return "release-platform-pc";
-  if (platform.includes("xbox")) return "release-platform-xbox";
+  if (platform.includes("xbox") || platform.includes("microsoft")) return "release-platform-xbox";
   return "release-platform-generic";
 }
 
@@ -1998,7 +1999,7 @@ function syncMobileSectionToResults() {
 
 function renderFilters() {
   const active = state.games.filter((game) => !game.deletedAt);
-  const platforms = unique(active.map((game) => canonicalPlatform(game.platform)).filter(Boolean));
+  const platforms = unique(active.map((game) => platformFilterGroup(game.platform)).filter(Boolean));
   const genres = unique(active.flatMap((game) => game.genres || []));
   fillSelect(el.platformFilter, ["all", ...platforms], state.filters.platform, "All platforms");
   fillSelect(el.tagFilter, ["all", ...genres], state.filters.tag, "All categories");
@@ -2579,7 +2580,7 @@ function filteredGames(options = {}) {
     ].join(" ").toLowerCase();
     const tagText = [...(game.genres || []), ...gameStatuses(game), canonicalStatus(game.preorderStore), canonicalStatus(game.preferredStore)].filter(Boolean);
     return (!state.filters.query || haystack.includes(state.filters.query))
-      && (state.filters.platform === "all" || canonicalPlatform(game.platform) === state.filters.platform)
+      && (state.filters.platform === "all" || platformFilterGroup(game.platform) === state.filters.platform)
       && (state.filters.tag === "all" || tagText.includes(state.filters.tag))
       && (!applyPreorder || !state.filters.preordered || Boolean(game.preorderStore));
   });
@@ -2954,6 +2955,18 @@ async function renderDetailTrophies(game) {
     await renderDetailSteamAchievements(game);
     return;
   }
+  if (isMicrosoftAchievementGame(game)) {
+    state.detailTrophyRequest = "";
+    state.detailTrophiesData = [];
+    state.detailTrophyProvider = "xbox";
+    if (el.detailTrophyTitle) el.detailTrophyTitle.textContent = "ACHIEVEMENTS";
+    el.detailTrophies.hidden = true;
+    el.detailTrophyCount.textContent = "";
+    el.detailTrophyPercent.innerHTML = "";
+    el.detailTrophyList.innerHTML = "";
+    updateDetailTrophyEdges();
+    return;
+  }
   const psn = matchedPsnGame(game);
   const trophyId = psn?.npCommunicationId;
   if (!trophyId) {
@@ -3192,6 +3205,7 @@ function manualTitleTermMatches(values, haystack, term) {
 function achievementProgressForGame(game) {
   if (game?.emulator) return null;
   if (isPcGame(game)) return steamProgressForGame(game);
+  if (isMicrosoftAchievementGame(game)) return null;
   return matchedPsnGame(game);
 }
 
@@ -3261,6 +3275,10 @@ function isPlayStationPlatform(platform) {
 
 function isPcGame(game) {
   return canonicalPlatform(game?.platform) === "PC";
+}
+
+function isMicrosoftAchievementGame(game) {
+  return ["Microsoft", "Xbox", "X360", "XOne"].includes(canonicalPlatform(game?.platform));
 }
 
 function psnTitleMatchScore(localTitle, psnTitle) {
@@ -3374,6 +3392,10 @@ function earnedTrophyTime(trophy) {
 
 function cardTrophiesFor(game) {
   if (isPcGame(game)) return cardSteamAchievementsFor(game);
+  if (isMicrosoftAchievementGame(game)) {
+    const guideLinks = guideLinksFor(game);
+    return guideLinks.length ? `<div class="guide-links card-guide-row">${guideLinks.join("")}</div>` : "";
+  }
   const psn = matchedPsnGame(game);
   const cacheKey = psn?.npCommunicationId || "";
   const cached = cacheKey ? state.cardTrophies[cacheKey] : null;
@@ -3820,7 +3842,7 @@ function platformLogo(platform) {
   if (isSegaPlatform(value)) return "assets/platforms/sega.png";
   if (value.includes("switch")) return "assets/platforms/switch.png";
   if (/\bps\d*\b/.test(value) || value.includes("playstation") || value.includes("psp") || value.includes("vita")) return "assets/platforms/playstation.png";
-  if (value.includes("xbox") || value === "x360" || value === "xone") return "assets/platforms/xbox.png";
+  if (value.includes("xbox") || value.includes("microsoft") || value === "x360" || value === "xone") return "assets/platforms/xbox.png";
   if (value.includes("pc")) return "assets/platforms/steam.png";
   return "assets/Icon.png";
 }
@@ -3842,7 +3864,7 @@ function platformClass(platform) {
   if (isSegaPlatform(value)) return "platform-sega";
   if (value.includes("switch")) return "platform-nintendo";
   if (/\bps\d*\b/.test(value) || value.includes("playstation") || value.includes("psp") || value.includes("vita")) return "platform-playstation";
-  if (value.includes("xbox") || value === "x360" || value === "xone") return "platform-xbox";
+  if (value.includes("xbox") || value.includes("microsoft") || value === "x360" || value === "xone") return "platform-xbox";
   if (value.includes("pc")) return "platform-pc";
   return "platform-generic";
 }
@@ -3945,6 +3967,11 @@ function canonicalPlatform(value) {
     switch2: "Switch 2",
     steam: "PC",
     pc: "PC",
+    microsoft: "Microsoft",
+    microsoftpc: "Microsoft",
+    xboxpc: "Microsoft",
+    windowsstore: "Microsoft",
+    microsoftstore: "Microsoft",
     xbox360: "X360",
     x360: "X360",
     xboxone: "XOne",
@@ -4001,6 +4028,11 @@ function canonicalPlatform(value) {
     "32x": "32X",
   };
   return aliases[normalized] || text;
+}
+
+function platformFilterGroup(platform) {
+  const value = canonicalPlatform(platform);
+  return value === "Microsoft" ? "PC" : value;
 }
 
 function platformDisplayName(platform) {
@@ -4362,7 +4394,7 @@ function platformStoreProvidersForGame(game) {
   if (platform === "Switch" || platform === "Switch 2") return [nintendoStoreName()];
   if (platform === "PS4" || platform === "PS5") return [playStationStoreName()];
   if (platform === "PC") return ["Steam"];
-  if (["Xbox", "X360", "XOne"].includes(platform)) return ["Xbox"];
+  if (["Microsoft", "Xbox", "X360", "XOne"].includes(platform)) return ["Xbox"];
   return [];
 }
 
