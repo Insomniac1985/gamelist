@@ -8,8 +8,8 @@ const SETTINGS_KEY = "gamelist:settings:v1";
 const KASH_TWITCH_URL = "https://www.twitch.tv/kashhoward";
 const DEFAULT_PAGE_ORDER = ["trophies", "calendar", "highlights", "search", "gamelist", "finished"];
 const LAYOUT_SECTION_KEYS = ["playing", ...DEFAULT_PAGE_ORDER, "latestFinished"];
-const SITE_VERSION = "v124";
-const SITE_UPDATED_AT = "2026-06-21T08:32:16Z";
+const SITE_VERSION = "v125";
+const SITE_UPDATED_AT = "2026-06-21T08:33:18Z";
 const VERSION_STORAGE_KEY = "gamelist:site-version";
 const STORE_OPTIONS = ["Amazon", "GAME.es", "Xtralife", "Retro Island NY", "GameStop", "Walmart"];
 const THEMES = {
@@ -80,6 +80,9 @@ const UI_ICON_URLS = [
   "/assets/stores/retroisland.png",
   "/assets/stores/xtralife.ico",
 ];
+const MANUAL_GAME_COVER_OVERRIDES = {
+  mandagon: "https://cdn.thegamesdb.net/images/original/boxart/front/45783-1.jpg",
+};
 const MANUAL_PLATINUM_COVER_OVERRIDES = [
   { match: ["we", "were", "here", "together"], cover: "https://cdn.cloudflare.steamstatic.com/steam/apps/865360/library_600x900_2x.jpg" },
   { match: ["we", "were", "here", "too"], cover: "https://m.media-amazon.com/images/M/MV5BODY0YzhlZTgtMTE1OS00NzI4LTk4YjktYjliNGYyMDU0NmUzXkEyXkFqcGc@._V1_.jpg" },
@@ -4054,6 +4057,7 @@ function normalizeGameRecords(games) {
 
 function normalizeGameRecord(game) {
   const normalized = { ...game };
+  normalized.cover = MANUAL_GAME_COVER_OVERRIDES[normalizeTag(normalized.title)] || normalized.cover || "";
   normalized.digital = Boolean(normalized.digital);
   normalized.emulator = Boolean(normalized.emulator);
   normalized.coop = Boolean(normalized.coop);
