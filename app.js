@@ -9,8 +9,8 @@ const SETTINGS_KEY = "gamelist:settings:v1";
 const KASH_TWITCH_URL = "https://www.twitch.tv/kashhoward";
 const DEFAULT_PAGE_ORDER = ["trophies", "calendar", "highlights", "search", "gamelist", "finished"];
 const LAYOUT_SECTION_KEYS = ["playing", ...DEFAULT_PAGE_ORDER, "latestFinished"];
-const SITE_VERSION = "v148";
-const SITE_UPDATED_AT = "2026-06-21T21:12:00Z";
+const SITE_VERSION = "v149";
+const SITE_UPDATED_AT = "2026-06-21T21:17:00Z";
 const VERSION_STORAGE_KEY = "gamelist:site-version";
 const STORE_OPTIONS = ["Amazon", "GAME.es", "Xtralife", "Retro Island NY", "GameStop", "Walmart"];
 const THEMES = {
@@ -1552,10 +1552,11 @@ function platinumItems() {
   }));
   const xboxCompleted = (state.xboxActivity.completed || []).map((item) => {
     const localGame = localXboxGameForTitle(item.title);
+    const cover = item.cover || (localGame?.cover ? coverDisplayUrl(localGame.cover, "card") : "") || platinumCoverFor(item);
     return {
       ...item,
-      cover: item.cover || (localGame?.cover ? coverDisplayUrl(localGame.cover, "card") : "") || platinumCoverFor(item),
-      trophyIcon: item.trophyIcon || platformLogo("Xbox"),
+      cover,
+      trophyIcon: cover || item.trophyIcon || platformLogo("Xbox"),
       trophyName: item.trophyName || "100% Achievements",
       platform: item.platform || "Xbox",
       gameId: localGame?.completedAt ? localGame.id : "",
