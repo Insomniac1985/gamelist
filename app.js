@@ -8,8 +8,8 @@ const SETTINGS_KEY = "gamelist:settings:v1";
 const KASH_TWITCH_URL = "https://www.twitch.tv/kashhoward";
 const DEFAULT_PAGE_ORDER = ["trophies", "calendar", "highlights", "search", "gamelist", "finished"];
 const LAYOUT_SECTION_KEYS = ["playing", ...DEFAULT_PAGE_ORDER, "latestFinished"];
-const SITE_VERSION = "v132";
-const SITE_UPDATED_AT = "2026-06-21T09:11:33Z";
+const SITE_VERSION = "v133";
+const SITE_UPDATED_AT = "2026-06-21T09:15:08Z";
 const VERSION_STORAGE_KEY = "gamelist:site-version";
 const STORE_OPTIONS = ["Amazon", "GAME.es", "Xtralife", "Retro Island NY", "GameStop", "Walmart"];
 const THEMES = {
@@ -2714,12 +2714,15 @@ function cardFor(game, options = {}) {
   const prices = card.querySelector(".prices");
   const priceRefreshAction = card.querySelector(".price-refresh-action");
   const boughtAction = card.querySelector(".bought-action");
+  const backlogAction = card.querySelector(".backlog-action");
   const completeAction = card.querySelector(".complete-action");
   const trophyAction = card.querySelector(".trophy-action");
   if (game.section === "backlog" || game.completedAt) {
     prices.remove();
     priceRefreshAction.remove();
     boughtAction.remove();
+    if (game.playing) backlogAction.addEventListener("click", () => returnPlayingToBacklog(game.id));
+    else backlogAction.remove();
     completeAction.innerHTML = game.playing
       ? `${checkIcon()}<span class="action-label">Finished</span>`
       : `<span class="action-label">Play</span>`;
@@ -2731,6 +2734,7 @@ function cardFor(game, options = {}) {
     trophyAction.classList.toggle("active", Boolean(game.platinum));
     trophyAction.addEventListener("click", () => completeGameWithTrophy(game.id));
   } else {
+    backlogAction.remove();
     completeAction.remove();
     trophyAction.remove();
     const providers = priceProvidersForGame(game);
@@ -4942,6 +4946,13 @@ function moveToBacklog(id) {
   game.order = nextOrder("backlog");
   game.updatedAt = new Date().toISOString();
   upsertGame(game);
+}
+
+function returnPlayingToBacklog(id) {
+  const game = getGame(id);
+  if (!game?.playing) return;
+  game.playing = false;
+  moveToBacklog(id);
 }
 
 function startPlaying(id) {

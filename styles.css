@@ -1369,6 +1369,7 @@ body.dialog-open .scroll-top-button {
 .history-edit-action:hover,
 .price-refresh-action:hover,
 .bought-action:hover,
+.backlog-action:hover,
 .complete-action:hover,
 .delete-action:hover,
 .restore-action:hover {
@@ -1397,6 +1398,7 @@ body.theme-kash .completed-edit-action:hover,
 body.theme-kash .history-edit-action:hover,
 body.theme-kash .price-refresh-action:hover,
 body.theme-kash .bought-action:hover,
+body.theme-kash .backlog-action:hover,
 body.theme-kash .complete-action:hover,
 body.theme-kash .delete-action:hover,
 body.theme-kash .restore-action:hover {
@@ -3840,6 +3842,7 @@ body:not(.can-edit) #loginButton,
 
 .trash-icon,
 .search-icon,
+.back-icon,
 .pause-icon,
 .play-icon,
 .euro-icon,
@@ -3865,6 +3868,10 @@ body:not(.can-edit) #loginButton,
 }
 
 .complete-action .check-icon {
+  display: none;
+}
+
+.backlog-action .back-icon {
   display: none;
 }
 
@@ -6281,6 +6288,24 @@ body.theme-kash .guide-button:hover {
   .card-actions .icon-only-button {
     width: 42px;
     min-width: 42px;
+  }
+
+  .playing-card .card-actions {
+    grid-template-columns: 42px minmax(0, 1fr) 42px 42px;
+  }
+
+  .playing-card .backlog-action {
+    width: 42px;
+    min-width: 42px;
+    padding: 0;
+  }
+
+  .playing-card .backlog-action .back-icon {
+    display: block;
+  }
+
+  .playing-card .backlog-action .action-label {
+    display: none;
   }
 
   .detail-modal {
