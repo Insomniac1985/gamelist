@@ -7,13 +7,15 @@ export async function onRequestGet({ request, env = {} }) {
   const requestedUser = cleanXboxUser(requestUrl.searchParams.get("user"));
   const fallbackUser = cleanXboxUser(env.XBOX_GAMERTAG || globalThis.process?.env?.XBOX_GAMERTAG);
   const targetUser = requestedUser || fallbackUser;
+  const titleId = String(requestUrl.searchParams.get("titleId") || "").replace(/\D/g, "").slice(0, 20);
   if (!apiKey) {
     return json({ achievements: [], games: [], completed: [], needsSetup: true, error: "Missing OPENXBL_API_KEY" }, 200, false);
   }
 
   try {
     const identity = await resolveXboxIdentity(targetUser, apiKey);
-    const achievementPath = identity.xuid ? `/v2/achievements/player/${encodeURIComponent(identity.xuid)}` : "/v2/achievements";
+    if (titleId) return await xboxTitleAchievements(identity, titleId, apiKey);
+    const achievementPath = identity.xuid ? `/v3/achievements/player/${encodeURIComponent(identity.xuid)}` : "/v2/achievements";
     const titlePath = identity.xuid ? `/v2/titles/${encodeURIComponent(identity.xuid)}` : "/v2/titles";
     const [achievementData, titleData] = await Promise.all([
       openXblGet(achievementPath, apiKey),
@@ -70,6 +72,40 @@ export async function onRequestGet({ request, env = {} }) {
   }
 }
 
+async function xboxTitleAchievements(identity, titleId, apiKey) {
+  if (!identity.xuid) throw new Error("A Microsoft account is required for Xbox achievement details");
+  let data;
+  try {
+    data = await openXblGet(`/v2/achievements/player/${encodeURIComponent(identity.xuid)}/${encodeURIComponent(titleId)}`, apiKey);
+  } catch {
+    data = await openXblGet(`/v2/achievements/player/${encodeURIComponent(identity.xuid)}/title/${encodeURIComponent(titleId)}`, apiKey);
+  }
+  const content = contentOf(data);
+  const rawAchievements = firstAchievementArray(content);
+  const achievements = rawAchievements.map(normalizeXboxAchievement);
+  return json({
+    source: "xbox",
+    titleId,
+    user: identity.gamertag,
+    xuid: identity.xuid,
+    achievements,
+    earnedCount: achievements.filter((achievement) => achievement.earned).length,
+    count: achievements.length,
+    sourceUrl: xboxProfileUrl(identity.gamertag),
+  });
+}
+
+function firstAchievementArray(content) {
+  const candidates = [
+    content?.achievements,
+    content?.title?.achievements,
+    content?.titles?.[0]?.achievements,
+    content?.items,
+    Array.isArray(content) ? content : null,
+  ];
+  return candidates.find(Array.isArray) || [];
+}
+
 async function resolveXboxIdentity(user, apiKey) {
   if (!user) return { gamertag: "", xuid: "" };
   if (/^\d{12,20}$/.test(user)) return { gamertag: "", xuid: user };
@@ -105,8 +141,11 @@ function contentOf(data) {
 function normalizeXboxTitle(title = {}, history = {}) {
   const achievements = (Array.isArray(title.achievements) ? title.achievements : []).map(normalizeXboxAchievement);
   const earnedAchievements = achievements.filter((achievement) => achievement.earned).sort(compareEarned);
-  const earned = Number.isFinite(Number(title.currentAchievements)) ? Number(title.currentAchievements) : earnedAchievements.length;
-  const total = achievements.length || Number(title.totalAchievements || history?.achievement?.totalAchievements || 0);
+  const summary = title.achievement || history?.achievement || {};
+  const earned = Number.isFinite(Number(title.currentAchievements ?? summary.currentAchievements))
+    ? Number(title.currentAchievements ?? summary.currentAchievements)
+    : earnedAchievements.length;
+  const total = achievements.length || Number(title.totalAchievements || summary.totalAchievements || 0);
   return {
     titleId: String(title.titleId || history?.titleId || ""),
     title: String(title.name || history?.name || "Xbox game"),

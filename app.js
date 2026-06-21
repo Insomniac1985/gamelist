@@ -8,8 +8,8 @@ const SETTINGS_KEY = "gamelist:settings:v1";
 const KASH_TWITCH_URL = "https://www.twitch.tv/kashhoward";
 const DEFAULT_PAGE_ORDER = ["trophies", "calendar", "highlights", "search", "gamelist", "finished"];
 const LAYOUT_SECTION_KEYS = ["playing", ...DEFAULT_PAGE_ORDER, "latestFinished"];
-const SITE_VERSION = "v130";
-const SITE_UPDATED_AT = "2026-06-21T09:02:50Z";
+const SITE_VERSION = "v131";
+const SITE_UPDATED_AT = "2026-06-21T09:05:12Z";
 const VERSION_STORAGE_KEY = "gamelist:site-version";
 const STORE_OPTIONS = ["Amazon", "GAME.es", "Xtralife", "Retro Island NY", "GameStop", "Walmart"];
 const THEMES = {
@@ -3016,7 +3016,7 @@ async function renderDetailTrophies(game) {
     return;
   }
   if (isMicrosoftAchievementGame(game)) {
-    renderDetailXboxAchievements(game);
+    await renderDetailXboxAchievements(game);
     return;
   }
   const psn = matchedPsnGame(game);
@@ -3119,19 +3119,47 @@ async function renderDetailSteamAchievements(game) {
   }
 }
 
-function renderDetailXboxAchievements(game) {
+async function renderDetailXboxAchievements(game) {
   const xboxGame = matchedXboxGame(game);
   state.detailGameId = game.id;
-  state.detailTrophyRequest = "";
   state.detailTrophyProvider = "xbox";
-  state.detailTrophiesData = Array.isArray(xboxGame?.achievements) ? xboxGame.achievements : [];
   if (el.detailTrophyTitle) el.detailTrophyTitle.textContent = "ACHIEVEMENTS";
   el.detailTrophies.hidden = !xboxGame;
   el.detailTrophyCount.textContent = "";
   el.detailTrophyPercent.innerHTML = "";
-  el.detailTrophyList.innerHTML = "";
-  if (xboxGame) renderDetailTrophyList();
-  else updateDetailTrophyEdges();
+  if (!xboxGame?.titleId) {
+    state.detailTrophyRequest = "";
+    state.detailTrophiesData = [];
+    el.detailTrophyList.innerHTML = "";
+    updateDetailTrophyEdges();
+    return;
+  }
+  const cacheKey = xboxAchievementCacheKey(xboxGame);
+  const cached = state.cardTrophies[cacheKey];
+  if (cached && !cached.loading) {
+    state.detailTrophyRequest = "";
+    state.detailTrophiesData = cached.achievements || [];
+    renderDetailTrophyList();
+    return;
+  }
+  const requestKey = `${game.id}:xbox:${xboxGame.titleId}:${Date.now()}`;
+  state.detailTrophyRequest = requestKey;
+  state.detailTrophiesData = [];
+  el.detailTrophyList.innerHTML = `<div class="detail-trophy-empty">Loading earned achievements...</div>`;
+  try {
+    const data = await fetchXboxTitleAchievements(xboxGame);
+    if (state.detailTrophyRequest !== requestKey) return;
+    const achievements = Array.isArray(data.achievements) ? data.achievements : [];
+    state.cardTrophies[cacheKey] = xboxAchievementCache(data, achievements);
+    state.detailTrophiesData = achievements;
+    renderDetailTrophyList();
+  } catch (error) {
+    if (state.detailTrophyRequest !== requestKey) return;
+    console.warn("[trophies] Xbox detail achievements unavailable", { game: game.title, titleId: xboxGame.titleId, error: error.message });
+    state.detailTrophiesData = [];
+    el.detailTrophyList.innerHTML = `<div class="detail-trophy-empty">Could not load achievements right now.</div>`;
+    updateDetailTrophyEdges();
+  }
 }
 
 function renderDetailTrophyList() {
@@ -3318,6 +3346,27 @@ function xboxProgressForGame(game) {
     label: `${earned}/${total} earned`,
     provider: "xbox",
   };
+}
+
+function xboxAchievementCacheKey(xboxGame) {
+  return xboxGame?.titleId ? `xbox:${xboxGame.titleId}` : "";
+}
+
+async function fetchXboxTitleAchievements(xboxGame) {
+  const params = new URLSearchParams({ titleId: xboxGame.titleId });
+  if (state.settings.microsoftUser) params.set("user", state.settings.microsoftUser);
+  const response = await fetch(`/api/xbox-achievements?${params}`);
+  const data = await response.json().catch(() => ({ error: "Invalid Xbox achievements response" }));
+  if (!response.ok || data.authError || data.error) throw new Error(data.error || `Xbox achievements failed (${response.status})`);
+  return data;
+}
+
+function xboxAchievementCache(data, achievements) {
+  const earned = Number.isFinite(Number(data.earnedCount))
+    ? Number(data.earnedCount)
+    : achievements.filter((achievement) => achievement.earned).length;
+  const total = Number.isFinite(Number(data.count)) ? Number(data.count) : achievements.length;
+  return { loading: false, achievements, trophies: achievements, earned, total };
 }
 
 function steamAchievementCacheKey(game) {
@@ -3569,7 +3618,10 @@ function cardXboxAchievementsFor(game) {
   const xboxGame = matchedXboxGame(game);
   const guideLinks = guideLinksFor(game);
   if (!xboxGame) return guideLinks.length ? `<div class="guide-links card-guide-row">${guideLinks.join("")}</div>` : "";
-  const achievements = (xboxGame.achievements || [])
+  const cacheKey = xboxAchievementCacheKey(xboxGame);
+  const cached = cacheKey ? state.cardTrophies[cacheKey] : null;
+  if (cacheKey && !cached) loadCardXboxAchievements(game, xboxGame);
+  const achievements = (cached?.achievements || xboxGame.achievements || [])
     .filter((achievement) => achievement.earned && achievement.earnedAt)
     .sort(compareEarnedTrophies)
     .slice(0, 3);
@@ -3591,6 +3643,21 @@ function cardXboxAchievementsFor(game) {
       `).join("")}
     </div>
   `;
+}
+
+async function loadCardXboxAchievements(game, xboxGame) {
+  const cacheKey = xboxAchievementCacheKey(xboxGame);
+  if (!cacheKey || state.cardTrophies[cacheKey]) return;
+  state.cardTrophies[cacheKey] = { loading: true, achievements: [], trophies: [] };
+  try {
+    const data = await fetchXboxTitleAchievements(xboxGame);
+    const achievements = Array.isArray(data.achievements) ? data.achievements : [];
+    state.cardTrophies[cacheKey] = xboxAchievementCache(data, achievements);
+  } catch (error) {
+    console.warn("[trophies] Xbox card achievements unavailable", { game: game.title, titleId: xboxGame.titleId, error: error.message });
+    state.cardTrophies[cacheKey] = { loading: false, achievements: [], trophies: [], earned: 0, total: 0 };
+  }
+  updateCardAchievementUi(game.id);
 }
 
 function cardTrophyMeta(trophy) {
