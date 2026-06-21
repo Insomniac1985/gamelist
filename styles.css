@@ -6291,7 +6291,7 @@ body.theme-kash .guide-button:hover {
   }
 
   .playing-card .card-actions {
-    grid-template-columns: 42px minmax(0, 1fr) 42px 42px;
+    grid-template-columns: minmax(0, 1fr) 42px 42px 42px;
   }
 
   .playing-card .backlog-action {
