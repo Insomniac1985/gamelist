@@ -8,8 +8,8 @@ const SETTINGS_KEY = "gamelist:settings:v1";
 const KASH_TWITCH_URL = "https://www.twitch.tv/kashhoward";
 const DEFAULT_PAGE_ORDER = ["trophies", "calendar", "highlights", "search", "gamelist", "finished"];
 const LAYOUT_SECTION_KEYS = ["playing", ...DEFAULT_PAGE_ORDER, "latestFinished"];
-const SITE_VERSION = "v141";
-const SITE_UPDATED_AT = "2026-06-21T14:59:23Z";
+const SITE_VERSION = "v142";
+const SITE_UPDATED_AT = "2026-06-21T15:01:05Z";
 const VERSION_STORAGE_KEY = "gamelist:site-version";
 const STORE_OPTIONS = ["Amazon", "GAME.es", "Xtralife", "Retro Island NY", "GameStop", "Walmart"];
 const THEMES = {
@@ -1821,6 +1821,8 @@ function renderStats() {
   const currentYear = String(new Date().getFullYear());
   const listedCompleted = state.games.filter((game) => !game.deletedAt && Boolean(game.completedAt));
   const completedThisYear = listedCompleted.filter((game) => completionYear(game) === currentYear).length;
+  const markedCompleted = listedCompleted.filter((game) => game.platinum);
+  const markedCompletedThisYear = markedCompleted.filter((game) => completionYear(game) === currentYear).length;
   const counts = {
     wanted: active.filter((game) => game.section === "wanted").length,
     upcoming: active.filter((game) => game.section === "upcoming").length,
@@ -1828,7 +1830,10 @@ function renderStats() {
     completed: listedCompleted.length,
   };
   el.stats.innerHTML = [
-    stat(`Finished ${currentYear}`, completedThisYear, "done", { action: "completed", detail: completedStatDetail(currentYear, completedThisYear, counts.completed) }),
+    stat(`Finished ${currentYear}`, completedThisYear, "done", {
+      action: "completed",
+      detail: completedStatDetail(currentYear, completedThisYear, counts.completed, markedCompletedThisYear, markedCompleted.length),
+    }),
     stat("Backlog", counts.backlog, "backlog", { detail: sectionStatDetail("backlog", active, total) }),
     stat("To Release", counts.upcoming, "release", { detail: sectionStatDetail("upcoming", active, total) }),
     stat("Available", counts.wanted, "available", { detail: sectionStatDetail("wanted", active, total) }),
@@ -1878,11 +1883,11 @@ function sectionStatDetail(section, games, total) {
   `;
 }
 
-function completedStatDetail(year, yearCount, total) {
+function completedStatDetail(year, yearCount, total, completedYearCount, completedTotal) {
   return `
     <div class="stat-detail">
       <span>${yearCount} ${yearCount === 1 ? "game" : "games"} in ${escapeHtml(year)}</span>
-      ${yearCount ? `<span class="completed-year-count-pill">${yearCount} completed of ${total} this year</span>` : ""}
+      ${completedYearCount ? `<span class="completed-year-count-pill">${completedYearCount} completed of ${completedTotal} this year</span>` : ""}
       <b>Total ${total} finished ${total === 1 ? "game" : "games"}</b>
     </div>
   `;
