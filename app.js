@@ -8,8 +8,8 @@ const SETTINGS_KEY = "gamelist:settings:v1";
 const KASH_TWITCH_URL = "https://www.twitch.tv/kashhoward";
 const DEFAULT_PAGE_ORDER = ["trophies", "calendar", "highlights", "search", "gamelist", "finished"];
 const LAYOUT_SECTION_KEYS = ["playing", ...DEFAULT_PAGE_ORDER, "latestFinished"];
-const SITE_VERSION = "v142";
-const SITE_UPDATED_AT = "2026-06-21T15:01:05Z";
+const SITE_VERSION = "v143";
+const SITE_UPDATED_AT = "2026-06-21T15:03:36Z";
 const VERSION_STORAGE_KEY = "gamelist:site-version";
 const STORE_OPTIONS = ["Amazon", "GAME.es", "Xtralife", "Retro Island NY", "GameStop", "Walmart"];
 const THEMES = {
@@ -1832,7 +1832,7 @@ function renderStats() {
   el.stats.innerHTML = [
     stat(`Finished ${currentYear}`, completedThisYear, "done", {
       action: "completed",
-      detail: completedStatDetail(currentYear, completedThisYear, counts.completed, markedCompletedThisYear, markedCompleted.length),
+      detail: completedStatDetail(currentYear, completedThisYear, counts.completed, markedCompletedThisYear),
     }),
     stat("Backlog", counts.backlog, "backlog", { detail: sectionStatDetail("backlog", active, total) }),
     stat("To Release", counts.upcoming, "release", { detail: sectionStatDetail("upcoming", active, total) }),
@@ -1883,11 +1883,11 @@ function sectionStatDetail(section, games, total) {
   `;
 }
 
-function completedStatDetail(year, yearCount, total, completedYearCount, completedTotal) {
+function completedStatDetail(year, yearCount, total, completedYearCount) {
   return `
     <div class="stat-detail">
       <span>${yearCount} ${yearCount === 1 ? "game" : "games"} in ${escapeHtml(year)}</span>
-      ${completedYearCount ? `<span class="completed-year-count-pill">${completedYearCount} completed of ${completedTotal} this year</span>` : ""}
+      ${completedYearCount ? `<span class="completed-year-count-pill">${completedYearCount} completed of ${yearCount} this year</span>` : ""}
       <b>Total ${total} finished ${total === 1 ? "game" : "games"}</b>
     </div>
   `;
