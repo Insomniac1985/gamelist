@@ -8,8 +8,8 @@ const SETTINGS_KEY = "gamelist:settings:v1";
 const KASH_TWITCH_URL = "https://www.twitch.tv/kashhoward";
 const DEFAULT_PAGE_ORDER = ["trophies", "calendar", "highlights", "search", "gamelist", "finished"];
 const LAYOUT_SECTION_KEYS = ["playing", ...DEFAULT_PAGE_ORDER, "latestFinished"];
-const SITE_VERSION = "v138";
-const SITE_UPDATED_AT = "2026-06-21T14:55:31Z";
+const SITE_VERSION = "v139";
+const SITE_UPDATED_AT = "2026-06-21T14:56:45Z";
 const VERSION_STORAGE_KEY = "gamelist:site-version";
 const STORE_OPTIONS = ["Amazon", "GAME.es", "Xtralife", "Retro Island NY", "GameStop", "Walmart"];
 const THEMES = {
@@ -5093,10 +5093,18 @@ function deleteCurrentGame() {
 
 function deleteGame(id) {
   const game = getGame(id);
+  if (!game) return;
   const deletedAt = new Date().toISOString();
   game.deletedAt = deletedAt;
   markGameEdited(game, deletedAt);
+  resetEmptyPlatformFilter();
   upsertGame(game);
+}
+
+function resetEmptyPlatformFilter() {
+  if (state.filters.platform === "all") return;
+  const hasMatch = state.games.some((game) => !game.deletedAt && platformFilterGroup(game.platform) === state.filters.platform);
+  if (!hasMatch) state.filters.platform = "all";
 }
 
 function getGame(id) {
