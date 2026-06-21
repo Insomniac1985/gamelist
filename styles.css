@@ -4417,7 +4417,7 @@ body.dialog-open .mobile-section-tabs {
 .settings-wire.wire-search span:nth-child(-n + 2),
 .settings-wire.wire-list span:nth-child(-n + 3),
 .settings-wire.wire-finished span,
-.settings-wire.wire-latest-finished span:nth-child(-n + 3) {
+.settings-wire.wire-latest-finished span:nth-child(-n + 5) {
   display: block;
 }
 
@@ -4569,9 +4569,9 @@ body.dialog-open .mobile-section-tabs {
   bottom: 9px;
 }
 
-.settings-wire.wire-latest-finished span:nth-child(-n + 3) {
+.settings-wire.wire-latest-finished span:nth-child(-n + 5) {
   top: 24px;
-  width: 31%;
+  width: 18%;
   height: 22px;
 }
 
@@ -4580,10 +4580,18 @@ body.dialog-open .mobile-section-tabs {
 }
 
 .settings-wire.wire-latest-finished span:nth-child(2) {
-  left: 34.5%;
+  left: 20.5%;
 }
 
 .settings-wire.wire-latest-finished span:nth-child(3) {
+  left: 41%;
+}
+
+.settings-wire.wire-latest-finished span:nth-child(4) {
+  left: 61.5%;
+}
+
+.settings-wire.wire-latest-finished span:nth-child(5) {
   right: 0;
 }
 
