@@ -192,11 +192,13 @@ Xbox 360, Xbox One, Xbox Series, and Xbox PC games can show achievements through
 npx wrangler secret put OPENXBL_API_KEY
 ```
 
-The personal key reads the Xbox profile connected to that OpenXBL account. You can optionally set its gamertag so achievement links open the correct Xbox profile:
+The personal key can read the Xbox profile connected to that OpenXBL account. You can optionally set its default gamertag:
 
 ```bash
 npx wrangler secret put XBOX_GAMERTAG
 ```
+
+The site's Settings overlay has a **Microsoft account** field that accepts an Xbox gamertag or XUID. When filled, it overrides `XBOX_GAMERTAG` and fetches that player's achievement history through OpenXBL's player endpoints.
 
 Use `Xbox PC` for Microsoft Store or PC Game Pass releases, `X360` for Xbox 360, `XOne` for Xbox One, `Xbox Series` for Series X/S, and `Xbox` for the original console. Xbox Store prices are fetched automatically for those platforms and follow the region selected in Settings.
 

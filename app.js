@@ -8,8 +8,8 @@ const SETTINGS_KEY = "gamelist:settings:v1";
 const KASH_TWITCH_URL = "https://www.twitch.tv/kashhoward";
 const DEFAULT_PAGE_ORDER = ["trophies", "calendar", "highlights", "search", "gamelist", "finished"];
 const LAYOUT_SECTION_KEYS = ["playing", ...DEFAULT_PAGE_ORDER, "latestFinished"];
-const SITE_VERSION = "v127";
-const SITE_UPDATED_AT = "2026-06-21T08:53:48Z";
+const SITE_VERSION = "v128";
+const SITE_UPDATED_AT = "2026-06-21T08:57:58Z";
 const VERSION_STORAGE_KEY = "gamelist:site-version";
 const STORE_OPTIONS = ["Amazon", "GAME.es", "Xtralife", "Retro Island NY", "GameStop", "Walmart"];
 const THEMES = {
@@ -35,6 +35,7 @@ const DEFAULT_SETTINGS = {
   hiddenSections: [],
   theme: "shabii",
   psnUser: "ShabiiEXE",
+  microsoftUser: "",
   steamUser: "",
   currency: "EUR",
   region: "ES",
@@ -238,6 +239,7 @@ const el = {
   authError: document.querySelector("#authError"),
   settingsLayoutList: document.querySelector("#settingsLayoutList"),
   settingsPsnUser: document.querySelector("#settingsPsnUser"),
+  settingsMicrosoftUser: document.querySelector("#settingsMicrosoftUser"),
   settingsSteamUser: document.querySelector("#settingsSteamUser"),
   settingsCurrency: document.querySelector("#settingsCurrency"),
   settingsRegion: document.querySelector("#settingsRegion"),
@@ -685,6 +687,7 @@ function normalizeSettings(settings = {}) {
     hiddenSections,
     theme: THEMES[settings.theme] ? settings.theme : DEFAULT_SETTINGS.theme,
     psnUser: cleanPsnUser(settings.psnUser) || DEFAULT_SETTINGS.psnUser,
+    microsoftUser: cleanMicrosoftUser(settings.microsoftUser),
     steamUser: cleanSteamUser(settings.steamUser),
     currency: settings.currency === "USD" ? "USD" : "EUR",
     region: ["ES", "US", "UK"].includes(settings.region) ? settings.region : DEFAULT_SETTINGS.region,
@@ -835,6 +838,7 @@ function openSettingsDialog() {
 function renderSettingsDialog() {
   state.settings = normalizeSettings(state.settings);
   el.settingsPsnUser.value = state.settings.psnUser;
+  el.settingsMicrosoftUser.value = state.settings.microsoftUser;
   el.settingsSteamUser.value = state.settings.steamUser;
   el.settingsCurrency.value = state.settings.currency;
   el.settingsRegion.value = state.settings.region;
@@ -957,6 +961,7 @@ async function saveSettingsFromForm(event) {
     hiddenSections: LAYOUT_SECTION_KEYS.filter((key) => !visibleSections.has(key)),
     theme: el.settingsLayoutList.querySelector("[data-theme-select]")?.value || state.settings.theme,
     psnUser: el.settingsPsnUser.value,
+    microsoftUser: el.settingsMicrosoftUser.value,
     steamUser: el.settingsSteamUser.value,
     currency: el.settingsCurrency.value,
     region: el.settingsRegion.value,
@@ -1109,7 +1114,9 @@ async function refreshAchievements() {
 }
 
 async function fetchXboxActivity() {
-  const response = await fetch("/api/xbox-achievements");
+  const params = new URLSearchParams();
+  if (state.settings.microsoftUser) params.set("user", state.settings.microsoftUser);
+  const response = await fetch(`/api/xbox-achievements${params.size ? `?${params}` : ""}`);
   const data = await response.json().catch(() => emptyXboxActivity());
   if (!response.ok || data.authError || data.error) {
     if (!data.needsSetup) console.warn("[trophies] Xbox activity unavailable", data.error || response.status);
@@ -5533,6 +5540,18 @@ function listFrom(value) {
 
 function cleanPsnUser(value) {
   return String(value || "").trim().replace(/[^A-Za-z0-9_-]/g, "").slice(0, 32);
+}
+
+function cleanMicrosoftUser(value) {
+  const text = String(value || "").trim().replace(/[<>]/g, "").slice(0, 128);
+  if (!/^https?:\/\//i.test(text)) return text;
+  try {
+    const parts = new URL(text).pathname.split("/").filter(Boolean);
+    const userIndex = parts.findIndex((part) => part.toLowerCase() === "user");
+    return decodeURIComponent(userIndex >= 0 ? parts[userIndex + 1] || "" : parts.at(-1) || "").slice(0, 64);
+  } catch {
+    return "";
+  }
 }
 
 function cleanSteamUser(value) {
