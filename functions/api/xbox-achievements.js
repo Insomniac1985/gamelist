@@ -200,7 +200,7 @@ function normalizeXboxAchievement(achievement = {}, index = 0) {
 }
 
 function xboxAchievementIcon(achievement) {
-  return String(
+  return secureXboxImageUrl(
     achievement.image
     || achievement.icon
     || achievement.displayImage
@@ -212,7 +212,28 @@ function xboxAchievementIcon(achievement) {
 
 function xboxCover(history = {}, title = {}) {
   const images = [...(Array.isArray(history.images) ? history.images : []), ...(Array.isArray(title.images) ? title.images : [])];
-  return String(history.displayImage || title.displayImage || images.find((image) => /boxart|poster/i.test(image.type || ""))?.url || images[0]?.url || "");
+  const candidates = [
+    ...images.filter((image) => /boxart|poster/i.test(image.type || "")).map((image) => image.url),
+    history.displayImage,
+    title.displayImage,
+    ...images.map((image) => image.url),
+  ];
+  return candidates.map(secureXboxCoverUrl).find(Boolean) || "";
+}
+
+function secureXboxImageUrl(value) {
+  const url = String(value || "").trim();
+  if (!url) return "";
+  if (/^https?:\/\/images-eds\.xboxlive\.com/i.test(url)) {
+    return url.replace(/^https?:\/\/images-eds\.xboxlive\.com/i, "https://images-eds-ssl.xboxlive.com");
+  }
+  return url.replace(/^http:\/\//i, "https://");
+}
+
+function secureXboxCoverUrl(value) {
+  const url = String(value || "").trim();
+  if (!url || /^https?:\/\/images-eds\.xboxlive\.com/i.test(url)) return "";
+  return secureXboxImageUrl(url);
 }
 
 function xboxPlatform(devices) {
