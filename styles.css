@@ -4666,7 +4666,7 @@ body.dialog-open .mobile-section-tabs {
 .settings-theme-card,
 .settings-order-card {
   grid-column: span 2;
-  grid-template-columns: minmax(0, 1fr) minmax(220px, 320px);
+  grid-template-columns: minmax(0, 1fr);
   align-items: center;
   gap: 14px;
   min-height: 66px;
@@ -4680,13 +4680,6 @@ body.dialog-open .mobile-section-tabs {
 .settings-theme-card .settings-wire,
 .settings-order-card .settings-wire {
   display: none;
-}
-
-.settings-theme-card > strong,
-.settings-order-card > strong {
-  min-height: 0;
-  text-align: left;
-  font-size: 14px;
 }
 
 .settings-theme-select span {

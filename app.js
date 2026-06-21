@@ -8,8 +8,8 @@ const SETTINGS_KEY = "gamelist:settings:v1";
 const KASH_TWITCH_URL = "https://www.twitch.tv/kashhoward";
 const DEFAULT_PAGE_ORDER = ["trophies", "calendar", "highlights", "search", "gamelist", "finished"];
 const LAYOUT_SECTION_KEYS = ["playing", ...DEFAULT_PAGE_ORDER, "latestFinished"];
-const SITE_VERSION = "v139";
-const SITE_UPDATED_AT = "2026-06-21T14:56:45Z";
+const SITE_VERSION = "v140";
+const SITE_UPDATED_AT = "2026-06-21T14:58:38Z";
 const VERSION_STORAGE_KEY = "gamelist:site-version";
 const STORE_OPTIONS = ["Amazon", "GAME.es", "Xtralife", "Retro Island NY", "GameStop", "Walmart"];
 const THEMES = {
@@ -963,7 +963,6 @@ function settingsThemeItem() {
   return `
     <article class="settings-layout-card settings-theme-card" data-layout-key="theme">
       <div class="settings-wire wire-theme" aria-hidden="true"><span></span><span></span><span></span><span></span><span></span><span></span></div>
-      <strong>Theme</strong>
       <label class="settings-theme-select">
         <span>Theme</span>
         <select data-theme-select aria-label="Theme">
@@ -978,9 +977,8 @@ function settingsDefaultOrderItem() {
   return `
     <article class="settings-layout-card settings-order-card" data-layout-key="default-order">
       <div class="settings-wire wire-order" aria-hidden="true"><span></span><span></span><span></span><span></span><span></span><span></span></div>
-      <strong>Default order</strong>
       <label class="settings-theme-select">
-        <span>Order</span>
+        <span>Default order</span>
         <select data-default-order aria-label="Default list order">
           <option value="custom" ${state.settings.defaultOrder === "custom" ? "selected" : ""}>Custom</option>
           <option value="time" ${state.settings.defaultOrder === "time" ? "selected" : ""}>Time</option>
