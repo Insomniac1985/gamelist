@@ -8,8 +8,8 @@ const SETTINGS_KEY = "gamelist:settings:v1";
 const KASH_TWITCH_URL = "https://www.twitch.tv/kashhoward";
 const DEFAULT_PAGE_ORDER = ["trophies", "calendar", "highlights", "search", "gamelist", "finished"];
 const LAYOUT_SECTION_KEYS = ["playing", ...DEFAULT_PAGE_ORDER, "latestFinished"];
-const SITE_VERSION = "v126";
-const SITE_UPDATED_AT = "2026-06-21T08:37:40Z";
+const SITE_VERSION = "v127";
+const SITE_UPDATED_AT = "2026-06-21T08:53:48Z";
 const VERSION_STORAGE_KEY = "gamelist:site-version";
 const STORE_OPTIONS = ["Amazon", "GAME.es", "Xtralife", "Retro Island NY", "GameStop", "Walmart"];
 const THEMES = {
@@ -1682,7 +1682,7 @@ function platinumPlatformFor(item) {
   const raw = String(item.platform || "").trim();
   const platform = canonicalPlatform(raw);
   if (isPlayStationPlatform(platform) || /(playstation|ps[1-5]|psp|psvita|pspc)/.test(normalizeTag(raw))) return "PlayStation";
-  if (["Xbox PC", "Xbox", "X360", "XOne"].includes(platform)) return "Xbox";
+  if (["Xbox PC", "Xbox Series", "Xbox", "X360", "XOne"].includes(platform)) return "Xbox";
   return platform || raw;
 }
 
@@ -3292,7 +3292,7 @@ function xboxPlatformMatchScore(localPlatform, remotePlatform) {
   const local = canonicalPlatform(localPlatform);
   const remote = canonicalPlatform(remotePlatform);
   if (local === remote) return 18;
-  if (["XOne", "Xbox"].includes(local) && ["XOne", "Xbox"].includes(remote)) return 10;
+  if (["XOne", "Xbox Series"].includes(local) && ["XOne", "Xbox Series"].includes(remote)) return 10;
   return null;
 }
 
@@ -3382,7 +3382,11 @@ function isPcGame(game) {
 }
 
 function isMicrosoftAchievementGame(game) {
-  return ["Xbox PC", "Xbox", "X360", "XOne"].includes(canonicalPlatform(game?.platform));
+  return ["Xbox PC", "Xbox Series", "X360", "XOne"].includes(canonicalPlatform(game?.platform));
+}
+
+function isXboxStoreGame(game) {
+  return ["Xbox PC", "Xbox Series", "Xbox", "X360", "XOne"].includes(canonicalPlatform(game?.platform));
 }
 
 function psnTitleMatchScore(localTitle, psnTitle) {
@@ -4105,10 +4109,10 @@ function canonicalPlatform(value) {
     x360: "X360",
     xboxone: "XOne",
     xone: "XOne",
-    xboxseries: "Xbox",
-    xboxseriesx: "Xbox",
-    xboxseriess: "Xbox",
-    xboxseriesxs: "Xbox",
+    xboxseries: "Xbox Series",
+    xboxseriesx: "Xbox Series",
+    xboxseriess: "Xbox Series",
+    xboxseriesxs: "Xbox Series",
     xbox: "Xbox",
     wii: "Wii",
     nintendowii: "Wii",
@@ -4465,7 +4469,7 @@ function pricesFor(game) {
 
 function fallbackPriceLinks(game) {
   const q = retailQuery(game.title, game.platform);
-  if (game.digital || isMicrosoftAchievementGame(game)) {
+  if (game.digital || isXboxStoreGame(game)) {
     const region = state.settings.region;
     const links = [
       { store: nintendoStoreName(), url: nintendoSearchUrl(q, region) },
@@ -4510,7 +4514,7 @@ function normalizedPrices(game) {
 }
 
 function priceProvidersForGame(game) {
-  return game.digital || isMicrosoftAchievementGame(game) ? platformStoreProvidersForGame(game) : physicalStoreProviders();
+  return game.digital || isXboxStoreGame(game) ? platformStoreProvidersForGame(game) : physicalStoreProviders();
 }
 
 function physicalStoreProviders() {
@@ -4525,7 +4529,7 @@ function platformStoreProvidersForGame(game) {
   if (platform === "Switch" || platform === "Switch 2") return [nintendoStoreName()];
   if (platform === "PS4" || platform === "PS5") return [playStationStoreName()];
   if (platform === "Steam") return ["Steam"];
-  if (["Xbox PC", "Xbox", "X360", "XOne"].includes(platform)) return ["Xbox"];
+  if (["Xbox PC", "Xbox Series", "Xbox", "X360", "XOne"].includes(platform)) return ["Xbox"];
   return [];
 }
 
@@ -5481,7 +5485,7 @@ function mergeFetchedPrices(game, fetchedPrices = []) {
 
 async function fetchPrices(title, platform, digital = false) {
   const params = new URLSearchParams({ title, platform });
-  if (digital || ["Xbox PC", "Xbox", "X360", "XOne"].includes(canonicalPlatform(platform))) params.set("digital", "1");
+  if (digital || ["Xbox PC", "Xbox Series", "Xbox", "X360", "XOne"].includes(canonicalPlatform(platform))) params.set("digital", "1");
   params.set("currency", state.settings.currency);
   params.set("region", state.settings.region);
   params.set("stores", state.settings.stores.join(","));

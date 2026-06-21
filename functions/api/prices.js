@@ -64,7 +64,7 @@ function digitalProvidersForPlatform(platform, region) {
     search: (q) => `https://store.steampowered.com/search/?term=${encodeURIComponent(q)}`,
     parse: parseSteam,
   }];
-  if (["xboxpc", "microsoft", "microsoftpc", "xbox", "xbox360", "x360", "xboxone", "xone"].includes(normalized)) return [{
+  if (["xboxpc", "microsoft", "microsoftpc", "xbox", "xbox360", "x360", "xboxone", "xone", "xboxseries", "xboxseriesx", "xboxseriess", "xboxseriesxs"].includes(normalized)) return [{
     store: "Xbox",
     search: (q) => xboxSearchUrl(q, region),
     lookup: lookupXboxStore,
@@ -250,7 +250,7 @@ async function lookupXboxStore(title, platform, query, options = {}) {
       const matchedTitle = String(product.Title || "").trim();
       return {
         title: matchedTitle,
-        platform: "Xbox Xbox PC Xbox One Xbox 360",
+        platform: "Xbox Xbox Series Xbox PC Xbox One Xbox 360",
         price: String(product.DisplayPrice || "").trim(),
         numericPrice: Number.isFinite(Number(product.Price)) ? Number(product.Price) : null,
         matchedTitle,

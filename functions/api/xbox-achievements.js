@@ -140,8 +140,9 @@ function xboxPlatform(devices) {
   const value = (Array.isArray(devices) ? devices : [devices]).join(" ").toLowerCase();
   if (/xbox\s*360|xbox360/.test(value)) return "X360";
   if (/win32|windows|pc/.test(value)) return "Xbox PC";
+  if (/xbox\s*series|scarlett/.test(value)) return "Xbox Series";
   if (/xbox\s*one|xboxone/.test(value)) return "XOne";
-  return "Xbox";
+  return "Xbox Series";
 }
 
 function compareEarned(a, b) {

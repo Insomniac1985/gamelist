@@ -198,7 +198,7 @@ The personal key reads the Xbox profile connected to that OpenXBL account. You c
 npx wrangler secret put XBOX_GAMERTAG
 ```
 
-Use `Xbox PC` for Microsoft Store or PC Game Pass releases, `X360` for Xbox 360, `XOne` for Xbox One, and `Xbox` for current Xbox releases. Xbox Store prices are fetched automatically for those platforms and follow the region selected in Settings.
+Use `Xbox PC` for Microsoft Store or PC Game Pass releases, `X360` for Xbox 360, `XOne` for Xbox One, `Xbox Series` for Series X/S, and `Xbox` for the original console. Xbox Store prices are fetched automatically for those platforms and follow the region selected in Settings.
 
 ### Google Calendar Preorder Events
 
