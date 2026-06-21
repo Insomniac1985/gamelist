@@ -8,8 +8,8 @@ const SETTINGS_KEY = "gamelist:settings:v1";
 const KASH_TWITCH_URL = "https://www.twitch.tv/kashhoward";
 const DEFAULT_PAGE_ORDER = ["trophies", "calendar", "highlights", "search", "gamelist", "finished"];
 const LAYOUT_SECTION_KEYS = ["playing", ...DEFAULT_PAGE_ORDER, "latestFinished"];
-const SITE_VERSION = "v131";
-const SITE_UPDATED_AT = "2026-06-21T09:05:12Z";
+const SITE_VERSION = "v132";
+const SITE_UPDATED_AT = "2026-06-21T09:11:33Z";
 const VERSION_STORAGE_KEY = "gamelist:site-version";
 const STORE_OPTIONS = ["Amazon", "GAME.es", "Xtralife", "Retro Island NY", "GameStop", "Walmart"];
 const THEMES = {
@@ -3333,11 +3333,16 @@ function xboxPlatformMatchScore(localPlatform, remotePlatform) {
 
 function xboxProgressForGame(game) {
   const match = matchedXboxGame(game);
-  if (!match?.total) return null;
-  const earned = Number(match.earned || 0);
-  const total = Number(match.total || 0);
-  const progress = Number.isFinite(Number(match.progress))
-    ? Number(match.progress)
+  if (!match) return null;
+  const cacheKey = xboxAchievementCacheKey(match);
+  const cached = cacheKey ? state.cardTrophies[cacheKey] : null;
+  if (!cached && (game.playing || game.completedAt)) loadCardXboxAchievements(game, match);
+  const earned = Number(cached?.earned ?? match.earned ?? 0);
+  const total = Number(cached?.total ?? match.total ?? 0);
+  if (!total) return null;
+  const progress = cached
+    ? Math.round((earned / Math.max(total, 1)) * 100)
+    : Number.isFinite(Number(match.progress)) ? Number(match.progress)
     : Math.round((earned / Math.max(total, 1)) * 100);
   return {
     title: match.title || game.title,

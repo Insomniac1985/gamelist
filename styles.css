@@ -4681,11 +4681,7 @@ body.dialog-open .mobile-section-tabs {
 }
 
 .settings-account-field {
-  grid-column: span 3;
-}
-
-.settings-account-field-wide {
-  grid-column: 1 / -1;
+  grid-column: span 2;
 }
 
 .settings-detail-compact {
