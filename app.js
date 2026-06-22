@@ -9,8 +9,8 @@ const SETTINGS_KEY = "gamelist:settings:v1";
 const KASH_TWITCH_URL = "https://www.twitch.tv/kashhoward";
 const DEFAULT_PAGE_ORDER = ["trophies", "calendar", "highlights", "search", "gamelist", "finished"];
 const LAYOUT_SECTION_KEYS = ["playing", ...DEFAULT_PAGE_ORDER, "latestFinished"];
-const SITE_VERSION = "v151";
-const SITE_UPDATED_AT = "2026-06-21T21:26:00Z";
+const SITE_VERSION = "v152";
+const SITE_UPDATED_AT = "2026-06-22T21:30:00Z";
 const VERSION_STORAGE_KEY = "gamelist:site-version";
 const STORE_OPTIONS = ["Amazon", "GAME.es", "Xtralife", "Retro Island NY", "GameStop", "Walmart"];
 const THEMES = {
@@ -329,6 +329,7 @@ async function init() {
   await window.__initialThemeReady?.catch(() => "shabii");
   registerServiceWorker();
   syncDisplayMode();
+  if (!state.canEdit) state.canEdit = await hasSharedEditorSession();
   document.body.classList.toggle("can-edit", state.canEdit);
   bindEvents();
   warmUiIcons();
@@ -460,7 +461,13 @@ function bindEvents() {
   }, { passive: true });
   document.addEventListener("visibilitychange", () => {
     if (document.hidden) pauseAllPlayingTrailers();
-    else scheduleFocusedPlayingTrailerUpdate();
+    else {
+      scheduleFocusedPlayingTrailerUpdate();
+      syncSharedEditorSession();
+    }
+  });
+  window.addEventListener("storage", (event) => {
+    if (event.key === "gamelist-editor-signal") syncSharedEditorSession();
   });
   document.addEventListener("pointerover", handleSelectOverflowTitle);
   document.addEventListener("focusin", handleSelectOverflowTitle);
@@ -5204,10 +5211,32 @@ async function toggleEditMode() {
     state.canEdit = false;
     sessionStorage.removeItem(SESSION_KEY);
     sessionStorage.removeItem(`${SESSION_KEY}:password`);
+    fetch("/api/auth", { method: "DELETE" }).catch(() => {});
+    localStorage.setItem("gamelist-editor-signal", String(Date.now()));
     render();
     return;
   }
   await ensureEditMode();
+}
+
+async function hasSharedEditorSession() {
+  try {
+    return (await fetch("/api/auth", { cache: "no-store" })).ok;
+  } catch {
+    return false;
+  }
+}
+
+async function syncSharedEditorSession() {
+  const active = await hasSharedEditorSession();
+  if (active === state.canEdit) return;
+  state.canEdit = active;
+  if (active) sessionStorage.setItem(SESSION_KEY, "true");
+  else {
+    sessionStorage.removeItem(SESSION_KEY);
+    sessionStorage.removeItem(`${SESSION_KEY}:password`);
+  }
+  render();
 }
 
 async function ensureEditMode() {
@@ -5224,6 +5253,7 @@ async function ensureEditMode() {
     state.canEdit = true;
     sessionStorage.setItem(SESSION_KEY, "true");
     sessionStorage.setItem(`${SESSION_KEY}:password`, password);
+    localStorage.setItem("gamelist-editor-signal", String(Date.now()));
     render();
     return true;
   }

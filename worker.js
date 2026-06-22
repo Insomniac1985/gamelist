@@ -4,6 +4,7 @@ import * as calendar from "./functions/api/calendar.js";
 import * as cover from "./functions/api/cover.js";
 import * as prices from "./functions/api/prices.js";
 import * as search from "./functions/api/search.js";
+import * as shelf from "./functions/api/shelf.js";
 import * as sync from "./functions/api/sync.js";
 import * as steamAchievements from "./functions/api/steam-achievements.js";
 import * as trophies from "./functions/api/trophies.js";
@@ -16,6 +17,7 @@ const routes = {
   "/api/cover": cover,
   "/api/prices": prices,
   "/api/search": search,
+  "/api/shelf": shelf,
   "/api/steam-achievements": steamAchievements,
   "/api/sync": sync,
   "/api/trophies": trophies,
@@ -29,6 +31,7 @@ const shelfOnlyPaths = new Set([
   "/shelf.css",
   "/shelf.js",
   "/api/cover",
+  "/api/shelf",
   "/data/2026_06_22_ge_collection.csv",
   "/data/collection-games.json",
   "/scripts/build-collection-data.mjs",

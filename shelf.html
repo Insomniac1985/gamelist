@@ -7,89 +7,206 @@
     <meta name="theme-color" content="#ff0039">
     <title>Shabii's Shelf</title>
     <link rel="icon" type="image/png" href="assets/Icon.png">
+    <link rel="stylesheet" href="styles.css">
     <link rel="stylesheet" href="shelf.css">
   </head>
-  <body>
+  <body class="shelf-page">
     <div class="backdrop" aria-hidden="true"></div>
-    <header class="topbar">
-      <a class="brand" href="index.html">
-        <img src="assets/Icon.png" alt="">
-        <span>Shabii's Gamelist</span>
+
+    <header class="topbar shelf-topbar">
+      <a class="brand" href="shelf" aria-label="Shabii's Shelf">
+        <img class="brand-mark" src="assets/Icon.png" alt="">
+        <span>Shabii's Shelf</span>
       </a>
-      <nav class="nav" aria-label="Main navigation">
+      <nav class="nav-tabs" aria-label="Sections">
         <a href="index.html">Gamelist</a>
-        <a class="active" href="shelf.html" aria-current="page">Shelf</a>
+        <a class="active" href="shelf" aria-current="page">Shelf</a>
       </nav>
-      <span class="source-label">GE · 22 JUN 2026</span>
+      <div class="top-actions">
+        <button class="icon-button" id="layoutButton" type="button" title="Customize Shelf" aria-label="Customize Shelf" hidden>
+          <svg class="settings-icon" viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M9.8 3.7h4.4l.42 2.1c.45.16.87.4 1.25.7l2.02-.68 2.2 3.82-1.6 1.42c.04.31.04.57 0 .88l1.6 1.42-2.2 3.82-2.02-.68c-.38.3-.8.54-1.25.7l-.42 2.1H9.8l-.42-2.1a5.3 5.3 0 0 1-1.25-.7l-2.02.68-2.2-3.82 1.6-1.42a4.1 4.1 0 0 1 0-.88l-1.6-1.42 2.2-3.82 2.02.68c.38-.3.8-.54 1.25-.7l.42-2.1Z"></path>
+            <circle cx="12" cy="12" r="2.9"></circle>
+          </svg>
+        </button>
+        <button class="ghost-button" id="loginButton" type="button" title="Edit" aria-label="Edit">
+          <svg class="pencil-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h4l11-11a2.8 2.8 0 0 0-4-4L4 16v4Z"></path><path d="M13.5 6.5l4 4"></path></svg>
+        </button>
+        <button class="primary-button" id="addGameButton" type="button" hidden>
+          <span class="button-label">Add Game</span>
+          <span class="button-icon" aria-hidden="true">
+            <svg class="plus-icon" viewBox="0 0 24 24"><path d="M12 5v14"></path><path d="M5 12h14"></path></svg>
+          </span>
+        </button>
+      </div>
     </header>
 
-    <main>
-      <section class="hero">
-        <div class="eyebrow"><span></span> Physical archive</div>
-        <h1>The games,<br><em>on the shelf.</em></h1>
-        <p>Every physical game in one place—from Japanese PlayStation oddities to modern Switch releases.</p>
-        <div class="hero-stats" id="heroStats" aria-live="polite"></div>
+    <main class="shell shelf-shell">
+      <section class="shelf-intro">
+        <div>
+          <p class="eyebrow">Physical archive</p>
+          <h1>Shelf</h1>
+          <p>Physical games, regional editions, and collection condition—all in one place.</p>
+        </div>
+        <div class="intro-mark" aria-hidden="true">278</div>
       </section>
 
-      <section class="collection-shell">
-        <div class="collection-head">
-          <div>
-            <p class="section-kicker">Library</p>
-            <h2>All games <span id="resultCount"></span></h2>
-          </div>
+      <div class="shelf-modules" id="shelfModules">
+        <section class="highlights-section" data-module="kpis">
+          <div class="stats" id="shelfStats" aria-live="polite"></div>
+        </section>
+
+        <section class="toolbar glass shelf-toolbar" data-module="filters">
           <label class="search">
-            <span class="visually-hidden">Search collection</span>
-            <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.5"></circle><path d="m16 16 4 4"></path></svg>
-            <input id="searchInput" type="search" placeholder="Search the shelf...">
+            <span>Search</span>
+            <input id="searchInput" type="search" placeholder="Game, publisher, genre...">
           </label>
-        </div>
+          <label>
+            <span>Console</span>
+            <select id="platformFilter"></select>
+          </label>
+          <label>
+            <span>Region</span>
+            <select id="regionFilter"></select>
+          </label>
+          <label>
+            <span>Condition</span>
+            <select id="conditionFilter">
+              <option value="all">All conditions</option>
+              <option value="complete">Complete</option>
+              <option value="boxed">Boxed</option>
+              <option value="loose">Loose</option>
+              <option value="new">New / sealed</option>
+              <option value="issues">With notes</option>
+            </select>
+          </label>
+          <label class="order-label">
+            <span>Order</span>
+            <select id="sortFilter">
+              <option value="platform">Console</option>
+              <option value="title">Name</option>
+              <option value="added">Last added</option>
+              <option value="value">Value</option>
+              <option value="region">Region</option>
+            </select>
+          </label>
+          <button class="icon-button view-toggle" id="viewToggleButton" type="button" title="Show as list" aria-label="Show as list">
+            <svg class="view-icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="6" height="6" rx="1"></rect><rect x="14" y="4" width="6" height="6" rx="1"></rect><rect x="4" y="14" width="6" height="6" rx="1"></rect><rect x="14" y="14" width="6" height="6" rx="1"></rect></svg>
+          </button>
+        </section>
 
-        <div class="filter-block">
-          <div class="filter-row">
-            <span class="filter-label">Console</span>
-            <div class="chip-list" id="platformFilters" role="group" aria-label="Filter by console"></div>
+        <section class="shelf-library" data-module="library">
+          <div class="column-head">
+            <div>
+              <p class="eyebrow">Library</p>
+              <h2>Physical games</h2>
+            </div>
+            <span id="resultCount"></span>
           </div>
-          <div class="filter-row">
-            <span class="filter-label">Region</span>
-            <div class="chip-list" id="regionFilters" role="group" aria-label="Filter by region"></div>
+          <div class="shelf-grid" id="gameShelf" aria-live="polite"></div>
+          <div class="empty-state glass" id="emptyState" hidden>
+            <strong>Nothing on this shelf</strong>
+            <span>Try another filter or search.</span>
+            <button class="ghost-button" id="clearFilters" type="button">Clear filters</button>
           </div>
-          <div class="filter-foot">
-            <span id="filterSummary">Showing the complete collection</span>
-            <label>Sort
-              <select id="sortSelect">
-                <option value="platform">Console</option>
-                <option value="title">Title A–Z</option>
-                <option value="newest">Recently added</option>
-                <option value="value">Highest value</option>
-              </select>
-            </label>
-          </div>
-        </div>
-
-        <div class="shelf" id="gameShelf" aria-live="polite"></div>
-        <div class="empty-state" id="emptyState" hidden>
-          <span>Nothing on this shelf.</span>
-          <button type="button" id="clearFilters">Clear filters</button>
-        </div>
-      </section>
+        </section>
+      </div>
     </main>
 
-    <dialog class="game-dialog" id="gameDialog">
-      <button class="dialog-close" id="dialogClose" type="button" aria-label="Close">×</button>
-      <div class="dialog-art"><img id="dialogCover" alt=""></div>
-      <div class="dialog-copy">
-        <p class="section-kicker" id="dialogPlatform"></p>
-        <h2 id="dialogTitle"></h2>
-        <div class="dialog-badges" id="dialogBadges"></div>
-        <dl id="dialogDetails"></dl>
-        <div class="dialog-note" id="dialogNote" hidden></div>
+    <footer class="site-footer" aria-label="Site updates">
+      <span id="footerDataUpdate">Collection imported 22 Jun 2026</span>
+      <button id="footerVersion" type="button">Shelf v1 · 278 source games</button>
+    </footer>
+
+    <button class="icon-button scroll-top-button" id="scrollTopButton" type="button" title="Back to top" aria-label="Back to top">
+      <svg class="scroll-top-icon" viewBox="0 0 24 24" aria-hidden="true"><polyline points="6 14 12 8 18 14"></polyline></svg>
+    </button>
+
+    <dialog id="detailDialog" class="shelf-dialog">
+      <div class="modal detail-modal">
+        <div class="modal-head">
+          <div><p class="eyebrow" id="detailEyebrow">Physical game</p><h2 id="detailTitle"></h2></div>
+          <button class="icon-button" id="detailClose" type="button" title="Close" aria-label="Close">×</button>
+        </div>
+        <div class="shelf-detail-body">
+          <div class="detail-cover"><img id="detailCover" alt=""></div>
+          <div>
+            <div class="chips" id="detailChips"></div>
+            <dl class="detail-list" id="detailList"></dl>
+            <div class="detail-note" id="detailNote" hidden></div>
+            <div class="modal-actions" id="detailActions"></div>
+          </div>
+        </div>
       </div>
     </dialog>
 
-    <footer>
-      <span>SHABII'S PHYSICAL ARCHIVE</span>
-      <span>278 games · 9 consoles · 10 countries</span>
-    </footer>
+    <dialog id="addDialog" class="shelf-dialog">
+      <form class="modal add-modal" id="addGameForm">
+        <div class="modal-head">
+          <div><p class="eyebrow">Shelf editor</p><h2>Add physical game</h2></div>
+          <button class="icon-button" id="addClose" type="button" title="Close" aria-label="Close">×</button>
+        </div>
+
+        <div class="lookup-row shelf-lookup">
+          <label>
+            <span>Find a game</span>
+            <input id="lookupInput" type="search" placeholder="Search IGDB / HowLongToBeat">
+          </label>
+          <button class="ghost-button" id="lookupButton" type="button">Fetch info</button>
+        </div>
+        <div class="lookup-results shelf-lookup-results" id="lookupResults"></div>
+
+        <div class="form-grid shelf-form-grid">
+          <label><span>Title</span><input id="titleInput" required></label>
+          <label><span>Console</span><select id="platformInput" required></select></label>
+          <label><span>Region</span><select id="countryInput" required></select></label>
+          <label><span>Completeness</span>
+            <select id="ownershipInput">
+              <option value="CIB+">CIB+</option><option value="CIB">CIB</option><option value="Boxed+">Boxed+</option><option value="Boxed">Boxed</option><option value="Loose">Loose</option><option value="New">New / sealed</option>
+            </select>
+          </label>
+          <label><span>Play status</span>
+            <select id="playStatusInput"><option>Backlog</option><option>Playing</option><option>Completed</option><option>Unplayed</option></select>
+          </label>
+          <label><span>Estimated value (€)</span><input id="priceInput" type="number" min="0" step="0.01" placeholder="0.00"></label>
+          <label><span>Publisher</span><input id="publisherInput"></label>
+          <label><span>Developer</span><input id="developerInput"></label>
+          <label class="form-span"><span>Genre</span><input id="genreInput"></label>
+          <label class="form-span"><span>Cover URL</span><input id="coverInput" type="url"></label>
+          <label class="form-span"><span>Condition notes</span><textarea id="notesInput" rows="3" placeholder="Missing booklet, sealed, damaged case..."></textarea></label>
+        </div>
+        <p class="save-note">Added games are saved to this browser for now.</p>
+        <div class="modal-actions">
+          <button class="ghost-button" id="addCancel" type="button">Cancel</button>
+          <button class="primary-button" type="submit">Add to Shelf</button>
+        </div>
+      </form>
+    </dialog>
+
+    <dialog id="layoutDialog" class="shelf-dialog">
+      <form class="modal layout-modal" id="layoutForm">
+        <div class="modal-head">
+          <div><p class="eyebrow">Shelf settings</p><h2>Page layout</h2></div>
+          <button class="icon-button" id="layoutClose" type="button" title="Close" aria-label="Close">×</button>
+        </div>
+        <p class="layout-help">Show, hide, and reorder Shelf sections.</p>
+        <div class="settings-layout" id="layoutList"></div>
+        <div class="modal-actions"><button class="primary-button" type="submit">Save layout</button></div>
+      </form>
+    </dialog>
+
+    <dialog id="authDialog" class="shelf-dialog">
+      <form class="modal auth-modal" id="authForm">
+        <div class="modal-head">
+          <div><p class="eyebrow">Shelf editor</p><h2>Unlock editing</h2></div>
+          <button class="icon-button" id="authClose" type="button" title="Close" aria-label="Close">×</button>
+        </div>
+        <label><span>Editor password</span><input id="authPasswordInput" type="password" autocomplete="current-password"></label>
+        <p class="auth-error" id="authError" hidden>Wrong password.</p>
+        <div class="modal-actions"><button class="ghost-button" id="authCancel" type="button">Cancel</button><button class="primary-button" type="submit">Unlock</button></div>
+      </form>
+    </dialog>
+
     <script src="shelf.js" defer></script>
   </body>
 </html>

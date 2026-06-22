@@ -1,3 +1,5 @@
+import { isEditorRequest } from "./editor-auth.js";
+
 const KV_KEY = "gamelist-data";
 
 export async function onRequestGet({ request, env }) {
@@ -12,8 +14,7 @@ export async function onRequestGet({ request, env }) {
 export async function onRequestPut({ request, env }) {
   if (!env.GAMELIST) return json({ error: "Missing GAMELIST KV binding" }, 501);
   if (!env.EDIT_PASSWORD) return json({ error: "Missing EDIT_PASSWORD secret" }, 503);
-  const password = request.headers.get("x-edit-password") || "";
-  if (password !== env.EDIT_PASSWORD) {
+  if (!await isEditorRequest(request, env)) {
     return json({ error: "Unauthorized" }, 401);
   }
   const body = await request.json().catch(() => null);
