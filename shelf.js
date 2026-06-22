@@ -1,4 +1,6 @@
 const SESSION_KEY = "gamelist-editor";
+const SITE_VERSION = "v153";
+const VERSION_STORAGE_KEY = "gamelist:site-version";
 const VIEW_KEY = "shelf:view-mode:v2";
 const LAYOUT_KEY = "shelf:layout:v2";
 const LOCAL_DRAFT_KEY = "shelf:draft-data:v2";
@@ -9,9 +11,9 @@ const PLATFORM_OPTIONS = [
   "Sony PlayStation 2", "Sony PlayStation", "Nintendo 3DS", "Nintendo DS", "Nintendo 64",
 ];
 const COUNTRY_OPTIONS = [
-  ["United Kingdom", "🇬🇧 United Kingdom"], ["Spain", "🇪🇸 Spain"], ["United States of America", "🇺🇸 United States"],
-  ["Japan", "🇯🇵 Japan"], ["Taiwan", "🇹🇼 Taiwan"], ["France", "🇫🇷 France"], ["Germany", "🇩🇪 Germany"],
-  ["Australia", "🇦🇺 Australia"], ["China", "🇨🇳 China"], ["World", "🌐 World"],
+  ["United Kingdom", "United Kingdom"], ["Spain", "Spain"], ["United States of America", "United States"],
+  ["Japan", "Japan"], ["Taiwan", "Taiwan"], ["France", "France"], ["Germany", "Germany"],
+  ["Australia", "Australia"], ["China", "China"], ["World", "World"],
 ];
 
 const state = {
@@ -68,7 +70,9 @@ const el = {
     playStatus: document.querySelector("#playStatusInput"), price: document.querySelector("#priceInput"),
     publisher: document.querySelector("#publisherInput"), developer: document.querySelector("#developerInput"),
     genre: document.querySelector("#genreInput"), cover: document.querySelector("#coverInput"), notes: document.querySelector("#notesInput"),
+    coverProject: document.querySelector("#coverProjectInput"),
   },
+  coverProjectButton: document.querySelector("#coverProjectButton"),
   layoutDialog: document.querySelector("#layoutDialog"),
   layoutForm: document.querySelector("#layoutForm"),
   layoutClose: document.querySelector("#layoutClose"),
@@ -84,19 +88,20 @@ const el = {
 init();
 
 async function init() {
+  if (await checkSiteVersion()) return;
+  registerServiceWorker();
   populateEditorOptions();
   bindEvents();
-  const [source, shelfData, auth] = await Promise.all([
-    fetch("data/collection-games.json").then((response) => response.json()),
+  const [shelfData, auth] = await Promise.all([
     fetch("/api/shelf", { cache: "no-store" }).then((response) => response.ok ? response.json() : null).catch(() => null),
     fetch("/api/auth", { cache: "no-store" }).then((response) => response.ok).catch(() => false),
   ]);
-  state.sourceGames = source.games || [];
+  state.sourceGames = shelfData?.sourceGames || [];
   const draft = loadDraft();
   state.additions = draft.games || shelfData?.games || [];
   state.overrides = draft.overrides || shelfData?.overrides || {};
   state.canEdit = state.canEdit || auth;
-  state.updatedAt = shelfData?.updatedAt || source.generatedAt || "";
+  state.updatedAt = shelfData?.updatedAt || "";
   rebuildGames();
   renderAll();
 }
@@ -113,6 +118,7 @@ function bindEvents() {
   el.addButton.addEventListener("click", () => openEditor());
   el.layoutButton.addEventListener("click", openLayout);
   el.scrollTop.addEventListener("click", () => window.scrollTo({ top: 0, behavior: "smooth" }));
+  el.footerVersion.addEventListener("click", clearSiteCachesAndReload);
   window.addEventListener("scroll", () => el.scrollTop.classList.toggle("visible", window.scrollY > 420), { passive: true });
   window.addEventListener("storage", (event) => { if (event.key === "gamelist-editor-signal") refreshSharedAuth(); });
   window.addEventListener("focus", refreshSharedAuth);
@@ -129,6 +135,8 @@ function bindEvents() {
   el.lookupButton.addEventListener("click", lookupGame);
   el.lookupInput.addEventListener("keydown", (event) => { if (event.key === "Enter") { event.preventDefault(); lookupGame(); } });
   el.lookupResults.addEventListener("click", chooseLookupResult);
+  el.coverProjectButton.addEventListener("click", findCoverProjectCover);
+  document.addEventListener("error", handleCoverImageError, true);
 
   el.layoutClose.addEventListener("click", () => closeDialog(el.layoutDialog));
   el.layoutDialog.addEventListener("click", (event) => { if (event.target === el.layoutDialog) closeDialog(el.layoutDialog); });
@@ -166,7 +174,7 @@ function renderChrome() {
   el.login.setAttribute("aria-label", el.login.title);
   el.view.title = state.viewMode === "grid" ? "Show as list" : "Show as grid";
   el.footerUpdate.textContent = state.updatedAt ? `Last edit ${formatDate(state.updatedAt)}` : "Collection imported 22 Jun 2026";
-  el.footerVersion.textContent = `Shelf v2 · ${state.sourceGames.length} source games${state.additions.length ? ` · ${state.additions.length} added` : ""}`;
+  el.footerVersion.textContent = `${SITE_VERSION} · Shelf · ${state.sourceGames.length} source games${state.additions.length ? ` · ${state.additions.length} added` : ""}`;
 }
 
 function renderStats() {
@@ -185,7 +193,7 @@ function renderFilters() {
   const platforms = countValues(state.games.map((game) => game.platform));
   const countries = countValues(state.games.map((game) => game.country));
   el.platform.innerHTML = `<option value="all">All consoles (${state.games.length})</option>${platforms.map(([value, count]) => `<option value="${escapeHtml(value)}">${escapeHtml(shortPlatform(value))} (${count})</option>`).join("")}`;
-  el.region.innerHTML = `<option value="all">All regions (${state.games.length})</option>${countries.map(([value, count]) => `<option value="${escapeHtml(value)}">${flagFor(value)} ${escapeHtml(regionName(value))} (${count})</option>`).join("")}`;
+  el.region.innerHTML = `<option value="all">All regions (${state.games.length})</option>${countries.map(([value, count]) => `<option value="${escapeHtml(value)}">${escapeHtml(regionName(value))} (${count})</option>`).join("")}`;
   el.platform.value = state.filters.platform;
   el.region.value = state.filters.region;
 }
@@ -208,19 +216,22 @@ function filteredGames() {
 }
 
 function gameCard(game) {
-  const cover = coverUrl(game.cover || "");
+  const fallbackCover = coverUrl(game.cover || "") || platformFallback(game.platform);
+  const projectCover = coverProjectUrl(game.coverProject || "");
+  const cover = projectCover || fallbackCover;
+  const wrapClass = projectCover ? " has-wrap" : "";
   const issueClass = game.ownership === "Loose" ? "condition-loose" : game.notes ? "condition-issue" : "condition-good";
   const studio = [game.developer, game.publisher && game.publisher !== game.developer ? game.publisher : ""].filter(Boolean).join(" · ");
   return `<article class="game-card glass${cover ? " has-art" : ""}" data-id="${escapeHtml(game.id)}"${cover ? ` style="--card-art:url('${escapeCss(cover)}')"` : ""}>
-    <div class="physical-case ${caseClass(game.platform)}" data-case-label="${escapeHtml(caseLabel(game.platform))}">
+    <div class="cover-showcase ${coverClass(game.platform)}${wrapClass}" style="--cover-art:url('${escapeCss(cover)}')">
       <button class="cover-button" type="button" data-action="details" aria-label="View ${escapeHtml(game.title)}">
-        <img src="${escapeHtml(cover || platformFallback(game.platform))}" alt="${escapeHtml(game.title)} cover" loading="lazy" decoding="async">
+        <img src="${escapeHtml(cover)}" data-cover-fallback="${escapeHtml(fallbackCover)}" alt="${escapeHtml(game.title)} cover" loading="lazy" decoding="async">
       </button>
     </div>
     <div class="game-main">
       <div class="title-line"><div class="title-wrap"><h3>${escapeHtml(game.title)}</h3></div></div>
       <div class="studio-line">${escapeHtml(studio || game.genre || "Physical edition")}</div>
-      <div class="meta"><span class="region-flag" title="${escapeHtml(game.country)}">${flagFor(game.country)}</span><span class="chip accent">${escapeHtml(shortPlatform(game.platform))}</span>${game.price != null ? `<span class="chip">€${Number(game.price).toFixed(0)}</span>` : ""}</div>
+      <div class="meta"><span class="region-flag" title="${escapeHtml(game.country)}">${flagIcon(game.country)}</span>${platformBadge(game.platform)}${game.price != null ? `<span class="chip">€${Number(game.price).toFixed(0)}</span>` : ""}</div>
       <div class="chips"><span class="chip ${issueClass}">${escapeHtml(game.ownership || "Owned")}</span>${game.playStatus ? `<span class="chip play-status">${escapeHtml(game.playStatus)}</span>` : ""}${game.genre ? `<span class="chip genre">${escapeHtml(firstGenre(game.genre))}</span>` : ""}</div>
       <div class="card-actions"><button class="ghost-button" type="button" data-action="details">Details</button>${state.canEdit ? `<button class="ghost-button editor-only" type="button" data-action="edit">Edit</button>` : ""}</div>
     </div>
@@ -240,16 +251,20 @@ function handleShelfClick(event) {
 function openDetails(game) {
   el.detailDialog.dataset.id = game.id;
   el.detailTitle.textContent = game.title;
-  el.detailEyebrow.textContent = `${flagFor(game.country)} ${game.country} · ${shortPlatform(game.platform)}`;
-  el.detailCover.src = coverUrl(game.cover || "") || platformFallback(game.platform);
+  el.detailEyebrow.textContent = `${game.country} · ${shortPlatform(game.platform)}`;
+  const fallbackCover = coverUrl(game.cover || "") || platformFallback(game.platform);
+  const projectCover = coverProjectUrl(game.coverProject || "");
+  el.detailCover.src = projectCover || fallbackCover;
+  el.detailCover.dataset.coverFallback = fallbackCover;
+  el.detailCover.parentElement.classList.toggle("has-wrap", Boolean(projectCover));
   el.detailCover.alt = `${game.title} cover`;
   el.detailChips.innerHTML = [game.ownership, game.playStatus, game.genre].filter(Boolean).map((value, index) => `<span class="chip ${index === 0 ? "accent" : index === 2 ? "genre" : ""}">${escapeHtml(value)}</span>`).join("");
   const details = [
-    ["Console", shortPlatform(game.platform)], ["Region", `${flagFor(game.country)} ${game.country}`],
+    ["Console", platformBadge(game.platform), true], ["Region", `${flagIcon(game.country, true)}<span>${escapeHtml(game.country)}</span>`, true],
     ["Publisher", game.publisher], ["Developer", game.developer], ["Value", game.price != null ? `€${Number(game.price).toFixed(2)}` : "—"],
     ["Metacritic", game.metacritic || "—"], ["Added", game.createdAt || "—"],
   ];
-  el.detailList.innerHTML = details.map(([term, value]) => `<dt>${escapeHtml(term)}</dt><dd>${escapeHtml(value || "—")}</dd>`).join("");
+  el.detailList.innerHTML = details.map(([term, value, raw]) => `<dt>${escapeHtml(term)}</dt><dd>${raw ? value : escapeHtml(value || "—")}</dd>`).join("");
   el.detailNote.hidden = !game.notes;
   el.detailNote.textContent = game.notes || "";
   el.detailActions.innerHTML = state.canEdit ? `<button class="ghost-button" type="button" data-detail-action="edit">Edit game</button>${game.sourceRecord ? `<button class="ghost-button" type="button" data-detail-action="reset">Reset changes</button>` : `<button class="danger-button" type="button" data-detail-action="delete">Delete</button>`}` : "";
@@ -325,6 +340,7 @@ async function saveEditor(event) {
     region: regionFor(el.fields.country.value), ownership: el.fields.ownership.value, playStatus: el.fields.playStatus.value,
     price: numberOrNull(el.fields.price.value), publisher: el.fields.publisher.value.trim(), developer: el.fields.developer.value.trim(),
     genre: el.fields.genre.value.trim(), cover: rawCoverUrl(el.fields.cover.value.trim()), notes: el.fields.notes.value.trim(),
+    coverProject: el.fields.coverProject.value.trim(),
     createdAt: existing?.createdAt || new Date().toISOString(), updatedAt: new Date().toISOString(), recordType: "Owned", releaseType: existing?.releaseType || "Official",
   };
   if (!game.title) return;
@@ -479,16 +495,47 @@ function loadLayout() {
 }
 
 function loadDraft() { try { return JSON.parse(localStorage.getItem(LOCAL_DRAFT_KEY) || "{}"); } catch { return {}; } }
+function registerServiceWorker() { if ("serviceWorker" in navigator) window.addEventListener("load", () => navigator.serviceWorker.register("/service-worker.js").catch(() => {})); }
+async function checkSiteVersion() { try { const response = await fetch(`/version.json?t=${Date.now()}`, { cache: "no-store" }); if (!response.ok) return false; const remote = await response.json(); const remoteVersion = String(remote.version || "").trim(); if (!remoteVersion) return false; const current = localStorage.getItem(VERSION_STORAGE_KEY); if (!current || current === remoteVersion || remoteVersion === SITE_VERSION) { localStorage.setItem(VERSION_STORAGE_KEY, remoteVersion); return false; } await clearSiteCaches(); localStorage.setItem(VERSION_STORAGE_KEY, remoteVersion); window.location.reload(); return true; } catch { return false; } }
+async function clearSiteCaches() { if ("caches" in window) { const keys = await caches.keys(); await Promise.all(keys.filter((key) => key.startsWith("gamelist-cache-")).map((key) => caches.delete(key))); } if ("serviceWorker" in navigator) { const registrations = await navigator.serviceWorker.getRegistrations(); await Promise.all(registrations.map((registration) => registration.update().catch(() => {}))); } }
+async function clearSiteCachesAndReload() { await clearSiteCaches(); localStorage.setItem(VERSION_STORAGE_KEY, SITE_VERSION); window.location.reload(); }
 function stripRuntimeFields(game) { const { sourceRecord, ...clean } = game; return clean; }
 function numberOrNull(value) { const number = Number(value); return Number.isFinite(number) && value !== "" ? number : null; }
 function firstGenre(value) { return String(value).split(",")[0].trim(); }
 function rawCoverUrl(value) { try { const url = new URL(value, location.origin); return url.searchParams.get("src") || value; } catch { return value; } }
 function coverUrl(value) { return value.includes("howlongtobeat.com/games/") ? `/api/cover?src=${encodeURIComponent(value)}` : value; }
+function coverProjectUrl(value) {
+  const raw = String(value || "").trim();
+  if (!raw) return "";
+  if (/^\d+$/.test(raw)) return `https://www.thecoverproject.net/download_cover.php?src=cdn&cover_id=${raw}`;
+  try {
+    const url = new URL(raw);
+    const id = url.searchParams.get("cover_id");
+    if (id && /thecoverproject\.net$/i.test(url.hostname)) return `https://www.thecoverproject.net/download_cover.php?src=cdn&cover_id=${encodeURIComponent(id)}`;
+    return raw;
+  } catch { return ""; }
+}
+function findCoverProjectCover() {
+  const title = el.fields.title.value.trim() || el.lookupInput.value.trim();
+  const platform = shortPlatform(el.fields.platform.value);
+  const query = `site:thecoverproject.net/view.php "${title}" "${platform}"`;
+  window.open(`https://www.google.com/search?q=${encodeURIComponent(query)}`, "_blank", "noopener,noreferrer");
+}
+function handleCoverImageError(event) {
+  const image = event.target;
+  if (!(image instanceof HTMLImageElement) || !image.dataset.coverFallback || image.dataset.fallbackUsed) return;
+  image.dataset.fallbackUsed = "true";
+  image.closest(".has-wrap")?.classList.remove("has-wrap");
+  image.src = image.dataset.coverFallback;
+}
 function platformFallback(platform) { const key = normalize(platform); if (key.includes("switch")) return "assets/platforms/switch.png"; if (key.includes("3ds")) return "assets/platforms/3ds.png"; if (key.includes("ds")) return "assets/platforms/nds.png"; if (key.includes("64")) return "assets/platforms/n64.png"; return "assets/platforms/playstation.png"; }
-function caseClass(platform) { const value = shortPlatform(platform).toLowerCase().replace(/\s+/g, ""); return `case-${value === "switch2" ? "switch2" : value}`; }
-function caseLabel(platform) { return shortPlatform(platform).toUpperCase(); }
+function coverClass(platform) { const value = shortPlatform(platform).toLowerCase().replace(/\s+/g, ""); return `cover-${value === "switch2" ? "switch2" : value}`; }
 function shortPlatform(value) { return ({ "Sony PlayStation": "PS1", "Sony PlayStation 2": "PS2", "Sony PlayStation 4": "PS4", "Sony PlayStation 5": "PS5", "Nintendo Switch": "Switch", "Nintendo Switch 2": "Switch 2", "Nintendo DS": "DS", "Nintendo 3DS": "3DS", "Nintendo 64": "N64" })[value] || value; }
-function flagFor(country) { return ({ "United Kingdom": "🇬🇧", Spain: "🇪🇸", "United States of America": "🇺🇸", Japan: "🇯🇵", Taiwan: "🇹🇼", France: "🇫🇷", Germany: "🇩🇪", Australia: "🇦🇺", China: "🇨🇳", World: "🌐" })[country] || "🏳️"; }
+function flagAsset(country) { return `assets/flags/${({ "United Kingdom": "gb", Spain: "es", "United States of America": "us", Japan: "jp", Taiwan: "tw", France: "fr", Germany: "de", Australia: "au", China: "cn", World: "world" })[country] || "world"}.svg`; }
+function flagIcon(country, withClass = false) { return `<img${withClass ? ` class="detail-flag"` : ""} src="${flagAsset(country)}" alt="" width="24" height="16" decoding="async">`; }
+function platformBadge(platform) { return `<span class="platform-badge ${platformClass(platform)}" title="${escapeHtml(shortPlatform(platform))}"><span class="platform-icon"><img src="${platformLogo(platform)}" alt="" width="18" height="18" decoding="async"></span><span class="platform-label">${escapeHtml(shortPlatform(platform))}</span></span>`; }
+function platformLogo(platform) { const value = normalize(shortPlatform(platform)); if (value === "n64") return "assets/platforms/n64.png"; if (value === "ds") return "assets/platforms/nds.png"; if (value === "3ds") return "assets/platforms/3ds.png"; if (value.includes("switch")) return "assets/platforms/switch.png"; return "assets/platforms/playstation.png"; }
+function platformClass(platform) { const value = normalize(shortPlatform(platform)); if (value === "n64") return "platform-n64"; if (value === "ds") return "platform-ds"; if (value === "3ds") return "platform-3ds"; if (value.includes("switch")) return "platform-nintendo"; if (value.includes("ps")) return "platform-playstation"; return "platform-generic"; }
 function regionName(country) { return country === "United States of America" ? "United States" : country; }
 function regionFor(country) { if (country === "Japan") return "Japan"; if (country === "Taiwan") return "Taiwan"; if (country === "United States of America") return "USA"; if (["United Kingdom", "Spain", "France", "Germany"].includes(country)) return country === "Spain" ? "Spain" : "Europe"; return country || "Other"; }
 function countValues(values) { const map = new Map(); values.filter(Boolean).forEach((value) => map.set(value, (map.get(value) || 0) + 1)); return [...map.entries()].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0])); }

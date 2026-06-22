@@ -32,9 +32,6 @@ const shelfOnlyPaths = new Set([
   "/shelf.js",
   "/api/cover",
   "/api/shelf",
-  "/data/2026_06_22_ge_collection.csv",
-  "/data/collection-games.json",
-  "/scripts/build-collection-data.mjs",
 ]);
 
 export default {

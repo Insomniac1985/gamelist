@@ -3,9 +3,9 @@ import { isEditorRequest } from "./editor-auth.js";
 const KV_KEY = "shelf-data";
 
 export async function onRequestGet({ env }) {
-  if (!env.GAMELIST) return json({ games: [], overrides: {} });
+  if (!env.GAMELIST) return json({ sourceGames: [], games: [], overrides: {} });
   const data = await env.GAMELIST.get(KV_KEY, "json");
-  return json(data || { games: [], overrides: {} });
+  return json(data || { sourceGames: [], games: [], overrides: {} });
 }
 
 export async function onRequestPut({ request, env }) {
@@ -16,7 +16,9 @@ export async function onRequestPut({ request, env }) {
   if (!body || !Array.isArray(body.games) || !body.overrides || typeof body.overrides !== "object") {
     return json({ error: "Expected { games: [], overrides: {} }" }, 400);
   }
+  const existing = await env.GAMELIST.get(KV_KEY, "json") || {};
   const data = {
+    sourceGames: Array.isArray(existing.sourceGames) ? existing.sourceGames : [],
     games: body.games.slice(0, 1000),
     overrides: body.overrides,
     updatedAt: new Date().toISOString(),
