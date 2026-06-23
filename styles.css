@@ -226,9 +226,12 @@ body.theme-kash .brand-mark {
 }
 
 .nav-tabs a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 42px;
   color: var(--muted);
   text-decoration: none;
-  padding: 9px 12px;
+  padding: 0 12px;
   border-radius: 6px;
 }
 

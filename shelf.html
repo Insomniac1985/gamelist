@@ -23,16 +23,23 @@
         <a class="active" href="shelf" aria-current="page">Shelf</a>
       </nav>
       <div class="top-actions">
-        <button class="icon-button" id="layoutButton" type="button" title="Customize Shelf" aria-label="Customize Shelf" hidden>
+        <button class="icon-button" id="syncButton" type="button" title="Sync" aria-label="Sync" hidden>
+          <svg class="reload-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M19 8.2A7.2 7.2 0 1 0 20.1 14"></path><path d="M19.2 3.8v4.8h-4.8"></path></svg>
+        </button>
+        <button class="icon-button" id="settingsButton" type="button" title="Settings" aria-label="Settings" hidden>
           <svg class="settings-icon" viewBox="0 0 24 24" aria-hidden="true">
             <path d="M9.8 3.7h4.4l.42 2.1c.45.16.87.4 1.25.7l2.02-.68 2.2 3.82-1.6 1.42c.04.31.04.57 0 .88l1.6 1.42-2.2 3.82-2.02-.68c-.38.3-.8.54-1.25.7l-.42 2.1H9.8l-.42-2.1a5.3 5.3 0 0 1-1.25-.7l-2.02.68-2.2-3.82 1.6-1.42a4.1 4.1 0 0 1 0-.88l-1.6-1.42 2.2-3.82 2.02.68c.38-.3.8-.54 1.25-.7l.42-2.1Z"></path>
             <circle cx="12" cy="12" r="2.9"></circle>
           </svg>
         </button>
+        <button class="ghost-button" id="fetchPricesButton" type="button" hidden>
+          <svg class="euro-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M19 5.5A7 7 0 0 0 8.2 7.1 7.4 7.4 0 0 0 7 12a7.4 7.4 0 0 0 1.2 4.9A7 7 0 0 0 19 18.5"></path><path d="M4 10h10"></path><path d="M4 14h10"></path></svg>
+          <span class="button-label">Fetch New Prices</span>
+        </button>
         <button class="ghost-button" id="loginButton" type="button" title="Edit" aria-label="Edit">
           <svg class="pencil-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h4l11-11a2.8 2.8 0 0 0-4-4L4 16v4Z"></path><path d="M13.5 6.5l4 4"></path></svg>
         </button>
-        <button class="primary-button" id="addGameButton" type="button" hidden>
+        <button class="primary-button" id="addButton" type="button" hidden>
           <span class="button-label">Add Game</span>
           <span class="button-icon" aria-hidden="true">
             <svg class="plus-icon" viewBox="0 0 24 24"><path d="M12 5v14"></path><path d="M5 12h14"></path></svg>
@@ -198,51 +205,34 @@
     </dialog>
 
     <dialog id="layoutDialog" class="shelf-dialog">
-      <form class="settings-modal glass layout-modal" id="layoutForm">
+      <form class="settings-modal glass" id="layoutForm">
         <div class="modal-head">
-          <div><p class="eyebrow">Shelf settings</p><h2>Page layout</h2></div>
+          <div><p class="eyebrow">Shelf settings</p><h2>Settings</h2></div>
           <button class="icon-button" id="layoutClose" type="button" title="Close" aria-label="Close">×</button>
         </div>
-        <p class="layout-help">Show, hide, and reorder Shelf sections.</p>
-        <div class="settings-layout" id="layoutList"></div>
-        <section class="settings-section shelf-price-settings">
-          <div class="detail-section-head"><h3>Details</h3></div>
-          <div class="settings-grid">
-            <label class="settings-detail-compact"><span>Theme</span><select id="shelfSettingsTheme"><option value="shabii">Shabii</option><option value="kash">Kash</option></select></label>
-            <label class="settings-detail-compact"><span>Default order</span><select id="shelfSettingsDefaultOrder"><option value="custom">Custom</option><option value="time">Time</option><option value="name">Name</option></select></label>
-            <label class="settings-detail-compact"><span>Currency</span><select id="shelfSettingsCurrency"><option value="EUR">EUR (€)</option><option value="USD">USD ($)</option></select></label>
-            <label class="settings-detail-compact"><span>Region</span><select id="shelfSettingsRegion"><option value="ES">Spain</option><option value="US">United States</option><option value="UK">United Kingdom</option></select></label>
-            <label class="settings-account-field"><span>PSN account</span><input id="shelfSettingsPsnUser" autocomplete="off"></label>
-            <label class="settings-account-field"><span>Xbox account</span><input id="shelfSettingsMicrosoftUser" autocomplete="off"></label>
-            <label class="settings-account-field"><span>Steam account</span><input id="shelfSettingsSteamUser" autocomplete="off"></label>
-            <label class="settings-account-field"><span>Default owner</span><input id="shelfSettingsDefaultOwner" autocomplete="off"></label>
-          </div>
-          <h3>Store prices</h3>
+        <section class="settings-section">
+          <h3>Page layout</h3>
+          <div class="settings-layout" id="layoutList" aria-label="Page order"></div>
+        </section>
+        <p class="eyebrow settings-detail-title">Details</p>
+        <section class="settings-grid">
+          <label class="settings-account-field"><span>PlayStation account</span><input id="shelfSettingsPsnUser" autocomplete="off"></label>
+          <label class="settings-account-field"><span>Microsoft account</span><input id="shelfSettingsMicrosoftUser" autocomplete="off" placeholder="Xbox gamertag or XUID"></label>
+          <label class="settings-account-field"><span>Steam account</span><input id="shelfSettingsSteamUser" autocomplete="off" placeholder="SteamID64, profile URL, or vanity name"></label>
+          <label class="settings-detail-compact"><span>Currency</span><select id="shelfSettingsCurrency"><option value="EUR">EUR</option><option value="USD">USD</option></select></label>
+          <label class="settings-detail-compact"><span>Region</span><select id="shelfSettingsRegion"><option value="ES">Spain</option><option value="US">US</option><option value="UK">UK</option></select></label>
+          <label class="settings-detail-compact"><span>Default owner</span><input id="shelfSettingsDefaultOwner" autocomplete="off"></label>
+        </section>
+        <section class="settings-section">
+          <h3>Shops</h3>
           <div class="settings-store-list" id="shelfSettingsStores"></div>
         </section>
-        <section class="settings-danger-zone">
-          <div><strong>Delete physical games list</strong><span>Removes every game and override from Shelf. Your Gamelist backlog is not deleted.</span></div>
-          <button class="danger-button" id="deleteShelfButton" type="button">Delete list</button>
-        </section>
-        <div class="modal-actions"><button class="primary-button" type="submit">Save layout</button></div>
+        <div class="modal-actions"><button class="primary-button" type="submit">Save Settings</button></div>
       </form>
     </dialog>
 
     <dialog id="shelfCompletedDialog" class="shelf-dialog">
       <article class="platinum-modal glass"><div class="modal-head"><div><p class="eyebrow">Achievements</p><h2 id="shelfCompletedTitle"></h2></div><div class="platinum-head-actions"><button class="icon-button" id="shelfCompletedClose" type="button" title="Close" aria-label="Close">×</button><span class="platinum-count-pill" id="shelfCompletedCount"></span></div></div><div class="platinum-filter-bar"><label class="platinum-year-select"><span>Year</span><select id="shelfCompletedYear"><option value="all">All</option></select></label><label class="platinum-platform-select"><span>Platform</span><select id="shelfCompletedPlatform"><option value="all">All</option></select></label><label class="platinum-order-label"><span>Order</span><div class="platinum-order-control"><select id="shelfCompletedSort"><option value="time">Time</option><option value="name">Name</option></select><button class="direction-toggle" id="shelfCompletedDirection" type="button" title="Sort descending" aria-label="Sort descending"></button><button class="icon-button view-toggle section-view-toggle" id="shelfCompletedView" type="button" title="Grid view" aria-label="Grid view"></button></div></label></div><div class="platinum-list" id="shelfCompletedList"></div></article>
-    </dialog>
-
-    <dialog id="deleteShelfDialog" class="shelf-dialog">
-      <form class="modal auth-modal" id="deleteShelfForm">
-        <div class="modal-head">
-          <div><p class="eyebrow">Permanent action</p><h2>Delete physical games list?</h2></div>
-          <button class="icon-button" id="deleteShelfClose" type="button" title="Close" aria-label="Close">×</button>
-        </div>
-        <p class="layout-help">This clears the entire Shelf collection. Enter your editor password again to confirm.</p>
-        <label><span>Editor password</span><input id="deleteShelfPassword" type="password" autocomplete="current-password" required></label>
-        <p class="auth-error" id="deleteShelfError" hidden>Incorrect password. Nothing was deleted.</p>
-        <div class="modal-actions"><button class="ghost-button" id="deleteShelfCancel" type="button">Cancel</button><button class="danger-button" id="deleteShelfConfirm" type="submit">Delete physical games</button></div>
-      </form>
     </dialog>
 
     <dialog id="authDialog" class="shelf-dialog">
