@@ -1,5 +1,5 @@
 const SESSION_KEY = "gamelist-editor";
-const SITE_VERSION = "v156";
+const SITE_VERSION = "v157";
 const VERSION_STORAGE_KEY = "gamelist:site-version";
 const VIEW_KEY = "shelf:view-mode:v2";
 const LAYOUT_KEY = "shelf:layout:v2";
@@ -60,7 +60,7 @@ const el = {
   detailDialog: document.querySelector("#detailDialog"),
   detailClose: document.querySelector("#detailClose"),
   detailTitle: document.querySelector("#detailTitle"),
-  detailEyebrow: document.querySelector("#detailEyebrow"),
+  detailStudio: document.querySelector("#detailStudio"), detailMeta: document.querySelector("#detailMeta"),
   detailCover: document.querySelector("#detailCover"),
   detailChips: document.querySelector("#detailChips"),
   detailList: document.querySelector("#detailList"),
@@ -112,6 +112,7 @@ init();
 async function init() {
   if (await checkSiteVersion()) return;
   registerServiceWorker();
+  bindTextureParallax();
   populateEditorOptions();
   bindEvents();
   const [shelfData, auth, gamelistData] = await Promise.all([
@@ -151,6 +152,7 @@ function bindEvents() {
   window.addEventListener("focus", refreshSharedAuth);
 
   el.shelf.addEventListener("click", handleShelfClick);
+  el.shelf.addEventListener("keydown", (event) => { if (event.key !== "Enter" && event.key !== " ") return; const card = event.target.closest("[data-id]"); if (!card || event.target.closest("button, a, input")) return; event.preventDefault(); const game = state.games.find((item) => item.id === card.dataset.id); if (game) openDetails(game); });
   el.detailActions.addEventListener("click", handleDetailAction);
   el.fetchValue.addEventListener("click", fetchCollectionValue);
   el.tabs.addEventListener("click", (event) => { const tab = event.target.closest("[data-shelf-tab]"); if (!tab) return; state.filters.tab = tab.dataset.shelfTab; renderLibrary(); });
@@ -259,25 +261,20 @@ function filteredGames() {
 
 function gameCard(game) {
   const fallbackCover = coverUrl(game.cover || "") || platformFallback(game.platform);
-  const projectCover = coverProjectUrl(game.coverProject || "");
-  const cover = projectCover || fallbackCover;
-  const wrapClass = projectCover ? " has-wrap" : "";
-  const condition = conditionLabel(game);
-  const issueClass = condition === "Loose" ? "condition-loose" : condition === "Sealed" ? "condition-sealed" : "condition-good";
+  const cover = fallbackCover;
   const studio = [game.developer, game.publisher && game.publisher !== game.developer ? game.publisher : ""].filter(Boolean).join(" · ");
-  const owners = (game.owners || []).map((owner) => `<span class="owner-pill owner-${normalize(owner)}">${escapeHtml(owner)}</span>`).join("");
-  return `<article class="game-card glass${cover ? " has-art" : ""}" data-id="${escapeHtml(game.id)}" role="button" tabindex="0"${cover ? ` style="--card-art:url('${escapeCss(cover)}')"` : ""}>
-    <div class="cover-showcase ${coverClass(game.platform)}${wrapClass}" style="--cover-art:url('${escapeCss(cover)}')">
-      <button class="cover-button" type="button" data-action="details" aria-label="View ${escapeHtml(game.title)}">
-        <img src="${escapeHtml(cover)}" data-cover-fallback="${escapeHtml(fallbackCover)}" alt="${escapeHtml(game.title)} cover" loading="lazy" decoding="async">
-      </button>
-    </div>
+  const owners = (game.owners || []).map(ownerBadge).join("");
+  const ownerClasses = `${(game.owners || []).includes("Judy") ? " owner-card-judy" : ""}${(game.owners || []).includes("Jordi") ? " owner-card-jordi" : ""}`;
+  const tags = [...(game.tags || []), game.category && game.category !== "Game" ? game.category : "", ...String(game.genre || "").split(",")].map((tag) => String(tag).trim()).filter((tag, index, list) => tag && normalize(tag) !== "game" && list.indexOf(tag) === index);
+  return `<article class="game-card glass${cover ? " has-art" : ""}${ownerClasses}" data-id="${escapeHtml(game.id)}" role="button" tabindex="0"${cover ? ` style="--card-art:url('${escapeCss(cover)}')"` : ""}>
+    <button class="cover-button" type="button" data-action="details" aria-label="View ${escapeHtml(game.title)}">
+      <img src="${escapeHtml(cover)}" data-cover-fallback="${escapeHtml(fallbackCover)}" alt="${escapeHtml(game.title)} cover" loading="lazy" decoding="async">
+    </button>
     <div class="game-main">
-      <div class="title-line"><div class="title-wrap"><h3>${escapeHtml(game.title)}</h3></div></div>
+      <div class="title-line"><div class="title-wrap"><h3 class="${(game.owners || []).includes("Judy") ? "owner-judy" : ""} ${(game.owners || []).includes("Jordi") ? "owner-jordi" : ""}">${escapeHtml(game.title)}</h3><div class="title-owners">${owners}</div></div>${state.canEdit ? `<button class="icon-button edit-action editor-only" type="button" data-action="edit" title="Edit" aria-label="Edit">${pencilIcon()}</button>` : ""}</div>
       <div class="studio-line">${escapeHtml(studio || game.genre || "Physical edition")}</div>
       <div class="meta"><span class="region-flag" title="${escapeHtml(game.country)}">${flagIcon(game.country)}</span>${platformBadge(game.platform)}</div>
-      <div class="chips"><span class="chip ${issueClass}">${escapeHtml(condition)}</span>${owners}${(game.tags || []).map((tag) => `<span class="chip">${escapeHtml(tag)}</span>`).join("")}${game.genre ? `<span class="chip genre">${escapeHtml(firstGenre(game.genre))}</span>` : ""}</div>
-      <div class="card-actions">${state.canEdit ? `<button class="icon-button editor-only" type="button" data-action="edit" title="Edit" aria-label="Edit">${pencilIcon()}</button>` : ""}</div>
+      <div class="chips">${tags.map((tag) => `<span class="chip ${normalize(tag) === "gamelist" ? "accent" : ""}">${escapeHtml(tag)}</span>`).join("")}</div>
     </div>
   </article>`;
 }
@@ -295,14 +292,17 @@ function handleShelfClick(event) {
 function openDetails(game) {
   el.detailDialog.dataset.id = game.id;
   el.detailTitle.textContent = game.title;
-  el.detailEyebrow.textContent = `${game.country} · ${shortPlatform(game.platform)}`;
+  el.detailTitle.classList.toggle("owner-judy", (game.owners || []).includes("Judy"));
+  el.detailTitle.classList.toggle("owner-jordi", (game.owners || []).includes("Jordi"));
+  el.detailStudio.textContent = [game.developer, game.publisher && game.publisher !== game.developer ? game.publisher : ""].filter(Boolean).join(" · ");
+  el.detailMeta.innerHTML = `<span class="region-flag" title="${escapeHtml(game.country)}">${flagIcon(game.country)}</span>${platformBadge(game.platform)}`;
   const fallbackCover = coverUrl(game.cover || "") || platformFallback(game.platform);
-  const projectCover = coverProjectUrl(game.coverProject || "");
-  el.detailCover.src = projectCover || fallbackCover;
+  el.detailCover.src = fallbackCover;
   el.detailCover.dataset.coverFallback = fallbackCover;
-  el.detailCover.parentElement.classList.toggle("has-wrap", Boolean(projectCover));
+  el.detailCover.parentElement.classList.remove("has-wrap");
   el.detailCover.alt = `${game.title} cover`;
-  el.detailChips.innerHTML = [conditionLabel(game), game.category || "Game", ...(game.tags || []), ...(game.owners || [])].filter(Boolean).map((value, index) => `<span class="chip ${index === 0 ? "accent" : ""}">${escapeHtml(value)}</span>`).join("");
+  const detailTags = [...(game.tags || []), game.category && game.category !== "Game" ? game.category : "", ...String(game.genre || "").split(",")].map((value) => String(value).trim()).filter((value, index, list) => value && normalize(value) !== "game" && list.indexOf(value) === index);
+  el.detailChips.innerHTML = `${(game.owners || []).map(ownerBadge).join("")}${detailTags.map((value) => `<span class="chip ${normalize(value) === "gamelist" ? "accent" : ""}">${escapeHtml(value)}</span>`).join("")}`;
   const details = [
     ["Platform", platformBadge(game.platform), true], ["Region", `${flagIcon(game.country, true)}<span>${escapeHtml(game.country)}</span>`, true],
     ["Publisher", game.publisher], ["Developer", game.developer], ["Release", game.releaseDate || "—"], ["Categories", game.genre || game.category || "Game"], ["Added", game.createdAt || "—"],
@@ -310,10 +310,10 @@ function openDetails(game) {
   el.detailList.innerHTML = details.map(([term, value, raw]) => `<dt>${escapeHtml(term)}</dt><dd>${raw ? value : escapeHtml(value || "—")}</dd>`).join("");
   el.detailNote.hidden = !game.notes;
   el.detailNote.textContent = game.notes || "";
-  el.detailCondition.innerHTML = ["game", "manual", "box", "other", "sealed"].map((key) => `<span class="fancy-check ${conditionValue(game, key) ? "checked" : ""}"><i>${conditionValue(game, key) ? "✓" : ""}</i>${escapeHtml(key[0].toUpperCase() + key.slice(1))}</span>`).join("");
+  el.detailCondition.innerHTML = ["game", "manual", "box", "other", "sealed"].map((key) => `<label class="check-filter toggle-check detail-condition-check"><input type="checkbox" ${conditionValue(game, key) ? "checked" : ""} disabled><span>${escapeHtml(key[0].toUpperCase() + key.slice(1))}</span></label>`).join("");
   const links = websiteLinks(game);
-  el.detailLinks.innerHTML = links.map((link) => `<a href="${escapeHtml(link)}" target="_blank" rel="noreferrer">${escapeHtml(linkLabel(link))}</a>`).join("");
-  el.detailGuideLinks.innerHTML = guideLinks(game).map(([label, link]) => `<a href="${escapeHtml(link)}" target="_blank" rel="noreferrer">${escapeHtml(label)}</a>`).join("");
+  el.detailLinks.innerHTML = links.map((link) => `<a class="store-button" href="${escapeHtml(link)}" target="_blank" rel="noreferrer"><img src="${escapeHtml(siteIcon(link))}" alt="">${escapeHtml(linkLabel(link))}</a>`).join("");
+  el.detailGuideLinks.innerHTML = guideLinks(game).map(([label, link]) => `<a class="store-button" href="${escapeHtml(link)}" target="_blank" rel="noreferrer"><img src="${escapeHtml(guideIcon(label))}" alt="">${escapeHtml(label)}</a>`).join("");
   loadStorePrices(game);
   renderPriceDetails(game);
   loadShelfTrophies(game);
@@ -513,6 +513,7 @@ function saveLayout(event) {
   state.layout.hidden = state.layout.order.filter((key) => !el.layoutList.querySelector(`[data-layout-visible][value="${key}"]`)?.checked);
   localStorage.setItem(LAYOUT_KEY, JSON.stringify(state.layout));
   applyLayout();
+  if (!state.layout.hidden.includes("trophies") && !state.trophyActivity) loadTrophyActivity();
   closeDialog(el.layoutDialog);
 }
 
@@ -596,19 +597,33 @@ function setupShelfParallax(card) {
   card.addEventListener("pointermove", (event) => { if (event.pointerType === "touch") return; const rect = card.getBoundingClientRect(); const x = ((event.clientX - rect.left) / rect.width - .5) * -18; const y = ((event.clientY - rect.top) / rect.height - .5) * -18; card.style.setProperty("--art-x", `${x.toFixed(2)}px`); card.style.setProperty("--art-y", `${y.toFixed(2)}px`); });
   card.addEventListener("pointerleave", () => { card.style.setProperty("--art-x", "0px"); card.style.setProperty("--art-y", "0px"); });
 }
+function bindTextureParallax() { if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return; let frame = 0; window.addEventListener("pointermove", (event) => { if (frame) return; frame = requestAnimationFrame(() => { frame = 0; const x = ((event.clientX / window.innerWidth) - .5) * -14; const y = ((event.clientY / window.innerHeight) - .5) * -14; document.documentElement.style.setProperty("--grid-x", `${x.toFixed(2)}px`); document.documentElement.style.setProperty("--grid-y", `${y.toFixed(2)}px`); }); }, { passive: true }); }
 function renderGamelistModules() {
   const playing = state.gamelistGames.filter((game) => game.playing && !game.deletedAt);
   const finished = state.gamelistGames.filter((game) => game.completedAt && !game.deletedAt).sort((a, b) => String(b.completedAt).localeCompare(String(a.completedAt))).slice(0, 12);
-  el.playingCarousel.innerHTML = playing.map(gamelistMiniCard).join("");
-  el.finishedCarousel.innerHTML = finished.map(gamelistMiniCard).join("");
+  el.playingCarousel.innerHTML = playing.map(gamelistProjectionCard).join("");
+  el.finishedCarousel.innerHTML = finished.map(finishedProjectionCard).join("");
+  el.playingCarousel.querySelectorAll(".game-card.has-art").forEach(setupShelfParallax);
+  [...el.playingCarousel.querySelectorAll("[data-gamelist-id]"), ...el.finishedCarousel.querySelectorAll("[data-gamelist-id]")].forEach((card) => { const open = () => { location.href = `index.html?game=${encodeURIComponent(card.dataset.gamelistId)}`; }; card.addEventListener("click", open); card.addEventListener("keydown", (event) => { if (event.key === "Enter" || event.key === " ") { event.preventDefault(); open(); } }); });
   const playingModule = el.playingCarousel.closest("[data-module]");
   const finishedModule = el.finishedCarousel.closest("[data-module]");
   playingModule.hidden = state.layout.hidden.includes("playing") || !playing.length;
   finishedModule.hidden = state.layout.hidden.includes("latestFinished") || !finished.length;
 }
-function gamelistMiniCard(game) {
+function gamelistProjectionCard(game) {
   const cover = coverUrl(game.cover || "") || platformFallback(game.platform);
-  return `<article class="shelf-mini-card glass"><img src="${escapeHtml(cover)}" alt=""><div><strong>${escapeHtml(game.title)}</strong><span>${platformBadge(game.platform)}</span>${game.completedAt ? `<small>${escapeHtml(formatDate(game.completedAt))}</small>` : ""}</div></article>`;
+  const owners = Array.isArray(game.owners) ? game.owners : [];
+  const ownerClasses = `${owners.includes("Judy") ? " owner-card-judy" : ""}${owners.includes("Jordi") ? " owner-card-jordi" : ""}`;
+  const studio = [game.developer, game.publisher && game.publisher !== game.developer ? game.publisher : ""].filter(Boolean).join(" · ");
+  const tags = [...(game.genres || []), ...(game.tags || [])];
+  return `<article class="game-card playing-card glass has-art${ownerClasses}" data-gamelist-id="${escapeHtml(game.id)}" role="button" tabindex="0" style="--card-art:url('${escapeCss(cover)}')">
+    <button class="cover-button" type="button" tabindex="-1"><img src="${escapeHtml(cover)}" alt="${escapeHtml(game.title)} cover" loading="lazy"></button>
+    <div class="game-main"><div class="title-line"><div class="title-wrap"><h3 class="${owners.includes("Judy") ? "owner-judy" : ""} ${owners.includes("Jordi") ? "owner-jordi" : ""}">${escapeHtml(game.title)}</h3><div class="title-owners">${owners.map(ownerBadge).join("")}</div></div></div><div class="studio-line">${escapeHtml(studio)}</div><div class="meta">${platformBadge(game.platform)}</div><div class="chips">${tags.map((tag) => `<span class="chip">${escapeHtml(tag)}</span>`).join("")}</div></div>
+  </article>`;
+}
+function finishedProjectionCard(game) {
+  const cover = coverUrl(game.cover || "") || platformFallback(game.platform);
+  return `<button class="achievement-game playing-finished-game ${game.platinum ? "completed-trophy-card" : ""}" type="button" data-gamelist-id="${escapeHtml(game.id)}"><img src="${escapeHtml(cover)}" alt="" loading="lazy"><div><strong class="${game.platinum ? "completed-achievements-title" : ""}">${escapeHtml(game.title)}</strong><span class="playing-finished-tags">${platformBadge(game.platform)}${game.platinum ? `<span class="platinum-pill">Completed</span>` : ""}</span><span>${escapeHtml(formatDate(game.completedAt))}</span></div></button>`;
 }
 async function loadTrophyActivity() {
   const module = el.trophyCard.closest("[data-module]");
@@ -619,8 +634,10 @@ async function loadTrophyActivity() {
     const response = await fetch(`/api/achievements?user=${encodeURIComponent(user)}`);
     state.trophyActivity = response.ok ? await response.json() : null;
     const summary = state.trophyActivity?.summary?.trophies || {};
-    const latest = (state.trophyActivity?.achievements || []).slice(0, 4);
-    el.trophyCard.innerHTML = `<div class="trophy-kpis"><strong>${Number(summary.platinum || 0)}<span>Platinum</span></strong><strong>${Number(summary.gold || 0)}<span>Gold</span></strong><strong>${Number(summary.silver || 0)}<span>Silver</span></strong><strong>${Number(summary.bronze || 0)}<span>Bronze</span></strong></div><div class="trophy-latest">${latest.map((item) => `<span><img src="${escapeHtml(item.icon || "assets/platforms/playstation.png")}" alt=""><b>${escapeHtml(item.title || "Trophy")}</b><small>${escapeHtml(item.game || "")}</small></span>`).join("")}</div>`;
+    const latest = (state.trophyActivity?.achievements || []).slice(0, 6);
+    const counts = [["Platinum", Number(summary.platinum || 0)], ["Gold", Number(summary.gold || 0)], ["Silver", Number(summary.silver || 0)], ["Bronze", Number(summary.bronze || 0)]];
+    const total = counts.reduce((sum, [, count]) => sum + count, 0);
+    el.trophyCard.innerHTML = `<div class="achievement-summary"><div class="achievement-kpi platinum-highlight"><strong>${summary.platinum || 0}</strong><span>PLATINUM</span></div><div class="achievement-kpi trophy-kpi"><strong>${total}</strong><span>TROPHIES</span></div><div class="achievement-kpi"><strong>${state.trophyActivity?.summary?.level || 0}</strong><span>LEVEL</span></div><div class="rarity-graph">${counts.map(([type, count]) => `<span class="rarity-bar rarity-${type.toLowerCase()}"><em style="--bar:${Math.max(7, total ? Math.round(count / Math.max(...counts.map(([, value]) => value), 1) * 100) : 7)}%"></em><small>${type}</small><strong>${count}</strong></span>`).join("")}</div></div>${latest.map((item, index) => `<a class="achievement-card ${index === 0 ? "latest" : ""} trophy-${trophyTone(item.rarity)}" href="${escapeHtml(item.url || state.trophyActivity?.sourceUrl || "#")}" target="_blank" rel="noreferrer"><img class="achievement-icon" src="${escapeHtml(item.icon || "assets/platforms/playstation.png")}" alt=""><div><strong>${escapeHtml(item.title || "Trophy")}</strong><span class="achievement-game-name">${escapeHtml(item.game || "")}</span><span class="achievement-card-meta playing-finished-tags">${platformBadge(item.platform || "PlayStation")}${item.earnedAt ? `<span class="achievement-earned-date">${escapeHtml(item.earnedAt)}</span>` : ""}</span></div></a>`).join("")}`;
   } catch { el.trophyCard.innerHTML = `<span>Trophy activity is unavailable.</span>`; }
   module.hidden = state.layout.hidden.includes("trophies");
 }
@@ -650,8 +667,11 @@ function conditionFromInputs() { return Object.fromEntries(Object.entries(el.con
 function splitValues(value) { return String(value || "").split(",").map((item) => item.trim()).filter(Boolean); }
 function websiteLinks(game) { return [...new Set([...(game.websites || []), ...Object.values(game.storeLinks || {})].filter(Boolean))]; }
 function linkLabel(value) { try { return new URL(value).hostname.replace(/^www\./, ""); } catch { return "Website"; } }
+function siteIcon(value) { const host = (() => { try { return new URL(value).hostname; } catch { return ""; } })(); if (host.includes("playstation")) return "assets/sites/playstation.png"; if (host.includes("nintendo")) return "assets/sites/nintendo.png"; if (host.includes("steam")) return "assets/sites/steam.png"; if (host.includes("howlongtobeat")) return "assets/sites/howlongtobeat.png"; return host ? `https://${host}/favicon.ico` : "assets/Icon.png"; }
+function guideIcon(label) { if (label === "HowLongToBeat") return "assets/sites/howlongtobeat.png"; if (label === "Neoseeker") return "assets/sites/neoseeker.png"; return "assets/sites/wikipedia.ico"; }
 function guideLinks(game) { return [["HowLongToBeat", `https://howlongtobeat.com/?q=${encodeURIComponent(game.title)}`], ["Neoseeker", `https://www.neoseeker.com/search/?q=${encodeURIComponent(`${game.title} guide`)}`], ["Wikipedia", `https://en.wikipedia.org/w/index.php?search=${encodeURIComponent(game.title)}`]]; }
-async function loadStorePrices(game) { el.detailStorePrices.innerHTML = `<span class="muted">Checking store prices…</span>`; try { const stores = (state.gamelistSettings.stores || ["Amazon", "GAME.es", "Xtralife", "Retro Island NY"]).join(","); const region = state.gamelistSettings.region || "ES"; const currency = state.gamelistSettings.currency || "EUR"; const response = await fetch(`/api/prices?title=${encodeURIComponent(game.title)}&platform=${encodeURIComponent(shortPlatform(game.platform))}&region=${encodeURIComponent(region)}&currency=${encodeURIComponent(currency)}&stores=${encodeURIComponent(stores)}`); const data = await response.json(); el.detailStorePrices.innerHTML = (data.prices || []).map((price) => `<a href="${escapeHtml(price.url || "#")}" target="_blank" rel="noreferrer"><span>${escapeHtml(price.store)}</span><strong>${escapeHtml(price.price || "Check store")}</strong></a>`).join("") || `<span class="muted">No store prices found.</span>`; } catch { el.detailStorePrices.innerHTML = `<span class="muted">Store prices unavailable.</span>`; } }
+async function loadStorePrices(game) { el.detailStorePrices.innerHTML = `<span class="muted">Checking store prices…</span>`; try { const stores = (state.gamelistSettings.stores || ["Amazon", "GAME.es", "Xtralife", "Retro Island NY"]).join(","); const region = state.gamelistSettings.region || "ES"; const currency = state.gamelistSettings.currency || "EUR"; const response = await fetch(`/api/prices?title=${encodeURIComponent(game.title)}&platform=${encodeURIComponent(shortPlatform(game.platform))}&region=${encodeURIComponent(region)}&currency=${encodeURIComponent(currency)}&stores=${encodeURIComponent(stores)}`); const data = await response.json(); const prices = data.prices || []; const available = prices.filter((price) => price.numericPrice != null).sort((a, b) => a.numericPrice - b.numericPrice); const best = available[0]?.store; el.detailStorePrices.innerHTML = prices.map((price) => { const label = price.price || `- ${currency === "USD" ? "$" : "€"}`; return `<a class="price-link ${best === price.store && price.price ? "best" : ""} ${price.price ? "has-price" : "missing-price"}" href="${escapeHtml(price.url || "#")}" target="_blank" rel="noreferrer" title="${escapeHtml(price.store)}"><img class="store-icon" src="${escapeHtml(storeIcon(price.store))}" alt=""><strong>${escapeHtml(label)}</strong></a>`; }).join("") || `<span class="muted">No store prices found.</span>`; } catch { el.detailStorePrices.innerHTML = `<span class="muted">Store prices unavailable.</span>`; } }
+function storeIcon(store) { if (String(store).startsWith("Amazon")) return "assets/stores/amazon.ico"; if (store === "Xtralife") return "assets/stores/xtralife.ico"; if (store === "GAME.es") return "assets/stores/game.ico"; if (store === "Retro Island NY") return "assets/stores/retroisland.png"; if (store === "GameStop") return "https://www.gamestop.com/favicon.ico"; if (store === "Walmart") return "https://www.walmart.com/favicon.ico"; if (String(store).startsWith("Nintendo")) return "assets/sites/nintendo.png"; if (String(store).startsWith("PlayStation")) return "assets/sites/playstation.png"; if (store === "Steam") return "assets/sites/steam.png"; if (store === "Xbox") return "assets/platforms/xbox.png"; return "assets/Icon.png"; }
 function renderPriceDetails(game) {
   const prices = game.collectionPrices || {};
   const rows = [["Loose", prices.loose], ["Complete", prices.complete], ["Sealed", prices.sealed]].filter(([, value]) => value != null);
@@ -688,9 +708,11 @@ async function loadShelfTrophies(game) {
   const id = match?.npCommunicationId || match?.id || "";
   if (!id) { el.detailTrophies.hidden = true; return; }
   el.detailTrophies.hidden = false; el.detailTrophyList.innerHTML = `<span>Loading trophies…</span>`;
-  try { const response = await fetch(`/api/trophies?id=${encodeURIComponent(id)}&service=${encodeURIComponent(match.npServiceName || "trophy")}&user=${encodeURIComponent(state.gamelistSettings.psnUser || "")}`); const data = await response.json(); const trophies = data.trophies || []; el.detailTrophyCount.textContent = `${trophies.filter((item) => item.earned).length}/${trophies.length}`; el.detailTrophyList.innerHTML = trophies.map((item) => `<article class="detail-trophy-card ${item.earned ? "earned" : ""}"><img src="${escapeHtml(item.icon || "assets/platforms/playstation.png")}" alt=""><div><strong>${escapeHtml(item.title)}</strong><span>${escapeHtml(item.description || item.type)}</span></div></article>`).join(""); } catch { el.detailTrophies.hidden = true; }
+  try { const response = await fetch(`/api/trophies?id=${encodeURIComponent(id)}&service=${encodeURIComponent(match.npServiceName || "trophy")}&user=${encodeURIComponent(state.gamelistSettings.psnUser || "")}`); const data = await response.json(); const trophies = data.trophies || []; el.detailTrophyCount.textContent = `${trophies.filter((item) => item.earned).length}/${trophies.length}`; el.detailTrophyList.innerHTML = trophies.map((item) => `<article class="detail-trophy-card trophy-${trophyTone(item.type)} ${item.earned ? "earned" : "missing"}"><img src="${escapeHtml(item.icon || "assets/platforms/playstation.png")}" alt=""><div><strong>${escapeHtml(item.title)}</strong><span>${escapeHtml([item.earned ? item.earnedAt : "Missing", item.rarity].filter(Boolean).join(" · "))}</span>${item.description ? `<p>${escapeHtml(item.description)}</p>` : ""}</div></article>`).join(""); } catch { el.detailTrophies.hidden = true; }
 }
 function pencilIcon() { return `<svg class="pencil-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h4l11-11a2.8 2.8 0 0 0-4-4L4 16v4Z"></path><path d="M13.5 6.5l4 4"></path></svg>`; }
+function ownerBadge(owner) { return `<span class="owner-pill owner-${normalize(owner)}">${escapeHtml(owner)}</span>`; }
+function trophyTone(value) { const text = String(value || "").toLowerCase(); if (text.includes("platinum")) return "platinum"; if (text.includes("gold")) return "gold"; if (text.includes("silver")) return "silver"; return "bronze"; }
 function registerServiceWorker() { if ("serviceWorker" in navigator) window.addEventListener("load", () => navigator.serviceWorker.register("/service-worker.js").catch(() => {})); }
 async function checkSiteVersion() { try { const response = await fetch(`/version.json?t=${Date.now()}`, { cache: "no-store" }); if (!response.ok) return false; const remote = await response.json(); const remoteVersion = String(remote.version || "").trim(); if (!remoteVersion) return false; const current = localStorage.getItem(VERSION_STORAGE_KEY); if (!current || current === remoteVersion || remoteVersion === SITE_VERSION) { localStorage.setItem(VERSION_STORAGE_KEY, remoteVersion); return false; } await clearSiteCaches(); localStorage.setItem(VERSION_STORAGE_KEY, remoteVersion); window.location.reload(); return true; } catch { return false; } }
 async function clearSiteCaches() { if ("caches" in window) { const keys = await caches.keys(); await Promise.all(keys.filter((key) => key.startsWith("gamelist-cache-")).map((key) => caches.delete(key))); } if ("serviceWorker" in navigator) { const registrations = await navigator.serviceWorker.getRegistrations(); await Promise.all(registrations.map((registration) => registration.update().catch(() => {}))); } }

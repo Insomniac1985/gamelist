@@ -9,7 +9,7 @@ const SETTINGS_KEY = "gamelist:settings:v1";
 const KASH_TWITCH_URL = "https://www.twitch.tv/kashhoward";
 const DEFAULT_PAGE_ORDER = ["trophies", "calendar", "highlights", "search", "gamelist", "finished"];
 const LAYOUT_SECTION_KEYS = ["playing", ...DEFAULT_PAGE_ORDER, "latestFinished"];
-const SITE_VERSION = "v156";
+const SITE_VERSION = "v157";
 const SITE_UPDATED_AT = "2026-06-22T21:45:00Z";
 const VERSION_STORAGE_KEY = "gamelist:site-version";
 const STORE_OPTIONS = ["Amazon", "GAME.es", "Xtralife", "Retro Island NY", "GameStop", "Walmart"];
@@ -338,6 +338,8 @@ async function init() {
   render();
   const cloudChanged = await pullCloudData();
   if (cloudChanged) render();
+  const requestedGame = new URLSearchParams(location.search).get("game");
+  if (requestedGame && state.games.some((game) => game.id === requestedGame && !game.deletedAt)) openDetail(requestedGame);
   refreshAchievements();
   scheduleBackgroundRefreshes();
 }
