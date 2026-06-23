@@ -4,6 +4,11 @@ export function createGameCardShell(doc = document) {
   return template.content.firstElementChild;
 }
 
+export function mountActivitySlider(section, ids) {
+  if (!section) return;
+  section.innerHTML = `<div class="column-head"><div><h2>Currently Playing</h2></div><div class="playing-head-actions"><span id="${ids.count}"></span><button class="icon-button playing-slider-button" id="${ids.previous}" type="button" title="Previous playing game" aria-label="Previous playing game">←</button><button class="icon-button playing-slider-button" id="${ids.next}" type="button" title="Next playing game" aria-label="Next playing game">→</button></div></div><div class="playing-panel"><div class="card-list playing-list" id="${ids.list}"${ids.dataSection ? ` data-section="${ids.dataSection}"` : ""}></div></div><div class="playing-finished" id="${ids.finished}" hidden><span class="achievement-subtitle">Last finished games</span><div class="playing-finished-list" id="${ids.finishedList}"></div></div>`;
+}
+
 export function finishedGameMarkup({ id, title, cover, completedClass = "", badges = "", dateText = "", progress = null, dataName = "id", escape }) {
   return `<button class="achievement-game playing-finished-game ${completedClass}" type="button" data-${dataName}="${escape(id)}" aria-label="${escape(`Open ${title}`)}"><img src="${escape(cover)}" alt="" loading="lazy" decoding="async"><div><strong class="${completedClass ? "completed-achievements-title" : ""}">${escape(title)}</strong>${badges ? `<span class="playing-finished-tags">${badges}</span>` : ""}<span>${escape(dateText)}</span>${progress != null ? `<em style="--progress:${progress}%"></em>` : ""}</div></button>`;
 }
@@ -70,6 +75,61 @@ export function finishedDurationText(startValue, doneValue) {
     months ? plural(months, "month") : "",
     days ? plural(days, "day") : "",
   ].filter(Boolean).join(" ");
+}
+
+export function timeBadgeMarkup(hours, url = "", escape = escapeHtml) {
+  const content = `<strong>${escape(hours)}</strong><span>hrs</span>`;
+  const clamped = Math.max(0, Math.min(1, (Number(hours) - 7) / 53));
+  const hue = Math.round(132 - (132 * clamped));
+  const style = `--time-color:hsl(${hue}, 88%, 56%);--time-light:hsl(${Math.min(140, hue + 10)}, 94%, 72%);--time-dark:hsl(${Math.max(0, hue - 8)}, 82%, 39%);--time-glow:hsla(${hue}, 88%, 56%, 0.34)`;
+  return url
+    ? `<a class="time-pill" style="${style}" href="${escape(url)}" target="_blank" rel="noreferrer" title="HowLongToBeat">${content}</a>`
+    : `<span class="time-pill" style="${style}">${content}</span>`;
+}
+
+export function guideLinksMarkup(game, { title = game?.title || "", playstation = false, escape = escapeHtml } = {}) {
+  const retail = String(title || "").trim();
+  if (!retail) return [];
+  const slug = retail.toLowerCase().replace(/[^\p{L}\p{N}]+/gu, "-").replace(/^-+|-+$/g, "");
+  const known = {
+    control: { psnprofiles: "https://psnprofiles.com/guide/9040-control-trophy-guide" },
+    pragmata: {
+      neoseeker: "https://www.neoseeker.com/pragmata/walkthrough",
+      psnprofiles: "https://psnprofiles.com/guide/24998-pragmata-trophy-guide",
+      rpgsite: "https://www.rpgsite.net/games/2464-pragmata/guides",
+    },
+  }[slug] || {};
+  const direct = game?.guideLinks || {};
+  const valid = (value) => /^https?:\/\//i.test(String(value || "").trim()) ? String(value).trim() : "";
+  const button = (label, url, cls, icon) => `<a class="guide-button ${cls}" href="${escape(url)}" target="_blank" rel="noreferrer"><img src="${escape(icon)}" alt="" width="18" height="18" decoding="async"><span>${escape(label)}</span></a>`;
+  const links = [];
+  if (playstation) {
+    const id = String(game?.psnprofilesGuideId || game?.psnGuideId || "").trim();
+    const url = known.psnprofiles || valid(direct.psnprofiles) || valid(game?.psnprofilesGuideUrl || game?.psnGuideUrl) || (/^\d+$/.test(id) ? `https://psnprofiles.com/guide/${encodeURIComponent(id)}` : `https://www.google.com/search?q=${encodeURIComponent(`site:psnprofiles.com/guide ${retail} trophy guide`)}`);
+    links.push(button("PSNProfiles", url, "guide-psnprofiles", "assets/sites/psnprofiles.png"));
+  }
+  const neoseeker = known.neoseeker || valid(direct.neoseeker) || `https://www.neoseeker.com/${slug}/walkthrough`;
+  const rpgId = String(game?.rpgsiteGameId || "").trim();
+  const rpgsite = known.rpgsite || valid(direct.rpgsite) || (rpgId ? `https://www.rpgsite.net/games/${encodeURIComponent(rpgId)}-${slug}/guides` : `https://www.rpgsite.net/search?terms=${encodeURIComponent(`${retail} guide`)}`);
+  links.push(button("Neoseeker", neoseeker, "guide-neoseeker", "assets/sites/neoseeker.png"));
+  links.push(button("RPG Site", rpgsite, "guide-rpgsite", "assets/sites/rpgsite.png"));
+  return links;
+}
+
+export function formatFooterDate(value) {
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "";
+  return new Intl.DateTimeFormat(undefined, { day: "numeric", month: "long" }).format(date);
+}
+
+export function formatFooterDateTime(value) {
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "";
+  return new Intl.DateTimeFormat(undefined, { day: "numeric", month: "long", hour: "2-digit", minute: "2-digit" }).format(date);
+}
+
+function escapeHtml(value) {
+  return String(value ?? "").replace(/[&<>"']/g, (char) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#039;" })[char]);
 }
 
 function addYearsClamped(date, years) {

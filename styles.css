@@ -4275,7 +4275,8 @@ dialog {
   padding: 0;
 }
 
-#detailDialog {
+#detailDialog,
+#gamelistDetailDialog {
   width: min(980px, calc(100vw - 24px));
 }
 

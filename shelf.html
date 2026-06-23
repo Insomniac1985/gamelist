@@ -50,11 +50,7 @@
 
     <main class="shell shelf-shell">
       <div class="shelf-modules" id="shelfModules">
-        <section class="playing-section shelf-carousel-module" data-module="playing" hidden>
-          <div class="column-head"><div><h2>Currently Playing</h2></div><div class="playing-head-actions"><span id="shelfPlayingCount"></span><button class="icon-button playing-slider-button" id="shelfPlayingPrev" type="button" title="Previous playing game" aria-label="Previous playing game">←</button><button class="icon-button playing-slider-button" id="shelfPlayingNext" type="button" title="Next playing game" aria-label="Next playing game">→</button></div></div>
-          <div class="playing-panel"><div class="card-list playing-list" id="playingCarousel"></div></div>
-          <div class="playing-finished" id="shelfPlayingFinished" hidden><span class="achievement-subtitle">Last finished games</span><div class="playing-finished-list" id="finishedCarousel"></div></div>
-        </section>
+        <section class="playing-section shelf-carousel-module" data-module="playing" hidden></section>
         <section class="achievement-section shelf-trophy-module" data-module="trophies" hidden>
           <div class="column-head"><div><h2>Achievements</h2></div><a id="shelfAchievementProfileLink" href="https://www.playstation.com/" target="_blank" rel="noreferrer" aria-label="Achievement activity"></a></div>
           <div id="shelfTrophyCard" class="achievement-panel glass"></div>
@@ -114,8 +110,8 @@
     </main>
 
     <footer class="site-footer" aria-label="Site updates">
-      <span id="footerDataUpdate">Collection imported 22 Jun 2026</span>
-      <button id="footerVersion" type="button">Shelf v1 · 278 source games</button>
+      <span id="footerDataUpdate">Last edit -</span>
+      <button id="footerVersion" type="button">Version -</button>
     </footer>
 
     <button class="icon-button scroll-top-button" id="scrollTopButton" type="button" title="Back to top" aria-label="Back to top">
@@ -145,6 +141,28 @@
             <section class="detail-trophies" id="shelfDetailTrophies" hidden><div class="detail-trophies-head"><h3><svg class="trophy-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 4h8v4a4 4 0 0 1-8 0V4Z"></path><path d="M8 6H5a3 3 0 0 0 3 3"></path><path d="M16 6h3a3 3 0 0 1-3 3"></path><path d="M12 12v4"></path><path d="M9 20h6"></path><path d="M10 16h4v4h-4z"></path></svg>TROPHIES</h3><div class="detail-trophy-tools"><span id="shelfTrophyCount"></span></div></div><div class="detail-trophy-scroller"><div class="detail-trophy-list" id="shelfTrophyList"></div></div></section>
             <div class="modal-actions" id="detailActions"></div>
           </div>
+      </article>
+    </dialog>
+
+    <dialog id="gamelistDetailDialog">
+      <article class="detail-modal glass">
+        <button class="icon-button detail-close" id="gamelistDetailClose" type="button" title="Close">×</button>
+        <div class="detail-cover"><img id="gamelistDetailCover" alt=""></div>
+        <div class="detail-body">
+          <h2 id="gamelistDetailTitle"></h2>
+          <div class="studio-line" id="gamelistDetailStudio"></div>
+          <div class="meta" id="gamelistDetailMeta"></div>
+          <div class="play-dates detail-dates" id="gamelistDetailDates"></div>
+          <div class="chips" id="gamelistDetailChips"></div>
+          <div class="store-links" id="gamelistDetailStoreLinks"></div>
+          <p id="gamelistDetailDescription"></p>
+          <div class="prices detail-prices" id="gamelistDetailPrices"></div>
+          <section class="detail-guides" id="gamelistDetailGuides" hidden><h3>Guides</h3><div class="guide-links" id="gamelistDetailGuideLinks"></div></section>
+          <section class="detail-trophies" id="gamelistDetailTrophies" hidden>
+            <div class="detail-trophies-head"><h3><svg class="trophy-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 4h8v4a4 4 0 0 1-8 0V4Z"></path><path d="M8 6H5a3 3 0 0 0 3 3"></path><path d="M16 6h3a3 3 0 0 1-3 3"></path><path d="M12 12v4"></path><path d="M9 20h6"></path><path d="M10 16h4v4h-4z"></path></svg><span id="gamelistDetailTrophyTitle">TROPHIES</span></h3><div class="detail-trophy-tools"><span id="gamelistDetailTrophyCount"></span><span class="detail-trophy-percent" id="gamelistDetailTrophyPercent"></span><select id="gamelistDetailTrophySort" aria-label="Sort trophies"><option value="order">Order</option><option value="name">Name</option><option value="completed">Completed</option></select><button class="direction-toggle" id="gamelistDetailTrophyDirection" type="button" title="Sort ascending" aria-label="Sort ascending">↑</button></div></div>
+            <div class="detail-trophy-scroller"><div class="detail-trophy-list" id="gamelistDetailTrophyList"></div></div>
+          </section>
+        </div>
       </article>
     </dialog>
 

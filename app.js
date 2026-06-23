@@ -1,4 +1,6 @@
-import { createGameCardShell, finishedGameMarkup, achievementCardMarkup, achievementDashboardMarkup, completedCardMarkup, horizontalCarouselState, slideHorizontalCarousel, comparePlayingGames, finishedDurationText } from "./activity-ui.js";
+import { createGameCardShell, mountActivitySlider, finishedGameMarkup, achievementCardMarkup, achievementDashboardMarkup, completedCardMarkup, horizontalCarouselState, slideHorizontalCarousel, comparePlayingGames, finishedDurationText, timeBadgeMarkup, guideLinksMarkup, formatFooterDate, formatFooterDateTime } from "./activity-ui.js";
+
+mountActivitySlider(document.querySelector("#playingSection"), { count: "playingCount", previous: "playingPrevButton", next: "playingNextButton", list: "playingList", dataSection: "playing", finished: "playingFinished", finishedList: "playingFinishedList" });
 
 const STORAGE_KEY = "gamelist:v1";
 const LEGACY_STORAGE_KEY = "buylist-tracker:v6";
@@ -11,8 +13,8 @@ const SETTINGS_KEY = "gamelist:settings:v1";
 const KASH_TWITCH_URL = "https://www.twitch.tv/kashhoward";
 const DEFAULT_PAGE_ORDER = ["trophies", "calendar", "highlights", "search", "gamelist", "finished"];
 const LAYOUT_SECTION_KEYS = ["playing", ...DEFAULT_PAGE_ORDER, "latestFinished"];
-const SITE_VERSION = "v160";
-const SITE_UPDATED_AT = "2026-06-23T12:10:00Z";
+const SITE_VERSION = "v162";
+const SITE_UPDATED_AT = "2026-06-23T16:00:00Z";
 const VERSION_STORAGE_KEY = "gamelist:site-version";
 const STORE_OPTIONS = ["Amazon", "eBay", "GAME.es", "Xtralife", "Retro Island NY", "GameStop", "Walmart"];
 const MAX_PRICE_STORES = 5;
@@ -2426,23 +2428,6 @@ function latestGameUpdateDate() {
   return new Date(Math.max(...times)).toISOString();
 }
 
-function formatFooterDate(value) {
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return "";
-  return new Intl.DateTimeFormat(undefined, { day: "numeric", month: "long" }).format(date);
-}
-
-function formatFooterDateTime(value) {
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return "";
-  return new Intl.DateTimeFormat(undefined, {
-    day: "numeric",
-    month: "long",
-    hour: "2-digit",
-    minute: "2-digit",
-  }).format(date);
-}
-
 function handleCompletedYearChange(event) {
   state.completedYear = event.target.value || "all";
   state.completedVisiblePages = 1;
@@ -4097,21 +4082,7 @@ function isSegaPlatform(value) {
 }
 
 function timeBadge(hours, url = "") {
-  const content = `<strong>${escapeHtml(hours)}</strong><span>hrs</span>`;
-  const style = timeStyle(hours);
-  if (url) {
-    return `<a class="time-pill" style="${style}" href="${escapeHtml(url)}" target="_blank" rel="noreferrer" title="HowLongToBeat">${content}</a>`;
-  }
-  return `<span class="time-pill" style="${style}">${content}</span>`;
-}
-
-function timeStyle(hours) {
-  const clamped = Math.max(0, Math.min(1, (Number(hours) - 7) / 53));
-  const hue = Math.round(132 - (132 * clamped));
-  const base = `hsl(${hue}, 88%, 56%)`;
-  const light = `hsl(${Math.min(140, hue + 10)}, 94%, 72%)`;
-  const dark = `hsl(${Math.max(0, hue - 8)}, 82%, 39%)`;
-  return `--time-color:${base};--time-light:${light};--time-dark:${dark};--time-glow:hsla(${hue}, 88%, 56%, 0.34)`;
+  return timeBadgeMarkup(hours, url, escapeHtml);
 }
 
 function chipsFor(game) {
@@ -4472,87 +4443,12 @@ function renderDetailGuides(game) {
 }
 
 function guideLinksFor(game) {
-  const title = retailTitle(game.title);
-  if (!title) return [];
-  const links = [];
-  if (["PS4", "PS5"].includes(canonicalPlatform(game.platform))) {
-    links.push(guideButton(
-      "PSNProfiles",
-      psnProfilesGuideUrl(game, title),
-      "guide-psnprofiles",
-      "assets/sites/psnprofiles.png"
-    ));
-  }
-  links.push(
-    guideButton("Neoseeker", neoseekerGuideUrl(game, title), "guide-neoseeker", "assets/sites/neoseeker.png"),
-    guideButton("RPG Site", rpgSiteGuideUrl(game, title), "guide-rpgsite", "assets/sites/rpgsite.png")
-  );
-  return links;
-}
-
-function guideButton(label, url, cls, icon) {
-  return `
-    <a class="guide-button ${cls}" href="${escapeHtml(url)}" target="_blank" rel="noreferrer">
-      <img src="${escapeHtml(icon)}" alt="" width="18" height="18" decoding="async">
-      <span>${escapeHtml(label)}</span>
-    </a>
-  `;
-}
-
-function psnProfilesGuideUrl(game, title) {
-  const known = knownGuideLinksFor(title).psnprofiles;
-  if (known) return known;
-  const direct = normalizeGuideUrl(game.guideLinks?.psnprofiles);
-  if (direct) return direct;
-  const exact = normalizeGuideUrl(game.psnprofilesGuideUrl || game.psnGuideUrl);
-  if (exact) return exact;
-  const guideId = String(game.psnprofilesGuideId || game.psnGuideId || "").trim();
-  if (/^\d+$/.test(guideId)) return `https://psnprofiles.com/guide/${encodeURIComponent(guideId)}`;
-  return siteSearchUrl("psnprofiles.com/guide", `${title} trophy guide`);
-}
-
-function neoseekerGuideUrl(game, title) {
-  const known = knownGuideLinksFor(title).neoseeker;
-  if (known) return known;
-  const direct = normalizeGuideUrl(game.guideLinks?.neoseeker);
-  return direct || `https://www.neoseeker.com/${guideSlug(title)}/walkthrough`;
-}
-
-function rpgSiteGuideUrl(game, title) {
-  const known = knownGuideLinksFor(title).rpgsite;
-  if (known) return known;
-  const direct = normalizeGuideUrl(game.guideLinks?.rpgsite);
-  if (direct) return direct;
-  const gameId = String(game.rpgsiteGameId || "").trim();
-  if (gameId) return `https://www.rpgsite.net/games/${encodeURIComponent(gameId)}-${guideSlug(title)}/guides`;
-  return `https://www.rpgsite.net/search?terms=${encodeURIComponent(`${title} guide`)}`;
-}
-
-function siteSearchUrl(site, query) {
-  return `https://www.google.com/search?q=${encodeURIComponent(`site:${site} ${query}`)}`;
+  return guideLinksMarkup(game, { title: retailTitle(game.title), playstation: ["PS4", "PS5"].includes(canonicalPlatform(game.platform)), escape: escapeHtml });
 }
 
 function normalizeGuideUrl(value) {
   const url = String(value || "").trim();
   return /^https?:\/\//i.test(url) ? url : "";
-}
-
-function knownGuideLinksFor(title) {
-  const guides = {
-    control: {
-      psnprofiles: "https://psnprofiles.com/guide/9040-control-trophy-guide",
-    },
-    pragmata: {
-      neoseeker: "https://www.neoseeker.com/pragmata/walkthrough",
-      psnprofiles: "https://psnprofiles.com/guide/24998-pragmata-trophy-guide",
-      rpgsite: "https://www.rpgsite.net/games/2464-pragmata/guides",
-    },
-  };
-  return guides[guideSlug(title)] || {};
-}
-
-function guideSlug(title) {
-  return retailTitle(title).toLowerCase().replace(/[^\p{L}\p{N}]+/gu, "-").replace(/^-+|-+$/g, "");
 }
 
 function pricesFor(game) {
