@@ -1,5 +1,5 @@
 const SESSION_KEY = "gamelist-editor";
-const SITE_VERSION = "v155";
+const SITE_VERSION = "v156";
 const VERSION_STORAGE_KEY = "gamelist:site-version";
 const VIEW_KEY = "shelf:view-mode:v2";
 const LAYOUT_KEY = "shelf:layout:v2";
@@ -89,7 +89,7 @@ const el = {
     coverProject: document.querySelector("#coverProjectInput"),
   },
   coverProjectButton: document.querySelector("#coverProjectButton"),
-  condition: { game: document.querySelector("#conditionGameInput"), manual: document.querySelector("#conditionManualInput"), box: document.querySelector("#conditionBoxInput"), other: document.querySelector("#conditionOtherInput"), sealed: document.querySelector("#conditionSealedInput") },
+  conditionFields: { game: document.querySelector("#conditionGameInput"), manual: document.querySelector("#conditionManualInput"), box: document.querySelector("#conditionBoxInput"), other: document.querySelector("#conditionOtherInput"), sealed: document.querySelector("#conditionSealedInput") },
   layoutDialog: document.querySelector("#layoutDialog"),
   layoutForm: document.querySelector("#layoutForm"),
   layoutClose: document.querySelector("#layoutClose"),
@@ -165,7 +165,7 @@ function bindEvents() {
   el.lookupInput.addEventListener("keydown", (event) => { if (event.key === "Enter") { event.preventDefault(); lookupGame(); } });
   el.lookupResults.addEventListener("click", chooseLookupResult);
   el.coverProjectButton.addEventListener("click", findCoverProjectCover);
-  Object.values(el.condition).forEach((input) => input.addEventListener("change", () => syncConditionInputs(input)));
+  Object.values(el.conditionFields).forEach((input) => input.addEventListener("change", () => syncConditionInputs(input)));
   document.addEventListener("error", handleCoverImageError, true);
 
   el.layoutClose.addEventListener("click", () => closeDialog(el.layoutDialog));
@@ -340,7 +340,7 @@ function openEditor(game = null) {
   for (const [key, input] of Object.entries(el.fields)) input.value = values[key] ?? "";
   el.fields.owners.value = (values.owners || []).join(", ");
   el.fields.websites.value = websiteLinks(values).join(", ");
-  Object.entries(el.condition).forEach(([key, input]) => { input.checked = conditionValue(values, key); });
+  Object.entries(el.conditionFields).forEach(([key, input]) => { input.checked = conditionValue(values, key); });
   syncConditionInputs();
   el.addForm.querySelector(".modal-head h2").textContent = game ? "Edit physical game" : "Add physical game";
   el.addForm.querySelector("button[type='submit']").textContent = game ? "Save changes" : "Add to Shelf";
@@ -640,13 +640,13 @@ function conditionLabel(game) {
   return "Loose";
 }
 function syncConditionInputs(changed) {
-  if (changed === el.condition.sealed && changed.checked) {
-    el.condition.game.checked = true; el.condition.box.checked = true; el.condition.other.checked = true; el.condition.manual.checked = false;
+  if (changed === el.conditionFields.sealed && changed.checked) {
+    el.conditionFields.game.checked = true; el.conditionFields.box.checked = true; el.conditionFields.other.checked = true; el.conditionFields.manual.checked = false;
   }
-  if (!el.condition.game.checked || !el.condition.box.checked) el.condition.sealed.checked = false;
-  el.condition.sealed.disabled = !el.condition.game.checked || !el.condition.box.checked;
+  if (!el.conditionFields.game.checked || !el.conditionFields.box.checked) el.conditionFields.sealed.checked = false;
+  el.conditionFields.sealed.disabled = !el.conditionFields.game.checked || !el.conditionFields.box.checked;
 }
-function conditionFromInputs() { return Object.fromEntries(Object.entries(el.condition).map(([key, input]) => [key, input.checked])); }
+function conditionFromInputs() { return Object.fromEntries(Object.entries(el.conditionFields).map(([key, input]) => [key, input.checked])); }
 function splitValues(value) { return String(value || "").split(",").map((item) => item.trim()).filter(Boolean); }
 function websiteLinks(game) { return [...new Set([...(game.websites || []), ...Object.values(game.storeLinks || {})].filter(Boolean))]; }
 function linkLabel(value) { try { return new URL(value).hostname.replace(/^www\./, ""); } catch { return "Website"; } }
