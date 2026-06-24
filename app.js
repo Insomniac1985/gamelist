@@ -13,8 +13,8 @@ const SETTINGS_KEY = "gamelist:settings:v1";
 const KASH_TWITCH_URL = "https://www.twitch.tv/kashhoward";
 const DEFAULT_PAGE_ORDER = ["trophies", "calendar", "highlights", "search", "gamelist", "finished"];
 const LAYOUT_SECTION_KEYS = ["playing", ...DEFAULT_PAGE_ORDER, "latestFinished"];
-const SITE_VERSION = "v165";
-const SITE_UPDATED_AT = "2026-06-24T12:00:00Z";
+const SITE_VERSION = "v166";
+const SITE_UPDATED_AT = "2026-06-24T13:00:00Z";
 const VERSION_STORAGE_KEY = "gamelist:site-version";
 const STORE_OPTIONS = ["Amazon", "eBay", "GAME.es", "Xtralife", "Retro Island NY", "GameStop", "Walmart"];
 const MAX_PRICE_STORES = 5;
@@ -1447,7 +1447,7 @@ function platinumItems() {
   });
   const steamCompleted = (state.steamActivity.completed || []).map((item) => ({
     ...item,
-    cover: item.cover || localCoverForTitle(item.title, "card"),
+    cover: activityCoverOverride(item) || item.cover || localCoverForTitle(item.title, "card"),
     trophyIcon: item.trophyIcon || platformLogo("Steam"),
     trophyName: item.trophyName || "100% Achievements",
     platform: item.platform || "Steam",
@@ -1680,13 +1680,14 @@ function platinumYearFor(item) {
 }
 
 function platinumCard(item) {
-  const artStyle = item.cover ? ` style="--platinum-art: url(&quot;${escapeHtml(cssUrl(item.cover))}&quot;)"` : "";
-  const artClass = item.cover ? " has-platinum-art" : "";
-  const coverPreview = item.cover
-    ? `<img class="platinum-cover-preview" src="${escapeHtml(item.cover)}" alt="">`
+  const cover = activityCoverOverride(item) || item.cover || "";
+  const artStyle = cover ? ` style="--platinum-art: url(&quot;${escapeHtml(cssUrl(cover))}&quot;)"` : "";
+  const artClass = cover ? " has-platinum-art" : "";
+  const coverPreview = cover
+    ? `<img class="platinum-cover-preview" src="${escapeHtml(cover)}" alt="">`
     : "";
   const content = `
-    ${item.cover ? `<span class="platinum-art-layer" aria-hidden="true"></span>` : ""}
+    ${cover ? `<span class="platinum-art-layer" aria-hidden="true"></span>` : ""}
     <span class="platinum-icon-wrap">
       <img class="platinum-icon" src="${escapeHtml(item.trophyIcon)}" alt="${escapeHtml(item.trophyName || "Platinum")}">
       ${coverPreview}
@@ -1698,7 +1699,7 @@ function platinumCard(item) {
     </div>
   `;
   if (item.gameId) {
-    return completedCardMarkup({ title: item.title, cover: item.cover, trophyIcon: item.trophyIcon, trophyName: item.trophyName || "Platinum", platform: item.platform, earnedAt: item.earnedAt, actionAttribute: `data-game-id="${escapeHtml(item.gameId)}"`, escape: escapeHtml, cssEscape: cssUrl });
+    return completedCardMarkup({ title: item.title, cover, trophyIcon: item.trophyIcon, trophyName: item.trophyName || "Platinum", platform: item.platform, earnedAt: item.earnedAt, actionAttribute: `data-game-id="${escapeHtml(item.gameId)}"`, escape: escapeHtml, cssEscape: cssUrl });
   }
   if (item.url) {
     return `<a class="platinum-card${artClass}" href="${escapeHtml(item.url)}" target="_blank" rel="noreferrer"${artStyle}>${content}</a>`;
