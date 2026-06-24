@@ -1,10 +1,10 @@
-import { createGameCardShell, mountActivitySlider, finishedGameMarkup, achievementCardMarkup, achievementDashboardMarkup, achievementPanelMarkup, completedCardMarkup, horizontalCarouselState, syncViewModeButton, slideHorizontalCarousel, comparePlayingGames, finishedDurationText, timeBadgeMarkup, guideLinksMarkup, storeButtonsMarkup, activityTrailerUrl, syncFocusedActivityTrailer, activityReleaseStatus, activityCoverOverride, activityLocalGameForTitle, activityTitleMatchScore, activityAllowsPsnCardTrophies, formatFooterDate, formatFooterDateTime } from "./activity-ui.js";
+import { createGameCardShell, bindActivityCardParallax, mountActivitySlider, finishedGameMarkup, achievementCardMarkup, achievementDashboardMarkup, achievementPanelMarkup, completedCardMarkup, horizontalCarouselState, syncViewModeButton, slideHorizontalCarousel, comparePlayingGames, finishedDurationText, timeBadgeMarkup, guideLinksMarkup, storeButtonsMarkup, activityTrailerUrl, syncFocusedActivityTrailer, activityReleaseStatus, activityCoverOverride, activityLocalGameForTitle, activityTitleMatchScore, activityAllowsPsnCardTrophies, formatFooterDate, formatFooterDateTime } from "./activity-ui.js";
 
 mountActivitySlider(document.querySelector("[data-module='playing']"), { count: "shelfPlayingCount", previous: "shelfPlayingPrev", next: "shelfPlayingNext", list: "playingCarousel", finished: "shelfPlayingFinished", finishedList: "finishedCarousel" });
 
 const SESSION_KEY = "gamelist-editor";
-const SITE_VERSION = "v175";
-const SITE_UPDATED_AT = "2026-06-24T16:05:00Z";
+const SITE_VERSION = "v176";
+const SITE_UPDATED_AT = "2026-06-24T16:15:00Z";
 const VERSION_STORAGE_KEY = "gamelist:site-version";
 const VIEW_KEY = "shelf:view-mode:v2";
 const LAYOUT_KEY = "shelf:layout:v2";
@@ -387,7 +387,7 @@ function renderLibrary() {
   el.count.textContent = `${games.length} ${games.length === 1 ? "game" : "games"}`;
   el.shelf.classList.toggle("list-view", state.viewMode === "list");
   el.shelf.innerHTML = games.map((game) => state.viewMode === "list" ? gameRow(game) : gameCard(game)).join("");
-  el.shelf.querySelectorAll(".game-card.has-art").forEach(setupShelfParallax);
+  el.shelf.querySelectorAll(".game-card.has-art").forEach(bindActivityCardParallax);
   if (state.viewMode === "list") requestAnimationFrame(updateShelfRowTitleOverflow);
   el.empty.hidden = games.length > 0;
 }
@@ -833,17 +833,13 @@ function normalizeLayout(value) {
 }
 
 function loadDraft() { try { return JSON.parse(localStorage.getItem(LOCAL_DRAFT_KEY) || "{}"); } catch { return {}; } }
-function setupShelfParallax(card) {
-  card.addEventListener("pointermove", (event) => { if (event.pointerType === "touch") return; const rect = card.getBoundingClientRect(); const x = ((event.clientX - rect.left) / rect.width - .5) * -18; const y = ((event.clientY - rect.top) / rect.height - .5) * -18; card.style.setProperty("--art-x", `${x.toFixed(2)}px`); card.style.setProperty("--art-y", `${y.toFixed(2)}px`); });
-  card.addEventListener("pointerleave", () => { card.style.setProperty("--art-x", "0px"); card.style.setProperty("--art-y", "0px"); });
-}
 function bindTextureParallax() { if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return; let frame = 0; window.addEventListener("pointermove", (event) => { if (frame) return; frame = requestAnimationFrame(() => { frame = 0; const x = ((event.clientX / window.innerWidth) - .5) * -14; const y = ((event.clientY / window.innerHeight) - .5) * -14; document.documentElement.style.setProperty("--grid-x", `${x.toFixed(2)}px`); document.documentElement.style.setProperty("--grid-y", `${y.toFixed(2)}px`); }); }, { passive: true }); }
 function renderGamelistModules() {
   const playing = state.gamelistGames.filter((game) => game.playing && !game.deletedAt).sort(comparePlayingGames);
   const finished = state.gamelistGames.filter((game) => game.completedAt && !game.deletedAt).sort((a, b) => String(b.completedAt).localeCompare(String(a.completedAt)) || String(a.title || "").localeCompare(String(b.title || ""), undefined, { sensitivity: "base" })).slice(0, 10);
   el.playingCarousel.innerHTML = playing.map(gamelistProjectionCard).join("");
   el.finishedCarousel.innerHTML = finished.map(finishedProjectionCard).join("");
-  el.playingCarousel.querySelectorAll(".game-card.has-art").forEach(setupShelfParallax);
+  el.playingCarousel.querySelectorAll(".game-card.has-art").forEach(bindActivityCardParallax);
   el.playingCarousel.querySelectorAll(".cover-button img").forEach((image) => image.addEventListener("load", schedulePlayingCardHeightSync, { once: true }));
   el.playingCarousel.querySelectorAll(".trailer-toggle").forEach((button) => button.addEventListener("click", (event) => { event.stopPropagation(); const card = button.closest(".game-card"); const paused = card.classList.toggle("trailer-user-paused"); button.innerHTML = paused ? playTrailerIcon() : pauseTrailerIcon(); button.title = paused ? "Play trailer" : "Pause trailer"; button.setAttribute("aria-label", button.title); scheduleShelfTrailerUpdate(); }));
   el.playingCarousel.querySelectorAll(".edit-action").forEach((button) => button.addEventListener("click", (event) => { event.stopPropagation(); const game = state.gamelistGames.find((item) => item.id === button.closest("[data-gamelist-id]")?.dataset.gamelistId); if (!state.canEdit) openAuth(); else if (game) openGamelistDetails(game); }));
@@ -1304,7 +1300,6 @@ function handleCoverImageError(event) {
   image.src = image.dataset.coverFallback;
 }
 function platformFallback(platform) { const key = normalize(platform); if (key.includes("switch")) return "assets/platforms/switch.png"; if (key.includes("3ds")) return "assets/platforms/3ds.png"; if (key.includes("ds")) return "assets/platforms/nds.png"; if (key.includes("64")) return "assets/platforms/n64.png"; return "assets/platforms/playstation.png"; }
-function coverClass(platform) { const value = shortPlatform(platform).toLowerCase().replace(/\s+/g, ""); return `cover-${value === "switch2" ? "switch2" : value}`; }
 function shortPlatform(value) { return ({ "Sony PlayStation": "PS1", "Sony PlayStation 2": "PS2", "Sony PlayStation 4": "PS4", "Sony PlayStation 5": "PS5", "Nintendo Switch": "Switch", "Nintendo Switch 2": "Switch 2", "Nintendo DS": "DS", "Nintendo 3DS": "3DS", "Nintendo 64": "N64" })[value] || value; }
 function flagAsset(country) { return `assets/flags/${({ "United Kingdom": "gb", Spain: "es", "United States of America": "us", Japan: "jp", Taiwan: "tw", France: "fr", Germany: "de", Australia: "au", China: "cn", Europe: "eu", World: "world" })[country] || "world"}.svg`; }
 function flagIcon(country, withClass = false) { return `<img${withClass ? ` class="detail-flag"` : ""} src="${flagAsset(country)}" alt="" width="47" height="31" decoding="async">`; }

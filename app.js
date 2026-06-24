@@ -1,4 +1,4 @@
-import { createGameCardShell, mountActivitySlider, finishedGameMarkup, achievementCardMarkup, achievementDashboardMarkup, achievementPanelMarkup, completedCardMarkup, horizontalCarouselState, syncViewModeButton, slideHorizontalCarousel, comparePlayingGames, finishedDurationText, timeBadgeMarkup, guideLinksMarkup, storeButtonsMarkup, activityTrailerUrl, activityTrailerFrameMarkup, activityReleaseStatus, activityCoverOverride, activityAllowsPsnCardTrophies, formatFooterDate, formatFooterDateTime } from "./activity-ui.js";
+import { createGameCardShell, bindActivityCardParallax, mountActivitySlider, finishedGameMarkup, achievementCardMarkup, achievementDashboardMarkup, achievementPanelMarkup, completedCardMarkup, horizontalCarouselState, syncViewModeButton, slideHorizontalCarousel, comparePlayingGames, finishedDurationText, timeBadgeMarkup, guideLinksMarkup, storeButtonsMarkup, activityTrailerUrl, activityTrailerFrameMarkup, activityReleaseStatus, activityCoverOverride, activityAllowsPsnCardTrophies, formatFooterDate, formatFooterDateTime } from "./activity-ui.js";
 
 mountActivitySlider(document.querySelector("#playingSection"), { count: "playingCount", previous: "playingPrevButton", next: "playingNextButton", list: "playingList", dataSection: "playing", finished: "playingFinished", finishedList: "playingFinishedList" });
 
@@ -13,8 +13,8 @@ const SETTINGS_KEY = "gamelist:settings:v1";
 const KASH_TWITCH_URL = "https://www.twitch.tv/kashhoward";
 const DEFAULT_PAGE_ORDER = ["trophies", "calendar", "highlights", "search", "gamelist", "finished"];
 const LAYOUT_SECTION_KEYS = ["playing", ...DEFAULT_PAGE_ORDER, "latestFinished"];
-const SITE_VERSION = "v175";
-const SITE_UPDATED_AT = "2026-06-24T16:05:00Z";
+const SITE_VERSION = "v176";
+const SITE_UPDATED_AT = "2026-06-24T16:15:00Z";
 const VERSION_STORAGE_KEY = "gamelist:site-version";
 const STORE_OPTIONS = ["Amazon", "eBay", "GAME.es", "Xtralife", "Retro Island NY", "GameStop", "Walmart"];
 const MAX_PRICE_STORES = 5;
@@ -2606,7 +2606,7 @@ function cardFor(game, options = {}) {
   card.classList.toggle("has-art", Boolean(game.cover));
   if (game.cover) {
     card.style.setProperty("--card-art", `url("${cssUrl(backgroundCoverUrl(game.cover))}")`);
-    setupCardParallax(card);
+    bindActivityCardParallax(card);
   }
   card.querySelector("h3").textContent = game.title;
   card.querySelector("h3").classList.toggle("owner-judy", owners.includes("Judy"));
@@ -2838,21 +2838,6 @@ function shouldShowCardTrailer(game) {
 
 function trailerEmbedUrl(value) {
   return activityTrailerUrl(value, window.location.origin);
-}
-
-function setupCardParallax(card) {
-  card.addEventListener("pointermove", (event) => {
-    if (event.pointerType === "touch") return;
-    const rect = card.getBoundingClientRect();
-    const x = ((event.clientX - rect.left) / rect.width - 0.5) * -18;
-    const y = ((event.clientY - rect.top) / rect.height - 0.5) * -18;
-    card.style.setProperty("--art-x", `${x.toFixed(2)}px`);
-    card.style.setProperty("--art-y", `${y.toFixed(2)}px`);
-  });
-  card.addEventListener("pointerleave", () => {
-    card.style.setProperty("--art-x", "0px");
-    card.style.setProperty("--art-y", "0px");
-  });
 }
 
 function openDetail(id, options = {}) {

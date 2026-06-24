@@ -4,6 +4,21 @@ export function createGameCardShell(doc = document) {
   return template.content.firstElementChild;
 }
 
+export function bindActivityCardParallax(card) {
+  card.addEventListener("pointermove", (event) => {
+    if (event.pointerType === "touch") return;
+    const rect = card.getBoundingClientRect();
+    const x = ((event.clientX - rect.left) / rect.width - 0.5) * -18;
+    const y = ((event.clientY - rect.top) / rect.height - 0.5) * -18;
+    card.style.setProperty("--art-x", `${x.toFixed(2)}px`);
+    card.style.setProperty("--art-y", `${y.toFixed(2)}px`);
+  });
+  card.addEventListener("pointerleave", () => {
+    card.style.setProperty("--art-x", "0px");
+    card.style.setProperty("--art-y", "0px");
+  });
+}
+
 export function mountActivitySlider(section, ids) {
   if (!section) return;
   section.innerHTML = `<div class="playing-current"><div class="column-head"><div><h2>Currently Playing</h2></div><div class="playing-head-actions"><span id="${ids.count}"></span><button class="icon-button playing-slider-button" id="${ids.previous}" type="button" title="Previous playing game" aria-label="Previous playing game">←</button><button class="icon-button playing-slider-button" id="${ids.next}" type="button" title="Next playing game" aria-label="Next playing game">→</button></div></div><div class="playing-panel"><div class="card-list playing-list" id="${ids.list}"${ids.dataSection ? ` data-section="${ids.dataSection}"` : ""}></div></div></div><div class="playing-finished" id="${ids.finished}" hidden><span class="achievement-subtitle">Last finished games</span><div class="playing-finished-list" id="${ids.finishedList}"></div></div>`;
