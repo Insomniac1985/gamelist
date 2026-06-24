@@ -3,8 +3,8 @@ import { createGameCardShell, mountActivitySlider, finishedGameMarkup, achieveme
 mountActivitySlider(document.querySelector("[data-module='playing']"), { count: "shelfPlayingCount", previous: "shelfPlayingPrev", next: "shelfPlayingNext", list: "playingCarousel", finished: "shelfPlayingFinished", finishedList: "finishedCarousel" });
 
 const SESSION_KEY = "gamelist-editor";
-const SITE_VERSION = "v171";
-const SITE_UPDATED_AT = "2026-06-24T14:50:00Z";
+const SITE_VERSION = "v172";
+const SITE_UPDATED_AT = "2026-06-24T15:10:00Z";
 const VERSION_STORAGE_KEY = "gamelist:site-version";
 const VIEW_KEY = "shelf:view-mode:v2";
 const LAYOUT_KEY = "shelf:layout:v2";
@@ -81,7 +81,6 @@ const el = {
   playingFinished: document.querySelector("#shelfPlayingFinished"), playingCount: document.querySelector("#shelfPlayingCount"),
   playingPrev: document.querySelector("#shelfPlayingPrev"), playingNext: document.querySelector("#shelfPlayingNext"),
   trophyCard: document.querySelector("#shelfTrophyCard"),
-  achievementProfile: document.querySelector("#shelfAchievementProfileLink"),
   footerUpdate: document.querySelector("#footerDataUpdate"),
   footerVersion: document.querySelector("#footerVersion"),
   scrollTop: document.querySelector("#scrollTopButton"),
@@ -934,7 +933,8 @@ function shelfCardTrophies(game) {
     const earned = external.achievements.filter((item) => item.earned !== false && item.earnedAt).sort((a, b) => (Date.parse(b.rawEarnedAt || b.earnedAt || 0) || 0) - (Date.parse(a.rawEarnedAt || a.earnedAt || 0) || 0)).slice(0, 3);
     const progress = external.total ? Math.round((external.earned / external.total) * 100) : null;
     if (!earned.length && progress == null) return guideRow;
-    return `<div class="card-trophy-head">${trophyIcon()}<span>Latest achievements</span>${progress != null ? `<span class="psn-progress-pill card-trophy-progress"><em style="--progress:${progress}%"></em><strong>${progress}%</strong></span>` : ""}</div>${guideRow}${earned.length ? `<div class="card-trophy-list">${earned.map((item) => `<a class="card-trophy trophy-${trophyTone(item.type || item.rarity)}" href="${escapeHtml(item.url || (shortPlatform(game.platform).toLowerCase().includes("xbox") ? state.xboxActivity.sourceUrl : state.steamActivity.sourceUrl) || "#")}" target="_blank" rel="noreferrer" title="${escapeHtml([item.title, item.earnedAt].filter(Boolean).join(" · "))}"><img src="${escapeHtml(item.icon || platformLogo(game.platform))}" alt=""><span>${escapeHtml(item.title || "Achievement")}</span>${item.earnedAt ? `<small class="card-trophy-meta">${escapeHtml(item.earnedAt)}</small>` : ""}</a>`).join("")}</div>` : ""}`;
+    const tone = ["steam", "pc"].includes(normalize(shortPlatform(game.platform))) ? "steam" : "";
+    return `<div class="card-trophy-head">${trophyIcon()}<span>Latest achievements</span>${progress != null ? `<span class="psn-progress-pill card-trophy-progress"><em style="--progress:${progress}%"></em><strong>${progress}%</strong></span>` : ""}</div>${guideRow}${earned.length ? `<div class="card-trophy-list">${earned.map((item) => `<a class="card-trophy trophy-${tone || trophyTone(item.type || item.rarity)}" href="${escapeHtml(item.url || (shortPlatform(game.platform).toLowerCase().includes("xbox") ? state.xboxActivity.sourceUrl : state.steamActivity.sourceUrl) || "#")}" target="_blank" rel="noreferrer" title="${escapeHtml([item.title, item.earnedAt].filter(Boolean).join(" · "))}"><img src="${escapeHtml(item.icon || platformLogo(game.platform))}" alt=""><span>${escapeHtml(item.title || "Achievement")}</span>${item.earnedAt ? `<small class="card-trophy-meta">${escapeHtml(item.earnedAt)}</small>` : ""}</a>`).join("")}</div>` : ""}`;
   }
   const remote = activityGameFor(game);
   const cacheKey = remote?.npCommunicationId || remote?.id || "";
@@ -1004,7 +1004,8 @@ function renderGamelistDetailTrophyList() {
   el.detailTrophyDirection.classList.toggle("desc", state.gamelistDetailTrophyDirection === "desc");
   el.detailTrophyDirection.title = state.gamelistDetailTrophyDirection === "asc" ? "Sort ascending" : "Sort descending";
   el.detailTrophyDirection.setAttribute("aria-label", el.detailTrophyDirection.title);
-  el.detailTrophyList.innerHTML = trophies.length ? trophies.map((item) => `<article class="detail-trophy-card trophy-${trophyTone(item.type || item.rarity)} ${item.earned ? "earned" : "missing"}"><img src="${escapeHtml(item.icon || platformLogo(game?.platform || "PS5"))}" alt=""><div><strong>${escapeHtml(item.title || "Achievement")}</strong><span>${escapeHtml([item.earned ? item.earnedAt || "Earned" : "Missing", item.rarity].filter(Boolean).join(" · "))}</span>${item.description ? `<p>${escapeHtml(item.description)}</p>` : ""}</div></article>`).join("") : `<div class="detail-trophy-empty">No ${state.gamelistDetailTrophyKind === "TROPHIES" ? "trophies" : "achievements"} found for this game yet.</div>`;
+  const tone = ["steam", "pc"].includes(normalize(shortPlatform(game?.platform))) ? "steam" : "";
+  el.detailTrophyList.innerHTML = trophies.length ? trophies.map((item) => `<article class="detail-trophy-card trophy-${tone || trophyTone(item.type || item.rarity)} ${item.earned ? "earned" : "missing"}"><img src="${escapeHtml(item.icon || platformLogo(game?.platform || "PS5"))}" alt=""><div><strong>${escapeHtml(item.title || "Achievement")}</strong><span>${escapeHtml([item.earned ? item.earnedAt || "Earned" : "Missing", item.rarity].filter(Boolean).join(" · "))}</span>${item.description ? `<p>${escapeHtml(item.description)}</p>` : ""}</div></article>`).join("") : `<div class="detail-trophy-empty">No ${state.gamelistDetailTrophyKind === "TROPHIES" ? "trophies" : "achievements"} found for this game yet.</div>`;
 }
 function externalActivityFor(game) {
   const platform = normalize(shortPlatform(game.platform)); const title = game.trophyName || game.title;
@@ -1053,8 +1054,6 @@ async function loadTrophyActivity() {
     state.steamActivity = steamResult.status === "fulfilled" ? steamResult.value : { achievements: [], games: [], completed: [], totalEarned: 0, sourceUrl: "" };
     state.xboxActivity = xboxResult.status === "fulfilled" ? xboxResult.value : { achievements: [], games: [], completed: [], totalEarned: 0, sourceUrl: "" };
     const panel = achievementPanelMarkup({ psn: state.trophyActivity || {}, steam: state.steamActivity, xbox: state.xboxActivity, trophyIconHtml: trophyIcon(), platformBadge, platformLogo, trophyTone, escape: escapeHtml });
-    el.achievementProfile.href = panel.sourceUrl;
-    el.achievementProfile.textContent = panel.activityLabel;
     el.trophyCard.innerHTML = panel.html;
     el.trophyCard.querySelector("[data-action='platinums']")?.addEventListener("click", openCompletedGames);
     renderGamelistModules();

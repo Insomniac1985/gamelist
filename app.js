@@ -13,8 +13,8 @@ const SETTINGS_KEY = "gamelist:settings:v1";
 const KASH_TWITCH_URL = "https://www.twitch.tv/kashhoward";
 const DEFAULT_PAGE_ORDER = ["trophies", "calendar", "highlights", "search", "gamelist", "finished"];
 const LAYOUT_SECTION_KEYS = ["playing", ...DEFAULT_PAGE_ORDER, "latestFinished"];
-const SITE_VERSION = "v171";
-const SITE_UPDATED_AT = "2026-06-24T14:50:00Z";
+const SITE_VERSION = "v172";
+const SITE_UPDATED_AT = "2026-06-24T15:10:00Z";
 const VERSION_STORAGE_KEY = "gamelist:site-version";
 const STORE_OPTIONS = ["Amazon", "eBay", "GAME.es", "Xtralife", "Retro Island NY", "GameStop", "Walmart"];
 const MAX_PRICE_STORES = 5;
@@ -197,7 +197,6 @@ const el = {
   calendarSection: document.querySelector(".calendar-section"),
   highlightsSection: document.querySelector(".highlights-section"),
   achievementPanel: document.querySelector("#achievementPanel"),
-  achievementProfileLink: document.querySelector("#achievementProfileLink"),
   stats: document.querySelector("#stats"),
   loginButton: document.querySelector("#loginButton"),
   addButton: document.querySelector("#addButton"),
@@ -1148,7 +1147,6 @@ function equalizeMobilePlayingCards() {
 
 async function refreshAchievements() {
   const psnUser = state.settings.psnUser || DEFAULT_SETTINGS.psnUser;
-  el.achievementProfileLink.href = `https://psnprofiles.com/${encodeURIComponent(psnUser)}`;
   const psnRequest = (async () => {
     const response = await fetch(`/api/achievements?user=${encodeURIComponent(psnUser)}&schema=3`);
     return response.json();
@@ -1336,8 +1334,6 @@ function renderAchievements(data = {}, steamData = state.steamActivity || emptyS
   };
   renderPlayingSection();
   const panel = achievementPanelMarkup({ psn: { ...data, ...state.psnActivity }, steam: state.steamActivity, xbox: state.xboxActivity, trophyIconHtml: trophyIcon(), platformBadge, platformLogo, trophyTone, escape: escapeHtml });
-  el.achievementProfileLink.href = panel.sourceUrl;
-  el.achievementProfileLink.textContent = panel.activityLabel;
   el.achievementPanel.innerHTML = panel.html;
   el.achievementPanel.querySelector("[data-action='platinums']")?.addEventListener("click", openPlatinumDialog);
   scheduleMobilePaintRefresh();
@@ -3107,7 +3103,7 @@ function detailTrophyCard(trophy) {
     ? platformLogo("Steam")
     : trophy.source === "xbox" ? platformLogo("Xbox") : platformLogo("PS5");
   return `
-    <article class="detail-trophy-card trophy-${escapeHtml(trophyTone(trophy.type))} ${trophy.earned ? "earned" : "missing"}">
+    <article class="detail-trophy-card trophy-${escapeHtml(state.detailTrophyProvider === "steam" ? "steam" : trophyTone(trophy.type))} ${trophy.earned ? "earned" : "missing"}">
       <img src="${escapeHtml(trophy.icon || fallbackIcon)}" alt="">
       <div>
         <strong>${escapeHtml(trophy.title || "Trophy")}</strong>
@@ -3492,7 +3488,7 @@ function cardSteamAchievementsFor(game) {
     ${guideLinks.length ? `<div class="guide-links card-guide-row">${guideLinks.join("")}</div>` : ""}
     <div class="card-trophy-list">
       ${achievements.map((achievement) => `
-        <a class="card-trophy trophy-${escapeHtml(trophyTone(achievement.type || achievement.rarity))}" href="${escapeHtml(game.storeLinks?.steam || hltbUrlFor(game) || "#")}" target="_blank" rel="noreferrer" title="${escapeHtml([achievement.title, achievement.earnedAt].filter(Boolean).join(" · "))}">
+        <a class="card-trophy trophy-steam" href="${escapeHtml(game.storeLinks?.steam || hltbUrlFor(game) || "#")}" target="_blank" rel="noreferrer" title="${escapeHtml([achievement.title, achievement.earnedAt].filter(Boolean).join(" · "))}">
           <img src="${escapeHtml(achievement.icon || platformLogo("Steam"))}" alt="">
           <span>${escapeHtml(achievement.title || "Achievement")}</span>
           ${cardTrophyMeta(achievement)}

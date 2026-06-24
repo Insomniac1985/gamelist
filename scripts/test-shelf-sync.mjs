@@ -4,11 +4,12 @@ import { onRequestPut as putGamelist } from "../functions/api/sync.js";
 import { onRequestPut as putShelf, onRequestDelete as deleteShelf } from "../functions/api/shelf.js";
 import { activityAllowsPsnCardTrophies, activityCoverOverride, activityTitleMatchScore } from "../activity-ui.js";
 
-const [appSource, shelfSource, shelfCss, shelfHtml] = await Promise.all([
+const [appSource, shelfSource, shelfCss, shelfHtml, sharedCss] = await Promise.all([
   readFile(new URL("../app.js", import.meta.url), "utf8"),
   readFile(new URL("../shelf.js", import.meta.url), "utf8"),
   readFile(new URL("../shelf.css", import.meta.url), "utf8"),
   readFile(new URL("../shelf.html", import.meta.url), "utf8"),
+  readFile(new URL("../styles.css", import.meta.url), "utf8"),
 ]);
 for (const source of [appSource, shelfSource]) {
   assert.match(source, /from "\.\/activity-ui\.js"/);
@@ -42,6 +43,12 @@ assert.match(shelfHtml, /<dialog id="shelfCompletedDialog" class="platinum-dialo
 assert.match(shelfHtml, /class="platinum-title" id="shelfCompletedTitle"/, "Shelf completed popup must use Main's title component class");
 assert.doesNotMatch(shelfHtml, /id="shelfCompletedDialog" class="shelf-dialog"/, "Shelf completed popup must not use Shelf dialog CSS");
 for (const source of [appSource, shelfSource]) assert.match(source, /syncViewModeButton/, "Main and Shelf completed popups must share the same view toggle behavior");
+assert.doesNotMatch(shelfHtml, /shelfAchievementProfileLink/, "Shelf must not show the activity profile link");
+assert.doesNotMatch(appSource, /achievementProfileLink/, "Main must not render the activity profile link");
+assert.match(sharedCss, /\.trophy-subtitle\s*\{[\s\S]*?font-size:\s*11px;/, "Latest Achievements must use the smaller shared label size");
+assert.match(sharedCss, /\.platinum-title\s*\{[\s\S]*?font-family:\s*inherit;/, "Completed popup titles must use the normal UI font");
+assert.match(appSource, /card-trophy trophy-steam/, "Main Steam card achievements must use the neutral Steam tone");
+assert.match(shelfSource, /tone \|\| trophyTone/, "Shelf Steam card achievements must use the neutral Steam tone");
 assert.match(shelfHtml, /<dialog id="layoutDialog" class="settings-dialog">\s*<form class="settings-modal glass"/, "Shelf settings must use Main's centered settings overlay and modal classes");
 assert.doesNotMatch(shelfHtml, /id="layoutDialog" class="shelf-dialog"/, "Shelf settings must not use the taller, heavier Shelf overlay");
 assert.match(shelfSource, /const FIXED_LAYOUT = \["playing", "latestFinished"\]/, "Shelf settings must separate Currently Playing and Last Finished like Main");

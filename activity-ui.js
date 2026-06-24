@@ -29,7 +29,6 @@ export function achievementPanelMarkup({ psn = {}, steam = {}, xbox = {}, trophy
   const achievements = [...psnAchievements, ...steamAchievements, ...xboxAchievements]
     .sort((a, b) => earnedTime(b) - earnedTime(a) || String(a.title || "").localeCompare(String(b.title || "")))
     .slice(0, 6);
-  const activitySources = ["PSN", steamAchievements.length ? "Steam" : "", xboxAchievements.length ? "Xbox" : ""].filter(Boolean);
   if (!achievements.length) {
     const fallbackText = psn.needsSetup
       ? "Set PSN_NPSSO in Cloudflare to show recent PSN trophy activity here."
@@ -40,7 +39,6 @@ export function achievementPanelMarkup({ psn = {}, steam = {}, xbox = {}, trophy
           : "No recent achievement activity found yet.";
     return {
       sourceUrl,
-      activityLabel: `${activitySources.join(" + ")} activity`,
       html: `<a class="achievement-fallback" href="${escape(sourceUrl)}" target="_blank" rel="noreferrer"><img src="${escape(platformLogo("PS5"))}" alt=""><div><strong>Achievement activity</strong><span>${escape(fallbackText)}</span></div></a>`,
     };
   }
@@ -66,9 +64,9 @@ export function achievementPanelMarkup({ psn = {}, steam = {}, xbox = {}, trophy
   });
   const cards = achievements.map((item, index) => {
     const platform = item.source === "steam" ? "Steam" : String(item.platform || (item.source === "xbox" ? "Xbox" : "PlayStation")).trim() || "PlayStation";
-    return achievementCardMarkup({ index, tone: trophyTone(item.rarity), href: item.url || sourceUrl, game: item.game || "", title: item.title || (item.source === "steam" ? "Achievement unlocked" : "Trophy unlocked"), icon: item.icon || platformLogo(item.source === "steam" ? "Steam" : item.source === "xbox" ? "Xbox" : "PS5"), meta: `${platformBadge(platform)}${item.earnedAt ? `<span class="achievement-earned-date">${escape(item.earnedAt)}</span>` : ""}`, escape });
+    return achievementCardMarkup({ index, tone: item.source === "steam" ? "steam" : trophyTone(item.rarity), href: item.url || sourceUrl, game: item.game || "", title: item.title || (item.source === "steam" ? "Achievement unlocked" : "Trophy unlocked"), icon: item.icon || platformLogo(item.source === "steam" ? "Steam" : item.source === "xbox" ? "Xbox" : "PS5"), meta: `${platformBadge(platform)}${item.earnedAt ? `<span class="achievement-earned-date">${escape(item.earnedAt)}</span>` : ""}`, escape });
   }).join("");
-  return { sourceUrl, activityLabel: `${activitySources.join(" + ")} activity`, html: `${dashboard}<span class="achievement-subtitle trophy-subtitle">Latest Achievements</span>${cards}` };
+  return { sourceUrl, html: `${dashboard}<span class="achievement-subtitle trophy-subtitle">Latest Achievements</span>${cards}` };
 }
 
 export function activityCoverOverride(input) {
