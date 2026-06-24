@@ -1,4 +1,4 @@
-import { createGameCardShell, mountActivitySlider, finishedGameMarkup, achievementCardMarkup, achievementDashboardMarkup, achievementPanelMarkup, completedCardMarkup, horizontalCarouselState, slideHorizontalCarousel, comparePlayingGames, finishedDurationText, timeBadgeMarkup, guideLinksMarkup, storeButtonsMarkup, activityCoverOverride, formatFooterDate, formatFooterDateTime } from "./activity-ui.js";
+import { createGameCardShell, mountActivitySlider, finishedGameMarkup, achievementCardMarkup, achievementDashboardMarkup, achievementPanelMarkup, completedCardMarkup, horizontalCarouselState, slideHorizontalCarousel, comparePlayingGames, finishedDurationText, timeBadgeMarkup, guideLinksMarkup, storeButtonsMarkup, activityTrailerUrl, activityTrailerFrameMarkup, activityReleaseStatus, activityCoverOverride, formatFooterDate, formatFooterDateTime } from "./activity-ui.js";
 
 mountActivitySlider(document.querySelector("#playingSection"), { count: "playingCount", previous: "playingPrevButton", next: "playingNextButton", list: "playingList", dataSection: "playing", finished: "playingFinished", finishedList: "playingFinishedList" });
 
@@ -13,8 +13,8 @@ const SETTINGS_KEY = "gamelist:settings:v1";
 const KASH_TWITCH_URL = "https://www.twitch.tv/kashhoward";
 const DEFAULT_PAGE_ORDER = ["trophies", "calendar", "highlights", "search", "gamelist", "finished"];
 const LAYOUT_SECTION_KEYS = ["playing", ...DEFAULT_PAGE_ORDER, "latestFinished"];
-const SITE_VERSION = "v164";
-const SITE_UPDATED_AT = "2026-06-24T09:00:00Z";
+const SITE_VERSION = "v165";
+const SITE_UPDATED_AT = "2026-06-24T12:00:00Z";
 const VERSION_STORAGE_KEY = "gamelist:site-version";
 const STORE_OPTIONS = ["Amazon", "eBay", "GAME.es", "Xtralife", "Retro Island NY", "GameStop", "Walmart"];
 const MAX_PRICE_STORES = 5;
@@ -2707,10 +2707,7 @@ function cardFor(game, options = {}) {
 }
 
 function trailerFrame(url) {
-  if (directTrailerUrl(url)) {
-    return `<video src="${escapeHtml(url)}" muted loop playsinline preload="none" aria-hidden="true"></video>`;
-  }
-  return `<iframe src="${escapeHtml(url)}" title="" tabindex="-1" loading="lazy" aria-hidden="true" allow="autoplay; encrypted-media; picture-in-picture"></iframe>`;
+  return activityTrailerFrameMarkup(url, escapeHtml);
 }
 
 function toggleCardTrailer(card) {
@@ -2845,53 +2842,7 @@ function shouldShowCardTrailer(game) {
 }
 
 function trailerEmbedUrl(value) {
-  const url = String(value || "").trim();
-  if (!url) return "";
-  if (directTrailerUrl(url)) return url;
-  const videoId = youtubeVideoId(url);
-  if (videoId) {
-    const params = new URLSearchParams({
-      autoplay: "1",
-      mute: "1",
-      cc_load_policy: "0",
-      controls: "0",
-      disablekb: "1",
-      enablejsapi: "1",
-      fs: "0",
-      iv_load_policy: "3",
-      loop: "1",
-      playlist: videoId,
-      playsinline: "1",
-      modestbranding: "1",
-      rel: "0",
-    });
-    if (window.location.origin) params.set("origin", window.location.origin);
-    return `https://www.youtube-nocookie.com/embed/${videoId}?${params.toString()}`;
-  }
-  return url;
-}
-
-function directTrailerUrl(value) {
-  return /^https?:\/\/.+\.(?:mp4|webm|ogg)(?:[?#].*)?$/i.test(String(value || "").trim());
-}
-
-function youtubeVideoId(value) {
-  const text = String(value || "").trim();
-  const direct = text.match(/^[a-zA-Z0-9_-]{11}$/);
-  if (direct) return direct[0];
-  try {
-    const url = new URL(text);
-    if (url.hostname.includes("youtu.be")) return url.pathname.split("/").filter(Boolean)[0] || "";
-    if (url.hostname.includes("youtube.com") || url.hostname.includes("youtube-nocookie.com")) {
-      if (url.searchParams.get("v")) return url.searchParams.get("v");
-      const parts = url.pathname.split("/").filter(Boolean);
-      const embedIndex = parts.findIndex((part) => ["embed", "shorts", "live"].includes(part));
-      if (embedIndex >= 0) return parts[embedIndex + 1] || "";
-    }
-  } catch {
-    return "";
-  }
-  return "";
+  return activityTrailerUrl(value, window.location.origin);
 }
 
 function setupCardParallax(card) {
@@ -4523,20 +4474,7 @@ function storeIcon(store) {
 }
 
 function releaseStatus(game, options = {}) {
-  const includePast = Boolean(options.includePast);
-  if (game.releaseDate) {
-    const release = new Date(`${game.releaseDate}T00:00:00`);
-    if (Number.isNaN(release.getTime()) || release.getFullYear() < 1990) {
-      if (game.releaseText && (includePast || game.section === "upcoming")) return game.releaseText;
-      return game.section === "upcoming" ? "???" : "";
-    }
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    if (release <= today && !includePast) return "";
-    return `${release <= today ? "Released" : "Releases"} ${game.releaseDate}`;
-  }
-  if (game.releaseText && (includePast || game.section === "upcoming")) return game.releaseText;
-  return game.section === "upcoming" ? "???" : "";
+  return activityReleaseStatus(game, options);
 }
 
 function dateOnly(value) {

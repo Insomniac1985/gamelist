@@ -73,9 +73,9 @@ export function achievementPanelMarkup({ psn = {}, steam = {}, xbox = {}, trophy
 
 export function activityCoverOverride(input) {
   const title = typeof input === "string" ? input : input?.title || input?.game || "";
-  return {
-    mandagon: "https://cdn2.steamgriddb.com/grid/a0ac3f221e625a1f87857b7d19c4c7d5.png",
-  }[normalizeTitle(title)] || "";
+  const normalized = normalizeTitle(title);
+  if (normalized.includes("mandagon")) return "https://cdn2.steamgriddb.com/grid/a0ac3f221e625a1f87857b7d19c4c7d5.png";
+  return "";
 }
 
 export function activityLocalGameForTitle(title, games = []) {
@@ -199,6 +199,68 @@ export function guideLinksMarkup(game, { title = game?.title || "", playstation 
 
 export function storeButtonsMarkup(stores = [], escape = escapeHtml) {
   return stores.filter((store) => store?.url).map((store) => `<a class="store-button ${store.cls || ""}" href="${escape(store.url)}" target="_blank" rel="noreferrer">${store.icon ? `<img src="${escape(store.icon)}" alt="" width="18" height="18" decoding="async">` : ""}${escape(store.label)}</a>`).join("");
+}
+
+export function activityTrailerUrl(value, origin = "") {
+  const url = String(value || "").trim();
+  if (!url) return "";
+  if (/^https?:\/\/.+\.(?:mp4|webm|ogg)(?:[?#].*)?$/i.test(url)) return url;
+  let videoId = url.match(/^[a-zA-Z0-9_-]{11}$/)?.[0] || "";
+  if (!videoId) {
+    try {
+      const parsed = new URL(url);
+      if (parsed.hostname.includes("youtu.be")) videoId = parsed.pathname.split("/").filter(Boolean)[0] || "";
+      else if (parsed.hostname.includes("youtube.com") || parsed.hostname.includes("youtube-nocookie.com")) {
+        videoId = parsed.searchParams.get("v") || "";
+        if (!videoId) { const parts = parsed.pathname.split("/").filter(Boolean); const index = parts.findIndex((part) => ["embed", "shorts", "live"].includes(part)); videoId = index >= 0 ? parts[index + 1] || "" : ""; }
+      }
+    } catch { return url; }
+  }
+  if (!videoId) return url;
+  const params = new URLSearchParams({ autoplay: "1", mute: "1", cc_load_policy: "0", controls: "0", disablekb: "1", enablejsapi: "1", fs: "0", iv_load_policy: "3", loop: "1", playlist: videoId, playsinline: "1", modestbranding: "1", rel: "0" });
+  if (origin) params.set("origin", origin);
+  return `https://www.youtube-nocookie.com/embed/${videoId}?${params}`;
+}
+
+export function activityTrailerFrameMarkup(url, escape = escapeHtml) {
+  return /\.(?:mp4|webm|ogg)(?:[?#].*)?$/i.test(url)
+    ? `<video src="${escape(url)}" muted autoplay loop playsinline preload="metadata" aria-hidden="true"></video>`
+    : `<iframe src="${escape(url)}" title="" tabindex="-1" loading="eager" aria-hidden="true" allow="autoplay; encrypted-media; picture-in-picture"></iframe>`;
+}
+
+export function syncFocusedActivityTrailer(list, escape = escapeHtml) {
+  const cards = [...list.querySelectorAll(".game-card.has-trailer")];
+  if (!cards.length) return;
+  const bounds = list.getBoundingClientRect();
+  const center = bounds.left + bounds.width / 2;
+  const focused = cards.filter((card) => { const rect = card.getBoundingClientRect(); return rect.right > bounds.left && rect.left < bounds.right; }).sort((a, b) => Math.abs((a.getBoundingClientRect().left + a.getBoundingClientRect().width / 2) - center) - Math.abs((b.getBoundingClientRect().left + b.getBoundingClientRect().width / 2) - center))[0] || null;
+  cards.forEach((card) => {
+    const trailer = card.querySelector(".card-trailer");
+    if (!trailer) return;
+    if (card === focused && !card.classList.contains("trailer-user-paused")) {
+      if (!trailer.firstElementChild && trailer.dataset.src) trailer.innerHTML = activityTrailerFrameMarkup(trailer.dataset.src, escape);
+      card.classList.remove("trailer-paused");
+      trailer.querySelector("video")?.play().catch(() => {});
+    } else {
+      card.classList.add("trailer-paused");
+      const video = trailer.querySelector("video");
+      if (video) video.pause();
+      const frame = trailer.querySelector("iframe");
+      if (frame) frame.remove();
+    }
+  });
+}
+
+export function activityReleaseStatus(game, { includePast = false, now = new Date() } = {}) {
+  if (game?.releaseDate) {
+    const release = new Date(`${game.releaseDate}T00:00:00`);
+    if (Number.isNaN(release.getTime()) || release.getFullYear() < 1990) return game.releaseText && (includePast || game.section === "upcoming") ? game.releaseText : game.section === "upcoming" ? "???" : "";
+    const today = new Date(now); today.setHours(0, 0, 0, 0);
+    if (release <= today && !includePast) return "";
+    return `${release <= today ? "Released" : "Releases"} ${game.releaseDate}`;
+  }
+  if (game?.releaseText && (includePast || game.section === "upcoming")) return game.releaseText;
+  return game?.section === "upcoming" ? "???" : "";
 }
 
 export function formatFooterDate(value) {
