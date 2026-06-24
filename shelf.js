@@ -3,8 +3,8 @@ import { createGameCardShell, bindActivityCardParallax, mountActivitySlider, fin
 mountActivitySlider(document.querySelector("[data-module='playing']"), { count: "shelfPlayingCount", previous: "shelfPlayingPrev", next: "shelfPlayingNext", list: "playingCarousel", finished: "shelfPlayingFinished", finishedList: "finishedCarousel" });
 
 const SESSION_KEY = "gamelist-editor";
-const SITE_VERSION = "v178";
-const SITE_UPDATED_AT = "2026-06-24T16:40:00Z";
+const SITE_VERSION = "v179";
+const SITE_UPDATED_AT = "2026-06-24T17:00:00Z";
 const VERSION_STORAGE_KEY = "gamelist:site-version";
 const VIEW_KEY = "shelf:view-mode:v2";
 const LAYOUT_KEY = "shelf:layout:v2";
@@ -166,7 +166,7 @@ async function init() {
   state.updatedAt = shelfData?.updatedAt || "";
   state.gamelistGames = gamelistData?.games || [];
   state.gamelistSettings = gamelistData?.settings || state.gamelistSettings;
-  state.filters.sort = shelfSortForDefault(state.gamelistSettings.defaultOrder);
+  applyShelfDefaultOrder(state.gamelistSettings.shelfDefaultOrder ?? state.gamelistSettings.defaultOrder);
   applyTheme();
   loadTrophyActivity();
   rebuildGames();
@@ -180,7 +180,7 @@ function bindEvents() {
   el.region.addEventListener("change", () => { state.filters.region = el.region.value; renderLibrary(); });
   el.condition.addEventListener("change", () => { state.filters.condition = el.condition.value; renderLibrary(); });
   el.category.addEventListener("change", () => { state.filters.category = el.category.value; renderLibrary(); });
-  el.sort.addEventListener("change", () => { state.filters.sort = el.sort.value; if (["added", "time", "value"].includes(state.filters.sort)) state.filters.direction = "desc"; renderChrome(); renderLibrary(); });
+  el.sort.addEventListener("change", () => { state.filters.sort = el.sort.value; if (["added", "value"].includes(state.filters.sort)) state.filters.direction = "desc"; renderChrome(); renderLibrary(); });
   el.sortDirection.addEventListener("click", () => { state.filters.direction = state.filters.direction === "asc" ? "desc" : "asc"; renderChrome(); renderLibrary(); });
   el.view.addEventListener("click", toggleView);
   el.playingPrev.addEventListener("click", () => slidePlaying(-1));
@@ -713,13 +713,13 @@ function renderLayoutEditor() {
   el.layoutList.innerHTML = [
     ...FIXED_LAYOUT.map((key) => settingsLayoutCard(key, -1, true)),
     ...state.layout.order.map((key, index) => settingsLayoutCard(key, index, false)),
-    `<div class="settings-preference-row">${settingsSelectCard("theme", "Theme", "shelfSettingsTheme", [{ value: "shabii", label: "Shabii" }, { value: "kash", label: "Kash" }])}${settingsSelectCard("order", "Default order", "shelfSettingsDefaultOrder", [{ value: "custom", label: "Custom" }, { value: "time", label: "Time" }, { value: "name", label: "Name" }])}</div>`,
+    `<div class="settings-preference-row">${settingsSelectCard("theme", "Theme", "shelfSettingsTheme", [{ value: "shabii", label: "Shabii" }, { value: "kash", label: "Kash" }])}${settingsSelectCard("order", "Default order", "shelfSettingsDefaultOrder", [{ value: "added", label: "Last added" }, { value: "title", label: "Name" }, { value: "platform", label: "Platform" }, { value: "region", label: "Region" }, { value: "value", label: "Value" }])}</div>`,
   ].join("");
   el.settingsTheme = document.querySelector("#shelfSettingsTheme");
   el.settingsDefaultOrder = document.querySelector("#shelfSettingsDefaultOrder");
   const settings = normalizePriceSettings(state.gamelistSettings);
   el.settingsTheme.value = THEMES[state.gamelistSettings.theme] ? state.gamelistSettings.theme : "shabii";
-  el.settingsDefaultOrder.value = ["custom", "time", "name"].includes(state.gamelistSettings.defaultOrder) ? state.gamelistSettings.defaultOrder : "custom";
+  el.settingsDefaultOrder.value = shelfSortForDefault(state.gamelistSettings.shelfDefaultOrder ?? state.gamelistSettings.defaultOrder);
   el.settingsCurrency.value = settings.currency;
   el.settingsRegion.value = settings.region;
   el.settingsPsnUser.value = state.gamelistSettings.psnUser || "";
@@ -760,9 +760,9 @@ async function saveLayout(event) {
   state.layout.hidden = LAYOUT_KEYS.filter((key) => !el.layoutList.querySelector(`[data-layout-visible][value="${key}"]`)?.checked);
   localStorage.setItem(LAYOUT_KEY, JSON.stringify(state.layout));
   const stores = [...el.settingsStores.querySelectorAll("input:checked")].map((input) => input.value).filter((store) => STORE_OPTIONS.includes(store)).slice(0, MAX_PRICE_STORES);
-  state.gamelistSettings = { ...state.gamelistSettings, theme: el.settingsTheme.value, defaultOrder: el.settingsDefaultOrder.value, currency: el.settingsCurrency.value, region: el.settingsRegion.value, psnUser: el.settingsPsnUser.value.trim(), microsoftUser: el.settingsMicrosoftUser.value.trim(), steamUser: el.settingsSteamUser.value.trim(), defaultOwner: el.settingsDefaultOwner.value.trim(), stores, storeSettingsVersion: 2 };
+  state.gamelistSettings = { ...state.gamelistSettings, theme: el.settingsTheme.value, shelfDefaultOrder: el.settingsDefaultOrder.value, currency: el.settingsCurrency.value, region: el.settingsRegion.value, psnUser: el.settingsPsnUser.value.trim(), microsoftUser: el.settingsMicrosoftUser.value.trim(), steamUser: el.settingsSteamUser.value.trim(), defaultOwner: el.settingsDefaultOwner.value.trim(), stores, storeSettingsVersion: 2 };
   localStorage.setItem("gamelist:settings:v1", JSON.stringify(state.gamelistSettings));
-  state.filters.sort = shelfSortForDefault(state.gamelistSettings.defaultOrder);
+  applyShelfDefaultOrder(state.gamelistSettings.shelfDefaultOrder);
   await Promise.all([persistShelf(), persistGamelistSettings()]);
   applyLayout();
   applyTheme();
@@ -1320,9 +1320,10 @@ function regionName(country) { return country === "United States of America" ? "
 function regionFor(country) { if (country === "Japan") return "Japan"; if (country === "Taiwan") return "Taiwan"; if (country === "United States of America") return "USA"; if (["United Kingdom", "Spain", "France", "Germany", "Europe"].includes(country)) return country === "Spain" ? "Spain" : "Europe"; return country || "Other"; }
 function countValues(values) { const map = new Map(); values.filter(Boolean).forEach((value) => map.set(value, (map.get(value) || 0) + 1)); return [...map.entries()].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0])); }
 function conditionMatches(game, condition) { const label = conditionLabel(game).toLowerCase(); if (condition === "all") return true; if (condition === "complete") return label === "complete"; if (condition === "complete-plus") return label === "complete +"; if (condition === "loose") return label === "loose"; if (condition === "sealed") return label === "sealed"; return true; }
-function sorter(type) { const direction = state.filters.direction === "desc" ? -1 : 1; if (type === "custom") return (a, b) => direction * ((a.order ?? Number.MAX_SAFE_INTEGER) - (b.order ?? Number.MAX_SAFE_INTEGER) || a.title.localeCompare(b.title)); if (type === "title" || type === "name") return (a, b) => direction * a.title.localeCompare(b.title); if (type === "added" || type === "time") return (a, b) => direction * (new Date(a.createdAt || 0) - new Date(b.createdAt || 0)); if (type === "value") return (a, b) => direction * ((a.price || 0) - (b.price || 0)); if (type === "region") return (a, b) => direction * (a.country.localeCompare(b.country) || a.title.localeCompare(b.title)); return (a, b) => direction * (a.platform.localeCompare(b.platform) || a.title.localeCompare(b.title)); }
+function sorter(type) { const direction = state.filters.direction === "desc" ? -1 : 1; if (type === "custom") return (a, b) => direction * ((a.order ?? Number.MAX_SAFE_INTEGER) - (b.order ?? Number.MAX_SAFE_INTEGER) || a.title.localeCompare(b.title)); if (type === "title" || type === "name") return (a, b) => direction * a.title.localeCompare(b.title); if (type === "added") return (a, b) => direction * (new Date(a.createdAt || 0) - new Date(b.createdAt || 0)); if (type === "value") return (a, b) => direction * ((a.price || 0) - (b.price || 0)); if (type === "region") return (a, b) => direction * (a.country.localeCompare(b.country) || a.title.localeCompare(b.title)); return (a, b) => direction * (a.platform.localeCompare(b.platform) || a.title.localeCompare(b.title)); }
 function uniqueSorted(values) { return [...new Set(values.filter(Boolean))].sort((a, b) => String(a).localeCompare(String(b), undefined, { sensitivity: "base" })); }
-function shelfSortForDefault(value) { if (value === "time") return "time"; if (value === "name") return "title"; return "platform"; }
+function shelfSortForDefault(value) { if (value === "time") return "added"; if (value === "name") return "title"; return ["added", "title", "platform", "region", "value"].includes(value) ? value : "platform"; }
+function applyShelfDefaultOrder(value) { state.filters.sort = shelfSortForDefault(value); state.filters.direction = ["added", "value"].includes(state.filters.sort) ? "desc" : "asc"; }
 function bestCollectionPlatform(platforms, fallback) {
   const value = platforms.map(normalize).join(" ");
   if (value.includes("nintendo switch 2")) return "Nintendo Switch 2";
