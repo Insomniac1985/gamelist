@@ -119,6 +119,14 @@ export function horizontalCarouselState(list) {
   return { max, overflow, atStart: !overflow || list.scrollLeft <= 2, atEnd: !overflow || list.scrollLeft >= max };
 }
 
+export function syncViewModeButton(button, mode, { gridIcon, linesIcon }) {
+  const showingGrid = mode === "grid";
+  button.innerHTML = showingGrid ? gridIcon() : linesIcon();
+  button.title = showingGrid ? "Grid view" : "List view";
+  button.setAttribute("aria-label", button.title);
+  button.classList.toggle("active", mode === "list");
+}
+
 export function slideHorizontalCarousel(list, direction, selector = ".game-card") {
   const card = list.querySelector(selector);
   const gap = Number.parseFloat(getComputedStyle(list).columnGap) || 0;

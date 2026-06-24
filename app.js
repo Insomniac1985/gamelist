@@ -1,4 +1,4 @@
-import { createGameCardShell, mountActivitySlider, finishedGameMarkup, achievementCardMarkup, achievementDashboardMarkup, achievementPanelMarkup, completedCardMarkup, horizontalCarouselState, slideHorizontalCarousel, comparePlayingGames, finishedDurationText, timeBadgeMarkup, guideLinksMarkup, storeButtonsMarkup, activityTrailerUrl, activityTrailerFrameMarkup, activityReleaseStatus, activityCoverOverride, activityAllowsPsnCardTrophies, formatFooterDate, formatFooterDateTime } from "./activity-ui.js";
+import { createGameCardShell, mountActivitySlider, finishedGameMarkup, achievementCardMarkup, achievementDashboardMarkup, achievementPanelMarkup, completedCardMarkup, horizontalCarouselState, syncViewModeButton, slideHorizontalCarousel, comparePlayingGames, finishedDurationText, timeBadgeMarkup, guideLinksMarkup, storeButtonsMarkup, activityTrailerUrl, activityTrailerFrameMarkup, activityReleaseStatus, activityCoverOverride, activityAllowsPsnCardTrophies, formatFooterDate, formatFooterDateTime } from "./activity-ui.js";
 
 mountActivitySlider(document.querySelector("#playingSection"), { count: "playingCount", previous: "playingPrevButton", next: "playingNextButton", list: "playingList", dataSection: "playing", finished: "playingFinished", finishedList: "playingFinishedList" });
 
@@ -13,8 +13,8 @@ const SETTINGS_KEY = "gamelist:settings:v1";
 const KASH_TWITCH_URL = "https://www.twitch.tv/kashhoward";
 const DEFAULT_PAGE_ORDER = ["trophies", "calendar", "highlights", "search", "gamelist", "finished"];
 const LAYOUT_SECTION_KEYS = ["playing", ...DEFAULT_PAGE_ORDER, "latestFinished"];
-const SITE_VERSION = "v170";
-const SITE_UPDATED_AT = "2026-06-24T14:35:00Z";
+const SITE_VERSION = "v171";
+const SITE_UPDATED_AT = "2026-06-24T14:50:00Z";
 const VERSION_STORAGE_KEY = "gamelist:site-version";
 const STORE_OPTIONS = ["Amazon", "eBay", "GAME.es", "Xtralife", "Retro Island NY", "GameStop", "Walmart"];
 const MAX_PRICE_STORES = 5;
@@ -895,8 +895,7 @@ function renderSettingsDialog() {
     settingsLayoutItem("playing", -1, { fixed: true }),
     settingsLayoutItem("latestFinished", -1, { fixed: true }),
     ...state.settings.pageOrder.map((key) => settingsLayoutItem(key, pageIndex.get(key) ?? 0)),
-    settingsThemeItem(),
-    settingsDefaultOrderItem(),
+    `<div class="settings-preference-row">${settingsThemeItem()}${settingsDefaultOrderItem()}</div>`,
   ].join("");
   el.settingsStores.innerHTML = STORE_OPTIONS.map((store) => `
     <label class="check-filter toggle-check settings-store-check">
@@ -1050,12 +1049,7 @@ async function saveSettingsFromForm(event) {
 }
 
 function renderModeToggle(button, mode) {
-  if (!button) return;
-  const showingGrid = mode === "grid";
-  button.innerHTML = showingGrid ? gridIcon() : linesIcon();
-  button.title = showingGrid ? "Grid view" : "List view";
-  button.setAttribute("aria-label", button.title);
-  button.classList.toggle("active", mode === "list");
+  if (button) syncViewModeButton(button, mode, { gridIcon, linesIcon });
 }
 
 function syncScrollLock() {

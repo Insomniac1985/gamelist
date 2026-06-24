@@ -1,15 +1,17 @@
-import { createGameCardShell, mountActivitySlider, finishedGameMarkup, achievementCardMarkup, achievementDashboardMarkup, achievementPanelMarkup, completedCardMarkup, horizontalCarouselState, slideHorizontalCarousel, comparePlayingGames, finishedDurationText, timeBadgeMarkup, guideLinksMarkup, storeButtonsMarkup, activityTrailerUrl, syncFocusedActivityTrailer, activityReleaseStatus, activityCoverOverride, activityLocalGameForTitle, activityTitleMatchScore, activityAllowsPsnCardTrophies, formatFooterDate, formatFooterDateTime } from "./activity-ui.js";
+import { createGameCardShell, mountActivitySlider, finishedGameMarkup, achievementCardMarkup, achievementDashboardMarkup, achievementPanelMarkup, completedCardMarkup, horizontalCarouselState, syncViewModeButton, slideHorizontalCarousel, comparePlayingGames, finishedDurationText, timeBadgeMarkup, guideLinksMarkup, storeButtonsMarkup, activityTrailerUrl, syncFocusedActivityTrailer, activityReleaseStatus, activityCoverOverride, activityLocalGameForTitle, activityTitleMatchScore, activityAllowsPsnCardTrophies, formatFooterDate, formatFooterDateTime } from "./activity-ui.js";
 
 mountActivitySlider(document.querySelector("[data-module='playing']"), { count: "shelfPlayingCount", previous: "shelfPlayingPrev", next: "shelfPlayingNext", list: "playingCarousel", finished: "shelfPlayingFinished", finishedList: "finishedCarousel" });
 
 const SESSION_KEY = "gamelist-editor";
-const SITE_VERSION = "v170";
-const SITE_UPDATED_AT = "2026-06-24T14:35:00Z";
+const SITE_VERSION = "v171";
+const SITE_UPDATED_AT = "2026-06-24T14:50:00Z";
 const VERSION_STORAGE_KEY = "gamelist:site-version";
 const VIEW_KEY = "shelf:view-mode:v2";
 const LAYOUT_KEY = "shelf:layout:v2";
 const LOCAL_DRAFT_KEY = "shelf:draft-data:v2";
-const DEFAULT_LAYOUT = ["playing", "trophies", "kpis", "filters", "library"];
+const FIXED_LAYOUT = ["playing", "latestFinished"];
+const DEFAULT_LAYOUT = ["trophies", "kpis", "filters", "library"];
+const LAYOUT_KEYS = [...FIXED_LAYOUT, ...DEFAULT_LAYOUT];
 const DEFAULT_HIDDEN_MODULES = ["playing", "trophies"];
 const STORE_OPTIONS = ["Amazon", "eBay", "GAME.es", "Xtralife", "Retro Island NY", "GameStop", "Walmart"];
 const DEFAULT_PRICE_STORES = ["Amazon", "eBay", "Xtralife", "GAME.es"];
@@ -18,7 +20,7 @@ const THEMES = {
   shabii: { title: "Shabii's Shelf", icon: "assets/Icon_shelf.png", color: "#ff0039" },
   kash: { title: "Kash's Shelf", icon: "assets/kh_icon.png", color: "#005cff" },
 };
-const MODULE_NAMES = { playing: "Playing & recently finished", trophies: "Achievements", kpis: "Collection highlights", filters: "Search and filters", library: "Shelf" };
+const MODULE_NAMES = { playing: "Currently Playing", latestFinished: "Last Finished", trophies: "Achievements", kpis: "Collection highlights", filters: "Search and filters", library: "Shelf" };
 const PLATFORM_OPTIONS = [
   "Nintendo Switch", "Nintendo Switch 2", "Sony PlayStation 5", "Sony PlayStation 4",
   "Sony PlayStation 2", "Sony PlayStation", "Nintendo 3DS", "Nintendo DS", "Nintendo 64",
@@ -684,10 +686,11 @@ function openLayout() {
 
 function renderLayoutEditor() {
   el.layoutList.className = "settings-layout";
-  el.layoutList.innerHTML = state.layout.order.map((key, index) => {
-    const visible = !state.layout.hidden.includes(key);
-    return `<article class="settings-layout-card ${visible ? "" : "is-hidden-section"}" data-layout-key="${key}"><div class="settings-wire wire-${key === "library" ? "list" : key === "filters" ? "search" : key}" aria-hidden="true">${Array.from({ length: 6 }, () => "<span></span>").join("")}</div><strong>${escapeHtml(MODULE_NAMES[key])}</strong><div class="settings-layout-actions"><button class="icon-button" type="button" data-layout-move="-1" ${index === 0 ? "disabled" : ""} aria-label="Move up">↑</button><button class="icon-button" type="button" data-layout-move="1" ${index === state.layout.order.length - 1 ? "disabled" : ""} aria-label="Move down">↓</button><label class="check-filter toggle-check settings-visible-check"><input type="checkbox" data-layout-visible value="${key}" ${visible ? "checked" : ""}><span>${visible ? "Show" : "Hide"}</span></label></div></article>`;
-  }).join("") + settingsSelectCard("theme", "Theme", "shelfSettingsTheme", [{ value: "shabii", label: "Shabii" }, { value: "kash", label: "Kash" }]) + settingsSelectCard("order", "Default order", "shelfSettingsDefaultOrder", [{ value: "custom", label: "Custom" }, { value: "time", label: "Time" }, { value: "name", label: "Name" }]);
+  el.layoutList.innerHTML = [
+    ...FIXED_LAYOUT.map((key) => settingsLayoutCard(key, -1, true)),
+    ...state.layout.order.map((key, index) => settingsLayoutCard(key, index, false)),
+    `<div class="settings-preference-row">${settingsSelectCard("theme", "Theme", "shelfSettingsTheme", [{ value: "shabii", label: "Shabii" }, { value: "kash", label: "Kash" }])}${settingsSelectCard("order", "Default order", "shelfSettingsDefaultOrder", [{ value: "custom", label: "Custom" }, { value: "time", label: "Time" }, { value: "name", label: "Name" }])}</div>`,
+  ].join("");
   el.settingsTheme = document.querySelector("#shelfSettingsTheme");
   el.settingsDefaultOrder = document.querySelector("#shelfSettingsDefaultOrder");
   const settings = normalizePriceSettings(state.gamelistSettings);
@@ -707,6 +710,12 @@ function renderLayoutEditor() {
   el.settingsTheme.onchange = () => { state.gamelistSettings.theme = el.settingsTheme.value; applyTheme(); };
 }
 
+function settingsLayoutCard(key, index, fixed) {
+  const visible = !state.layout.hidden.includes(key);
+  const wire = { latestFinished: "latest-finished", kpis: "highlights", filters: "search", library: "list" }[key] || key;
+  return `<article class="settings-layout-card ${fixed ? "is-fixed" : ""} ${visible ? "" : "is-hidden-section"}" data-layout-key="${key}"><div class="settings-wire wire-${wire}" aria-hidden="true">${Array.from({ length: 6 }, () => "<span></span>").join("")}</div><strong>${escapeHtml(MODULE_NAMES[key])}</strong><div class="settings-layout-actions">${fixed ? `<span class="settings-fixed-label">Fixed</span>` : `<button class="icon-button" type="button" data-layout-move="-1" ${index === 0 ? "disabled" : ""} title="Move up" aria-label="Move ${escapeHtml(MODULE_NAMES[key])} up">↑</button><button class="icon-button" type="button" data-layout-move="1" ${index === state.layout.order.length - 1 ? "disabled" : ""} title="Move down" aria-label="Move ${escapeHtml(MODULE_NAMES[key])} down">↓</button>`}<label class="check-filter toggle-check settings-visible-check" title="${visible ? "Visible" : "Hidden"}"><input type="checkbox" data-layout-visible value="${key}" ${visible ? "checked" : ""}><span>${visible ? "Show" : "Hide"}</span></label></div></article>`;
+}
+
 function settingsSelectCard(type, title, id, options) {
   return `<article class="settings-layout-card settings-${type === "theme" ? "theme" : "order"}-card"><div class="settings-wire wire-${type}" aria-hidden="true">${Array.from({ length: 3 }, () => "<span></span>").join("")}</div><label class="settings-theme-select"><span>${escapeHtml(title)}</span><select id="${id}">${options.map((option) => `<option value="${option.value}">${escapeHtml(option.label)}</option>`).join("")}</select></label></article>`;
 }
@@ -724,7 +733,7 @@ function handleLayoutMove(event) {
 
 async function saveLayout(event) {
   event.preventDefault();
-  state.layout.hidden = state.layout.order.filter((key) => !el.layoutList.querySelector(`[data-layout-visible][value="${key}"]`)?.checked);
+  state.layout.hidden = LAYOUT_KEYS.filter((key) => !el.layoutList.querySelector(`[data-layout-visible][value="${key}"]`)?.checked);
   localStorage.setItem(LAYOUT_KEY, JSON.stringify(state.layout));
   const stores = [...el.settingsStores.querySelectorAll("input:checked")].map((input) => input.value).filter((store) => STORE_OPTIONS.includes(store)).slice(0, MAX_PRICE_STORES);
   state.gamelistSettings = { ...state.gamelistSettings, theme: el.settingsTheme.value, defaultOrder: el.settingsDefaultOrder.value, currency: el.settingsCurrency.value, region: el.settingsRegion.value, psnUser: el.settingsPsnUser.value.trim(), microsoftUser: el.settingsMicrosoftUser.value.trim(), steamUser: el.settingsSteamUser.value.trim(), defaultOwner: el.settingsDefaultOwner.value.trim(), stores, storeSettingsVersion: 2 };
@@ -755,11 +764,12 @@ async function persistGamelistSettings() {
 }
 
 function applyLayout() {
-  const order = new Map(state.layout.order.map((key, index) => [key, index]));
+  const order = new Map(state.layout.order.map((key, index) => [key, index + 1]));
   el.modules.querySelectorAll("[data-module]").forEach((section) => {
-    section.style.order = String(order.get(section.dataset.module) ?? 99);
+    section.style.order = section.dataset.module === "playing" ? "0" : String(order.get(section.dataset.module) ?? 99);
     section.hidden = state.layout.hidden.includes(section.dataset.module);
   });
+  el.playingFinished.hidden = state.layout.hidden.includes("latestFinished") || !el.finishedCarousel.children.length;
 }
 
 function toggleView() {
@@ -790,13 +800,13 @@ function loadLayout() {
     const value = JSON.parse(localStorage.getItem(LAYOUT_KEY) || "{}");
     const order = Array.isArray(value.order) ? value.order.filter((key) => DEFAULT_LAYOUT.includes(key)) : [];
     const hasSavedLayout = Array.isArray(value.order);
-    return { order: [...order, ...DEFAULT_LAYOUT.filter((key) => !order.includes(key))], hidden: hasSavedLayout && Array.isArray(value.hidden) ? value.hidden.filter((key) => DEFAULT_LAYOUT.includes(key)) : [...DEFAULT_HIDDEN_MODULES] };
+    return { order: [...order, ...DEFAULT_LAYOUT.filter((key) => !order.includes(key))], hidden: hasSavedLayout && Array.isArray(value.hidden) ? value.hidden.filter((key) => LAYOUT_KEYS.includes(key)) : [...DEFAULT_HIDDEN_MODULES] };
   } catch { return { order: [...DEFAULT_LAYOUT], hidden: [...DEFAULT_HIDDEN_MODULES] }; }
 }
 
 function normalizeLayout(value) {
   const order = Array.isArray(value?.order) ? value.order.filter((key) => DEFAULT_LAYOUT.includes(key)) : [];
-  const hidden = Array.isArray(value?.hidden) ? value.hidden.filter((key) => DEFAULT_LAYOUT.includes(key)) : [...DEFAULT_HIDDEN_MODULES];
+  const hidden = Array.isArray(value?.hidden) ? value.hidden.filter((key) => LAYOUT_KEYS.includes(key)) : [...DEFAULT_HIDDEN_MODULES];
   return { order: [...order, ...DEFAULT_LAYOUT.filter((key) => !order.includes(key))], hidden };
 }
 
@@ -818,7 +828,7 @@ function renderGamelistModules() {
   [...el.playingCarousel.querySelectorAll("[data-gamelist-id]"), ...el.finishedCarousel.querySelectorAll("[data-gamelist-id]")].forEach((card) => { const open = (event) => { if (event?.target.closest("a,.edit-action,.trailer-toggle")) return; const game = state.gamelistGames.find((item) => item.id === card.dataset.gamelistId); if (game) openGamelistDetails(game); }; card.addEventListener("click", open); card.addEventListener("keydown", (event) => { if (event.key === "Enter" || event.key === " ") { event.preventDefault(); open(); } }); });
   const playingModule = el.playingCarousel.closest("[data-module]");
   playingModule.hidden = state.layout.hidden.includes("playing") || !playing.length;
-  el.playingFinished.hidden = !finished.length;
+  el.playingFinished.hidden = state.layout.hidden.includes("latestFinished") || !finished.length;
   el.playingCount.textContent = `Playing ${playing.length} ${playing.length === 1 ? "game" : "games"}`;
   schedulePlayingCardHeightSync();
   requestAnimationFrame(() => { updatePlayingControls(); updateFinishedControls(); scheduleShelfTrailerUpdate(); });
@@ -1112,7 +1122,7 @@ function renderCompletedGames(items) {
   el.completedSort.value = state.completedSort;
   el.completedDirection.innerHTML = sortArrowIcon(state.completedDirection === "desc");
   el.completedDirection.classList.toggle("desc", state.completedDirection === "desc");
-  el.completedView.innerHTML = state.completedView === "grid" ? linesIcon() : gridIcon();
+  syncViewModeButton(el.completedView, state.completedView, { gridIcon, linesIcon });
   el.completedList.classList.toggle("list-view", state.completedView === "list");
   el.completedList.innerHTML = visible.map(completedCard).join("") || `<div class="empty">No completed games tracked yet.</div>`;
   el.completedList.querySelectorAll("[data-completed-title]").forEach((button) => button.addEventListener("click", () => { closeDialog(el.completedDialog); openGamelistGameByTitle(button.dataset.completedTitle); }));

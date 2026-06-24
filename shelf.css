@@ -59,7 +59,6 @@
   margin: 0;
 }
 .shelf-page .playing-section { margin:0 0 20px; }
-.shelf-page .achievement-section { margin:0 0 20px; padding-bottom:30px; }
 .shelf-page .shelf-library { margin:20px 0 0; }
 
 .shelf-page .stats { display: flex; gap: 8px; }
