@@ -13,8 +13,8 @@ const SETTINGS_KEY = "gamelist:settings:v1";
 const KASH_TWITCH_URL = "https://www.twitch.tv/kashhoward";
 const DEFAULT_PAGE_ORDER = ["trophies", "calendar", "highlights", "search", "gamelist", "finished"];
 const LAYOUT_SECTION_KEYS = ["playing", ...DEFAULT_PAGE_ORDER, "latestFinished"];
-const SITE_VERSION = "v172";
-const SITE_UPDATED_AT = "2026-06-24T15:10:00Z";
+const SITE_VERSION = "v173";
+const SITE_UPDATED_AT = "2026-06-24T15:30:00Z";
 const VERSION_STORAGE_KEY = "gamelist:site-version";
 const STORE_OPTIONS = ["Amazon", "eBay", "GAME.es", "Xtralife", "Retro Island NY", "GameStop", "Walmart"];
 const MAX_PRICE_STORES = 5;
@@ -187,6 +187,7 @@ const state = {
 const el = {
   brandLink: document.querySelector(".brand"),
   playingSection: document.querySelector("#playingSection"),
+  playingCurrent: document.querySelector("#playingSection .playing-current"),
   playingCount: document.querySelector("#playingCount"),
   playingList: document.querySelector(".playing-list"),
   playingFinished: document.querySelector("#playingFinished"),
@@ -863,7 +864,7 @@ function applyPageOrder() {
   document.querySelector(".mobile-section-tabs").style.order = String(orderMap.get("gamelist") || 5);
   el.board.style.order = String(orderMap.get("gamelist") || 5);
   document.querySelector("#completed").style.order = String(orderMap.get("finished") || 6);
-  el.playingSection.hidden = hidden.has("playing") || !hasPlayingGames;
+  el.playingCurrent.hidden = hidden.has("playing") || !hasPlayingGames;
   el.achievementSection.hidden = hidden.has("trophies");
   el.calendarSection.hidden = hidden.has("calendar");
   el.highlightsSection.hidden = hidden.has("highlights");
@@ -872,6 +873,7 @@ function applyPageOrder() {
   el.board.hidden = hidden.has("gamelist");
   document.querySelector("#completed").hidden = hidden.has("finished");
   el.playingFinished.hidden = hidden.has("latestFinished") || !hasFinishedGames;
+  el.playingSection.hidden = el.playingCurrent.hidden && el.playingFinished.hidden;
 }
 
 function openSettingsDialog() {
@@ -1072,12 +1074,14 @@ function handleDetailClose() {
 function renderPlayingSection() {
   const games = activeGames().filter((game) => game.playing);
   games.sort(comparePlayingGames);
-  el.playingSection.hidden = !games.length;
   el.playingCount.textContent = `Playing ${games.length} ${games.length === 1 ? "game" : "games"}`;
   el.playingList.innerHTML = "";
   games.forEach((game) => el.playingList.appendChild(cardFor(game, { staticCard: true, imagePriority: "eager" })));
   bindPlayingTrailerFocus();
   renderPlayingFinished();
+  const hidden = new Set(normalizeSettings(state.settings).hiddenSections);
+  el.playingCurrent.hidden = hidden.has("playing") || !games.length;
+  el.playingSection.hidden = el.playingCurrent.hidden && el.playingFinished.hidden;
   schedulePlayingCardHeightSync();
   requestAnimationFrame(updatePlayingSliderControls);
   scheduleFocusedPlayingTrailerUpdate();
@@ -1088,7 +1092,7 @@ function renderPlayingFinished() {
     .filter((game) => !game.deletedAt && game.completedAt)
     .sort((a, b) => String(b.completedAt).localeCompare(String(a.completedAt)) || stringCompare(a.title, b.title))
     .slice(0, 10);
-  el.playingFinished.hidden = !games.length;
+  el.playingFinished.hidden = (state.settings.hiddenSections || []).includes("latestFinished") || !games.length;
   el.playingFinishedList.innerHTML = games.map((game) => {
     const achievementProgress = achievementProgressForGame(game);
     const progress = achievementProgress ? progressValue(achievementProgress.game) : 0;

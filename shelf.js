@@ -3,8 +3,8 @@ import { createGameCardShell, mountActivitySlider, finishedGameMarkup, achieveme
 mountActivitySlider(document.querySelector("[data-module='playing']"), { count: "shelfPlayingCount", previous: "shelfPlayingPrev", next: "shelfPlayingNext", list: "playingCarousel", finished: "shelfPlayingFinished", finishedList: "finishedCarousel" });
 
 const SESSION_KEY = "gamelist-editor";
-const SITE_VERSION = "v172";
-const SITE_UPDATED_AT = "2026-06-24T15:10:00Z";
+const SITE_VERSION = "v173";
+const SITE_UPDATED_AT = "2026-06-24T15:30:00Z";
 const VERSION_STORAGE_KEY = "gamelist:site-version";
 const VIEW_KEY = "shelf:view-mode:v2";
 const LAYOUT_KEY = "shelf:layout:v2";
@@ -77,6 +77,7 @@ const el = {
   modules: document.querySelector("#shelfModules"),
   tabs: document.querySelector("#shelfTabs"),
   playingCarousel: document.querySelector("#playingCarousel"),
+  playingCurrent: document.querySelector("[data-module='playing'] .playing-current"),
   finishedCarousel: document.querySelector("#finishedCarousel"),
   playingFinished: document.querySelector("#shelfPlayingFinished"), playingCount: document.querySelector("#shelfPlayingCount"),
   playingPrev: document.querySelector("#shelfPlayingPrev"), playingNext: document.querySelector("#shelfPlayingNext"),
@@ -766,9 +767,15 @@ function applyLayout() {
   const order = new Map(state.layout.order.map((key, index) => [key, index + 1]));
   el.modules.querySelectorAll("[data-module]").forEach((section) => {
     section.style.order = section.dataset.module === "playing" ? "0" : String(order.get(section.dataset.module) ?? 99);
-    section.hidden = state.layout.hidden.includes(section.dataset.module);
+    if (section.dataset.module !== "playing") section.hidden = state.layout.hidden.includes(section.dataset.module);
   });
+  syncShelfActivityVisibility();
+}
+
+function syncShelfActivityVisibility() {
+  el.playingCurrent.hidden = state.layout.hidden.includes("playing") || !el.playingCarousel.children.length;
   el.playingFinished.hidden = state.layout.hidden.includes("latestFinished") || !el.finishedCarousel.children.length;
+  el.playingCurrent.closest("[data-module='playing']").hidden = el.playingCurrent.hidden && el.playingFinished.hidden;
 }
 
 function toggleView() {
@@ -825,9 +832,7 @@ function renderGamelistModules() {
   el.playingCarousel.querySelectorAll(".trailer-toggle").forEach((button) => button.addEventListener("click", (event) => { event.stopPropagation(); const card = button.closest(".game-card"); const paused = card.classList.toggle("trailer-user-paused"); button.innerHTML = paused ? playTrailerIcon() : pauseTrailerIcon(); button.title = paused ? "Play trailer" : "Pause trailer"; button.setAttribute("aria-label", button.title); scheduleShelfTrailerUpdate(); }));
   el.playingCarousel.querySelectorAll(".edit-action").forEach((button) => button.addEventListener("click", (event) => { event.stopPropagation(); const game = state.gamelistGames.find((item) => item.id === button.closest("[data-gamelist-id]")?.dataset.gamelistId); if (!state.canEdit) openAuth(); else if (game) openGamelistDetails(game); }));
   [...el.playingCarousel.querySelectorAll("[data-gamelist-id]"), ...el.finishedCarousel.querySelectorAll("[data-gamelist-id]")].forEach((card) => { const open = (event) => { if (event?.target.closest("a,.edit-action,.trailer-toggle")) return; const game = state.gamelistGames.find((item) => item.id === card.dataset.gamelistId); if (game) openGamelistDetails(game); }; card.addEventListener("click", open); card.addEventListener("keydown", (event) => { if (event.key === "Enter" || event.key === " ") { event.preventDefault(); open(); } }); });
-  const playingModule = el.playingCarousel.closest("[data-module]");
-  playingModule.hidden = state.layout.hidden.includes("playing") || !playing.length;
-  el.playingFinished.hidden = state.layout.hidden.includes("latestFinished") || !finished.length;
+  syncShelfActivityVisibility();
   el.playingCount.textContent = `Playing ${playing.length} ${playing.length === 1 ? "game" : "games"}`;
   schedulePlayingCardHeightSync();
   requestAnimationFrame(() => { updatePlayingControls(); updateFinishedControls(); scheduleShelfTrailerUpdate(); });
@@ -1296,7 +1301,7 @@ function countValues(values) { const map = new Map(); values.filter(Boolean).for
 function conditionMatches(game, condition) { const label = conditionLabel(game).toLowerCase(); if (condition === "all") return true; if (condition === "complete") return label === "complete"; if (condition === "complete-plus") return label === "complete +"; if (condition === "loose") return label === "loose"; if (condition === "sealed") return label === "sealed"; return true; }
 function sorter(type) { const direction = state.filters.direction === "desc" ? -1 : 1; if (type === "custom") return (a, b) => direction * ((a.order ?? Number.MAX_SAFE_INTEGER) - (b.order ?? Number.MAX_SAFE_INTEGER) || a.title.localeCompare(b.title)); if (type === "title" || type === "name") return (a, b) => direction * a.title.localeCompare(b.title); if (type === "added" || type === "time") return (a, b) => direction * (new Date(a.createdAt || 0) - new Date(b.createdAt || 0)); if (type === "value") return (a, b) => direction * ((a.price || 0) - (b.price || 0)); if (type === "region") return (a, b) => direction * (a.country.localeCompare(b.country) || a.title.localeCompare(b.title)); return (a, b) => direction * (a.platform.localeCompare(b.platform) || a.title.localeCompare(b.title)); }
 function uniqueSorted(values) { return [...new Set(values.filter(Boolean))].sort((a, b) => String(a).localeCompare(String(b), undefined, { sensitivity: "base" })); }
-function shelfSortForDefault(value) { if (value === "time") return "time"; if (value === "name") return "title"; return "custom"; }
+function shelfSortForDefault(value) { if (value === "time") return "time"; if (value === "name") return "title"; return "platform"; }
 function bestCollectionPlatform(platforms, fallback) {
   const value = platforms.map(normalize).join(" ");
   if (value.includes("nintendo switch 2")) return "Nintendo Switch 2";

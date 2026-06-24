@@ -319,6 +319,10 @@ body.theme-kash .nav-tabs a:hover {
   margin-bottom: 20px;
 }
 
+.playing-current[hidden] {
+  display: none;
+}
+
 .playing-section .column-head {
   padding-top: 0;
   align-items: end;

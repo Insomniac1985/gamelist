@@ -56,7 +56,7 @@
 }
 
 .shelf-page .highlights-section {
-  margin: 0;
+  margin: 0 0 32px;
 }
 .shelf-page .playing-section { margin:0 0 20px; }
 .shelf-page .shelf-library { margin:20px 0 0; }
@@ -488,7 +488,8 @@
   .shelf-intro h1 { font-size: 48px; }
   .shelf-intro p:last-child { font-size: 11px; }
   .intro-mark { display: none; }
-  .shelf-page .stats { display:flex; gap:6px; }
+  .shelf-page .stats { display:flex; flex-direction:column; gap:8px; }
+  .shelf-page .stats .stat { width:100%; }
   .shelf-page .stats .stat { padding:10px 6px; }
   .shelf-page .stats .stat strong { font-size:clamp(18px,7vw,28px); }
   .shelf-page .stats .stat span { font-size:9px; }
