@@ -96,6 +96,11 @@ export function activityTitleMatchScore(a, b) {
   return 0;
 }
 
+export function activityAllowsPsnCardTrophies(platform) {
+  const value = String(platform || "").toLowerCase().replace(/[^a-z0-9]+/g, "");
+  return !["ps1", "psone", "psx", "playstation", "playstation1", "sonyplaystation", "sonyplaystation1", "ps2", "playstation2", "sonyplaystation2"].includes(value);
+}
+
 function earnedTime(item) { const time = Date.parse(item?.rawEarnedAt || item?.earnedAt || 0); return Number.isNaN(time) ? 0 : time; }
 function sharedTrophyBarHeight(count, counts) { const max = Math.max(1, ...counts.map(([, value]) => value)); if (!count) return 8; return Math.round(18 + (Math.log1p(count) / Math.log1p(max)) * 82); }
 function progressFromText(value) { const match = String(value || "").match(/(\d{1,3})%/); return match ? Math.min(100, Number(match[1])) : 0; }
