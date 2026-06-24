@@ -61,6 +61,9 @@ assert.match(shelfSource, /state\.viewMode === "list" \? gameRow\(game\) : gameC
 assert.match(shelfSource, /syncViewModeButton\(el\.view, state\.viewMode/, "Shelf view control must show the current mode");
 assert.match(shelfCss, /\.shelf-page \.stats \{ display:grid; grid-template-columns:1fr;/, "Shelf mobile KPIs must use naturally sized vertical rows");
 assert.match(shelfCss, /\.shelf-toolbar \{ position:static; grid-template-columns:minmax\(0,1fr\) var\(--toolbar-control-height\)/, "Shelf mobile order row must reserve square action controls like Main");
+assert.match(shelfCss, /\.shelf-grid\.list-view \.region-flag,[\s\S]*?\.condition-pill[\s\S]*?height:\s*22px;/, "Shelf list flags and condition pills must match Main's platform-pill height");
+assert.match(shelfSource, /function updateShelfRowTitleOverflow\(\)[\s\S]*?scrollWidth > title\.clientWidth/, "Shelf list titles must expose their full text on hover when truncated");
+assert.match(shelfSource, /shelf-row-description/, "Shelf list rows must include a compact description excerpt");
 for (const source of [appSource, shelfSource]) assert.match(source, /settings-preference-row/, "Main and Shelf must keep Theme and Default order together in the shared preference row");
 assert.match(shelfSource, /function updateShelfCardTrophyStrips\(gameId\)[\s\S]*?\.game-card\[data-gamelist-id=[\s\S]*?shelfCardTrophies\(game\)/, "Shelf must update the visible playing-card trophy strip when its async data arrives");
 assert.match(shelfSource, /async function loadShelfCardTrophies\(game, remote\)[\s\S]*?updateShelfCardTrophyStrips\(game\.id\)/, "Shelf PSN trophy loading must refresh the outside playing card directly");

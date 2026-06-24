@@ -271,6 +271,31 @@
   width: 100%;
 }
 
+.shelf-grid.list-view .region-flag,
+.shelf-grid.list-view .condition-pill {
+  width: auto;
+  height: 22px;
+  min-height: 22px;
+  padding: 2px 5px;
+  border-radius: 5px;
+}
+
+.shelf-grid.list-view .region-flag {
+  width: 30px;
+  padding: 2px;
+}
+
+.shelf-grid.list-view .condition-pill img {
+  width: 15px;
+  height: 15px;
+}
+
+.shelf-row-description {
+  color: var(--muted) !important;
+  font-size: 10px !important;
+  opacity: 0.78;
+}
+
 .empty-state {
   display: grid;
   place-items: center;

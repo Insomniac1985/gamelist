@@ -3,8 +3,8 @@ import { createGameCardShell, mountActivitySlider, finishedGameMarkup, achieveme
 mountActivitySlider(document.querySelector("[data-module='playing']"), { count: "shelfPlayingCount", previous: "shelfPlayingPrev", next: "shelfPlayingNext", list: "playingCarousel", finished: "shelfPlayingFinished", finishedList: "finishedCarousel" });
 
 const SESSION_KEY = "gamelist-editor";
-const SITE_VERSION = "v174";
-const SITE_UPDATED_AT = "2026-06-24T15:50:00Z";
+const SITE_VERSION = "v175";
+const SITE_UPDATED_AT = "2026-06-24T16:05:00Z";
 const VERSION_STORAGE_KEY = "gamelist:site-version";
 const VIEW_KEY = "shelf:view-mode:v2";
 const LAYOUT_KEY = "shelf:layout:v2";
@@ -388,7 +388,12 @@ function renderLibrary() {
   el.shelf.classList.toggle("list-view", state.viewMode === "list");
   el.shelf.innerHTML = games.map((game) => state.viewMode === "list" ? gameRow(game) : gameCard(game)).join("");
   el.shelf.querySelectorAll(".game-card.has-art").forEach(setupShelfParallax);
+  if (state.viewMode === "list") requestAnimationFrame(updateShelfRowTitleOverflow);
   el.empty.hidden = games.length > 0;
+}
+
+function updateShelfRowTitleOverflow() {
+  el.shelf.querySelectorAll(".game-row-identity strong").forEach((title) => title.classList.toggle("is-overflowing", title.scrollWidth > title.clientWidth + 1));
 }
 
 function filteredGames() {
@@ -439,7 +444,8 @@ function gameRow(game) {
   const owners = game.owners || [];
   const ownerClasses = `${owners.includes("Judy") ? " owner-card-judy" : ""}${owners.includes("Jordi") ? " owner-card-jordi" : ""}`;
   const tags = [...(game.tags || []), game.category && game.category !== "Game" ? game.category : "", ...String(game.genre || "").split(",")].map((tag) => String(tag).trim()).filter((tag, index, list) => tag && normalize(tag) !== "game" && list.indexOf(tag) === index);
-  return `<article class="game-row${ownerClasses}" data-id="${escapeHtml(game.id)}" role="button" tabindex="0" aria-label="${escapeHtml(`Open ${game.title}`)}"><span class="game-row-cover-wrap"><img class="game-row-cover" src="${escapeHtml(cover)}" alt="" loading="lazy" decoding="async"><img class="game-row-cover-preview" src="${escapeHtml(cover)}" alt="" loading="lazy" decoding="async" aria-hidden="true"></span><div class="game-row-identity"><strong class="${owners.includes("Judy") ? "owner-judy" : ""} ${owners.includes("Jordi") ? "owner-jordi" : ""}">${escapeHtml(game.title)}</strong>${studio ? `<span>${escapeHtml(studio)}</span>` : ""}</div><div class="game-row-core"><span class="region-flag" title="${escapeHtml(game.country)}">${flagIcon(game.country)}</span>${platformBadge(game.platform)}${conditionBadge(conditionLabel(game))}${owners.map(ownerBadge).join("")}</div><div class="game-row-tags">${tags.map((tag) => `<span class="chip ${normalize(tag) === "gamelist" ? "accent" : ""}">${escapeHtml(tag)}</span>`).join("")}</div><div class="game-row-actions"><button class="icon-button row-edit-action" data-action="edit" type="button" title="Edit" aria-label="Edit">${pencilIcon()}</button></div></article>`;
+  const description = shortDescription(game.description || "", 120);
+  return `<article class="game-row${ownerClasses}" data-id="${escapeHtml(game.id)}" role="button" tabindex="0" aria-label="${escapeHtml(`Open ${game.title}`)}"><span class="game-row-cover-wrap"><img class="game-row-cover" src="${escapeHtml(cover)}" alt="" loading="lazy" decoding="async"><img class="game-row-cover-preview" src="${escapeHtml(cover)}" alt="" loading="lazy" decoding="async" aria-hidden="true"></span><div class="game-row-identity"><strong class="${owners.includes("Judy") ? "owner-judy" : ""} ${owners.includes("Jordi") ? "owner-jordi" : ""}">${escapeHtml(game.title)}</strong>${studio ? `<span>${escapeHtml(studio)}</span>` : ""}${description ? `<span class="shelf-row-description">${escapeHtml(description)}</span>` : ""}</div><div class="game-row-core"><span class="region-flag" title="${escapeHtml(game.country)}">${flagIcon(game.country)}</span>${platformBadge(game.platform)}${conditionBadge(conditionLabel(game))}${owners.map(ownerBadge).join("")}</div><div class="game-row-tags">${tags.map((tag) => `<span class="chip ${normalize(tag) === "gamelist" ? "accent" : ""}">${escapeHtml(tag)}</span>`).join("")}</div><div class="game-row-actions"><button class="icon-button row-edit-action" data-action="edit" type="button" title="Edit" aria-label="Edit">${pencilIcon()}</button></div></article>`;
 }
 
 function conditionBadge(condition) { const tone = condition === "Complete +" ? "complete-plus" : normalize(condition).replace(/ /g, "-"); return `<span class="condition-pill condition-${tone}"><img src="assets/platforms/disk.png" alt="" width="18" height="18"><span>${escapeHtml(condition)}</span></span>`; }
