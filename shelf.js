@@ -3,8 +3,8 @@ import { createGameCardShell, bindActivityCardParallax, mountActivitySlider, fin
 mountActivitySlider(document.querySelector("[data-module='playing']"), { count: "shelfPlayingCount", previous: "shelfPlayingPrev", next: "shelfPlayingNext", list: "playingCarousel", finished: "shelfPlayingFinished", finishedList: "finishedCarousel" });
 
 const SESSION_KEY = "gamelist-editor";
-const SITE_VERSION = "v181";
-const SITE_UPDATED_AT = "2026-06-24T18:45:00Z";
+const SITE_VERSION = "v182";
+const SITE_UPDATED_AT = "2026-06-24T19:00:00Z";
 const VERSION_STORAGE_KEY = "gamelist:site-version";
 const VIEW_KEY = "shelf:view-mode:v2";
 const LAYOUT_KEY = "shelf:layout:v2";

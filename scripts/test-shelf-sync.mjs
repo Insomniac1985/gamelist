@@ -91,6 +91,7 @@ assert.match(collectionPriceSource, /encodeURIComponent\(requestedUpc \|\| title
 assert.match(collectionPriceSource, /rankCandidates\(await fetchPublicCandidates\(searchUrl\), query\)/, "PriceCharting results must rank PAL, Japan, and platform matches locally");
 assert.doesNotMatch(shelfSource, /Loading the selected PriceCharting edition|Matching the physical edition/, "Selecting a lookup result must not replace it with fetching text");
 assert.match(shelfCss, /\.condition-sealed input\[type="checkbox"\]:checked[\s\S]*?#ffe982[\s\S]*?#c8920a/, "The Sealed checkbox must use the gold condition treatment");
+assert.match(shelfCss, /\.condition-sealed input\[type="checkbox"\]:checked[\s\S]*?stroke='%23fff'/, "The gold Sealed checkbox must retain a white checkmark");
 
 class MemoryKv {
   values = new Map();
