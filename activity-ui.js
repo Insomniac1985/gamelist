@@ -100,7 +100,7 @@ function earnedTime(item) { const time = Date.parse(item?.rawEarnedAt || item?.e
 function sharedTrophyBarHeight(count, counts) { const max = Math.max(1, ...counts.map(([, value]) => value)); if (!count) return 8; return Math.round(18 + (Math.log1p(count) / Math.log1p(max)) * 82); }
 function progressFromText(value) { const match = String(value || "").match(/(\d{1,3})%/); return match ? Math.min(100, Number(match[1])) : 0; }
 function normalizeTitle(value) { return String(value || "").toLowerCase().normalize("NFKD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]+/g, ""); }
-function titleParts(value) { const phrase = String(value || "").toLowerCase().replace(/&/g, " and ").replace(/\btrophies\b/g, " ").replace(/[^a-z0-9]+/g, " ").trim().replace(/\s+/g, " "); const tokens = phrase.split(" ").filter(Boolean); return { phrase, tokens, compact: tokens.join(""), acronym: tokens.map((token) => token[0]).join("") }; }
+function titleParts(value) { const phrase = String(value || "").toLowerCase().replace(/&/g, " and ").replace(/\btrophies\b/g, " ").replace(/\bxii\b/g, "12").replace(/\bxi\b/g, "11").replace(/\bviii\b/g, "8").replace(/\bvii\b/g, "7").replace(/\bvi\b/g, "6").replace(/\bix\b/g, "9").replace(/\biv\b/g, "4").replace(/\biii\b/g, "3").replace(/\bii\b/g, "2").replace(/\bx\b/g, "10").replace(/[^a-z0-9]+/g, " ").trim().replace(/\s+/g, " "); const tokens = phrase.split(" ").filter(Boolean); return { phrase, tokens, compact: tokens.join(""), acronym: tokens.map((token) => token[0]).join("") }; }
 
 export function completedCardMarkup({ title, cover = "", trophyIcon, trophyName, platform, earnedAt, actionAttribute = "", escape, cssEscape }) {
   const artStyle = cover ? ` style="--platinum-art:url('${cssEscape(cover)}')"` : "";

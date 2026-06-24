@@ -462,7 +462,6 @@
 .price-history-graph { width:100%; height:150px; border-radius:7px; background:linear-gradient(180deg,color-mix(in srgb,var(--accent) 9%,transparent),transparent); }
 .store-links { display:flex; flex-wrap:wrap; gap:8px; }
 .shelf-carousel { display:grid; grid-auto-flow:column; grid-auto-columns:minmax(240px,320px); gap:10px; overflow-x:auto; padding-bottom:7px; }.shelf-mini-card { display:grid; grid-template-columns:70px 1fr; gap:10px; padding:9px; }.shelf-mini-card>img { width:70px; height:96px; object-fit:cover; border-radius:6px; }.shelf-mini-card>div { display:grid; align-content:center; gap:8px; }.shelf-mini-card small { color:var(--dim); }
-.playing-finished-list.shelf-carousel { display:flex; grid-auto-flow:unset; grid-auto-columns:unset; }
 .shelf-card-notes,.shelf-card-description { grid-column:1/-1; margin:0; }
 .shelf-card-notes { padding:9px 10px; color:var(--muted); border-left:3px solid var(--accent); border-radius:0 6px 6px 0; background:rgba(255,255,255,.05); font-size:11px; line-height:1.4; }
 .shelf-card-description { display:-webkit-box; overflow:hidden; color:var(--text); font-size:12px; line-height:1.45; -webkit-box-orient:vertical; -webkit-line-clamp:3; }
