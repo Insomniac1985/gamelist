@@ -4,8 +4,8 @@ mountActivitySlider(document.querySelector("[data-module='playing']"), { count: 
 
 const SESSION_KEY = "gamelist-editor";
 const KASH_TWITCH_URL = "https://www.twitch.tv/kashhoward";
-const SITE_VERSION = "v190";
-const SITE_UPDATED_AT = "2026-06-25T12:02:14+02:00";
+const SITE_VERSION = "v191";
+const SITE_UPDATED_AT = "2026-06-25T12:06:19+02:00";
 const VERSION_STORAGE_KEY = "gamelist:site-version";
 const VIEW_KEY = "shelf:view-mode:v2";
 const LAYOUT_KEY = "shelf:layout:v2";
@@ -584,12 +584,11 @@ async function lookupGame() {
       renderPhysicalSelection(physical);
       return;
     }
-    const [gameResult, physicalData] = await Promise.allSettled([
-      fetch(`/api/search?q=${encodeURIComponent(query)}`),
+    const [gameDataResult, physicalData] = await Promise.allSettled([
+      fetchGameMetadataData(query),
       fetchPhysicalSearchData(query),
     ]);
-    const gameResponse = gameResult.status === "fulfilled" ? gameResult.value : null;
-    const gameData = gameResponse?.ok ? await gameResponse.json() : { results: [] };
+    const gameData = gameDataResult.status === "fulfilled" ? gameDataResult.value : { results: [] };
     const gameResults = (gameData.results || []).slice(0, 6).map((result) => ({ ...result, lookupSource: "game" }));
     state.metadataLookupResults = gameResults;
     const physicalResults = (physicalData.status === "fulfilled" ? physicalData.value.results || [] : []).slice(0, 8).map((result) => ({ ...result, title: result.productName, platform: result.consoleName, lookupSource: "pricecharting" }));
@@ -607,6 +606,23 @@ async function lookupGame() {
     el.lookupButton.classList.remove("is-loading");
     el.lookupButton.title = "Fetch info";
   }
+}
+
+async function fetchGameMetadataData(query) {
+  for (const title of gameMetadataQueries(query)) {
+    const response = await fetch(`/api/search?q=${encodeURIComponent(title)}`);
+    const data = response.ok ? await response.json() : { results: [] };
+    if ((data.results || []).length) return data;
+  }
+  return { results: [] };
+}
+
+function gameMetadataQueries(query) {
+  const plain = String(query || "").trim();
+  const withoutBrackets = plain.replace(/\s*[\[(][^\])]*(?:edition|collector|collectors|limited|special|deluxe|agent|day one|steelbook)[^\])]*[\])]\s*/gi, " ").trim();
+  const withoutEditionSuffix = withoutBrackets.replace(/\s+(?:special|collector'?s?|limited|deluxe|complete|ultimate|definitive|premium|gold|standard|day one|steelbook)(?:\s+\w+){0,3}\s+edition\s*$/i, "").trim();
+  const normalized = normalize(plain);
+  return [...new Set([plain, withoutBrackets, withoutEditionSuffix, normalized].filter(Boolean))];
 }
 
 async function fetchPhysicalSearchData(query) {
