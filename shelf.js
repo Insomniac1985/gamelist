@@ -1323,6 +1323,7 @@ function applyCollectionPrice(game, data) {
   game.asin = data.asin || game.asin;
   game.epid = data.epid || game.epid;
   game.pricechartingId = data.productId || game.pricechartingId;
+  game.cover = data.image || game.cover;
   game.updatedAt = new Date().toISOString();
   const clean = stripRuntimeFields(game);
   const index = state.additions.findIndex((item) => item.id === game.id);

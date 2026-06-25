@@ -19,8 +19,8 @@ export async function onRequestGet({ request, env = {} }) {
   const token = env.PRICECHARTING_TOKEN || globalThis.process?.env?.PRICECHARTING_TOKEN || "";
   try {
     if (searchMode) {
-      let results = rankCandidates(await fetchPublicCandidates(searchUrl), query);
-      if (!results.length) results = rankCandidates(await fetchDirectCandidates(fallbackUrls, query, searchUrl), query);
+      let results = uniqueCandidates(rankCandidates(await fetchPublicCandidates(searchUrl), query));
+      if (!results.length) results = uniqueCandidates(rankCandidates(await fetchDirectCandidates(fallbackUrls, query, searchUrl), query));
       return json({ results: results.slice(0, 12), searchUrl, source: "PriceCharting" });
     }
     const apiProduct = token ? await fetchApiProduct(token, { id: requestedId, upc: requestedUpc, query }) : null;
@@ -156,7 +156,17 @@ function parseSearchCandidates(html) {
 }
 
 function bestCandidate(candidates, query) {
-  return rankCandidates(candidates, query)[0] || null;
+  return uniqueCandidates(rankCandidates(candidates, query))[0] || null;
+}
+
+function uniqueCandidates(candidates) {
+  const seen = new Set();
+  return candidates.filter((item) => {
+    const key = item.productId || item.url || `${item.productName}|${item.consoleName}`;
+    if (!key || seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
 }
 
 function rankCandidates(candidates, query) {
@@ -170,12 +180,20 @@ function rankCandidates(candidates, query) {
     const value = `${title} ${consoleName}`;
     const tokens = wantedTitle.split(" ").filter((token) => token.length > 1 || /^\d$/.test(token));
     const overlap = tokens.filter((token) => title.includes(token)).length / Math.max(1, tokens.length);
+    const coreTokens = tokens.filter((token) => !editionQualifierToken(token));
+    const coreOverlap = coreTokens.filter((token) => title.includes(token)).length;
     const extraTitleTokens = Math.max(0, title.split(" ").filter((token) => token && !tokens.includes(token)).length - 1);
     const exactTitleBonus = title === wantedTitle ? 0.75 : title.startsWith(`${wantedTitle} `) ? 0.25 : 0;
     const consoleBonus = wantedConsole && consoleSignature(consoleName) === wantedConsole ? 0.65 : wantedConsole && value.includes(wantedConsole) ? 0.25 : 0;
     const regionBonus = !wantedRegion || regionSignature(value) === wantedRegion ? 0.35 : -0.45;
-    return { item, score: overlap + exactTitleBonus + consoleBonus + regionBonus - extraTitleTokens * 0.035 - index * 0.002 };
+    const coreBonus = coreTokens.length ? coreOverlap / coreTokens.length : 0;
+    const missingCorePenalty = coreTokens.length && !coreOverlap ? 1.4 : 0;
+    return { item, score: overlap + coreBonus + exactTitleBonus + consoleBonus + regionBonus - missingCorePenalty - extraTitleTokens * 0.035 - index * 0.002 };
   }).sort((a, b) => b.score - a.score).map(({ item }) => item);
+}
+
+function editionQualifierToken(token) {
+  return /^(?:edition|deluxe|special|collector|collectors|limited|standard|ultimate|complete|definitive|anniversary|bonus|launch|day|one|steelbook|premium|gold|platinum|hits)$/.test(token);
 }
 
 function stripSearchQualifiers(value) {
