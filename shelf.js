@@ -3,8 +3,8 @@ import { normalizeSearchText, createGameCardShell, bindActivityCardParallax, mou
 mountActivitySlider(document.querySelector("[data-module='playing']"), { count: "shelfPlayingCount", previous: "shelfPlayingPrev", next: "shelfPlayingNext", list: "playingCarousel", finished: "shelfPlayingFinished", finishedList: "finishedCarousel" });
 
 const SESSION_KEY = "gamelist-editor";
-const SITE_VERSION = "v185";
-const SITE_UPDATED_AT = "2026-06-25T11:10:00Z";
+const SITE_VERSION = "v186";
+const SITE_UPDATED_AT = "2026-06-25T11:11:38+02:00";
 const VERSION_STORAGE_KEY = "gamelist:site-version";
 const VIEW_KEY = "shelf:view-mode:v2";
 const LAYOUT_KEY = "shelf:layout:v2";
@@ -565,16 +565,16 @@ async function lookupGame() {
       renderPhysicalSelection(physical);
       return;
     }
-    const physicalParams = new URLSearchParams({ mode: "search", title: query, platform: shortPlatform(el.fields.platform.value), region: el.fields.country.value, currency: state.gamelistSettings.currency || "EUR" });
-    const [gameResponse, physicalResponse] = await Promise.all([
+    const [gameResult, physicalData] = await Promise.allSettled([
       fetch(`/api/search?q=${encodeURIComponent(query)}`),
-      fetch(`/api/collection-price?${physicalParams}`),
+      fetchPhysicalSearchData(query),
     ]);
-    const gameData = gameResponse.ok ? await gameResponse.json() : { results: [] };
-    const physicalData = physicalResponse.ok ? await physicalResponse.json() : { results: [] };
+    const gameResponse = gameResult.status === "fulfilled" ? gameResult.value : null;
+    const gameData = gameResponse?.ok ? await gameResponse.json() : { results: [] };
     const gameResults = (gameData.results || []).slice(0, 6).map((result) => ({ ...result, lookupSource: "game" }));
-    const physicalResults = (physicalData.results || []).slice(0, 8).map((result) => ({ ...result, title: result.productName, platform: result.consoleName, lookupSource: "pricecharting" }));
+    const physicalResults = (physicalData.status === "fulfilled" ? physicalData.value.results || [] : []).slice(0, 8).map((result) => ({ ...result, title: result.productName, platform: result.consoleName, lookupSource: "pricecharting" }));
     state.lookupResults = [...physicalResults, ...gameResults];
+    if (physicalResults[0]) await prefillPhysicalResult(physicalResults[0]);
     renderShelfLookupResults();
   } catch {
     el.lookupResults.innerHTML = `<div class="empty">Lookup is unavailable right now. Manual entry still works.</div>`;
@@ -584,6 +584,21 @@ async function lookupGame() {
     el.lookupButton.classList.remove("is-loading");
     el.lookupButton.title = "Fetch info";
   }
+}
+
+async function fetchPhysicalSearchData(query) {
+  for (const title of physicalLookupQueries(query)) {
+    const params = new URLSearchParams({ mode: "search", title, platform: shortPlatform(el.fields.platform.value), region: el.fields.country.value, currency: state.gamelistSettings.currency || "EUR" });
+    const response = await fetch(`/api/collection-price?${params}`);
+    const data = response.ok ? await response.json() : { results: [] };
+    if ((data.results || []).length) return data;
+  }
+  return { results: [] };
+}
+
+function physicalLookupQueries(query) {
+  const values = [query, normalize(query), normalize(query).replace(/\bcollectors\b/g, "collector").replace(/\bspecial\b/g, "deluxe")];
+  return [...new Set(values.map((value) => String(value || "").trim()).filter(Boolean))];
 }
 
 function renderShelfLookupResults() {
@@ -608,12 +623,7 @@ async function chooseLookupResult(event) {
   const result = state.lookupResults[Number(button.dataset.resultIndex)];
   if (!result) return;
   if (result.lookupSource === "pricecharting") {
-    el.fields.title.value = result.productName || el.fields.title.value;
-    el.fields.platform.value = bestCollectionPlatform([result.consoleName], el.fields.platform.value);
-    applyPriceChartingRegion(result.consoleName);
-    applyPriceChartingSearchResult(result);
-    const physical = await fetchPhysicalMetadata(result.productName, { id: result.productId, url: result.url });
-    if (physical) applyPhysicalMetadata(physical);
+    const physical = await prefillPhysicalResult(result);
     renderPhysicalSelection(physical || result);
     return;
   }
@@ -629,6 +639,16 @@ async function chooseLookupResult(event) {
   const physical = await fetchPhysicalMetadata(result.title);
   if (physical) applyPhysicalMetadata(physical);
   renderPhysicalSelection(physical, result.title);
+}
+
+async function prefillPhysicalResult(result) {
+  el.fields.title.value = result.productName || el.fields.title.value;
+  el.fields.platform.value = bestCollectionPlatform([result.consoleName], el.fields.platform.value);
+  applyPriceChartingRegion(result.consoleName);
+  applyPriceChartingSearchResult(result);
+  const physical = await fetchPhysicalMetadata(result.productName, { id: result.productId, url: result.url });
+  if (physical) applyPhysicalMetadata(physical);
+  return physical;
 }
 
 async function fetchPhysicalMetadata(title, options = {}) {
