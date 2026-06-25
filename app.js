@@ -13,8 +13,8 @@ const SETTINGS_KEY = "gamelist:settings:v1";
 const KASH_TWITCH_URL = "https://www.twitch.tv/kashhoward";
 const DEFAULT_PAGE_ORDER = ["trophies", "calendar", "highlights", "search", "gamelist", "finished"];
 const LAYOUT_SECTION_KEYS = ["playing", ...DEFAULT_PAGE_ORDER, "latestFinished"];
-const SITE_VERSION = "v184";
-const SITE_UPDATED_AT = "2026-06-25T10:20:00Z";
+const SITE_VERSION = "v185";
+const SITE_UPDATED_AT = "2026-06-25T11:10:00Z";
 const VERSION_STORAGE_KEY = "gamelist:site-version";
 const STORE_OPTIONS = ["Amazon", "eBay", "GAME.es", "Xtralife", "Retro Island NY", "GameStop", "Walmart"];
 const MAX_PRICE_STORES = 5;
@@ -1856,7 +1856,7 @@ function renderReleaseCalendar() {
 function releaseGamesByDate() {
   const groups = new Map();
   state.games
-    .filter((game) => !game.deletedAt && !game.completedAt && game.section === "upcoming" && validReleaseDate(game.releaseDate))
+    .filter((game) => !game.deletedAt && !game.completedAt && ["upcoming", "wanted", "backlog"].includes(game.section) && validReleaseDate(game.releaseDate))
     .forEach((game) => {
       const key = dateOnly(game.releaseDate);
       if (!groups.has(key)) groups.set(key, []);
@@ -1936,7 +1936,7 @@ function openReleaseDialog(date) {
   if (!games.length) return;
   el.releaseDialogTitle.textContent = formatLongDate(date);
   el.releaseDialogList.innerHTML = "";
-  games.forEach((game) => el.releaseDialogList.appendChild(cardFor(game, { staticCard: true })));
+  games.forEach((game) => el.releaseDialogList.appendChild(cardFor(game, { staticCard: true, includePastRelease: true })));
   el.releaseDialog.showModal();
   syncScrollLock();
 }
@@ -2618,7 +2618,7 @@ function cardFor(game, options = {}) {
   const studioLine = card.querySelector(".studio-line");
   studioLine.textContent = studioText(game);
   studioLine.hidden = !studioLine.textContent;
-  card.querySelector(".meta").innerHTML = metaFor(game, { includePsn: !game.playing }).join("");
+  card.querySelector(".meta").innerHTML = metaFor(game, { includePsn: !game.playing, includePastRelease: Boolean(options.includePastRelease) }).join("");
   const playDates = card.querySelector(".play-dates");
   playDates.innerHTML = playDatesFor(game).join("");
   playDates.hidden = !playDates.innerHTML;

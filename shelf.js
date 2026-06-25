@@ -3,8 +3,8 @@ import { normalizeSearchText, createGameCardShell, bindActivityCardParallax, mou
 mountActivitySlider(document.querySelector("[data-module='playing']"), { count: "shelfPlayingCount", previous: "shelfPlayingPrev", next: "shelfPlayingNext", list: "playingCarousel", finished: "shelfPlayingFinished", finishedList: "finishedCarousel" });
 
 const SESSION_KEY = "gamelist-editor";
-const SITE_VERSION = "v184";
-const SITE_UPDATED_AT = "2026-06-25T10:20:00Z";
+const SITE_VERSION = "v185";
+const SITE_UPDATED_AT = "2026-06-25T11:10:00Z";
 const VERSION_STORAGE_KEY = "gamelist:site-version";
 const VIEW_KEY = "shelf:view-mode:v2";
 const LAYOUT_KEY = "shelf:layout:v2";
@@ -136,8 +136,8 @@ const el = {
   completedDialog: document.querySelector("#shelfCompletedDialog"), completedClose: document.querySelector("#shelfCompletedClose"), completedTitle: document.querySelector("#shelfCompletedTitle"), completedCount: document.querySelector("#shelfCompletedCount"), completedYear: document.querySelector("#shelfCompletedYear"), completedPlatform: document.querySelector("#shelfCompletedPlatform"), completedSort: document.querySelector("#shelfCompletedSort"), completedDirection: document.querySelector("#shelfCompletedDirection"), completedView: document.querySelector("#shelfCompletedView"), completedList: document.querySelector("#shelfCompletedList"),
   authDialog: document.querySelector("#authDialog"),
   authForm: document.querySelector("#authForm"),
-  authClose: document.querySelector("#authClose"),
-  authCancel: document.querySelector("#authCancel"),
+  authClose: document.querySelector("#authCloseButton"),
+  authCancel: document.querySelector("#authCancelButton"),
   authPassword: document.querySelector("#authPasswordInput"),
   authError: document.querySelector("#authError"),
 };
@@ -242,7 +242,7 @@ function bindEvents() {
 
 function rebuildGames() {
   const source = state.sourceGames.map((game) => ({ ...game, ...(state.overrides[game.id] || {}), sourceRecord: true }));
-  state.games = [...source, ...state.additions.map((game) => ({ ...game, sourceRecord: false }))];
+  state.games = [...source, ...state.additions.map((game) => ({ ...game, sourceRecord: false }))].filter((game) => !game.deletedAt);
 }
 
 function renderAll() {
@@ -383,7 +383,7 @@ function renderFilters() {
 
 function renderLibrary() {
   const games = filteredGames();
-  const gamelistCount = state.games.filter((game) => game.source === "gamelist" || (game.tags || []).includes("Gamelist")).length;
+  const gamelistCount = state.games.filter((game) => !game.deletedAt && (game.source === "gamelist" || (game.tags || []).includes("Gamelist"))).length;
   el.tabs.hidden = !gamelistCount;
   el.tabs.innerHTML = gamelistCount ? `<button class="${state.filters.tab === "all" ? "active" : ""}" data-shelf-tab="all" type="button">All</button><button class="${state.filters.tab === "gamelist" ? "active" : ""}" data-shelf-tab="gamelist" type="button">Gamelist <span>${gamelistCount}</span></button>` : "";
   el.count.textContent = `${games.length} ${games.length === 1 ? "game" : "games"}`;
@@ -407,7 +407,8 @@ function updateShelfRowTitleOverflow() {
 function filteredGames() {
   return state.games.filter((game) => {
     const haystack = normalizeSearchText(`${game.title} ${game.platform} ${game.publisher} ${game.developer} ${game.genre} ${game.notes} ${(game.tags || []).join(" ")} ${(game.owners || []).join(" ")}`);
-    return (state.filters.platform === "all" || game.platform === state.filters.platform)
+    return !game.deletedAt
+      && (state.filters.platform === "all" || game.platform === state.filters.platform)
       && (state.filters.region === "all" || game.country === state.filters.region)
       && conditionMatches(game, state.filters.condition)
       && (state.filters.category === "all" || [...String(game.genre || "").split(","), ...(game.genres || [])].map((value) => value.trim()).includes(state.filters.category))
@@ -438,7 +439,7 @@ function gameCard(game, options = {}) {
   const title = card.querySelector("h3"); title.textContent = game.title; title.classList.toggle("owner-judy", owners.includes("Judy")); title.classList.toggle("owner-jordi", owners.includes("Jordi"));
   card.querySelector(".title-owners").innerHTML = owners.map(ownerBadge).join("");
   const edit = card.querySelector(".edit-action"); edit.dataset.action = "edit";
-  if (!game.sourceRecord) edit.insertAdjacentHTML("afterend", `<button class="icon-button danger-button shelf-card-delete-action editor-only" data-action="delete" type="button" title="Delete" aria-label="Delete">${trashIcon()}</button>`);
+  edit.insertAdjacentHTML("afterend", `<button class="icon-button danger-button shelf-card-delete-action editor-only" data-action="delete" type="button" title="Delete" aria-label="Delete">${trashIcon()}</button>`);
   card.querySelector(".studio-line").textContent = studio || game.genre || "Physical edition";
   card.querySelector(".meta").innerHTML = `<span class="region-flag" title="${escapeHtml(game.country)}">${flagIcon(game.country)}</span>${platformBadge(game.platform)}${conditionBadge(condition)}`;
   card.querySelector(".play-dates").remove();
@@ -457,7 +458,7 @@ function gameRow(game) {
   const ownerClasses = `${owners.includes("Judy") ? " owner-card-judy" : ""}${owners.includes("Jordi") ? " owner-card-jordi" : ""}`;
   const tags = [...(game.tags || []), game.category && game.category !== "Game" ? game.category : "", ...String(game.genre || "").split(",")].map((tag) => String(tag).trim()).filter((tag, index, list) => tag && normalize(tag) !== "game" && list.indexOf(tag) === index);
   const description = game.description || "";
-  return `<article class="game-row${ownerClasses}" data-id="${escapeHtml(game.id)}" role="button" tabindex="0" aria-label="${escapeHtml(`Open ${game.title}`)}"><span class="game-row-cover-wrap"><img class="game-row-cover" src="${escapeHtml(cover)}" alt="" loading="lazy" decoding="async"><img class="game-row-cover-preview" src="${escapeHtml(cover)}" alt="" loading="lazy" decoding="async" aria-hidden="true"></span><div class="game-row-identity"><strong class="${owners.includes("Judy") ? "owner-judy" : ""} ${owners.includes("Jordi") ? "owner-jordi" : ""}">${escapeHtml(game.title)}</strong>${studio ? `<span>${escapeHtml(studio)}</span>` : ""}${description ? `<span class="shelf-row-description">${escapeHtml(description)}</span>` : ""}</div><div class="game-row-core"><span class="region-flag" title="${escapeHtml(game.country)}">${flagIcon(game.country)}</span>${platformBadge(game.platform)}${conditionBadge(conditionLabel(game))}${owners.map(ownerBadge).join("")}</div><div class="game-row-tags">${tags.map((tag) => `<span class="chip genre">${escapeHtml(tag)}</span>`).join("")}</div><div class="game-row-actions"><button class="icon-button row-edit-action" data-action="edit" type="button" title="Edit" aria-label="Edit">${pencilIcon()}</button>${!game.sourceRecord ? `<button class="icon-button danger-button row-delete-action" data-action="delete" type="button" title="Delete" aria-label="Delete">${trashIcon()}</button>` : ""}</div></article>`;
+  return `<article class="game-row${ownerClasses}" data-id="${escapeHtml(game.id)}" role="button" tabindex="0" aria-label="${escapeHtml(`Open ${game.title}`)}"><span class="game-row-cover-wrap"><img class="game-row-cover" src="${escapeHtml(cover)}" alt="" loading="lazy" decoding="async"><img class="game-row-cover-preview" src="${escapeHtml(cover)}" alt="" loading="lazy" decoding="async" aria-hidden="true"></span><div class="game-row-identity"><strong class="${owners.includes("Judy") ? "owner-judy" : ""} ${owners.includes("Jordi") ? "owner-jordi" : ""}">${escapeHtml(game.title)}</strong>${studio ? `<span>${escapeHtml(studio)}</span>` : ""}${description ? `<span class="shelf-row-description">${escapeHtml(description)}</span>` : ""}</div><div class="game-row-core"><span class="region-flag" title="${escapeHtml(game.country)}">${flagIcon(game.country)}</span>${platformBadge(game.platform)}${conditionBadge(conditionLabel(game))}${owners.map(ownerBadge).join("")}</div><div class="game-row-tags">${tags.map((tag) => `<span class="chip genre">${escapeHtml(tag)}</span>`).join("")}</div><div class="game-row-actions"><button class="icon-button row-edit-action" data-action="edit" type="button" title="Edit" aria-label="Edit">${pencilIcon()}</button><button class="icon-button danger-button row-delete-action" data-action="delete" type="button" title="Delete" aria-label="Delete">${trashIcon()}</button></div></article>`;
 }
 
 function conditionBadge(condition) { const tone = condition === "Complete +" ? "complete-plus" : normalize(condition).replace(/ /g, "-"); return `<span class="condition-pill condition-${tone}"><img src="assets/platforms/disk.png" alt="" width="18" height="18"><span>${escapeHtml(condition)}</span></span>`; }
@@ -506,7 +507,7 @@ function openDetails(game) {
   el.detailPricePanel.hidden = Boolean(game._gamelistProjection);
   if (!game._gamelistProjection) renderPriceDetails(game);
   loadShelfTrophies(game);
-  el.detailActions.innerHTML = state.canEdit && !game._gamelistProjection ? `<button class="ghost-button" type="button" data-detail-action="edit">Edit game</button>${game.sourceRecord ? `<button class="ghost-button" type="button" data-detail-action="reset">Reset changes</button>` : `<button class="danger-button" type="button" data-detail-action="delete">Delete</button>`}` : "";
+  el.detailActions.innerHTML = state.canEdit && !game._gamelistProjection ? `<button class="ghost-button" type="button" data-detail-action="edit">Edit game</button>${game.sourceRecord ? `<button class="ghost-button" type="button" data-detail-action="reset">Reset changes</button>` : ""}<button class="danger-button" type="button" data-detail-action="delete">Delete</button>` : "";
   openDialog(el.detailDialog);
 }
 
@@ -534,7 +535,7 @@ function openEditor(game = null) {
   syncConditionInputs();
   el.addForm.querySelector(".modal-head h2").textContent = game ? "Edit Game" : "Add Game";
   el.addForm.querySelector("button[type='submit']").textContent = game ? "Save changes" : "Add to Shelf";
-  el.editDelete.hidden = !game || Boolean(game.sourceRecord);
+  el.editDelete.hidden = !game;
   openDialog(el.addDialog);
 }
 
@@ -709,8 +710,8 @@ async function resetGame(game) {
 }
 
 async function deleteGame(game) {
-  if (game.sourceRecord) return;
-  state.additions = state.additions.filter((item) => item.id !== game.id);
+  if (game.sourceRecord) state.overrides[game.id] = { ...(state.overrides[game.id] || {}), deletedAt: new Date().toISOString() };
+  else state.additions = state.additions.filter((item) => item.id !== game.id);
   await persistShelf();
   rebuildGames();
   renderAll();
