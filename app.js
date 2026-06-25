@@ -13,8 +13,8 @@ const SETTINGS_KEY = "gamelist:settings:v1";
 const KASH_TWITCH_URL = "https://www.twitch.tv/kashhoward";
 const DEFAULT_PAGE_ORDER = ["trophies", "calendar", "highlights", "search", "gamelist", "finished"];
 const LAYOUT_SECTION_KEYS = ["playing", ...DEFAULT_PAGE_ORDER, "latestFinished"];
-const SITE_VERSION = "v195";
-const SITE_UPDATED_AT = "2026-06-25T13:36:00+02:00";
+const SITE_VERSION = "v197";
+const SITE_UPDATED_AT = "2026-06-25T13:58:00+02:00";
 const VERSION_STORAGE_KEY = "gamelist:site-version";
 const STORE_OPTIONS = ["Amazon", "eBay", "GAME.es", "Xtralife", "Retro Island NY", "GameStop", "Walmart"];
 const MAX_PRICE_STORES = 5;
@@ -2237,7 +2237,7 @@ function rowCoreStats(game) {
     game.emulator ? `<span class="emulator-pill">Emulator</span>` : "",
     game.lengthHours ? timeBadge(game.lengthHours, hltbUrlFor(game)) : "",
     game.stream ? `<span class="stream-pill">Stream</span>` : "",
-    release ? `<span class="release-pill">${escapeHtml(release)}</span>` : "",
+    release ? releaseStatusPill(release) : "",
     ...ownerTags(game).filter((owner) => owner !== (state.settings.defaultOwner || DEFAULT_SETTINGS.defaultOwner)).map(ownerBadge),
     ...gameStatuses(game).map(statusBadge),
     game.coop ? `<span class="coop-pill">Coop</span>` : "",
@@ -2618,9 +2618,9 @@ function cardFor(game, options = {}) {
   const studioLine = card.querySelector(".studio-line");
   studioLine.textContent = studioText(game);
   studioLine.hidden = !studioLine.textContent;
-  card.querySelector(".meta").innerHTML = metaFor(game, { includePsn: !game.playing, includePastRelease: Boolean(options.includePastRelease) }).join("");
+  card.querySelector(".meta").innerHTML = metaFor(game, { includePsn: !game.playing }).join("");
   const playDates = card.querySelector(".play-dates");
-  playDates.innerHTML = playDatesFor(game).join("");
+  playDates.innerHTML = playDatesFor(game, { includePastRelease: Boolean(options.includePastRelease) }).join("");
   playDates.hidden = !playDates.innerHTML;
   card.querySelector(".chips").innerHTML = chipsFor(game).join("");
   const trophyStrip = card.querySelector(".card-trophies");
@@ -2851,8 +2851,8 @@ function openDetail(id, options = {}) {
   el.detailTitle.classList.toggle("owner-jordi", hasJordiToneOwner(owners));
   el.detailStudio.textContent = studioText(game);
   el.detailStudio.hidden = !el.detailStudio.textContent;
-  el.detailMeta.innerHTML = metaFor(game, { includePsn: false, includePastRelease: true }).join("");
-  el.detailDates.innerHTML = playDatesFor(game).join("");
+  el.detailMeta.innerHTML = metaFor(game, { includePsn: false }).join("");
+  el.detailDates.innerHTML = playDatesFor(game, { includePastRelease: true }).join("");
   el.detailDates.hidden = !el.detailDates.innerHTML;
   el.detailChips.innerHTML = chipsFor(game).join("");
   el.detailStoreLinks.innerHTML = storeLinksFor(game);
@@ -3114,8 +3114,6 @@ function metaFor(game, options = {}) {
   if (game.emulator) values.push(`<span class="emulator-pill">Emulator</span>`);
   if (game.lengthHours) values.push(timeBadge(game.lengthHours, hltbUrlFor(game)));
   if (game.stream) values.push(`<span class="stream-pill">Stream</span>`);
-  const release = releaseStatus(game, { includePast: options.includePastRelease });
-  if (release) values.push(releaseStatusPill(release));
   gameStatuses(game).forEach((status) => values.push(statusBadge(status)));
   const progress = achievementProgressForGame(game);
   if (options.includePsn !== false && progress) values.push(psnProgressBadge(progress));
@@ -3692,9 +3690,11 @@ function completedBadges(game, options = {}) {
   ].filter(Boolean).join("");
 }
 
-function playDatesFor(game) {
+function playDatesFor(game, options = {}) {
   const values = [];
   const formatDate = game.completedAt ? formatLongDate : formatShortDate;
+  const release = releaseStatus(game, { includePast: options.includePastRelease });
+  if (release) values.push(releaseStatusPill(release));
   if (game.startedAt) values.push(`<span class="history-pill history-date-pill"><small>Started</small><strong>${escapeHtml(formatDate(game.startedAt))}</strong></span>`);
   if (game.completedAt) values.push(`<span class="history-pill history-date-pill"><small>Finished</small><strong>${escapeHtml(formatDate(game.completedAt))}</strong></span>`);
   const duration = finishedDurationText(game.startedAt, game.completedAt);

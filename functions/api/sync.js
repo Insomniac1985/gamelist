@@ -31,12 +31,12 @@ export async function onRequestPut({ request, env }) {
     return json({ error: "Expected { games: [], settings?: {} }" }, 400);
   }
   const previous = await env.GAMELIST.get(KV_KEY, "json") || { games: [] };
-  const previousIds = new Set((previous.games || []).map((game) => game.id));
+  const previousById = new Map((previous.games || []).map((game) => [game.id, game]));
   const newlyCollected = body.games.filter((game) => (
-    !previousIds.has(game.id)
-    && game.section === "backlog"
+    game.section === "backlog"
     && !game.digital
     && !game.deletedAt
+    && (!previousById.has(game.id) || previousById.get(game.id)?.section !== "backlog" || previousById.get(game.id)?.digital)
   ));
   await env.GAMELIST.put(KV_KEY, JSON.stringify({
     games: body.games,
@@ -67,6 +67,7 @@ async function syncBacklogGamesToShelf(env, allGames, games) {
     id: `gamelist-${game.id}`,
     gamelistId: game.id,
     source: "gamelist",
+    pendingCollection: true,
     title: game.title,
     platform: game.platform || "Unknown platform",
     country: "World",

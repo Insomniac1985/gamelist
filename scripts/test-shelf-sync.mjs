@@ -117,6 +117,7 @@ let shelf = await kv.get("shelf-data", "json");
 assert.equal(shelf.games.length, 1);
 assert.deepEqual(shelf.games[0].owners, ["Judy"]);
 assert.deepEqual(shelf.games[0].tags, ["Gamelist"]);
+assert.equal(shelf.games[0].pendingCollection, true);
 
 const layout = { order: ["playing", "trophies", "kpis", "filters", "library"], hidden: ["trophies"] };
 await putShelf({ request: request("https://example.test/api/shelf", { games: [...shelf.games, { id: "s2", title: "Shelf Add", platform: "Nintendo Switch", country: "Spain", owners: ["Jordi"], genre: "RPG" }], overrides: {}, layout }), env });
