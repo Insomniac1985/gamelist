@@ -410,6 +410,8 @@
 .detail-section-toggle[aria-expanded="false"]::after { transform:rotate(-45deg); }
 .detail-section-toggle span { text-transform:uppercase; color:var(--accent-2); font-size:13px; letter-spacing:0; }
 .detail-section-toggle strong { color:var(--text); font-size:15px; }
+.detail-fetch-value-button { width:32px; height:32px; min-width:32px; min-height:32px; padding:0; }
+.detail-fetch-value-button svg { width:16px; height:16px; }
 .detail-price-content { display:grid; gap:11px; }
 .detail-price-panel.is-collapsed .detail-price-content { display:none; }
 .detail-guide-panel h3 { margin:0; font-size:15px; }.detail-store-prices { --price-columns:4; }.detail-store-prices span { color:var(--dim); }
@@ -417,6 +419,10 @@
 .collection-product-meta { display:flex; flex-wrap:wrap; gap:6px; margin-top:12px; }.collection-product-meta span { display:inline-flex; gap:5px; padding:5px 7px; border:1px solid var(--line); border-radius:6px; background:rgba(255,255,255,.035); }.collection-product-meta small { color:var(--dim); text-transform:uppercase; font-size:9px; }.collection-product-meta strong { color:var(--text); font-size:10px; }
 .price-history-graph { width:100%; height:150px; border-radius:7px; background:linear-gradient(180deg,color-mix(in srgb,var(--accent) 9%,transparent),transparent); }
 .price-history-point { pointer-events:all; cursor:pointer; }
+.price-history-tooltip { display:none; pointer-events:none; }
+.price-history-point:hover .price-history-tooltip,.price-history-point:focus .price-history-tooltip { display:block; }
+.price-history-tooltip rect { fill:rgba(12,13,18,.94); stroke:color-mix(in srgb,var(--accent) 48%,rgba(255,255,255,.18)); }
+.price-history-tooltip text { fill:var(--text); font-size:10px; font-weight:850; }
 .store-links { display:flex; flex-wrap:wrap; gap:8px; }
 .shelf-carousel { display:grid; grid-auto-flow:column; grid-auto-columns:minmax(240px,320px); gap:10px; overflow-x:auto; padding-bottom:7px; }.shelf-mini-card { display:grid; grid-template-columns:70px 1fr; gap:10px; padding:9px; }.shelf-mini-card>img { width:70px; height:96px; object-fit:cover; border-radius:6px; }.shelf-mini-card>div { display:grid; align-content:center; gap:8px; }.shelf-mini-card small { color:var(--dim); }
 .shelf-card-notes,.shelf-card-description { grid-column:1/-1; margin:0; }

@@ -5,8 +5,8 @@ splitShelfPlayingModules();
 
 const SESSION_KEY = "gamelist-editor";
 const KASH_TWITCH_URL = "https://www.twitch.tv/kashhoward";
-const SITE_VERSION = "v194";
-const SITE_UPDATED_AT = "2026-06-25T13:25:00+02:00";
+const SITE_VERSION = "v195";
+const SITE_UPDATED_AT = "2026-06-25T13:36:00+02:00";
 const VERSION_STORAGE_KEY = "gamelist:site-version";
 const VIEW_KEY = "shelf:view-mode:v2";
 const LAYOUT_KEY = "shelf:layout:v2";
@@ -507,7 +507,7 @@ function openDetails(game) {
   bindCoverFrame(el.detailCover);
   const detailTags = [...(game.tags || []), game.category && game.category !== "Game" ? game.category : "", ...String(game.genre || "").split(",")].map((value) => String(value).trim()).filter((value, index, list) => value && normalize(value) !== "game" && list.indexOf(value) === index);
   el.detailChips.innerHTML = `${(game.owners || []).map(ownerBadge).join("")}${detailTags.map((value) => `<span class="chip genre">${escapeHtml(value)}</span>`).join("")}`;
-  el.detailDates.innerHTML = `${game.releaseDate ? `<span class="release-pill"><small>Release</small><strong>${escapeHtml(formatDate(game.releaseDate))}</strong></span>` : ""}${game.createdAt ? `<span class="history-pill history-date-pill"><small>Added</small><strong>${escapeHtml(formatDate(game.createdAt))}</strong></span>` : ""}`;
+  el.detailDates.innerHTML = `${game.releaseDate ? `<span class="release-pill history-date-pill"><small>Released</small><strong>${escapeHtml(formatDate(game.releaseDate))}</strong></span>` : ""}${game.createdAt ? `<span class="history-pill history-date-pill"><small>Added</small><strong>${escapeHtml(formatDate(game.createdAt))}</strong></span>` : ""}`;
   el.detailDates.hidden = !el.detailDates.innerHTML;
   el.detailNote.hidden = !game.notes;
   el.detailNote.textContent = game.notes || "";
@@ -1107,7 +1107,15 @@ function gamelistProjectionCard(game) {
   const note = card.querySelector(".notes"); note.textContent = shortDescription(game.description || ""); note.hidden = !note.textContent;
   return card.outerHTML;
 }
-function projectionMeta(game, options = {}) { const release = activityReleaseStatus(game, { includePast: Boolean(options.includePast) }); return `${platformBadge(game.platform)}${game.digital ? `<span class="digital-pill">Digital</span>` : ""}${game.emulator ? `<span class="emulator-pill">Emulator</span>` : ""}${game.lengthHours ? timeBadgeMarkup(game.lengthHours, game.hltbUrl || game.howLongToBeatUrl || `https://howlongtobeat.com/?q=${encodeURIComponent(game.title)}`, escapeHtml) : ""}${game.stream ? `<span class="stream-pill">Stream</span>` : ""}${release ? `<span class="release-pill">${escapeHtml(release)}</span>` : ""}${game.coop ? `<span class="coop-pill">Coop</span>` : ""}${game.replayCount ? `<span class="replay-pill">Replay ${escapeHtml(game.replayCount)}</span>` : ""}`; }
+function projectionMeta(game, options = {}) { const release = activityReleaseStatus(game, { includePast: Boolean(options.includePast) }); return `${platformBadge(game.platform)}${game.digital ? `<span class="digital-pill">Digital</span>` : ""}${game.emulator ? `<span class="emulator-pill">Emulator</span>` : ""}${game.lengthHours ? timeBadgeMarkup(game.lengthHours, game.hltbUrl || game.howLongToBeatUrl || `https://howlongtobeat.com/?q=${encodeURIComponent(game.title)}`, escapeHtml) : ""}${game.stream ? `<span class="stream-pill">Stream</span>` : ""}${release ? releaseStatusPill(release) : ""}${game.coop ? `<span class="coop-pill">Coop</span>` : ""}${game.replayCount ? `<span class="replay-pill">Replay ${escapeHtml(game.replayCount)}</span>` : ""}`; }
+function releaseStatusPill(value) {
+  const text = String(value || "").trim();
+  const match = text.match(/^(Released|Releases)\s+(.+)$/i);
+  if (!match) return `<span class="release-pill">${escapeHtml(text)}</span>`;
+  const label = match[1].toLowerCase() === "released" ? "Released" : "Releases";
+  const date = formatShortDate(match[2]) || match[2];
+  return `<span class="release-pill history-date-pill"><small>${label}</small><strong>${escapeHtml(date)}</strong></span>`;
+}
 function activityGameFor(game) {
   if (!/(^|\s)ps[1-5](\s|$)|playstation/i.test(shortPlatform(game.platform || ""))) return null;
   return (state.trophyActivity?.games || []).map((item) => ({ item, score: activityTitleMatchScore(game.trophyName || game.title, item.title || item.game || "") })).filter(({ score }) => score >= 75).sort((a, b) => b.score - a.score)[0]?.item || null;
@@ -1418,23 +1426,29 @@ function renderPriceDetails(game) {
   el.detailPriceSummary.innerHTML = `${priceMarkup}${identifierMarkup}`;
   el.detailPriceHeadline.textContent = Number.isFinite(Number(game.price)) ? `${symbol}${Number(game.price).toFixed(2)}` : "";
   const history = game.priceHistory || [];
-  el.detailPriceGraph.innerHTML = priceGraph(history);
+  el.detailPriceGraph.innerHTML = priceGraph(history, symbol);
   el.detailPriceGraph.hidden = history.length < 1;
+  syncFetchValueButton();
+}
+function syncFetchValueButton(label = "Fetch value") {
+  el.fetchValue.innerHTML = currencyIcon();
+  el.fetchValue.title = label;
+  el.fetchValue.setAttribute("aria-label", label);
 }
 function toggleCollectionValuePanel() {
   const collapsed = el.detailPricePanel.classList.toggle("is-collapsed");
   el.detailPriceToggle.setAttribute("aria-expanded", String(!collapsed));
 }
-function priceGraph(history) {
+function priceGraph(history, symbol = "") {
   if (!history.length) return "";
   const values = history.map((item) => Number(item.value)).filter(Number.isFinite); const min = Math.min(...values); const max = Math.max(...values); const range = Math.max(1, max - min);
   const coords = values.map((value, index) => ({ x: values.length === 1 ? 300 : 24 + index * (552 / (values.length - 1)), y: values.length === 1 ? 75 : 126 - ((value - min) / range) * 102, value, date: history[index]?.date || "" }));
   const points = coords.map(({ x, y }) => `${x},${y}`).join(" ");
-  return `<line x1="24" y1="126" x2="576" y2="126" stroke="rgba(255,255,255,.14)"/><polyline points="${points}" fill="none" stroke="var(--accent)" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>${coords.map(({ x, y, value, date }) => `<g class="price-history-point"><circle cx="${x}" cy="${y}" r="11" fill="transparent"></circle><circle cx="${x}" cy="${y}" r="4" fill="var(--accent)"></circle><title>${escapeHtml([date, `${value.toFixed(2)}`].filter(Boolean).join(" - "))}</title></g>`).join("")}<text x="24" y="145" fill="rgba(255,255,255,.48)" font-size="10">${escapeHtml(history[0]?.date || "")}</text><text x="576" y="145" fill="rgba(255,255,255,.48)" font-size="10" text-anchor="end">${escapeHtml(history.at(-1)?.date || "")}</text>`;
+  return `<line x1="24" y1="126" x2="576" y2="126" stroke="rgba(255,255,255,.14)"/><polyline points="${points}" fill="none" stroke="var(--accent)" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>${coords.map(({ x, y, value, date }) => { const tooltipX = Math.min(486, Math.max(12, x - 45)); const tooltipY = Math.max(10, y - 50); return `<g class="price-history-point"><circle cx="${x}" cy="${y}" r="12" fill="transparent"></circle><circle cx="${x}" cy="${y}" r="4" fill="var(--accent)"></circle><g class="price-history-tooltip" transform="translate(${tooltipX} ${tooltipY})"><rect width="102" height="38" rx="7"></rect><text x="10" y="15">${escapeHtml(date || "Unknown")}</text><text x="10" y="30">${escapeHtml(`${symbol}${value.toFixed(2)}`)}</text></g></g>`; }).join("")}<text x="24" y="145" fill="rgba(255,255,255,.48)" font-size="10">${escapeHtml(history[0]?.date || "")}</text><text x="576" y="145" fill="rgba(255,255,255,.48)" font-size="10" text-anchor="end">${escapeHtml(history.at(-1)?.date || "")}</text>`;
 }
 async function fetchCollectionValue() {
   const game = state.games.find((item) => item.id === el.detailDialog.dataset.id); if (!game) return;
-  el.fetchValue.disabled = true; el.fetchValue.textContent = "Fetching…";
+  el.fetchValue.disabled = true; syncFetchValueButton("Fetching value");
   try {
     const params = new URLSearchParams({ title: game.title, platform: shortPlatform(game.platform), region: game.country || game.region || "", currency: state.gamelistSettings.currency || "EUR" });
     if (game.pricechartingId) params.set("id", game.pricechartingId); else if (game.upc) params.set("upc", game.upc);
@@ -1445,7 +1459,7 @@ async function fetchCollectionValue() {
     el.detailStorePrices.innerHTML = `<span class="muted">Checking store prices...</span>`;
     await fetchAndSaveStorePrices(game).catch((error) => { el.detailStorePrices.innerHTML = `<span class="auth-error">${escapeHtml(error?.message || "Store prices unavailable.")}</span>`; });
     await persistShelf(); renderPriceDetails(game); renderSavedStorePrices(game); renderStats();
-  } catch (error) { el.detailPriceSummary.innerHTML = `<span class="auth-error">${escapeHtml(error?.message || "Collection value is unavailable.")}</span>`; } finally { el.fetchValue.disabled = false; el.fetchValue.textContent = "Fetch value"; }
+  } catch (error) { el.detailPriceSummary.innerHTML = `<span class="auth-error">${escapeHtml(error?.message || "Collection value is unavailable.")}</span>`; } finally { el.fetchValue.disabled = false; syncFetchValueButton(); }
 }
 
 function applyCollectionPrice(game, data) {

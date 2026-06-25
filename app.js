@@ -13,8 +13,8 @@ const SETTINGS_KEY = "gamelist:settings:v1";
 const KASH_TWITCH_URL = "https://www.twitch.tv/kashhoward";
 const DEFAULT_PAGE_ORDER = ["trophies", "calendar", "highlights", "search", "gamelist", "finished"];
 const LAYOUT_SECTION_KEYS = ["playing", ...DEFAULT_PAGE_ORDER, "latestFinished"];
-const SITE_VERSION = "v194";
-const SITE_UPDATED_AT = "2026-06-25T13:25:00+02:00";
+const SITE_VERSION = "v195";
+const SITE_UPDATED_AT = "2026-06-25T13:36:00+02:00";
 const VERSION_STORAGE_KEY = "gamelist:site-version";
 const STORE_OPTIONS = ["Amazon", "eBay", "GAME.es", "Xtralife", "Retro Island NY", "GameStop", "Walmart"];
 const MAX_PRICE_STORES = 5;
@@ -3115,13 +3115,22 @@ function metaFor(game, options = {}) {
   if (game.lengthHours) values.push(timeBadge(game.lengthHours, hltbUrlFor(game)));
   if (game.stream) values.push(`<span class="stream-pill">Stream</span>`);
   const release = releaseStatus(game, { includePast: options.includePastRelease });
-  if (release) values.push(`<span class="release-pill">${escapeHtml(release)}</span>`);
+  if (release) values.push(releaseStatusPill(release));
   gameStatuses(game).forEach((status) => values.push(statusBadge(status)));
   const progress = achievementProgressForGame(game);
   if (options.includePsn !== false && progress) values.push(psnProgressBadge(progress));
   if (game.coop) values.push(`<span class="coop-pill">Coop</span>`);
   if (game.replayCount) values.push(replayBadge(game.replayCount));
   return values;
+}
+
+function releaseStatusPill(value) {
+  const text = String(value || "").trim();
+  const match = text.match(/^(Released|Releases)\s+(.+)$/i);
+  if (!match) return `<span class="release-pill">${escapeHtml(text)}</span>`;
+  const label = match[1].toLowerCase() === "released" ? "Released" : "Releases";
+  const date = formatShortDate(match[2]) || match[2];
+  return `<span class="release-pill history-date-pill"><small>${label}</small><strong>${escapeHtml(date)}</strong></span>`;
 }
 
 function matchedPsnGame(game) {
