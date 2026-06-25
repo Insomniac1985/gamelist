@@ -1,6 +1,7 @@
 import * as auth from "./functions/api/auth.js";
 import * as achievements from "./functions/api/achievements.js";
 import * as calendar from "./functions/api/calendar.js";
+import * as collectionPrice from "./functions/api/collection-price.js";
 import * as cover from "./functions/api/cover.js";
 import * as prices from "./functions/api/prices.js";
 import * as search from "./functions/api/search.js";
@@ -14,6 +15,7 @@ const routes = {
   "/api/achievements": achievements,
   "/api/auth": auth,
   "/api/calendar": calendar,
+  "/api/collection-price": collectionPrice,
   "/api/cover": cover,
   "/api/prices": prices,
   "/api/search": search,
@@ -30,6 +32,7 @@ const shelfOnlyPaths = new Set([
   "/shelf.html",
   "/shelf.css",
   "/shelf.js",
+  "/api/collection-price",
   "/api/cover",
   "/api/shelf",
 ]);

@@ -3,8 +3,9 @@ import { normalizeSearchText, createGameCardShell, bindActivityCardParallax, mou
 mountActivitySlider(document.querySelector("[data-module='playing']"), { count: "shelfPlayingCount", previous: "shelfPlayingPrev", next: "shelfPlayingNext", list: "playingCarousel", finished: "shelfPlayingFinished", finishedList: "finishedCarousel" });
 
 const SESSION_KEY = "gamelist-editor";
-const SITE_VERSION = "v186";
-const SITE_UPDATED_AT = "2026-06-25T11:11:38+02:00";
+const KASH_TWITCH_URL = "https://www.twitch.tv/kashhoward";
+const SITE_VERSION = "v188";
+const SITE_UPDATED_AT = "2026-06-25T11:18:04+02:00";
 const VERSION_STORAGE_KEY = "gamelist:site-version";
 const VIEW_KEY = "shelf:view-mode:v2";
 const LAYOUT_KEY = "shelf:layout:v2";
@@ -56,6 +57,7 @@ const state = {
 };
 
 const el = {
+  brandLink: document.querySelector(".brand"),
   stats: document.querySelector("#shelfStats"),
   count: document.querySelector("#resultCount"),
   shelf: document.querySelector("#gameShelf"),
@@ -176,6 +178,14 @@ async function init() {
 function loadSharedSettings() { try { return JSON.parse(localStorage.getItem("gamelist:settings:v1") || "{}"); } catch { return {}; } }
 
 function bindEvents() {
+  el.brandLink?.addEventListener("click", (event) => {
+    event.preventDefault();
+    if ((THEMES[state.gamelistSettings.theme] ? state.gamelistSettings.theme : "shabii") === "kash") {
+      window.open(KASH_TWITCH_URL, "_blank", "noopener,noreferrer");
+      return;
+    }
+    scrollToShelfLibrary();
+  });
   el.search.addEventListener("input", () => { state.filters.query = normalizeSearchText(el.search.value); renderLibrary(); });
   el.platform.addEventListener("change", () => { state.filters.platform = el.platform.value; renderLibrary(); });
   el.region.addEventListener("change", () => { state.filters.region = el.region.value; renderLibrary(); });
@@ -355,6 +365,15 @@ function applyTheme() {
   const brandText = document.querySelector(".brand span:last-child");
   if (brandMark) brandMark.src = theme.icon;
   if (brandText) brandText.textContent = theme.title;
+  el.brandLink?.setAttribute("aria-label", theme.title);
+  el.brandLink?.setAttribute("href", key === "kash" ? KASH_TWITCH_URL : "#gameShelf");
+  el.brandLink?.toggleAttribute("target", key === "kash");
+  if (key === "kash") el.brandLink?.setAttribute("rel", "noreferrer");
+  else el.brandLink?.removeAttribute("rel");
+}
+
+function scrollToShelfLibrary() {
+  document.querySelector("[data-module='library']")?.scrollIntoView({ behavior: "smooth", block: "start" });
 }
 
 function renderStats() {
@@ -573,7 +592,7 @@ async function lookupGame() {
     const gameData = gameResponse?.ok ? await gameResponse.json() : { results: [] };
     const gameResults = (gameData.results || []).slice(0, 6).map((result) => ({ ...result, lookupSource: "game" }));
     const physicalResults = (physicalData.status === "fulfilled" ? physicalData.value.results || [] : []).slice(0, 8).map((result) => ({ ...result, title: result.productName, platform: result.consoleName, lookupSource: "pricecharting" }));
-    state.lookupResults = [...physicalResults, ...gameResults];
+    state.lookupResults = physicalResults.length ? physicalResults : gameResults;
     if (physicalResults[0]) await prefillPhysicalResult(physicalResults[0]);
     renderShelfLookupResults();
   } catch {
