@@ -3,8 +3,8 @@ import { normalizeSearchText, createGameCardShell, bindActivityCardParallax, mou
 mountActivitySlider(document.querySelector("[data-module='playing']"), { count: "shelfPlayingCount", previous: "shelfPlayingPrev", next: "shelfPlayingNext", list: "playingCarousel", finished: "shelfPlayingFinished", finishedList: "finishedCarousel" });
 
 const SESSION_KEY = "gamelist-editor";
-const SITE_VERSION = "v183";
-const SITE_UPDATED_AT = "2026-06-24T19:20:00Z";
+const SITE_VERSION = "v184";
+const SITE_UPDATED_AT = "2026-06-25T10:20:00Z";
 const VERSION_STORAGE_KEY = "gamelist:site-version";
 const VIEW_KEY = "shelf:view-mode:v2";
 const LAYOUT_KEY = "shelf:layout:v2";
@@ -105,6 +105,7 @@ const el = {
   addForm: document.querySelector("#addGameForm"),
   addClose: document.querySelector("#addClose"),
   addCancel: document.querySelector("#addCancel"),
+  editDelete: document.querySelector("#editDeleteButton"),
   lookupInput: document.querySelector("#lookupInput"),
   lookupButton: document.querySelector("#lookupButton"),
   lookupResults: document.querySelector("#lookupResults"),
@@ -217,6 +218,7 @@ function bindEvents() {
 
   el.addClose.addEventListener("click", () => closeDialog(el.addDialog));
   el.addCancel.addEventListener("click", () => closeDialog(el.addDialog));
+  el.editDelete.addEventListener("click", deleteCurrentEditedGame);
   el.addDialog.addEventListener("click", (event) => { if (event.target === el.addDialog) closeDialog(el.addDialog); });
   el.addForm.addEventListener("submit", saveEditor);
   el.lookupButton.addEventListener("click", lookupGame);
@@ -436,10 +438,11 @@ function gameCard(game, options = {}) {
   const title = card.querySelector("h3"); title.textContent = game.title; title.classList.toggle("owner-judy", owners.includes("Judy")); title.classList.toggle("owner-jordi", owners.includes("Jordi"));
   card.querySelector(".title-owners").innerHTML = owners.map(ownerBadge).join("");
   const edit = card.querySelector(".edit-action"); edit.dataset.action = "edit";
+  if (!game.sourceRecord) edit.insertAdjacentHTML("afterend", `<button class="icon-button danger-button shelf-card-delete-action editor-only" data-action="delete" type="button" title="Delete" aria-label="Delete">${trashIcon()}</button>`);
   card.querySelector(".studio-line").textContent = studio || game.genre || "Physical edition";
   card.querySelector(".meta").innerHTML = `<span class="region-flag" title="${escapeHtml(game.country)}">${flagIcon(game.country)}</span>${platformBadge(game.platform)}${conditionBadge(condition)}`;
   card.querySelector(".play-dates").remove();
-  card.querySelector(".chips").innerHTML = tags.map((tag) => `<span class="chip ${normalize(tag) === "gamelist" ? "accent" : ""}">${escapeHtml(tag)}</span>`).join("");
+  card.querySelector(".chips").innerHTML = tags.map((tag) => `<span class="chip genre">${escapeHtml(tag)}</span>`).join("");
   card.querySelector(".card-trophies").remove();
   card.querySelector(".card-actions").remove(); card.querySelector(".prices").remove();
   const note = card.querySelector(".notes"); note.textContent = game.notes || ""; note.classList.add("shelf-card-notes"); note.hidden = !game.notes;
@@ -453,8 +456,8 @@ function gameRow(game) {
   const owners = game.owners || [];
   const ownerClasses = `${owners.includes("Judy") ? " owner-card-judy" : ""}${owners.includes("Jordi") ? " owner-card-jordi" : ""}`;
   const tags = [...(game.tags || []), game.category && game.category !== "Game" ? game.category : "", ...String(game.genre || "").split(",")].map((tag) => String(tag).trim()).filter((tag, index, list) => tag && normalize(tag) !== "game" && list.indexOf(tag) === index);
-  const description = shortDescription(game.description || "", 120);
-  return `<article class="game-row${ownerClasses}" data-id="${escapeHtml(game.id)}" role="button" tabindex="0" aria-label="${escapeHtml(`Open ${game.title}`)}"><span class="game-row-cover-wrap"><img class="game-row-cover" src="${escapeHtml(cover)}" alt="" loading="lazy" decoding="async"><img class="game-row-cover-preview" src="${escapeHtml(cover)}" alt="" loading="lazy" decoding="async" aria-hidden="true"></span><div class="game-row-identity"><strong class="${owners.includes("Judy") ? "owner-judy" : ""} ${owners.includes("Jordi") ? "owner-jordi" : ""}">${escapeHtml(game.title)}</strong>${studio ? `<span>${escapeHtml(studio)}</span>` : ""}${description ? `<span class="shelf-row-description">${escapeHtml(description)}</span>` : ""}</div><div class="game-row-core"><span class="region-flag" title="${escapeHtml(game.country)}">${flagIcon(game.country)}</span>${platformBadge(game.platform)}${conditionBadge(conditionLabel(game))}${owners.map(ownerBadge).join("")}</div><div class="game-row-tags">${tags.map((tag) => `<span class="chip ${normalize(tag) === "gamelist" ? "accent" : ""}">${escapeHtml(tag)}</span>`).join("")}</div><div class="game-row-actions"><button class="icon-button row-edit-action" data-action="edit" type="button" title="Edit" aria-label="Edit">${pencilIcon()}</button></div></article>`;
+  const description = game.description || "";
+  return `<article class="game-row${ownerClasses}" data-id="${escapeHtml(game.id)}" role="button" tabindex="0" aria-label="${escapeHtml(`Open ${game.title}`)}"><span class="game-row-cover-wrap"><img class="game-row-cover" src="${escapeHtml(cover)}" alt="" loading="lazy" decoding="async"><img class="game-row-cover-preview" src="${escapeHtml(cover)}" alt="" loading="lazy" decoding="async" aria-hidden="true"></span><div class="game-row-identity"><strong class="${owners.includes("Judy") ? "owner-judy" : ""} ${owners.includes("Jordi") ? "owner-jordi" : ""}">${escapeHtml(game.title)}</strong>${studio ? `<span>${escapeHtml(studio)}</span>` : ""}${description ? `<span class="shelf-row-description">${escapeHtml(description)}</span>` : ""}</div><div class="game-row-core"><span class="region-flag" title="${escapeHtml(game.country)}">${flagIcon(game.country)}</span>${platformBadge(game.platform)}${conditionBadge(conditionLabel(game))}${owners.map(ownerBadge).join("")}</div><div class="game-row-tags">${tags.map((tag) => `<span class="chip genre">${escapeHtml(tag)}</span>`).join("")}</div><div class="game-row-actions"><button class="icon-button row-edit-action" data-action="edit" type="button" title="Edit" aria-label="Edit">${pencilIcon()}</button>${!game.sourceRecord ? `<button class="icon-button danger-button row-delete-action" data-action="delete" type="button" title="Delete" aria-label="Delete">${trashIcon()}</button>` : ""}</div></article>`;
 }
 
 function conditionBadge(condition) { const tone = condition === "Complete +" ? "complete-plus" : normalize(condition).replace(/ /g, "-"); return `<span class="condition-pill condition-${tone}"><img src="assets/platforms/disk.png" alt="" width="18" height="18"><span>${escapeHtml(condition)}</span></span>`; }
@@ -466,6 +469,7 @@ function handleShelfClick(event) {
   const game = state.games.find((item) => item.id === card.dataset.id);
   if (!game) return;
   if (action === "edit") state.canEdit ? openEditor(game) : openAuth();
+  else if (action === "delete") state.canEdit ? deleteGame(game) : openAuth();
   else openDetails(game);
 }
 
@@ -483,7 +487,7 @@ function openDetails(game) {
   el.detailCover.parentElement.classList.remove("has-wrap");
   el.detailCover.alt = `${game.title} cover`;
   const detailTags = [...(game.tags || []), game.category && game.category !== "Game" ? game.category : "", ...String(game.genre || "").split(",")].map((value) => String(value).trim()).filter((value, index, list) => value && normalize(value) !== "game" && list.indexOf(value) === index);
-  el.detailChips.innerHTML = `${(game.owners || []).map(ownerBadge).join("")}${detailTags.map((value) => `<span class="chip ${normalize(value) === "gamelist" ? "accent" : ""}">${escapeHtml(value)}</span>`).join("")}`;
+  el.detailChips.innerHTML = `${(game.owners || []).map(ownerBadge).join("")}${detailTags.map((value) => `<span class="chip genre">${escapeHtml(value)}</span>`).join("")}`;
   const categories = [...String(game.genre || "").split(","), ...(game.genres || [])].map((value) => value.trim()).filter(Boolean);
   el.detailDates.innerHTML = `${game.releaseDate ? `<span class="release-pill"><small>Release</small><strong>${escapeHtml(formatDate(game.releaseDate))}</strong></span>` : ""}${game.createdAt ? `<span class="history-pill history-date-pill"><small>Added</small><strong>${escapeHtml(formatDate(game.createdAt))}</strong></span>` : ""}${categories.map((value) => `<span class="chip genre">${escapeHtml(value)}</span>`).join("")}`;
   el.detailNote.hidden = !game.notes;
@@ -530,7 +534,14 @@ function openEditor(game = null) {
   syncConditionInputs();
   el.addForm.querySelector(".modal-head h2").textContent = game ? "Edit Game" : "Add Game";
   el.addForm.querySelector("button[type='submit']").textContent = game ? "Save changes" : "Add to Shelf";
+  el.editDelete.hidden = !game || Boolean(game.sourceRecord);
   openDialog(el.addDialog);
+}
+
+async function deleteCurrentEditedGame() {
+  const game = state.games.find((item) => item.id === state.editingId);
+  if (!game) return;
+  await deleteGame(game);
 }
 
 async function lookupGame() {
@@ -694,6 +705,7 @@ async function resetGame(game) {
   rebuildGames();
   renderAll();
   closeDialog(el.detailDialog);
+  closeDialog(el.addDialog);
 }
 
 async function deleteGame(game) {
@@ -703,6 +715,7 @@ async function deleteGame(game) {
   rebuildGames();
   renderAll();
   closeDialog(el.detailDialog);
+  closeDialog(el.addDialog);
 }
 
 async function persistShelf() {
@@ -1319,6 +1332,7 @@ async function loadShelfTrophies(game) {
   try { const response = await fetch(`/api/trophies?id=${encodeURIComponent(id)}&service=${encodeURIComponent(match.npServiceName || "trophy")}&user=${encodeURIComponent(state.gamelistSettings.psnUser || "")}`); const data = await response.json(); const trophies = data.trophies || []; el.detailTrophyCount.textContent = `${trophies.filter((item) => item.earned).length}/${trophies.length}`; el.detailTrophyList.innerHTML = trophies.map((item) => `<article class="detail-trophy-card trophy-${trophyTone(item.type)} ${item.earned ? "earned" : "missing"}"><img src="${escapeHtml(item.icon || "assets/platforms/playstation.png")}" alt=""><div><strong>${escapeHtml(item.title)}</strong><span>${escapeHtml([item.earned ? item.earnedAt : "Missing", item.rarity].filter(Boolean).join(" · "))}</span>${item.description ? `<p>${escapeHtml(item.description)}</p>` : ""}</div></article>`).join(""); } catch { el.detailTrophies.hidden = true; }
 }
 function pencilIcon() { return `<svg class="pencil-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h4l11-11a2.8 2.8 0 0 0-4-4L4 16v4Z"></path><path d="M13.5 6.5l4 4"></path></svg>`; }
+function trashIcon() { return `<svg class="trash-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6h18"></path><path d="M8 6V4h8v2"></path><path d="M19 6l-1 14H6L5 6"></path><path d="M10 11v5"></path><path d="M14 11v5"></path></svg>`; }
 function pauseTrailerIcon() { return `<svg class="pause-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5v14M16 5v14"></path></svg>`; }
 function playTrailerIcon() { return `<svg class="play-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m8 5 11 7-11 7Z"></path></svg>`; }
 function currencyIcon() { const currency = state.gamelistSettings.currency === "USD" ? "dollar" : "euro"; return currency === "dollar" ? `<svg class="dollar-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M16.8 7.2c-1.1-1-2.7-1.7-4.8-1.7-2.8 0-4.8 1.4-4.8 3.5 0 5.3 9.8 2.1 9.8 7 0 2.1-2 3.5-5 3.5-2.3 0-4.2-.8-5.4-2"></path><path d="M12 3v18"></path></svg>` : `<svg class="euro-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M19 5.5A7 7 0 0 0 8.2 7.1 7.4 7.4 0 0 0 7 12a7.4 7.4 0 0 0 1.2 4.9A7 7 0 0 0 19 18.5"></path><path d="M4 10h10"></path><path d="M4 14h10"></path></svg>`; }
