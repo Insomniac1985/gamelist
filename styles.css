@@ -511,6 +511,7 @@ body.theme-kash .playing-slider-button:hover {
 }
 
 .playing-finished-tags .platform-badge,
+.playing-finished-tags .owner-pill,
 .playing-finished-tags .digital-pill,
 .playing-finished-tags .emulator-pill,
 .playing-finished-tags .coop-pill,
@@ -3100,6 +3101,27 @@ body.theme-kash .game-card.stream-card.completed-trophy-card {
     font-size: 10px;
     padding: 2px 8px;
     min-height: 20px;
+}
+
+.game-card .meta .owner-pill,
+.playing-finished-tags .owner-pill,
+.completed-platform .owner-pill {
+  min-height: 18px;
+  padding: 2px 6px;
+  font-size: 10px;
+  border-radius: 5px;
+}
+
+.playing-finished-game.owner-card-judy strong,
+.completed-row.owner-card-judy strong {
+  color: var(--judy);
+}
+
+.playing-finished-game.owner-card-jordi strong,
+.playing-finished-game.owner-card-cage strong,
+.completed-row.owner-card-jordi strong,
+.completed-row.owner-card-cage strong {
+  color: var(--jordi);
 }
 .game-card .edit-action {
   position: absolute;

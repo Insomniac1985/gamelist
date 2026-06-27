@@ -575,6 +575,14 @@
 .owner-pill.owner-cage {
   color: var(--jordi);
 }
+
+.shelf-page .game-card .title-owners .owner-pill,
+.shelf-page .game-row-core .owner-pill {
+  min-height: 18px;
+  padding: 2px 6px;
+  border-radius: 5px;
+  font-size: 10px;
+}
 .condition-sealed:has(input:checked) {
   color: #f7df69;
   border-color: rgba(247, 223, 105, 0.45) !important;

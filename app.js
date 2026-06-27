@@ -13,8 +13,8 @@ const SETTINGS_KEY = "gamelist:settings:v1";
 const KASH_TWITCH_URL = "https://www.twitch.tv/kashhoward";
 const DEFAULT_PAGE_ORDER = ["trophies", "calendar", "highlights", "search", "gamelist", "finished"];
 const LAYOUT_SECTION_KEYS = ["playing", ...DEFAULT_PAGE_ORDER, "latestFinished"];
-const SITE_VERSION = "v205";
-const SITE_UPDATED_AT = "2026-06-27T18:36:11+02:00";
+const SITE_VERSION = "v206";
+const SITE_UPDATED_AT = "2026-06-27T18:39:01+02:00";
 const VERSION_STORAGE_KEY = "gamelist:site-version";
 const STORE_OPTIONS = ["Amazon", "eBay", "GAME.es", "Xtralife", "Retro Island NY", "GameStop", "Walmart"];
 const MAX_PRICE_STORES = 5;
@@ -1116,8 +1116,8 @@ function renderPlayingFinished() {
   el.playingFinishedList.innerHTML = games.map((game) => {
     const achievementProgress = achievementProgressForGame(game);
     const progress = achievementProgress ? progressValue(achievementProgress.game) : 0;
-    const badges = completedBadges(game, { includePsn: false });
-    return finishedGameMarkup({ id: game.id, title: game.title, cover: game.cover || platformLogo(game.platform || "PS5"), completedClass: game.platinum ? "completed-trophy-card" : "", badges, dateText: [formatLongDate(game.completedAt), finishedDurationText(game.startedAt, game.completedAt)].filter(Boolean).join(" · "), progress: achievementProgress ? progress : null, escape: escapeHtml });
+    const badges = `${completedOwnerBadges(game)}${completedBadges(game, { includePsn: false })}`;
+    return finishedGameMarkup({ id: game.id, title: game.title, cover: game.cover || platformLogo(game.platform || "PS5"), completedClass: game.platinum ? "completed-trophy-card" : "", itemClass: ownerCardClass(game), badges, dateText: [formatLongDate(game.completedAt), finishedDurationText(game.startedAt, game.completedAt)].filter(Boolean).join(" · "), progress: achievementProgress ? progress : null, escape: escapeHtml });
   }).join("");
   el.playingFinishedList.querySelectorAll(".playing-finished-game").forEach((button) => {
     button.addEventListener("click", () => openDetail(button.dataset.id));
@@ -2347,11 +2347,11 @@ function renderCompleted() {
   list.classList.toggle("is-collapsed", hasMore);
   updateCompletedCount(completedCountForSelectedYear());
   list.innerHTML = shownGames.length ? shownGames.map((game) => `
-    <div class="completed-row ${game.stream ? "stream-card" : ""} ${game.platinum ? "completed-trophy-card" : ""}" data-id="${escapeHtml(game.id)}" role="button" tabindex="0" aria-label="${escapeHtml(`Open ${game.title}`)}">
+    <div class="completed-row ${game.stream ? "stream-card" : ""} ${game.platinum ? "completed-trophy-card" : ""} ${ownerCardClass(game)}" data-id="${escapeHtml(game.id)}" role="button" tabindex="0" aria-label="${escapeHtml(`Open ${game.title}`)}">
       <img class="completed-cover" src="${escapeHtml(game.cover || "")}" alt="" loading="lazy" decoding="async" ${game.cover ? "" : "hidden"}>
       <div class="completed-main">
         <strong class="${game.platinum ? "completed-achievements-title" : ""}">${escapeHtml(game.title)}</strong>
-        <span class="completed-platform">${completedBadges(game)}</span>
+        <span class="completed-platform">${completedOwnerBadges(game)}${completedBadges(game)}</span>
         <span class="completed-dates">${escapeHtml(historyRangeText(game))}</span>
         ${completedDurationLine(game)}
       </div>
@@ -2681,12 +2681,12 @@ function cardFor(game, options = {}) {
   card.querySelector("h3").classList.toggle("owner-jordi", hasJordiToneOwner(owners));
   card.querySelector("h3").classList.toggle("completed-achievements-title", Boolean(game.platinum));
   const titleOwners = card.querySelector(".title-owners");
-  titleOwners.innerHTML = owners.filter((owner) => owner !== (state.settings.defaultOwner || DEFAULT_SETTINGS.defaultOwner)).map(ownerBadge).join("");
-  titleOwners.hidden = !titleOwners.innerHTML;
+  titleOwners.innerHTML = "";
+  titleOwners.hidden = true;
   const studioLine = card.querySelector(".studio-line");
   studioLine.textContent = studioText(game);
   studioLine.hidden = !studioLine.textContent;
-  card.querySelector(".meta").innerHTML = metaFor(game, { includePsn: !game.playing }).join("");
+  card.querySelector(".meta").innerHTML = metaFor(game, { includePsn: !game.playing, includeOwners: true }).join("");
   const playDates = card.querySelector(".play-dates");
   playDates.innerHTML = playDatesFor(game, { includePastRelease: Boolean(options.includePastRelease) }).join("");
   playDates.hidden = !playDates.innerHTML;
@@ -2929,7 +2929,7 @@ function openDetail(id, options = {}) {
   el.detailTitle.classList.toggle("owner-jordi", hasJordiToneOwner(owners));
   el.detailStudio.textContent = studioText(game);
   el.detailStudio.hidden = !el.detailStudio.textContent;
-  el.detailMeta.innerHTML = metaFor(game, { includePsn: false }).join("");
+  el.detailMeta.innerHTML = metaFor(game, { includePsn: false, includeOwners: false }).join("");
   el.detailDates.innerHTML = playDatesFor(game, { includePastRelease: true }).join("");
   el.detailDates.hidden = !el.detailDates.innerHTML;
   el.detailChips.innerHTML = chipsFor(game).join("");
@@ -3192,6 +3192,7 @@ function metaFor(game, options = {}) {
   if (game.emulator) values.push(`<span class="emulator-pill">Emulator</span>`);
   if (game.lengthHours) values.push(timeBadge(game.lengthHours, hltbUrlFor(game)));
   if (game.stream) values.push(`<span class="stream-pill">Stream</span>`);
+  if (options.includeOwners) visibleOwnerTags(game).forEach((owner) => values.push(ownerBadge(owner)));
   gameStatuses(game).forEach((status) => values.push(statusBadge(status)));
   const progress = achievementProgressForGame(game);
   if (options.includePsn !== false && progress) values.push(psnProgressBadge(progress));
@@ -4054,6 +4055,20 @@ function gameStatuses(game) {
 function ownerTags(game) {
   const owners = unique((game.owners || []).map(canonicalOwner).filter(Boolean));
   return owners.length ? owners : [state.settings.defaultOwner || DEFAULT_SETTINGS.defaultOwner];
+}
+
+function visibleOwnerTags(game) {
+  const defaultOwner = state.settings.defaultOwner || DEFAULT_SETTINGS.defaultOwner;
+  return ownerTags(game).filter((owner) => owner !== defaultOwner);
+}
+
+function completedOwnerBadges(game) {
+  return visibleOwnerTags(game).map(ownerBadge).join("");
+}
+
+function ownerCardClass(game) {
+  const owners = ownerTags(game);
+  return `${owners.includes("Judy") ? "owner-card-judy" : ""} ${hasJordiToneOwner(owners) ? "owner-card-jordi" : ""}`.trim();
 }
 
 function canonicalStatus(status) {
