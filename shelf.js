@@ -5,8 +5,8 @@ splitShelfPlayingModules();
 
 const SESSION_KEY = "gamelist-editor";
 const KASH_TWITCH_URL = "https://www.twitch.tv/kashhoward";
-const SITE_VERSION = "v209";
-const SITE_UPDATED_AT = "2026-06-27T23:14:16+02:00";
+const SITE_VERSION = "v210";
+const SITE_UPDATED_AT = "2026-06-27T23:20:07+02:00";
 const VERSION_STORAGE_KEY = "gamelist:site-version";
 const VIEW_KEY = "shelf:view-mode:v2";
 const LAYOUT_KEY = "shelf:layout:v2";
@@ -344,8 +344,7 @@ async function refreshAllShelfPrices() {
       el.fetchPricesButton.title = `Prices ${index + 1}/${games.length}`;
       el.fetchPricesButton.setAttribute("aria-label", el.fetchPricesButton.title);
       try {
-        const params = new URLSearchParams({ title: game.title, platform: shortPlatform(game.platform), region: game.country || game.region || "", currency: settings.currency });
-        if (game.pricechartingId) params.set("id", game.pricechartingId); else if (game.upc) params.set("upc", game.upc);
+        const params = collectionPriceParams(game, settings);
         const response = await fetch(`/api/collection-price?${params}`);
         const data = await response.json();
         if (!response.ok || data.error) throw new Error(data.error || "Price unavailable");
@@ -391,7 +390,7 @@ function scrollToShelfLibrary() {
 
 function renderStats() {
   const visibleGames = visibleShelfGames();
-  const value = visibleGames.reduce((sum, game) => sum + (Number(game.price) || 0), 0);
+  const value = visibleGames.reduce((sum, game) => sum + (collectionValueFor(game) || 0), 0);
   const valueText = normalizePriceSettings(state.gamelistSettings).currency === "USD" ? `$${Math.round(value).toLocaleString("en")}` : `${Math.round(value).toLocaleString("en")}€`;
   const rows = [
     [visibleGames.length, "Physical games", "stat-backlog"],
@@ -864,6 +863,7 @@ function renderPhysicalSelection(physical, fallbackTitle = "") {
 }
 
 function priceChartingPageUrl(value) { const match = String(value || "").trim().match(/^https:\/\/www\.pricecharting\.com\/(?:[a-z]{2}\/)?game\/[^?#]+/i); return match?.[0] || ""; }
+function priceChartingProductId(value) { return priceChartingPageUrl(value) ? "" : String(value || "").trim().replace(/[^a-zA-Z0-9_-]/g, ""); }
 function blankImage() { return "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw=="; }
 function applyPriceChartingRegion(consoleName) { const value = normalize(consoleName); if (value.startsWith("jp ")) el.fields.country.value = "Japan"; else if (value.startsWith("pal ") && !["United Kingdom", "Spain", "France", "Germany", "Europe", "Australia"].includes(el.fields.country.value)) el.fields.country.value = "Europe"; else if (!value.startsWith("pal ") && !value.startsWith("jp ") && ["Japan", "Europe"].includes(el.fields.country.value)) el.fields.country.value = "United States of America"; }
 
@@ -946,7 +946,6 @@ async function addShelfGameToGamelistNew(game) {
   if (!response.ok) { alert("Could not add this game to Gamelist New additions."); return; }
   state.gamelistGames = nextGames;
   renderGamelistModules();
-  alert("Added to Gamelist New additions.");
 }
 
 async function deleteGame(game) {
@@ -1057,11 +1056,11 @@ function settingsSelectCard(type, title, id, options) {
 }
 
 function settingsShelfSyncCard() {
-  return `<article class="settings-layout-card settings-sync-card"><div class="settings-wire wire-list" aria-hidden="true"><span></span><span></span><span></span></div><div class="settings-theme-select"><span>Shelf Sync</span><label class="check-filter toggle-check settings-visible-check" title="Shelf Sync"><input type="checkbox" id="shelfSettingsSync" ${state.gamelistSettings.shelfSync === false ? "" : "checked"}><span>Enabled</span></label></div></article>`;
+  return `<article class="settings-layout-card settings-sync-card"><div class="settings-wire wire-list" aria-hidden="true"><span></span><span></span><span></span></div><div class="settings-theme-select"><span>Shelf Sync</span><div class="settings-check-field"><label class="check-filter toggle-check settings-visible-check" title="Shelf Sync"><input type="checkbox" id="shelfSettingsSync" ${state.gamelistSettings.shelfSync === false ? "" : "checked"}><span>Enabled</span></label></div></div></article>`;
 }
 
 function settingsShelfPricesCard() {
-  return `<article class="settings-layout-card settings-sync-card"><div class="settings-wire wire-list" aria-hidden="true"><span></span><span></span><span></span></div><div class="settings-theme-select"><span>Prices</span><label class="check-filter toggle-check settings-visible-check" title="Show prices"><input type="checkbox" id="shelfSettingsShowPrices" ${state.gamelistSettings.shelfHidePrices ? "" : "checked"}><span>Show prices</span></label></div></article>`;
+  return `<article class="settings-layout-card settings-sync-card"><div class="settings-wire wire-list" aria-hidden="true"><span></span><span></span><span></span></div><div class="settings-theme-select"><span>Prices</span><div class="settings-check-field"><label class="check-filter toggle-check settings-visible-check" title="Show prices"><input type="checkbox" id="shelfSettingsShowPrices" ${state.gamelistSettings.shelfHidePrices ? "" : "checked"}><span>Show prices</span></label></div></div></article>`;
 }
 
 function handleLayoutMove(event) {
@@ -1555,6 +1554,33 @@ function formatMoney(value, currency = "USD") {
   const amount = Number.isFinite(number) ? number.toFixed(2) : "0.00";
   return currency === "USD" ? `$${amount}` : `${amount}€`;
 }
+
+function collectionPriceParams(game, settings = normalizePriceSettings(state.gamelistSettings)) {
+  const params = new URLSearchParams({ title: game.title || "", platform: shortPlatform(game.platform), region: game.country || game.region || "", currency: settings.currency });
+  const priceChartingValue = String(game.pricechartingId || "").trim();
+  const productUrl = priceChartingPageUrl(priceChartingValue);
+  const productId = priceChartingProductId(priceChartingValue);
+  if (productUrl) params.set("url", productUrl);
+  else if (productId) params.set("id", productId);
+  else if (game.upc) params.set("upc", game.upc);
+  return params;
+}
+
+function collectionPriceKey(game) {
+  const condition = conditionLabel(game);
+  if (condition === "Sealed") return "sealed";
+  if (condition.startsWith("Complete")) return "complete";
+  return "loose";
+}
+
+function collectionValueFor(game) {
+  const prices = game?.collectionPrices || {};
+  const key = collectionPriceKey(game);
+  const value = prices[key] ?? game?.price;
+  const number = Number(value);
+  return Number.isFinite(number) ? number : 0;
+}
+
 function normalizePriceLabel(value, currency = "USD") {
   if (!value) return currency === "USD" ? "- $" : "- €";
   const text = String(value).trim();
@@ -1738,7 +1764,8 @@ function renderPriceDetails(game) {
   const priceMarkup = rows.length ? `<div class="collection-price-grid">${rows.map(([label, value]) => `<span><small>${label}</small><strong>${formatMoney(value, currency)}</strong></span>`).join("")}</div>` : `<span class="muted">No collection value fetched yet.</span>`;
   const identifierMarkup = identifiers.length ? `<div class="collection-product-meta">${identifiers.map(([label, value]) => `<span><small>${label}</small><strong>${escapeHtml(value)}</strong></span>`).join("")}</div>` : "";
   el.detailPriceSummary.innerHTML = `${priceMarkup}${identifierMarkup}`;
-  el.detailPriceHeadline.textContent = Number.isFinite(Number(game.price)) ? formatMoney(game.price, currency) : "";
+  const collectionValue = collectionValueFor(game);
+  el.detailPriceHeadline.textContent = Number.isFinite(collectionValue) ? formatMoney(collectionValue, currency) : "";
   const history = game.priceHistory || [];
   el.detailPriceGraph.innerHTML = priceGraph(history, currency);
   el.detailPriceGraph.hidden = history.length < 1;
@@ -1766,8 +1793,7 @@ async function fetchCollectionValue() {
   el.fetchValue.disabled = true; syncFetchValueButton("Fetching value");
   try {
     const settings = normalizePriceSettings(state.gamelistSettings);
-    const params = new URLSearchParams({ title: game.title, platform: shortPlatform(game.platform), region: game.country || game.region || "", currency: settings.currency });
-    if (game.pricechartingId) params.set("id", game.pricechartingId); else if (game.upc) params.set("upc", game.upc);
+    const params = collectionPriceParams(game, settings);
     const response = await fetch(`/api/collection-price?${params}`);
     const data = await response.json();
     if (!response.ok || data.error) { el.detailPriceSummary.innerHTML = `<span class="auth-error">${escapeHtml(data.error || "No matching physical edition was found.")}</span>`; return; }
@@ -1780,10 +1806,10 @@ async function fetchCollectionValue() {
 
 function applyCollectionPrice(game, data) {
   game.collectionPrices = data.prices;
-  const condition = conditionLabel(game);
-  const historyKey = condition === "Sealed" ? "sealed" : condition.startsWith("Complete") ? "complete" : "loose";
+  const historyKey = collectionPriceKey(game);
   game.price = data.prices?.[historyKey] ?? data.mainValue;
   game.priceCurrency = data.currency || "USD";
+  game.priceFetchedAt = data.checkedAt || new Date().toISOString();
   game.priceHistory = (data.history?.[historyKey]?.length ? data.history[historyKey] : [...(game.priceHistory || []), { date: String(data.checkedAt || "").slice(0, 10), value: game.price }]).filter((item) => item.value != null).slice(-60);
   game.updatedAt = new Date().toISOString();
   syncShelfGameRecord(game);
@@ -1942,7 +1968,7 @@ function regionName(country) { return country === "United States of America" ? "
 function regionFor(country) { if (country === "Japan") return "Japan"; if (country === "Taiwan") return "Taiwan"; if (country === "United States of America") return "USA"; if (["United Kingdom", "Spain", "France", "Germany", "Europe"].includes(country)) return country === "Spain" ? "Spain" : "Europe"; return country || "Other"; }
 function countValues(values) { const map = new Map(); values.filter(Boolean).forEach((value) => map.set(value, (map.get(value) || 0) + 1)); return [...map.entries()].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0])); }
 function conditionMatches(game, condition) { const label = conditionLabel(game).toLowerCase(); if (condition === "all") return true; if (condition === "complete") return label === "complete"; if (condition === "complete-plus") return label === "complete +"; if (condition === "loose") return label === "loose"; if (condition === "sealed") return label === "sealed"; return true; }
-function sorter(type) { const direction = state.filters.direction === "desc" ? -1 : 1; if (type === "custom") return (a, b) => direction * ((a.order ?? Number.MAX_SAFE_INTEGER) - (b.order ?? Number.MAX_SAFE_INTEGER) || a.title.localeCompare(b.title)); if (type === "title" || type === "name") return (a, b) => direction * a.title.localeCompare(b.title); if (type === "added") return (a, b) => direction * (new Date(a.createdAt || 0) - new Date(b.createdAt || 0)); if (type === "value") return (a, b) => direction * ((a.price || 0) - (b.price || 0)); if (type === "region") return (a, b) => direction * (a.country.localeCompare(b.country) || a.title.localeCompare(b.title)); return (a, b) => direction * (a.platform.localeCompare(b.platform) || a.title.localeCompare(b.title)); }
+function sorter(type) { const direction = state.filters.direction === "desc" ? -1 : 1; if (type === "custom") return (a, b) => direction * ((a.order ?? Number.MAX_SAFE_INTEGER) - (b.order ?? Number.MAX_SAFE_INTEGER) || a.title.localeCompare(b.title)); if (type === "title" || type === "name") return (a, b) => direction * a.title.localeCompare(b.title); if (type === "added") return (a, b) => direction * (new Date(a.createdAt || 0) - new Date(b.createdAt || 0)); if (type === "value") return (a, b) => direction * (collectionValueFor(a) - collectionValueFor(b)); if (type === "region") return (a, b) => direction * (a.country.localeCompare(b.country) || a.title.localeCompare(b.title)); return (a, b) => direction * (a.platform.localeCompare(b.platform) || a.title.localeCompare(b.title)); }
 function uniqueSorted(values) { return [...new Set(values.filter(Boolean))].sort((a, b) => String(a).localeCompare(String(b), undefined, { sensitivity: "base" })); }
 function shelfSortForDefault(value) { if (value === "time") return "added"; if (value === "name") return "title"; return ["added", "title", "platform", "region", "value"].includes(value) ? value : "platform"; }
 function applyShelfDefaultOrder(value) { state.filters.sort = shelfSortForDefault(value); state.filters.direction = ["added", "value"].includes(state.filters.sort) ? "desc" : "asc"; }

@@ -13,8 +13,8 @@ const SETTINGS_KEY = "gamelist:settings:v1";
 const KASH_TWITCH_URL = "https://www.twitch.tv/kashhoward";
 const DEFAULT_PAGE_ORDER = ["trophies", "calendar", "highlights", "search", "gamelist", "finished"];
 const LAYOUT_SECTION_KEYS = ["playing", ...DEFAULT_PAGE_ORDER, "latestFinished"];
-const SITE_VERSION = "v209";
-const SITE_UPDATED_AT = "2026-06-27T23:14:16+02:00";
+const SITE_VERSION = "v210";
+const SITE_UPDATED_AT = "2026-06-27T23:20:07+02:00";
 const VERSION_STORAGE_KEY = "gamelist:site-version";
 const STORE_OPTIONS = ["Amazon", "eBay", "GAME.es", "Xtralife", "Retro Island NY", "GameStop", "Walmart"];
 const MAX_PRICE_STORES = 5;
@@ -1027,10 +1027,12 @@ function settingsShelfSyncItem() {
       <div class="settings-wire wire-list" aria-hidden="true"><span></span><span></span><span></span></div>
       <div class="settings-theme-select">
         <span>Shelf Sync</span>
-        <label class="check-filter toggle-check settings-visible-check" title="Shelf Sync">
-          <input type="checkbox" data-shelf-sync ${state.settings.shelfSync ? "checked" : ""}>
-          <span>Enabled</span>
-        </label>
+        <div class="settings-check-field">
+          <label class="check-filter toggle-check settings-visible-check" title="Shelf Sync">
+            <input type="checkbox" data-shelf-sync ${state.settings.shelfSync ? "checked" : ""}>
+            <span>Enabled</span>
+          </label>
+        </div>
       </div>
     </article>
   `;

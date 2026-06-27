@@ -7,9 +7,11 @@ export async function onRequestGet({ request, env = {} }) {
   const platform = clean(url.searchParams.get("platform"), 80);
   const region = clean(url.searchParams.get("region"), 80);
   const currency = ["EUR", "USD"].includes(String(url.searchParams.get("currency") || "").toUpperCase()) ? String(url.searchParams.get("currency")).toUpperCase() : "EUR";
-  const requestedId = cleanIdentifier(url.searchParams.get("id"));
+  const rawRequestedId = url.searchParams.get("id");
+  const requestedIdUrl = cleanPriceChartingUrl(rawRequestedId);
+  const requestedId = requestedIdUrl ? "" : cleanIdentifier(rawRequestedId);
   const requestedUpc = cleanIdentifier(url.searchParams.get("upc"));
-  const requestedUrl = cleanPriceChartingUrl(url.searchParams.get("url"));
+  const requestedUrl = cleanPriceChartingUrl(url.searchParams.get("url")) || requestedIdUrl;
   const searchMode = url.searchParams.get("mode") === "search";
   if (!title && !requestedId && !requestedUpc && !requestedUrl) return json({ error: "Missing title, product id, UPC, or PriceCharting URL" }, 400);
 

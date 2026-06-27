@@ -1117,6 +1117,22 @@
       );
     min-height: 214px;
   }
+  .shelf-grid .game-card .card-actions {
+    grid-template-columns: minmax(0, 1fr) 42px;
+  }
+  .shelf-grid .game-card .card-actions:has(.add-collection-action) {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) 42px;
+  }
+  .shelf-grid .game-card .shelf-add-backlog-action,
+  .shelf-grid .game-card .add-collection-action {
+    min-width: 0;
+    padding-inline: 8px;
+    white-space: nowrap;
+  }
+  .shelf-grid .game-card .shelf-card-delete-action {
+    width: 42px;
+    min-width: 42px;
+  }
   .shelf-detail-body {
     grid-template-columns: 1fr;
   }

@@ -4830,6 +4830,10 @@ body.dialog-open .mobile-section-tabs {
   gap: 5px;
 }
 
+.settings-check-field {
+  width: 100%;
+}
+
 .settings-theme-card .settings-wire,
 .settings-order-card .settings-wire,
 .settings-sync-card .settings-wire {
@@ -4841,19 +4845,24 @@ body.dialog-open .mobile-section-tabs {
   width: 100%;
   min-height: 42px;
   margin: 0;
-  padding: 0;
-  background: transparent;
-  border: 0;
+  padding: 0 10px;
+  color: var(--text);
+  background-color: rgba(255, 255, 255, 0.075);
+  border: 1px solid rgba(255, 255, 255, 0.14);
   box-shadow: none;
 }
 
 .settings-sync-card .settings-visible-check:hover {
-  border-color: transparent;
-  box-shadow: none;
+  border-color: rgba(255, 255, 255, 0.24);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 12%, transparent);
 }
 
 .settings-sync-card .settings-visible-check span {
+  color: var(--text);
+  font-size: 13px;
+  font-weight: 760;
   white-space: nowrap;
+  text-transform: none;
 }
 
 .settings-theme-select span {
@@ -6109,6 +6118,7 @@ body.theme-kash .guide-button:hover {
     margin: 12px 0 16px;
   }
 
+  .prices,
   .game-card .prices {
     grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
   }
