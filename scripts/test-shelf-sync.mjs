@@ -70,6 +70,8 @@ assert.match(shelfSource, /shelfDefaultOrder: el\.settingsDefaultOrder\.value/, 
 for (const source of [appSource, shelfSource]) assert.match(source, /Shelf Sync/, "Main and Shelf settings must expose Shelf Sync");
 assert.match(appSource, /shelfSync: settings\.shelfSync !== false/, "Main must normalize Shelf Sync as enabled by default");
 assert.match(shelfSource, /shelfSync: document\.querySelector\("#shelfSettingsSync"\)\?\.checked !== false/, "Shelf must persist the shared Shelf Sync setting");
+assert.match(shelfSource, /shelfHidePrices: Boolean\(document\.querySelector\("#shelfSettingsHidePrices"\)\?\.checked\)/, "Shelf must persist the Hide prices setting without changing price data");
+assert.match(shelfSource, /function shelfPricesVisible\(\)[\s\S]*?shelfHidePrices !== true/, "Shelf price visibility must be a display-only setting");
 for (const html of [appHtml, shelfHtml]) assert.doesNotMatch(html, /<nav class="nav-tabs"/, "Main and Shelf must not show the temporary cross-site navbar");
 assert.match(shelfSource, /state\.viewMode === "list"[\s\S]*?games\.map\(gameRow\)/, "Shelf list mode must render Main-style compact rows");
 assert.match(shelfSource, /syncViewModeButton\(el\.view, state\.viewMode/, "Shelf view control must show the current mode");

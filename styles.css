@@ -4725,7 +4725,7 @@ body.dialog-open .mobile-section-tabs {
 .settings-preference-row {
   grid-column: 1 / -1;
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
   gap: 10px;
 }
 
@@ -4744,6 +4744,26 @@ body.dialog-open .mobile-section-tabs {
 .settings-order-card .settings-wire,
 .settings-sync-card .settings-wire {
   display: none;
+}
+
+.settings-sync-card .settings-visible-check {
+  justify-content: center;
+  width: 100%;
+  min-height: 42px;
+  margin: 0;
+  padding: 0;
+  background: transparent;
+  border: 0;
+  box-shadow: none;
+}
+
+.settings-sync-card .settings-visible-check:hover {
+  border-color: transparent;
+  box-shadow: none;
+}
+
+.settings-sync-card .settings-visible-check span {
+  white-space: nowrap;
 }
 
 .settings-theme-select span {
