@@ -5,8 +5,8 @@ splitShelfPlayingModules();
 
 const SESSION_KEY = "gamelist-editor";
 const KASH_TWITCH_URL = "https://www.twitch.tv/kashhoward";
-const SITE_VERSION = "v215";
-const SITE_UPDATED_AT = "2026-06-27T23:40:42+02:00";
+const SITE_VERSION = "v216";
+const SITE_UPDATED_AT = "2026-06-27T23:49:39+02:00";
 const VERSION_STORAGE_KEY = "gamelist:site-version";
 const VIEW_KEY = "shelf:view-mode:v2";
 const LAYOUT_KEY = "shelf:layout:v2";
@@ -1732,8 +1732,9 @@ function siteClass(value) {
 }
 function siteIcon(value) { const host = (() => { try { return new URL(value).hostname; } catch { return ""; } })(); if (host.includes("playstation")) return "assets/sites/playstation.png"; if (host.includes("nintendo")) return "assets/sites/nintendo.png"; if (host.includes("steam")) return "assets/sites/steam.png"; if (host.includes("howlongtobeat")) return "assets/sites/howlongtobeat.png"; return host ? `https://${host}/favicon.ico` : "assets/Icon.png"; }
 function renderSavedStorePrices(game) {
-  const prices = Array.isArray(game.storePrices) ? game.storePrices : [];
-  const currency = game.storePriceCurrency || normalizePriceSettings(state.gamelistSettings).currency;
+  const settings = normalizePriceSettings(state.gamelistSettings);
+  const prices = Array.isArray(game.storePrices) && game.storePrices.length ? game.storePrices : placeholderStorePrices(settings);
+  const currency = game.storePriceCurrency || settings.currency;
   el.detailStorePrices.innerHTML = storePricesMarkup(prices, currency) || `<span class="muted">No saved store prices yet.</span>`;
 }
 async function fetchAndSaveStorePrices(game) {
@@ -1754,6 +1755,9 @@ function storePricesMarkup(prices, currency) {
     const label = normalizePriceLabel(price.price, currency);
     return `<a class="price-link ${best === price.store && price.price ? "best" : ""} ${price.price ? "has-price" : "missing-price"}" href="${escapeHtml(price.url || "#")}" target="_blank" rel="noreferrer" title="${escapeHtml(price.store)}"><img class="store-icon" src="${escapeHtml(storeIcon(price.store))}" alt=""><strong>${escapeHtml(label)}</strong></a>`;
   }).join("");
+}
+function placeholderStorePrices(settings = normalizePriceSettings(state.gamelistSettings)) {
+  return settings.stores.map((store) => ({ store, price: "", numericPrice: null, url: "" }));
 }
 function storeIcon(store) { if (String(store).startsWith("Amazon")) return "assets/stores/amazon.ico"; if (store === "eBay") return "https://www.ebay.com/favicon.ico"; if (store === "Xtralife") return "assets/stores/xtralife.ico"; if (store === "GAME.es") return "assets/stores/game.ico"; if (store === "Retro Island NY") return "assets/stores/retroisland.png"; if (store === "GameStop") return "https://www.gamestop.com/favicon.ico"; if (store === "Walmart") return "https://www.walmart.com/favicon.ico"; if (String(store).startsWith("Nintendo")) return "assets/sites/nintendo.png"; if (String(store).startsWith("PlayStation")) return "assets/sites/playstation.png"; if (store === "Steam") return "assets/sites/steam.png"; if (store === "Xbox") return "assets/platforms/xbox.png"; return "assets/Icon.png"; }
 function renderPriceDetails(game) {
@@ -1796,11 +1800,14 @@ async function fetchCollectionValue() {
     const params = collectionPriceParams(game, settings);
     const response = await fetch(`/api/collection-price?${params}`);
     const data = await response.json();
-    if (!response.ok || data.error) { el.detailPriceSummary.innerHTML = `<span class="auth-error">${escapeHtml(data.error || "No matching physical edition was found.")}</span>`; return; }
-    applyCollectionPrice(game, data);
+    if (!response.ok || data.error) el.detailPriceSummary.innerHTML = `<span class="auth-error">${escapeHtml(data.error || "No matching physical edition was found.")}</span>`;
+    else applyCollectionPrice(game, data);
     el.detailStorePrices.innerHTML = `<span class="muted">Checking store prices...</span>`;
     await fetchAndSaveStorePrices(game).catch((error) => { el.detailStorePrices.innerHTML = `<span class="auth-error">${escapeHtml(error?.message || "Store prices unavailable.")}</span>`; });
-    await persistShelf(); renderPriceDetails(game); renderSavedStorePrices(game); renderStats();
+    await persistShelf();
+    if (!data.error && response.ok) renderPriceDetails(game);
+    renderSavedStorePrices(game);
+    renderStats();
   } catch (error) { el.detailPriceSummary.innerHTML = `<span class="auth-error">${escapeHtml(error?.message || "Collection value is unavailable.")}</span>`; } finally { el.fetchValue.disabled = false; syncFetchValueButton(); }
 }
 

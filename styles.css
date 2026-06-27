@@ -1960,14 +1960,13 @@ body.theme-kash .check-filter:hover {
 .mobile-section-tabs::before {
   content: "";
   position: absolute;
-  inset: 6px auto 6px 6px;
+  inset: 6px auto 6px var(--mobile-tab-left, 6px);
   z-index: 0;
   width: var(--mobile-tab-width);
   border-radius: 7px;
   background: var(--accent);
   box-shadow: 0px 3px 24px 3px rgb(255 0 0 / 40%);
-  transform: translateX(calc(var(--mobile-tab-index) * (100% + 6px)));
-  transition: transform 180ms ease;
+  transition: inset 180ms ease, width 180ms ease;
 }
 
 body.theme-kash .mobile-section-tabs::before {
@@ -6118,8 +6117,21 @@ body.theme-kash .guide-button:hover {
     margin: 12px 0 16px;
   }
 
+  .mobile-section-tabs button[data-mobile-section="new"] {
+    min-width: 0;
+    padding: 0;
+  }
+
   .mobile-section-tabs button[data-mobile-section="new"] .label {
     display: none;
+  }
+
+  .mobile-section-tabs button[data-mobile-section="new"] .count {
+    min-width: 18px;
+    height: 18px;
+    padding: 0 4px;
+    border-radius: 5px;
+    font-size: 9px;
   }
 
   .prices,
@@ -6376,25 +6388,41 @@ body.theme-kash .guide-button:hover {
   }
 
   .game-row.new-addition-row {
-    grid-template-columns: 52px minmax(0, 1fr) minmax(94px, auto);
+    grid-template-columns: 42px minmax(0, 1fr) minmax(74px, max-content);
   }
 
   .game-row.new-addition-row .game-row-actions {
     display: grid;
     grid-template-columns: minmax(0, 1fr) 34px;
+    grid-template-rows: repeat(2, 32px);
     align-content: center;
+    gap: 4px;
     min-width: 0;
   }
 
   .game-row.new-addition-row .row-primary-action,
   .game-row.new-addition-row .row-setup-action {
     min-width: 0;
-    padding-inline: 6px;
-    font-size: 10px;
+    min-height: 32px;
+    padding-inline: 5px;
+    font-size: 9px;
     white-space: nowrap;
   }
 
+  .game-row.new-addition-row .row-primary-action {
+    grid-column: 1 / 2;
+    grid-row: 1;
+  }
+
+  .game-row.new-addition-row .row-setup-action {
+    grid-column: 1 / 2;
+    grid-row: 2;
+  }
+
   .game-row.new-addition-row .row-delete-action {
+    grid-column: 2 / 3;
+    grid-row: 1 / 3;
+    align-self: center;
     width: 34px;
     min-width: 34px;
     height: 34px;

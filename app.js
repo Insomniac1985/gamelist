@@ -13,8 +13,8 @@ const SETTINGS_KEY = "gamelist:settings:v1";
 const KASH_TWITCH_URL = "https://www.twitch.tv/kashhoward";
 const DEFAULT_PAGE_ORDER = ["trophies", "calendar", "highlights", "search", "gamelist", "finished"];
 const LAYOUT_SECTION_KEYS = ["playing", ...DEFAULT_PAGE_ORDER, "latestFinished"];
-const SITE_VERSION = "v215";
-const SITE_UPDATED_AT = "2026-06-27T23:40:42+02:00";
+const SITE_VERSION = "v216";
+const SITE_UPDATED_AT = "2026-06-27T23:49:39+02:00";
 const VERSION_STORAGE_KEY = "gamelist:site-version";
 const STORE_OPTIONS = ["Amazon", "eBay", "GAME.es", "Xtralife", "Retro Island NY", "GameStop", "Walmart"];
 const MAX_PRICE_STORES = 5;
@@ -468,6 +468,7 @@ function bindEvents() {
     schedulePlayingCardHeightSync();
     requestAnimationFrame(updateAllRowTitleOverflow);
     scheduleFocusedPlayingTrailerUpdate();
+    requestAnimationFrame(syncMobileTabIndicator);
   }, { passive: true });
   document.addEventListener("visibilitychange", () => {
     if (document.hidden) pauseAllPlayingTrailers();
@@ -2017,9 +2018,13 @@ function renderMobileTabs() {
     button.innerHTML = `<span class="label">${escapeHtml(label)}</span>${button.dataset.mobileSection === "new" ? `<span class="count">${count}</span>` : ""}`;
   });
   const index = Math.max(0, sections.indexOf(state.mobileSection));
-  document.querySelector(".mobile-section-tabs")?.style.setProperty("--mobile-tab-count", String(sections.length));
-  document.querySelector(".mobile-section-tabs")?.style.setProperty("--mobile-tab-width", `calc((100% - ${6 * (sections.length + 1)}px) / ${sections.length})`);
-  document.querySelector(".mobile-section-tabs")?.style.setProperty("--mobile-tab-index", String(index));
+  const mobileTabs = document.querySelector(".mobile-section-tabs");
+  mobileTabs?.style.setProperty("--mobile-tab-count", String(sections.length));
+  mobileTabs?.style.setProperty("--mobile-tab-index", String(index));
+  if (mobileTabs) {
+    mobileTabs.style.gridTemplateColumns = sections.includes("new") ? `minmax(34px, 42px) repeat(${Math.max(1, sections.length - 1)}, minmax(0, 1fr))` : "";
+    requestAnimationFrame(syncMobileTabIndicator);
+  }
   el.board.style.setProperty("--mobile-section-count", String(sections.length));
   el.board.style.setProperty("--mobile-section-index", String(index));
   el.board.querySelectorAll(".column").forEach((column) => {
@@ -2030,6 +2035,16 @@ function renderMobileTabs() {
     column.setAttribute("aria-hidden", String(columnIndex < 0 || column.id !== state.mobileSection));
   });
   document.body.dataset.mobileSection = state.mobileSection;
+}
+
+function syncMobileTabIndicator() {
+  const tabs = document.querySelector(".mobile-section-tabs");
+  const active = tabs?.querySelector("button.active:not([hidden])");
+  if (!tabs || !active) return;
+  const tabsRect = tabs.getBoundingClientRect();
+  const activeRect = active.getBoundingClientRect();
+  tabs.style.setProperty("--mobile-tab-left", `${Math.max(6, activeRect.left - tabsRect.left)}px`);
+  tabs.style.setProperty("--mobile-tab-width", `${activeRect.width}px`);
 }
 
 function mobileSections() {

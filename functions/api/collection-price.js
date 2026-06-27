@@ -17,7 +17,7 @@ export async function onRequestGet({ request, env = {} }) {
 
   const priceChartingTitle = priceChartingSearchTitle(title);
   const query = [priceChartingTitle || title, physicalRegionTerm(region), priceChartingPlatformTerm(platform)].filter(Boolean).join(" ");
-  const searchUrl = `${SITE_URL}/search-products?type=prices&region-name=all&exclude-variants=false&q=${encodeURIComponent(requestedId || requestedUpc || query || title)}`;
+  const searchUrl = `${SITE_URL}/search-products?type=prices&region-name=all&exclude-variants=false&q=${encodeURIComponent(requestedUpc || query || title || requestedId)}`;
   const fallbackUrls = directProductUrls(priceChartingTitle || title, platform, region);
   const token = env.PRICECHARTING_TOKEN || globalThis.process?.env?.PRICECHARTING_TOKEN || "";
   try {
