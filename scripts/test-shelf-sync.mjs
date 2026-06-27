@@ -79,7 +79,8 @@ assert.match(appSource, /function mobileSectionCounts\(\)/, "Main mobile tabs mu
 assert.match(appSource, /function canSeeNewAdditions\(\)[\s\S]*?state\.canEdit/, "Main New additions must only appear while logged in");
 assert.match(appSource, /function finishSetupGame\(id\)[\s\S]*?openEditor\(id\)/, "Main New additions must use Finish setup to complete missing info");
 assert.match(appSource, /if \(game\.section === "new"\)[\s\S]*?completeAction\.addEventListener\("click", \(\) => startPlaying\(game\.id\)\)/, "Main New additions cards must play directly");
-assert.match(appSource, /titleOwners\.innerHTML = visibleOwnerTags\(game\)\.map\(ownerBadge\)\.join\(""\)/, "Main cards must show owner tags beside the title like Shelf");
+assert.match(appSource, /card\.querySelector\("\.chips"\)\.innerHTML = cardChipsFor\(game\)\.join\(""\)/, "Main cards must show owner tags in the tag row");
+assert.match(appSource, /function cardChipsFor\(game\)[\s\S]*?visibleOwnerTags\(game\)\.map\(ownerBadge\)[\s\S]*?chipsFor\(game\)/, "Main card tag row must include owner pills before normal tags");
 assert.match(appSource, /const badges = `\$\{completedOwnerBadges\(game\)\}\$\{completedBadges\(game, \{ includePsn: false \}\)\}`[\s\S]*?itemClass: ownerCardClass\(game\)/, "Main Last Finished cards must include mini owner tags and owner color classes");
 assert.match(appSource, /class="completed-row[\s\S]*?\$\{ownerCardClass\(game\)\}[\s\S]*?<span class="completed-platform">\$\{completedOwnerBadges\(game\)\}\$\{completedBadges\(game\)\}<\/span>/, "Main Finished list rows must include mini owner tags and owner color classes");
 assert.doesNotMatch(shelfSource, /<span class="label">Shelf<\/span><span class="count">/, "Shelf must only show a count on New additions");
@@ -92,7 +93,8 @@ assert.match(shelfCss, /\.shelf-tabs button\s*\{[\s\S]*?min-height:\s*38px;[\s\S
 assert.doesNotMatch(shelfCss, /\.shelf-tabs button\s*\{[\s\S]*?padding:\s*8px 13px;/, "Shelf tabs must not keep the chunkier local padding");
 assert.match(shelfCss, /\.shelf-tabs button:hover\s*\{\s*color:\s*var\(--accent\);[\s\S]*?\.shelf-tabs button\.active:hover\s*\{\s*color:\s*#ffffff;/, "Shelf tabs must use Main's accent hover text effect");
 assert.match(shelfSource, /const badges = `\$\{visibleProjectionOwners\(game\)\.map\(ownerBadge\)\.join\(""\)\}[\s\S]*?itemClass: projectionOwnerCardClass\(game\)/, "Shelf Last Finished projection cards must include mini owner tags and owner color classes");
-assert.match(shelfCss, /\.shelf-page \.game-card \.title-owners \.owner-pill,[\s\S]*?\.shelf-page \.game-row-core \.owner-pill[\s\S]*?font-size:\s*10px;/, "Shelf owner tags must stay compact");
+assert.match(shelfCss, /\.shelf-page \.game-card \.title-owners \.owner-pill\s*\{[\s\S]*?min-height:\s*31px;[\s\S]*?font-size:\s*12px;/, "Shelf card owner tags must match tag chip height");
+assert.match(shelfCss, /\.shelf-page \.game-row-core \.owner-pill\s*\{[\s\S]*?min-height:\s*18px;[\s\S]*?font-size:\s*10px;/, "Shelf row owner tags must stay compact");
 assert.match(sharedCss, /\.playing-finished-game\.owner-card-judy strong,[\s\S]*?\.completed-row\.owner-card-jordi strong/, "Finished sliders and rows must support owner title colors");
 assert.match(sharedCss, /\.playing-finished-game\.owner-card-judy,[\s\S]*?box-shadow: 0 0 20px rgba\(255, 158, 210, 0\.12\);[\s\S]*?\.playing-finished-game\.owner-card-jordi,[\s\S]*?box-shadow: 0 0 20px rgba\(255, 173, 95, 0\.12\);/, "Finished sliders and rows must support owner border glow");
 assert.match(shelfSource, /function platformStoreProvidersForGame\(game\)[\s\S]*?return \["Nintendo"\][\s\S]*?return \["PlayStation"\][\s\S]*?return \["Steam"\][\s\S]*?return \["Xbox"\]/, "Shelf website links must follow platform-specific store rules");

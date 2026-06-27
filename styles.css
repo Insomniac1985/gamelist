@@ -3103,6 +3103,13 @@ body.theme-kash .game-card.stream-card.completed-trophy-card {
     min-height: 20px;
 }
 
+.game-card .chips .owner-pill {
+  min-height: 31px;
+  padding: 5px 9px;
+  font-size: 12px;
+  border-radius: 6px;
+}
+
 .game-card .meta .owner-pill,
 .playing-finished-tags .owner-pill,
 .completed-platform .owner-pill {

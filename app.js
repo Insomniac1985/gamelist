@@ -13,8 +13,8 @@ const SETTINGS_KEY = "gamelist:settings:v1";
 const KASH_TWITCH_URL = "https://www.twitch.tv/kashhoward";
 const DEFAULT_PAGE_ORDER = ["trophies", "calendar", "highlights", "search", "gamelist", "finished"];
 const LAYOUT_SECTION_KEYS = ["playing", ...DEFAULT_PAGE_ORDER, "latestFinished"];
-const SITE_VERSION = "v208";
-const SITE_UPDATED_AT = "2026-06-27T23:09:46+02:00";
+const SITE_VERSION = "v209";
+const SITE_UPDATED_AT = "2026-06-27T23:14:16+02:00";
 const VERSION_STORAGE_KEY = "gamelist:site-version";
 const STORE_OPTIONS = ["Amazon", "eBay", "GAME.es", "Xtralife", "Retro Island NY", "GameStop", "Walmart"];
 const MAX_PRICE_STORES = 5;
@@ -2684,8 +2684,8 @@ function cardFor(game, options = {}) {
   card.querySelector("h3").classList.toggle("owner-jordi", hasJordiToneOwner(owners));
   card.querySelector("h3").classList.toggle("completed-achievements-title", Boolean(game.platinum));
   const titleOwners = card.querySelector(".title-owners");
-  titleOwners.innerHTML = visibleOwnerTags(game).map(ownerBadge).join("");
-  titleOwners.hidden = !titleOwners.innerHTML;
+  titleOwners.innerHTML = "";
+  titleOwners.hidden = true;
   const studioLine = card.querySelector(".studio-line");
   studioLine.textContent = studioText(game);
   studioLine.hidden = !studioLine.textContent;
@@ -2693,7 +2693,7 @@ function cardFor(game, options = {}) {
   const playDates = card.querySelector(".play-dates");
   playDates.innerHTML = playDatesFor(game, { includePastRelease: Boolean(options.includePastRelease) }).join("");
   playDates.hidden = !playDates.innerHTML;
-  card.querySelector(".chips").innerHTML = chipsFor(game).join("");
+  card.querySelector(".chips").innerHTML = cardChipsFor(game).join("");
   const trophyStrip = card.querySelector(".card-trophies");
   trophyStrip.innerHTML = game.playing ? cardTrophiesFor(game) : "";
   trophyStrip.hidden = !trophyStrip.innerHTML;
@@ -4044,6 +4044,10 @@ function chipsFor(game) {
   if (game.preferredStore) chips.push(chip(`Buy: ${game.preferredStore}`));
   (game.genres || []).slice(0, 4).forEach((genre) => chips.push(chip(genre, "genre")));
   return chips;
+}
+
+function cardChipsFor(game) {
+  return [...visibleOwnerTags(game).map(ownerBadge), ...chipsFor(game)];
 }
 
 function chip(label, type = "") {

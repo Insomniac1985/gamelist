@@ -589,7 +589,13 @@
   color: var(--jordi);
 }
 
-.shelf-page .game-card .title-owners .owner-pill,
+.shelf-page .game-card .title-owners .owner-pill {
+  min-height: 31px;
+  padding: 5px 9px;
+  border-radius: 6px;
+  font-size: 12px;
+}
+
 .shelf-page .game-row-core .owner-pill {
   min-height: 18px;
   padding: 2px 6px;
