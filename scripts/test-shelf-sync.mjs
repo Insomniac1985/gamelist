@@ -83,6 +83,9 @@ assert.match(shelfSource, /--tab-index", state\.filters\.tab === "new" \? "1" : 
 assert.match(shelfSource, /const pendingCount = state\.canEdit \? state\.games\.filter\(isPendingCollectionGame\)\.length : 0/, "Shelf New additions must only appear while logged in");
 assert.match(shelfSource, /isPendingCollectionGame\(game\) \? `<button class="primary-button add-collection-action[\s\S]*?data-action="add-collection"[\s\S]*?data-action="delete"/, "Shelf New additions cards must offer Delete beside Add to Collection");
 assert.match(shelfSource, /function visibleShelfCardOwners\(owners = \[\]\)[\s\S]*?state\.gamelistSettings\.defaultOwner[\s\S]*?owners\.filter\(\(owner\) => owner !== defaultOwner\)/, "Shelf library cards must hide the default owner pill");
+assert.match(shelfCss, /\.shelf-tabs button\s*\{[\s\S]*?min-height:\s*38px;[\s\S]*?transition:\s*color 180ms ease;[\s\S]*?\}\s*\.shelf-tabs button\.active/, "Shelf tab buttons must stay slim like Main tabs");
+assert.doesNotMatch(shelfCss, /\.shelf-tabs button\s*\{[\s\S]*?padding:\s*8px 13px;/, "Shelf tabs must not keep the chunkier local padding");
+assert.match(shelfCss, /\.shelf-tabs button:hover\s*\{\s*color:\s*var\(--accent\);[\s\S]*?\.shelf-tabs button\.active:hover\s*\{\s*color:\s*#ffffff;/, "Shelf tabs must use Main's accent hover text effect");
 for (const html of [appHtml, shelfHtml]) assert.doesNotMatch(html, /<nav class="nav-tabs"/, "Main and Shelf must not show the temporary cross-site navbar");
 assert.match(shelfSource, /state\.viewMode === "list"[\s\S]*?games\.map\(gameRow\)/, "Shelf list mode must render Main-style compact rows");
 assert.match(shelfSource, /syncViewModeButton\(el\.view, state\.viewMode/, "Shelf view control must show the current mode");

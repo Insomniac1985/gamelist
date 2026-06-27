@@ -525,7 +525,6 @@
   justify-content: center;
   gap: 7px;
   min-height: 38px;
-  padding: 8px 13px;
   color: var(--muted);
   background: transparent;
   border: 1px solid transparent;
@@ -559,6 +558,14 @@
 
 .shelf-tabs button.active .count {
   background: color-mix(in srgb, var(--accent) 25%, #262626);
+}
+
+.shelf-tabs button:hover {
+  color: var(--accent);
+}
+
+.shelf-tabs button.active:hover {
+  color: #ffffff;
 }
 
 .owner-pill.owner-judy {
