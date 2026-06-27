@@ -5,8 +5,8 @@ splitShelfPlayingModules();
 
 const SESSION_KEY = "gamelist-editor";
 const KASH_TWITCH_URL = "https://www.twitch.tv/kashhoward";
-const SITE_VERSION = "v202";
-const SITE_UPDATED_AT = "2026-06-27T18:27:28+02:00";
+const SITE_VERSION = "v203";
+const SITE_UPDATED_AT = "2026-06-27T18:31:14+02:00";
 const VERSION_STORAGE_KEY = "gamelist:site-version";
 const VIEW_KEY = "shelf:view-mode:v2";
 const LAYOUT_KEY = "shelf:layout:v2";
@@ -419,12 +419,14 @@ function renderFilters() {
 
 function renderLibrary() {
   const pendingCount = state.canEdit ? state.games.filter(isPendingCollectionGame).length : 0;
-  const shelfCount = state.games.filter((game) => !isPendingCollectionGame(game)).length;
   state.filters.tab = normalizedShelfTab(pendingCount ? state.filters.tab : "shelf");
   const games = filteredGames();
   el.tabs.hidden = !pendingCount;
   el.tabs.dataset.activeTab = state.filters.tab;
-  el.tabs.innerHTML = pendingCount ? `<button class="${state.filters.tab !== "new" ? "active" : ""}" data-shelf-tab="shelf" type="button"><span class="label">Shelf</span><span class="count">${shelfCount}</span></button><button class="${state.filters.tab === "new" ? "active" : ""}" data-shelf-tab="new" type="button"><span class="label">New additions</span><span class="count">${pendingCount}</span></button>` : "";
+  el.tabs.style.setProperty("--tab-count", "2");
+  el.tabs.style.setProperty("--tab-width", "calc((100% - 18px) / 2)");
+  el.tabs.style.setProperty("--tab-index", state.filters.tab === "new" ? "1" : "0");
+  el.tabs.innerHTML = pendingCount ? `<button class="${state.filters.tab !== "new" ? "active" : ""}" data-shelf-tab="shelf" type="button"><span class="label">Shelf</span></button><button class="${state.filters.tab === "new" ? "active" : ""}" data-shelf-tab="new" type="button"><span class="label">New additions</span><span class="count">${pendingCount}</span></button>` : "";
   el.count.textContent = `${games.length} ${games.length === 1 ? "game" : "games"}`;
   el.shelf.classList.toggle("list-view", state.viewMode === "list");
   el.shelf.innerHTML = "";

@@ -77,7 +77,9 @@ assert.match(appSource, /function mobileSectionCounts\(\)/, "Main mobile tabs mu
 assert.match(appSource, /function canSeeNewAdditions\(\)[\s\S]*?state\.canEdit/, "Main New additions must only appear while logged in");
 assert.match(appSource, /function finishSetupGame\(id\)[\s\S]*?openEditor\(id\)/, "Main New additions must use Finish setup to complete missing info");
 assert.match(appSource, /if \(game\.section === "new"\)[\s\S]*?completeAction\.addEventListener\("click", \(\) => startPlaying\(game\.id\)\)/, "Main New additions cards must play directly");
-assert.match(shelfSource, /<span class="label">Shelf<\/span><span class="count">\$\{shelfCount\}<\/span>/, "Shelf tabs must show counts on every tab");
+assert.doesNotMatch(shelfSource, /<span class="label">Shelf<\/span><span class="count">/, "Shelf must only show a count on New additions");
+assert.match(shelfSource, /<span class="label">New additions<\/span><span class="count">\$\{pendingCount\}<\/span>/, "Shelf New additions tab must show its count");
+assert.match(shelfSource, /--tab-index", state\.filters\.tab === "new" \? "1" : "0"/, "Shelf tab slider must move by active tab index");
 assert.match(shelfSource, /const pendingCount = state\.canEdit \? state\.games\.filter\(isPendingCollectionGame\)\.length : 0/, "Shelf New additions must only appear while logged in");
 for (const html of [appHtml, shelfHtml]) assert.doesNotMatch(html, /<nav class="nav-tabs"/, "Main and Shelf must not show the temporary cross-site navbar");
 assert.match(shelfSource, /state\.viewMode === "list"[\s\S]*?games\.map\(gameRow\)/, "Shelf list mode must render Main-style compact rows");

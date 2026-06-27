@@ -477,12 +477,14 @@
   border-radius: 0;
 }
 .shelf-tabs {
-  --shelf-tab-width: calc((100% - 18px) / 2);
+  --tab-count: 2;
+  --tab-index: 0;
+  --tab-width: calc((100% - 18px) / 2);
   position: sticky;
   top: 110px;
   z-index: 11;
   display: grid;
-  grid-template-columns: repeat(2, minmax(160px, 1fr));
+  grid-template-columns: repeat(var(--tab-count), minmax(0, 1fr));
   gap: 6px;
   margin: 0 0 12px;
   padding: 6px;
@@ -506,17 +508,13 @@
   position: absolute;
   inset: 6px auto 6px 6px;
   z-index: 0;
-  width: var(--shelf-tab-width);
+  width: var(--tab-width);
   border-radius: 7px;
   background: var(--accent);
   box-shadow: 0 3px 24px color-mix(in srgb, var(--accent) 42%, transparent);
-  transform: translateX(0);
+  transform: translateX(calc(var(--tab-index) * (100% + 6px)));
   transition: transform 180ms ease;
   pointer-events: none;
-}
-
-.shelf-tabs[data-active-tab="new"]::before {
-  transform: translateX(calc(var(--shelf-tab-width) + 6px));
 }
 
 .shelf-tabs button {
@@ -1069,9 +1067,8 @@
     height: var(--toolbar-control-height);
   }
   .shelf-tabs {
-    --shelf-tab-width: calc((100% - 18px) / 2);
+    --tab-width: calc((100% - 18px) / 2);
     top: 10px;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
   .shelf-grid {
     grid-template-columns: 1fr;
