@@ -13,15 +13,15 @@ export async function onRequestGet({ request, env = {} }) {
   const searchMode = url.searchParams.get("mode") === "search";
   if (!title && !requestedId && !requestedUpc && !requestedUrl) return json({ error: "Missing title, product id, UPC, or PriceCharting URL" }, 400);
 
-  const query = [title, physicalRegionTerm(region), priceChartingPlatformTerm(platform)].filter(Boolean).join(" ");
-  const searchUrl = `${SITE_URL}/search-products?type=prices&region-name=all&exclude-variants=false&q=${encodeURIComponent(requestedUpc || title || query)}`;
-  const fallbackUrls = directProductUrls(title, platform, region);
+  const priceChartingTitle = priceChartingSearchTitle(title);
+  const query = [priceChartingTitle || title, physicalRegionTerm(region), priceChartingPlatformTerm(platform)].filter(Boolean).join(" ");
+  const searchUrl = `${SITE_URL}/search-products?type=prices&region-name=all&exclude-variants=false&q=${encodeURIComponent(requestedUpc || query || title)}`;
+  const fallbackUrls = directProductUrls(priceChartingTitle || title, platform, region);
   const token = env.PRICECHARTING_TOKEN || globalThis.process?.env?.PRICECHARTING_TOKEN || "";
   try {
     if (searchMode) {
-      let results = uniqueCandidates(rankCandidates(await fetchPublicCandidates(searchUrl), query));
+      let results = uniqueCandidates(rankCandidates(filterVideoGameCandidates(await fetchPublicCandidates(searchUrl), query), query));
       if (!results.length) results = uniqueCandidates(rankCandidates(await fetchDirectCandidates(fallbackUrls, query, searchUrl), query));
-      results = await hydrateSearchCandidateImages(results.slice(0, 12), query, searchUrl);
       return json({ results: results.slice(0, 12), searchUrl, source: "PriceCharting" });
     }
     const apiProduct = token ? await fetchApiProduct(token, { id: requestedId, upc: requestedUpc, query }) : null;
@@ -114,10 +114,11 @@ async function fetchPublicCandidates(searchUrl) {
 }
 
 async function fetchPublicProduct({ query, searchUrl, requestedId, requestedUrl, fallbackUrls = [] }) {
-  const candidates = requestedUrl ? [] : await fetchPublicCandidates(searchUrl);
+  const candidates = requestedUrl ? [] : await fetchPublicCandidates(searchUrl).then((items) => filterVideoGameCandidates(items, query));
   const candidate = requestedUrl ? { url: requestedUrl, productId: requestedId } : candidates.find((item) => requestedId && item.productId === requestedId) || bestCandidate(candidates, query);
   if (!candidate?.url && fallbackUrls.length) return (await fetchDirectCandidates(fallbackUrls, query, searchUrl))[0] || null;
   if (!candidate?.url) return candidate || null;
+  if (!isVideoGameConsole(consoleNameFromProductUrl(candidate.url))) return null;
   const productResponse = await fetch(candidate.url, { headers: browserHeaders(), cf: { cacheTtl: 3600, cacheEverything: true } });
   if (!productResponse.ok) return candidate;
   const html = await productResponse.text();
@@ -141,13 +142,6 @@ async function fetchDirectCandidates(urls, query, searchUrl) {
   return products.filter((product) => product?.productId && product?.productName);
 }
 
-async function hydrateSearchCandidateImages(candidates, query, searchUrl) {
-  return Promise.all(candidates.map(async (candidate) => {
-    if (candidate.image || !candidate.url) return candidate;
-    return fetchPublicProduct({ query, searchUrl, requestedId: candidate.productId, requestedUrl: candidate.url }).catch(() => candidate);
-  }));
-}
-
 function parseSearchCandidates(html) {
   return [...String(html).matchAll(/<tr[^>]+id="product-(\d+)"[\s\S]*?<\/tr>/gi)].map((match) => {
     const row = match[0];
@@ -161,6 +155,20 @@ function parseSearchCandidates(html) {
       prices: { loose: moneyCell(row, "used_price"), complete: moneyCell(row, "cib_price"), sealed: moneyCell(row, "new_price") },
     };
   });
+}
+
+function filterVideoGameCandidates(candidates, query) {
+  const wantedConsole = consoleSignature(query);
+  return candidates.filter((item) => {
+    if (!isVideoGameConsole(item.consoleName)) return false;
+    return !wantedConsole || consoleSignature(item.consoleName) === wantedConsole;
+  });
+}
+
+function isVideoGameConsole(value) {
+  const consoleName = consoleSignature(value);
+  if (consoleName) return true;
+  return /\b(?:nes|snes|gamecube|wii|wii u|game boy|gba|gbc|vita|psp|dreamcast|genesis|mega drive|saturn|master system|game gear|atari)\b/i.test(String(value || ""));
 }
 
 function bestCandidate(candidates, query) {
@@ -206,6 +214,7 @@ function editionQualifierToken(token) {
 
 function stripSearchQualifiers(value) {
   return normalize(value)
+    .replace(/\bversion\b/g, " ")
     .replace(/\b(?:pal|ntsc|jp|japan|japanese|asian english|asia|usa|us|united states|europe|spain|france|germany|australia|uk|united kingdom)\b/g, " ")
     .replace(/\b(?:nintendo )?switch(?: 2)?\b/g, " ")
     .replace(/\b(?:sony )?playstation ?[1-5]\b/g, " ")
@@ -293,6 +302,7 @@ function moneyCell(row, className) { const cell = row.match(new RegExp(`<td[^>]+
 function cents(value) { const number = Number(value); return Number.isFinite(number) && number > 0 ? number / 100 : null; }
 function withoutNulls(value) { return Object.fromEntries(Object.entries(value).filter(([, item]) => item != null)); }
 function physicalRegionTerm(region) { const value = normalize(region); if (/japan|jp/.test(value)) return "JP"; if (/spain|europe|france|germany|united kingdom|uk|australia/.test(value)) return "PAL"; if (/united states|usa|ntsc/.test(value)) return "NTSC"; if (/taiwan|asia/.test(value)) return "Asian English"; return ""; }
+function priceChartingSearchTitle(title) { return String(title || "").replace(/\bversion\b/gi, " ").replace(/\s+/g, " ").trim(); }
 function priceChartingPlatformTerm(platform) { const value = normalize(platform); const playstation = value.match(/^(?:ps|playstation)\s*([1-5])$/); if (playstation) return `Playstation ${playstation[1]}`; if (value === "switch") return "Nintendo Switch"; if (value === "switch 2") return "Nintendo Switch 2"; if (value === "xone") return "Xbox One"; if (value === "x360") return "Xbox 360"; return platform; }
 function directProductUrls(title, platform, region) { const titleSlug = slug(title); const consoleSlug = slug(priceChartingPlatformTerm(platform)); if (!titleSlug || !consoleSlug) return []; const prefix = physicalRegionTerm(region) === "PAL" ? "pal-" : physicalRegionTerm(region) === "JP" ? "jp-" : ""; return [...new Set([`${SITE_URL}/game/${prefix}${consoleSlug}/${titleSlug}`, `${SITE_URL}/game/${consoleSlug}/${titleSlug}`])]; }
 function slug(value) { return normalize(value).replace(/\s+/g, "-"); }
