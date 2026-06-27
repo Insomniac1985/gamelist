@@ -13,8 +13,8 @@ const SETTINGS_KEY = "gamelist:settings:v1";
 const KASH_TWITCH_URL = "https://www.twitch.tv/kashhoward";
 const DEFAULT_PAGE_ORDER = ["trophies", "calendar", "highlights", "search", "gamelist", "finished"];
 const LAYOUT_SECTION_KEYS = ["playing", ...DEFAULT_PAGE_ORDER, "latestFinished"];
-const SITE_VERSION = "v199";
-const SITE_UPDATED_AT = "2026-06-27T18:09:20+02:00";
+const SITE_VERSION = "v200";
+const SITE_UPDATED_AT = "2026-06-27T18:14:49+02:00";
 const VERSION_STORAGE_KEY = "gamelist:site-version";
 const STORE_OPTIONS = ["Amazon", "eBay", "GAME.es", "Xtralife", "Retro Island NY", "GameStop", "Walmart"];
 const MAX_PRICE_STORES = 5;
@@ -780,6 +780,7 @@ function render() {
   renderReleaseCalendar();
   syncMobileSectionToResults();
   renderMobileTabs();
+  renderSection("new");
   renderSection("backlog");
   renderSection("upcoming");
   renderSection("wanted");
@@ -1754,6 +1755,7 @@ function renderStats() {
   const markedCompleted = listedCompleted.filter((game) => game.platinum);
   const markedCompletedThisYear = markedCompleted.filter((game) => completionYear(game) === currentYear).length;
   const counts = {
+    new: active.filter((game) => game.section === "new").length,
     wanted: active.filter((game) => game.section === "wanted").length,
     upcoming: active.filter((game) => game.section === "upcoming").length,
     backlog: active.filter((game) => game.section === "backlog").length,
@@ -1764,6 +1766,7 @@ function renderStats() {
       action: "completed",
       detail: completedStatDetail(currentYear, completedThisYear, counts.completed, markedCompletedThisYear),
     }),
+    counts.new ? stat("New additions", counts.new, "new", { detail: sectionStatDetail("new", active, total) }) : "",
     stat("Backlog", counts.backlog, "backlog", { detail: sectionStatDetail("backlog", active, total) }),
     stat("To Release", counts.upcoming, "release", { detail: sectionStatDetail("upcoming", active, total) }),
     stat("Available", counts.wanted, "available", { detail: sectionStatDetail("wanted", active, total) }),
@@ -1993,11 +1996,27 @@ function platformCounts(games) {
 }
 
 function renderMobileTabs() {
+  const sections = mobileSections();
+  if (!sections.includes(state.mobileSection)) state.mobileSection = sections[0] || "backlog";
   el.mobileTabs.forEach((button) => {
-    const active = button.dataset.mobileSection === state.mobileSection;
+    const visible = sections.includes(button.dataset.mobileSection);
+    button.hidden = !visible;
+    const active = visible && button.dataset.mobileSection === state.mobileSection;
     button.classList.toggle("active", active);
   });
+  const index = Math.max(0, sections.indexOf(state.mobileSection));
+  document.querySelector(".mobile-section-tabs")?.style.setProperty("--mobile-tab-count", String(sections.length));
+  document.querySelector(".mobile-section-tabs")?.style.setProperty("--mobile-tab-width", `calc((100% - ${6 * (sections.length + 1)}px) / ${sections.length})`);
+  document.querySelector(".mobile-section-tabs")?.style.setProperty("--mobile-tab-index", String(index));
   document.body.dataset.mobileSection = state.mobileSection;
+}
+
+function mobileSections() {
+  return hasNewAdditions() ? ["new", "backlog", "upcoming", "wanted"] : ["backlog", "upcoming", "wanted"];
+}
+
+function hasNewAdditions() {
+  return state.games.some((game) => !game.deletedAt && !game.completedAt && !game.playing && game.section === "new");
 }
 
 function handleBoardSwipeStart(event) {
@@ -2016,7 +2035,7 @@ function handleBoardSwipeEnd(event) {
   const dx = touch.clientX - start.x;
   const dy = touch.clientY - start.y;
   if (Math.abs(dx) < 34 || Math.abs(dx) < Math.abs(dy) * 1.15) return;
-  const sections = ["backlog", "upcoming", "wanted"];
+  const sections = mobileSections();
   const index = sections.indexOf(state.mobileSection);
   const next = dx < 0 ? sections[index + 1] : sections[index - 1];
   if (!next) return;
@@ -2026,7 +2045,7 @@ function handleBoardSwipeEnd(event) {
 
 function syncMobileSectionToResults() {
   if (!state.filters.query && !state.filters.preordered) return;
-  const sections = state.filters.preordered ? ["upcoming", "backlog", "wanted"] : ["backlog", "upcoming", "wanted"];
+  const sections = state.filters.preordered ? mobileSections().filter((section) => section !== "new").sort((a, b) => ["upcoming", "backlog", "wanted"].indexOf(a) - ["upcoming", "backlog", "wanted"].indexOf(b)) : mobileSections();
   const hasCurrent = filteredGames().some((game) => (
     game.section === state.mobileSection
     && !game.completedAt
@@ -2134,7 +2153,10 @@ function hideSelectOverflowPopover() {
 
 function renderSection(section) {
   const list = document.querySelector(`.card-list[data-section="${section}"]`);
+  const column = document.querySelector(`#${CSS.escape(section)}`);
+  if (!list) return;
   const games = filteredGames().filter((game) => game.section === section && !game.completedAt && !game.playing);
+  if (column && section === "new") column.hidden = !games.length;
   games.sort((a, b) => compareGames(a, b, section));
   list.innerHTML = "";
   list.classList.toggle("list-view", state.viewMode === "list");
@@ -4135,7 +4157,7 @@ function platformDisplayName(platform) {
 
 function normalizeGameRecords(games) {
   const normalized = Array.isArray(games) ? games.map(normalizeGameRecord) : [];
-  ["backlog", "upcoming", "wanted"].forEach((section) => {
+  ["new", "backlog", "upcoming", "wanted"].forEach((section) => {
     normalized
       .filter((game) => !game.deletedAt && !game.completedAt && !game.playing && game.section === section)
       .sort((a, b) => {
@@ -4174,6 +4196,7 @@ function normalizeGameRecord(game) {
   normalized.statuses = gameStatuses(normalized);
   normalized.genres = unique((Array.isArray(normalized.genres) ? normalized.genres : []).map((genre) => String(genre || "").trim()).filter(Boolean));
   normalized.prices = Array.isArray(normalized.prices) ? normalized.prices : [];
+  normalized.section = ["new", "backlog", "upcoming", "wanted"].includes(normalized.section) ? normalized.section : "wanted";
   return normalized;
 }
 
@@ -4745,7 +4768,9 @@ function markGameEdited(game, timestamp = new Date().toISOString()) {
 
 function moveToBacklog(id) {
   const game = getGame(id);
+  const fromShelfAdditions = game.section === "new" && game.shelfId;
   game.section = "backlog";
+  if (fromShelfAdditions) game.acceptedFromShelfAt = new Date().toISOString();
   game.preorderStore = "";
   game.prices = [];
   game.order = nextOrder("backlog");
@@ -5313,7 +5338,7 @@ async function fetchSearchResults(query) {
 }
 
 function shouldFetchPricesForGame(game) {
-  return Boolean(game?.title && game.section !== "backlog" && !game.completedAt && !game.platinum && priceProvidersForGame(game).length);
+  return Boolean(game?.title && ["upcoming", "wanted"].includes(game.section) && !game.completedAt && !game.platinum && priceProvidersForGame(game).length);
 }
 
 async function refreshCurrentPrices() {
@@ -5370,7 +5395,7 @@ async function refreshPricesForGame(id, options = {}) {
 
 async function refreshAllPrices() {
   if (!state.canEdit) return;
-  const games = activeGames().filter((game) => game.section !== "backlog" && game.title && priceProvidersForGame(game).length);
+  const games = activeGames().filter((game) => ["upcoming", "wanted"].includes(game.section) && game.title && priceProvidersForGame(game).length);
   if (!games.length) {
     alert("No Available now or To Release games to refresh.");
     return;

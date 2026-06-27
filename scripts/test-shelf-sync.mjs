@@ -129,8 +129,13 @@ assert.equal(shelf.games[0].pendingCollection, true);
 const layout = { order: ["playing", "trophies", "kpis", "filters", "library"], hidden: ["trophies"] };
 await putShelf({ request: request("https://example.test/api/shelf", { games: [...shelf.games, { id: "s2", title: "Shelf Add", platform: "Nintendo Switch", country: "Spain", owners: ["Jordi"], genre: "RPG" }], overrides: {}, layout }), env });
 let list = await kv.get("gamelist-data", "json");
-assert.equal(list.games.some((game) => game.shelfId === "s2" && game.section === "backlog"), true);
+assert.equal(list.games.some((game) => game.shelfId === "s2" && game.section === "new"), true);
 assert.deepEqual(list.games.find((game) => game.shelfId === "s2").owners, ["Jordi"]);
+
+await putGamelist({ request: request("https://example.test/api/sync", { games: list.games.map((game) => game.shelfId === "s2" ? { ...game, section: "backlog" } : game), settings: {} }), env });
+shelf = await kv.get("shelf-data", "json");
+assert.equal(shelf.games.some((game) => game.gamelistId === "shelf-s2"), false, "Accepting a Shelf-origin addition into backlog must not sync it back to Shelf");
+list = await kv.get("gamelist-data", "json");
 
 await putGamelist({ request: request("https://example.test/api/sync", { games: list.games, settings: { shelfSync: false } }), env });
 await putGamelist({ request: request("https://example.test/api/sync", { games: [...list.games, { id: "g2", title: "No Sync", platform: "PS5", section: "backlog", digital: false }], settings: { shelfSync: false } }), env });

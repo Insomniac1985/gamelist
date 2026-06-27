@@ -60,7 +60,7 @@ async function syncShelfGamesToBacklog(env, allShelfGames, games) {
     shelfId: game.id,
     title: game.title,
     platform: shortPlatform(game.platform),
-    section: "backlog",
+    section: "new",
     digital: false,
     playing: false,
     platinum: false,

@@ -35,6 +35,7 @@ export async function onRequestPut({ request, env }) {
   const newlyCollected = body.games.filter((game) => (
     game.section === "backlog"
     && !game.digital
+    && !game.shelfId
     && !game.deletedAt
     && (!previousById.has(game.id) || previousById.get(game.id)?.section !== "backlog" || previousById.get(game.id)?.digital)
   ));

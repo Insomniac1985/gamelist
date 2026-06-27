@@ -478,15 +478,17 @@
 }
 .shelf-tabs {
   --shelf-tab-width: calc((100% - 18px) / 2);
-  position: relative;
+  position: sticky;
+  top: 110px;
+  z-index: 10;
   display: grid;
   grid-template-columns: repeat(2, minmax(160px, 1fr));
   gap: 6px;
   margin: 0 0 12px;
   padding: 6px;
   overflow-y: hidden;
-  overflow-x: auto;
-  scroll-snap-type: x proximity;
+  overflow-x: hidden;
+  scroll-snap-type: none;
   scrollbar-width: none;
   background: var(--panel);
   border: 1px solid var(--line);
@@ -1061,9 +1063,8 @@
   }
   .shelf-tabs {
     --shelf-tab-width: calc((100% - 18px) / 2);
+    top: 10px;
     grid-template-columns: repeat(2, minmax(0, 1fr));
-    overflow-x: hidden;
-    scroll-snap-type: none;
   }
   .shelf-grid {
     grid-template-columns: 1fr;
