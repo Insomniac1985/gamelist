@@ -5,8 +5,8 @@ splitShelfPlayingModules();
 
 const SESSION_KEY = "gamelist-editor";
 const KASH_TWITCH_URL = "https://www.twitch.tv/kashhoward";
-const SITE_VERSION = "v200";
-const SITE_UPDATED_AT = "2026-06-27T18:14:49+02:00";
+const SITE_VERSION = "v202";
+const SITE_UPDATED_AT = "2026-06-27T18:27:28+02:00";
 const VERSION_STORAGE_KEY = "gamelist:site-version";
 const VIEW_KEY = "shelf:view-mode:v2";
 const LAYOUT_KEY = "shelf:layout:v2";
@@ -382,11 +382,12 @@ function scrollToShelfLibrary() {
 }
 
 function renderStats() {
-  const value = state.games.reduce((sum, game) => sum + (Number(game.price) || 0), 0);
+  const visibleGames = visibleShelfGames();
+  const value = visibleGames.reduce((sum, game) => sum + (Number(game.price) || 0), 0);
   const valueText = state.gamelistSettings.currency === "USD" ? `$${Math.round(value).toLocaleString("en")}` : `${Math.round(value).toLocaleString("en")}€`;
   const rows = [
-    [state.games.length, "Physical games", "stat-backlog"],
-    [new Set(state.games.map((game) => game.platform)).size, "Platforms", "stat-available"],
+    [visibleGames.length, "Physical games", "stat-backlog"],
+    [new Set(visibleGames.map((game) => game.platform)).size, "Platforms", "stat-available"],
     ...(shelfPricesVisible() ? [[valueText, "Estimated value", "stat-done"]] : []),
   ];
   el.stats.innerHTML = rows.map(([valueText, label, className]) => `<div class="stat glass ${className}"><strong>${escapeHtml(valueText)}</strong><span>${escapeHtml(label)}</span></div>`).join("");
@@ -397,9 +398,10 @@ function renderFilters() {
     state.filters.sort = "platform";
     state.filters.direction = "asc";
   }
-  const platforms = uniqueSorted(state.games.map((game) => game.platform));
-  const countries = uniqueSorted(state.games.map((game) => game.country));
-  const categories = uniqueSorted(state.games.flatMap((game) => [...String(game.genre || "").split(","), ...(game.genres || [])].map((value) => value.trim()).filter(Boolean)));
+  const visibleGames = visibleShelfGames();
+  const platforms = uniqueSorted(visibleGames.map((game) => game.platform));
+  const countries = uniqueSorted(visibleGames.map((game) => game.country));
+  const categories = uniqueSorted(visibleGames.flatMap((game) => [...String(game.genre || "").split(","), ...(game.genres || [])].map((value) => value.trim()).filter(Boolean)));
   el.platform.innerHTML = `<option value="all">All consoles</option>${platforms.map((value) => `<option value="${escapeHtml(value)}">${escapeHtml(shortPlatform(value))}</option>`).join("")}`;
   el.region.innerHTML = `<option value="all">All regions</option>${countries.map((value) => `<option value="${escapeHtml(value)}">${escapeHtml(regionName(value))}</option>`).join("")}`;
   el.category.innerHTML = `<option value="all">All categories</option>${categories.map((value) => `<option value="${escapeHtml(value)}">${escapeHtml(value)}</option>`).join("")}`;
@@ -416,12 +418,13 @@ function renderFilters() {
 }
 
 function renderLibrary() {
-  const pendingCount = state.games.filter(isPendingCollectionGame).length;
+  const pendingCount = state.canEdit ? state.games.filter(isPendingCollectionGame).length : 0;
+  const shelfCount = state.games.filter((game) => !isPendingCollectionGame(game)).length;
   state.filters.tab = normalizedShelfTab(pendingCount ? state.filters.tab : "shelf");
   const games = filteredGames();
   el.tabs.hidden = !pendingCount;
   el.tabs.dataset.activeTab = state.filters.tab;
-  el.tabs.innerHTML = pendingCount ? `<button class="${state.filters.tab !== "new" ? "active" : ""}" data-shelf-tab="shelf" type="button">Shelf</button><button class="${state.filters.tab === "new" ? "active" : ""}" data-shelf-tab="new" type="button"><span class="label">New additions</span> <span class="count">${pendingCount}</span></button>` : "";
+  el.tabs.innerHTML = pendingCount ? `<button class="${state.filters.tab !== "new" ? "active" : ""}" data-shelf-tab="shelf" type="button"><span class="label">Shelf</span><span class="count">${shelfCount}</span></button><button class="${state.filters.tab === "new" ? "active" : ""}" data-shelf-tab="new" type="button"><span class="label">New additions</span><span class="count">${pendingCount}</span></button>` : "";
   el.count.textContent = `${games.length} ${games.length === 1 ? "game" : "games"}`;
   el.shelf.classList.toggle("list-view", state.viewMode === "list");
   el.shelf.innerHTML = "";
@@ -476,7 +479,7 @@ function updateShelfRowTitleOverflow() {
 }
 
 function filteredGames() {
-  return state.games.filter((game) => {
+  return visibleShelfGames().filter((game) => {
     const haystack = normalizeSearchText(`${game.title} ${game.platform} ${game.publisher} ${game.developer} ${game.genre} ${game.notes} ${(game.tags || []).join(" ")} ${(game.owners || []).join(" ")}`);
     return !game.deletedAt
       && (state.filters.platform === "all" || game.platform === state.filters.platform)
@@ -488,6 +491,7 @@ function filteredGames() {
   }).sort(sorter(state.filters.sort));
 }
 function isPendingCollectionGame(game) { return Boolean(game?.pendingCollection); }
+function visibleShelfGames() { return state.canEdit ? state.games : state.games.filter((game) => !isPendingCollectionGame(game)); }
 
 function gameCard(game, options = {}) {
   const fallbackCover = coverUrl(game.cover || "") || platformFallback(game.platform);

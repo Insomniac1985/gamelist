@@ -72,6 +72,13 @@ assert.match(appSource, /shelfSync: settings\.shelfSync !== false/, "Main must n
 assert.match(shelfSource, /shelfSync: document\.querySelector\("#shelfSettingsSync"\)\?\.checked !== false/, "Shelf must persist the shared Shelf Sync setting");
 assert.match(shelfSource, /shelfHidePrices: Boolean\(document\.querySelector\("#shelfSettingsHidePrices"\)\?\.checked\)/, "Shelf must persist the Hide prices setting without changing price data");
 assert.match(shelfSource, /function shelfPricesVisible\(\)[\s\S]*?shelfHidePrices !== true/, "Shelf price visibility must be a display-only setting");
+assert.doesNotMatch(appSource, /stat\("New additions"/, "Main must not show a New additions KPI");
+assert.match(appSource, /function mobileSectionCounts\(\)/, "Main mobile tabs must show section counts");
+assert.match(appSource, /function canSeeNewAdditions\(\)[\s\S]*?state\.canEdit/, "Main New additions must only appear while logged in");
+assert.match(appSource, /function finishSetupGame\(id\)[\s\S]*?openEditor\(id\)/, "Main New additions must use Finish setup to complete missing info");
+assert.match(appSource, /if \(game\.section === "new"\)[\s\S]*?completeAction\.addEventListener\("click", \(\) => startPlaying\(game\.id\)\)/, "Main New additions cards must play directly");
+assert.match(shelfSource, /<span class="label">Shelf<\/span><span class="count">\$\{shelfCount\}<\/span>/, "Shelf tabs must show counts on every tab");
+assert.match(shelfSource, /const pendingCount = state\.canEdit \? state\.games\.filter\(isPendingCollectionGame\)\.length : 0/, "Shelf New additions must only appear while logged in");
 for (const html of [appHtml, shelfHtml]) assert.doesNotMatch(html, /<nav class="nav-tabs"/, "Main and Shelf must not show the temporary cross-site navbar");
 assert.match(shelfSource, /state\.viewMode === "list"[\s\S]*?games\.map\(gameRow\)/, "Shelf list mode must render Main-style compact rows");
 assert.match(shelfSource, /syncViewModeButton\(el\.view, state\.viewMode/, "Shelf view control must show the current mode");

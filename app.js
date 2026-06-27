@@ -13,8 +13,8 @@ const SETTINGS_KEY = "gamelist:settings:v1";
 const KASH_TWITCH_URL = "https://www.twitch.tv/kashhoward";
 const DEFAULT_PAGE_ORDER = ["trophies", "calendar", "highlights", "search", "gamelist", "finished"];
 const LAYOUT_SECTION_KEYS = ["playing", ...DEFAULT_PAGE_ORDER, "latestFinished"];
-const SITE_VERSION = "v200";
-const SITE_UPDATED_AT = "2026-06-27T18:14:49+02:00";
+const SITE_VERSION = "v202";
+const SITE_UPDATED_AT = "2026-06-27T18:27:28+02:00";
 const VERSION_STORAGE_KEY = "gamelist:site-version";
 const STORE_OPTIONS = ["Amazon", "eBay", "GAME.es", "Xtralife", "Retro Island NY", "GameStop", "Walmart"];
 const MAX_PRICE_STORES = 5;
@@ -157,6 +157,7 @@ const state = {
   sortTouched: false,
   viewMode: localStorage.getItem(VIEW_MODE_KEY) === "list" ? "list" : "grid",
   editingId: "",
+  finishSetupId: "",
   pendingDescription: "",
   canEdit: sessionStorage.getItem(SESSION_KEY) === "true",
   draggingId: "",
@@ -562,7 +563,10 @@ function bindEvents() {
     if (event.target === el.releaseDialog) el.releaseDialog.close();
   });
   el.releaseDialog.addEventListener("close", syncScrollLock);
-  el.dialog.addEventListener("close", syncScrollLock);
+  el.dialog.addEventListener("close", () => {
+    state.finishSetupId = "";
+    syncScrollLock();
+  });
   el.settingsCloseButton?.addEventListener("click", () => el.settingsDialog.close());
   el.settingsDialog?.addEventListener("click", (event) => {
     if (event.target === el.settingsDialog) el.settingsDialog.close();
@@ -1766,7 +1770,6 @@ function renderStats() {
       action: "completed",
       detail: completedStatDetail(currentYear, completedThisYear, counts.completed, markedCompletedThisYear),
     }),
-    counts.new ? stat("New additions", counts.new, "new", { detail: sectionStatDetail("new", active, total) }) : "",
     stat("Backlog", counts.backlog, "backlog", { detail: sectionStatDetail("backlog", active, total) }),
     stat("To Release", counts.upcoming, "release", { detail: sectionStatDetail("upcoming", active, total) }),
     stat("Available", counts.wanted, "available", { detail: sectionStatDetail("wanted", active, total) }),
@@ -1997,12 +2000,16 @@ function platformCounts(games) {
 
 function renderMobileTabs() {
   const sections = mobileSections();
+  const counts = mobileSectionCounts();
   if (!sections.includes(state.mobileSection)) state.mobileSection = sections[0] || "backlog";
   el.mobileTabs.forEach((button) => {
     const visible = sections.includes(button.dataset.mobileSection);
     button.hidden = !visible;
     const active = visible && button.dataset.mobileSection === state.mobileSection;
     button.classList.toggle("active", active);
+    const label = mobileSectionLabel(button.dataset.mobileSection);
+    const count = counts[button.dataset.mobileSection] || 0;
+    button.innerHTML = `<span class="label">${escapeHtml(label)}</span><span class="count">${count}</span>`;
   });
   const index = Math.max(0, sections.indexOf(state.mobileSection));
   document.querySelector(".mobile-section-tabs")?.style.setProperty("--mobile-tab-count", String(sections.length));
@@ -2015,8 +2022,26 @@ function mobileSections() {
   return hasNewAdditions() ? ["new", "backlog", "upcoming", "wanted"] : ["backlog", "upcoming", "wanted"];
 }
 
+function mobileSectionCounts() {
+  const games = filteredGames().filter((game) => !game.completedAt && !game.playing);
+  return Object.fromEntries(mobileSections().map((section) => [section, games.filter((game) => game.section === section).length]));
+}
+
+function mobileSectionLabel(section) {
+  return {
+    new: "New additions",
+    backlog: "Backlog",
+    upcoming: "To Release",
+    wanted: "Available",
+  }[section] || section;
+}
+
 function hasNewAdditions() {
-  return state.games.some((game) => !game.deletedAt && !game.completedAt && !game.playing && game.section === "new");
+  return canSeeNewAdditions() && state.games.some((game) => !game.deletedAt && !game.completedAt && !game.playing && game.section === "new");
+}
+
+function canSeeNewAdditions() {
+  return Boolean(state.canEdit);
 }
 
 function handleBoardSwipeStart(event) {
@@ -2156,7 +2181,7 @@ function renderSection(section) {
   const column = document.querySelector(`#${CSS.escape(section)}`);
   if (!list) return;
   const games = filteredGames().filter((game) => game.section === section && !game.completedAt && !game.playing);
-  if (column && section === "new") column.hidden = !games.length;
+  if (column && section === "new") column.hidden = !canSeeNewAdditions() || !games.length;
   games.sort((a, b) => compareGames(a, b, section));
   list.innerHTML = "";
   list.classList.toggle("list-view", state.viewMode === "list");
@@ -2213,7 +2238,7 @@ function rowFor(game, section, options = {}) {
   const row = document.createElement("article");
   const statuses = gameStatuses(game);
   const owners = ownerTags(game);
-  const showRowPrices = section !== "backlog" && priceProvidersForGame(game).length;
+  const showRowPrices = !["backlog", "new"].includes(section) && priceProvidersForGame(game).length;
   row.className = "game-row";
   row.dataset.id = game.id;
   row.dataset.owner = statuses.join(" ");
@@ -2238,7 +2263,7 @@ function rowFor(game, section, options = {}) {
     <div class="game-row-tags">${rowTags(game).join("")}</div>
     ${showRowPrices ? `<div class="game-row-prices">${rowPrices(game)}</div>` : ""}
     <div class="game-row-actions">
-      <button class="icon-button row-edit-action" type="button" title="Edit" aria-label="Edit">${pencilIcon()}</button>
+      ${section === "new" ? "" : `<button class="icon-button row-edit-action" type="button" title="Edit" aria-label="Edit">${pencilIcon()}</button>`}
       ${rowPrimaryAction(game, section)}
     </div>
   `;
@@ -2252,16 +2277,21 @@ function rowFor(game, section, options = {}) {
     event.preventDefault();
     openDetail(game.id);
   });
-  row.querySelector(".row-edit-action").addEventListener("click", () => openEditor(game.id));
+  row.querySelector(".row-edit-action")?.addEventListener("click", () => openEditor(game.id));
   row.querySelector(".row-primary-action")?.addEventListener("click", () => {
-    if (section === "backlog") startPlaying(game.id);
+    if (section === "backlog" || section === "new") startPlaying(game.id);
     else moveToBacklog(game.id);
   });
+  row.querySelector(".row-setup-action")?.addEventListener("click", () => finishSetupGame(game.id));
+  row.querySelector(".row-delete-action")?.addEventListener("click", () => deleteGame(game.id));
   return row;
 }
 
 function rowPrimaryAction(game, section) {
   if (section === "backlog") return `<button class="primary-button row-primary-action" type="button">Play</button>`;
+  if (section === "new") {
+    return `<button class="primary-button row-primary-action" type="button">Play</button><button class="ghost-button row-setup-action" type="button">Finish setup</button><button class="danger-button icon-only-button row-delete-action" type="button" title="Delete" aria-label="Delete">${trashIcon()}</button>`;
+  }
   return `<button class="ghost-button row-primary-action" type="button">Got it</button>`;
 }
 
@@ -2580,6 +2610,7 @@ function filteredGames(options = {}) {
   const { applyPreorder = true } = options;
   return state.games.filter((game) => {
     if (game.deletedAt) return false;
+    if (game.section === "new" && !canSeeNewAdditions()) return false;
     const haystack = [
       game.title,
       game.platform,
@@ -2680,7 +2711,17 @@ function cardFor(game, options = {}) {
   const backlogAction = card.querySelector(".backlog-action");
   const completeAction = card.querySelector(".complete-action");
   const trophyAction = card.querySelector(".trophy-action");
-  if (game.section === "backlog" || game.completedAt) {
+  if (game.section === "new") {
+    card.querySelector(".edit-action").remove();
+    prices.remove();
+    priceRefreshAction.remove();
+    backlogAction.remove();
+    trophyAction.remove();
+    boughtAction.textContent = "Finish setup";
+    boughtAction.addEventListener("click", () => finishSetupGame(game.id));
+    completeAction.innerHTML = `<span class="action-label">Play</span>`;
+    completeAction.addEventListener("click", () => startPlaying(game.id));
+  } else if (game.section === "backlog" || game.completedAt) {
     prices.remove();
     priceRefreshAction.remove();
     boughtAction.remove();
@@ -2711,7 +2752,7 @@ function cardFor(game, options = {}) {
     }
     boughtAction.addEventListener("click", () => moveToBacklog(game.id));
   }
-  card.querySelector(".edit-action").addEventListener("click", () => openEditor(game.id));
+  card.querySelector(".edit-action")?.addEventListener("click", () => openEditor(game.id));
   const trailerToggle = card.querySelector(".trailer-toggle");
   if (trailerUrl) {
     trailerToggle.hidden = false;
@@ -4574,7 +4615,7 @@ async function openEditor(id = "") {
   el.fields.id.value = game.id || "";
   el.fields.title.value = game.title || "";
   el.fields.platform.value = game.platform || "";
-  el.fields.section.value = game.section || "wanted";
+  el.fields.section.value = game.section === "new" ? "backlog" : game.section || "wanted";
   el.fields.releaseDate.value = game.releaseDate || "";
   el.fields.releaseText.value = game.releaseText || "";
   el.fields.length.value = game.lengthHours || "";
@@ -4665,6 +4706,7 @@ async function saveFromForm(event) {
   event.preventDefault();
   const existing = state.games.find((game) => game.id === el.fields.id.value);
   const game = await saveCurrentFormGame();
+  state.finishSetupId = "";
   if (shouldCreatePreorderCalendarEvent(existing, game)) {
     createPreorderCalendarEvent(game);
   }
@@ -4681,7 +4723,8 @@ async function saveCurrentFormGame() {
   const platinum = el.fields.platinum.checked;
   const effectiveCompletedAt = completedAt || (platinum ? todayDate() : "");
   const playing = el.fields.playing.checked && !effectiveCompletedAt;
-  const section = playing || replayCount ? "backlog" : el.fields.section.value;
+  const finishingSetup = existing?.section === "new" && state.finishSetupId === id;
+  const section = playing || replayCount || finishingSetup ? "backlog" : el.fields.section.value;
   const startedAt = el.fields.startedAt.value || (playing && !existing?.playing && !existing?.startedAt ? todayDate() : "");
   const trailerUrl = el.fields.trailerUrl.value.trim();
   const trailerUrlRemoved = !trailerUrl && Boolean(existing?.trailerUrl || existing?.trailerUrlRemoved);
@@ -4768,7 +4811,7 @@ function markGameEdited(game, timestamp = new Date().toISOString()) {
 
 function moveToBacklog(id) {
   const game = getGame(id);
-  const fromShelfAdditions = game.section === "new" && game.shelfId;
+  const fromShelfAdditions = isShelfNewAddition(game);
   game.section = "backlog";
   if (fromShelfAdditions) game.acceptedFromShelfAt = new Date().toISOString();
   game.preorderStore = "";
@@ -4788,11 +4831,21 @@ function returnPlayingToBacklog(id) {
 function startPlaying(id) {
   const game = getGame(id);
   if (!game || game.completedAt) return;
+  if (isShelfNewAddition(game)) game.acceptedFromShelfAt = new Date().toISOString();
   game.section = "backlog";
   game.playing = true;
   game.startedAt = game.startedAt || todayDate();
   markGameEdited(game);
   upsertGame(game);
+}
+
+function finishSetupGame(id) {
+  state.finishSetupId = id;
+  openEditor(id);
+}
+
+function isShelfNewAddition(game) {
+  return Boolean(game?.section === "new" && game.shelfId);
 }
 
 function completeGame(id) {
