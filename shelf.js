@@ -1,12 +1,12 @@
-import { normalizeSearchText, createGameCardShell, bindActivityCardParallax, mountActivitySlider, finishedGameMarkup, achievementCardMarkup, achievementDashboardMarkup, achievementPanelMarkup, completedCardMarkup, horizontalCarouselState, syncViewModeButton, slideHorizontalCarousel, comparePlayingGames, finishedDurationText, timeBadgeMarkup, guideLinksMarkup, storeButtonsMarkup, activityTrailerUrl, syncFocusedActivityTrailer, activityReleaseStatus, activityCoverOverride, activityLocalGameForTitle, activityTitleMatchScore, activityAllowsPsnCardTrophies, formatFooterDate, formatFooterDateTime } from "./activity-ui.js";
+import { normalizeSearchText, createGameCardShell, bindActivityCardParallax, mountActivitySlider, finishedGameMarkup, achievementCardMarkup, achievementDashboardMarkup, achievementPanelMarkup, completedCardMarkup, horizontalCarouselState, syncViewModeButton, slideHorizontalCarousel, comparePlayingGames, finishedDurationText, timeBadgeMarkup, guideLinksMarkup, storeButtonsMarkup, activityTrailerUrl, syncFocusedActivityTrailer, activityReleaseStatus, activityCoverOverride, activityLocalGameForTitle, activityTitleMatchScore, activityAllowsPsnCardTrophies, formatFooterDate, formatFooterDateTime, confirmGameDelete } from "./activity-ui.js";
 
 mountActivitySlider(document.querySelector("[data-module='playing']"), { count: "shelfPlayingCount", previous: "shelfPlayingPrev", next: "shelfPlayingNext", list: "playingCarousel", finished: "shelfPlayingFinished", finishedList: "finishedCarousel" });
 splitShelfPlayingModules();
 
 const SESSION_KEY = "gamelist-editor";
 const KASH_TWITCH_URL = "https://www.twitch.tv/kashhoward";
-const SITE_VERSION = "v197";
-const SITE_UPDATED_AT = "2026-06-25T13:58:00+02:00";
+const SITE_VERSION = "v198";
+const SITE_UPDATED_AT = "2026-06-27T18:04:50+02:00";
 const VERSION_STORAGE_KEY = "gamelist:site-version";
 const VIEW_KEY = "shelf:view-mode:v2";
 const LAYOUT_KEY = "shelf:layout:v2";
@@ -54,6 +54,7 @@ const state = {
   completedCoverCache: {},
   playingTrailerFrame: 0,
   playingHeightFrame: 0,
+  shelfSwipeStart: null,
   layout: loadLayout(),
 };
 
@@ -149,7 +150,9 @@ init();
 
 async function init() {
   if (await checkSiteVersion()) return;
+  await window.__initialThemeReady?.catch(() => "shabii");
   applyTheme();
+  document.documentElement.classList.remove("theme-booting");
   registerServiceWorker();
   bindTextureParallax();
   populateEditorOptions();
@@ -219,7 +222,11 @@ function bindEvents() {
   el.shelf.addEventListener("keydown", (event) => { if (event.key !== "Enter" && event.key !== " ") return; const card = event.target.closest("[data-id]"); if (!card || event.target.closest("button, a, input")) return; event.preventDefault(); const game = state.games.find((item) => item.id === card.dataset.id); if (game) openDetails(game); });
   el.fetchValue.addEventListener("click", fetchCollectionValue);
   el.detailPriceToggle.addEventListener("click", toggleCollectionValuePanel);
-  el.tabs.addEventListener("click", (event) => { const tab = event.target.closest("[data-shelf-tab]"); if (!tab) return; state.filters.tab = tab.dataset.shelfTab; renderLibrary(); });
+  el.tabs.addEventListener("click", (event) => { const tab = event.target.closest("[data-shelf-tab]"); if (!tab) return; setShelfTab(tab.dataset.shelfTab); });
+  el.shelf.addEventListener("touchstart", handleShelfSwipeStart, { passive: true });
+  el.shelf.addEventListener("touchend", handleShelfSwipeEnd, { passive: true });
+  el.tabs.addEventListener("touchstart", handleShelfSwipeStart, { passive: true });
+  el.tabs.addEventListener("touchend", handleShelfSwipeEnd, { passive: true });
   el.detailClose.addEventListener("click", () => closeDialog(el.detailDialog));
   el.detailDialog.addEventListener("click", (event) => { if (event.target === el.detailDialog) closeDialog(el.detailDialog); });
   el.detailTrophySort.addEventListener("change", renderGamelistDetailTrophyList);
@@ -403,6 +410,7 @@ function renderLibrary() {
   if (!pendingCount && state.filters.tab === "new") state.filters.tab = "shelf";
   const games = filteredGames();
   el.tabs.hidden = !pendingCount;
+  el.tabs.dataset.activeTab = state.filters.tab === "new" ? "new" : "shelf";
   el.tabs.innerHTML = pendingCount ? `<button class="${state.filters.tab !== "new" ? "active" : ""}" data-shelf-tab="shelf" type="button">Shelf</button><button class="${state.filters.tab === "new" ? "active" : ""}" data-shelf-tab="new" type="button"><span class="label">New additions</span> <span class="count">${pendingCount}</span></button>` : "";
   el.count.textContent = `${games.length} ${games.length === 1 ? "game" : "games"}`;
   el.shelf.classList.toggle("list-view", state.viewMode === "list");
@@ -417,6 +425,42 @@ function renderLibrary() {
     el.shelf.appendChild(fragment);
   }
   el.empty.hidden = games.length > 0;
+  scrollActiveShelfTabIntoView();
+}
+
+function setShelfTab(tab) {
+  const next = tab === "new" ? "new" : "shelf";
+  if (state.filters.tab === next || (next === "shelf" && state.filters.tab !== "new")) return;
+  state.filters.tab = next;
+  renderLibrary();
+}
+
+function scrollActiveShelfTabIntoView() {
+  if (el.tabs.hidden) return;
+  requestAnimationFrame(() => el.tabs.querySelector(".active")?.scrollIntoView({ behavior: "smooth", inline: "center", block: "nearest" }));
+}
+
+function handleShelfSwipeStart(event) {
+  if (!window.matchMedia("(max-width: 760px)").matches || el.tabs.hidden) return;
+  const touch = event.changedTouches?.[0];
+  if (!touch) return;
+  state.shelfSwipeStart = { x: touch.clientX, y: touch.clientY };
+}
+
+function handleShelfSwipeEnd(event) {
+  const start = state.shelfSwipeStart;
+  state.shelfSwipeStart = null;
+  if (!start || !window.matchMedia("(max-width: 760px)").matches || el.tabs.hidden) return;
+  const touch = event.changedTouches?.[0];
+  if (!touch) return;
+  const dx = touch.clientX - start.x;
+  const dy = touch.clientY - start.y;
+  if (Math.abs(dx) < 34 || Math.abs(dx) < Math.abs(dy) * 1.15) return;
+  const tabs = ["shelf", "new"];
+  const current = state.filters.tab === "new" ? "new" : "shelf";
+  const index = tabs.indexOf(current);
+  const next = dx < 0 ? tabs[index + 1] : tabs[index - 1];
+  if (next) setShelfTab(next);
 }
 
 function updateShelfRowTitleOverflow() {
@@ -802,6 +846,7 @@ async function resetGame(game) {
 }
 
 async function deleteGame(game) {
+  if (!confirmGameDelete(game?.title)) return false;
   if (game.sourceRecord) state.overrides[game.id] = { ...(state.overrides[game.id] || {}), deletedAt: new Date().toISOString() };
   else state.additions = state.additions.filter((item) => item.id !== game.id);
   await persistShelf();
@@ -809,6 +854,7 @@ async function deleteGame(game) {
   renderAll();
   closeDialog(el.detailDialog);
   closeDialog(el.addDialog);
+  return true;
 }
 
 async function persistShelf() {
@@ -875,7 +921,7 @@ function renderLayoutEditor() {
   el.layoutList.className = "settings-layout";
   el.layoutList.innerHTML = [
     ...state.layout.order.map((key, index) => settingsLayoutCard(key, index)),
-    `<div class="settings-preference-row">${settingsSelectCard("theme", "Theme", "shelfSettingsTheme", [{ value: "shabii", label: "Shabii" }, { value: "kash", label: "Kash" }])}${settingsSelectCard("order", "Default order", "shelfSettingsDefaultOrder", [{ value: "added", label: "Last added" }, { value: "title", label: "Name" }, { value: "platform", label: "Platform" }, { value: "region", label: "Region" }, { value: "value", label: "Value" }])}</div>`,
+    `<div class="settings-preference-row">${settingsSelectCard("theme", "Theme", "shelfSettingsTheme", [{ value: "shabii", label: "Shabii" }, { value: "kash", label: "Kash" }])}${settingsSelectCard("order", "Default order", "shelfSettingsDefaultOrder", [{ value: "added", label: "Last added" }, { value: "title", label: "Name" }, { value: "platform", label: "Platform" }, { value: "region", label: "Region" }, { value: "value", label: "Value" }])}${settingsShelfSyncCard()}</div>`,
   ].join("");
   el.settingsTheme = document.querySelector("#shelfSettingsTheme");
   el.settingsDefaultOrder = document.querySelector("#shelfSettingsDefaultOrder");
@@ -906,6 +952,10 @@ function settingsSelectCard(type, title, id, options) {
   return `<article class="settings-layout-card settings-${type === "theme" ? "theme" : "order"}-card"><div class="settings-wire wire-${type}" aria-hidden="true">${Array.from({ length: 3 }, () => "<span></span>").join("")}</div><label class="settings-theme-select"><span>${escapeHtml(title)}</span><select id="${id}">${options.map((option) => `<option value="${option.value}">${escapeHtml(option.label)}</option>`).join("")}</select></label></article>`;
 }
 
+function settingsShelfSyncCard() {
+  return `<article class="settings-layout-card settings-sync-card"><div class="settings-wire wire-list" aria-hidden="true"><span></span><span></span><span></span></div><label class="check-filter toggle-check settings-visible-check" title="Shelf Sync"><input type="checkbox" id="shelfSettingsSync" ${state.gamelistSettings.shelfSync === false ? "" : "checked"}><span>Shelf Sync</span></label></article>`;
+}
+
 function handleLayoutMove(event) {
   const button = event.target.closest("[data-layout-move]");
   const row = button?.closest("[data-layout-key]");
@@ -922,7 +972,7 @@ async function saveLayout(event) {
   state.layout.hidden = LAYOUT_KEYS.filter((key) => !el.layoutList.querySelector(`[data-layout-visible][value="${key}"]`)?.checked);
   localStorage.setItem(LAYOUT_KEY, JSON.stringify(state.layout));
   const stores = [...el.settingsStores.querySelectorAll("input:checked")].map((input) => input.value).filter((store) => STORE_OPTIONS.includes(store)).slice(0, MAX_PRICE_STORES);
-  state.gamelistSettings = { ...state.gamelistSettings, theme: el.settingsTheme.value, shelfDefaultOrder: el.settingsDefaultOrder.value, currency: el.settingsCurrency.value, region: el.settingsRegion.value, psnUser: el.settingsPsnUser.value.trim(), microsoftUser: el.settingsMicrosoftUser.value.trim(), steamUser: el.settingsSteamUser.value.trim(), defaultOwner: el.settingsDefaultOwner.value.trim(), stores, storeSettingsVersion: 2 };
+  state.gamelistSettings = { ...state.gamelistSettings, theme: el.settingsTheme.value, shelfDefaultOrder: el.settingsDefaultOrder.value, currency: el.settingsCurrency.value, region: el.settingsRegion.value, psnUser: el.settingsPsnUser.value.trim(), microsoftUser: el.settingsMicrosoftUser.value.trim(), steamUser: el.settingsSteamUser.value.trim(), defaultOwner: el.settingsDefaultOwner.value.trim(), stores, storeSettingsVersion: 2, shelfSync: document.querySelector("#shelfSettingsSync")?.checked !== false };
   localStorage.setItem("gamelist:settings:v1", JSON.stringify(state.gamelistSettings));
   applyShelfDefaultOrder(state.gamelistSettings.shelfDefaultOrder);
   await Promise.all([persistShelf(), persistGamelistSettings()]);

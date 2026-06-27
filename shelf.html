@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" class="theme-booting">
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -7,6 +7,50 @@
     <meta name="theme-color" content="#ff0039">
     <title>Shabii's Shelf</title>
     <link rel="icon" type="image/png" href="assets/Icon_shelf.png">
+    <style>html.theme-booting body{visibility:hidden}</style>
+    <script>
+      (() => {
+        const root = document.documentElement;
+        const settingsKey = "gamelist:settings:v1";
+        const themes = {
+          shabii: { title: "Shabii's Shelf", icon: "assets/Icon_shelf.png", color: "#ff0039" },
+          kash: { title: "Kash's Shelf", icon: "assets/kh_icon.png", color: "#005cff" },
+        };
+        const apply = (key) => {
+          const themeKey = themes[key] ? key : "shabii";
+          const theme = themes[themeKey];
+          root.dataset.initialTheme = themeKey;
+          root.classList.toggle("theme-kash", themeKey === "kash");
+          document.body?.classList.toggle("theme-kash", themeKey === "kash");
+          document.title = theme.title;
+          document.querySelector("meta[name='theme-color']")?.setAttribute("content", theme.color);
+          document.querySelector("link[rel='icon']")?.setAttribute("href", theme.icon);
+          return themeKey;
+        };
+        const saveTheme = (key) => {
+          try {
+            const settings = JSON.parse(localStorage.getItem(settingsKey) || "{}");
+            localStorage.setItem(settingsKey, JSON.stringify({ ...settings, theme: key }));
+          } catch {}
+        };
+        let savedTheme = "";
+        try {
+          savedTheme = JSON.parse(localStorage.getItem(settingsKey) || "{}").theme || "";
+        } catch {}
+        window.__applyInitialTheme = apply;
+        window.__initialThemeReady = themes[savedTheme]
+          ? Promise.resolve(apply(savedTheme))
+          : fetch("/api/sync?settings=1", { cache: "no-store" })
+            .then((response) => response.ok ? response.json() : {})
+            .then((data) => {
+              const key = themes[data?.settings?.theme] ? data.settings.theme : "shabii";
+              saveTheme(key);
+              return apply(key);
+            })
+            .catch(() => apply("shabii"));
+        window.setTimeout(() => root.classList.remove("theme-booting"), 3500);
+      })();
+    </script>
     <link rel="stylesheet" href="styles.css">
     <link rel="stylesheet" href="shelf.css">
   </head>

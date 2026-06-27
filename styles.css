@@ -4713,7 +4713,8 @@ body.dialog-open .mobile-section-tabs {
 }
 
 .settings-theme-card,
-.settings-order-card {
+.settings-order-card,
+.settings-sync-card {
   grid-column: span 2;
   grid-template-columns: minmax(0, 1fr);
   align-items: center;
@@ -4724,12 +4725,13 @@ body.dialog-open .mobile-section-tabs {
 .settings-preference-row {
   grid-column: 1 / -1;
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 10px;
 }
 
 .settings-preference-row .settings-theme-card,
-.settings-preference-row .settings-order-card {
+.settings-preference-row .settings-order-card,
+.settings-preference-row .settings-sync-card {
   grid-column: auto;
 }
 
@@ -4739,7 +4741,8 @@ body.dialog-open .mobile-section-tabs {
 }
 
 .settings-theme-card .settings-wire,
-.settings-order-card .settings-wire {
+.settings-order-card .settings-wire,
+.settings-sync-card .settings-wire {
   display: none;
 }
 
@@ -5783,6 +5786,10 @@ body.theme-kash .guide-button:hover {
 }
 
 @media (max-width: 760px) {
+  .settings-preference-row {
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  }
+
   .topbar {
     grid-template-columns: minmax(0, 1fr) auto;
     align-items: center;

@@ -1,4 +1,4 @@
-import { normalizeSearchText, createGameCardShell, bindActivityCardParallax, mountActivitySlider, finishedGameMarkup, achievementCardMarkup, achievementDashboardMarkup, achievementPanelMarkup, completedCardMarkup, horizontalCarouselState, syncViewModeButton, slideHorizontalCarousel, comparePlayingGames, finishedDurationText, timeBadgeMarkup, guideLinksMarkup, storeButtonsMarkup, activityTrailerUrl, activityTrailerFrameMarkup, activityReleaseStatus, activityCoverOverride, activityAllowsPsnCardTrophies, formatFooterDate, formatFooterDateTime } from "./activity-ui.js";
+import { normalizeSearchText, createGameCardShell, bindActivityCardParallax, mountActivitySlider, finishedGameMarkup, achievementCardMarkup, achievementDashboardMarkup, achievementPanelMarkup, completedCardMarkup, horizontalCarouselState, syncViewModeButton, slideHorizontalCarousel, comparePlayingGames, finishedDurationText, timeBadgeMarkup, guideLinksMarkup, storeButtonsMarkup, activityTrailerUrl, activityTrailerFrameMarkup, activityReleaseStatus, activityCoverOverride, activityAllowsPsnCardTrophies, formatFooterDate, formatFooterDateTime, confirmGameDelete } from "./activity-ui.js";
 
 mountActivitySlider(document.querySelector("#playingSection"), { count: "playingCount", previous: "playingPrevButton", next: "playingNextButton", list: "playingList", dataSection: "playing", finished: "playingFinished", finishedList: "playingFinishedList" });
 
@@ -13,8 +13,8 @@ const SETTINGS_KEY = "gamelist:settings:v1";
 const KASH_TWITCH_URL = "https://www.twitch.tv/kashhoward";
 const DEFAULT_PAGE_ORDER = ["trophies", "calendar", "highlights", "search", "gamelist", "finished"];
 const LAYOUT_SECTION_KEYS = ["playing", ...DEFAULT_PAGE_ORDER, "latestFinished"];
-const SITE_VERSION = "v197";
-const SITE_UPDATED_AT = "2026-06-25T13:58:00+02:00";
+const SITE_VERSION = "v198";
+const SITE_UPDATED_AT = "2026-06-27T18:04:50+02:00";
 const VERSION_STORAGE_KEY = "gamelist:site-version";
 const STORE_OPTIONS = ["Amazon", "eBay", "GAME.es", "Xtralife", "Retro Island NY", "GameStop", "Walmart"];
 const MAX_PRICE_STORES = 5;
@@ -49,6 +49,7 @@ const DEFAULT_SETTINGS = {
   stores: ["Amazon", "eBay", "Xtralife", "GAME.es", "Retro Island NY"],
   storeSettingsVersion: 2,
   defaultOwner: "Xavi",
+  shelfSync: true,
 };
 const STATUS_OPTIONS = [
   "To Collect",
@@ -739,6 +740,7 @@ function normalizeSettings(settings = {}) {
     stores: stores.slice(0, MAX_PRICE_STORES),
     storeSettingsVersion: 2,
     defaultOwner: cleanOwnerLabel(settings.defaultOwner) || DEFAULT_SETTINGS.defaultOwner,
+    shelfSync: settings.shelfSync !== false,
   };
 }
 
@@ -896,7 +898,7 @@ function renderSettingsDialog() {
     settingsLayoutItem("playing", -1, { fixed: true }),
     settingsLayoutItem("latestFinished", -1, { fixed: true }),
     ...state.settings.pageOrder.map((key) => settingsLayoutItem(key, pageIndex.get(key) ?? 0)),
-    `<div class="settings-preference-row">${settingsThemeItem()}${settingsDefaultOrderItem()}</div>`,
+    `<div class="settings-preference-row">${settingsThemeItem()}${settingsDefaultOrderItem()}${settingsShelfSyncItem()}</div>`,
   ].join("");
   el.settingsStores.innerHTML = STORE_OPTIONS.map((store) => `
     <label class="check-filter toggle-check settings-store-check">
@@ -1014,6 +1016,18 @@ function settingsDefaultOrderItem() {
   `;
 }
 
+function settingsShelfSyncItem() {
+  return `
+    <article class="settings-layout-card settings-sync-card" data-layout-key="shelf-sync">
+      <div class="settings-wire wire-list" aria-hidden="true"><span></span><span></span><span></span></div>
+      <label class="check-filter toggle-check settings-visible-check" title="Shelf Sync">
+        <input type="checkbox" data-shelf-sync ${state.settings.shelfSync ? "checked" : ""}>
+        <span>Shelf Sync</span>
+      </label>
+    </article>
+  `;
+}
+
 async function saveSettingsFromForm(event) {
   event.preventDefault();
   const previousCurrency = state.settings.currency;
@@ -1035,6 +1049,7 @@ async function saveSettingsFromForm(event) {
     region: el.settingsRegion.value,
     stores,
     defaultOwner: el.settingsDefaultOwner.value,
+    shelfSync: Boolean(el.settingsLayoutList.querySelector("[data-shelf-sync]")?.checked),
   });
   persistLocalSettings();
   await persistCloud();
@@ -4789,18 +4804,19 @@ function restoreCompletedToBacklog(id) {
 }
 
 function deleteCurrentGame() {
-  if (state.editingId) deleteGame(state.editingId);
-  el.dialog.close();
+  if (state.editingId && deleteGame(state.editingId)) el.dialog.close();
 }
 
 function deleteGame(id) {
   const game = getGame(id);
-  if (!game) return;
+  if (!game) return false;
+  if (!confirmGameDelete(game.title)) return false;
   const deletedAt = new Date().toISOString();
   game.deletedAt = deletedAt;
   markGameEdited(game, deletedAt);
   resetEmptyPlatformFilter();
   upsertGame(game);
+  return true;
 }
 
 function resetEmptyPlatformFilter() {

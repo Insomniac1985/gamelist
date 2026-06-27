@@ -43,6 +43,7 @@ export async function onRequestDelete({ request, env }) {
 
 async function syncShelfGamesToBacklog(env, allShelfGames, games) {
   const list = await env.GAMELIST.get("gamelist-data", "json") || { games: [], settings: {} };
+  if (list.settings?.shelfSync === false) return;
   const shelfById = new Map(allShelfGames.map((game) => [game.id, game]));
   let changed = false;
   const listGames = (list.games || []).map((game) => {
@@ -66,7 +67,7 @@ async function syncShelfGamesToBacklog(env, allShelfGames, games) {
     completedAt: "",
     owners: Array.isArray(game.owners) ? game.owners : [],
     statuses: [],
-    tags: Array.isArray(game.tags) ? game.tags.filter((tag) => tag !== "Gamelist") : [],
+    tags: cleanTransferTags(game.tags),
     genres: String(game.genre || "").split(",").map((value) => value.trim()).filter(Boolean),
     publisher: game.publisher || "",
     developer: game.developer || "",
@@ -85,6 +86,12 @@ async function syncShelfGamesToBacklog(env, allShelfGames, games) {
     settings: list.settings || {},
     updatedAt: new Date().toISOString(),
   }));
+}
+
+function cleanTransferTags(tags) {
+  return Array.isArray(tags)
+    ? tags.filter((tag) => String(tag || "").trim().toLowerCase() !== "gamelist")
+    : [];
 }
 
 function shortPlatform(value) {

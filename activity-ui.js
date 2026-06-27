@@ -305,6 +305,10 @@ export function formatFooterDateTime(value) {
   return new Intl.DateTimeFormat(undefined, { day: "numeric", month: "long", hour: "2-digit", minute: "2-digit" }).format(date);
 }
 
+export function confirmGameDelete(title = "this game") {
+  return window.confirm(`Delete ${title || "this game"}? This cannot be undone.`);
+}
+
 function escapeHtml(value) {
   return String(value ?? "").replace(/[&<>"']/g, (char) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#039;" })[char]);
 }

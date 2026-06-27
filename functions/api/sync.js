@@ -43,8 +43,12 @@ export async function onRequestPut({ request, env }) {
     settings: body.settings && typeof body.settings === "object" ? body.settings : {},
     updatedAt: new Date().toISOString(),
   }));
-  await syncBacklogGamesToShelf(env, body.games, newlyCollected);
+  if (shelfSyncEnabled(body.settings)) await syncBacklogGamesToShelf(env, body.games, newlyCollected);
   return json({ ok: true });
+}
+
+function shelfSyncEnabled(settings = {}) {
+  return settings?.shelfSync !== false;
 }
 
 async function syncBacklogGamesToShelf(env, allGames, games) {
@@ -73,7 +77,7 @@ async function syncBacklogGamesToShelf(env, allGames, games) {
     country: "World",
     region: "Unconfirmed",
     category: "Gamelist",
-    tags: ["Gamelist", ...(game.tags || [])],
+    tags: cleanTransferTags(game.tags),
     owners: Array.isArray(game.owners) ? game.owners : [],
     game: true,
     box: false,
@@ -100,6 +104,12 @@ async function syncBacklogGamesToShelf(env, allGames, games) {
     layout: shelf.layout || null,
     updatedAt: new Date().toISOString(),
   }));
+}
+
+function cleanTransferTags(tags) {
+  return Array.isArray(tags)
+    ? tags.filter((tag) => String(tag || "").trim().toLowerCase() !== "gamelist")
+    : [];
 }
 
 function json(data, status = 200) {

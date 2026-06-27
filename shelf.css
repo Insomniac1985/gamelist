@@ -477,18 +477,47 @@
   border-radius: 0;
 }
 .shelf-tabs {
+  --shelf-tab-width: calc((100% - 18px) / 2);
+  position: relative;
   display: grid;
   grid-template-columns: repeat(2, minmax(160px, 1fr));
   gap: 6px;
   margin: 0 0 12px;
   padding: 6px;
+  overflow-y: hidden;
   overflow-x: auto;
+  scroll-snap-type: x proximity;
+  scrollbar-width: none;
   background: var(--panel);
   border: 1px solid var(--line);
   border-radius: 12px;
   backdrop-filter: blur(12px) saturate(1.15);
 }
+
+.shelf-tabs::-webkit-scrollbar {
+  display: none;
+}
+
+.shelf-tabs::before {
+  content: "";
+  position: absolute;
+  inset: 6px auto 6px 6px;
+  z-index: 0;
+  width: var(--shelf-tab-width);
+  border-radius: 7px;
+  background: var(--accent);
+  box-shadow: 0 3px 24px color-mix(in srgb, var(--accent) 42%, transparent);
+  transform: translateX(0);
+  transition: transform 180ms ease;
+}
+
+.shelf-tabs[data-active-tab="new"]::before {
+  transform: translateX(calc(var(--shelf-tab-width) + 6px));
+}
+
 .shelf-tabs button {
+  position: relative;
+  z-index: 1;
   min-height: 38px;
   padding: 8px 13px;
   color: var(--muted);
@@ -496,12 +525,11 @@
   border: 1px solid transparent;
   border-radius: 12px;
   white-space: nowrap;
+  scroll-snap-align: center;
+  transition: color 180ms ease;
 }
 .shelf-tabs button.active {
   color: #fff;
-  border-color: color-mix(in srgb, var(--accent) 55%, transparent);
-  background: var(--accent);
-  box-shadow: 0 3px 24px color-mix(in srgb, var(--accent) 42%, transparent);
   font-weight: 820;
 }
 .shelf-tabs button .label {
@@ -514,12 +542,17 @@
   display: inline-grid;
   place-items: center;
   border-radius: 5px;
-  background: color-mix(in srgb, var(--accent) 25%, #262626);
+  background-color: var(--accent);
   color: white;
   font-size: 11px;
   width: 25px;
   height: 25px;
 }
+
+.shelf-tabs button.active .count {
+  background: color-mix(in srgb, var(--accent) 25%, #262626);
+}
+
 .owner-pill.owner-judy {
   color: var(--judy);
 }

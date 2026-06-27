@@ -54,6 +54,8 @@ assert.match(appSource, /card-trophy trophy-steam/, "Main Steam card achievement
 assert.match(shelfSource, /tone \|\| trophyTone/, "Shelf Steam card achievements must use the neutral Steam tone");
 assert.match(shelfHtml, /<dialog id="layoutDialog" class="settings-dialog">\s*<form class="settings-modal glass"/, "Shelf settings must use Main's centered settings overlay and modal classes");
 assert.doesNotMatch(shelfHtml, /id="layoutDialog" class="shelf-dialog"/, "Shelf settings must not use the taller, heavier Shelf overlay");
+assert.match(shelfHtml, /<html lang="en" class="theme-booting">[\s\S]*?window\.__initialThemeReady/, "Shelf must resolve the saved shared theme before first paint");
+assert.match(shelfSource, /await window\.__initialThemeReady\?\.catch/, "Shelf must wait for the initial theme before rendering");
 assert.doesNotMatch(shelfSource, /const FIXED_LAYOUT/, "Shelf settings must allow Currently Playing and Last Finished to move");
 assert.match(shelfSource, /const DEFAULT_LAYOUT = \["playing", "latestFinished", "trophies", "kpis", "filters", "library"\]/, "Shelf settings must include playing sections in the movable layout");
 assert.match(appSource, /playingSection\.hidden = el\.playingCurrent\.hidden && el\.playingFinished\.hidden/, "Main must keep Last Finished visible when Currently Playing is hidden");
@@ -65,11 +67,14 @@ const shelfLibraryOrder = shelfHtml.match(/<select id="sortFilter">([\s\S]*?)<\/
 assert.doesNotMatch(shelfLibraryOrder, /value="time"/, "Shelf must not offer Time as a library order filter");
 for (const [value, label] of [["added", "Last added"], ["title", "Name"], ["platform", "Platform"], ["region", "Region"], ["value", "Value"]]) assert.match(shelfSource, new RegExp(`value: "${value}", label: "${label}"`), `Shelf settings must offer ${label} as a default order`);
 assert.match(shelfSource, /shelfDefaultOrder: el\.settingsDefaultOrder\.value/, "Shelf must persist its default independently from Main's order preference");
+for (const source of [appSource, shelfSource]) assert.match(source, /Shelf Sync/, "Main and Shelf settings must expose Shelf Sync");
+assert.match(appSource, /shelfSync: settings\.shelfSync !== false/, "Main must normalize Shelf Sync as enabled by default");
+assert.match(shelfSource, /shelfSync: document\.querySelector\("#shelfSettingsSync"\)\?\.checked !== false/, "Shelf must persist the shared Shelf Sync setting");
 for (const html of [appHtml, shelfHtml]) assert.doesNotMatch(html, /<nav class="nav-tabs"/, "Main and Shelf must not show the temporary cross-site navbar");
 assert.match(shelfSource, /state\.viewMode === "list"[\s\S]*?games\.map\(gameRow\)/, "Shelf list mode must render Main-style compact rows");
 assert.match(shelfSource, /syncViewModeButton\(el\.view, state\.viewMode/, "Shelf view control must show the current mode");
-assert.match(shelfCss, /\.shelf-page \.stats \{ display:grid; grid-template-columns:1fr;/, "Shelf mobile KPIs must use naturally sized vertical rows");
-assert.match(shelfCss, /\.shelf-toolbar \{ position:static; grid-template-columns:minmax\(0,1fr\) var\(--toolbar-control-height\)/, "Shelf mobile order row must reserve square action controls like Main");
+assert.match(shelfCss, /\.shelf-page \.stats\s*\{[\s\S]*?display:\s*grid;[\s\S]*?grid-template-columns:\s*1fr;/, "Shelf mobile KPIs must use naturally sized vertical rows");
+assert.match(shelfCss, /\.shelf-toolbar\s*\{[\s\S]*?position:\s*static;[\s\S]*?grid-template-columns:\s*minmax\(0,\s*1fr\)\s+var\(--toolbar-control-height\)/, "Shelf mobile order row must reserve square action controls like Main");
 assert.match(shelfCss, /\.shelf-grid\.list-view \.region-flag,[\s\S]*?\.condition-pill[\s\S]*?height:\s*24px;/, "Shelf list flags and condition pills must match the platform pill's rendered height");
 assert.match(shelfSource, /function updateShelfRowTitleOverflow\(\)[\s\S]*?scrollWidth > title\.clientWidth/, "Shelf list titles must expose their full text on hover when truncated");
 assert.match(shelfSource, /shelf-row-description/, "Shelf list rows must include a compact description excerpt");
@@ -116,7 +121,7 @@ await putGamelist({ request: request("https://example.test/api/sync", { games: [
 let shelf = await kv.get("shelf-data", "json");
 assert.equal(shelf.games.length, 1);
 assert.deepEqual(shelf.games[0].owners, ["Judy"]);
-assert.deepEqual(shelf.games[0].tags, ["Gamelist"]);
+assert.deepEqual(shelf.games[0].tags, []);
 assert.equal(shelf.games[0].pendingCollection, true);
 
 const layout = { order: ["playing", "trophies", "kpis", "filters", "library"], hidden: ["trophies"] };
@@ -124,6 +129,14 @@ await putShelf({ request: request("https://example.test/api/shelf", { games: [..
 let list = await kv.get("gamelist-data", "json");
 assert.equal(list.games.some((game) => game.shelfId === "s2" && game.section === "backlog"), true);
 assert.deepEqual(list.games.find((game) => game.shelfId === "s2").owners, ["Jordi"]);
+
+await putGamelist({ request: request("https://example.test/api/sync", { games: list.games, settings: { shelfSync: false } }), env });
+await putGamelist({ request: request("https://example.test/api/sync", { games: [...list.games, { id: "g2", title: "No Sync", platform: "PS5", section: "backlog", digital: false }], settings: { shelfSync: false } }), env });
+shelf = await kv.get("shelf-data", "json");
+assert.equal(shelf.games.some((game) => game.gamelistId === "g2"), false);
+await putShelf({ request: request("https://example.test/api/shelf", { games: [...shelf.games, { id: "s3", title: "No Back Sync", platform: "Nintendo Switch", country: "Spain" }], overrides: {}, layout }), env });
+list = await kv.get("gamelist-data", "json");
+assert.equal(list.games.some((game) => game.shelfId === "s3"), false);
 
 const gameCount = list.games.length;
 await putGamelist({ request: request("https://example.test/api/sync", { settingsOnly: true, settings: { stores: ["Amazon", "eBay"], region: "ES", currency: "EUR" } }), env });
