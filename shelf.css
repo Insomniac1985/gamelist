@@ -506,12 +506,10 @@
 }
 .shelf-tabs button span {
   display: inline-grid;
-  min-width: 20px;
-  height: 20px;
   place-items: center;
-  margin-left: 6px;
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.16);
+  border-radius: 5px;
+  background: color-mix(in srgb, var(--accent) 25%, #262626);
+  color: white;
   font-size: 11px;
 }
 .owner-pill.owner-judy {
@@ -935,6 +933,10 @@
 #addDialog #lookupButton.is-loading svg {
   animation: shelf-search-pulse 0.75s ease-in-out infinite alternate;
 }
+
+.shelf-tabs button.active #text {
+  color: blue;
+}
 @keyframes shelf-search-pulse {
   to {
     opacity: 0.35;
@@ -967,6 +969,11 @@
     min-height: 100px;
     padding: 16px 0;
   }
+
+  .card-actions button {
+    width: 200px;
+  }
+
   .shelf-intro h1 {
     font-size: 48px;
   }
