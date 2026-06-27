@@ -6371,6 +6371,33 @@ body.theme-kash .guide-button:hover {
     font-size: 11px;
   }
 
+  .game-row.new-addition-row {
+    grid-template-columns: 52px minmax(0, 1fr) minmax(94px, auto);
+  }
+
+  .game-row.new-addition-row .game-row-actions {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 34px;
+    align-content: center;
+    min-width: 0;
+  }
+
+  .game-row.new-addition-row .row-primary-action,
+  .game-row.new-addition-row .row-setup-action {
+    min-width: 0;
+    padding-inline: 6px;
+    font-size: 10px;
+    white-space: nowrap;
+  }
+
+  .game-row.new-addition-row .row-delete-action {
+    width: 34px;
+    min-width: 34px;
+    height: 34px;
+    min-height: 34px;
+    padding: 0;
+  }
+
   .playing-section .card-list {
     grid-template-columns: 1fr;
     gap: 10px;

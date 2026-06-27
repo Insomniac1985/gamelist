@@ -1121,17 +1121,49 @@
     grid-template-columns: minmax(0, 1fr) 42px;
   }
   .shelf-grid .game-card .card-actions:has(.add-collection-action) {
-    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) 42px;
+    grid-template-columns: minmax(0, 1fr) 42px;
   }
   .shelf-grid .game-card .shelf-add-backlog-action,
   .shelf-grid .game-card .add-collection-action {
     min-width: 0;
-    padding-inline: 8px;
+    padding-inline: 6px;
+    font-size: 10px;
     white-space: nowrap;
   }
   .shelf-grid .game-card .shelf-card-delete-action {
     width: 42px;
     min-width: 42px;
+    height: 42px;
+    min-height: 42px;
+    padding: 0;
+  }
+  .shelf-grid.list-view .game-row-actions {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 5px;
+    align-content: center;
+  }
+  .shelf-grid.list-view .game-row-actions-top {
+    display: flex;
+    justify-content: flex-end;
+    gap: 5px;
+  }
+  .shelf-grid.list-view .game-row-actions-bottom {
+    display: grid;
+  }
+  .shelf-grid.list-view .game-row-actions .icon-button {
+    width: 34px;
+    min-width: 34px;
+    height: 34px;
+    min-height: 34px;
+    padding: 0;
+  }
+  .shelf-grid.list-view .game-row-actions .shelf-add-backlog-action,
+  .shelf-grid.list-view .game-row-actions .add-collection-action {
+    min-height: 30px;
+    padding: 5px 7px;
+    font-size: 10px;
+    white-space: nowrap;
   }
   .shelf-detail-body {
     grid-template-columns: 1fr;

@@ -13,8 +13,8 @@ const SETTINGS_KEY = "gamelist:settings:v1";
 const KASH_TWITCH_URL = "https://www.twitch.tv/kashhoward";
 const DEFAULT_PAGE_ORDER = ["trophies", "calendar", "highlights", "search", "gamelist", "finished"];
 const LAYOUT_SECTION_KEYS = ["playing", ...DEFAULT_PAGE_ORDER, "latestFinished"];
-const SITE_VERSION = "v211";
-const SITE_UPDATED_AT = "2026-06-27T23:24:17+02:00";
+const SITE_VERSION = "v212";
+const SITE_UPDATED_AT = "2026-06-27T23:29:29+02:00";
 const VERSION_STORAGE_KEY = "gamelist:site-version";
 const STORE_OPTIONS = ["Amazon", "eBay", "GAME.es", "Xtralife", "Retro Island NY", "GameStop", "Walmart"];
 const MAX_PRICE_STORES = 5;
@@ -2014,7 +2014,7 @@ function renderMobileTabs() {
     button.classList.toggle("active", active);
     const label = mobileSectionLabel(button.dataset.mobileSection);
     const count = counts[button.dataset.mobileSection] || 0;
-    button.innerHTML = `<span class="label">${escapeHtml(label)}</span>${button.dataset.mobileSection === "new" ? `<span class="count">${count}</span>` : ""}`;
+    button.innerHTML = button.dataset.mobileSection === "new" ? `<span class="count">${count}</span>` : `<span class="label">${escapeHtml(label)}</span>`;
   });
   const index = Math.max(0, sections.indexOf(state.mobileSection));
   document.querySelector(".mobile-section-tabs")?.style.setProperty("--mobile-tab-count", String(sections.length));
@@ -2254,6 +2254,7 @@ function rowFor(game, section, options = {}) {
   const owners = ownerTags(game);
   const showRowPrices = !["backlog", "new"].includes(section) && priceProvidersForGame(game).length;
   row.className = "game-row";
+  row.classList.toggle("new-addition-row", section === "new");
   row.dataset.id = game.id;
   row.dataset.owner = statuses.join(" ");
   row.draggable = manualDragEnabled();
