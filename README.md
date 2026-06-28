@@ -12,7 +12,7 @@ The app is a static frontend served by a Cloudflare Worker. Saved data lives in 
 - One Cloudflare KV namespace bound as `GAMELIST`
 - An `EDIT_PASSWORD` Worker secret
 
-Optional integrations can be added with Worker secrets for IGDB, PSN, Steam, Xbox, Google Calendar, and PriceCharting.
+After the required Cloudflare setup, IGDB is the main integration to configure. PriceCharting is recommended for Shelf prices, and PSN, Steam, Xbox, and Google Calendar are optional.
 
 ## Local Development
 
@@ -147,23 +147,11 @@ Stores saved Gamelist data, Shelf data, layout settings, and synced preferences.
 `EDIT_PASSWORD` secret:
 Unlocks edit mode and allows saving to KV. Without it, the app can display data but cannot save edits to the cloud.
 
-## Recommended Secret
-
-### PriceCharting Token
-
-Shelf collection values work best with a PriceCharting API token:
-
-```bash
-npx wrangler secret put PRICECHARTING_TOKEN
-```
-
-With this token, saved PriceCharting product IDs can be fetched directly through PriceCharting's product API. Without it, the app falls back to public PriceCharting search/product pages, which can be slower and less reliable during bulk Shelf price updates.
-
-## Optional Integrations
+## Must-Do Integration
 
 ### IGDB Lookup
 
-Game lookup can use IGDB if these secrets are configured:
+Game lookup works best with IGDB configured:
 
 ```bash
 npx wrangler secret put IGDB_CLIENT_ID
@@ -185,6 +173,20 @@ IGDB authentication uses Twitch developer credentials:
 11. Create/copy the app secret into `IGDB_CLIENT_SECRET`.
 
 The app requests Twitch app access tokens automatically. Without IGDB credentials, lookup falls back where possible, but results may be weaker.
+
+## Recommended Integration
+
+### PriceCharting Token
+
+Shelf collection values work best with a PriceCharting API token:
+
+```bash
+npx wrangler secret put PRICECHARTING_TOKEN
+```
+
+With this token, saved PriceCharting product IDs can be fetched directly through PriceCharting's product API. Without it, the app falls back to public PriceCharting search/product pages, which can be slower and less reliable during bulk Shelf price updates.
+
+## Optional Integrations
 
 ### PSN Trophy Activity
 
