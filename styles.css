@@ -3097,14 +3097,15 @@ body.theme-kash .game-card.stream-card.completed-trophy-card {
 }
 
 .title-owners .owner-pill {
-    font-size: 10px;
-    padding: 2px 8px;
-    min-height: 20px;
+  min-height: 18px;
+  padding: 2px 6px;
+  border-radius: 5px;
+  font-size: 10px;
 }
 
-.game-card .chips .owner-pill {
-  min-height: 31px;
-  padding: 5px 9px;
+#detailChips .owner-pill {
+  min-height: 24px;
+  padding: 5px 8px;
   font-size: 12px;
   border-radius: 6px;
 }
@@ -6598,24 +6599,22 @@ body.theme-kash .guide-button:hover {
 
   .board {
     position: relative;
-    display: flex;
+    display: block;
     overflow: hidden;
     touch-action: pan-y;
-    transform: translateX(calc(var(--mobile-section-index, 0) * -100%));
-    transition: transform 190ms ease;
   }
 
   body[data-mobile-section] .board .column.is-mobile-pane:not([hidden]) {
-    display: block !important;
-    flex: 0 0 100%;
     width: 100%;
   }
 
   body[data-mobile-section] .board .column.is-mobile-pane:not(.is-mobile-active):not([hidden]) {
+    display: none !important;
     pointer-events: none;
   }
 
   body[data-mobile-section] .board .column.is-mobile-active:not([hidden]) {
+    display: block !important;
     pointer-events: auto;
   }
 

@@ -5,8 +5,8 @@ splitShelfPlayingModules();
 
 const SESSION_KEY = "gamelist-editor";
 const KASH_TWITCH_URL = "https://www.twitch.tv/kashhoward";
-const SITE_VERSION = "v216";
-const SITE_UPDATED_AT = "2026-06-27T23:49:39+02:00";
+const SITE_VERSION = "v217";
+const SITE_UPDATED_AT = "2026-06-28T09:51:35+02:00";
 const VERSION_STORAGE_KEY = "gamelist:site-version";
 const VIEW_KEY = "shelf:view-mode:v2";
 const LAYOUT_KEY = "shelf:layout:v2";
@@ -523,7 +523,9 @@ function gameCard(game, options = {}) {
   const image = card.querySelector(".cover-button img"); image.src = cover; image.dataset.coverFallback = fallbackCover; image.alt = `${game.title} cover`; image.loading = options.imagePriority || "lazy"; image.fetchPriority = options.imagePriority === "eager" ? "high" : "low"; image.decoding = "async"; bindCoverFrame(image);
   card.querySelector(".cover-button").dataset.action = "details";
   const title = card.querySelector("h3"); title.textContent = game.title; title.classList.toggle("owner-judy", visibleOwners.includes("Judy")); title.classList.toggle("owner-jordi", hasJordiToneOwner(visibleOwners));
-  card.querySelector(".title-owners").innerHTML = visibleOwners.map(ownerBadge).join("");
+  const titleOwners = card.querySelector(".title-owners");
+  titleOwners.innerHTML = visibleOwners.map(ownerBadge).join("");
+  titleOwners.hidden = !titleOwners.innerHTML;
   const edit = card.querySelector(".edit-action"); edit.dataset.action = "edit";
   card.querySelector(".studio-line").textContent = studio || game.genre || "Physical edition";
   card.querySelector(".meta").innerHTML = `<span class="region-flag" title="${escapeHtml(game.country)}">${flagIcon(game.country)}</span>${platformBadge(game.platform)}${conditionBadge(condition)}${shelfProgressPill(game)}`;
@@ -598,7 +600,7 @@ function openDetails(game) {
   el.detailCover.alt = `${game.title} cover`;
   bindCoverFrame(el.detailCover);
   const detailTags = [...(game.tags || []), game.category && game.category !== "Game" ? game.category : "", ...String(game.genre || "").split(",")].map((value) => String(value).trim()).filter((value, index, list) => value && normalize(value) !== "game" && list.indexOf(value) === index);
-  el.detailChips.innerHTML = `${(game.owners || []).map(ownerBadge).join("")}${detailTags.map((value) => `<span class="chip genre">${escapeHtml(value)}</span>`).join("")}`;
+  el.detailChips.innerHTML = `${visibleShelfCardOwners(game.owners || []).map(ownerBadge).join("")}${detailTags.map((value) => `<span class="chip genre">${escapeHtml(value)}</span>`).join("")}`;
   el.detailDates.innerHTML = `${game.releaseDate ? `<span class="release-pill history-date-pill"><small>Released</small><strong>${escapeHtml(formatDate(game.releaseDate))}</strong></span>` : ""}${game.createdAt ? `<span class="history-pill history-date-pill"><small>Added</small><strong>${escapeHtml(formatDate(game.createdAt))}</strong></span>` : ""}`;
   el.detailDates.hidden = !el.detailDates.innerHTML;
   el.detailNote.hidden = !game.notes;
@@ -915,10 +917,13 @@ async function addShelfGameToGamelistNew(game) {
   const password = sessionStorage.getItem(`${SESSION_KEY}:password`) || "";
   const data = await fetch("/api/sync", { cache: "no-store" }).then((response) => response.ok ? response.json() : { games: [], settings: state.gamelistSettings }).catch(() => ({ games: [], settings: state.gamelistSettings }));
   const games = Array.isArray(data.games) ? data.games : [];
-  const existingIndex = games.findIndex((item) => item.shelfId === game.id || item.id === `shelf-${game.id}`);
+  const linkedGames = games.filter((item) => item.shelfId === game.id || item.id === `shelf-${game.id}`);
+  const existingIndex = games.findIndex((item) => (item.shelfId === game.id || item.id === `shelf-${game.id}`) && item.section === "new" && !item.deletedAt);
+  const nextReplayCount = existingIndex >= 0 ? (games[existingIndex].replayCount || 0) : nextShelfReplayCount(linkedGames);
+  const createdAt = new Date().toISOString();
   const item = {
     ...(existingIndex >= 0 ? games[existingIndex] : {}),
-    id: existingIndex >= 0 ? games[existingIndex].id : `shelf-${game.id}`,
+    id: existingIndex >= 0 ? games[existingIndex].id : nextShelfBacklogId(game.id, games),
     shelfId: game.id,
     title: game.title,
     platform: shortPlatform(game.platform),
@@ -937,8 +942,10 @@ async function addShelfGameToGamelistNew(game) {
     releaseDate: game.releaseDate || "",
     description: game.description || "",
     storeLinks: game.storeLinks || {},
-    createdAt: existingIndex >= 0 ? games[existingIndex].createdAt : new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
+    replayCount: nextReplayCount,
+    deletedAt: "",
+    createdAt: existingIndex >= 0 ? games[existingIndex].createdAt : createdAt,
+    updatedAt: createdAt,
     order: existingIndex >= 0 ? games[existingIndex].order : 0,
   };
   const nextGames = existingIndex >= 0 ? games.map((entry, index) => index === existingIndex ? item : entry) : [item, ...games];
@@ -946,6 +953,19 @@ async function addShelfGameToGamelistNew(game) {
   if (!response.ok) { alert("Could not add this game to Gamelist New additions."); return; }
   state.gamelistGames = nextGames;
   renderGamelistModules();
+}
+
+function nextShelfBacklogId(shelfId, games) {
+  const base = `shelf-${shelfId}`;
+  if (!games.some((game) => game.id === base)) return base;
+  let index = 2;
+  while (games.some((game) => game.id === `${base}-replay-${index}`)) index += 1;
+  return `${base}-replay-${index}`;
+}
+
+function nextShelfReplayCount(games) {
+  if (!games.length) return 0;
+  return Math.max(0, ...games.map((game) => Number(game.replayCount) || 0)) + 1;
 }
 
 async function deleteGame(game) {
@@ -1211,7 +1231,7 @@ function openGamelistDetails(sourceGame) {
   el.detailMeta.innerHTML = projectionMeta(game, { includePast: true });
   el.detailDates.innerHTML = `${game.startedAt ? `<span class="history-pill history-date-pill"><small>Started</small><strong>${escapeHtml(formatShortDate(game.startedAt))}</strong></span>` : ""}${game.completedAt ? `<span class="history-pill history-date-pill"><small>Finished</small><strong>${escapeHtml(formatLongDate(game.completedAt))}</strong></span>` : ""}${finishedDurationText(game.startedAt, game.completedAt) ? `<span class="history-pill history-date-pill"><small>Time</small><strong>${escapeHtml(finishedDurationText(game.startedAt, game.completedAt))}</strong></span>` : ""}`;
   el.detailDates.hidden = !el.detailDates.innerHTML;
-  el.detailChips.innerHTML = (game.genres || []).slice(0, 4).map((genre) => `<span class="chip genre">${escapeHtml(genre)}</span>`).join("");
+  el.detailChips.innerHTML = `${visibleShelfCardOwners(owners).map(ownerBadge).join("")}${(game.genres || []).slice(0, 4).map((genre) => `<span class="chip genre">${escapeHtml(genre)}</span>`).join("")}`;
   el.detailCover.src = cover;
   el.detailCover.hidden = !cover;
   el.detailCover.alt = cover ? `${game.title} cover` : "";
@@ -1264,7 +1284,9 @@ function gamelistProjectionCard(game) {
   const trailer = card.querySelector(".card-trailer"); const trailerUrl = window.matchMedia("(min-width: 900px)").matches ? activityTrailerUrl(game.trailerUrl, window.location.origin) : ""; if (trailerUrl) { card.classList.add("has-trailer"); trailer.dataset.src = trailerUrl; const toggle = card.querySelector(".trailer-toggle"); toggle.hidden = false; toggle.innerHTML = pauseTrailerIcon(); } else { trailer.remove(); card.querySelector(".trailer-toggle")?.remove(); }
   const image = card.querySelector(".cover-button img"); image.src = cover; image.alt = `${game.title} cover`; image.loading = "eager"; image.fetchPriority = "high"; image.decoding = "async"; bindCoverFrame(image);
   const title = card.querySelector("h3"); title.textContent = game.title; title.classList.toggle("owner-judy", visibleOwners.includes("Judy")); title.classList.toggle("owner-jordi", hasJordiToneOwner(visibleOwners)); title.classList.toggle("completed-achievements-title", Boolean(game.platinum));
-  card.querySelector(".title-owners").innerHTML = visibleOwners.map(ownerBadge).join("");
+  const titleOwners = card.querySelector(".title-owners");
+  titleOwners.innerHTML = visibleOwners.map(ownerBadge).join("");
+  titleOwners.hidden = !titleOwners.innerHTML;
   card.querySelector(".edit-action").classList.remove("editor-only");
   const studioLine = card.querySelector(".studio-line"); studioLine.textContent = studio; studioLine.hidden = !studio;
   card.querySelector(".meta").innerHTML = projectionMeta(game);

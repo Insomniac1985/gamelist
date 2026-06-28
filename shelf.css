@@ -596,12 +596,18 @@
   font-size: 10px;
 }
 
-.shelf-dialog #detailChips .owner-pill,
 .shelf-page .game-row-core .owner-pill {
   min-height: 18px;
   padding: 2px 6px;
   border-radius: 5px;
   font-size: 10px;
+}
+
+.shelf-dialog #detailChips .owner-pill {
+  min-height: 24px;
+  padding: 5px 8px;
+  border-radius: 6px;
+  font-size: 12px;
 }
 .condition-sealed:has(input:checked) {
   color: #f7df69;
@@ -633,8 +639,7 @@
 }
 .shelf-dialog .detail-cover {
   align-self: start;
-  display: grid;
-  place-items: center;
+  display: block;
   width: var(--shelf-cover-width, auto);
   height: var(--shelf-cover-height, auto);
   aspect-ratio: var(--shelf-cover-ratio, auto);
@@ -655,6 +660,7 @@
   aspect-ratio: var(--shelf-cover-ratio, auto);
   object-fit: contain;
   border-radius: inherit;
+  vertical-align: top;
 }
 .shelf-detail-content {
   display: grid;
@@ -1183,7 +1189,7 @@
     grid-template-columns: 1fr;
   }
   .shelf-dialog .detail-cover {
-    display: grid;
+    display: block;
     width: min(100%, var(--shelf-cover-width, 360px));
     height: var(--shelf-cover-height, auto);
     max-width: none;

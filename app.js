@@ -13,8 +13,8 @@ const SETTINGS_KEY = "gamelist:settings:v1";
 const KASH_TWITCH_URL = "https://www.twitch.tv/kashhoward";
 const DEFAULT_PAGE_ORDER = ["trophies", "calendar", "highlights", "search", "gamelist", "finished"];
 const LAYOUT_SECTION_KEYS = ["playing", ...DEFAULT_PAGE_ORDER, "latestFinished"];
-const SITE_VERSION = "v216";
-const SITE_UPDATED_AT = "2026-06-27T23:49:39+02:00";
+const SITE_VERSION = "v217";
+const SITE_UPDATED_AT = "2026-06-28T09:51:35+02:00";
 const VERSION_STORAGE_KEY = "gamelist:site-version";
 const STORE_OPTIONS = ["Amazon", "eBay", "GAME.es", "Xtralife", "Retro Island NY", "GameStop", "Walmart"];
 const MAX_PRICE_STORES = 5;
@@ -468,7 +468,7 @@ function bindEvents() {
     schedulePlayingCardHeightSync();
     requestAnimationFrame(updateAllRowTitleOverflow);
     scheduleFocusedPlayingTrailerUpdate();
-    requestAnimationFrame(syncMobileTabIndicator);
+    requestAnimationFrame(renderMobileTabs);
   }, { passive: true });
   document.addEventListener("visibilitychange", () => {
     if (document.hidden) pauseAllPlayingTrailers();
@@ -2022,7 +2022,7 @@ function renderMobileTabs() {
   mobileTabs?.style.setProperty("--mobile-tab-count", String(sections.length));
   mobileTabs?.style.setProperty("--mobile-tab-index", String(index));
   if (mobileTabs) {
-    mobileTabs.style.gridTemplateColumns = sections.includes("new") ? `minmax(34px, 42px) repeat(${Math.max(1, sections.length - 1)}, minmax(0, 1fr))` : "";
+    mobileTabs.style.gridTemplateColumns = sections.includes("new") && window.matchMedia("(max-width: 760px)").matches ? `minmax(34px, 42px) repeat(${Math.max(1, sections.length - 1)}, minmax(0, 1fr))` : "";
     requestAnimationFrame(syncMobileTabIndicator);
   }
   el.board.style.setProperty("--mobile-section-count", String(sections.length));
@@ -2711,8 +2711,8 @@ function cardFor(game, options = {}) {
   card.querySelector("h3").classList.toggle("owner-jordi", hasJordiToneOwner(owners));
   card.querySelector("h3").classList.toggle("completed-achievements-title", Boolean(game.platinum));
   const titleOwners = card.querySelector(".title-owners");
-  titleOwners.innerHTML = "";
-  titleOwners.hidden = true;
+  titleOwners.innerHTML = visibleOwnerTags(game).map(ownerBadge).join("");
+  titleOwners.hidden = !titleOwners.innerHTML;
   const studioLine = card.querySelector(".studio-line");
   studioLine.textContent = studioText(game);
   studioLine.hidden = !studioLine.textContent;
@@ -2962,7 +2962,7 @@ function openDetail(id, options = {}) {
   el.detailMeta.innerHTML = metaFor(game, { includePsn: false, includeOwners: false }).join("");
   el.detailDates.innerHTML = playDatesFor(game, { includePastRelease: true }).join("");
   el.detailDates.hidden = !el.detailDates.innerHTML;
-  el.detailChips.innerHTML = chipsFor(game).join("");
+  el.detailChips.innerHTML = `${visibleOwnerTags(game).map(ownerBadge).join("")}${chipsFor(game).join("")}`;
   el.detailStoreLinks.innerHTML = storeLinksFor(game);
   el.detailDescription.textContent = game.description || "No description yet.";
   renderDetailGuides(game);
@@ -4086,7 +4086,7 @@ function chipsFor(game) {
 }
 
 function cardChipsFor(game) {
-  return [...visibleOwnerTags(game).map(ownerBadge), ...chipsFor(game)];
+  return chipsFor(game);
 }
 
 function chip(label, type = "") {
