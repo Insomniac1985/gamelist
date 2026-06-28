@@ -103,8 +103,8 @@ assert.match(shelfSource, /const pendingCount = state\.canEdit \? state\.games\.
 assert.match(shelfSource, /isPendingCollectionGame\(game\) \? `<button class="primary-button add-collection-action[\s\S]*?data-action="add-collection"[\s\S]*?data-action="delete"/, "Shelf New additions cards must offer Delete beside Add to Collection");
 assert.match(shelfSource, /isPendingCollectionGame\(game\) \? `<button class="primary-button add-collection-action editor-only" data-action="add-collection"[\s\S]*?<button class="danger-button icon-only-button shelf-card-delete-action editor-only" data-action="delete"[\s\S]*?` : `<button class="ghost-button shelf-add-backlog-action editor-only" data-action="add-backlog"/, "Shelf New additions cards must not offer Add to Backlog");
 assert.match(shelfSource, /data-action="add-backlog"/, "Shelf cards must offer Add to Backlog");
-assert.doesNotMatch(shelfSource, /alert\("Added to Gamelist New additions\."\)/, "Shelf Add to Backlog must not show a success popup");
-assert.match(shelfSource, /showToast\("Added to Gamelist New additions\."\)/, "Shelf Add to Backlog must show a floating success toast");
+assert.doesNotMatch(shelfSource, /alert\("Added to Backlog\."\)/, "Shelf Add to Backlog must not show a success popup");
+assert.match(shelfSource, /showToast\("Added to Backlog\."\)/, "Shelf Add to Backlog must show a floating success toast");
 assert.match(shelfSource, /const existingIndex = games\.findIndex\([\s\S]*?item\.section === "new" && !item\.deletedAt/, "Shelf Add to Backlog must not reuse deleted or accepted Gamelist additions");
 assert.match(shelfSource, /function nextShelfReplayCount\(games\)[\s\S]*?return Math\.max\(0, \.\.\.games\.map\(\(game\) => Number\(game\.replayCount\) \|\| 0\)\) \+ 1;/, "Shelf Add to Backlog must bump replay count for repeat additions");
 assert.match(shelfSource, /function visibleShelfCardOwners\(owners = \[\]\)[\s\S]*?state\.gamelistSettings\.defaultOwner[\s\S]*?owners\.filter\(\(owner\) => owner !== defaultOwner\)/, "Shelf library cards must hide the default owner pill");

@@ -5,8 +5,8 @@ splitShelfPlayingModules();
 
 const SESSION_KEY = "gamelist-editor";
 const KASH_TWITCH_URL = "https://www.twitch.tv/kashhoward";
-const SITE_VERSION = "v223";
-const SITE_UPDATED_AT = "2026-06-28T10:49:49+02:00";
+const SITE_VERSION = "v224";
+const SITE_UPDATED_AT = "2026-06-28T10:53:15+02:00";
 const VERSION_STORAGE_KEY = "gamelist:site-version";
 const VIEW_KEY = "shelf:view-mode:v2";
 const LAYOUT_KEY = "shelf:layout:v2";
@@ -957,7 +957,7 @@ async function addShelfGameToGamelistNew(game) {
   if (!response.ok) { showToast("Could not add this game to Gamelist.", "error"); return; }
   state.gamelistGames = nextGames;
   renderGamelistModules();
-  showToast("Added to Gamelist New additions.");
+  showToast("Added to Backlog.");
 }
 
 function nextShelfBacklogId(shelfId, games) {
