@@ -27,8 +27,8 @@
 }
 
 @font-face {
-  font-family: "Minecraft";
-  src: url("assets/fonts/Minecraft.ttf") format("truetype");
+  font-family: "Pokemon GBA";
+  src: url("assets/fonts/pokemon-emerald.ttf") format("truetype");
   font-weight: 400;
   font-style: normal;
   font-display: swap;
