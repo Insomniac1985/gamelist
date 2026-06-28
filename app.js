@@ -13,8 +13,8 @@ const SETTINGS_KEY = "gamelist:settings:v1";
 const KASH_TWITCH_URL = "https://www.twitch.tv/kashhoward";
 const DEFAULT_PAGE_ORDER = ["trophies", "calendar", "highlights", "search", "gamelist", "finished"];
 const LAYOUT_SECTION_KEYS = ["playing", ...DEFAULT_PAGE_ORDER, "latestFinished"];
-const SITE_VERSION = "v239";
-const SITE_UPDATED_AT = "2026-06-28T22:15:38+02:00";
+const SITE_VERSION = "v240";
+const SITE_UPDATED_AT = "2026-06-28T22:24:34+02:00";
 const VERSION_STORAGE_KEY = "gamelist:site-version";
 const PULL_NAVIGATION_KEY = "gamelist:pull-navigation";
 const STORE_OPTIONS = ["Amazon", "eBay", "GAME.es", "Xtralife", "Retro Island NY", "GameStop", "Walmart"];
@@ -420,9 +420,16 @@ async function checkSiteVersion() {
 
 function consumeRecentPullNavigation() {
   try {
+    const url = new URL(window.location.href);
+    const fromPullUrl = url.searchParams.get("pull") === "1";
+    if (fromPullUrl) {
+      url.searchParams.delete("pull");
+      url.searchParams.delete("v");
+      window.history.replaceState({}, "", `${url.pathname}${url.search}${url.hash}`);
+    }
     const value = JSON.parse(sessionStorage.getItem(PULL_NAVIGATION_KEY) || "{}");
     sessionStorage.removeItem(PULL_NAVIGATION_KEY);
-    return Date.now() - Number(value.at || 0) < 8000;
+    return fromPullUrl || Date.now() - Number(value.at || 0) < 8000;
   } catch {
     return false;
   }
@@ -655,6 +662,7 @@ function initPagePullTransition({ targetLabel, targetUrl }) {
     document.body.style.setProperty("--pull-preview-scale", "1");
     try {
       sessionStorage.setItem(PULL_NAVIGATION_KEY, JSON.stringify({ version: SITE_VERSION, at: Date.now() }));
+      localStorage.setItem(VERSION_STORAGE_KEY, SITE_VERSION);
     } catch {}
     window.setTimeout(() => { window.location.href = pullNavigationUrl(targetUrl); }, 430);
   };

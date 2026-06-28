@@ -12,10 +12,11 @@
     <link rel="icon" type="image/png" href="assets/Icon.png">
     <link rel="apple-touch-icon" href="assets/app-Icon.png">
     <link rel="manifest" href="manifest.webmanifest">
-    <style>html.theme-booting body{visibility:hidden}</style>
+    <style>html.theme-booting:not(.from-pull-navigation) body{visibility:hidden}</style>
     <script>
       (() => {
         const root = document.documentElement;
+        if (new URLSearchParams(location.search).get("pull") === "1") root.classList.add("from-pull-navigation");
         const settingsKey = "gamelist:settings:v1";
         const themes = {
           shabii: { title: "Shabii's Gamelist", shortName: "Gamelist", icon: "assets/Icon.png", appIcon: "assets/app-Icon.png", color: "#ff0039" },

@@ -7,10 +7,11 @@
     <meta name="theme-color" content="#ff0039">
     <title>Shabii's Shelf</title>
     <link rel="icon" type="image/png" href="assets/Icon_shelf.png">
-    <style>html.theme-booting body{visibility:hidden}</style>
+    <style>html.theme-booting:not(.from-pull-navigation) body{visibility:hidden}</style>
     <script>
       (() => {
         const root = document.documentElement;
+        if (new URLSearchParams(location.search).get("pull") === "1") root.classList.add("from-pull-navigation");
         const settingsKey = "gamelist:settings:v1";
         const themes = {
           shabii: { title: "Shabii's Shelf", icon: "assets/Icon_shelf.png", color: "#ff0039" },

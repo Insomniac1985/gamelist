@@ -149,10 +149,14 @@ assert.match(sharedCss, /\.page-pull-switch\.is-dragging\s*\{[\s\S]*?transition:
 assert.match(sharedCss, /\.page-pull-curtain[\s\S]*?transform:\s*translateY\(calc\(-102% \+ var\(--pull-distance, 0px\)\)\);[\s\S]*?\.page-pull-preview[\s\S]*?width:\s*100vw;[\s\S]*?filter:\s*blur\(var\(--pull-blur, 10px\)\);[\s\S]*?\.page-pull-frame[\s\S]*?height:\s*100vh;[\s\S]*?pointer-events:\s*none;[\s\S]*?body\.page-switching \.page-pull-curtain[\s\S]*?transform:\s*translateY\(0\);/, "Pull-down page transition must use a full-viewport real blurred destination preview");
 for (const source of [appSource, shelfSource]) assert.match(source, /window\.innerHeight \* 0\.75[\s\S]*?--pull-handle-y[\s\S]*?--pull-blur[\s\S]*?\(1 - progress\) \* 10[\s\S]*?pull > window\.innerHeight \* 0\.75/, "Pull-down page transition must move the handle with the page and keep blur until three quarters of the viewport");
 for (const source of [appSource, shelfSource]) {
-  assert.match(source, /PULL_NAVIGATION_KEY[\s\S]*?sessionStorage\.setItem\(PULL_NAVIGATION_KEY[\s\S]*?pullNavigationUrl\(targetUrl\)/, "Pull-switch navigation must mark the transition before leaving");
+  assert.match(source, /PULL_NAVIGATION_KEY[\s\S]*?sessionStorage\.setItem\(PULL_NAVIGATION_KEY[\s\S]*?localStorage\.setItem\(VERSION_STORAGE_KEY, SITE_VERSION\)[\s\S]*?pullNavigationUrl\(targetUrl\)/, "Pull-switch navigation must mark the transition and current version before leaving");
   assert.match(source, /function pullNavigationUrl\(targetUrl\)[\s\S]*?searchParams\.set\("pull", "1"\)[\s\S]*?searchParams\.set\("v", SITE_VERSION\)/, "Pull-switch navigation must cache-bust the destination URL");
-  assert.match(source, /function consumeRecentPullNavigation\(\)[\s\S]*?sessionStorage\.removeItem\(PULL_NAVIGATION_KEY\)/, "Pull-switch navigation must consume its transition marker on landing");
+  assert.match(source, /function consumeRecentPullNavigation\(\)[\s\S]*?searchParams\.get\("pull"\) === "1"[\s\S]*?history\.replaceState[\s\S]*?sessionStorage\.removeItem\(PULL_NAVIGATION_KEY\)/, "Pull-switch navigation must consume its transition marker and clean the landing URL");
   assert.match(source, /const fromPullNavigation = consumeRecentPullNavigation\(\)[\s\S]*?if \(fromPullNavigation\) \{[\s\S]*?clearSiteCaches\(\)\.catch/, "Pull-switch navigation must avoid an immediate version reload on landing");
+}
+for (const html of [appHtml, shelfHtml]) {
+  assert.match(html, /html\.theme-booting:not\(\.from-pull-navigation\) body\{visibility:hidden\}/, "Pull-switch landings must not hide the destination during theme boot");
+  assert.match(html, /URLSearchParams\(location\.search\)\.get\("pull"\) === "1"[\s\S]*?from-pull-navigation/, "Pull-switch landings must mark the initial document before first paint");
 }
 assert.match(sharedCss, /@media \(max-width: 760px\)[\s\S]*?\.page-pull-switch\s*\{[\s\S]*?width:\s*min\(340px, calc\(100vw - 20px\)\);[\s\S]*?height:\s*25px;/, "Mobile pull handle must keep a compact grab target that avoids navbar buttons");
 for (const source of [appSource, shelfSource]) assert.match(source, /function formatShortDate\(value\)[\s\S]*?formatPillDate[\s\S]*?function formatLongDate\(value\)[\s\S]*?formatPillDate[\s\S]*?month:\s*"short",\s*day:\s*"2-digit",\s*year:\s*"numeric"/, "Main and Shelf date pills must render as Mon DD, YYYY");
