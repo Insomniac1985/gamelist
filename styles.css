@@ -1513,12 +1513,14 @@ body.dialog-open .scroll-top-button {
   display: inline-flex;
   align-items: center;
   gap: 8px;
+  flex: 0 0 auto;
+  margin-left: auto;
 }
 
 .modal-head-save {
-  min-height: 36px;
-  padding: 7px 12px;
-  font-size: 12px;
+  min-height: 40px;
+  padding: 9px 14px;
+  font-size: 13px;
 }
 
 .release-calendar-actions .icon-button:hover,
@@ -5260,8 +5262,9 @@ body.dialog-open .mobile-section-tabs {
 }
 
 .settings-sync-card .settings-visible-check {
-  justify-content: center;
+  justify-content: flex-start;
   width: 100%;
+  height: var(--settings-control-height);
   min-height: var(--settings-control-height);
   margin: 0;
   padding: 0 10px;
@@ -5293,6 +5296,7 @@ body.dialog-open .mobile-section-tabs {
 
 .settings-theme-select select {
   width: 100%;
+  height: var(--settings-control-height, 44px);
   min-height: var(--settings-control-height, 44px);
   padding: 0 30px 0 10px;
   color: var(--text);
@@ -6121,7 +6125,7 @@ body.theme-kash .guide-button:hover {
   margin-bottom: 14px;
 }
 
-.modal-head > div {
+.modal-head > div:not(.modal-head-actions) {
   flex: 1;
   min-width: 0;
 }
