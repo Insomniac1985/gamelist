@@ -1,4 +1,4 @@
-const CACHE_VERSION = "gamelist-cache-v241";
+const CACHE_VERSION = "gamelist-cache-v244";
 const STATIC_CACHE = `${CACHE_VERSION}:static`;
 const MEDIA_CACHE = `${CACHE_VERSION}:media`;
 const STATIC_ASSETS = [
@@ -13,6 +13,7 @@ const STATIC_ASSETS = [
   "/shelf.css",
   "/shelf.js",
   "/assets/backdrop.png",
+  "/assets/backdrop_light.png",
   "/assets/Icon.png",
   "/assets/Icon_shelf.png",
   "/assets/app-Icon.png",
@@ -24,6 +25,8 @@ const STATIC_ASSETS = [
   "/assets/fonts/04B_30.TTF",
   "/assets/fonts/Michroma.ttf",
   "/assets/platforms/playstation.png",
+  "/assets/platforms/playstation_retro.png",
+  "/assets/platforms/playstation_modern.png",
   "/assets/platforms/steam.png",
   "/assets/platforms/switch.png",
   "/assets/platforms/xbox.png",

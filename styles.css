@@ -62,11 +62,12 @@
   --accent: #ff0039;
   --accent-2: #79f2ce;
   --accent-3: #ee32b3;
-  --title-gradient-start: var(--accent-3);
+  --title-gradient-start: var(--accent);
   --title-gradient-end: var(--accent);
   --glow-primary: rgba(255, 0, 81, 0.22);
   --glow-secondary: rgba(0, 0, 255, 0.14);
-  --custom-backdrop-image: url("assets/backdrop.png");
+  --default-backdrop-image: url("assets/backdrop.png");
+  --custom-backdrop-image: var(--default-backdrop-image);
   --danger: #ff6f85;
   --switch: #ff0002;
   --playstation: #0043ff;
@@ -84,7 +85,7 @@
     135deg,
     rgba(255, 255, 255, 0.055),
     transparent 34%,
-    rgba(255, 0, 57, 0.026) 100%
+    color-mix(in srgb, var(--accent) 8%, transparent) 100%
   );
 }
 
@@ -97,14 +98,27 @@ body.theme-kash {
 }
 
 html.theme-light {
-  --bg: #f3f4f8;
-  --panel: rgba(255, 255, 255, 0.72);
-  --panel-dark: rgb(255 255 255 / 82%);
-  --panel-strong: rgba(255, 255, 255, 0.92);
-  --line: rgba(20, 24, 34, 0.14);
-  --text: #171a22;
-  --muted: #555f70;
-  --dim: #788294;
+  --bg: #eef1f6;
+  --panel: rgba(255, 255, 255, 0.84);
+  --panel-dark: rgb(255 255 255 / 92%);
+  --panel-strong: rgba(255, 255, 255, 0.98);
+  --line: rgba(20, 24, 34, 0.22);
+  --text: #111827;
+  --muted: #3f4a5f;
+  --dim: #667085;
+  --glow-primary: color-mix(in srgb, var(--accent) 18%, transparent);
+  --glow-secondary: color-mix(in srgb, var(--accent-2) 16%, transparent);
+  --default-backdrop-image: url("assets/backdrop_light.png");
+  --shadow: 0 24px 70px rgba(45, 55, 72, 0.18);
+  --grid-texture:
+    linear-gradient(rgba(20, 24, 34, 0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(20, 24, 34, 0.035) 1px, transparent 1px);
+  --grid-fade: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.72),
+    transparent 34%,
+    color-mix(in srgb, var(--accent) 8%, transparent) 100%
+  );
   color-scheme: light;
 }
 
@@ -240,8 +254,7 @@ html.theme-light .backdrop {
     radial-gradient(circle at 11% 84%, var(--glow-secondary), transparent 34%),
     linear-gradient(120deg, rgba(255, 255, 255, 0.55), transparent 38%),
     var(--custom-backdrop-image) top left / cover repeat,
-    url("assets/backdrop_light.png") top left / auto repeat,
-    #f3f4f8;
+    var(--bg);
 }
 
 body.theme-kash .backdrop {
@@ -297,11 +310,11 @@ body.theme-kash .brand span:last-child {
   width: 34px;
   height: 34px;
   object-fit: contain;
-  filter: drop-shadow(0 0 10px rgba(255, 0, 81, 0.44))
+  filter: drop-shadow(0 0 10px color-mix(in srgb, var(--accent) 44%, transparent))
     drop-shadow(0 7px 18px rgba(0, 0, 0, 0.32));
 }
 
-body.theme-kash .brand-mark {
+body.theme-big-logo .brand-mark {
   filter: unset !important;
   width: 70px !important;
   height: 70px !important;
@@ -420,19 +433,14 @@ body.theme-kash .brand-mark {
 
 .playing-slider-button {
   color: #ffffff;
-  border-color: rgba(255, 0, 57, 0.28);
+  border-color: color-mix(in srgb, var(--accent) 28%, transparent);
   background: rgba(255, 255, 255, 0.09);
 }
 
 .playing-slider-button:hover {
   color: #ffffff;
-  border-color: rgba(255, 0, 57, 0.58);
-  background: rgba(255, 0, 57, 0.28);
-}
-
-body.theme-kash .playing-slider-button:hover {
-  border-color: rgba(0, 92, 255, 0.58);
-  background: rgba(0, 92, 255, 0.28);
+  border-color: color-mix(in srgb, var(--accent) 58%, transparent);
+  background: color-mix(in srgb, var(--accent) 28%, transparent);
 }
 
 .playing-slider-button:disabled {
@@ -946,19 +954,10 @@ button.achievement-kpi {
 }
 
 .achievement-card.latest {
-  border-color: rgba(255, 0, 57, 0.38);
+  border-color: color-mix(in srgb, var(--accent) 38%, transparent);
   background: linear-gradient(
     135deg,
-    rgba(255, 0, 57, 0.16),
-    rgba(255, 255, 255, 0.055)
-  );
-}
-
-body.theme-kash .achievement-card.latest {
-  border-color: rgba(255, 184, 220, 0.44);
-  background: linear-gradient(
-    135deg,
-    rgba(255, 184, 220, 0.18),
+    color-mix(in srgb, var(--accent) 16%, transparent),
     rgba(255, 255, 255, 0.055)
   );
 }
@@ -1179,13 +1178,13 @@ h2 {
   align-items: center;
   padding: 4px 0;
   color: transparent;
-  background: linear-gradient(135deg, var(--title-gradient-start, var(--accent-3)) 0%, var(--title-gradient-end, var(--accent)) 100%);
+  background: var(--accent);
   -webkit-background-clip: text;
   background-clip: text;
 }
 
-body.theme-kash .column-head h2 {
-  background: var(--accent);
+html.theme-gradient .column-head h2 {
+  background: linear-gradient(135deg, var(--title-gradient-start, var(--accent)) 0%, var(--title-gradient-end, var(--accent)) 100%);
   -webkit-background-clip: text;
   background-clip: text;
 }
@@ -1409,20 +1408,11 @@ h3 {
 .stat-action:hover,
 .stat-action:focus-visible,
 .stat[data-stat-detail]:focus-visible {
-  border-color: rgba(255, 0, 81, 0.44);
+  border-color: color-mix(in srgb, var(--accent) 44%, transparent);
   outline: none;
   box-shadow:
-    0 0 0 3px rgba(255, 0, 81, 0.12),
-    0 14px 34px rgba(255, 0, 81, 0.16);
-}
-
-body.theme-kash .stat-action:hover,
-body.theme-kash .stat-action:focus-visible,
-body.theme-kash .stat[data-stat-detail]:focus-visible {
-  border-color: rgba(0, 92, 255, 0.44);
-  box-shadow:
-    0 0 0 3px rgba(0, 92, 255, 0.12),
-    0 14px 34px rgba(0, 92, 255, 0.16);
+    0 0 0 3px color-mix(in srgb, var(--accent) 12%, transparent),
+    0 14px 34px color-mix(in srgb, var(--accent) 16%, transparent);
 }
 
 .stat-done.stat-action:hover,
@@ -1448,11 +1438,7 @@ body.theme-kash .stat[data-stat-detail]:focus-visible {
 
 .stat-backlog {
   --stat-color: var(--accent);
-  --stat-glow: rgb(247 105 105 / 26%);
-}
-
-body.theme-kash .stat-backlog {
-  --stat-glow: rgba(0, 92, 255, 0.28);
+  --stat-glow: color-mix(in srgb, var(--accent) 26%, transparent);
 }
 
 .stat-done {
@@ -1615,36 +1601,8 @@ body.dialog-open .scroll-top-button {
 .delete-action:hover,
 .restore-action:hover {
   color: #ffffff;
-  border-color: rgba(255, 0, 57, 0.58);
-  background: rgba(255, 0, 57, 0.28);
-}
-
-body.theme-kash .release-calendar-actions .icon-button:hover,
-body.theme-kash #closeDialogButton:hover,
-body.theme-kash #detailCloseButton:hover,
-body.theme-kash #historyCloseButton:hover,
-body.theme-kash #releaseCloseButton:hover,
-body.theme-kash .ghost-button:not(.trophy-action):hover,
-body.theme-kash .primary-button:hover,
-body.theme-kash .danger-button:hover,
-body.theme-kash #syncButton:hover,
-body.theme-kash #loginButton:hover,
-body.theme-kash #fetchPricesButton:hover,
-body.theme-kash #addButton:hover,
-body.theme-kash #lookupButton:hover,
-body.theme-kash #pricesButton:hover,
-body.theme-kash #deleteButton:hover,
-body.theme-kash .edit-action:hover,
-body.theme-kash .completed-edit-action:hover,
-body.theme-kash .history-edit-action:hover,
-body.theme-kash .price-refresh-action:hover,
-body.theme-kash .bought-action:hover,
-body.theme-kash .backlog-action:hover,
-body.theme-kash .complete-action:hover,
-body.theme-kash .delete-action:hover,
-body.theme-kash .restore-action:hover {
-  border-color: rgba(0, 92, 255, 0.58);
-  background: rgba(0, 92, 255, 0.28);
+  border-color: color-mix(in srgb, var(--accent) 58%, transparent);
+  background: color-mix(in srgb, var(--accent) 28%, transparent);
 }
 
 .scroll-top-button:hover {
@@ -1698,10 +1656,6 @@ body.theme-kash .restore-action:hover {
 .floating-action-button:hover {
   color: #ffffff;
   border-color: rgba(255, 255, 255, 0.28);
-  background: #ff0039;
-}
-
-body.theme-kash .floating-action-button:hover {
   background: var(--accent);
 }
 
@@ -1808,20 +1762,9 @@ body.dialog-open .floating-edit-actions {
 .release-day.has-release {
   color: #ffffff;
   cursor: pointer;
-  background: rgba(255, 0, 57, 0.18);
-  border-color: rgba(255, 0, 57, 0.4);
-  box-shadow: 0 8px 20px rgba(255, 0, 57, 0.1);
-}
-
-body.theme-kash
-  .release-day.has-release:not(.has-preorder):not(
-    .release-platform-nintendo
-  ):not(.release-platform-playstation):not(.release-platform-pc):not(
-    .release-platform-xbox
-  ):not(.release-platform-mixed):not(.release-platform-generic) {
-  background: rgba(0, 92, 255, 0.18);
-  border-color: rgba(0, 92, 255, 0.4);
-  box-shadow: 0 8px 20px rgba(0, 92, 255, 0.12);
+  background: color-mix(in srgb, var(--accent) 18%, transparent);
+  border-color: color-mix(in srgb, var(--accent) 40%, transparent);
+  box-shadow: 0 8px 20px color-mix(in srgb, var(--accent) 10%, transparent);
 }
 
 .release-day.release-platform-nintendo {
@@ -1938,20 +1881,9 @@ body.theme-kash
   background:
     linear-gradient(
       135deg,
-      rgba(255, 0, 81, 0.18),
-      rgba(0, 0, 255, 0.1) 52%,
-      rgba(121, 242, 206, 0.08)
-    ),
-    rgba(255, 255, 255, 0.06);
-}
-
-body.theme-kash .stat-group {
-  background:
-    linear-gradient(
-      135deg,
-      rgba(0, 92, 255, 0.16),
-      rgba(255, 184, 220, 0.12) 54%,
-      rgba(255, 255, 255, 0.055)
+      color-mix(in srgb, var(--accent) 18%, transparent),
+      color-mix(in srgb, var(--accent-2) 10%, transparent) 52%,
+      color-mix(in srgb, var(--accent-2) 8%, transparent)
     ),
     rgba(255, 255, 255, 0.06);
 }
@@ -1962,11 +1894,7 @@ body.theme-kash .stat-group {
   font-size: 20px;
   letter-spacing: 0;
   text-transform: uppercase;
-  text-shadow: 0 0 16px rgba(255, 0, 81, 0.24);
-}
-
-body.theme-kash .stat-group > strong {
-  text-shadow: 0 0 16px rgba(255, 184, 220, 0.22);
+  text-shadow: 0 0 16px color-mix(in srgb, var(--accent) 24%, transparent);
 }
 
 .stat-platform {
@@ -2078,16 +2006,12 @@ body.theme-kash .stat-group > strong {
 }
 
 .check-filter input[type="checkbox"]:checked {
-  border-color: rgba(255, 0, 81, 0.72);
+  border-color: color-mix(in srgb, var(--accent) 72%, transparent);
   background:
     center / 15px 15px no-repeat
       url("data:image/svg+xml,%3Csvg width='15' height='15' viewBox='0 0 15 15' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M3.4 7.6 6.3 10.5 11.8 4.8' fill='none' stroke='%23fff' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E"),
     var(--accent);
   box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.14);
-}
-
-body.theme-kash .check-filter input[type="checkbox"]:checked {
-  border-color: rgba(0, 92, 255, 0.72);
 }
 
 .check-filter input[type="checkbox"]:focus-visible {
@@ -2197,22 +2121,10 @@ body.theme-kash .check-filter input[type="checkbox"]:checked {
 .danger-button:hover,
 .direction-toggle:hover,
 .check-filter:hover {
-  border-color: rgba(255, 0, 81, 0.48);
+  border-color: color-mix(in srgb, var(--accent) 48%, transparent);
   box-shadow:
-    0 0 0 3px rgba(255, 0, 81, 0.12),
-    0 10px 28px rgba(255, 0, 81, 0.12);
-}
-
-body.theme-kash .ghost-button:not(.trophy-action):hover,
-body.theme-kash .primary-button:hover,
-body.theme-kash .icon-button:hover,
-body.theme-kash .danger-button:hover,
-body.theme-kash .direction-toggle:hover,
-body.theme-kash .check-filter:hover {
-  border-color: rgba(0, 92, 255, 0.5);
-  box-shadow:
-    0 0 0 3px rgba(0, 92, 255, 0.13),
-    0 10px 28px rgba(0, 92, 255, 0.14);
+    0 0 0 3px color-mix(in srgb, var(--accent) 12%, transparent),
+    0 10px 28px color-mix(in srgb, var(--accent) 12%, transparent);
 }
 
 .direction-toggle:hover {
@@ -2257,14 +2169,10 @@ body.theme-kash .check-filter:hover {
   width: var(--mobile-tab-width);
   border-radius: 7px;
   background: var(--accent);
-  box-shadow: 0px 3px 24px 3px rgb(255 0 0 / 40%);
+  box-shadow: 0px 3px 24px 3px color-mix(in srgb, var(--accent) 40%, transparent);
   transition:
     inset 180ms ease,
     width 180ms ease;
-}
-
-body.theme-kash .mobile-section-tabs::before {
-  box-shadow: 0 3px 24px 3px rgba(0, 92, 255, 0.42);
 }
 
 .mobile-section-tabs button {
@@ -2343,13 +2251,7 @@ textarea {
 input:hover,
 select:hover,
 textarea:hover {
-  border-color: rgba(255, 0, 81, 0.34);
-}
-
-body.theme-kash input:hover,
-body.theme-kash select:hover,
-body.theme-kash textarea:hover {
-  border-color: rgba(0, 92, 255, 0.38);
+  border-color: color-mix(in srgb, var(--accent) 34%, transparent);
 }
 
 select {
@@ -2373,24 +2275,17 @@ select option {
 input:focus,
 select:focus,
 textarea:focus {
-  border-color: rgba(255, 0, 81, 0.62);
-  box-shadow: 0 0 0 3px rgba(255, 0, 81, 0.12);
-}
-
-body.theme-kash input:focus,
-body.theme-kash select:focus,
-body.theme-kash textarea:focus {
-  border-color: rgba(0, 92, 255, 0.62);
-  box-shadow: 0 0 0 3px rgba(0, 92, 255, 0.12);
+  border-color: color-mix(in srgb, var(--accent) 62%, transparent);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 12%, transparent);
 }
 
 select.is-active {
   color: #ffffff;
-  border-color: rgba(255, 0, 81, 0.68);
+  border-color: color-mix(in srgb, var(--accent) 68%, transparent);
   background-color: rgba(255, 255, 255, 0.08);
   background-image:
     url("data:image/svg+xml,%3Csvg width='14' height='14' viewBox='0 0 14 14' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M3.5 5.25 7 8.75l3.5-3.5' fill='none' stroke='%23ffffff' stroke-opacity='.92' stroke-width='1.7' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E"),
-    linear-gradient(135deg, rgba(255, 0, 81, 0.22), rgba(0, 0, 255, 0.11));
+    linear-gradient(135deg, color-mix(in srgb, var(--accent) 22%, transparent), color-mix(in srgb, var(--accent-2) 11%, transparent));
   background-position:
     right 15px center,
     center;
@@ -2400,17 +2295,7 @@ select.is-active {
     auto;
   box-shadow:
     inset 0 0 0 1px rgba(255, 255, 255, 0.08),
-    0 0 22px rgba(255, 0, 81, 0.14);
-}
-
-body.theme-kash select.is-active {
-  border-color: rgba(0, 92, 255, 0.68);
-  background-image:
-    url("data:image/svg+xml,%3Csvg width='14' height='14' viewBox='0 0 14 14' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M3.5 5.25 7 8.75l3.5-3.5' fill='none' stroke='%23ffffff' stroke-opacity='.92' stroke-width='1.7' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E"),
-    linear-gradient(135deg, rgba(0, 92, 255, 0.22), rgba(255, 184, 220, 0.12));
-  box-shadow:
-    inset 0 0 0 1px rgba(255, 255, 255, 0.08),
-    0 0 22px rgba(0, 92, 255, 0.14);
+    0 0 22px color-mix(in srgb, var(--accent) 14%, transparent);
 }
 
 .select-overflow-popover {
@@ -2516,12 +2401,8 @@ body[data-mobile-section="upcoming"] .column:not(#upcoming) {
 }
 
 .game-row:hover {
-  border-color: rgba(255, 0, 57, 0.32);
+  border-color: color-mix(in srgb, var(--accent) 32%, transparent);
   background: rgba(255, 255, 255, 0.07);
-}
-
-body.theme-kash .game-row:hover {
-  border-color: rgba(0, 92, 255, 0.32);
 }
 
 .game-row.owner-card-judy,
@@ -2959,43 +2840,18 @@ body.theme-kash .game-card.stream-card.playing-card.digital-card {
   background:
     radial-gradient(
       circle at 22% 18%,
-      rgba(247, 223, 105, 0.2),
+      color-mix(in srgb, var(--accent-2) 20%, transparent),
       transparent 28%
     ),
     linear-gradient(
       135deg,
-      rgba(255, 0, 57, 0.34),
-      rgba(255, 0, 57, 0.12) 42%,
+      color-mix(in srgb, var(--accent) 34%, transparent),
+      color-mix(in srgb, var(--accent) 12%, transparent) 42%,
       rgba(12, 14, 19, 0.72)
     ),
     var(--panel);
-  border-color: rgba(255, 0, 57, 0.5);
+  border-color: color-mix(in srgb, var(--accent) 50%, transparent);
   box-shadow: unset;
-}
-
-body.theme-kash .game-card.playing-card,
-body.theme-kash .game-card.playing-card.owner-card-judy,
-body.theme-kash .game-card.playing-card.owner-card-jordi,
-body.theme-kash .game-card.playing-card.digital-card,
-body.theme-kash .game-card.playing-card.digital-card.owner-card-judy,
-body.theme-kash .game-card.playing-card.digital-card.owner-card-jordi,
-body.theme-kash .game-card.playing-card.owner-card-judy.owner-card-jordi,
-body.theme-kash
-  .game-card.playing-card.digital-card.owner-card-judy.owner-card-jordi {
-  background:
-    radial-gradient(
-      circle at 22% 18%,
-      rgba(255, 184, 220, 0.2),
-      transparent 28%
-    ),
-    linear-gradient(
-      135deg,
-      rgba(0, 92, 255, 0.34),
-      rgba(0, 92, 255, 0.12) 42%,
-      rgba(12, 14, 19, 0.72)
-    ),
-    var(--panel);
-  border-color: rgba(0, 92, 255, 0.5);
 }
 
 .game-card.stream-card.playing-card,
@@ -3110,7 +2966,7 @@ body.theme-kash
     left: -300px !important;
     pointer-events: none;
     background:
-      linear-gradient(180deg, transparent 62%, rgba(255, 0, 57, 0.38) 100%),
+      linear-gradient(180deg, transparent 62%, color-mix(in srgb, var(--accent) 38%, transparent) 100%),
       linear-gradient(
         180deg,
         rgba(255, 255, 255, 0.08),
@@ -3123,18 +2979,6 @@ body.theme-kash
   .game-card.stream-card.playing-card.has-trailer .card-trailer::after {
     background:
       linear-gradient(180deg, transparent 62%, rgba(183, 116, 255, 0.4) 100%),
-      linear-gradient(
-        180deg,
-        rgba(255, 255, 255, 0.08),
-        transparent 26%,
-        transparent 74%,
-        rgba(6, 7, 10, 0.18)
-      );
-  }
-
-  body.theme-kash .game-card.playing-card.has-trailer .card-trailer::after {
-    background:
-      linear-gradient(180deg, transparent 62%, rgba(0, 92, 255, 0.38) 100%),
       linear-gradient(
         180deg,
         rgba(255, 255, 255, 0.08),
@@ -3212,13 +3056,7 @@ body.theme-kash
   border-color: rgba(255, 255, 255, 0.24);
   box-shadow:
     0 18px 42px rgba(0, 0, 0, 0.46),
-    0 0 0 1px rgba(255, 0, 57, 0.12);
-}
-
-body.theme-kash .playing-section .cover-button {
-  box-shadow:
-    0 18px 42px rgba(0, 0, 0, 0.46),
-    0 0 0 1px rgba(0, 92, 255, 0.16);
+    0 0 0 1px color-mix(in srgb, var(--accent) 14%, transparent);
 }
 
 .playing-section .cover-button img {
@@ -3896,13 +3734,8 @@ body.theme-kash .game-card.stream-card.completed-trophy-card {
 
 .status-pill.collect {
   color: #ffffff;
-  border-color: rgba(255, 0, 57, 0.36);
-  background: rgba(255, 0, 57, 0.18);
-}
-
-body.theme-kash .status-pill.collect {
-  border-color: rgba(0, 92, 255, 0.36);
-  background: rgba(0, 92, 255, 0.18);
+  border-color: color-mix(in srgb, var(--accent) 36%, transparent);
+  background: color-mix(in srgb, var(--accent) 18%, transparent);
 }
 
 .status-pill.scarce {
@@ -3949,18 +3782,10 @@ body.theme-kash .status-pill.collect {
   border-color: rgba(255, 255, 255, 0.28);
   background: linear-gradient(
     135deg,
-    rgba(255, 0, 57, 0.22),
-    rgba(121, 242, 206, 0.14)
+    color-mix(in srgb, var(--accent) 22%, transparent),
+    color-mix(in srgb, var(--accent-2) 14%, transparent)
   );
   font-weight: 860;
-}
-
-body.theme-kash .replay-pill {
-  background: linear-gradient(
-    135deg,
-    rgba(0, 92, 255, 0.2),
-    rgba(255, 184, 220, 0.15)
-  );
 }
 
 .platinum-pill {
@@ -4317,12 +4142,8 @@ a.time-pill {
 .icon-button.floating-action-button:hover {
   color: #ffffff;
   border-color: rgba(255, 255, 255, 0.28);
-  background: #ff0039;
-  box-shadow: 0 14px 32px rgba(0, 0, 0, 0.38);
-}
-
-body.theme-kash .icon-button.floating-action-button:hover {
   background: var(--accent);
+  box-shadow: 0 14px 32px rgba(0, 0, 0, 0.38);
 }
 
 .icon-button.view-toggle {
@@ -4671,12 +4492,8 @@ body:not(.can-edit) .game-card:focus-within .edit-action {
 }
 
 .completed-row:hover {
-  border-color: rgba(255, 0, 57, 0.32);
+  border-color: color-mix(in srgb, var(--accent) 32%, transparent);
   background: rgba(255, 255, 255, 0.07);
-}
-
-body.theme-kash .completed-row:hover {
-  border-color: rgba(0, 92, 255, 0.32);
 }
 
 .completed-row.stream-card,
@@ -5403,6 +5220,90 @@ body.dialog-open .mobile-section-tabs {
   box-shadow: 0 0 14px color-mix(in srgb, var(--swatch, var(--accent)) 50%, transparent);
 }
 
+html.theme-light .glass,
+html.theme-light .modal,
+html.theme-light .history-modal,
+html.theme-light .release-modal,
+html.theme-light .settings-modal,
+html.theme-light .platinum-modal,
+html.theme-light .auth-modal,
+html.theme-light .theme-editor-modal {
+  background:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.94), rgba(246, 248, 252, 0.88)),
+    var(--grid-texture),
+    var(--panel-dark);
+  border-color: rgba(17, 24, 39, 0.16);
+  box-shadow: 0 20px 60px rgba(30, 41, 59, 0.18);
+}
+
+html.theme-light .settings-layout-card,
+html.theme-light .settings-store-check,
+html.theme-light .check-filter,
+html.theme-light .theme-editor-card,
+html.theme-light .theme-upload-card {
+  background: rgba(255, 255, 255, 0.74);
+  border-color: rgba(17, 24, 39, 0.14);
+}
+
+html.theme-light .settings-preference-row .settings-theme-card,
+html.theme-light .settings-preference-row .settings-order-card,
+html.theme-light .settings-preference-row .settings-sync-card {
+  background: transparent;
+  border: 0;
+}
+
+html.theme-light .settings-preference-separator {
+  background: rgba(17, 24, 39, 0.14);
+}
+
+html.theme-light .settings-layout-card strong,
+html.theme-light .settings-section h3,
+html.theme-light .settings-theme-select span,
+html.theme-light .theme-field label,
+html.theme-light .theme-editor-card h3 {
+  color: #233047;
+}
+
+html.theme-light input,
+html.theme-light select,
+html.theme-light textarea,
+html.theme-light .settings-theme-select select,
+html.theme-light .settings-theme-edit-button,
+html.theme-light .settings-sync-card .settings-visible-check {
+  color: var(--text);
+  background-color: rgba(255, 255, 255, 0.9);
+  border-color: rgba(17, 24, 39, 0.18);
+}
+
+html.theme-light input::placeholder,
+html.theme-light textarea::placeholder {
+  color: rgba(71, 85, 105, 0.72);
+}
+
+html.theme-light .settings-theme-select select:hover,
+html.theme-light .settings-theme-edit-button:hover,
+html.theme-light .settings-sync-card .settings-visible-check:hover {
+  border-color: color-mix(in srgb, var(--accent) 42%, rgba(17, 24, 39, 0.2));
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 12%, transparent);
+}
+
+html.theme-light .settings-wire span {
+  background: rgba(17, 24, 39, 0.055);
+  border-color: rgba(17, 24, 39, 0.24);
+}
+
+html.theme-light .game-card,
+html.theme-light .game-row,
+html.theme-light .stat,
+html.theme-light .toolbar,
+html.theme-light .panel,
+html.theme-light .search-panel,
+html.theme-light .settings-toolbar,
+html.theme-light .theme-editor-preview {
+  background-color: rgba(255, 255, 255, 0.78);
+  border-color: rgba(17, 24, 39, 0.14);
+}
+
 .theme-editor-dialog {
   width: min(920px, calc(100vw - 24px));
 }
@@ -5536,13 +5437,8 @@ body.dialog-open .mobile-section-tabs {
 
 .year-tab.active {
   color: #ffffff;
-  background: rgba(255, 0, 57, 0.22);
-  border-color: rgba(255, 0, 57, 0.42);
-}
-
-body.theme-kash .year-tab.active {
-  background: rgba(0, 92, 255, 0.22);
-  border-color: rgba(0, 92, 255, 0.42);
+  background: color-mix(in srgb, var(--accent) 22%, transparent);
+  border-color: color-mix(in srgb, var(--accent) 42%, transparent);
 }
 
 .page-pull-switch {
@@ -6059,13 +5955,8 @@ body.theme-kash .history-row.completed-trophy-card:hover {
 }
 
 .store-button:hover {
-  border-color: rgba(255, 0, 81, 0.5);
-  box-shadow: 0 0 0 3px rgba(255, 0, 81, 0.12);
-}
-
-body.theme-kash .store-button:hover {
-  border-color: rgba(0, 92, 255, 0.5);
-  box-shadow: 0 0 0 3px rgba(0, 92, 255, 0.12);
+  border-color: color-mix(in srgb, var(--accent) 50%, transparent);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 12%, transparent);
 }
 
 @media (min-width: 761px) {
@@ -6436,13 +6327,8 @@ body.theme-kash .store-button:hover {
 }
 
 .guide-button:hover {
-  border-color: rgba(255, 0, 81, 0.5);
-  box-shadow: 0 0 0 3px rgba(255, 0, 81, 0.12);
-}
-
-body.theme-kash .guide-button:hover {
-  border-color: rgba(0, 92, 255, 0.5);
-  box-shadow: 0 0 0 3px rgba(0, 92, 255, 0.12);
+  border-color: color-mix(in srgb, var(--accent) 50%, transparent);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 12%, transparent);
 }
 
 .guide-psnprofiles {

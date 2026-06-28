@@ -18,6 +18,7 @@ const DEFAULT_THEME = {
   mode: "dark",
   backgroundImage: "",
   disableGlow: false,
+  bigLogo: false,
   accentFont: "",
   gamelistIcon: "",
   shelfIcon: "",
@@ -37,6 +38,7 @@ const PRESETS = {
     shelfIcon: "assets/kh_icon.png",
     gamelistIcon: "assets/kh_icon.png",
     appIcon: "assets/kh_app-icon.png",
+    bigLogo: true,
   },
 };
 
@@ -55,6 +57,7 @@ export function normalizeThemeSettings(settings = {}) {
     gradient: Boolean(raw.gradient),
     mode: raw.mode === "light" ? "light" : "dark",
     disableGlow: Boolean(raw.disableGlow),
+    bigLogo: Boolean(raw.bigLogo),
     accentFont: FONT_OPTIONS.some((font) => font.value === raw.accentFont) ? raw.accentFont : "",
     backgroundImage: safeImage(raw.backgroundImage),
     gamelistIcon: safeImage(raw.gamelistIcon),
@@ -96,17 +99,22 @@ export function applySiteTheme(settings = {}, options = {}) {
   root.classList.toggle("theme-kash", settings.theme === "kash");
   root.classList.toggle("theme-light", theme.mode === "light");
   root.classList.toggle("theme-no-glow", theme.disableGlow);
+  root.classList.toggle("theme-gradient", theme.gradient);
+  root.classList.toggle("theme-big-logo", theme.bigLogo);
   body?.classList.toggle("theme-kash", settings.theme === "kash");
   body?.classList.toggle("theme-light", theme.mode === "light");
   body?.classList.toggle("theme-no-glow", theme.disableGlow);
+  body?.classList.toggle("theme-gradient", theme.gradient);
+  body?.classList.toggle("theme-big-logo", theme.bigLogo);
   root.style.setProperty("--accent", theme.mainColor);
   root.style.setProperty("--accent-2", theme.accentColor);
   root.style.setProperty("--accent-3", theme.accent3);
-  root.style.setProperty("--title-gradient-start", theme.accent3);
-  root.style.setProperty("--title-gradient-end", theme.gradient ? theme.gradientColor : theme.mainColor);
+  root.style.setProperty("--title-gradient-start", theme.gradient ? theme.gradientColor : theme.mainColor);
+  root.style.setProperty("--title-gradient-end", theme.mainColor);
   root.style.setProperty("--glow-primary", colorMix(theme.mainColor, 0.22));
   root.style.setProperty("--glow-secondary", colorMix(theme.accentColor, 0.14));
-  root.style.setProperty("--custom-backdrop-image", theme.backgroundImage ? `url("${cssEscape(theme.backgroundImage)}")` : "url(\"assets/backdrop.png\")");
+  root.style.setProperty("--default-backdrop-image", theme.mode === "light" ? "url(\"assets/backdrop_light.png\")" : "url(\"assets/backdrop.png\")");
+  root.style.setProperty("--custom-backdrop-image", theme.backgroundImage ? `url("${cssEscape(theme.backgroundImage)}")` : "var(--default-backdrop-image)");
   root.style.setProperty("--display-title-font", fontFamily(theme.accentFont));
   document.title = theme.title;
   document.querySelector("meta[name='theme-color']")?.setAttribute("content", theme.mainColor);
@@ -194,6 +202,7 @@ function renderThemeDialog(dialog, draft, settings, page, onSave) {
         ${colorField("accentColor", "Accent color", draft.accentColor, draft.accentColorReset, true)}
         <label class="settings-detail-compact"><span>Light or dark</span><select name="mode"><option value="dark" ${draft.mode === "dark" ? "selected" : ""}>Dark</option><option value="light" ${draft.mode === "light" ? "selected" : ""}>Light</option></select></label>
         <label class="check-filter toggle-check theme-check"><input name="gradient" type="checkbox" ${draft.gradient ? "checked" : ""}><span>Gradient titles</span></label>
+        <label class="check-filter toggle-check theme-check"><input name="bigLogo" type="checkbox" ${draft.bigLogo ? "checked" : ""}><span>Big logo</span></label>
         <label class="check-filter toggle-check theme-check"><input name="disableGlow" type="checkbox" ${draft.disableGlow ? "checked" : ""}><span>Disable background glow</span></label>
         <label class="settings-detail-compact theme-font-field"><span>Accent font</span><select name="accentFont">${FONT_OPTIONS.map((font) => `<option value="${htmlEscape(font.value)}" style="font-family:${htmlEscape(font.family)}" ${draft.accentFont === font.value ? "selected" : ""}>${htmlEscape(font.label)}</option>`).join("")}</select></label>
         ${imageField("backgroundImage", "Background", draft.backgroundImage)}
@@ -288,6 +297,7 @@ function readThemeForm(form, draft) {
       accentColorReset: Boolean(form.elements.accentColorReset?.checked),
       mode: value("mode") === "light" ? "light" : "dark",
       disableGlow: Boolean(form.elements.disableGlow?.checked),
+      bigLogo: Boolean(form.elements.bigLogo?.checked),
       accentFont: value("accentFont"),
       backgroundImage: value("backgroundImage"),
       gamelistIcon: value("gamelistIcon"),
