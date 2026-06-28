@@ -5,8 +5,8 @@ splitShelfPlayingModules();
 
 const SESSION_KEY = "gamelist-editor";
 const KASH_TWITCH_URL = "https://www.twitch.tv/kashhoward";
-const SITE_VERSION = "v234";
-const SITE_UPDATED_AT = "2026-06-28T16:05:50+02:00";
+const SITE_VERSION = "v235";
+const SITE_UPDATED_AT = "2026-06-28T16:10:09+02:00";
 const VERSION_STORAGE_KEY = "gamelist:site-version";
 const VIEW_KEY = "shelf:view-mode:v2";
 const LAYOUT_KEY = "shelf:layout:v2";
@@ -350,7 +350,7 @@ function initPagePullTransition({ targetLabel, targetUrl }) {
     const pull = Math.max(0, Math.min(window.innerHeight, distance));
     const progress = Math.min(1, pull / Math.max(160, window.innerHeight * 0.36));
     document.body.style.setProperty("--pull-distance", `${pull}px`);
-    document.body.style.setProperty("--pull-blur", `${Math.round((1 - progress) * 18)}px`);
+    document.body.style.setProperty("--pull-blur", `${Math.round((1 - progress) * 10)}px`);
     document.body.style.setProperty("--pull-preview-opacity", `${0.48 + progress * 0.52}`);
     document.body.style.setProperty("--pull-preview-scale", `${0.96 + progress * 0.04}`);
     document.body.classList.toggle("page-pulling", pull > 6);
