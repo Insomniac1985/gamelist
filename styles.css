@@ -62,11 +62,20 @@ body.theme-kash {
 
 * {
   box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
 }
 
 html {
   overscroll-behavior-y: none;
   scroll-behavior: smooth;
+}
+
+@media (hover: none), (pointer: coarse) {
+  *:not(input):not(textarea) {
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    user-select: none;
+  }
 }
 
 body {
@@ -5370,8 +5379,10 @@ body.theme-kash .year-tab.active {
   color: var(--text);
   background: transparent;
   border: 0;
-  transform: translateX(-50%);
+  transform: translateX(-50%) translateY(var(--pull-handle-y, 0px));
+  transition: transform 520ms cubic-bezier(0.2, 0.86, 0.2, 1);
   touch-action: none;
+  will-change: transform;
 }
 
 .page-pull-switch::before {
@@ -5381,11 +5392,11 @@ body.theme-kash .year-tab.active {
   left: 50%;
   width: 280px;
   height: 35px;
-  border-radius: 12px;
+  border-radius: 999px;
   background: var(--accent);
   box-shadow: 0 0 22px color-mix(in srgb, var(--accent) 45%, transparent);
   opacity: 1;
-  transform: translateX(-50%) scaleX(0.42) scaleY(0.28);
+  transform: translateX(-50%) scaleX(0.42) scaleY(0.57);
   transition:
     transform 260ms cubic-bezier(0.2, 0.86, 0.2, 1),
     opacity 180ms ease,

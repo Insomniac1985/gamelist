@@ -13,8 +13,8 @@ const SETTINGS_KEY = "gamelist:settings:v1";
 const KASH_TWITCH_URL = "https://www.twitch.tv/kashhoward";
 const DEFAULT_PAGE_ORDER = ["trophies", "calendar", "highlights", "search", "gamelist", "finished"];
 const LAYOUT_SECTION_KEYS = ["playing", ...DEFAULT_PAGE_ORDER, "latestFinished"];
-const SITE_VERSION = "v235";
-const SITE_UPDATED_AT = "2026-06-28T16:10:09+02:00";
+const SITE_VERSION = "v236";
+const SITE_UPDATED_AT = "2026-06-28T19:59:11+02:00";
 const VERSION_STORAGE_KEY = "gamelist:site-version";
 const STORE_OPTIONS = ["Amazon", "eBay", "GAME.es", "Xtralife", "Retro Island NY", "GameStop", "Walmart"];
 const MAX_PRICE_STORES = 5;
@@ -618,8 +618,9 @@ function initPagePullTransition({ targetLabel, targetUrl }) {
   let moved = false;
   const setPull = (distance) => {
     const pull = Math.max(0, Math.min(window.innerHeight, distance));
-    const progress = Math.min(1, pull / Math.max(160, window.innerHeight * 0.36));
+    const progress = Math.min(1, pull / Math.max(180, window.innerHeight * 0.75));
     document.body.style.setProperty("--pull-distance", `${pull}px`);
+    document.body.style.setProperty("--pull-handle-y", `${pull}px`);
     document.body.style.setProperty("--pull-blur", `${Math.round((1 - progress) * 10)}px`);
     document.body.style.setProperty("--pull-preview-opacity", `${0.48 + progress * 0.52}`);
     document.body.style.setProperty("--pull-preview-scale", `${0.96 + progress * 0.04}`);
@@ -631,6 +632,7 @@ function initPagePullTransition({ targetLabel, targetUrl }) {
     document.body.classList.add("page-switching");
     document.body.classList.remove("page-pulling");
     document.body.style.setProperty("--pull-distance", `${window.innerHeight}px`);
+    document.body.style.setProperty("--pull-handle-y", `${window.innerHeight}px`);
     document.body.style.setProperty("--pull-blur", "0px");
     document.body.style.setProperty("--pull-preview-opacity", "1");
     document.body.style.setProperty("--pull-preview-scale", "1");
@@ -659,10 +661,11 @@ function initPagePullTransition({ targetLabel, targetUrl }) {
     document.body.classList.remove("page-pull-hover");
     button.releasePointerCapture?.(event.pointerId);
     const pull = Number.parseFloat(document.body.style.getPropertyValue("--pull-distance")) || 0;
-    if (pull > 90) switchPage();
+    if (pull > window.innerHeight * 0.75) switchPage();
     else {
       document.body.classList.remove("page-pulling");
       document.body.style.setProperty("--pull-distance", "0px");
+      document.body.style.setProperty("--pull-handle-y", "0px");
     }
     window.setTimeout(() => { moved = false; }, 0);
   };
@@ -4765,17 +4768,20 @@ async function createPreorderCalendarEvent(game) {
 
 function formatShortDate(value) {
   const date = dateOnly(value);
-  if (!date) return "";
-  const [year, month, day] = date.split("-");
-  return `${day}/${month}/${year}`;
+  return formatPillDate(date);
 }
 
 function formatLongDate(value) {
   const date = dateOnly(value);
+  return formatPillDate(date);
+}
+
+function formatPillDate(value) {
+  const date = dateOnly(value);
   if (!date) return "";
   const parsed = new Date(`${date}T00:00:00`);
   if (Number.isNaN(parsed.getTime())) return "";
-  return new Intl.DateTimeFormat("en-US", { month: "long", day: "numeric", year: "numeric" }).format(parsed);
+  return new Intl.DateTimeFormat("en-US", { month: "short", day: "2-digit", year: "numeric" }).format(parsed);
 }
 
 async function openEditor(id = "") {
