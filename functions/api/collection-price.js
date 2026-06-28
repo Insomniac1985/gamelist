@@ -127,8 +127,9 @@ async function fetchPublicProduct({ query, searchUrl, idSearchUrl = "", broadSea
   const rawCandidates = requestedUrl || idCandidate ? [] : await fetchPublicCandidates(searchUrl);
   const exactCandidate = rawCandidates.find((item) => requestedId && item.productId === requestedId);
   const broadExactCandidate = requestedUrl || idCandidate || exactCandidate || !requestedId ? null : await exactCandidateFromSearchUrls(broadSearchUrls, requestedId);
+  const directCandidate = requestedUrl || idCandidate || exactCandidate || broadExactCandidate ? null : (await fetchDirectCandidates(fallbackUrls, query, searchUrl))[0] || null;
   const candidates = exactCandidate || broadExactCandidate ? [] : filterVideoGameCandidates(rawCandidates, query);
-  const candidate = requestedUrl ? { url: requestedUrl, productId: requestedId } : idCandidate || exactCandidate || broadExactCandidate || bestCandidate(candidates, query);
+  const candidate = requestedUrl ? { url: requestedUrl, productId: requestedId } : idCandidate || exactCandidate || broadExactCandidate || directCandidate || bestCandidate(candidates, query);
   if (!candidate?.url && fallbackUrls.length) return (await fetchDirectCandidates(fallbackUrls, query, searchUrl))[0] || null;
   if (!candidate?.url) return candidate || null;
   if (!isVideoGameConsole(consoleNameFromProductUrl(candidate.url))) return null;
