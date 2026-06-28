@@ -5,8 +5,8 @@ splitShelfPlayingModules();
 
 const SESSION_KEY = "gamelist-editor";
 const KASH_TWITCH_URL = "https://www.twitch.tv/kashhoward";
-const SITE_VERSION = "v220";
-const SITE_UPDATED_AT = "2026-06-28T10:38:54+02:00";
+const SITE_VERSION = "v221";
+const SITE_UPDATED_AT = "2026-06-28T10:40:09+02:00";
 const VERSION_STORAGE_KEY = "gamelist:site-version";
 const VIEW_KEY = "shelf:view-mode:v2";
 const LAYOUT_KEY = "shelf:layout:v2";
@@ -212,7 +212,7 @@ function bindEvents() {
   el.addButton.addEventListener("click", () => openEditor());
   el.floatingAdd.addEventListener("click", () => state.canEdit ? openEditor() : openAuth());
   el.layoutButton.addEventListener("click", openLayout);
-  el.syncButton.addEventListener("click", syncShelfNow);
+  el.syncButton?.addEventListener("click", syncShelfNow);
   el.fetchPricesButton.addEventListener("click", refreshAllShelfPrices);
   el.scrollTop.addEventListener("click", () => window.scrollTo({ top: 0, behavior: "smooth" }));
   el.footerVersion.addEventListener("click", clearSiteCachesAndReload);
@@ -281,7 +281,7 @@ function renderChrome() {
   document.body.classList.toggle("list-view-mode", state.viewMode === "list");
   el.addButton.hidden = false;
   el.layoutButton.hidden = !state.canEdit;
-  el.syncButton.hidden = !state.canEdit;
+  if (el.syncButton) el.syncButton.hidden = true;
   el.fetchPricesButton.hidden = !state.canEdit || !shelfPricesVisible();
   el.fetchPricesButton.innerHTML = `${currencyIcon()}<span class="button-label">Fetch New Prices</span>`;
   el.login.innerHTML = state.canEdit
@@ -305,7 +305,7 @@ function updateFloatingActions() {
 }
 
 async function syncShelfNow() {
-  el.syncButton.disabled = true;
+  if (el.syncButton) el.syncButton.disabled = true;
   try {
     const [shelfData, gamelistData] = await Promise.all([
       fetch("/api/shelf", { cache: "no-store" }).then((response) => response.ok ? response.json() : null),
@@ -326,7 +326,7 @@ async function syncShelfNow() {
     renderAll();
     loadTrophyActivity();
   } finally {
-    el.syncButton.disabled = false;
+    if (el.syncButton) el.syncButton.disabled = false;
   }
 }
 
