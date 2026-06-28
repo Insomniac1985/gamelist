@@ -5367,6 +5367,106 @@ body.theme-kash .year-tab.active {
   border-color: rgba(0, 92, 255, 0.42);
 }
 
+.page-pull-switch {
+  position: fixed;
+  top: 0;
+  left: 50%;
+  z-index: 1200;
+  width: min(360px, calc(100vw - 32px));
+  height: 58px;
+  padding: 0;
+  color: var(--text);
+  background: transparent;
+  border: 0;
+  transform: translateX(-50%);
+  touch-action: none;
+}
+
+.page-pull-switch::before {
+  content: "";
+  position: absolute;
+  top: 8px;
+  left: 50%;
+  width: 76px;
+  height: 5px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--accent) 60%, rgba(255, 255, 255, 0.5));
+  box-shadow: 0 0 22px color-mix(in srgb, var(--accent) 45%, transparent);
+  transform: translateX(-50%);
+}
+
+.page-pull-switch span {
+  position: absolute;
+  top: 20px;
+  left: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 26px;
+  padding: 0 11px;
+  color: var(--text);
+  font-size: 11px;
+  font-weight: 860;
+  text-transform: uppercase;
+  background: rgba(20, 22, 28, 0.86);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 999px;
+  box-shadow: 0 12px 34px rgba(0, 0, 0, 0.34);
+  opacity: 0;
+  transform: translate(-50%, -8px);
+  transition: opacity 160ms ease, transform 160ms ease, color 160ms ease;
+  pointer-events: none;
+}
+
+.page-pull-switch:hover span,
+.page-pull-switch.is-dragging span,
+.page-pull-switch.is-switching span {
+  color: var(--accent);
+  opacity: 1;
+  transform: translate(-50%, 0);
+}
+
+.page-pull-curtain {
+  position: fixed;
+  inset: 0;
+  z-index: 1190;
+  display: grid;
+  place-items: start center;
+  padding-top: max(64px, env(safe-area-inset-top));
+  background:
+    linear-gradient(180deg, color-mix(in srgb, var(--accent) 22%, rgba(18, 18, 22, 0.96)), rgba(18, 18, 22, 0.92)),
+    var(--grid-texture);
+  opacity: 0;
+  transform: translateY(calc(-102% + var(--pull-distance, 0px)));
+  transition: transform 520ms cubic-bezier(.2, .86, .2, 1), opacity 240ms ease;
+  pointer-events: none;
+}
+
+.page-pull-curtain strong {
+  color: var(--text);
+  font-family: var(--display-title-font);
+  font-size: clamp(36px, 11vw, 120px);
+  font-weight: 950;
+  letter-spacing: 0;
+  text-transform: uppercase;
+  text-shadow: 0 22px 60px rgba(0, 0, 0, 0.45);
+}
+
+body.page-pulling .page-pull-curtain,
+body.page-switching .page-pull-curtain {
+  opacity: 1;
+}
+
+body.page-switching .page-pull-curtain {
+  transform: translateY(0);
+}
+
+body.page-switching > :not(.page-pull-switch):not(.page-pull-curtain):not(script):not(style) {
+  transform: translateY(22px);
+  transition: transform 520ms cubic-bezier(.2, .86, .2, 1), opacity 260ms ease;
+  opacity: 0.42;
+}
+
 .year-tab span {
   display: inline-grid;
   min-width: 22px;

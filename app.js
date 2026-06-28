@@ -13,8 +13,8 @@ const SETTINGS_KEY = "gamelist:settings:v1";
 const KASH_TWITCH_URL = "https://www.twitch.tv/kashhoward";
 const DEFAULT_PAGE_ORDER = ["trophies", "calendar", "highlights", "search", "gamelist", "finished"];
 const LAYOUT_SECTION_KEYS = ["playing", ...DEFAULT_PAGE_ORDER, "latestFinished"];
-const SITE_VERSION = "v231";
-const SITE_UPDATED_AT = "2026-06-28T15:40:53+02:00";
+const SITE_VERSION = "v232";
+const SITE_UPDATED_AT = "2026-06-28T15:50:54+02:00";
 const VERSION_STORAGE_KEY = "gamelist:site-version";
 const STORE_OPTIONS = ["Amazon", "eBay", "GAME.es", "Xtralife", "Retro Island NY", "GameStop", "Walmart"];
 const MAX_PRICE_STORES = 5;
@@ -340,6 +340,7 @@ async function init() {
   if (!state.canEdit) state.canEdit = await hasSharedEditorSession();
   document.body.classList.toggle("can-edit", state.canEdit);
   bindEvents();
+  initPagePullTransition({ targetLabel: "Shelf", targetUrl: "shelf" });
   warmUiIcons();
   bindTextureParallax();
   await loadData();
@@ -598,6 +599,64 @@ function bindEvents() {
   el.coverUpload.addEventListener("change", handleCoverUpload);
   window.addEventListener("resize", syncDisplayMode, { passive: true });
   window.matchMedia("(display-mode: standalone)").addEventListener?.("change", syncDisplayMode);
+}
+
+function initPagePullTransition({ targetLabel, targetUrl }) {
+  if (document.querySelector(".page-pull-switch")) return;
+  const button = document.createElement("button");
+  button.className = "page-pull-switch";
+  button.type = "button";
+  button.setAttribute("aria-label", `Switch to ${targetLabel}`);
+  button.innerHTML = `<span>${escapeHtml(targetLabel)}</span>`;
+  const curtain = document.createElement("div");
+  curtain.className = "page-pull-curtain";
+  curtain.setAttribute("aria-hidden", "true");
+  curtain.innerHTML = `<strong>${escapeHtml(targetLabel)}</strong>`;
+  document.body.append(button, curtain);
+  let startY = 0;
+  let dragging = false;
+  let moved = false;
+  const setPull = (distance) => {
+    const pull = Math.max(0, Math.min(window.innerHeight, distance));
+    document.body.style.setProperty("--pull-distance", `${pull}px`);
+    document.body.classList.toggle("page-pulling", pull > 6);
+    return pull;
+  };
+  const switchPage = () => {
+    if (document.body.classList.contains("page-switching")) return;
+    document.body.classList.add("page-switching");
+    document.body.classList.remove("page-pulling");
+    document.body.style.setProperty("--pull-distance", `${window.innerHeight}px`);
+    window.setTimeout(() => { window.location.href = targetUrl; }, 430);
+  };
+  button.addEventListener("click", () => { if (!moved) switchPage(); moved = false; });
+  button.addEventListener("pointerdown", (event) => {
+    dragging = true;
+    moved = false;
+    startY = event.clientY;
+    button.classList.add("is-dragging");
+    button.setPointerCapture?.(event.pointerId);
+  });
+  button.addEventListener("pointermove", (event) => {
+    if (!dragging) return;
+    const pull = setPull(event.clientY - startY);
+    moved = moved || pull > 8;
+  });
+  const endDrag = (event) => {
+    if (!dragging) return;
+    dragging = false;
+    button.classList.remove("is-dragging");
+    button.releasePointerCapture?.(event.pointerId);
+    const pull = Number.parseFloat(document.body.style.getPropertyValue("--pull-distance")) || 0;
+    if (pull > 90) switchPage();
+    else {
+      document.body.classList.remove("page-pulling");
+      document.body.style.setProperty("--pull-distance", "0px");
+    }
+    window.setTimeout(() => { moved = false; }, 0);
+  };
+  button.addEventListener("pointerup", endDrag);
+  button.addEventListener("pointercancel", endDrag);
 }
 
 function warmUiIcons() {
