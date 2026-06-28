@@ -5,8 +5,8 @@ splitShelfPlayingModules();
 
 const SESSION_KEY = "gamelist-editor";
 const KASH_TWITCH_URL = "https://www.twitch.tv/kashhoward";
-const SITE_VERSION = "v238";
-const SITE_UPDATED_AT = "2026-06-28T22:10:54+02:00";
+const SITE_VERSION = "v239";
+const SITE_UPDATED_AT = "2026-06-28T22:15:38+02:00";
 const VERSION_STORAGE_KEY = "gamelist:site-version";
 const PULL_NAVIGATION_KEY = "gamelist:pull-navigation";
 const VIEW_KEY = "shelf:view-mode:v2";
@@ -800,7 +800,12 @@ async function lookupGame() {
     const gameData = gameDataResult.status === "fulfilled" ? gameDataResult.value : { results: [] };
     const gameResults = (gameData.results || []).slice(0, 6).map((result) => ({ ...result, lookupSource: "game" }));
     state.metadataLookupResults = gameResults;
-    const physicalResults = (physicalData.status === "fulfilled" ? physicalData.value.results || [] : []).slice(0, 8).map((result) => ({ ...result, title: result.productName, platform: result.consoleName, lookupSource: "pricecharting" }));
+    const physicalResults = (physicalData.status === "fulfilled" ? physicalData.value.results || [] : [])
+      .slice(0, 8)
+      .map((result) => {
+        const metadata = bestGameMetadata(result.productName || query);
+        return { ...result, title: result.productName, platform: result.consoleName, cover: metadata?.cover || "", lookupSource: "pricecharting" };
+      });
     state.lookupResults = physicalResults.length ? physicalResults : gameResults;
     if (physicalResults[0]) {
       await prefillPhysicalResult(physicalResults[0]);
@@ -838,19 +843,57 @@ function gameMetadataQueries(query) {
 
 async function fetchPhysicalSearchData(query) {
   const settings = normalizePriceSettings(state.gamelistSettings);
+  const selectedPlatform = shortPlatform(el.fields.platform.value);
+  const searches = [];
   for (const title of physicalLookupQueries(query)) {
-    const params = new URLSearchParams({ mode: "search", title, platform: shortPlatform(el.fields.platform.value), region: el.fields.country.value, currency: settings.currency });
+    searches.push({ title, platform: selectedPlatform });
+    searches.push({ title, platform: "" });
+  }
+  const results = [];
+  let searchUrl = "";
+  for (const search of searches) {
+    const params = new URLSearchParams({ mode: "search", title: search.title, region: el.fields.country.value, currency: settings.currency });
+    if (search.platform) params.set("platform", search.platform);
     const response = await fetch(`/api/collection-price?${params}`);
     const data = response.ok ? await response.json() : { results: [] };
-    if ((data.results || []).length) return data;
+    if (!searchUrl && data.searchUrl) searchUrl = data.searchUrl;
+    results.push(...(data.results || []));
+    if (bestPhysicalSearchScore(query, results[0] || {}, selectedPlatform) >= 1.28) break;
   }
-  return { results: [] };
+  return {
+    results: uniquePhysicalResults(results)
+      .sort((a, b) => bestPhysicalSearchScore(query, b, selectedPlatform) - bestPhysicalSearchScore(query, a, selectedPlatform))
+      .slice(0, 12),
+    searchUrl,
+  };
 }
 
 function physicalLookupQueries(query) {
   const normalized = normalize(query);
   const values = [query, normalized, normalized.replace(/\bversion\b/g, " "), normalized.replace(/\bcollectors\b/g, "collector").replace(/\bspecial\b/g, "deluxe")];
   return [...new Set(values.map((value) => String(value || "").trim()).filter(Boolean))];
+}
+
+function uniquePhysicalResults(results) {
+  const seen = new Set();
+  return results.filter((result) => {
+    const key = String(result.productId || result.url || `${result.consoleName}:${result.productName}`).trim();
+    if (!key || seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+}
+
+function bestPhysicalSearchScore(query, result, selectedPlatform = "") {
+  const wanted = normalize(query);
+  const found = normalize(result.productName || result.title || "");
+  if (!wanted || !found) return 0;
+  const wantedTokens = wanted.split(" ").filter((token) => token.length > 1 && !["of", "the", "and"].includes(token));
+  const matchedTokens = wantedTokens.filter((token) => found.includes(token)).length;
+  const tokenScore = matchedTokens / Math.max(1, wantedTokens.length);
+  const exactBonus = found === wanted ? 0.55 : found.startsWith(wanted) ? 0.28 : 0;
+  const platformBonus = selectedPlatform && normalize(result.consoleName).includes(normalize(selectedPlatform)) ? 0.08 : 0;
+  return tokenScore + exactBonus + platformBonus;
 }
 
 function renderShelfLookupResults() {
@@ -863,8 +906,8 @@ function renderShelfLookupResults() {
   el.lookupResults.innerHTML = state.lookupResults.map((result, index) => {
     const physical = result.lookupSource === "pricecharting";
     const platforms = (result.platforms || [result.platform]).filter(Boolean);
-    const image = physical ? "" : coverUrl(result.cover || "");
-    return `<div class="lookup-result shelf-lookup-result"><img class="${image ? "" : "lookup-placeholder"}" src="${escapeHtml(image || blankImage())}" alt=""><div><strong>${escapeHtml(result.title || "Untitled game")}</strong><p>${escapeHtml(platforms.join(" · ") || "Platform unknown")}</p></div><button class="ghost-button" type="button" data-result-index="${index}">Use</button></div>`;
+    const image = coverUrl(result.cover || "");
+    return `<div class="lookup-result shelf-lookup-result${image ? "" : " no-cover"}"><img class="${image ? "" : "lookup-placeholder"}" src="${escapeHtml(image || blankImage())}" alt=""><div><strong>${escapeHtml(result.title || "Untitled game")}</strong><p>${escapeHtml(platforms.join(" · ") || "Platform unknown")}</p></div><button class="ghost-button" type="button" data-result-index="${index}">Use</button></div>`;
   }).join("");
   requestAnimationFrame(() => el.lookupResults.classList.add("loaded"));
 }
@@ -909,6 +952,7 @@ function applyGameMetadata(result) {
   if (result.publisher && !el.fields.publisher.value) el.fields.publisher.value = result.publisher;
   if (result.developer && !el.fields.developer.value) el.fields.developer.value = result.developer;
   if ((result.genres || []).length && !el.fields.genre.value) el.fields.genre.value = result.genres.join(", ");
+  if (result.cover && !el.fields.cover.value) el.fields.cover.value = result.cover;
   if (result.releaseDate && !el.fields.releaseDate.value) el.fields.releaseDate.value = result.releaseDate;
   if (result.description && !el.fields.description.value) el.fields.description.value = result.description;
   fillStoreLinkFields(result.storeLinks);

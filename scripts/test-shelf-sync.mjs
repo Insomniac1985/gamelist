@@ -185,7 +185,11 @@ assert.doesNotMatch(shelfHtml, /Added games are saved to this browser/, "Shelf m
 assert.doesNotMatch(shelfCss, /^\.lookup-result/m, "Shelf lookup must use Main's shared result CSS");
 assert.match(shelfSource, /classList\.add\("loaded"\)/, "Shelf lookup results must activate Main's visible result state");
 assert.match(shelfSource, /lookupSource: "pricecharting"/, "Shelf lookup must show selectable PriceCharting editions");
-assert.match(shelfSource, /const image = physical \? "" : coverUrl\(result\.cover \|\| ""\)/, "Shelf lookup must not show PriceCharting images for physical editions");
+assert.match(shelfSource, /const metadata = bestGameMetadata\(result\.productName \|\| query\)[\s\S]*?cover: metadata\?\.cover \|\| ""[\s\S]*?lookupSource: "pricecharting"/, "Shelf PriceCharting lookup rows must reuse matching game metadata covers when available");
+assert.match(shelfSource, /const image = coverUrl\(result\.cover \|\| ""\)[\s\S]*?shelf-lookup-result\$\{image \? "" : " no-cover"\}/, "Shelf lookup rows must only use the no-cover state when no cover exists");
+assert.match(shelfCss, /\.shelf-dialog \.lookup-result \.lookup-placeholder\s*\{[\s\S]*?background: color-mix\(in srgb, var\(--muted\) 30%, transparent\);[\s\S]*?opacity:\s*0\.3;[\s\S]*?\.shelf-dialog \.lookup-result\.no-cover strong,[\s\S]*?\.shelf-dialog \.lookup-result\.no-cover p\s*\{[\s\S]*?opacity:\s*0\.3;/, "Shelf lookup rows without covers must show muted 30% placeholders");
+assert.match(shelfSource, /searches\.push\(\{ title, platform: selectedPlatform \}\);[\s\S]*?searches\.push\(\{ title, platform: "" \}\);[\s\S]*?bestPhysicalSearchScore/, "Shelf physical search must retry broadly so selected platform defaults do not hide exact games like WWE Day of Reckoning");
+assert.match(shelfSource, /if \(result\.cover && !el\.fields\.cover\.value\) el\.fields\.cover\.value = result\.cover;/, "Shelf metadata lookup must apply a found cover to the editor");
 assert.match(collectionPriceSource, /region-name=all&exclude-variants=false/, "PriceCharting edition search must include PAL, Japan, and other regional variants");
 assert.match(collectionPriceSource, /cleanPriceChartingUrl/, "PriceCharting lookup must accept an exact product page URL");
 assert.match(collectionPriceSource, /const requestedIdUrl = cleanPriceChartingUrl\(rawRequestedId\)/, "PriceCharting lookup must recover if a saved page URL is passed as id");

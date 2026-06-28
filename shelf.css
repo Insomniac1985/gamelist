@@ -188,8 +188,18 @@
 }
 
 .shelf-dialog .lookup-result .lookup-placeholder {
-  background: rgba(255, 255, 255, 0.055);
+  background: color-mix(in srgb, var(--muted) 30%, transparent);
   border: 1px solid var(--line);
+  opacity: 0.3;
+}
+
+.shelf-dialog .lookup-result.no-cover {
+  color: var(--muted);
+}
+
+.shelf-dialog .lookup-result.no-cover strong,
+.shelf-dialog .lookup-result.no-cover p {
+  opacity: 0.3;
 }
 
 .shelf-dialog .detail-cover.has-wrap img {
