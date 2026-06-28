@@ -184,6 +184,15 @@ Shelf collection values work best with a PriceCharting API token:
 npx wrangler secret put PRICECHARTING_TOKEN
 ```
 
+To get the token:
+
+1. Log into PriceCharting.
+2. Make sure the account has a paid subscription with API access.
+3. Open the PriceCharting **Subscription** page.
+4. Click **API/Download**.
+5. Copy the 40-character access token.
+6. Paste it into Wrangler when `npx wrangler secret put PRICECHARTING_TOKEN` asks for the secret value.
+
 With this token, saved PriceCharting product IDs can be fetched directly through PriceCharting's product API. Without it, the app falls back to public PriceCharting search/product pages, which can be slower and less reliable during bulk Shelf price updates.
 
 ## Optional Integrations
