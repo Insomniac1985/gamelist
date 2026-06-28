@@ -18,7 +18,7 @@ export async function onRequestGet({ request, env = {} }) {
   const priceChartingTitle = priceChartingSearchTitle(title);
   const query = [priceChartingTitle || title, physicalRegionTerm(region), priceChartingPlatformTerm(platform)].filter(Boolean).join(" ");
   const searchUrl = `${SITE_URL}/search-products?type=prices&region-name=all&exclude-variants=false&q=${encodeURIComponent(requestedUpc || query || title || requestedId)}`;
-  const idSearchUrl = requestedId ? `${SITE_URL}/search-products?type=prices&region-name=all&exclude-variants=false&q=${encodeURIComponent(requestedId)}` : "";
+  const idSearchUrl = requestedId ? `${SITE_URL}/search-products?id=${encodeURIComponent(requestedId)}` : "";
   const broadSearchUrls = uniqueValues([
     [priceChartingTitle || title, priceChartingPlatformTerm(platform)].filter(Boolean).join(" "),
     priceChartingTitle || title,
@@ -169,11 +169,13 @@ function parseSearchCandidates(html) {
     const row = match[0];
     const link = row.match(/href="(https:\/\/www\.pricecharting\.com\/(?:[a-z]{2}\/)?game\/[^"]+)"/i)?.[1] || "";
     const titleCell = row.match(/<td class="title">([\s\S]*?)<\/td>/i)?.[1] || "";
+    const productNameCell = row.match(/<h2[^>]+class="product_name"[^>]*>([\s\S]*?)<\/h2>/i)?.[1] || "";
     const consoleCell = row.match(/<td class="console[^>]*>([\s\S]*?)<\/td>/i)?.[1] || "";
-    const consoleName = text(consoleCell);
-    const rawProductName = text(titleCell);
+    const productNameParts = productNameCell ? productNameCell.split(/<br\s*\/?>/i).map(text).filter(Boolean) : [];
+    const consoleName = text(consoleCell) || productNameParts[1] || "";
+    const rawProductName = text(titleCell) || productNameParts[0] || "";
     return {
-      productId: match[1], url: decodeHtml(link), productName: consoleName && rawProductName.endsWith(consoleName) ? rawProductName.slice(0, -consoleName.length).trim() : rawProductName, consoleName,
+      productId: match[1], url: decodeHtml(link) || productPageUrl(rawProductName, consoleName), productName: consoleName && rawProductName.endsWith(consoleName) ? rawProductName.slice(0, -consoleName.length).trim() : rawProductName, consoleName,
       prices: { loose: moneyCell(row, "used_price"), complete: moneyCell(row, "cib_price"), sealed: moneyCell(row, "new_price") },
     };
   });
@@ -330,6 +332,7 @@ function physicalRegionTerm(region) { const value = normalize(region); if (/japa
 function priceChartingSearchTitle(title) { return String(title || "").replace(/\bversion\b/gi, " ").replace(/\s+/g, " ").trim(); }
 function priceChartingPlatformTerm(platform) { const value = normalize(platform); const playstation = value.match(/^(?:sony\s*)?(?:ps|playstation)\s*([1-5])$/); if (playstation) return `Playstation ${playstation[1]}`; if (/^(?:sony\s*)?playstation$|^psx$|^ps\s*one$/.test(value)) return "Playstation"; if (value === "pc") return "PC"; if (value === "switch") return "Nintendo Switch"; if (value === "switch 2") return "Nintendo Switch 2"; if (value === "xone") return "Xbox One"; if (value === "x360") return "Xbox 360"; return platform; }
 function directProductUrls(title, platform, region) { const titleSlug = slug(title); const consoleSlug = slug(priceChartingPlatformTerm(platform)); if (!titleSlug || !consoleSlug) return []; const prefix = physicalRegionTerm(region) === "PAL" ? "pal-" : physicalRegionTerm(region) === "JP" ? "jp-" : ""; return [...new Set([`${SITE_URL}/game/${prefix}${consoleSlug}/${titleSlug}`, `${SITE_URL}/game/${consoleSlug}/${titleSlug}`])]; }
+function productPageUrl(title, consoleName) { const titleSlug = slug(title); const consoleSlug = slug(consoleName); return titleSlug && consoleSlug ? `${SITE_URL}/game/${consoleSlug}/${titleSlug}` : ""; }
 function slug(value) { return normalize(value).replace(/\s+/g, "-"); }
 function isoDate(value) { const textValue = String(value || "").trim(); if (!textValue) return ""; const leadingDate = textValue.match(/^\d{4}-\d{2}-\d{2}/)?.[0]; if (leadingDate) return leadingDate; const date = new Date(`${textValue} UTC`); return Number.isNaN(date.getTime()) ? "" : date.toISOString().slice(0, 10); }
 function text(value) { return decodeHtml(String(value || "").replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim()); }
