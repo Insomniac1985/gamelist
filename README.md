@@ -94,6 +94,51 @@ npx wrangler deploy
 
 The site will be available on the generated `workers.dev` URL unless you attach a custom domain in Cloudflare.
 
+### Updating An Existing Deploy
+
+For normal updates after editing the repo:
+
+```bash
+npx wrangler deploy
+```
+
+If you changed `wrangler.toml`, changed KV bindings, or added a new integration, confirm the relevant secret/namespace exists before deploying. Secrets are not stored in git, so a fresh Cloudflare Worker needs them set again with `npx wrangler secret put ...`.
+
+If a browser keeps an old version after deploy, the app checks `version.json` and clears its own caches when the version changes. The service worker cache name is also versioned in `service-worker.js`.
+
+## GitHub And GitLab Deploy Notes
+
+This repo currently includes both default/GitHub and GitLab Wrangler environments because the original project used two Cloudflare deploys with separate saved-data namespaces:
+
+- Default/GitHub deploy: `npx wrangler deploy` or `npx wrangler deploy --env github`
+- GitLab deploy: `npx wrangler deploy --env gitlab`
+
+The default and `github` environment keep `SHELF_ENABLED=true`. The `gitlab` environment sets `SHELF_ENABLED=false`, so Shelf routes and Shelf-only assets return `404` there.
+
+For a normal downloaded/forked copy, you probably do not need the GitLab environment. To remove it cleanly:
+
+1. Open `wrangler.toml`.
+2. Delete the `[env.gitlab]`, `[env.gitlab.vars]`, and `[[env.gitlab.kv_namespaces]]` sections.
+3. If you also do not need the explicit GitHub environment, delete `[env.github]`, `[env.github.vars]`, and `[[env.github.kv_namespaces]]`.
+4. Keep the top-level `name`, `[vars]`, `[assets]`, and `[[kv_namespaces]]` sections.
+5. Replace the top-level KV namespace id with your own `GAMELIST` namespace id.
+6. Deploy with `npx wrangler deploy`.
+
+If you keep multiple environments, each environment needs its own KV namespace binding and its own secrets. Set secrets for a specific environment like this:
+
+```bash
+npx wrangler secret put EDIT_PASSWORD --env gitlab
+npx wrangler secret put PRICECHARTING_TOKEN --env gitlab
+```
+
+If a Cloudflare Pages/Workers project cannot change its deploy command, you can set this normal environment variable in that Cloudflare project's **Settings > Variables and Secrets**:
+
+```text
+CLOUDFLARE_ENV=gitlab
+```
+
+Then Cloudflare can keep running `npx wrangler deploy`, and Wrangler will deploy the `gitlab` environment.
+
 ## Required Cloudflare Pieces
 
 `GAMELIST` KV namespace:
