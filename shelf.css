@@ -1133,7 +1133,7 @@
   }
   .shelf-tabs {
     --tab-width: calc((100% - 18px) / 2);
-    top: 10px;
+    top: 25px;
   }
   .shelf-grid {
     grid-template-columns: 1fr;
