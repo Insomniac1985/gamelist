@@ -13,8 +13,8 @@ const SETTINGS_KEY = "gamelist:settings:v1";
 const KASH_TWITCH_URL = "https://www.twitch.tv/kashhoward";
 const DEFAULT_PAGE_ORDER = ["trophies", "calendar", "highlights", "search", "gamelist", "finished"];
 const LAYOUT_SECTION_KEYS = ["playing", ...DEFAULT_PAGE_ORDER, "latestFinished"];
-const SITE_VERSION = "v217";
-const SITE_UPDATED_AT = "2026-06-28T09:51:35+02:00";
+const SITE_VERSION = "v218";
+const SITE_UPDATED_AT = "2026-06-28T09:54:48+02:00";
 const VERSION_STORAGE_KEY = "gamelist:site-version";
 const STORE_OPTIONS = ["Amazon", "eBay", "GAME.es", "Xtralife", "Retro Island NY", "GameStop", "Walmart"];
 const MAX_PRICE_STORES = 5;
@@ -1777,7 +1777,7 @@ function renderStats() {
       detail: completedStatDetail(currentYear, completedThisYear, counts.completed, markedCompletedThisYear),
     }),
     stat("Backlog", counts.backlog, "backlog", { detail: sectionStatDetail("backlog", active, total) }),
-    stat("To Release", counts.upcoming, "release", { detail: sectionStatDetail("upcoming", active, total) }),
+    stat("Upcoming", counts.upcoming, "release", { detail: sectionStatDetail("upcoming", active, total) }),
     stat("Available", counts.wanted, "available", { detail: sectionStatDetail("wanted", active, total) }),
   ].join("");
   const completedStat = el.stats.querySelector("[data-stat-action='completed']");
@@ -2060,7 +2060,7 @@ function mobileSectionLabel(section) {
   return {
     new: "New additions",
     backlog: "Backlog",
-    upcoming: "To Release",
+    upcoming: "Upcoming",
     wanted: "Available",
   }[section] || section;
 }
@@ -5510,7 +5510,7 @@ async function refreshAllPrices() {
   if (!state.canEdit) return;
   const games = activeGames().filter((game) => ["upcoming", "wanted"].includes(game.section) && game.title && priceProvidersForGame(game).length);
   if (!games.length) {
-    alert("No Available now or To Release games to refresh.");
+    alert("No Available now or Upcoming games to refresh.");
     return;
   }
 
