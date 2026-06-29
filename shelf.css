@@ -371,6 +371,10 @@ html.theme-font-pokemon .shelf-page .column-head h2 {
   border-color: rgba(255, 255, 255, 0.24);
 }
 
+#showcaseSortDirection {
+  align-self: end;
+}
+
 .showcase-count {
   margin: 0 0 10px;
   color: var(--muted);
