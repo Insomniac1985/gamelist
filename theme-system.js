@@ -212,10 +212,10 @@ function renderThemeDialog(dialog, draft, settings, page, onSave) {
         ${colorField("gradientColor", "Gradient color", draft.gradientColor, false, false, "theme-gradient-color")}
         ${colorField("extraColor", "Extra color", draft.extraColor, false, false, "theme-extra-color")}
         <div class="theme-editor-row theme-controls-row">
-          <label class="settings-detail-compact"><span>Light or dark</span><select name="mode"><option value="dark" ${draft.mode === "dark" ? "selected" : ""}>Dark</option><option value="light" ${draft.mode === "light" ? "selected" : ""}>Light</option></select></label>
-          <label class="check-filter toggle-check theme-check"><input name="disableGlow" type="checkbox" ${draft.disableGlow ? "" : "checked"}><span>Enable background glow</span></label>
+          <label class="settings-detail-compact theme-font-field"><span>Title font</span><select name="accentFont" style="font-family:${htmlEscape(FONT_OPTIONS.find((font) => font.value === draft.accentFont)?.family || "Cascadia Code")}">${FONT_OPTIONS.map((font) => `<option value="${htmlEscape(font.value)}" style="font-family:${htmlEscape(font.family)}" ${draft.accentFont === font.value ? "selected" : ""}>${htmlEscape(font.label)}</option>`).join("")}</select></label>
           <label class="check-filter toggle-check theme-check"><input name="gradient" type="checkbox" ${draft.gradient ? "checked" : ""}><span>Gradient titles</span></label>
-          <label class="settings-detail-compact theme-font-field"><span>Accent font</span><select name="accentFont" style="font-family:${htmlEscape(FONT_OPTIONS.find((font) => font.value === draft.accentFont)?.family || "Cascadia Code")}">${FONT_OPTIONS.map((font) => `<option value="${htmlEscape(font.value)}" style="font-family:${htmlEscape(font.family)}" ${draft.accentFont === font.value ? "selected" : ""}>${htmlEscape(font.label)}</option>`).join("")}</select></label>
+          <label class="check-filter toggle-check theme-check"><input name="disableGlow" type="checkbox" ${draft.disableGlow ? "" : "checked"}><span>Enable background glow</span></label>
+          <label class="settings-detail-compact"><span>Theme</span><select name="mode"><option value="dark" ${draft.mode === "dark" ? "selected" : ""}>Dark</option><option value="light" ${draft.mode === "light" ? "selected" : ""}>Light (WIP)</option></select></label>
         </div>
         <div class="theme-editor-row theme-glow-row" ${draft.disableGlow ? "hidden" : ""}>
           <label class="settings-detail-compact"><span>Glow 1</span>${glowSelect("glowPrimary", draft.glowPrimary)}</label>
