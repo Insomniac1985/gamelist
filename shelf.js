@@ -141,9 +141,7 @@ const el = {
     steamUrl: document.querySelector("#steamUrlInput"), xboxUrl: document.querySelector("#xboxUrlInput"), hltbUrl: document.querySelector("#hltbUrlInput"),
     publisher: document.querySelector("#publisherInput"), developer: document.querySelector("#developerInput"),
     genre: document.querySelector("#genreInput"), cover: document.querySelector("#coverInput"), notes: document.querySelector("#notesInput"), description: document.querySelector("#shelfDescriptionInput"),
-    coverProject: document.querySelector("#coverProjectInput"),
   },
-  coverProjectButton: document.querySelector("#coverProjectButton"),
   conditionFields: { game: document.querySelector("#conditionGameInput"), manual: document.querySelector("#conditionManualInput"), box: document.querySelector("#conditionBoxInput"), other: document.querySelector("#conditionOtherInput"), sealed: document.querySelector("#conditionSealedInput") },
   layoutDialog: document.querySelector("#layoutDialog"),
   layoutForm: document.querySelector("#layoutForm"),
@@ -266,7 +264,6 @@ function bindEvents() {
   el.lookupButton.addEventListener("click", lookupGame);
   el.lookupInput.addEventListener("keydown", (event) => { if (event.key === "Enter") { event.preventDefault(); lookupGame(); } });
   el.lookupResults.addEventListener("click", chooseLookupResult);
-  el.coverProjectButton.addEventListener("click", findCoverProjectCover);
   Object.values(el.conditionFields).forEach((input) => input.addEventListener("change", () => syncConditionInputs(input)));
   document.addEventListener("error", handleCoverImageError, true);
 
@@ -1163,7 +1160,7 @@ async function saveEditor(event) {
     lengthHours: existing?.lengthHours || state.pendingLengthHours || null,
     upc: el.fields.upc.value.trim(), sku: el.fields.sku.value.trim(), asin: el.fields.asin.value.trim(), epid: el.fields.epid.value.trim(),
     pricechartingId: el.fields.pricechartingId.value.trim(), description: el.fields.description.value.trim(),
-    coverProject: el.fields.coverProject.value.trim(),
+    coverProject: existing?.coverProject || "",
     pendingCollection: false,
     createdAt: existing?.createdAt || new Date().toISOString(), updatedAt: new Date().toISOString(), recordType: "Owned", releaseType: existing?.releaseType || "Official",
   };
@@ -2443,23 +2440,6 @@ function numberOrNull(value) { const number = Number(value); return Number.isFin
 function firstGenre(value) { return String(value).split(",")[0].trim(); }
 function rawCoverUrl(value) { try { const url = new URL(value, location.origin); return url.searchParams.get("src") || value; } catch { return value; } }
 function coverUrl(value) { return value.includes("howlongtobeat.com/games/") ? `/api/cover?src=${encodeURIComponent(value)}` : value; }
-function coverProjectUrl(value) {
-  const raw = String(value || "").trim();
-  if (!raw) return "";
-  if (/^\d+$/.test(raw)) return `https://www.thecoverproject.net/download_cover.php?src=cdn&cover_id=${raw}`;
-  try {
-    const url = new URL(raw);
-    const id = url.searchParams.get("cover_id");
-    if (id && /thecoverproject\.net$/i.test(url.hostname)) return `https://www.thecoverproject.net/download_cover.php?src=cdn&cover_id=${encodeURIComponent(id)}`;
-    return raw;
-  } catch { return ""; }
-}
-function findCoverProjectCover() {
-  const title = el.fields.title.value.trim() || el.lookupInput.value.trim();
-  const platform = shortPlatform(el.fields.platform.value);
-  const query = `site:thecoverproject.net/view.php "${title}" "${platform}"`;
-  window.open(`https://www.google.com/search?q=${encodeURIComponent(query)}`, "_blank", "noopener,noreferrer");
-}
 function handleCoverImageError(event) {
   const image = event.target;
   if (!(image instanceof HTMLImageElement) || !image.dataset.coverFallback || image.dataset.fallbackUsed) return;
