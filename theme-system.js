@@ -205,21 +205,30 @@ function renderThemeDialog(dialog, draft, settings, page, onSave) {
         </div>
       </div>
       <section class="theme-editor-grid">
-        ${colorField("mainColor", "Main color", draft.mainColor, draft.mainColorReset, true)}
-        ${colorField("accentColor", "Accent color", draft.accentColor, draft.accentColorReset, true)}
-        <label class="check-filter toggle-check theme-check"><input name="gradient" type="checkbox" ${draft.gradient ? "checked" : ""}><span>Gradient titles</span></label>
-        ${colorField("gradientColor", "Gradient color", draft.gradientColor, false, false)}
-        <label class="settings-detail-compact"><span>Light or dark</span><select name="mode"><option value="dark" ${draft.mode === "dark" ? "selected" : ""}>Dark</option><option value="light" ${draft.mode === "light" ? "selected" : ""}>Light</option></select></label>
-        <label class="check-filter toggle-check theme-check"><input name="disableGlow" type="checkbox" ${draft.disableGlow ? "" : "checked"}><span>Enable background glow</span></label>
-        <label class="settings-detail-compact"><span>Glow 1</span>${glowSelect("glowPrimary", draft.glowPrimary)}</label>
-        <label class="settings-detail-compact"><span>Glow 2</span>${glowSelect("glowSecondary", draft.glowSecondary)}</label>
-        ${colorField("extraColor", "Extra color", draft.extraColor, false, false)}
-        <label class="settings-detail-compact theme-font-field"><span>Accent font</span><select name="accentFont" style="font-family:${htmlEscape(FONT_OPTIONS.find((font) => font.value === draft.accentFont)?.family || "Cascadia Code")}">${FONT_OPTIONS.map((font) => `<option value="${htmlEscape(font.value)}" style="font-family:${htmlEscape(font.family)}" ${draft.accentFont === font.value ? "selected" : ""}>${htmlEscape(font.label)}</option>`).join("")}</select></label>
-        ${imageField("backgroundImage", "Background", draft.backgroundImage)}
-        ${imageField("gamelistIcon", "Gamelist icon", draft.gamelistIcon)}
-        ${imageField("shelfIcon", "Shelf icon", draft.shelfIcon)}
-        <label class="check-filter toggle-check theme-check"><input name="bigLogo" type="checkbox" ${draft.bigLogo ? "checked" : ""}><span>Big logo</span></label>
-        ${imageField("appIcon", "Game app icon", draft.appIcon)}
+        ${colorField("mainColor", "Main color", draft.mainColor, false, false, "theme-main-color")}
+        ${colorField("accentColor", "Accent color", draft.accentColor, false, false, "theme-accent-color")}
+        ${colorField("gradientColor", "Gradient color", draft.gradientColor, false, false, "theme-gradient-color")}
+        ${colorField("extraColor", "Extra color", draft.extraColor, false, false, "theme-extra-color")}
+        <div class="theme-editor-row theme-controls-row">
+          <label class="settings-detail-compact"><span>Light or dark</span><select name="mode"><option value="dark" ${draft.mode === "dark" ? "selected" : ""}>Dark</option><option value="light" ${draft.mode === "light" ? "selected" : ""}>Light</option></select></label>
+          <label class="check-filter toggle-check theme-check"><input name="disableGlow" type="checkbox" ${draft.disableGlow ? "" : "checked"}><span>Enable background glow</span></label>
+          <label class="check-filter toggle-check theme-check"><input name="gradient" type="checkbox" ${draft.gradient ? "checked" : ""}><span>Gradient titles</span></label>
+          <label class="settings-detail-compact theme-font-field"><span>Accent font</span><select name="accentFont" style="font-family:${htmlEscape(FONT_OPTIONS.find((font) => font.value === draft.accentFont)?.family || "Cascadia Code")}">${FONT_OPTIONS.map((font) => `<option value="${htmlEscape(font.value)}" style="font-family:${htmlEscape(font.family)}" ${draft.accentFont === font.value ? "selected" : ""}>${htmlEscape(font.label)}</option>`).join("")}</select></label>
+        </div>
+        <div class="theme-editor-row theme-glow-row" ${draft.disableGlow ? "hidden" : ""}>
+          <label class="settings-detail-compact"><span>Glow 1</span>${glowSelect("glowPrimary", draft.glowPrimary)}</label>
+          <label class="settings-detail-compact"><span>Glow 2</span>${glowSelect("glowSecondary", draft.glowSecondary)}</label>
+        </div>
+        <div class="theme-editor-separator" role="presentation"></div>
+        <div class="theme-editor-row theme-icon-row">
+          ${imageField("gamelistIcon", "Gamelist icon", draft.gamelistIcon)}
+          ${imageField("shelfIcon", "Shelf icon", draft.shelfIcon)}
+        </div>
+        <label class="check-filter toggle-check theme-check theme-big-logo-row"><input name="bigLogo" type="checkbox" ${draft.bigLogo ? "checked" : ""}><span>Big logo</span></label>
+        <div class="theme-editor-row theme-media-row">
+          ${imageField("appIcon", "Game app icon", draft.appIcon)}
+          ${imageField("backgroundImage", "Custom Background", draft.backgroundImage)}
+        </div>
       </section>
       <section class="settings-section">
         <h3>Custom Owner Colors</h3>
@@ -236,6 +245,9 @@ function renderThemeDialog(dialog, draft, settings, page, onSave) {
   dialog.querySelector("[data-theme-close]")?.addEventListener("click", () => dialog.close());
   form.querySelector("[name='accentFont']")?.addEventListener("change", (event) => {
     event.currentTarget.style.fontFamily = FONT_OPTIONS.find((font) => font.value === event.currentTarget.value)?.family || "Cascadia Code";
+  });
+  form.querySelector("[name='disableGlow']")?.addEventListener("change", (event) => {
+    form.querySelector(".theme-glow-row")?.toggleAttribute("hidden", !event.currentTarget.checked);
   });
   form.querySelector("[data-owner-add]")?.addEventListener("click", () => {
     const rows = form.querySelector("[data-owner-rows]");
@@ -262,12 +274,11 @@ function renderThemeDialog(dialog, draft, settings, page, onSave) {
   });
 }
 
-function colorField(name, label, value, reset, hasReset) {
+function colorField(name, label, value, reset, hasReset, className = "") {
   return `
-    <div class="theme-color-field">
+    <div class="theme-color-field ${htmlEscape(className)}">
       <label><span>${htmlEscape(label)}</span><input name="${name}" value="${htmlEscape(value)}" pattern="#?[0-9a-fA-F]{6}" inputmode="text"></label>
       <input class="theme-color-picker" type="color" data-color-for="${name}" value="${htmlEscape(value)}" onchange="this.form.elements['${name}'].value=this.value">
-      ${hasReset ? `<label class="check-filter toggle-check theme-check compact"><input name="${name}Reset" type="checkbox" ${reset ? "checked" : ""}><span>Reset</span></label>` : ""}
     </div>
   `;
 }

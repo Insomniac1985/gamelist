@@ -5228,25 +5228,31 @@ body.dialog-open .mobile-section-tabs {
   width: 100%;
   min-height: var(--settings-control-height, 42px);
   padding: 10px 12px;
-  color: var(--text);
+  color: #ffffff;
   text-align: left;
-  background: rgba(255, 255, 255, 0.07);
-  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: var(--accent);
+  border: 1px solid color-mix(in srgb, var(--accent) 78%, rgba(255, 255, 255, 0.28));
   border-radius: 7px;
+  box-shadow: 0 12px 28px color-mix(in srgb, var(--accent) 22%, transparent);
 }
 
 .settings-theme-edit-button:hover {
-  border-color: color-mix(in srgb, var(--accent) 48%, rgba(255, 255, 255, 0.2));
-  color: var(--accent);
+  color: #ffffff;
+  border-color: color-mix(in srgb, var(--accent) 62%, #ffffff);
+  background: color-mix(in srgb, var(--accent) 88%, #ffffff);
+  box-shadow:
+    0 0 0 3px color-mix(in srgb, var(--accent) 18%, transparent),
+    0 14px 32px color-mix(in srgb, var(--accent) 26%, transparent);
 }
 
 .settings-theme-edit-button i {
   width: 22px;
   height: 22px;
   border-radius: 999px;
-  background: var(--swatch, var(--accent));
-  box-shadow: 0 0 14px
-    color-mix(in srgb, var(--swatch, var(--accent)) 50%, transparent);
+  background: #ffffff;
+  box-shadow:
+    inset 0 0 0 5px var(--swatch, var(--accent)),
+    0 0 14px rgba(255, 255, 255, 0.28);
 }
 
 html.theme-light .glass,
@@ -5300,7 +5306,6 @@ html.theme-light input,
 html.theme-light select,
 html.theme-light textarea,
 html.theme-light .settings-theme-select select,
-html.theme-light .settings-theme-edit-button,
 html.theme-light .settings-sync-card .settings-visible-check {
   color: var(--text);
   background-color: rgba(206, 214, 226, 0.92);
@@ -5313,7 +5318,6 @@ html.theme-light textarea::placeholder {
 }
 
 html.theme-light .settings-theme-select select:hover,
-html.theme-light .settings-theme-edit-button:hover,
 html.theme-light .settings-sync-card .settings-visible-check:hover {
   border-color: color-mix(in srgb, var(--accent) 42%, rgba(17, 24, 39, 0.2));
   box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 12%, transparent);
@@ -5414,20 +5418,59 @@ html.theme-light .stream-check input[type="checkbox"]:checked {
 
 .theme-editor-grid {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(8, minmax(0, 1fr));
   gap: 10px;
 }
 
-.theme-color-field,
-.theme-image-field,
-.theme-font-field,
-.theme-check {
-  grid-column: span 2;
+.theme-main-color,
+.theme-accent-color,
+.theme-gradient-color,
+.theme-extra-color {
+  grid-column: span 4;
+}
+
+.theme-editor-row,
+.theme-editor-separator,
+.theme-big-logo-row {
+  grid-column: 1 / -1;
+}
+
+.theme-editor-row {
+  display: grid;
+  gap: 10px;
+}
+
+.theme-editor-row > .settings-detail-compact,
+.theme-editor-row > .theme-image-field,
+.theme-editor-row > .theme-font-field,
+.theme-editor-row > .theme-check {
+  grid-column: auto;
+}
+
+.theme-controls-row {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.theme-glow-row,
+.theme-icon-row,
+.theme-media-row {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.theme-editor-separator {
+  height: 1px;
+  margin: 4px 0;
+  background: rgba(255, 255, 255, 0.14);
+}
+
+.theme-big-logo-row {
+  justify-content: flex-start;
+  width: 100%;
 }
 
 .theme-color-field {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 44px auto;
+  grid-template-columns: minmax(0, 1fr) 44px;
   gap: 8px;
   align-items: end;
 }
@@ -5446,11 +5489,6 @@ html.theme-light .stream-check input[type="checkbox"]:checked {
 .theme-check {
   align-self: end;
   min-height: 42px;
-}
-
-.theme-check.compact {
-  grid-column: auto;
-  min-width: 92px;
 }
 
 .theme-image-field input[type="file"] {
@@ -6721,24 +6759,30 @@ body.theme-kash .history-row.completed-trophy-card:hover {
     grid-template-columns: 1fr;
   }
 
-  .theme-color-field,
-  .theme-image-field,
-  .theme-font-field,
-  .theme-check {
+  .theme-main-color,
+  .theme-accent-color,
+  .theme-gradient-color,
+  .theme-extra-color,
+  .theme-editor-row,
+  .theme-editor-separator,
+  .theme-big-logo-row {
     grid-column: 1;
+  }
+
+  .theme-controls-row,
+  .theme-glow-row,
+  .theme-icon-row,
+  .theme-media-row {
+    grid-template-columns: 1fr;
   }
 
   .theme-color-field {
     grid-template-columns: minmax(0, 1fr) 42px;
   }
 
-  .theme-color-field .theme-check.compact {
-    grid-column: 1 / -1;
-  }
-
   .theme-owner-head,
   .theme-owner-row {
-    grid-template-columns: minmax(0, 1fr) minmax(92px, 126px) 36px;
+    grid-template-columns: minmax(0, 1fr) minmax(92px, 126px) 42px 36px;
   }
 
   .topbar {
