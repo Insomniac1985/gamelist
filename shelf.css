@@ -298,12 +298,17 @@ html.theme-font-pokemon .shelf-page .column-head h2 {
 
 .showcase-slot-actions {
   position: absolute;
-  left: 7px;
   right: 7px;
-  top: 7px;
+  bottom: 7px;
   display: flex;
-  justify-content: space-between;
+  justify-content: flex-end;
   gap: 5px;
+  padding: 5px;
+  background: rgba(0, 0, 0, 0.48);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 9px;
+  backdrop-filter: blur(10px) saturate(1.12);
+  -webkit-backdrop-filter: blur(10px) saturate(1.12);
 }
 
 .showcase-slot-actions .icon-button {
