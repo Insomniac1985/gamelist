@@ -155,8 +155,8 @@ const el = {
   settingsStores: document.querySelector("#shelfSettingsStores"),
   settingsPsnUser: document.querySelector("#shelfSettingsPsnUser"), settingsMicrosoftUser: document.querySelector("#shelfSettingsMicrosoftUser"),
   settingsSteamUser: document.querySelector("#shelfSettingsSteamUser"), settingsDefaultOwner: document.querySelector("#shelfSettingsDefaultOwner"),
-  showcaseDialog: document.querySelector("#showcaseDialog"), showcaseForm: document.querySelector("#showcaseForm"), showcaseClose: document.querySelector("#showcaseClose"), showcaseCancel: document.querySelector("#showcaseCancel"),
-  showcaseSelected: document.querySelector("#showcaseSelected"), showcaseSearch: document.querySelector("#showcaseSearch"), showcasePlatform: document.querySelector("#showcasePlatform"), showcaseRegion: document.querySelector("#showcaseRegion"), showcaseCategory: document.querySelector("#showcaseCategory"), showcaseCount: document.querySelector("#showcaseCount"), showcaseList: document.querySelector("#showcaseList"),
+  showcaseDialog: document.querySelector("#showcaseDialog"), showcaseForm: document.querySelector("#showcaseForm"), showcaseClose: document.querySelector("#showcaseClose"),
+  showcaseSelected: document.querySelector("#showcaseSelected"), showcaseSearch: document.querySelector("#showcaseSearch"), showcasePlatform: document.querySelector("#showcasePlatform"), showcaseRegion: document.querySelector("#showcaseRegion"), showcaseCategory: document.querySelector("#showcaseCategory"), showcaseDirection: document.querySelector("#showcaseSortDirection"), showcaseCount: document.querySelector("#showcaseCount"), showcaseList: document.querySelector("#showcaseList"),
   completedDialog: document.querySelector("#shelfCompletedDialog"), completedClose: document.querySelector("#shelfCompletedClose"), completedTitle: document.querySelector("#shelfCompletedTitle"), completedCount: document.querySelector("#shelfCompletedCount"), completedYear: document.querySelector("#shelfCompletedYear"), completedPlatform: document.querySelector("#shelfCompletedPlatform"), completedSort: document.querySelector("#shelfCompletedSort"), completedDirection: document.querySelector("#shelfCompletedDirection"), completedView: document.querySelector("#shelfCompletedView"), completedList: document.querySelector("#shelfCompletedList"),
   authDialog: document.querySelector("#authDialog"),
   authForm: document.querySelector("#authForm"),
@@ -275,13 +275,14 @@ function bindEvents() {
   el.layoutForm.addEventListener("submit", saveLayout);
   el.layoutList.addEventListener("click", handleLayoutMove);
   el.showcaseClose.addEventListener("click", () => closeDialog(el.showcaseDialog));
-  el.showcaseCancel.addEventListener("click", () => closeDialog(el.showcaseDialog));
   el.showcaseDialog.addEventListener("click", (event) => { if (event.target === el.showcaseDialog) closeDialog(el.showcaseDialog); });
   el.showcaseForm.addEventListener("submit", saveShowcase);
   el.showcaseSearch.addEventListener("input", () => { state.showcaseFilters.query = normalizeSearchText(el.showcaseSearch.value); renderShowcasePicker(); });
   el.showcasePlatform.addEventListener("change", () => { state.showcaseFilters.platform = el.showcasePlatform.value; renderShowcasePicker(); });
   el.showcaseRegion.addEventListener("change", () => { state.showcaseFilters.region = el.showcaseRegion.value; renderShowcasePicker(); });
   el.showcaseCategory.addEventListener("change", () => { state.showcaseFilters.category = el.showcaseCategory.value; renderShowcasePicker(); });
+  el.showcaseDirection.addEventListener("click", () => { state.showcaseFilters.direction = state.showcaseFilters.direction === "asc" ? "desc" : "asc"; renderShowcasePicker(); });
+  el.showcaseList.addEventListener("scroll", updateShowcaseScrollFades, { passive: true });
   el.showcaseList.addEventListener("click", handleShowcasePick);
   el.showcaseSelected.addEventListener("click", handleShowcaseSelectedClick);
   el.completedClose.addEventListener("click", () => closeDialog(el.completedDialog));
@@ -326,7 +327,7 @@ function favoriteGames() {
 function favoriteCoverCard(game, index = 0) {
   if (!game) return `<button class="favorite-cover-card favorite-cover-empty" type="button" data-action="showcase-edit" title="Add showcase game" aria-label="Add showcase game ${index + 1}"></button>`;
   const cover = coverUrl(game.cover || "") || platformFallback(game.platform);
-  return `<button class="favorite-cover-card" type="button" data-id="${escapeHtml(game.id)}" title="${escapeHtml(game.title)}" aria-label="${escapeHtml(game.title)}"><img src="${escapeHtml(cover)}" alt="${escapeHtml(game.title)} cover" loading="lazy" decoding="async"><span>${escapeHtml(game.title)}</span></button>`;
+  return `<button class="favorite-cover-card" type="button" data-id="${escapeHtml(game.id)}" title="${escapeHtml(game.title)}" aria-label="${escapeHtml(game.title)}"><img src="${escapeHtml(cover)}" alt="${escapeHtml(game.title)} cover" loading="lazy" decoding="async">${showcaseHoverInfo(game, "favorite-cover-info")}</button>`;
 }
 
 function handleFavoriteClick(event) {
@@ -1371,7 +1372,7 @@ function settingsShelfPricesCard() {
 function openShowcaseEditor() {
   if (!state.canEdit) return openAuth();
   state.showcaseDraftIds = normalizeFavoriteGameIds(state.favoriteGameIds);
-  state.showcaseFilters = { query: "", platform: "all", region: "all", category: "all" };
+  state.showcaseFilters = { query: "", platform: "all", region: "all", category: "all", direction: "asc" };
   el.showcaseSearch.value = "";
   renderShowcaseFilters();
   renderShowcasePicker();
@@ -1404,8 +1405,10 @@ function renderShowcasePicker() {
   }).join("");
   el.showcaseList.innerHTML = games.map((game) => showcasePickerCard(game, selected.has(game.id))).join("");
   el.showcaseCount.textContent = `${state.showcaseDraftIds.length}/5 selected · ${games.length} ${games.length === 1 ? "game" : "games"}`;
+  syncShowcaseDirectionButton();
   el.showcaseSelected.querySelectorAll("img").forEach(bindCoverFrame);
   el.showcaseList.querySelectorAll("img").forEach(bindCoverFrame);
+  requestAnimationFrame(updateShowcaseScrollFades);
 }
 
 function filteredShowcaseGames() {
@@ -1416,20 +1419,48 @@ function filteredShowcaseGames() {
       && (filters.region === "all" || game.country === filters.region)
       && (filters.category === "all" || [...String(game.genre || "").split(","), ...(game.genres || [])].map((value) => value.trim()).includes(filters.category))
       && (!filters.query || haystack.includes(filters.query));
-  }).sort((a, b) => a.title.localeCompare(b.title));
+  }).sort((a, b) => {
+    const direction = filters.direction === "desc" ? -1 : 1;
+    return direction * a.title.localeCompare(b.title);
+  });
 }
 
 function showcasePickerCard(game, selected) {
   const cover = coverUrl(game.cover || "") || platformFallback(game.platform);
-  const tags = [...(game.tags || []), game.category && game.category !== "Game" ? game.category : "", ...String(game.genre || "").split(",")]
-    .map((tag) => String(tag).trim())
-    .filter((tag, index, list) => tag && normalize(tag) !== "game" && list.indexOf(tag) === index)
-    .slice(0, 4);
+  return `<button class="showcase-picker-card ${selected ? "is-selected" : ""}" type="button" data-showcase-id="${escapeHtml(game.id)}" title="${escapeHtml(game.title)}"><span class="showcase-picker-cover"><img src="${escapeHtml(cover)}" alt=""></span>${showcaseHoverInfo(game, "showcase-picker-info")}</button>`;
+}
+
+function showcaseHoverInfo(game, className) {
+  const tags = showcaseGameTags(game);
   const studio = [
     game.developer ? `Dev: ${game.developer}` : "",
     game.publisher ? `Pub: ${game.publisher}` : "",
   ].filter(Boolean);
-  return `<button class="showcase-picker-card ${selected ? "is-selected" : ""}" type="button" data-showcase-id="${escapeHtml(game.id)}" title="${escapeHtml(game.title)}"><span class="showcase-picker-cover"><img src="${escapeHtml(cover)}" alt=""></span><span class="showcase-picker-info"><strong>${escapeHtml(game.title)}</strong>${studio.length ? `<small>${escapeHtml(studio.join(" · "))}</small>` : ""}<span class="showcase-picker-meta">${shelfProgressPill(game)}${tags.map((tag) => `<span class="chip genre">${escapeHtml(tag)}</span>`).join("")}</span></span></button>`;
+  return `<span class="${className} showcase-hover-info"><strong>${escapeHtml(game.title)}</strong>${studio.length ? `<small>${escapeHtml(studio.join(" · "))}</small>` : ""}<span class="showcase-hover-meta">${shelfProgressPill(game)}${tags.map((tag) => `<span class="chip genre">${escapeHtml(tag)}</span>`).join("")}</span></span>`;
+}
+
+function showcaseGameTags(game) {
+  const tags = [...(game.tags || []), game.category && game.category !== "Game" ? game.category : "", ...String(game.genre || "").split(",")]
+    .map((tag) => String(tag).trim())
+    .filter((tag, index, list) => tag && normalize(tag) !== "game" && list.indexOf(tag) === index)
+    .slice(0, 4);
+  return tags;
+}
+
+function syncShowcaseDirectionButton() {
+  const desc = state.showcaseFilters.direction === "desc";
+  el.showcaseDirection.innerHTML = sortArrowIcon(desc);
+  el.showcaseDirection.classList.toggle("desc", desc);
+  el.showcaseDirection.title = `Sort ${desc ? "descending" : "ascending"}`;
+  el.showcaseDirection.setAttribute("aria-label", el.showcaseDirection.title);
+}
+
+function updateShowcaseScrollFades() {
+  const list = el.showcaseList;
+  if (!list) return;
+  const hasOverflow = list.scrollHeight > list.clientHeight + 2;
+  list.classList.toggle("has-more-above", hasOverflow && list.scrollTop > 2);
+  list.classList.toggle("has-more-below", hasOverflow && list.scrollTop + list.clientHeight < list.scrollHeight - 2);
 }
 
 function handleShowcasePick(event) {
