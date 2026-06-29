@@ -6,8 +6,8 @@ splitShelfPlayingModules();
 
 const SESSION_KEY = "gamelist-editor";
 const KASH_TWITCH_URL = "https://www.twitch.tv/kashhoward";
-const SITE_VERSION = "v245";
-const SITE_UPDATED_AT = "2026-06-29T00:00:00+02:00";
+const SITE_VERSION = "v246";
+const SITE_UPDATED_AT = "2026-06-29T00:10:00+02:00";
 const VERSION_STORAGE_KEY = "gamelist:site-version";
 const PULL_NAVIGATION_KEY = "gamelist:pull-navigation";
 const VIEW_KEY = "shelf:view-mode:v2";

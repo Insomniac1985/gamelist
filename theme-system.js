@@ -136,6 +136,7 @@ export function applySiteTheme(settings = {}, options = {}) {
   if (brandMark) brandMark.src = theme.icon;
   if (brandText) brandText.textContent = theme.title;
   applyOwnerStyle(theme.ownerColors);
+  warmThemeImages(theme);
   return theme;
 }
 
@@ -447,6 +448,16 @@ function safeImage(value) {
   if (/^data:image\/(?:png|jpe?g|webp|gif);base64,/i.test(raw)) return raw;
   if (/^(?:https?:\/\/|assets\/|\/assets\/)/i.test(raw)) return raw;
   return "";
+}
+
+function warmThemeImages(theme) {
+  [theme.icon, theme.appIcon, theme.backgroundImage].filter(Boolean).forEach((src) => {
+    try {
+      const image = new Image();
+      image.decoding = "async";
+      image.src = src;
+    } catch {}
+  });
 }
 
 function absoluteAsset(value) {

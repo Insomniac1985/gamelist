@@ -41,6 +41,7 @@
         const apply = (key, settings = {}) => {
           const themeKey = themes[key] ? key : "shabii";
           const theme = custom(settings, themeKey);
+          window.__initialTheme = theme;
           root.dataset.initialTheme = themeKey;
           root.classList.toggle("theme-kash", themeKey === "kash");
           root.classList.toggle("theme-light", theme.mode === "light");
@@ -66,7 +67,25 @@
           document.querySelector("meta[name='apple-mobile-web-app-title']")?.setAttribute("content", theme.shortName);
           document.querySelector("link[rel='icon']")?.setAttribute("href", theme.icon);
           document.querySelector("link[rel='apple-touch-icon']")?.setAttribute("href", theme.appIcon);
+          warmThemeImages(theme);
           return themeKey;
+        };
+        const warmThemeImages = (theme) => {
+          [theme.icon, theme.appIcon, theme.background].filter(Boolean).forEach((src) => {
+            try {
+              const image = new Image();
+              image.decoding = "async";
+              image.src = src;
+              if (!src.startsWith("data:") && !document.querySelector(`link[data-theme-preload][href="${CSS.escape(src)}"]`)) {
+                const link = document.createElement("link");
+                link.rel = "preload";
+                link.as = "image";
+                link.href = src;
+                link.dataset.themePreload = "true";
+                document.head.appendChild(link);
+              }
+            } catch {}
+          });
         };
         const saveTheme = (key, nextSettings = null) => {
           try {
@@ -123,6 +142,18 @@
         <img class="brand-mark" src="assets/Icon.png" alt="">
         <span>Shabii's Gamelist</span>
       </a>
+      <script>
+        (() => {
+          const theme = window.__initialTheme;
+          if (!theme) return;
+          const brand = document.currentScript.previousElementSibling;
+          const mark = brand?.querySelector(".brand-mark");
+          const label = brand?.querySelector("span:last-child");
+          if (mark && theme.icon) mark.src = theme.icon;
+          if (label && theme.title) label.textContent = theme.title;
+          if (brand && theme.title) brand.setAttribute("aria-label", theme.title);
+        })();
+      </script>
       <div class="top-actions">
         <button class="icon-button" id="syncButton" type="button" title="Sync" aria-label="Sync">
           <svg class="reload-icon" viewBox="0 0 24 24" aria-hidden="true">
