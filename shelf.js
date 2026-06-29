@@ -1318,7 +1318,8 @@ function renderLayoutEditor() {
   el.layoutList.className = "settings-layout";
   el.layoutList.innerHTML = [
     ...state.layout.order.map((key, index) => settingsLayoutCard(key, index)),
-    `<div class="settings-preference-separator" role="presentation"></div><div class="settings-preference-row">${themeSettingsButton(state.gamelistSettings, escapeHtml)}${settingsSelectCard("order", "Default order", "shelfSettingsDefaultOrder", [{ value: "added", label: "Last added" }, { value: "title", label: "Name" }, { value: "platform", label: "Platform" }, { value: "region", label: "Region" }, { value: "value", label: "Value" }])}${settingsShelfSyncCard()}${settingsShelfPricesCard()}${settingsCsvDataCard("shelf")}</div>`,
+    `<div class="settings-preference-separator" role="presentation"></div><div class="settings-preference-row">${themeSettingsButton(state.gamelistSettings, escapeHtml)}${settingsSelectCard("order", "Default order", "shelfSettingsDefaultOrder", [{ value: "added", label: "Last added" }, { value: "title", label: "Name" }, { value: "platform", label: "Platform" }, { value: "region", label: "Region" }, { value: "value", label: "Value" }])}${settingsShelfSyncCard()}${settingsShelfPricesCard()}</div>`,
+    `<div class="settings-preference-separator" role="presentation"></div><div class="settings-data-row">${settingsCsvDataCard("shelf")}</div>`,
   ].join("");
   el.settingsDefaultOrder = document.querySelector("#shelfSettingsDefaultOrder");
   const settings = normalizePriceSettings(state.gamelistSettings);

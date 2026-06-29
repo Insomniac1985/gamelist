@@ -999,7 +999,8 @@ function renderSettingsDialog() {
     settingsLayoutItem("playing", -1, { fixed: true }),
     settingsLayoutItem("latestFinished", -1, { fixed: true }),
     ...state.settings.pageOrder.map((key) => settingsLayoutItem(key, pageIndex.get(key) ?? 0)),
-    `<div class="settings-preference-separator" role="presentation"></div><div class="settings-preference-row">${settingsThemeItem()}${settingsDefaultOrderItem()}${settingsShelfSyncItem()}${settingsCsvDataItem("gamelist")}</div>`,
+    `<div class="settings-preference-separator" role="presentation"></div><div class="settings-preference-row">${settingsThemeItem()}${settingsDefaultOrderItem()}${settingsShelfSyncItem()}</div>`,
+    `<div class="settings-preference-separator" role="presentation"></div><div class="settings-data-row">${settingsCsvDataItem("gamelist")}</div>`,
   ].join("");
   el.settingsStores.innerHTML = STORE_OPTIONS.map((store) => `
     <label class="check-filter toggle-check settings-store-check">
