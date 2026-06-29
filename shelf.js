@@ -6,8 +6,8 @@ splitShelfPlayingModules();
 
 const SESSION_KEY = "gamelist-editor";
 const KASH_TWITCH_URL = "https://www.twitch.tv/kashhoward";
-const SITE_VERSION = "v260";
-const SITE_UPDATED_AT = "2026-06-29T02:40:00+02:00";
+const SITE_VERSION = "v261";
+const SITE_UPDATED_AT = "2026-06-29T02:50:00+02:00";
 const VERSION_STORAGE_KEY = "gamelist:site-version";
 const PULL_NAVIGATION_KEY = "gamelist:pull-navigation";
 const VIEW_KEY = "shelf:view-mode:v2";
@@ -324,7 +324,7 @@ function favoriteGames() {
 }
 
 function favoriteCoverCard(game, index = 0) {
-  if (!game) return `<button class="favorite-cover-card favorite-cover-empty" type="button" data-action="showcase-edit" title="Add showcase game" aria-label="Add showcase game ${index + 1}"><span class="favorite-plus" aria-hidden="true">+</span></button>`;
+  if (!game) return `<button class="favorite-cover-card favorite-cover-empty" type="button" data-action="showcase-edit" title="Add showcase game" aria-label="Add showcase game ${index + 1}"></button>`;
   const cover = coverUrl(game.cover || "") || platformFallback(game.platform);
   return `<button class="favorite-cover-card" type="button" data-id="${escapeHtml(game.id)}" title="${escapeHtml(game.title)}" aria-label="${escapeHtml(game.title)}"><img src="${escapeHtml(cover)}" alt="${escapeHtml(game.title)} cover" loading="lazy" decoding="async"><span>${escapeHtml(game.title)}</span></button>`;
 }
@@ -1398,7 +1398,7 @@ function renderShowcasePicker() {
   const games = filteredShowcaseGames();
   el.showcaseSelected.innerHTML = Array.from({ length: 5 }, (_, index) => {
     const game = ownedShelfGames().find((item) => item.id === state.showcaseDraftIds[index]);
-    if (!game) return `<button class="showcase-selected-slot is-empty" type="button" data-empty-slot="${index}" aria-label="Empty showcase slot ${index + 1}"><span>+</span></button>`;
+    if (!game) return `<button class="showcase-selected-slot is-empty" type="button" data-empty-slot="${index}" aria-label="Empty showcase slot ${index + 1}"></button>`;
     const cover = coverUrl(game.cover || "") || platformFallback(game.platform);
     return `<button class="showcase-selected-slot" type="button" data-remove-showcase="${escapeHtml(game.id)}" title="Remove ${escapeHtml(game.title)}"><img src="${escapeHtml(cover)}" alt=""><span>${escapeHtml(game.title)}</span></button>`;
   }).join("");
