@@ -2677,6 +2677,7 @@ body.theme-kash .game-row.stream-card:hover {
 
 .game-row .time-pill strong,
 .game-row .psn-progress-pill strong {
+  color: #ffe985;
   font-size: 10px;
 }
 
@@ -3759,6 +3760,7 @@ body.theme-kash .game-card.stream-card.completed-trophy-card {
 }
 
 .psn-progress-pill strong {
+  color: #ffe985;
   font-size: 11px;
 }
 
@@ -4647,6 +4649,7 @@ body.theme-kash .playing-finished-game.completed-trophy-card:hover {
 }
 
 .completed-platform .psn-progress-pill strong {
+  color: #ffe985;
   font-size: 10px;
 }
 
@@ -5668,7 +5671,7 @@ html.theme-light .card-trophy-progress {
 
 html.theme-light .psn-progress-pill strong,
 html.theme-light .card-trophy-progress strong {
-  color: #725100;
+  color: #ffe985;
 }
 
 html.theme-light .icon-button,
@@ -5679,6 +5682,20 @@ html.theme-light .calendar-today-action {
   color: #142033;
   background: rgba(177, 190, 210, 0.82);
   border-color: rgba(31, 42, 61, 0.42);
+}
+
+html.theme-light .settings-theme-edit-button,
+html.theme-light .settings-theme-edit-button:hover {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: var(--settings-control-height, 42px);
+  padding: 8px 12px;
+  color: #ffffff;
+  line-height: 1.1;
+  text-align: center;
+  background: var(--accent);
+  border-color: color-mix(in srgb, var(--accent) 72%, rgba(31, 42, 61, 0.34));
 }
 
 html.theme-light .release-calendar-actions .icon-button:hover,
@@ -6339,6 +6356,7 @@ body.theme-kash .history-row.completed-trophy-card:hover {
 }
 
 .detail-trophy-percent .psn-progress-pill strong {
+  color: #ffe985;
   font-size: 10px;
 }
 
