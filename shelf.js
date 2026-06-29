@@ -1427,7 +1427,7 @@ function filteredShowcaseGames() {
 
 function showcasePickerCard(game, selected) {
   const cover = coverUrl(game.cover || "") || platformFallback(game.platform);
-  return `<button class="showcase-picker-card ${selected ? "is-selected" : ""}" type="button" data-showcase-id="${escapeHtml(game.id)}" title="${escapeHtml(game.title)}"><span class="showcase-picker-cover"><img src="${escapeHtml(cover)}" alt=""></span></button>`;
+  return `<button class="showcase-picker-card ${selected ? "is-selected" : ""}" type="button" data-showcase-id="${escapeHtml(game.id)}" title="${escapeHtml(game.title)}"><span class="showcase-picker-cover"><img src="${escapeHtml(cover)}" alt=""></span><span class="showcase-picker-title">${escapeHtml(game.title)}</span></button>`;
 }
 
 function showcaseHoverInfo(game, className) {
