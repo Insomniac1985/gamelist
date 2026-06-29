@@ -474,8 +474,10 @@ html.theme-font-pokemon .shelf-page .column-head h2 {
   left: 0;
   right: 0;
   bottom: 0;
-  display: -webkit-box;
-  max-height: calc(1.1em * 4 + 26px);
+  display: grid;
+  justify-items: start;
+  gap: 5px;
+  max-height: calc(1.1em * 4 + 56px);
   padding: 26px 8px 8px;
   overflow: hidden;
   color: #fff;
@@ -492,6 +494,12 @@ html.theme-font-pokemon .shelf-page .column-head h2 {
   pointer-events: none;
   transform: translateY(6px);
   transition: opacity 160ms ease, transform 160ms ease;
+}
+
+.showcase-picker-title strong {
+  display: -webkit-box;
+  overflow: hidden;
+  font: inherit;
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 4;
 }
@@ -550,6 +558,26 @@ html.theme-font-pokemon .shelf-page .column-head h2 {
   display: flex;
   flex-wrap: wrap;
   gap: 5px;
+}
+
+.showcase-picker-title .platform-badge,
+.showcase-hover-meta .platform-badge {
+  min-height: 24px;
+  gap: 4px;
+  padding: 3px 6px 3px 3px;
+  font-size: 9px;
+}
+
+.showcase-picker-title .platform-icon,
+.showcase-hover-meta .platform-icon {
+  width: 16px;
+  height: 16px;
+  border-radius: 5px;
+}
+
+.showcase-picker-title .platform-label,
+.showcase-hover-meta .platform-label {
+  font-size: 9px;
 }
 
 .showcase-hover-meta .psn-progress-pill {
