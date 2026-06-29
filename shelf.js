@@ -6,8 +6,8 @@ splitShelfPlayingModules();
 
 const SESSION_KEY = "gamelist-editor";
 const KASH_TWITCH_URL = "https://www.twitch.tv/kashhoward";
-const SITE_VERSION = "v255";
-const SITE_UPDATED_AT = "2026-06-29T01:35:00+02:00";
+const SITE_VERSION = "v256";
+const SITE_UPDATED_AT = "2026-06-29T01:45:00+02:00";
 const VERSION_STORAGE_KEY = "gamelist:site-version";
 const PULL_NAVIGATION_KEY = "gamelist:pull-navigation";
 const VIEW_KEY = "shelf:view-mode:v2";
@@ -307,8 +307,22 @@ function renderReleaseCalendar() {
 function openReleaseDialog(date, games = []) {
   if (!games.length) return;
   el.releaseDialogTitle.textContent = formatLongDate(date);
-  el.releaseDialogList.innerHTML = games.map(gamelistProjectionCard).join("");
+  el.releaseDialogList.innerHTML = games.map((game) => gamelistProjectionCard(game, { releaseDialog: true })).join("");
   el.releaseDialogList.querySelectorAll(".cover-button img").forEach(bindCoverFrame);
+  el.releaseDialogList.querySelectorAll(".game-card[data-gamelist-id]").forEach((card) => {
+    const open = () => {
+      closeDialog(el.releaseDialog);
+      openGamelistGameByTitle(card.dataset.gamelistTitle || "");
+    };
+    card.addEventListener("click", (event) => {
+      if (event.target.closest("button, a")) return;
+      open();
+    });
+    card.querySelector(".cover-button")?.addEventListener("click", (event) => {
+      event.stopPropagation();
+      open();
+    });
+  });
   openDialog(el.releaseDialog);
 }
 
@@ -1476,7 +1490,8 @@ function updateFinishedControls() { const max = Math.max(0, el.finishedCarousel.
 function schedulePlayingCardHeightSync() { cancelAnimationFrame(state.playingHeightFrame); state.playingHeightFrame = requestAnimationFrame(() => { state.playingHeightFrame = requestAnimationFrame(equalizeMobilePlayingCards); }); }
 function equalizeMobilePlayingCards() { state.playingHeightFrame = 0; el.playingCarousel.style.removeProperty("--mobile-playing-card-height"); if (!window.matchMedia("(max-width: 760px)").matches) return; const cards = [...el.playingCarousel.querySelectorAll(".game-card.playing-card")]; if (!cards.length) return; const height = Math.ceil(Math.max(...cards.map((card) => card.scrollHeight), 252)); el.playingCarousel.style.setProperty("--mobile-playing-card-height", `${height}px`); }
 function scheduleShelfTrailerUpdate() { if (state.playingTrailerFrame) return; state.playingTrailerFrame = requestAnimationFrame(() => { state.playingTrailerFrame = 0; if (document.hidden || document.body.classList.contains("dialog-open")) return; syncFocusedActivityTrailer(el.playingCarousel, escapeHtml); }); }
-function gamelistProjectionCard(game) {
+function gamelistProjectionCard(game, options = {}) {
+  const isReleaseDialog = Boolean(options.releaseDialog);
   const cover = coverUrl(game.cover || "") || platformFallback(game.platform);
   const owners = Array.isArray(game.owners) && game.owners.length ? game.owners : [state.gamelistSettings.defaultOwner || "Xavi"];
   const visibleOwners = visibleShelfCardOwners(owners);
@@ -1484,9 +1499,10 @@ function gamelistProjectionCard(game) {
   const studio = [game.developer, game.publisher].filter(Boolean).join(" / ");
   const card = createGameCardShell(document);
   card.dataset.gamelistId = game.id; card.setAttribute("role", "button"); card.tabIndex = 0;
-  card.className += ` playing-card has-art${ownerClasses}${game.digital ? " digital-card" : ""}${game.stream ? " stream-card" : ""}${game.platinum ? " completed-trophy-card" : ""}`;
+  card.dataset.gamelistTitle = game.title || "";
+  card.className += ` has-art${isReleaseDialog ? "" : " playing-card"}${ownerClasses}${game.digital ? " digital-card" : ""}${game.stream ? " stream-card" : ""}${game.platinum ? " completed-trophy-card" : ""}`;
   card.style.setProperty("--card-art", `url('${escapeCss(cover)}')`);
-  const trailer = card.querySelector(".card-trailer"); const trailerUrl = window.matchMedia("(min-width: 900px)").matches ? activityTrailerUrl(game.trailerUrl, window.location.origin) : ""; if (trailerUrl) { card.classList.add("has-trailer"); trailer.dataset.src = trailerUrl; const toggle = card.querySelector(".trailer-toggle"); toggle.hidden = false; toggle.innerHTML = pauseTrailerIcon(); } else { trailer.remove(); card.querySelector(".trailer-toggle")?.remove(); }
+  const trailer = card.querySelector(".card-trailer"); const trailerUrl = !isReleaseDialog && window.matchMedia("(min-width: 900px)").matches ? activityTrailerUrl(game.trailerUrl, window.location.origin) : ""; if (trailerUrl) { card.classList.add("has-trailer"); trailer.dataset.src = trailerUrl; const toggle = card.querySelector(".trailer-toggle"); toggle.hidden = false; toggle.innerHTML = pauseTrailerIcon(); } else { trailer.remove(); card.querySelector(".trailer-toggle")?.remove(); }
   const image = card.querySelector(".cover-button img"); image.src = cover; image.alt = `${game.title} cover`; image.loading = "eager"; image.fetchPriority = "high"; image.decoding = "async"; bindCoverFrame(image);
   const title = card.querySelector("h3"); title.textContent = game.title; title.className = `${title.className.replace(/\bowner-[\w-]+/g, "").trim()} ${visibleOwners.map(ownerColorClass).join(" ")}`.trim(); title.classList.toggle("completed-achievements-title", Boolean(game.platinum));
   const titleOwners = card.querySelector(".title-owners");
@@ -1494,11 +1510,12 @@ function gamelistProjectionCard(game) {
   titleOwners.hidden = !titleOwners.innerHTML;
   card.querySelector(".edit-action").classList.remove("editor-only");
   const studioLine = card.querySelector(".studio-line"); studioLine.textContent = studio; studioLine.hidden = !studio;
-  card.querySelector(".meta").innerHTML = projectionMeta(game);
-  const dates = card.querySelector(".play-dates"); dates.innerHTML = game.startedAt ? `<span class="history-pill history-date-pill"><small>Started</small><strong>${escapeHtml(formatShortDate(game.startedAt))}</strong></span>` : ""; dates.hidden = !dates.innerHTML;
+  card.querySelector(".meta").innerHTML = projectionMeta(game, { includePast: isReleaseDialog });
+  const dates = card.querySelector(".play-dates"); dates.innerHTML = game.startedAt && !isReleaseDialog ? `<span class="history-pill history-date-pill"><small>Started</small><strong>${escapeHtml(formatShortDate(game.startedAt))}</strong></span>` : ""; dates.hidden = !dates.innerHTML;
   card.querySelector(".chips").innerHTML = (game.genres || []).slice(0, 4).map((tag) => `<span class="chip genre">${escapeHtml(tag)}</span>`).join("");
-  const trophies = card.querySelector(".card-trophies"); trophies.innerHTML = shelfCardTrophies(game, { compactProgress: true }); trophies.hidden = !trophies.innerHTML;
+  const trophies = card.querySelector(".card-trophies"); trophies.innerHTML = isReleaseDialog ? "" : shelfCardTrophies(game, { compactProgress: true }); trophies.hidden = !trophies.innerHTML;
   card.querySelector(".card-actions").remove(); card.querySelector(".prices").remove();
+  if (isReleaseDialog) card.querySelector(".edit-action")?.remove();
   const note = card.querySelector(".notes"); note.textContent = shortDescription(game.description || ""); note.hidden = !note.textContent;
   return card.outerHTML;
 }

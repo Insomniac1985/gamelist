@@ -43,7 +43,7 @@ assert.match(swSource, /"\/assets\/platforms\/playstation_retro\.png"[\s\S]*?"\/
 assert.match(sharedCss, /\.toast-notification\s*\{[\s\S]*?position:\s*fixed;[\s\S]*?left: max\(16px, env\(safe-area-inset-left\)\);[\s\S]*?bottom: max\(18px, env\(safe-area-inset-bottom\)\);[\s\S]*?background:\s*var\(--accent\);/, "Toast notifications must float bottom-left with accent styling");
 assert.doesNotMatch(sharedCss, /\.toast-notification\.is-error\s*\{[\s\S]*?background:\s*var\(--danger\)/, "Toast notifications must keep the accent background for every tone");
 assert.match(shelfSource, /function gameCard\(game, options = \{\}\)[\s\S]*?querySelector\("\.card-trophies"\)\.remove\(\)/, "physical Shelf cards must not render outside trophy strips");
-assert.match(shelfSource, /function gamelistProjectionCard\(game\)[\s\S]*?shelfCardTrophies\(game,\s*\{\s*compactProgress:\s*true\s*\}\)/, "Currently Playing cards must retain compact outside trophy strips");
+assert.match(shelfSource, /function gamelistProjectionCard\(game(?:,\s*options = \{\})?\)[\s\S]*?shelfCardTrophies\(game,\s*\{\s*compactProgress:\s*true\s*\}\)/, "Currently Playing cards must retain compact outside trophy strips");
 assert.equal(activityCoverOverride("Mandagon"), "https://cdn2.steamgriddb.com/grid/a0ac3f221e625a1f87857b7d19c4c7d5.png");
 assert.equal(activityCoverOverride("MANDAGON (Steam)"), "https://cdn2.steamgriddb.com/grid/a0ac3f221e625a1f87857b7d19c4c7d5.png");
 assert.equal(activityTitleMatchScore("Mandagon", "MANDAGON Trophies") >= 75, true);
@@ -86,6 +86,7 @@ assert.match(shelfSource, /const DEFAULT_LAYOUT = \["playing", "latestFinished",
 assert.match(appSource, /mountReleaseCalendar\(el\.releaseCalendar/, "Main must render the release calendar through the shared module");
 assert.match(shelfSource, /mountReleaseCalendar\(el\.releaseCalendar/, "Shelf must render the release calendar through the shared module");
 assert.match(appSource + shelfSource, /mountReleaseCalendar[\s\S]*?releaseCalendarOffset/, "Calendar navigation must keep page-specific offsets while sharing renderer code");
+assert.match(shelfSource, /function openReleaseDialog\(date, games = \[\]\)[\s\S]*?gamelistProjectionCard\(game,\s*\{\s*releaseDialog:\s*true\s*\}\)[\s\S]*?openGamelistGameByTitle/, "Shelf release calendar cards must open projected game details");
 assert.equal(releaseGamesByDate([{ id: "preorder-1", title: "Preorder Game", platform: "PS5", section: "upcoming", releaseDate: "2026-11-03", preorderStore: "Xtralife" }, { id: "preorder-1", title: "Preorder Game", platform: "PS5", section: "upcoming", releaseDate: "2026-11-03", preorderStore: "Xtralife" }]).get("2026-11-03").length, 1, "Calendar grouping must not duplicate preorder events");
 assert.match(appSource, /playingSection\.hidden = el\.playingCurrent\.hidden && el\.playingFinished\.hidden/, "Main must keep Last Finished visible when Currently Playing is hidden");
 assert.match(shelfSource, /finishedModule\.dataset\.module = "latestFinished"/, "Shelf must split Last Finished into its own movable module");
