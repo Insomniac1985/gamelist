@@ -2695,6 +2695,7 @@ function filteredGames(options = {}) {
 
 function cardFor(game, options = {}) {
   const releaseDialog = Boolean(options.releaseDialog);
+  const neutralReleaseCard = releaseDialog && Boolean(game.playing);
   const card = createGameCardShell(document);
   const statuses = gameStatuses(game);
   const owners = ownerTags(game);
@@ -2703,11 +2704,11 @@ function cardFor(game, options = {}) {
   card.draggable = !options.staticCard && manualDragEnabled() && ["backlog", "upcoming", "wanted"].includes(game.section);
   applyOwnerCardClasses(card, owners);
   card.classList.toggle("digital-card", Boolean(game.digital));
-  card.classList.toggle("playing-card", Boolean(game.playing) && !releaseDialog);
+  card.classList.toggle("playing-card", Boolean(game.playing) && !neutralReleaseCard);
   card.classList.toggle("stream-card", Boolean(game.stream));
   card.classList.toggle("completed-trophy-card", Boolean(game.platinum));
   const trailer = card.querySelector(".card-trailer");
-  const trailerUrl = !releaseDialog && shouldShowCardTrailer(game) ? trailerEmbedUrl(game.trailerUrl) : "";
+  const trailerUrl = !neutralReleaseCard && shouldShowCardTrailer(game) ? trailerEmbedUrl(game.trailerUrl) : "";
   if (trailerUrl) {
     card.classList.add("has-trailer");
     trailer.dataset.src = trailerUrl;
@@ -2722,8 +2723,8 @@ function cardFor(game, options = {}) {
   img.loading = options.imagePriority || "lazy";
   img.fetchPriority = options.imagePriority === "eager" ? "high" : "low";
   img.decoding = "async";
-  if (game.playing && !releaseDialog && game.cover) upgradeCoverIfFast(img, game.cover, "playing");
-  if (game.playing && !releaseDialog && game.cover) img.addEventListener("load", schedulePlayingCardHeightSync, { once: true });
+  if (game.playing && !neutralReleaseCard && game.cover) upgradeCoverIfFast(img, game.cover, "playing");
+  if (game.playing && !neutralReleaseCard && game.cover) img.addEventListener("load", schedulePlayingCardHeightSync, { once: true });
   card.classList.toggle("has-art", Boolean(game.cover));
   if (game.cover) {
     card.style.setProperty("--card-art", `url("${cssUrl(backgroundCoverUrl(game.cover))}")`);
@@ -2738,13 +2739,13 @@ function cardFor(game, options = {}) {
   const studioLine = card.querySelector(".studio-line");
   studioLine.textContent = studioText(game);
   studioLine.hidden = !studioLine.textContent;
-  card.querySelector(".meta").innerHTML = metaFor(game, { includePsn: releaseDialog || !game.playing }).join("");
+  card.querySelector(".meta").innerHTML = metaFor(game, { includePsn: neutralReleaseCard || !game.playing }).join("");
   const playDates = card.querySelector(".play-dates");
   playDates.innerHTML = playDatesFor(game, { includePastRelease: Boolean(options.includePastRelease) }).join("");
   playDates.hidden = !playDates.innerHTML;
   card.querySelector(".chips").innerHTML = cardChipsFor(game).join("");
   const trophyStrip = card.querySelector(".card-trophies");
-  trophyStrip.innerHTML = game.playing && !releaseDialog ? cardTrophiesFor(game) : "";
+  trophyStrip.innerHTML = game.playing && !neutralReleaseCard ? cardTrophiesFor(game) : "";
   trophyStrip.hidden = !trophyStrip.innerHTML;
   trophyStrip.addEventListener("click", (event) => {
     if (event.target.closest("a")) {
@@ -2763,7 +2764,7 @@ function cardFor(game, options = {}) {
   const backlogAction = card.querySelector(".backlog-action");
   const completeAction = card.querySelector(".complete-action");
   const trophyAction = card.querySelector(".trophy-action");
-  if (releaseDialog) {
+  if (neutralReleaseCard) {
     card.querySelector(".edit-action")?.remove();
     card.querySelector(".card-actions")?.remove();
     prices.remove();
