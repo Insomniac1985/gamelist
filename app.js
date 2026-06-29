@@ -14,8 +14,8 @@ const SETTINGS_KEY = "gamelist:settings:v1";
 const KASH_TWITCH_URL = "https://www.twitch.tv/kashhoward";
 const DEFAULT_PAGE_ORDER = ["trophies", "calendar", "highlights", "search", "gamelist", "finished"];
 const LAYOUT_SECTION_KEYS = ["playing", ...DEFAULT_PAGE_ORDER, "latestFinished"];
-const SITE_VERSION = "v265";
-const SITE_UPDATED_AT = "2026-06-29T23:05:00+02:00";
+const SITE_VERSION = "v266";
+const SITE_UPDATED_AT = "2026-06-29T23:12:00+02:00";
 const VERSION_STORAGE_KEY = "gamelist:site-version";
 const PULL_NAVIGATION_KEY = "gamelist:pull-navigation";
 const STORE_OPTIONS = ["Amazon", "eBay", "GAME.es", "Xtralife", "Retro Island NY", "GameStop", "Walmart"];
@@ -49,7 +49,7 @@ const DEFAULT_SETTINGS = {
   steamUser: "",
   currency: "EUR",
   region: "ES",
-  stores: ["Amazon", "eBay", "Xtralife", "GAME.es", "Retro Island NY"],
+  stores: ["Amazon", "Xtralife", "GAME.es", "Retro Island NY"],
   storeSettingsVersion: 2,
   defaultOwner: "Xavi",
   shelfSync: true,
@@ -856,7 +856,7 @@ function normalizeSettings(settings = {}) {
   const selectedStores = Array.isArray(settings.stores)
     ? settings.stores.filter((store) => STORE_OPTIONS.includes(store))
     : DEFAULT_SETTINGS.stores;
-  const stores = settings.storeSettingsVersion === 2 || selectedStores.includes("eBay") ? selectedStores : [...selectedStores, "eBay"];
+  const stores = selectedStores;
   const hiddenSections = migratedHidden.filter((item) => LAYOUT_SECTION_KEYS.includes(item));
   return {
     ...DEFAULT_SETTINGS,

@@ -6,8 +6,8 @@ splitShelfPlayingModules();
 
 const SESSION_KEY = "gamelist-editor";
 const KASH_TWITCH_URL = "https://www.twitch.tv/kashhoward";
-const SITE_VERSION = "v265";
-const SITE_UPDATED_AT = "2026-06-29T23:05:00+02:00";
+const SITE_VERSION = "v266";
+const SITE_UPDATED_AT = "2026-06-29T23:12:00+02:00";
 const VERSION_STORAGE_KEY = "gamelist:site-version";
 const PULL_NAVIGATION_KEY = "gamelist:pull-navigation";
 const VIEW_KEY = "shelf:view-mode:v2";
@@ -17,7 +17,7 @@ const DEFAULT_LAYOUT = ["playing", "latestFinished", "favorites", "trophies", "c
 const LAYOUT_KEYS = [...DEFAULT_LAYOUT];
 const DEFAULT_HIDDEN_MODULES = ["playing", "trophies"];
 const STORE_OPTIONS = ["Amazon", "eBay", "GAME.es", "Xtralife", "Retro Island NY", "GameStop", "Walmart"];
-const DEFAULT_PRICE_STORES = ["Amazon", "eBay", "Xtralife", "GAME.es"];
+const DEFAULT_PRICE_STORES = ["Amazon", "Xtralife", "GAME.es"];
 const MAX_PRICE_STORES = 5;
 const THEMES = {
   shabii: { title: "Shabii's Shelf", icon: "assets/Icon_shelf.png", color: "#ff0039" },
@@ -1674,7 +1674,7 @@ async function saveLayout(event) {
 
 function normalizePriceSettings(settings = {}) {
   const selectedStores = Array.isArray(settings.stores) ? settings.stores.filter((store) => STORE_OPTIONS.includes(store)) : DEFAULT_PRICE_STORES;
-  const stores = settings.storeSettingsVersion === 2 || selectedStores.includes("eBay") ? selectedStores : [...selectedStores, "eBay"];
+  const stores = selectedStores;
   return {
     currency: settings.currency === "USD" ? "USD" : "EUR",
     region: ["ES", "IT", "US", "UK"].includes(settings.region) ? settings.region : "ES",
