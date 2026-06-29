@@ -6,8 +6,8 @@ splitShelfPlayingModules();
 
 const SESSION_KEY = "gamelist-editor";
 const KASH_TWITCH_URL = "https://www.twitch.tv/kashhoward";
-const SITE_VERSION = "v252";
-const SITE_UPDATED_AT = "2026-06-29T01:15:00+02:00";
+const SITE_VERSION = "v253";
+const SITE_UPDATED_AT = "2026-06-29T01:20:00+02:00";
 const VERSION_STORAGE_KEY = "gamelist:site-version";
 const PULL_NAVIGATION_KEY = "gamelist:pull-navigation";
 const VIEW_KEY = "shelf:view-mode:v2";
@@ -1519,7 +1519,8 @@ function shelfProgressBadge(summary, options = {}) {
   return `<span class="${className}">${options.includeIcon === false ? "" : trophyIcon()}<em style="--progress:${summary.progress}%"></em><strong>${summary.progress}%</strong>${label ? `<span>${options.separator ? "<b>·</b>" : ""}${escapeHtml(label)}</span>` : ""}</span>`;
 }
 function shelfProgressPill(game) {
-  return shelfProgressBadge(activityProgressSummary(game), { className: "shelf-progress-pill" });
+  const progress = activityProgressFor(game);
+  return progress != null ? `<span class="psn-progress-pill shelf-progress-pill">${trophyIcon()}<em style="--progress:${progress}%"></em><strong>${progress}%</strong></span>` : "";
 }
 function shelfCardTrophies(game) {
   if (!activityAllowsPsnCardTrophies(game.platform)) return "";
