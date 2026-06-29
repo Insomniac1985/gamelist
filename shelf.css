@@ -185,7 +185,7 @@ html.theme-font-pokemon .shelf-page .column-head h2 {
   overflow: visible;
   background: transparent;
   border: 0;
-  border-radius: 10px;
+  border-radius: 14px;
   cursor: pointer;
   box-shadow: none;
   transition: transform 170ms ease, filter 170ms ease, z-index 170ms ease;
@@ -196,7 +196,7 @@ html.theme-font-pokemon .shelf-page .column-head h2 {
   height: 100%;
   object-fit: contain;
   background: transparent;
-  border-radius: 10px;
+  border-radius: 14px;
   transition: filter 180ms ease;
 }
 
