@@ -1,4 +1,4 @@
-import { normalizeSearchText, createGameCardShell, bindActivityCardParallax, mountActivitySlider, finishedGameMarkup, achievementCardMarkup, achievementDashboardMarkup, achievementPanelMarkup, completedCardMarkup, horizontalCarouselState, syncViewModeButton, slideHorizontalCarousel, comparePlayingGames, finishedDurationText, timeBadgeMarkup, guideLinksMarkup, storeButtonsMarkup, activityTrailerUrl, syncFocusedActivityTrailer, activityReleaseStatus, activityCoverOverride, activityLocalGameForTitle, activityTitleMatchScore, activityAllowsPsnCardTrophies, formatFooterDate, formatFooterDateTime, confirmGameDelete } from "./activity-ui.js";
+import { normalizeSearchText, createGameCardShell, bindActivityCardParallax, mountActivitySlider, mountReleaseCalendar, finishedGameMarkup, achievementCardMarkup, achievementDashboardMarkup, achievementPanelMarkup, completedCardMarkup, horizontalCarouselState, syncViewModeButton, slideHorizontalCarousel, comparePlayingGames, finishedDurationText, timeBadgeMarkup, guideLinksMarkup, storeButtonsMarkup, activityTrailerUrl, syncFocusedActivityTrailer, activityReleaseStatus, activityCoverOverride, activityLocalGameForTitle, activityTitleMatchScore, activityAllowsPsnCardTrophies, formatFooterDate, formatFooterDateTime, confirmGameDelete } from "./activity-ui.js";
 import { applySiteTheme, normalizeThemeSettings, openThemeEditor, ownerCardColorClass, ownerColorClass, themeSettingsButton } from "./theme-system.js";
 
 mountActivitySlider(document.querySelector("[data-module='playing']"), { count: "shelfPlayingCount", previous: "shelfPlayingPrev", next: "shelfPlayingNext", list: "playingCarousel", finished: "shelfPlayingFinished", finishedList: "finishedCarousel" });
@@ -6,14 +6,14 @@ splitShelfPlayingModules();
 
 const SESSION_KEY = "gamelist-editor";
 const KASH_TWITCH_URL = "https://www.twitch.tv/kashhoward";
-const SITE_VERSION = "v254";
-const SITE_UPDATED_AT = "2026-06-29T01:25:00+02:00";
+const SITE_VERSION = "v255";
+const SITE_UPDATED_AT = "2026-06-29T01:35:00+02:00";
 const VERSION_STORAGE_KEY = "gamelist:site-version";
 const PULL_NAVIGATION_KEY = "gamelist:pull-navigation";
 const VIEW_KEY = "shelf:view-mode:v2";
 const LAYOUT_KEY = "shelf:layout:v2";
 const LOCAL_DRAFT_KEY = "shelf:draft-data:v2";
-const DEFAULT_LAYOUT = ["playing", "latestFinished", "trophies", "kpis", "filters", "library"];
+const DEFAULT_LAYOUT = ["playing", "latestFinished", "trophies", "calendar", "kpis", "filters", "library"];
 const LAYOUT_KEYS = [...DEFAULT_LAYOUT];
 const DEFAULT_HIDDEN_MODULES = ["playing", "trophies"];
 const STORE_OPTIONS = ["Amazon", "eBay", "GAME.es", "Xtralife", "Retro Island NY", "GameStop", "Walmart"];
@@ -23,7 +23,7 @@ const THEMES = {
   shabii: { title: "Shabii's Shelf", icon: "assets/Icon_shelf.png", color: "#ff0039" },
   kash: { title: "Kash's Shelf", icon: "assets/kh_icon.png", color: "#005cff" },
 };
-const MODULE_NAMES = { playing: "Currently Playing", latestFinished: "Last Finished", trophies: "Achievements", kpis: "Highlights", filters: "Search", library: "Shelf" };
+const MODULE_NAMES = { playing: "Currently Playing", latestFinished: "Last Finished", trophies: "Achievements", calendar: "Calendar", kpis: "Highlights", filters: "Search", library: "Shelf" };
 const PLATFORM_OPTIONS = [
   "Nintendo Switch", "Nintendo Switch 2", "Sony PlayStation 5", "Sony PlayStation 4",
   "Sony PlayStation 2", "Sony PlayStation", "Nintendo 3DS", "Nintendo DS", "Nintendo 64",
@@ -60,6 +60,7 @@ const state = {
   completedYear: "all", completedPlatform: "all", completedSort: "time", completedDirection: "desc", completedView: "grid",
   gamelistDetailGame: null, gamelistDetailTrophyData: [], gamelistDetailTrophyEarned: 0, gamelistDetailTrophyTotal: 0, gamelistDetailTrophyKind: "TROPHIES", gamelistDetailTrophyDirection: "asc",
   completedCoverCache: {},
+  releaseCalendarOffset: 0,
   playingTrailerFrame: 0,
   playingHeightFrame: 0,
   shelfSwipeStart: null,
@@ -94,6 +95,11 @@ const el = {
   playingFinished: document.querySelector("#shelfPlayingFinished"), playingCount: document.querySelector("#shelfPlayingCount"),
   playingPrev: document.querySelector("#shelfPlayingPrev"), playingNext: document.querySelector("#shelfPlayingNext"),
   trophyCard: document.querySelector("#shelfTrophyCard"),
+  releaseCalendar: document.querySelector("#shelfReleaseCalendar"),
+  releaseDialog: document.querySelector("#shelfReleaseDialog"),
+  releaseCloseButton: document.querySelector("#shelfReleaseCloseButton"),
+  releaseDialogTitle: document.querySelector("#shelfReleaseDialogTitle"),
+  releaseDialogList: document.querySelector("#shelfReleaseDialogList"),
   footerUpdate: document.querySelector("#footerDataUpdate"),
   footerVersion: document.querySelector("#footerVersion"),
   scrollTop: document.querySelector("#scrollTopButton"),
@@ -259,6 +265,8 @@ function bindEvents() {
   el.layoutList.addEventListener("click", handleLayoutMove);
   el.completedClose.addEventListener("click", () => closeDialog(el.completedDialog));
   el.completedDialog.addEventListener("click", (event) => { if (event.target === el.completedDialog) closeDialog(el.completedDialog); });
+  el.releaseCloseButton.addEventListener("click", () => closeDialog(el.releaseDialog));
+  el.releaseDialog.addEventListener("click", (event) => { if (event.target === el.releaseDialog) closeDialog(el.releaseDialog); });
   el.authClose.addEventListener("click", () => closeDialog(el.authDialog));
   el.authCancel.addEventListener("click", () => closeDialog(el.authDialog));
   el.authDialog.addEventListener("click", (event) => { if (event.target === el.authDialog) closeDialog(el.authDialog); });
@@ -275,8 +283,33 @@ function renderAll() {
   renderChrome();
   renderFilters();
   renderStats();
+  renderReleaseCalendar();
   renderGamelistModules();
   renderLibrary();
+}
+
+function renderReleaseCalendar() {
+  mountReleaseCalendar(el.releaseCalendar, {
+    games: state.gamelistGames,
+    offset: state.releaseCalendarOffset,
+    onShift: (value) => {
+      state.releaseCalendarOffset += value;
+      renderReleaseCalendar();
+    },
+    onToday: () => {
+      state.releaseCalendarOffset = 0;
+      renderReleaseCalendar();
+    },
+    onOpen: openReleaseDialog,
+  });
+}
+
+function openReleaseDialog(date, games = []) {
+  if (!games.length) return;
+  el.releaseDialogTitle.textContent = formatLongDate(date);
+  el.releaseDialogList.innerHTML = games.map(gamelistProjectionCard).join("");
+  el.releaseDialogList.querySelectorAll(".cover-button img").forEach(bindCoverFrame);
+  openDialog(el.releaseDialog);
 }
 
 function renderChrome() {

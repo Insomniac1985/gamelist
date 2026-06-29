@@ -1,4 +1,4 @@
-import { normalizeSearchText, createGameCardShell, bindActivityCardParallax, mountActivitySlider, finishedGameMarkup, achievementCardMarkup, achievementDashboardMarkup, achievementPanelMarkup, completedCardMarkup, horizontalCarouselState, syncViewModeButton, slideHorizontalCarousel, comparePlayingGames, finishedDurationText, timeBadgeMarkup, guideLinksMarkup, storeButtonsMarkup, activityTrailerUrl, activityTrailerFrameMarkup, activityReleaseStatus, activityCoverOverride, activityAllowsPsnCardTrophies, formatFooterDate, formatFooterDateTime, confirmGameDelete } from "./activity-ui.js";
+import { normalizeSearchText, createGameCardShell, bindActivityCardParallax, mountActivitySlider, mountReleaseCalendar, finishedGameMarkup, achievementCardMarkup, achievementDashboardMarkup, achievementPanelMarkup, completedCardMarkup, horizontalCarouselState, syncViewModeButton, slideHorizontalCarousel, comparePlayingGames, finishedDurationText, timeBadgeMarkup, guideLinksMarkup, storeButtonsMarkup, activityTrailerUrl, activityTrailerFrameMarkup, activityReleaseStatus, activityCoverOverride, activityAllowsPsnCardTrophies, formatFooterDate, formatFooterDateTime, confirmGameDelete } from "./activity-ui.js";
 import { applySiteTheme, normalizeThemeSettings, openThemeEditor, ownerCardColorClass, ownerColorClass, themeSettingsButton } from "./theme-system.js";
 
 mountActivitySlider(document.querySelector("#playingSection"), { count: "playingCount", previous: "playingPrevButton", next: "playingNextButton", list: "playingList", dataSection: "playing", finished: "playingFinished", finishedList: "playingFinishedList" });
@@ -14,8 +14,8 @@ const SETTINGS_KEY = "gamelist:settings:v1";
 const KASH_TWITCH_URL = "https://www.twitch.tv/kashhoward";
 const DEFAULT_PAGE_ORDER = ["trophies", "calendar", "highlights", "search", "gamelist", "finished"];
 const LAYOUT_SECTION_KEYS = ["playing", ...DEFAULT_PAGE_ORDER, "latestFinished"];
-const SITE_VERSION = "v254";
-const SITE_UPDATED_AT = "2026-06-29T01:25:00+02:00";
+const SITE_VERSION = "v255";
+const SITE_UPDATED_AT = "2026-06-29T01:35:00+02:00";
 const VERSION_STORAGE_KEY = "gamelist:site-version";
 const PULL_NAVIGATION_KEY = "gamelist:pull-navigation";
 const STORE_OPTIONS = ["Amazon", "eBay", "GAME.es", "Xtralife", "Retro Island NY", "GameStop", "Walmart"];
@@ -1959,139 +1959,28 @@ function preorderCountPill(count, summary) {
 }
 
 function renderReleaseCalendar() {
-  const releases = releaseGamesByDate();
-  const months = releaseCalendarMonths(4);
-  const today = localDateKey(new Date());
-  el.releaseCalendar.innerHTML = `
-    <div class="release-calendar-head">
-      <div class="release-calendar-actions">
-        <button class="ghost-button calendar-today-action" type="button" data-calendar-today>Today</button>
-        <button class="icon-button" type="button" data-calendar-shift="-1" title="Previous month" aria-label="Previous month">←</button>
-        <button class="icon-button" type="button" data-calendar-shift="1" title="Next month" aria-label="Next month">→</button>
-      </div>
-    </div>
-    <div class="release-months-frame glass">
-      <div class="release-months">
-        ${months.map((month) => releaseMonthMarkup(month, releases, today)).join("")}
-      </div>
-    </div>
-  `;
-  el.releaseCalendar.querySelectorAll("[data-calendar-shift]").forEach((button) => {
-    button.addEventListener("click", () => {
-      state.releaseCalendarOffset += Number(button.dataset.calendarShift || 0);
+  mountReleaseCalendar(el.releaseCalendar, {
+    games: state.games,
+    offset: state.releaseCalendarOffset,
+    onShift: (value) => {
+      state.releaseCalendarOffset += value;
       renderReleaseCalendar();
-    });
-  });
-  el.releaseCalendar.querySelector("[data-calendar-today]")?.addEventListener("click", () => {
-    state.releaseCalendarOffset = 0;
-    renderReleaseCalendar();
-  });
-  el.releaseCalendar.querySelectorAll(".release-day.has-release").forEach((button) => {
-    button.addEventListener("click", () => openReleaseDialog(button.dataset.date));
+    },
+    onToday: () => {
+      state.releaseCalendarOffset = 0;
+      renderReleaseCalendar();
+    },
+    onOpen: openReleaseDialog,
   });
 }
 
-function releaseGamesByDate() {
-  const groups = new Map();
-  state.games
-    .filter((game) => !game.deletedAt && !game.completedAt && ["upcoming", "wanted", "backlog"].includes(game.section) && validReleaseDate(game.releaseDate))
-    .forEach((game) => {
-      const key = dateOnly(game.releaseDate);
-      if (!groups.has(key)) groups.set(key, []);
-      groups.get(key).push(game);
-    });
-  groups.forEach((games) => games.sort((a, b) => stringCompare(a.title, b.title)));
-  return groups;
-}
-
-function releaseCalendarMonths(count) {
-  const start = new Date();
-  start.setDate(1);
-  start.setHours(0, 0, 0, 0);
-  return Array.from({ length: count }, (_, index) => new Date(start.getFullYear(), start.getMonth() + state.releaseCalendarOffset + index, 1));
-}
-
-function releaseMonthMarkup(monthDate, releases, today) {
-  const year = monthDate.getFullYear();
-  const month = monthDate.getMonth();
-  const totalDays = new Date(year, month + 1, 0).getDate();
-  const leading = mondayWeekdayIndex(new Date(year, month, 1));
-  const cells = [];
-  for (let index = 0; index < leading; index += 1) {
-    cells.push(`<span class="release-day empty" aria-hidden="true"></span>`);
-  }
-  for (let day = 1; day <= totalDays; day += 1) {
-    const date = localDateKey(new Date(year, month, day));
-    const games = releases.get(date) || [];
-    const preordered = games.some((game) => game.preorderStore);
-    const platformTone = releasePlatformTone(games);
-    const titles = games.map((game) => game.title).join("\n");
-    cells.push(`
-      <button
-        class="release-day ${games.length ? "has-release" : ""} ${platformTone} ${preordered ? "has-preorder" : ""} ${date === today ? "today" : ""}"
-        type="button"
-        data-date="${escapeHtml(date)}"
-        data-games="${escapeHtml(games.map((game) => game.title).join(" · "))}"
-        title="${escapeHtml(titles)}"
-        ${games.length ? "" : "disabled"}
-      >
-        <span>${day}</span>
-        ${games.length > 1 ? `<em>${games.length}</em>` : ""}
-      </button>
-    `);
-  }
-  while (cells.length < 42) {
-    cells.push(`<span class="release-day empty" aria-hidden="true"></span>`);
-  }
-  return `
-    <article class="release-month">
-      <header>
-        <strong>${escapeHtml(monthName(monthDate))}</strong>
-        <span>${year}</span>
-      </header>
-      <div class="release-weekdays" aria-hidden="true">
-        <span>M</span><span>T</span><span>W</span><span>T</span><span>F</span><span>S</span><span>S</span>
-      </div>
-      <div class="release-days">${cells.join("")}</div>
-    </article>
-  `;
-}
-
-function releasePlatformTone(games) {
-  const platforms = unique(games.map((game) => canonicalPlatform(game.platform)).filter(Boolean));
-  if (platforms.length !== 1) return games.length ? "release-platform-mixed" : "";
-  const platform = platforms[0].toLowerCase();
-  const cls = platformClass(platform);
-  if (["platform-nintendo", "platform-wii", "platform-wiiu", "platform-n64", "platform-gamecube", "platform-nes", "platform-snes", "platform-ds", "platform-3ds"].includes(cls)) return "release-platform-nintendo";
-  if (cls === "platform-playstation") return "release-platform-playstation";
-  if (cls === "platform-xbox") return "release-platform-xbox";
-  if (platform.includes("steam") || platform.includes("pc")) return "release-platform-pc";
-  return "release-platform-generic";
-}
-
-function openReleaseDialog(date) {
-  const games = releaseGamesByDate().get(date) || [];
+function openReleaseDialog(date, games = []) {
   if (!games.length) return;
   el.releaseDialogTitle.textContent = formatLongDate(date);
   el.releaseDialogList.innerHTML = "";
   games.forEach((game) => el.releaseDialogList.appendChild(cardFor(game, { staticCard: true, includePastRelease: true })));
   el.releaseDialog.showModal();
   syncScrollLock();
-}
-
-function mondayWeekdayIndex(date) {
-  return (date.getDay() + 6) % 7;
-}
-
-function monthName(date) {
-  return new Intl.DateTimeFormat("en-US", { month: "long" }).format(date);
-}
-
-function localDateKey(date) {
-  const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, "0");
-  const day = String(date.getDate()).padStart(2, "0");
-  return `${year}-${month}-${day}`;
 }
 
 function validReleaseDate(value) {

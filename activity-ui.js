@@ -88,6 +88,141 @@ export function achievementPanelMarkup({ psn = {}, steam = {}, xbox = {}, trophy
   return { sourceUrl, html: `${dashboard}<span class="achievement-subtitle trophy-subtitle">Latest Achievements</span>${cards}` };
 }
 
+export function mountReleaseCalendar(container, options = {}) {
+  if (!container) return;
+  const months = releaseCalendarMonths(4, options.offset || 0);
+  const releases = releaseGamesByDate(options.games || []);
+  const today = localDateKey(new Date());
+  container.innerHTML = releaseCalendarMarkup(months, releases, today);
+  container.querySelectorAll("[data-calendar-shift]").forEach((button) => {
+    button.addEventListener("click", () => options.onShift?.(Number(button.dataset.calendarShift || 0)));
+  });
+  container.querySelector("[data-calendar-today]")?.addEventListener("click", () => options.onToday?.());
+  container.querySelectorAll(".release-day.has-release").forEach((button) => {
+    button.addEventListener("click", () => options.onOpen?.(button.dataset.date, releases.get(button.dataset.date) || []));
+  });
+}
+
+export function releaseGamesByDate(games = []) {
+  const groups = new Map();
+  const seen = new Set();
+  games
+    .filter((game) => !game.deletedAt && !game.completedAt && ["upcoming", "wanted", "backlog"].includes(game.section) && validReleaseDate(game.releaseDate))
+    .forEach((game) => {
+      const key = dateOnly(game.releaseDate);
+      const identity = `${key}:${game.id || game.gamelistId || normalizeSearchText(`${game.title} ${game.platform}`)}`;
+      if (seen.has(identity)) return;
+      seen.add(identity);
+      if (!groups.has(key)) groups.set(key, []);
+      groups.get(key).push(game);
+    });
+  groups.forEach((items) => items.sort((a, b) => String(a.title || "").localeCompare(String(b.title || ""), undefined, { sensitivity: "base" })));
+  return groups;
+}
+
+function releaseCalendarMarkup(months, releases, today) {
+  return `
+    <div class="release-calendar-head">
+      <div class="release-calendar-actions">
+        <button class="ghost-button calendar-today-action" type="button" data-calendar-today>Today</button>
+        <button class="icon-button" type="button" data-calendar-shift="-1" title="Previous month" aria-label="Previous month">←</button>
+        <button class="icon-button" type="button" data-calendar-shift="1" title="Next month" aria-label="Next month">→</button>
+      </div>
+    </div>
+    <div class="release-months-frame glass">
+      <div class="release-months">
+        ${months.map((month) => releaseMonthMarkup(month, releases, today)).join("")}
+      </div>
+    </div>
+  `;
+}
+
+function releaseCalendarMonths(count, offset = 0) {
+  const start = new Date();
+  start.setDate(1);
+  start.setHours(0, 0, 0, 0);
+  return Array.from({ length: count }, (_, index) => new Date(start.getFullYear(), start.getMonth() + offset + index, 1));
+}
+
+function releaseMonthMarkup(monthDate, releases, today) {
+  const year = monthDate.getFullYear();
+  const month = monthDate.getMonth();
+  const totalDays = new Date(year, month + 1, 0).getDate();
+  const leading = mondayWeekdayIndex(new Date(year, month, 1));
+  const cells = [];
+  for (let index = 0; index < leading; index += 1) {
+    cells.push(`<span class="release-day empty" aria-hidden="true"></span>`);
+  }
+  for (let day = 1; day <= totalDays; day += 1) {
+    const date = localDateKey(new Date(year, month, day));
+    const games = releases.get(date) || [];
+    const preordered = games.some((game) => game.preorderStore);
+    const platformTone = releasePlatformTone(games);
+    const titles = games.map((game) => game.title).join("\n");
+    cells.push(`
+      <button
+        class="release-day ${games.length ? "has-release" : ""} ${platformTone} ${preordered ? "has-preorder" : ""} ${date === today ? "today" : ""}"
+        type="button"
+        data-date="${escapeHtml(date)}"
+        data-games="${escapeHtml(games.map((game) => game.title).join(" · "))}"
+        title="${escapeHtml(titles)}"
+        ${games.length ? "" : "disabled"}
+      >
+        <span>${day}</span>
+        ${games.length > 1 ? `<em>${games.length}</em>` : ""}
+      </button>
+    `);
+  }
+  while (cells.length < 42) {
+    cells.push(`<span class="release-day empty" aria-hidden="true"></span>`);
+  }
+  return `
+    <article class="release-month">
+      <header>
+        <strong>${escapeHtml(monthName(monthDate))}</strong>
+        <span>${year}</span>
+      </header>
+      <div class="release-weekdays" aria-hidden="true">
+        <span>M</span><span>T</span><span>W</span><span>T</span><span>F</span><span>S</span><span>S</span>
+      </div>
+      <div class="release-days">${cells.join("")}</div>
+    </article>
+  `;
+}
+
+function releasePlatformTone(games) {
+  const platforms = [...new Set(games.map((game) => normalizeSearchText(game.platform)).filter(Boolean))];
+  if (platforms.length !== 1) return games.length ? "release-platform-mixed" : "";
+  const platform = platforms[0];
+  if (/switch|nintendo|wii|gamecube|nes|snes|ds|3ds|gba|gbc|game boy|n64/.test(platform)) return "release-platform-nintendo";
+  if (/xbox|x360|xone/.test(platform)) return "release-platform-xbox";
+  if (/steam|pc/.test(platform)) return "release-platform-pc";
+  if (/ps|playstation|psp|vita/.test(platform)) return "release-platform-playstation";
+  return "release-platform-generic";
+}
+
+function mondayWeekdayIndex(date) {
+  return (date.getDay() + 6) % 7;
+}
+
+function monthName(date) {
+  return new Intl.DateTimeFormat("en-US", { month: "long" }).format(date);
+}
+
+function localDateKey(date) {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+}
+
+function validReleaseDate(value) {
+  const date = dateOnly(value);
+  if (!date) return false;
+  const year = Number(date.slice(0, 4));
+  return year >= 1990;
+}
+
 export function activityCoverOverride(input) {
   const title = typeof input === "string" ? input : input?.title || input?.game || "";
   const normalized = normalizeTitle(title);

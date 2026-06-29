@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import { onRequestPut as putGamelist } from "../functions/api/sync.js";
 import { onRequestPut as putShelf, onRequestDelete as deleteShelf } from "../functions/api/shelf.js";
-import { activityAllowsPsnCardTrophies, activityCoverOverride, activityTitleMatchScore, normalizeSearchText } from "../activity-ui.js";
+import { activityAllowsPsnCardTrophies, activityCoverOverride, activityTitleMatchScore, normalizeSearchText, releaseGamesByDate } from "../activity-ui.js";
 
 const [appSource, shelfSource, shelfCss, shelfHtml, sharedCss, appHtml, collectionPriceSource, themeSource, swSource] = await Promise.all([
   readFile(new URL("../app.js", import.meta.url), "utf8"),
@@ -82,7 +82,11 @@ assert.match(shelfHtml, /id="fetchPricesButton"/, "Shelf must keep the Fetch New
 assert.match(shelfHtml, /<html lang="en" class="theme-booting">[\s\S]*?window\.__initialThemeReady/, "Shelf must resolve the saved shared theme before first paint");
 assert.match(shelfSource, /await window\.__initialThemeReady\?\.catch/, "Shelf must wait for the initial theme before rendering");
 assert.doesNotMatch(shelfSource, /const FIXED_LAYOUT/, "Shelf settings must allow Currently Playing and Last Finished to move");
-assert.match(shelfSource, /const DEFAULT_LAYOUT = \["playing", "latestFinished", "trophies", "kpis", "filters", "library"\]/, "Shelf settings must include playing sections in the movable layout");
+assert.match(shelfSource, /const DEFAULT_LAYOUT = \["playing", "latestFinished", "trophies", "calendar", "kpis", "filters", "library"\]/, "Shelf settings must include playing and calendar sections in the movable layout");
+assert.match(appSource, /mountReleaseCalendar\(el\.releaseCalendar/, "Main must render the release calendar through the shared module");
+assert.match(shelfSource, /mountReleaseCalendar\(el\.releaseCalendar/, "Shelf must render the release calendar through the shared module");
+assert.match(appSource + shelfSource, /mountReleaseCalendar[\s\S]*?releaseCalendarOffset/, "Calendar navigation must keep page-specific offsets while sharing renderer code");
+assert.equal(releaseGamesByDate([{ id: "preorder-1", title: "Preorder Game", platform: "PS5", section: "upcoming", releaseDate: "2026-11-03", preorderStore: "Xtralife" }, { id: "preorder-1", title: "Preorder Game", platform: "PS5", section: "upcoming", releaseDate: "2026-11-03", preorderStore: "Xtralife" }]).get("2026-11-03").length, 1, "Calendar grouping must not duplicate preorder events");
 assert.match(appSource, /playingSection\.hidden = el\.playingCurrent\.hidden && el\.playingFinished\.hidden/, "Main must keep Last Finished visible when Currently Playing is hidden");
 assert.match(shelfSource, /finishedModule\.dataset\.module = "latestFinished"/, "Shelf must split Last Finished into its own movable module");
 assert.match(shelfSource, /closest\("\[data-module='playing'\]"\)\.hidden = el\.playingCurrent\.hidden/, "Shelf must hide Currently Playing independently");
