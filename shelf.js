@@ -866,7 +866,7 @@ function openEditor(game = null) {
   el.lookupResults.classList.remove("loaded");
   el.lookupResults.innerHTML = "";
   el.lookupInput.value = game?.title || "";
-  const values = game || { platform: "Nintendo Switch", country: "United Kingdom", game: true, box: true, manual: true };
+  const values = game || { platform: "Nintendo Switch", country: defaultShelfCountry(), owners: defaultShelfOwners(), game: true, box: true, manual: true };
   for (const [key, input] of Object.entries(el.fields)) input.value = values[key] ?? "";
   el.fields.owners.value = (values.owners || []).join(", ");
   const links = normalizedStoreLinks(values);
@@ -1530,6 +1530,15 @@ function normalizePriceSettings(settings = {}) {
     region: ["ES", "IT", "US", "UK"].includes(settings.region) ? settings.region : "ES",
     stores: stores.slice(0, MAX_PRICE_STORES),
   };
+}
+
+function defaultShelfCountry() {
+  return ({ ES: "Spain", IT: "Italy", US: "United States of America", UK: "United Kingdom" })[normalizePriceSettings(state.gamelistSettings).region] || "Spain";
+}
+
+function defaultShelfOwners() {
+  const owner = String(state.gamelistSettings.defaultOwner || "").trim();
+  return owner ? [owner] : [];
 }
 
 function shelfPricesVisible() {
