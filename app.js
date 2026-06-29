@@ -14,8 +14,8 @@ const SETTINGS_KEY = "gamelist:settings:v1";
 const KASH_TWITCH_URL = "https://www.twitch.tv/kashhoward";
 const DEFAULT_PAGE_ORDER = ["trophies", "calendar", "highlights", "search", "gamelist", "finished"];
 const LAYOUT_SECTION_KEYS = ["playing", ...DEFAULT_PAGE_ORDER, "latestFinished"];
-const SITE_VERSION = "v264";
-const SITE_UPDATED_AT = "2026-06-29T22:33:00+02:00";
+const SITE_VERSION = "v265";
+const SITE_UPDATED_AT = "2026-06-29T23:05:00+02:00";
 const VERSION_STORAGE_KEY = "gamelist:site-version";
 const PULL_NAVIGATION_KEY = "gamelist:pull-navigation";
 const STORE_OPTIONS = ["Amazon", "eBay", "GAME.es", "Xtralife", "Retro Island NY", "GameStop", "Walmart"];
@@ -999,7 +999,7 @@ function renderSettingsDialog() {
     settingsLayoutItem("playing", -1, { fixed: true }),
     settingsLayoutItem("latestFinished", -1, { fixed: true }),
     ...state.settings.pageOrder.map((key) => settingsLayoutItem(key, pageIndex.get(key) ?? 0)),
-    `<div class="settings-preference-separator" role="presentation"></div><div class="settings-preference-row">${settingsThemeItem()}${settingsDefaultOrderItem()}${settingsShelfSyncItem()}</div>`,
+    `<div class="settings-preference-separator" role="presentation"></div><div class="settings-preference-row">${settingsThemeItem()}${settingsDefaultOrderItem()}${settingsShelfSyncItem()}${settingsCsvDataItem("gamelist")}</div>`,
   ].join("");
   el.settingsStores.innerHTML = STORE_OPTIONS.map((store) => `
     <label class="check-filter toggle-check settings-store-check">
@@ -1040,6 +1040,8 @@ function renderSettingsDialog() {
   el.settingsLayoutList.querySelector("[data-default-order]")?.addEventListener("change", (event) => {
     state.settings.defaultOrder = event.target.value;
   });
+  el.settingsLayoutList.querySelector("[data-export-csv='gamelist']")?.addEventListener("click", exportGamelistCsv);
+  el.settingsLayoutList.querySelector("[data-import-csv='gamelist']")?.addEventListener("click", importGamelistCsv);
 }
 
 function settingsLayoutItem(key, index, options = {}) {
@@ -1129,6 +1131,155 @@ function settingsShelfSyncItem() {
       </div>
     </article>
   `;
+}
+
+function settingsCsvDataItem(kind) {
+  return `
+    <article class="settings-layout-card settings-data-card" data-layout-key="${escapeHtml(kind)}-csv">
+      <div class="settings-theme-select">
+        <span>CSV data</span>
+        <div class="settings-data-actions">
+          <button class="ghost-button" type="button" data-export-csv="${escapeHtml(kind)}">Export</button>
+          <button class="ghost-button" type="button" data-import-csv="${escapeHtml(kind)}">Import</button>
+        </div>
+      </div>
+    </article>
+  `;
+}
+
+const CSV_NUMERIC_FIELDS = new Set(["order", "lengthHours", "replayCount", "numericPrice", "price", "estimatedValue"]);
+
+function downloadCsv(records, filename) {
+  const csv = recordsToCsv(records);
+  const url = URL.createObjectURL(new Blob([csv], { type: "text/csv;charset=utf-8" }));
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = filename;
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  window.setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+
+function recordsToCsv(records) {
+  const rows = Array.isArray(records) ? records : [];
+  const columns = [...rows.reduce((keys, record) => {
+    Object.keys(record || {}).forEach((key) => keys.add(key));
+    return keys;
+  }, new Set(["id", "title", "platform"]))];
+  return [
+    columns.map(csvCell).join(","),
+    ...rows.map((record) => columns.map((key) => csvCell(record?.[key])).join(",")),
+  ].join("\n");
+}
+
+function csvCell(value) {
+  if (value == null) return "";
+  const text = typeof value === "object" ? JSON.stringify(value) : String(value);
+  return /[",\n\r]/.test(text) ? `"${text.replace(/"/g, '""')}"` : text;
+}
+
+function csvToObjects(text) {
+  const rows = parseCsvRows(text);
+  if (!rows.length) return [];
+  const headers = rows.shift().map((header) => String(header || "").trim()).filter(Boolean);
+  if (!headers.length) return [];
+  return rows
+    .filter((row) => row.some((cell) => String(cell || "").trim()))
+    .map((row) => Object.fromEntries(headers.map((header, index) => [header, parseCsvValue(header, row[index] ?? "")])));
+}
+
+function parseCsvRows(text) {
+  const rows = [];
+  let row = [];
+  let cell = "";
+  let quoted = false;
+  const source = String(text || "").replace(/^\uFEFF/, "");
+  for (let index = 0; index < source.length; index += 1) {
+    const char = source[index];
+    if (quoted) {
+      if (char === '"' && source[index + 1] === '"') {
+        cell += '"';
+        index += 1;
+      } else if (char === '"') quoted = false;
+      else cell += char;
+    } else if (char === '"') quoted = true;
+    else if (char === ",") {
+      row.push(cell);
+      cell = "";
+    } else if (char === "\n" || char === "\r") {
+      if (char === "\r" && source[index + 1] === "\n") index += 1;
+      row.push(cell);
+      rows.push(row);
+      row = [];
+      cell = "";
+    } else cell += char;
+  }
+  if (cell || row.length) {
+    row.push(cell);
+    rows.push(row);
+  }
+  return rows;
+}
+
+function parseCsvValue(key, value) {
+  const text = String(value ?? "").trim();
+  if (!text) return "";
+  if ((text.startsWith("[") && text.endsWith("]")) || (text.startsWith("{") && text.endsWith("}"))) {
+    try { return JSON.parse(text); } catch {}
+  }
+  if (text === "true") return true;
+  if (text === "false") return false;
+  if (CSV_NUMERIC_FIELDS.has(key) && /^-?\d+(\.\d+)?$/.test(text)) return Number(text);
+  return value;
+}
+
+function pickCsvFile() {
+  return new Promise((resolve) => {
+    const input = document.createElement("input");
+    input.type = "file";
+    input.accept = ".csv,text/csv";
+    input.addEventListener("change", () => resolve(input.files?.[0] || null), { once: true });
+    input.click();
+  });
+}
+
+function dateStamp() {
+  return new Date().toISOString().slice(0, 10);
+}
+
+function csvImportedId(prefix, index) {
+  if (globalThis.crypto?.randomUUID) return globalThis.crypto.randomUUID();
+  return `${prefix}-csv-${Date.now()}-${index + 1}`;
+}
+
+function exportGamelistCsv() {
+  downloadCsv(state.games, `gamelist-games-${dateStamp()}.csv`);
+  showToast(`Exported ${state.games.length} games.`);
+}
+
+async function importGamelistCsv() {
+  const file = await pickCsvFile();
+  if (!file) return;
+  try {
+    const rows = csvToObjects(await file.text());
+    if (!rows.length) {
+      showToast("No games found in that CSV.", "error");
+      return;
+    }
+    if (!window.confirm(`Import ${rows.length} games from CSV? This replaces the current Gamelist games.`)) return;
+    state.games = normalizeGameRecords(rows.map((row, index) => ({
+      ...row,
+      id: row.id || csvImportedId("gamelist", index),
+      updatedAt: row.updatedAt || new Date().toISOString(),
+    })));
+    persistLocal(false);
+    await persistCloud();
+    render();
+    showToast(`Imported ${state.games.length} games.`);
+  } catch (error) {
+    showToast(error?.message || "CSV import failed.", "error");
+  }
 }
 
 async function saveSettingsFromForm(event) {

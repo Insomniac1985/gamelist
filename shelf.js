@@ -6,8 +6,8 @@ splitShelfPlayingModules();
 
 const SESSION_KEY = "gamelist-editor";
 const KASH_TWITCH_URL = "https://www.twitch.tv/kashhoward";
-const SITE_VERSION = "v264";
-const SITE_UPDATED_AT = "2026-06-29T22:33:00+02:00";
+const SITE_VERSION = "v265";
+const SITE_UPDATED_AT = "2026-06-29T23:05:00+02:00";
 const VERSION_STORAGE_KEY = "gamelist:site-version";
 const PULL_NAVIGATION_KEY = "gamelist:pull-navigation";
 const VIEW_KEY = "shelf:view-mode:v2";
@@ -183,8 +183,8 @@ async function init() {
     fetch("/api/auth", { cache: "no-store" }).then((response) => response.ok).catch(() => false),
     fetch("/api/sync", { cache: "no-store" }).then((response) => response.ok ? response.json() : null).catch(() => null),
   ]);
-  state.sourceGames = shelfData?.sourceGames || [];
   const draft = loadDraft();
+  state.sourceGames = draft.sourceGames || shelfData?.sourceGames || [];
   state.additions = draft.games || shelfData?.games || [];
   state.overrides = draft.overrides || shelfData?.overrides || {};
   state.layout = normalizeLayout(shelfData?.layout || state.layout);
@@ -1255,7 +1255,7 @@ async function deleteGame(game) {
 }
 
 async function persistShelf() {
-  const payload = { games: state.additions, overrides: state.overrides, layout: state.layout, favoriteGameIds: normalizeFavoriteGameIds(state.favoriteGameIds) };
+  const payload = { sourceGames: state.sourceGames.map(stripRuntimeFields), games: state.additions.map(stripRuntimeFields), overrides: state.overrides, layout: state.layout, favoriteGameIds: normalizeFavoriteGameIds(state.favoriteGameIds) };
   localStorage.setItem(LOCAL_DRAFT_KEY, JSON.stringify(payload));
   try {
     const password = sessionStorage.getItem(`${SESSION_KEY}:password`) || "";
@@ -1318,7 +1318,7 @@ function renderLayoutEditor() {
   el.layoutList.className = "settings-layout";
   el.layoutList.innerHTML = [
     ...state.layout.order.map((key, index) => settingsLayoutCard(key, index)),
-    `<div class="settings-preference-separator" role="presentation"></div><div class="settings-preference-row">${themeSettingsButton(state.gamelistSettings, escapeHtml)}${settingsSelectCard("order", "Default order", "shelfSettingsDefaultOrder", [{ value: "added", label: "Last added" }, { value: "title", label: "Name" }, { value: "platform", label: "Platform" }, { value: "region", label: "Region" }, { value: "value", label: "Value" }])}${settingsShelfSyncCard()}${settingsShelfPricesCard()}</div>`,
+    `<div class="settings-preference-separator" role="presentation"></div><div class="settings-preference-row">${themeSettingsButton(state.gamelistSettings, escapeHtml)}${settingsSelectCard("order", "Default order", "shelfSettingsDefaultOrder", [{ value: "added", label: "Last added" }, { value: "title", label: "Name" }, { value: "platform", label: "Platform" }, { value: "region", label: "Region" }, { value: "value", label: "Value" }])}${settingsShelfSyncCard()}${settingsShelfPricesCard()}${settingsCsvDataCard("shelf")}</div>`,
   ].join("");
   el.settingsDefaultOrder = document.querySelector("#shelfSettingsDefaultOrder");
   const settings = normalizePriceSettings(state.gamelistSettings);
@@ -1346,6 +1346,8 @@ function renderLayoutEditor() {
       renderAll();
     },
   }));
+  el.layoutList.querySelector("[data-export-csv='shelf']")?.addEventListener("click", exportShelfCsv);
+  el.layoutList.querySelector("[data-import-csv='shelf']")?.addEventListener("click", importShelfCsv);
 }
 
 function settingsLayoutCard(key, index) {
@@ -1364,6 +1366,149 @@ function settingsShelfSyncCard() {
 
 function settingsShelfPricesCard() {
   return `<article class="settings-layout-card settings-sync-card"><div class="settings-wire wire-list" aria-hidden="true"><span></span><span></span><span></span></div><div class="settings-theme-select"><span>Prices</span><div class="settings-check-field"><label class="check-filter toggle-check settings-visible-check" title="Show prices"><input type="checkbox" id="shelfSettingsShowPrices" ${state.gamelistSettings.shelfHidePrices ? "" : "checked"}><span>Show prices</span></label></div></div></article>`;
+}
+
+function settingsCsvDataCard(kind) {
+  return `<article class="settings-layout-card settings-data-card"><div class="settings-theme-select"><span>CSV data</span><div class="settings-data-actions"><button class="ghost-button" type="button" data-export-csv="${escapeHtml(kind)}">Export</button><button class="ghost-button" type="button" data-import-csv="${escapeHtml(kind)}">Import</button></div></div></article>`;
+}
+
+const CSV_NUMERIC_FIELDS = new Set(["order", "lengthHours", "replayCount", "numericPrice", "price", "estimatedValue", "purchasePrice"]);
+
+function exportShelfCsv() {
+  downloadCsv(state.games, `shelf-games-${dateStamp()}.csv`);
+  showToast(`Exported ${state.games.length} shelf games.`);
+}
+
+async function importShelfCsv() {
+  const file = await pickCsvFile();
+  if (!file) return;
+  try {
+    const rows = csvToObjects(await file.text());
+    if (!rows.length) {
+      showToast("No shelf games found in that CSV.", "error");
+      return;
+    }
+    if (!window.confirm(`Import ${rows.length} games from CSV? This replaces the current Shelf games.`)) return;
+    const now = new Date().toISOString();
+    state.sourceGames = [];
+    state.additions = [];
+    state.overrides = {};
+    rows.forEach((row, index) => {
+      const game = stripRuntimeFields({ ...row, id: row.id || csvImportedId("shelf", index), updatedAt: row.updatedAt || now });
+      if (row.sourceRecord === true) state.sourceGames.push(game);
+      else state.additions.push(game);
+    });
+    await persistShelf();
+    rebuildGames();
+    renderAll();
+    showToast(`Imported ${state.games.length} shelf games.`);
+  } catch (error) {
+    showToast(error?.message || "CSV import failed.", "error");
+  }
+}
+
+function downloadCsv(records, filename) {
+  const csv = recordsToCsv(records);
+  const url = URL.createObjectURL(new Blob([csv], { type: "text/csv;charset=utf-8" }));
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = filename;
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  window.setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+
+function recordsToCsv(records) {
+  const rows = Array.isArray(records) ? records : [];
+  const columns = [...rows.reduce((keys, record) => {
+    Object.keys(record || {}).forEach((key) => keys.add(key));
+    return keys;
+  }, new Set(["id", "title", "platform", "sourceRecord"]))];
+  return [
+    columns.map(csvCell).join(","),
+    ...rows.map((record) => columns.map((key) => csvCell(record?.[key])).join(",")),
+  ].join("\n");
+}
+
+function csvCell(value) {
+  if (value == null) return "";
+  const text = typeof value === "object" ? JSON.stringify(value) : String(value);
+  return /[",\n\r]/.test(text) ? `"${text.replace(/"/g, '""')}"` : text;
+}
+
+function csvToObjects(text) {
+  const rows = parseCsvRows(text);
+  if (!rows.length) return [];
+  const headers = rows.shift().map((header) => String(header || "").trim()).filter(Boolean);
+  if (!headers.length) return [];
+  return rows
+    .filter((row) => row.some((cell) => String(cell || "").trim()))
+    .map((row) => Object.fromEntries(headers.map((header, index) => [header, parseCsvValue(header, row[index] ?? "")])));
+}
+
+function parseCsvRows(text) {
+  const rows = [];
+  let row = [];
+  let cell = "";
+  let quoted = false;
+  const source = String(text || "").replace(/^\uFEFF/, "");
+  for (let index = 0; index < source.length; index += 1) {
+    const char = source[index];
+    if (quoted) {
+      if (char === '"' && source[index + 1] === '"') {
+        cell += '"';
+        index += 1;
+      } else if (char === '"') quoted = false;
+      else cell += char;
+    } else if (char === '"') quoted = true;
+    else if (char === ",") {
+      row.push(cell);
+      cell = "";
+    } else if (char === "\n" || char === "\r") {
+      if (char === "\r" && source[index + 1] === "\n") index += 1;
+      row.push(cell);
+      rows.push(row);
+      row = [];
+      cell = "";
+    } else cell += char;
+  }
+  if (cell || row.length) {
+    row.push(cell);
+    rows.push(row);
+  }
+  return rows;
+}
+
+function parseCsvValue(key, value) {
+  const text = String(value ?? "").trim();
+  if (!text) return "";
+  if ((text.startsWith("[") && text.endsWith("]")) || (text.startsWith("{") && text.endsWith("}"))) {
+    try { return JSON.parse(text); } catch {}
+  }
+  if (text === "true") return true;
+  if (text === "false") return false;
+  if (CSV_NUMERIC_FIELDS.has(key) && /^-?\d+(\.\d+)?$/.test(text)) return Number(text);
+  return value;
+}
+
+function pickCsvFile() {
+  return new Promise((resolve) => {
+    const input = document.createElement("input");
+    input.type = "file";
+    input.accept = ".csv,text/csv";
+    input.addEventListener("change", () => resolve(input.files?.[0] || null), { once: true });
+    input.click();
+  });
+}
+
+function dateStamp() {
+  return new Date().toISOString().slice(0, 10);
+}
+
+function csvImportedId(prefix, index) {
+  if (globalThis.crypto?.randomUUID) return globalThis.crypto.randomUUID();
+  return `${prefix}-csv-${Date.now()}-${index + 1}`;
 }
 
 function openShowcaseEditor() {

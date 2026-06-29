@@ -5191,7 +5191,8 @@ body.dialog-open .mobile-section-tabs {
 
 .settings-theme-card,
 .settings-order-card,
-.settings-sync-card {
+.settings-sync-card,
+.settings-data-card {
   --settings-control-height: 42px;
   grid-column: span 2;
   grid-template-columns: minmax(0, 1fr);
@@ -5216,7 +5217,8 @@ body.dialog-open .mobile-section-tabs {
 
 .settings-preference-row .settings-theme-card,
 .settings-preference-row .settings-order-card,
-.settings-preference-row .settings-sync-card {
+.settings-preference-row .settings-sync-card,
+.settings-preference-row .settings-data-card {
   grid-column: auto;
   min-height: 0;
   padding: 0;
@@ -5237,8 +5239,21 @@ body.dialog-open .mobile-section-tabs {
 
 .settings-theme-card .settings-wire,
 .settings-order-card .settings-wire,
-.settings-sync-card .settings-wire {
+.settings-sync-card .settings-wire,
+.settings-data-card .settings-wire {
   display: none;
+}
+
+.settings-data-actions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.settings-data-actions .ghost-button {
+  width: 100%;
+  min-height: var(--settings-control-height, 42px);
+  padding-inline: 10px;
 }
 
 .settings-sync-card .settings-visible-check {
@@ -5362,7 +5377,8 @@ html.theme-light .theme-upload-card {
 
 html.theme-light .settings-preference-row .settings-theme-card,
 html.theme-light .settings-preference-row .settings-order-card,
-html.theme-light .settings-preference-row .settings-sync-card {
+html.theme-light .settings-preference-row .settings-sync-card,
+html.theme-light .settings-preference-row .settings-data-card {
   background: transparent;
   border: 0;
 }
