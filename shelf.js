@@ -1433,8 +1433,8 @@ function showcasePickerCard(game, selected) {
 function showcaseHoverInfo(game, className) {
   const tags = showcaseGameTags(game);
   const studio = [
-    game.developer ? `Dev: ${game.developer}` : "",
-    game.publisher ? `Pub: ${game.publisher}` : "",
+    game.developer || "",
+    game.publisher || "",
   ].filter(Boolean);
   return `<span class="${className} showcase-hover-info"><strong>${escapeHtml(game.title)}</strong>${studio.length ? `<small>${escapeHtml(studio.join(" · "))}</small>` : ""}<span class="showcase-hover-meta">${shelfProgressPill(game)}${tags.map((tag) => `<span class="chip genre">${escapeHtml(tag)}</span>`).join("")}</span></span>`;
 }

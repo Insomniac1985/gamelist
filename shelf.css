@@ -457,10 +457,16 @@ html.theme-font-pokemon .shelf-page .column-head h2 {
   gap: 6px;
   padding: 9px;
   color: var(--text);
-  background: color-mix(in srgb, var(--panel) 90%, rgba(0, 0, 0, 0.72));
+  background:
+    linear-gradient(135deg, color-mix(in srgb, var(--accent) 26%, transparent), transparent 58%),
+    repeating-linear-gradient(0deg, rgba(255, 255, 255, 0.08) 0 1px, transparent 1px 12px),
+    repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.06) 0 1px, transparent 1px 12px),
+    color-mix(in srgb, var(--panel) 78%, rgba(0, 0, 0, 0.82));
   border: 1px solid var(--line);
   border-radius: 8px;
   box-shadow: 0 20px 44px rgba(0, 0, 0, 0.34);
+  backdrop-filter: blur(22px) saturate(1.28);
+  -webkit-backdrop-filter: blur(22px) saturate(1.28);
   opacity: 0;
   pointer-events: none;
   transform: translateY(-6px);
