@@ -139,12 +139,30 @@ body:not(.can-edit) .showcase-edit-button {
   margin-bottom: 12px;
 }
 
-.shelf-library .column-head h2 {
+.shelf-page .column-head h2 {
   margin: 0;
+  color: transparent;
   font-family: var(--display-title-font);
   font-size: var(--display-title-size, clamp(28px, 4vw, 48px));
   line-height: var(--display-title-line-height, 0.95);
+  background: var(--accent);
+  -webkit-background-clip: text;
+  background-clip: text;
   text-transform: uppercase;
+}
+
+html.theme-gradient .shelf-page .column-head h2 {
+  background: linear-gradient(
+    135deg,
+    var(--title-gradient-start, var(--accent)) 0%,
+    var(--title-gradient-end, var(--accent)) 100%
+  );
+  -webkit-background-clip: text;
+  background-clip: text;
+}
+
+html.theme-font-pokemon .shelf-page .column-head h2 {
+  font-size: var(--display-title-playing-size);
 }
 
 .favorite-cover-row {
