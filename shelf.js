@@ -6,8 +6,8 @@ splitShelfPlayingModules();
 
 const SESSION_KEY = "gamelist-editor";
 const KASH_TWITCH_URL = "https://www.twitch.tv/kashhoward";
-const SITE_VERSION = "v259";
-const SITE_UPDATED_AT = "2026-06-29T02:25:00+02:00";
+const SITE_VERSION = "v260";
+const SITE_UPDATED_AT = "2026-06-29T02:40:00+02:00";
 const VERSION_STORAGE_KEY = "gamelist:site-version";
 const PULL_NAVIGATION_KEY = "gamelist:pull-navigation";
 const VIEW_KEY = "shelf:view-mode:v2";
@@ -23,7 +23,7 @@ const THEMES = {
   shabii: { title: "Shabii's Shelf", icon: "assets/Icon_shelf.png", color: "#ff0039" },
   kash: { title: "Kash's Shelf", icon: "assets/kh_icon.png", color: "#005cff" },
 };
-const MODULE_NAMES = { playing: "Currently Playing", latestFinished: "Last Finished", favorites: "Top 5 Favorite Games", trophies: "Achievements", calendar: "Calendar", kpis: "Highlights", filters: "Search", library: "Shelf" };
+const MODULE_NAMES = { playing: "Currently Playing", latestFinished: "Last Finished", favorites: "Showcase", trophies: "Achievements", calendar: "Calendar", kpis: "Highlights", filters: "Search", library: "Shelf" };
 const PLATFORM_OPTIONS = [
   "Nintendo Switch", "Nintendo Switch 2", "Sony PlayStation 5", "Sony PlayStation 4",
   "Sony PlayStation 2", "Sony PlayStation", "Nintendo 3DS", "Nintendo DS", "Nintendo 64",
@@ -65,6 +65,8 @@ const state = {
   playingHeightFrame: 0,
   shelfSwipeStart: null,
   favoriteGameIds: [],
+  showcaseDraftIds: [],
+  showcaseFilters: { query: "", platform: "all", region: "all", category: "all" },
   layout: loadLayout(),
 };
 
@@ -90,6 +92,7 @@ const el = {
   fetchPricesButton: document.querySelector("#fetchPricesButton"),
   modules: document.querySelector("#shelfModules"),
   favorites: document.querySelector("#favoriteGames"),
+  showcaseEdit: document.querySelector("#showcaseEditButton"),
   tabs: document.querySelector("#shelfTabs"),
   playingCarousel: document.querySelector("#playingCarousel"),
   playingCurrent: document.querySelector("[data-module='playing'] .playing-current"),
@@ -150,9 +153,10 @@ const el = {
   settingsTheme: document.querySelector("#shelfSettingsTheme"), settingsDefaultOrder: document.querySelector("#shelfSettingsDefaultOrder"),
   settingsCurrency: document.querySelector("#shelfSettingsCurrency"), settingsRegion: document.querySelector("#shelfSettingsRegion"),
   settingsStores: document.querySelector("#shelfSettingsStores"),
-  favoritePickers: document.querySelector("#shelfFavoritePickers"),
   settingsPsnUser: document.querySelector("#shelfSettingsPsnUser"), settingsMicrosoftUser: document.querySelector("#shelfSettingsMicrosoftUser"),
   settingsSteamUser: document.querySelector("#shelfSettingsSteamUser"), settingsDefaultOwner: document.querySelector("#shelfSettingsDefaultOwner"),
+  showcaseDialog: document.querySelector("#showcaseDialog"), showcaseForm: document.querySelector("#showcaseForm"), showcaseClose: document.querySelector("#showcaseClose"), showcaseCancel: document.querySelector("#showcaseCancel"),
+  showcaseSelected: document.querySelector("#showcaseSelected"), showcaseSearch: document.querySelector("#showcaseSearch"), showcasePlatform: document.querySelector("#showcasePlatform"), showcaseRegion: document.querySelector("#showcaseRegion"), showcaseCategory: document.querySelector("#showcaseCategory"), showcaseCount: document.querySelector("#showcaseCount"), showcaseList: document.querySelector("#showcaseList"),
   completedDialog: document.querySelector("#shelfCompletedDialog"), completedClose: document.querySelector("#shelfCompletedClose"), completedTitle: document.querySelector("#shelfCompletedTitle"), completedCount: document.querySelector("#shelfCompletedCount"), completedYear: document.querySelector("#shelfCompletedYear"), completedPlatform: document.querySelector("#shelfCompletedPlatform"), completedSort: document.querySelector("#shelfCompletedSort"), completedDirection: document.querySelector("#shelfCompletedDirection"), completedView: document.querySelector("#shelfCompletedView"), completedList: document.querySelector("#shelfCompletedList"),
   authDialog: document.querySelector("#authDialog"),
   authForm: document.querySelector("#authForm"),
@@ -225,6 +229,7 @@ function bindEvents() {
   el.addButton.addEventListener("click", () => openEditor());
   el.floatingAdd.addEventListener("click", () => state.canEdit ? openEditor() : openAuth());
   el.layoutButton.addEventListener("click", openLayout);
+  el.showcaseEdit.addEventListener("click", openShowcaseEditor);
   el.syncButton?.addEventListener("click", syncShelfNow);
   el.fetchPricesButton.addEventListener("click", refreshAllShelfPrices);
   el.scrollTop.addEventListener("click", () => window.scrollTo({ top: 0, behavior: "smooth" }));
@@ -269,6 +274,16 @@ function bindEvents() {
   el.layoutDialog.addEventListener("click", (event) => { if (event.target === el.layoutDialog) closeDialog(el.layoutDialog); });
   el.layoutForm.addEventListener("submit", saveLayout);
   el.layoutList.addEventListener("click", handleLayoutMove);
+  el.showcaseClose.addEventListener("click", () => closeDialog(el.showcaseDialog));
+  el.showcaseCancel.addEventListener("click", () => closeDialog(el.showcaseDialog));
+  el.showcaseDialog.addEventListener("click", (event) => { if (event.target === el.showcaseDialog) closeDialog(el.showcaseDialog); });
+  el.showcaseForm.addEventListener("submit", saveShowcase);
+  el.showcaseSearch.addEventListener("input", () => { state.showcaseFilters.query = normalizeSearchText(el.showcaseSearch.value); renderShowcasePicker(); });
+  el.showcasePlatform.addEventListener("change", () => { state.showcaseFilters.platform = el.showcasePlatform.value; renderShowcasePicker(); });
+  el.showcaseRegion.addEventListener("change", () => { state.showcaseFilters.region = el.showcaseRegion.value; renderShowcasePicker(); });
+  el.showcaseCategory.addEventListener("change", () => { state.showcaseFilters.category = el.showcaseCategory.value; renderShowcasePicker(); });
+  el.showcaseList.addEventListener("click", handleShowcasePick);
+  el.showcaseSelected.addEventListener("click", handleShowcaseSelectedClick);
   el.completedClose.addEventListener("click", () => closeDialog(el.completedDialog));
   el.completedDialog.addEventListener("click", (event) => { if (event.target === el.completedDialog) closeDialog(el.completedDialog); });
   el.releaseCloseButton.addEventListener("click", () => closeDialog(el.releaseDialog));
@@ -298,8 +313,8 @@ function renderAll() {
 function renderFavorites() {
   state.favoriteGameIds = normalizeFavoriteGameIds(state.favoriteGameIds);
   const games = favoriteGames();
-  el.favorites.innerHTML = games.map(favoriteCoverCard).join("");
-  el.favorites.closest("[data-module='favorites']").hidden = state.layout.hidden.includes("favorites") || !games.length;
+  el.favorites.innerHTML = Array.from({ length: 5 }, (_, index) => favoriteCoverCard(games[index], index)).join("");
+  el.favorites.closest("[data-module='favorites']").hidden = state.layout.hidden.includes("favorites");
   el.favorites.querySelectorAll("img").forEach(bindCoverFrame);
 }
 
@@ -308,12 +323,14 @@ function favoriteGames() {
   return normalizeFavoriteGameIds(state.favoriteGameIds).map((id) => byId.get(id)).filter(Boolean);
 }
 
-function favoriteCoverCard(game) {
+function favoriteCoverCard(game, index = 0) {
+  if (!game) return `<button class="favorite-cover-card favorite-cover-empty" type="button" data-action="showcase-edit" title="Add showcase game" aria-label="Add showcase game ${index + 1}"><span class="favorite-plus" aria-hidden="true">+</span></button>`;
   const cover = coverUrl(game.cover || "") || platformFallback(game.platform);
   return `<button class="favorite-cover-card" type="button" data-id="${escapeHtml(game.id)}" title="${escapeHtml(game.title)}" aria-label="${escapeHtml(game.title)}"><img src="${escapeHtml(cover)}" alt="${escapeHtml(game.title)} cover" loading="lazy" decoding="async"><span>${escapeHtml(game.title)}</span></button>`;
 }
 
 function handleFavoriteClick(event) {
+  if (event.target.closest("[data-action='showcase-edit']")) return openShowcaseEditor();
   const card = event.target.closest(".favorite-cover-card[data-id]");
   if (!card) return;
   const game = state.games.find((item) => item.id === card.dataset.id);
@@ -322,6 +339,7 @@ function handleFavoriteClick(event) {
 
 function handleFavoriteKeydown(event) {
   if (event.key !== "Enter" && event.key !== " ") return;
+  if (event.target.closest("[data-action='showcase-edit']")) { event.preventDefault(); openShowcaseEditor(); return; }
   const card = event.target.closest(".favorite-cover-card[data-id]");
   if (!card) return;
   event.preventDefault();
@@ -1304,7 +1322,6 @@ function renderLayoutEditor() {
     ...state.layout.order.map((key, index) => settingsLayoutCard(key, index)),
     `<div class="settings-preference-separator" role="presentation"></div><div class="settings-preference-row">${themeSettingsButton(state.gamelistSettings, escapeHtml)}${settingsSelectCard("order", "Default order", "shelfSettingsDefaultOrder", [{ value: "added", label: "Last added" }, { value: "title", label: "Name" }, { value: "platform", label: "Platform" }, { value: "region", label: "Region" }, { value: "value", label: "Value" }])}${settingsShelfSyncCard()}${settingsShelfPricesCard()}</div>`,
   ].join("");
-  renderFavoritePickers();
   el.settingsDefaultOrder = document.querySelector("#shelfSettingsDefaultOrder");
   const settings = normalizePriceSettings(state.gamelistSettings);
   el.settingsDefaultOrder.value = shelfSortForDefault(state.gamelistSettings.shelfDefaultOrder ?? state.gamelistSettings.defaultOrder);
@@ -1351,11 +1368,85 @@ function settingsShelfPricesCard() {
   return `<article class="settings-layout-card settings-sync-card"><div class="settings-wire wire-list" aria-hidden="true"><span></span><span></span><span></span></div><div class="settings-theme-select"><span>Prices</span><div class="settings-check-field"><label class="check-filter toggle-check settings-visible-check" title="Show prices"><input type="checkbox" id="shelfSettingsShowPrices" ${state.gamelistSettings.shelfHidePrices ? "" : "checked"}><span>Show prices</span></label></div></div></article>`;
 }
 
-function renderFavoritePickers() {
-  const games = ownedShelfGames().sort((a, b) => a.title.localeCompare(b.title));
-  const selected = normalizeFavoriteGameIds(state.favoriteGameIds);
-  const optionsFor = (value) => `<option value="">None</option>${games.map((game) => `<option value="${escapeHtml(game.id)}" ${game.id === value ? "selected" : ""}>${escapeHtml(game.title)}</option>`).join("")}`;
-  el.favoritePickers.innerHTML = Array.from({ length: 5 }, (_, index) => `<label class="settings-detail-compact favorite-picker"><span>#${index + 1}</span><select data-favorite-picker="${index}">${optionsFor(selected[index] || "")}</select></label>`).join("");
+function openShowcaseEditor() {
+  if (!state.canEdit) return openAuth();
+  state.showcaseDraftIds = normalizeFavoriteGameIds(state.favoriteGameIds);
+  state.showcaseFilters = { query: "", platform: "all", region: "all", category: "all" };
+  el.showcaseSearch.value = "";
+  renderShowcaseFilters();
+  renderShowcasePicker();
+  openDialog(el.showcaseDialog);
+  requestAnimationFrame(() => el.showcaseSearch.focus());
+}
+
+function renderShowcaseFilters() {
+  const games = ownedShelfGames();
+  const platforms = uniqueSorted(games.map((game) => game.platform));
+  const countries = uniqueSorted(games.map((game) => game.country));
+  const categories = uniqueSorted(games.flatMap((game) => [...String(game.genre || "").split(","), ...(game.genres || [])].map((value) => value.trim()).filter(Boolean)));
+  el.showcasePlatform.innerHTML = `<option value="all">All platforms</option>${platforms.map((value) => `<option value="${escapeHtml(value)}">${escapeHtml(shortPlatform(value))}</option>`).join("")}`;
+  el.showcaseRegion.innerHTML = `<option value="all">All regions</option>${countries.map((value) => `<option value="${escapeHtml(value)}">${escapeHtml(regionName(value))}</option>`).join("")}`;
+  el.showcaseCategory.innerHTML = `<option value="all">All categories</option>${categories.map((value) => `<option value="${escapeHtml(value)}">${escapeHtml(value)}</option>`).join("")}`;
+  el.showcasePlatform.value = state.showcaseFilters.platform;
+  el.showcaseRegion.value = state.showcaseFilters.region;
+  el.showcaseCategory.value = state.showcaseFilters.category;
+  [el.showcasePlatform, el.showcaseRegion, el.showcaseCategory].forEach(updateSelectOverflowTitle);
+}
+
+function renderShowcasePicker() {
+  const selected = new Set(state.showcaseDraftIds);
+  const games = filteredShowcaseGames();
+  el.showcaseSelected.innerHTML = Array.from({ length: 5 }, (_, index) => {
+    const game = ownedShelfGames().find((item) => item.id === state.showcaseDraftIds[index]);
+    if (!game) return `<button class="showcase-selected-slot is-empty" type="button" data-empty-slot="${index}" aria-label="Empty showcase slot ${index + 1}"><span>+</span></button>`;
+    const cover = coverUrl(game.cover || "") || platformFallback(game.platform);
+    return `<button class="showcase-selected-slot" type="button" data-remove-showcase="${escapeHtml(game.id)}" title="Remove ${escapeHtml(game.title)}"><img src="${escapeHtml(cover)}" alt=""><span>${escapeHtml(game.title)}</span></button>`;
+  }).join("");
+  el.showcaseList.innerHTML = games.map((game) => showcasePickerCard(game, selected.has(game.id))).join("");
+  el.showcaseCount.textContent = `${state.showcaseDraftIds.length}/5 selected · ${games.length} ${games.length === 1 ? "game" : "games"}`;
+  el.showcaseSelected.querySelectorAll("img").forEach(bindCoverFrame);
+  el.showcaseList.querySelectorAll("img").forEach(bindCoverFrame);
+}
+
+function filteredShowcaseGames() {
+  const filters = state.showcaseFilters;
+  return ownedShelfGames().filter((game) => {
+    const haystack = normalizeSearchText(`${game.title} ${game.platform} ${game.publisher} ${game.developer} ${game.genre} ${game.notes} ${(game.tags || []).join(" ")} ${(game.owners || []).join(" ")}`);
+    return (filters.platform === "all" || game.platform === filters.platform)
+      && (filters.region === "all" || game.country === filters.region)
+      && (filters.category === "all" || [...String(game.genre || "").split(","), ...(game.genres || [])].map((value) => value.trim()).includes(filters.category))
+      && (!filters.query || haystack.includes(filters.query));
+  }).sort((a, b) => a.title.localeCompare(b.title));
+}
+
+function showcasePickerCard(game, selected) {
+  const cover = coverUrl(game.cover || "") || platformFallback(game.platform);
+  return `<button class="showcase-picker-card ${selected ? "is-selected" : ""}" type="button" data-showcase-id="${escapeHtml(game.id)}" title="${escapeHtml(game.title)}"><img src="${escapeHtml(cover)}" alt=""><span>${escapeHtml(game.title)}</span></button>`;
+}
+
+function handleShowcasePick(event) {
+  const card = event.target.closest("[data-showcase-id]");
+  if (!card) return;
+  const id = card.dataset.showcaseId;
+  if (state.showcaseDraftIds.includes(id)) state.showcaseDraftIds = state.showcaseDraftIds.filter((item) => item !== id);
+  else if (state.showcaseDraftIds.length < 5) state.showcaseDraftIds = [...state.showcaseDraftIds, id];
+  renderShowcasePicker();
+}
+
+function handleShowcaseSelectedClick(event) {
+  const remove = event.target.closest("[data-remove-showcase]");
+  if (!remove) return;
+  state.showcaseDraftIds = state.showcaseDraftIds.filter((id) => id !== remove.dataset.removeShowcase);
+  renderShowcasePicker();
+}
+
+async function saveShowcase(event) {
+  event.preventDefault();
+  state.favoriteGameIds = normalizeFavoriteGameIds(state.showcaseDraftIds);
+  await persistShelf();
+  renderChrome();
+  renderFavorites();
+  closeDialog(el.showcaseDialog);
 }
 
 function handleLayoutMove(event) {
@@ -1373,7 +1464,6 @@ async function saveLayout(event) {
   event.preventDefault();
   state.layout.hidden = LAYOUT_KEYS.filter((key) => !el.layoutList.querySelector(`[data-layout-visible][value="${key}"]`)?.checked);
   localStorage.setItem(LAYOUT_KEY, JSON.stringify(state.layout));
-  state.favoriteGameIds = normalizeFavoriteGameIds([...el.favoritePickers.querySelectorAll("[data-favorite-picker]")].map((input) => input.value));
   const stores = [...el.settingsStores.querySelectorAll("input:checked")].map((input) => input.value).filter((store) => STORE_OPTIONS.includes(store)).slice(0, MAX_PRICE_STORES);
   state.gamelistSettings = { ...state.gamelistSettings, shelfDefaultOrder: el.settingsDefaultOrder.value, currency: el.settingsCurrency.value, region: el.settingsRegion.value, psnUser: el.settingsPsnUser.value.trim(), microsoftUser: el.settingsMicrosoftUser.value.trim(), steamUser: el.settingsSteamUser.value.trim(), defaultOwner: el.settingsDefaultOwner.value.trim(), stores, storeSettingsVersion: 2, shelfSync: document.querySelector("#shelfSettingsSync")?.checked !== false, shelfHidePrices: document.querySelector("#shelfSettingsShowPrices")?.checked === false };
   localStorage.setItem("gamelist:settings:v1", JSON.stringify(state.gamelistSettings));

@@ -158,7 +158,7 @@
       <div class="shelf-modules" id="shelfModules">
         <section class="playing-section shelf-carousel-module" data-module="playing" hidden></section>
         <section class="shelf-favorites-section" data-module="favorites" hidden>
-          <div class="column-head"><div><h2>Top 5 Favorite Games</h2></div></div>
+          <div class="column-head"><div><h2>Showcase</h2></div><button class="ghost-button showcase-edit-button editor-only" id="showcaseEditButton" type="button">Edit</button></div>
           <div class="favorite-cover-row" id="favoriteGames"></div>
         </section>
         <section class="achievement-section shelf-trophy-module" data-module="trophies" hidden>
@@ -357,14 +357,38 @@
           <label class="settings-detail-compact"><span>Default owner</span><input id="shelfSettingsDefaultOwner" autocomplete="off"></label>
         </section>
         <section class="settings-section">
-          <h3>Top 5 Favorite Games</h3>
-          <div class="favorite-settings-grid" id="shelfFavoritePickers"></div>
-        </section>
-        <section class="settings-section">
           <h3>Stores</h3>
           <div class="settings-store-list" id="shelfSettingsStores"></div>
         </section>
         <div class="modal-actions"><button class="primary-button" type="submit">Save</button></div>
+      </form>
+    </dialog>
+
+    <dialog id="showcaseDialog" class="settings-dialog">
+      <form class="settings-modal glass showcase-modal" id="showcaseForm">
+        <div class="modal-head">
+          <div><p class="eyebrow">Shelf</p><h2>Showcase</h2></div>
+          <div class="modal-head-actions">
+            <button class="primary-button modal-head-save" type="submit">Save</button>
+            <button class="icon-button" id="showcaseClose" type="button" title="Close" aria-label="Close">×</button>
+          </div>
+        </div>
+        <div class="showcase-selected" id="showcaseSelected"></div>
+        <div class="toolbar showcase-toolbar">
+          <label class="search showcase-search">
+            <span>Search</span>
+            <input id="showcaseSearch" type="search" placeholder="Game, platform, genre...">
+          </label>
+          <label><span>Platform</span><select id="showcasePlatform"></select></label>
+          <label><span>Region</span><select id="showcaseRegion"></select></label>
+          <label><span>Category</span><select id="showcaseCategory"></select></label>
+        </div>
+        <div class="showcase-count" id="showcaseCount"></div>
+        <div class="showcase-picker-grid" id="showcaseList"></div>
+        <div class="modal-actions">
+          <button class="ghost-button" id="showcaseCancel" type="button">Cancel</button>
+          <button class="primary-button" type="submit">Save</button>
+        </div>
       </form>
     </dialog>
 
