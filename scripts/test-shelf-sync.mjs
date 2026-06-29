@@ -43,14 +43,14 @@ assert.match(swSource, /"\/assets\/platforms\/playstation_retro\.png"[\s\S]*?"\/
 assert.match(sharedCss, /\.toast-notification\s*\{[\s\S]*?position:\s*fixed;[\s\S]*?left: max\(16px, env\(safe-area-inset-left\)\);[\s\S]*?bottom: max\(18px, env\(safe-area-inset-bottom\)\);[\s\S]*?background:\s*var\(--accent\);/, "Toast notifications must float bottom-left with accent styling");
 assert.doesNotMatch(sharedCss, /\.toast-notification\.is-error\s*\{[\s\S]*?background:\s*var\(--danger\)/, "Toast notifications must keep the accent background for every tone");
 assert.match(shelfSource, /function gameCard\(game, options = \{\}\)[\s\S]*?querySelector\("\.card-trophies"\)\.remove\(\)/, "physical Shelf cards must not render outside trophy strips");
-assert.match(shelfSource, /function gamelistProjectionCard\(game\)[\s\S]*?shelfCardTrophies\(game\)/, "Currently Playing cards must retain outside trophy strips");
+assert.match(shelfSource, /function gamelistProjectionCard\(game\)[\s\S]*?shelfCardTrophies\(game,\s*\{\s*compactProgress:\s*true\s*\}\)/, "Currently Playing cards must retain compact outside trophy strips");
 assert.equal(activityCoverOverride("Mandagon"), "https://cdn2.steamgriddb.com/grid/a0ac3f221e625a1f87857b7d19c4c7d5.png");
 assert.equal(activityCoverOverride("MANDAGON (Steam)"), "https://cdn2.steamgriddb.com/grid/a0ac3f221e625a1f87857b7d19c4c7d5.png");
 assert.equal(activityTitleMatchScore("Mandagon", "MANDAGON Trophies") >= 75, true);
 assert.equal(activityTitleMatchScore("Baldur's Gate III", "Baldur's Gate 3 Trophies") >= 75, true, "shared activity matching must normalize Roman numeral titles like Main");
 for (const platform of ["PS1", "PS One", "PSX", "PlayStation 1", "Sony PlayStation", "PS2", "Sony PlayStation 2"]) assert.equal(activityAllowsPsnCardTrophies(platform), false, `${platform} must never show PSN trophies on cards`);
 for (const platform of ["PS3", "PS4", "PS5", "Steam", "Xbox Series"]) assert.equal(activityAllowsPsnCardTrophies(platform), true, `${platform} must retain supported card achievements`);
-for (const source of [appSource, shelfSource]) assert.match(source, /function (?:cardTrophiesFor|shelfCardTrophies)\(game\) \{\s*if \(!activityAllowsPsnCardTrophies\(game\.platform\)\) return "";/, "Main and Shelf must apply the shared PS1/PS2 trophy guard before matching");
+for (const source of [appSource, shelfSource]) assert.match(source, /function (?:cardTrophiesFor|shelfCardTrophies)\(game(?:,\s*options = \{\})?\) \{\s*if \(!activityAllowsPsnCardTrophies\(game\.platform\)\) return "";/, "Main and Shelf must apply the shared PS1/PS2 trophy guard before matching");
 assert.doesNotMatch(shelfCss, /^\.detail-cover\s*\{/m, "Shelf CSS must not override the shared activity detail cover");
 assert.doesNotMatch(shelfCss, /^\.detail-trophies h3/m, "Shelf CSS must not override the shared activity trophy typography");
 assert.match(shelfHtml, /<dialog id="detailDialog">\s*<article class="detail-modal glass">/, "Shelf details must use Main's detail component classes");
@@ -200,7 +200,7 @@ assert.match(shelfSource, /function gameCard\(game, options = \{\}\)[\s\S]*?bind
 assert.doesNotMatch(shelfSource, /async function loadShelfCardTrophies\(game, remote\)[\s\S]*?renderLibrary\(\)/, "Async trophy loading must not rebuild the Shelf library or disturb scrolling");
 assert.match(shelfSource, /async function loadTrophyActivity\(\)[\s\S]*?updateAllShelfTrophyStrips\(\)/, "Achievement refreshes must patch playing trophy strips in place");
 for (const source of [appSource, shelfSource]) assert.match(source, /settings-preference-row/, "Main and Shelf must keep Theme and Default order together in the shared preference row");
-assert.match(shelfSource, /function updateShelfCardTrophyStrips\(gameId\)[\s\S]*?\.game-card\[data-gamelist-id=[\s\S]*?shelfCardTrophies\(game\)/, "Shelf must update the visible playing-card trophy strip when its async data arrives");
+assert.match(shelfSource, /function updateShelfCardTrophyStrips\(gameId\)[\s\S]*?\.game-card\[data-gamelist-id=[\s\S]*?shelfCardTrophies\(game,\s*\{\s*compactProgress:\s*true\s*\}\)/, "Shelf must update the visible playing-card trophy strip when its async data arrives");
 assert.match(shelfSource, /async function loadShelfCardTrophies\(game, remote\)[\s\S]*?updateShelfCardTrophyStrips\(game\.id\)/, "Shelf PSN trophy loading must refresh the outside playing card directly");
 assert.match(shelfHtml, /<dialog id="addDialog">\s*<form method="dialog" class="modal add-modal"/, "Shelf physical editor must use Main's dialog and modal shell");
 assert.match(shelfHtml, /<p class="eyebrow">Game data<\/p><h2>Add Game<\/h2>/, "Shelf physical editor must use a normal Add Game title beneath the Game data eyebrow");

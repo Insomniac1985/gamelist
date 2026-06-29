@@ -6,8 +6,8 @@ splitShelfPlayingModules();
 
 const SESSION_KEY = "gamelist-editor";
 const KASH_TWITCH_URL = "https://www.twitch.tv/kashhoward";
-const SITE_VERSION = "v253";
-const SITE_UPDATED_AT = "2026-06-29T01:20:00+02:00";
+const SITE_VERSION = "v254";
+const SITE_UPDATED_AT = "2026-06-29T01:25:00+02:00";
 const VERSION_STORAGE_KEY = "gamelist:site-version";
 const PULL_NAVIGATION_KEY = "gamelist:pull-navigation";
 const VIEW_KEY = "shelf:view-mode:v2";
@@ -1464,7 +1464,7 @@ function gamelistProjectionCard(game) {
   card.querySelector(".meta").innerHTML = projectionMeta(game);
   const dates = card.querySelector(".play-dates"); dates.innerHTML = game.startedAt ? `<span class="history-pill history-date-pill"><small>Started</small><strong>${escapeHtml(formatShortDate(game.startedAt))}</strong></span>` : ""; dates.hidden = !dates.innerHTML;
   card.querySelector(".chips").innerHTML = (game.genres || []).slice(0, 4).map((tag) => `<span class="chip genre">${escapeHtml(tag)}</span>`).join("");
-  const trophies = card.querySelector(".card-trophies"); trophies.innerHTML = shelfCardTrophies(game); trophies.hidden = !trophies.innerHTML;
+  const trophies = card.querySelector(".card-trophies"); trophies.innerHTML = shelfCardTrophies(game, { compactProgress: true }); trophies.hidden = !trophies.innerHTML;
   card.querySelector(".card-actions").remove(); card.querySelector(".prices").remove();
   const note = card.querySelector(".notes"); note.textContent = shortDescription(game.description || ""); note.hidden = !note.textContent;
   return card.outerHTML;
@@ -1515,14 +1515,14 @@ function activityProgressSummary(game) {
 function shelfProgressBadge(summary, options = {}) {
   if (!summary || summary.progress == null) return "";
   const className = ["psn-progress-pill", options.className || ""].filter(Boolean).join(" ");
-  const label = Number.isFinite(Number(summary.earned)) && Number.isFinite(Number(summary.total)) ? `${Number(summary.earned)}/${Number(summary.total)} earned` : "";
+  const label = !options.compact && Number.isFinite(Number(summary.earned)) && Number.isFinite(Number(summary.total)) ? `${Number(summary.earned)}/${Number(summary.total)} earned` : "";
   return `<span class="${className}">${options.includeIcon === false ? "" : trophyIcon()}<em style="--progress:${summary.progress}%"></em><strong>${summary.progress}%</strong>${label ? `<span>${options.separator ? "<b>·</b>" : ""}${escapeHtml(label)}</span>` : ""}</span>`;
 }
 function shelfProgressPill(game) {
   const progress = activityProgressFor(game);
   return progress != null ? `<span class="psn-progress-pill shelf-progress-pill">${trophyIcon()}<em style="--progress:${progress}%"></em><strong>${progress}%</strong></span>` : "";
 }
-function shelfCardTrophies(game) {
+function shelfCardTrophies(game, options = {}) {
   if (!activityAllowsPsnCardTrophies(game.platform)) return "";
   const guides = activityGuideLinks(game);
   const guideRow = guides.length ? `<div class="guide-links card-guide-row">${guides.join("")}</div>` : "";
@@ -1533,7 +1533,7 @@ function shelfCardTrophies(game) {
     const progress = activityProgressSummary(game);
     if (!earned.length && !progress) return guideRow;
     const tone = ["steam", "pc"].includes(normalize(shortPlatform(game.platform))) ? "steam" : "";
-    return `<div class="card-trophy-head">${trophyIcon()}<span>Latest achievements</span>${shelfProgressBadge(progress, { includeIcon: false, className: "card-trophy-progress", separator: true })}</div>${guideRow}${earned.length ? `<div class="card-trophy-list">${earned.map((item) => `<a class="card-trophy trophy-${tone || trophyTone(item.type || item.rarity)}" href="${escapeHtml(item.url || (shortPlatform(game.platform).toLowerCase().includes("xbox") ? state.xboxActivity.sourceUrl : state.steamActivity.sourceUrl) || "#")}" target="_blank" rel="noreferrer" title="${escapeHtml([item.title, item.earnedAt].filter(Boolean).join(" · "))}"><img src="${escapeHtml(item.icon || platformLogo(game.platform))}" alt=""><span>${escapeHtml(item.title || "Achievement")}</span>${item.earnedAt ? `<small class="card-trophy-meta">${escapeHtml(item.earnedAt)}</small>` : ""}</a>`).join("")}</div>` : ""}`;
+    return `<div class="card-trophy-head">${trophyIcon()}<span>Latest achievements</span>${shelfProgressBadge(progress, { includeIcon: false, className: "card-trophy-progress", separator: !options.compactProgress, compact: options.compactProgress })}</div>${guideRow}${earned.length ? `<div class="card-trophy-list">${earned.map((item) => `<a class="card-trophy trophy-${tone || trophyTone(item.type || item.rarity)}" href="${escapeHtml(item.url || (shortPlatform(game.platform).toLowerCase().includes("xbox") ? state.xboxActivity.sourceUrl : state.steamActivity.sourceUrl) || "#")}" target="_blank" rel="noreferrer" title="${escapeHtml([item.title, item.earnedAt].filter(Boolean).join(" · "))}"><img src="${escapeHtml(item.icon || platformLogo(game.platform))}" alt=""><span>${escapeHtml(item.title || "Achievement")}</span>${item.earnedAt ? `<small class="card-trophy-meta">${escapeHtml(item.earnedAt)}</small>` : ""}</a>`).join("")}</div>` : ""}`;
   }
   const remote = activityGameFor(game);
   const cacheKey = remote?.npCommunicationId || remote?.id || "";
@@ -1545,7 +1545,7 @@ function shelfCardTrophies(game) {
   if (!trophies.length && cached?.loading) return `<div class="card-trophy-head">${trophyIcon()}<span>Loading trophies...</span></div>${guideRow}`;
   if (!trophies.length) return guideRow;
   const progress = activityProgressSummary(game);
-  return `<div class="card-trophy-head">${trophyIcon()}<span>Latest trophies</span>${shelfProgressBadge(progress, { includeIcon: false, className: "card-trophy-progress", separator: true })}</div>${guideRow}<div class="card-trophy-list">${trophies.map((item) => `<a class="card-trophy trophy-${trophyTone(item.type || item.rarity)}" href="${escapeHtml(item.url || state.trophyActivity?.sourceUrl || "#")}" target="_blank" rel="noreferrer" title="${escapeHtml([item.title, item.earnedAt].filter(Boolean).join(" · "))}"><img src="${escapeHtml(item.icon || platformLogo("PS5"))}" alt=""><span>${escapeHtml(item.title || "Trophy")}</span>${item.earnedAt ? `<small class="card-trophy-meta">${escapeHtml(item.earnedAt)}</small>` : ""}</a>`).join("")}</div>`;
+  return `<div class="card-trophy-head">${trophyIcon()}<span>Latest trophies</span>${shelfProgressBadge(progress, { includeIcon: false, className: "card-trophy-progress", separator: !options.compactProgress, compact: options.compactProgress })}</div>${guideRow}<div class="card-trophy-list">${trophies.map((item) => `<a class="card-trophy trophy-${trophyTone(item.type || item.rarity)}" href="${escapeHtml(item.url || state.trophyActivity?.sourceUrl || "#")}" target="_blank" rel="noreferrer" title="${escapeHtml([item.title, item.earnedAt].filter(Boolean).join(" · "))}"><img src="${escapeHtml(item.icon || platformLogo("PS5"))}" alt=""><span>${escapeHtml(item.title || "Trophy")}</span>${item.earnedAt ? `<small class="card-trophy-meta">${escapeHtml(item.earnedAt)}</small>` : ""}</a>`).join("")}</div>`;
 }
 
 async function loadGamelistDetailTrophies(game) {
@@ -1631,7 +1631,7 @@ function updateShelfCardTrophyStrips(gameId) {
   const game = state.gamelistGames.find((item) => item.id === gameId && !item.deletedAt);
   if (!game) return;
   document.querySelectorAll(`.game-card[data-gamelist-id="${CSS.escape(gameId)}"] .card-trophies`).forEach((node) => {
-    node.innerHTML = game.playing ? shelfCardTrophies(game) : "";
+    node.innerHTML = game.playing ? shelfCardTrophies(game, { compactProgress: true }) : "";
     node.hidden = !node.innerHTML;
   });
   if (game.playing) schedulePlayingCardHeightSync();
