@@ -463,22 +463,26 @@ html.theme-font-pokemon .shelf-page .column-head h2 {
   left: 0;
   right: 0;
   bottom: 0;
-  padding: 18px 8px 8px;
+  display: -webkit-box;
+  max-height: calc(1.1em * 4 + 26px);
+  padding: 26px 8px 8px;
   overflow: hidden;
   color: #fff;
   font-size: 11px;
   font-weight: 850;
   line-height: 1.1;
   text-align: left;
-  text-overflow: ellipsis;
   text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8);
-  white-space: nowrap;
-  background: linear-gradient(0deg, rgba(0, 0, 0, 0.82), rgba(0, 0, 0, 0));
+  white-space: normal;
+  overflow-wrap: anywhere;
+  background: linear-gradient(0deg, rgba(0, 0, 0, 0.88), rgba(0, 0, 0, 0.56) 68%, rgba(0, 0, 0, 0));
   border-radius: 0 0 8px 8px;
   opacity: 0;
   pointer-events: none;
   transform: translateY(6px);
   transition: opacity 160ms ease, transform 160ms ease;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 4;
 }
 
 .showcase-picker-card:hover .showcase-picker-title,
