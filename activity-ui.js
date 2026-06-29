@@ -107,7 +107,7 @@ export function releaseGamesByDate(games = []) {
   const groups = new Map();
   const seen = new Set();
   games
-    .filter((game) => !game.deletedAt && !game.completedAt && ["upcoming", "wanted", "backlog"].includes(game.section) && validReleaseDate(game.releaseDate))
+    .filter((game) => !game.deletedAt && validReleaseDate(game.releaseDate))
     .forEach((game) => {
       const key = dateOnly(game.releaseDate);
       const identity = `${key}:${game.id || game.gamelistId || normalizeSearchText(`${game.title} ${game.platform}`)}`;
