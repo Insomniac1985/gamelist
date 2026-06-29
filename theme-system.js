@@ -12,6 +12,7 @@ const DEFAULT_THEME = {
   mainColor: "#ff0039",
   mainColorReset: true,
   gradient: false,
+  uppercaseTitles: false,
   gradientColor: "#005cff",
   accentColor: "#79f2ce",
   accentColorReset: true,
@@ -60,6 +61,7 @@ export function normalizeThemeSettings(settings = {}) {
     mainColorReset: raw.mainColorReset !== false,
     accentColorReset: raw.accentColorReset !== false,
     gradient: Boolean(raw.gradient),
+    uppercaseTitles: Boolean(raw.uppercaseTitles),
     mode: raw.mode === "light" ? "light" : "dark",
     disableGlow: Boolean(raw.disableGlow),
     glowPrimary: glowSource(raw.glowPrimary, DEFAULT_THEME.glowPrimary),
@@ -92,8 +94,8 @@ export function resolveSiteTheme(settings = {}, page = "gamelist") {
     mainColor,
     accentColor,
     accent3,
-    icon: theme[isShelf ? "shelfIcon" : "gamelistIcon"] || (isShelf ? "assets/Icon_shelf.png" : "assets/Icon.png"),
-    appIcon: theme.appIcon || "assets/app-Icon.png",
+    icon: theme[isShelf ? "shelfIcon" : "gamelistIcon"] || defaultThemeIcon(isShelf ? "shelf" : "gamelist", mainColor, theme.mainColorReset),
+    appIcon: theme.appIcon || defaultThemeIcon("app", mainColor, theme.mainColorReset),
   };
 }
 
@@ -107,12 +109,14 @@ export function applySiteTheme(settings = {}, options = {}) {
   root.classList.toggle("theme-light", theme.mode === "light");
   root.classList.toggle("theme-no-glow", theme.disableGlow);
   root.classList.toggle("theme-gradient", theme.gradient);
+  root.classList.toggle("theme-uppercase-titles", theme.uppercaseTitles);
   root.classList.toggle("theme-big-logo", theme.bigLogo);
   root.classList.toggle("theme-font-pokemon", theme.accentFont === "pokemon");
   body?.classList.toggle("theme-kash", settings.theme === "kash");
   body?.classList.toggle("theme-light", theme.mode === "light");
   body?.classList.toggle("theme-no-glow", theme.disableGlow);
   body?.classList.toggle("theme-gradient", theme.gradient);
+  body?.classList.toggle("theme-uppercase-titles", theme.uppercaseTitles);
   body?.classList.toggle("theme-big-logo", theme.bigLogo);
   body?.classList.toggle("theme-font-pokemon", theme.accentFont === "pokemon");
   root.style.setProperty("--accent", theme.mainColor);
@@ -139,6 +143,7 @@ export function applySiteTheme(settings = {}, options = {}) {
   if (brandText) brandText.textContent = theme.title;
   applyOwnerStyle(theme.ownerColors);
   warmThemeImages(theme);
+  tintDefaultThemeIcons(settings, theme, page);
   return theme;
 }
 
@@ -212,10 +217,11 @@ function renderThemeDialog(dialog, draft, settings, page, onSave) {
         ${colorField("gradientColor", "Gradient color", draft.gradientColor, false, false, "theme-gradient-color")}
         ${colorField("extraColor", "Extra color", draft.extraColor, false, false, "theme-extra-color")}
         <div class="theme-editor-row theme-controls-row">
+          <label class="settings-detail-compact theme-mode-field"><span>Theme</span><select name="mode"><option value="dark" ${draft.mode === "dark" ? "selected" : ""}>Dark</option><option value="light" ${draft.mode === "light" ? "selected" : ""}>Light (WIP)</option></select></label>
           <label class="settings-detail-compact theme-font-field"><span>Title font</span><select name="accentFont" style="font-family:${htmlEscape(FONT_OPTIONS.find((font) => font.value === draft.accentFont)?.family || "Cascadia Code")}">${FONT_OPTIONS.map((font) => `<option value="${htmlEscape(font.value)}" style="font-family:${htmlEscape(font.family)}" ${draft.accentFont === font.value ? "selected" : ""}>${htmlEscape(font.label)}</option>`).join("")}</select></label>
           <label class="check-filter toggle-check theme-check"><input name="gradient" type="checkbox" ${draft.gradient ? "checked" : ""}><span>Gradient titles</span></label>
-          <label class="check-filter toggle-check theme-check"><input name="disableGlow" type="checkbox" ${draft.disableGlow ? "" : "checked"}><span>Enable background glow</span></label>
-          <label class="settings-detail-compact"><span>Theme</span><select name="mode"><option value="dark" ${draft.mode === "dark" ? "selected" : ""}>Dark</option><option value="light" ${draft.mode === "light" ? "selected" : ""}>Light (WIP)</option></select></label>
+          <label class="check-filter toggle-check theme-check"><input name="uppercaseTitles" type="checkbox" ${draft.uppercaseTitles ? "checked" : ""}><span>Uppercase Titles</span></label>
+          <label class="check-filter toggle-check theme-check"><input name="disableGlow" type="checkbox" ${draft.disableGlow ? "" : "checked"}><span>Background glows</span></label>
         </div>
         <div class="theme-editor-row theme-glow-row" ${draft.disableGlow ? "hidden" : ""}>
           <label class="settings-detail-compact"><span>Glow 1</span>${glowSelect("glowPrimary", draft.glowPrimary)}</label>
@@ -326,6 +332,7 @@ function readThemeForm(form, draft) {
       mainColor: normalizeHex(value("mainColor")) || draft.mainColor,
       mainColorReset: Boolean(form.elements.mainColorReset?.checked),
       gradient: Boolean(form.elements.gradient?.checked),
+      uppercaseTitles: Boolean(form.elements.uppercaseTitles?.checked),
       gradientColor: normalizeHex(value("gradientColor")) || draft.gradientColor,
       accentColor: normalizeHex(value("accentColor")) || draft.accentColor,
       accentColorReset: Boolean(form.elements.accentColorReset?.checked),
@@ -441,6 +448,74 @@ function colorMix(hex, alpha) {
   const g = (int >> 8) & 255;
   const b = int & 255;
   return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+}
+
+function defaultThemeIcon(kind, color, reset) {
+  const defaults = { gamelist: "assets/Icon.png", shelf: "assets/Icon_shelf.png", app: "assets/app-Icon.png" };
+  const fill = normalizeHex(color);
+  if (reset || !fill) return defaults[kind] || defaults.gamelist;
+  try {
+    return localStorage.getItem(tintedIconCacheKey(kind, fill)) || defaults[kind] || defaults.gamelist;
+  } catch {
+    return defaults[kind] || defaults.gamelist;
+  }
+}
+
+function tintDefaultThemeIcons(settings, theme, page) {
+  if (theme.mainColorReset) return;
+  const custom = normalizeThemeSettings(settings);
+  const jobs = [];
+  const pageIconKey = page === "shelf" ? "shelfIcon" : "gamelistIcon";
+  const pageKind = page === "shelf" ? "shelf" : "gamelist";
+  if (!custom[pageIconKey]) jobs.push({ kind: pageKind, source: pageKind === "shelf" ? "assets/Icon_shelf.png" : "assets/Icon.png", selector: "link[rel='icon']", brand: true });
+  if (page === "gamelist" && !custom.appIcon) jobs.push({ kind: "app", source: "assets/app-Icon.png", selector: "link[rel='apple-touch-icon']", manifest: true });
+  jobs.forEach((job) => {
+    tintIcon(job.source, theme.mainColor, job.kind).then((url) => {
+      if (!url) return;
+      document.querySelector(job.selector)?.setAttribute("href", url);
+      if (job.brand) {
+        const brandMark = document.querySelector(".brand-mark");
+        if (brandMark) brandMark.src = url;
+      }
+      if (job.manifest) {
+        const manifest = document.querySelector("link[rel='manifest']");
+        if (manifest) manifest.setAttribute("href", themedManifestUrl({ ...theme, appIcon: url }));
+      }
+    });
+  });
+}
+
+async function tintIcon(source, color, kind) {
+  const fill = normalizeHex(color);
+  if (!fill) return "";
+  const cacheKey = tintedIconCacheKey(kind, fill);
+  try {
+    const cached = localStorage.getItem(cacheKey);
+    if (cached) return cached;
+    const image = await new Promise((resolve, reject) => {
+      const img = new Image();
+      img.onload = () => resolve(img);
+      img.onerror = reject;
+      img.src = source;
+    });
+    const canvas = document.createElement("canvas");
+    canvas.width = image.naturalWidth || image.width;
+    canvas.height = image.naturalHeight || image.height;
+    const context = canvas.getContext("2d");
+    context.drawImage(image, 0, 0, canvas.width, canvas.height);
+    context.globalCompositeOperation = "source-in";
+    context.fillStyle = fill;
+    context.fillRect(0, 0, canvas.width, canvas.height);
+    const url = canvas.toDataURL("image/png");
+    localStorage.setItem(cacheKey, url);
+    return url;
+  } catch {
+    return "";
+  }
+}
+
+function tintedIconCacheKey(kind, color) {
+  return `gamelist:tinted-icon:${kind}:${normalizeHex(color) || color}`;
 }
 
 function safeImage(value) {

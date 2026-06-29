@@ -1220,6 +1220,10 @@ html.theme-gradient .column-head h2 {
   background-clip: text;
 }
 
+html.theme-uppercase-titles .column-head h2 {
+  text-transform: uppercase;
+}
+
 .playing-section .column-head h2,
 .achievement-section > .column-head h2,
 #new > .column-head h2,
@@ -6177,7 +6181,16 @@ html.theme-light .shelf-card-delete-action:hover {
 }
 
 .theme-controls-row {
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: minmax(92px, 0.7fr) minmax(190px, 1.45fr) repeat(3, minmax(132px, 1fr));
+  align-items: end;
+}
+
+.theme-mode-field {
+  max-width: 132px;
+}
+
+.theme-controls-row select {
+  min-height: 42px;
 }
 
 .theme-glow-row,

@@ -148,6 +148,10 @@ body:not(.can-edit) .showcase-edit-button {
   background: var(--accent);
   -webkit-background-clip: text;
   background-clip: text;
+  text-transform: none;
+}
+
+html.theme-uppercase-titles .shelf-page .column-head h2 {
   text-transform: uppercase;
 }
 
@@ -243,9 +247,17 @@ html.theme-font-pokemon .shelf-page .column-head h2 {
 
 .showcase-modal {
   width: 100%;
+  height: min(920px, calc(100vh - 16px));
   max-height: calc(100vh - 16px);
-  overflow: auto;
+  overflow: hidden;
   padding: 16px;
+}
+
+.showcase-modal form {
+  display: grid;
+  height: 100%;
+  grid-template-rows: auto auto auto auto 1fr auto;
+  overflow: hidden;
 }
 
 .showcase-selected {
@@ -322,7 +334,30 @@ html.theme-font-pokemon .shelf-page .column-head h2 {
   border-radius: 999px;
 }
 
-.showcase-slot-actions .icon-button:disabled {
+.showcase-slot-actions .direction-toggle,
+.showcase-slot-actions .icon-only-button {
+  width: 28px;
+  height: 28px;
+  min-width: 28px;
+  min-height: 28px;
+  flex: 0 0 28px;
+  padding: 0;
+  border-radius: 999px;
+}
+
+.showcase-slot-actions .direction-toggle {
+  color: #fff;
+  background: rgba(0, 0, 0, 0.62);
+  border-color: rgba(255, 255, 255, 0.18);
+}
+
+.showcase-slot-actions .direction-toggle .sort-arrow-icon {
+  width: 16px;
+  height: 16px;
+}
+
+.showcase-slot-actions .icon-button:disabled,
+.showcase-slot-actions .direction-toggle:disabled {
   opacity: 0.32;
 }
 
@@ -334,9 +369,14 @@ html.theme-font-pokemon .shelf-page .column-head h2 {
 .showcase-toolbar .search {
   width: auto;
   height: auto;
-  padding: 0;
-  border: 0;
-  background: transparent;
+  padding: 8px 10px;
+  border: 1px solid color-mix(in srgb, var(--accent) 28%, rgba(255, 255, 255, 0.16));
+  background: rgba(255, 255, 255, 0.045);
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.14);
+}
+
+.showcase-toolbar .search:focus-within {
+  border-color: color-mix(in srgb, var(--accent) 58%, rgba(255, 255, 255, 0.24));
 }
 
 .showcase-count {
@@ -350,46 +390,115 @@ html.theme-font-pokemon .shelf-page .column-head h2 {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(104px, 132px));
   justify-content: start;
-  gap: 12px;
-  max-height: min(590px, 56vh);
-  overflow: auto;
-  padding-right: 4px;
+  align-content: start;
+  gap: 18px 12px;
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 4px 10px 140px 4px;
 }
 
 .showcase-picker-card {
   position: relative;
+  display: grid;
   min-width: 0;
   padding: 0;
-  aspect-ratio: 104 / 142;
-  overflow: hidden;
+  overflow: visible;
   color: #fff;
   background: transparent;
   border: 0;
   border-radius: 8px;
   cursor: pointer;
+  transition: transform 170ms ease, filter 170ms ease, z-index 170ms ease;
 }
 
-.showcase-picker-card img {
+.showcase-picker-card:hover,
+.showcase-picker-card:focus-visible {
+  z-index: 5;
+  transform: scale(1.08);
+  filter: saturate(1.08);
+}
+
+.showcase-picker-cover {
+  display: block;
+  aspect-ratio: 104 / 142;
+  overflow: hidden;
+  border-radius: 8px;
+}
+
+.showcase-picker-cover img {
   width: 100%;
   height: 100%;
   object-fit: contain;
   background: transparent;
 }
 
-.showcase-picker-card span {
+.showcase-picker-info {
   position: absolute;
   left: 0;
   right: 0;
-  bottom: 0;
-  padding: 18px 8px 8px;
-  overflow: hidden;
-  font-size: 11px;
+  top: calc(100% + 7px);
+  display: grid;
+  gap: 6px;
+  min-width: min(220px, 78vw);
+  padding: 9px;
+  color: var(--text);
+  background: color-mix(in srgb, var(--panel) 90%, rgba(0, 0, 0, 0.72));
+  border: 1px solid color-mix(in srgb, var(--accent) 28%, rgba(255, 255, 255, 0.16));
+  border-radius: 8px;
+  box-shadow: 0 20px 44px rgba(0, 0, 0, 0.34);
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(-6px);
+  transition: opacity 160ms ease, transform 160ms ease;
+}
+
+.showcase-picker-card:hover .showcase-picker-info,
+.showcase-picker-card:focus-visible .showcase-picker-info {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.showcase-picker-info strong {
+  overflow-wrap: anywhere;
+  font-size: 12px;
   font-weight: 850;
-  line-height: 1.1;
-  text-overflow: ellipsis;
-  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8);
-  white-space: nowrap;
-  background: linear-gradient(0deg, rgba(0, 0, 0, 0.82), rgba(0, 0, 0, 0));
+  line-height: 1.15;
+}
+
+.showcase-picker-info small {
+  color: var(--muted);
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 1.25;
+}
+
+.showcase-picker-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+
+.showcase-picker-meta .psn-progress-pill {
+  min-height: 24px;
+  padding: 3px 6px;
+  gap: 4px;
+  cursor: inherit;
+}
+
+.showcase-picker-meta .psn-progress-pill .trophy-icon {
+  width: 13px;
+  height: 13px;
+}
+
+.showcase-picker-meta .psn-progress-pill em {
+  display: none;
+}
+
+.showcase-picker-meta .chip {
+  min-height: 24px;
+  padding: 4px 6px;
+  font-size: 9px;
 }
 
 .showcase-picker-card.is-selected {

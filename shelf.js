@@ -1400,7 +1400,7 @@ function renderShowcasePicker() {
     const game = ownedShelfGames().find((item) => item.id === state.showcaseDraftIds[index]);
     if (!game) return `<div class="showcase-selected-slot is-empty" data-empty-slot="${index}" aria-label="Empty showcase slot ${index + 1}"></div>`;
     const cover = coverUrl(game.cover || "") || platformFallback(game.platform);
-    return `<article class="showcase-selected-slot" data-showcase-slot="${escapeHtml(game.id)}"><img src="${escapeHtml(cover)}" alt=""><span>${escapeHtml(game.title)}</span><div class="showcase-slot-actions"><button class="icon-button" type="button" data-move-showcase="${escapeHtml(game.id)}" data-direction="-1" ${index === 0 ? "disabled" : ""} title="Move left" aria-label="Move ${escapeHtml(game.title)} left">&larr;</button><button class="icon-button" type="button" data-move-showcase="${escapeHtml(game.id)}" data-direction="1" ${index === state.showcaseDraftIds.length - 1 ? "disabled" : ""} title="Move right" aria-label="Move ${escapeHtml(game.title)} right">&rarr;</button><button class="icon-button" type="button" data-remove-showcase="${escapeHtml(game.id)}" title="Remove" aria-label="Remove ${escapeHtml(game.title)}">&times;</button></div></article>`;
+    return `<article class="showcase-selected-slot" data-showcase-slot="${escapeHtml(game.id)}"><img src="${escapeHtml(cover)}" alt=""><span>${escapeHtml(game.title)}</span><div class="showcase-slot-actions"><button class="direction-toggle showcase-move-action" type="button" data-move-showcase="${escapeHtml(game.id)}" data-direction="-1" ${index === 0 ? "disabled" : ""} title="Move left" aria-label="Move ${escapeHtml(game.title)} left">${carouselArrowIcon("left")}</button><button class="direction-toggle showcase-move-action" type="button" data-move-showcase="${escapeHtml(game.id)}" data-direction="1" ${index === state.showcaseDraftIds.length - 1 ? "disabled" : ""} title="Move right" aria-label="Move ${escapeHtml(game.title)} right">${carouselArrowIcon("right")}</button><button class="danger-button icon-only-button" type="button" data-remove-showcase="${escapeHtml(game.id)}" title="Remove" aria-label="Remove ${escapeHtml(game.title)}">${trashIcon()}</button></div></article>`;
   }).join("");
   el.showcaseList.innerHTML = games.map((game) => showcasePickerCard(game, selected.has(game.id))).join("");
   el.showcaseCount.textContent = `${state.showcaseDraftIds.length}/5 selected · ${games.length} ${games.length === 1 ? "game" : "games"}`;
@@ -1421,7 +1421,15 @@ function filteredShowcaseGames() {
 
 function showcasePickerCard(game, selected) {
   const cover = coverUrl(game.cover || "") || platformFallback(game.platform);
-  return `<button class="showcase-picker-card ${selected ? "is-selected" : ""}" type="button" data-showcase-id="${escapeHtml(game.id)}" title="${escapeHtml(game.title)}"><img src="${escapeHtml(cover)}" alt=""><span>${escapeHtml(game.title)}</span></button>`;
+  const tags = [...(game.tags || []), game.category && game.category !== "Game" ? game.category : "", ...String(game.genre || "").split(",")]
+    .map((tag) => String(tag).trim())
+    .filter((tag, index, list) => tag && normalize(tag) !== "game" && list.indexOf(tag) === index)
+    .slice(0, 4);
+  const studio = [
+    game.developer ? `Dev: ${game.developer}` : "",
+    game.publisher ? `Pub: ${game.publisher}` : "",
+  ].filter(Boolean);
+  return `<button class="showcase-picker-card ${selected ? "is-selected" : ""}" type="button" data-showcase-id="${escapeHtml(game.id)}" title="${escapeHtml(game.title)}"><span class="showcase-picker-cover"><img src="${escapeHtml(cover)}" alt=""></span><span class="showcase-picker-info"><strong>${escapeHtml(game.title)}</strong>${studio.length ? `<small>${escapeHtml(studio.join(" · "))}</small>` : ""}<span class="showcase-picker-meta">${shelfProgressPill(game)}${tags.map((tag) => `<span class="chip genre">${escapeHtml(tag)}</span>`).join("")}</span></span></button>`;
 }
 
 function handleShowcasePick(event) {
@@ -2372,6 +2380,7 @@ function pauseTrailerIcon() { return `<svg class="pause-icon" viewBox="0 0 24 24
 function playTrailerIcon() { return `<svg class="play-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m8 5 11 7-11 7Z"></path></svg>`; }
 function currencyIcon() { const currency = normalizePriceSettings(state.gamelistSettings).currency === "USD" ? "dollar" : "euro"; return currency === "dollar" ? `<svg class="dollar-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M16.8 7.2c-1.1-1-2.7-1.7-4.8-1.7-2.8 0-4.8 1.4-4.8 3.5 0 5.3 9.8 2.1 9.8 7 0 2.1-2 3.5-5 3.5-2.3 0-4.2-.8-5.4-2"></path><path d="M12 3v18"></path></svg>` : `<svg class="euro-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M19 5.5A7 7 0 0 0 8.2 7.1 7.4 7.4 0 0 0 7 12a7.4 7.4 0 0 0 1.2 4.9A7 7 0 0 0 19 18.5"></path><path d="M4 10h10"></path><path d="M4 14h10"></path></svg>`; }
 function trophyIcon() { return `<svg class="trophy-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 4h8v4a4 4 0 0 1-8 0V4Z"></path><path d="M8 6H5a3 3 0 0 0 3 3"></path><path d="M16 6h3a3 3 0 0 1-3 3"></path><path d="M12 12v4"></path><path d="M9 20h6"></path><path d="M10 16h4v4h-4z"></path></svg>`; }
+function carouselArrowIcon(direction = "right") { return `<svg class="sort-arrow-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="${direction === "left" ? "M15.5 5.5 9 12l6.5 6.5" : "M8.5 5.5 15 12l-6.5 6.5"}"></path></svg>`; }
 function sortArrowIcon(desc = false) { return `<svg class="sort-arrow-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="${desc ? "M12 3.5v17" : "M12 20.5v-17"}"></path><path d="${desc ? "M6.5 15l5.5 5.5 5.5-5.5" : "M6.5 9l5.5-5.5L17.5 9"}"></path></svg>`; }
 function linesIcon() { return `<svg class="view-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 7h14M5 12h14M5 17h14"></path></svg>`; }
 function gridIcon() { return `<svg class="view-icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="4.5" y="4.5" width="5.5" height="5.5"></rect><rect x="14" y="4.5" width="5.5" height="5.5"></rect><rect x="4.5" y="14" width="5.5" height="5.5"></rect><rect x="14" y="14" width="5.5" height="5.5"></rect></svg>`; }

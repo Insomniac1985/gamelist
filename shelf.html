@@ -31,7 +31,11 @@
             const int = Number.parseInt(color.slice(1), 16);
             return `rgba(${(int >> 16) & 255}, ${(int >> 8) & 255}, ${int & 255}, ${alpha})`;
           };
-          return { title: `${owner}'s Shelf`, icon: theme.shelfIcon || themes[fallbackKey].icon, color: main, accent, gradient, extra, glow1: mix(source(theme.glowPrimary), .22), glow2: mix(source(theme.glowSecondary || "accent"), .14), background: theme.backgroundImage || "", font: fonts[theme.accentFont] || "Cascadia Code", fontKey: theme.accentFont || "", mode: theme.mode === "light" ? "light" : "dark", disableGlow: Boolean(theme.disableGlow), gradientOn: Boolean(theme.gradient), bigLogo: fallbackKey === "kash" || Boolean(theme.bigLogo) };
+          const defaultIcon = () => {
+            if (theme.mainColorReset !== false) return themes[fallbackKey].icon;
+            try { return localStorage.getItem(`gamelist:tinted-icon:shelf:${main}`) || themes[fallbackKey].icon; } catch { return themes[fallbackKey].icon; }
+          };
+          return { title: `${owner}'s Shelf`, icon: theme.shelfIcon || defaultIcon(), color: main, accent, gradient, extra, glow1: mix(source(theme.glowPrimary), .22), glow2: mix(source(theme.glowSecondary || "accent"), .14), background: theme.backgroundImage || "", font: fonts[theme.accentFont] || "Cascadia Code", fontKey: theme.accentFont || "", mode: theme.mode === "light" ? "light" : "dark", disableGlow: Boolean(theme.disableGlow), gradientOn: Boolean(theme.gradient), uppercaseTitles: Boolean(theme.uppercaseTitles), bigLogo: fallbackKey === "kash" || Boolean(theme.bigLogo) };
         };
         const apply = (key, settings = {}) => {
           const themeKey = themes[key] ? key : "shabii";
@@ -42,6 +46,7 @@
           root.classList.toggle("theme-light", theme.mode === "light");
           root.classList.toggle("theme-no-glow", theme.disableGlow);
           root.classList.toggle("theme-gradient", theme.gradientOn);
+          root.classList.toggle("theme-uppercase-titles", theme.uppercaseTitles);
           root.classList.toggle("theme-big-logo", theme.bigLogo);
           root.classList.toggle("theme-font-pokemon", theme.fontKey === "pokemon");
           root.style.setProperty("--accent", theme.color);
@@ -57,6 +62,7 @@
           document.body?.classList.toggle("theme-light", theme.mode === "light");
           document.body?.classList.toggle("theme-no-glow", theme.disableGlow);
           document.body?.classList.toggle("theme-gradient", theme.gradientOn);
+          document.body?.classList.toggle("theme-uppercase-titles", theme.uppercaseTitles);
           document.body?.classList.toggle("theme-big-logo", theme.bigLogo);
           document.body?.classList.toggle("theme-font-pokemon", theme.fontKey === "pokemon");
           document.title = theme.title;
