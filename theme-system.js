@@ -384,7 +384,7 @@ function applyOwnerStyle(ownerColors) {
         border-color: ${colorMix(color, 0.48)} !important;
       }
       .owner-color-card-${slug}, .owner-color-card-${slug}:hover {
-        background: linear-gradient(135deg, ${fill}, ${faint} 42%, rgba(20, 22, 28, 0.58)), var(--panel) !important;
+        background: linear-gradient(135deg, ${fill}, ${faint} 42%, var(--owner-card-base)), var(--panel) !important;
         border-color: ${border} !important;
         box-shadow: 0 0 20px ${glow} !important;
       }

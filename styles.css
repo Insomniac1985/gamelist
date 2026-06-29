@@ -63,6 +63,7 @@
   --panel: rgba(20, 22, 28, 0.58);
   --panel-dark: rgb(16 17 20 / 72%);
   --panel-strong: rgba(28, 31, 40, 0.82);
+  --owner-card-base: rgba(20, 22, 28, 0.58);
   --line: rgba(255, 255, 255, 0.13);
   --text: #f6f7fb;
   --muted: #a6adbd;
@@ -106,26 +107,27 @@ body.theme-kash {
 }
 
 html.theme-light {
-  --bg: #d9dee8;
-  --panel: rgba(214, 220, 230, 0.9);
-  --panel-dark: rgb(200 208 220 / 94%);
-  --panel-strong: rgba(226, 231, 240, 0.98);
-  --line: rgba(20, 24, 34, 0.32);
-  --text: #111827;
-  --muted: #3f4a5f;
-  --dim: #667085;
+  --bg: #b9c3d1;
+  --panel: rgba(222, 229, 239, 0.93);
+  --panel-dark: rgb(205 215 228 / 96%);
+  --panel-strong: rgba(235, 240, 247, 0.98);
+  --owner-card-base: rgba(218, 226, 238, 0.94);
+  --line: rgba(31, 42, 61, 0.38);
+  --text: #101827;
+  --muted: #33445c;
+  --dim: #617086;
   --glow-primary: color-mix(in srgb, var(--accent) 18%, transparent);
   --glow-secondary: color-mix(in srgb, var(--accent-2) 16%, transparent);
   --default-backdrop-image: url("assets/backdrop_light.png");
-  --shadow: 0 24px 70px rgba(45, 55, 72, 0.18);
+  --shadow: 0 20px 54px rgba(30, 41, 59, 0.26);
   --grid-texture:
-    linear-gradient(rgba(20, 24, 34, 0.08) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(20, 24, 34, 0.07) 1px, transparent 1px);
+    linear-gradient(rgba(20, 24, 34, 0.115) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(20, 24, 34, 0.095) 1px, transparent 1px);
   --grid-fade: linear-gradient(
     135deg,
-    rgba(255, 255, 255, 0.72),
+    rgba(255, 255, 255, 0.42),
     transparent 34%,
-    color-mix(in srgb, var(--accent) 8%, transparent) 100%
+    color-mix(in srgb, var(--accent) 10%, transparent) 100%
   );
   color-scheme: light;
 }
@@ -272,6 +274,15 @@ body.theme-kash .backdrop {
     linear-gradient(120deg, rgba(255, 255, 255, 0.04), transparent 38%),
     url(assets/backdrop.png) top left / auto repeat,
     #111723;
+}
+
+html.theme-no-glow .backdrop,
+html.theme-no-glow.theme-light .backdrop,
+html.theme-no-glow body.theme-kash .backdrop {
+  background:
+    linear-gradient(120deg, rgba(255, 255, 255, 0.035), transparent 38%),
+    var(--custom-backdrop-image) top left / cover repeat,
+    var(--bg) !important;
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -5266,12 +5277,14 @@ html.theme-light .theme-editor-modal {
   background:
     linear-gradient(
       135deg,
-      rgba(230, 235, 244, 0.96),
-      rgba(215, 222, 234, 0.9)
+      rgba(236, 241, 248, 0.97),
+      rgba(212, 222, 235, 0.94)
     ),
     var(--grid-texture), var(--panel-dark);
-  border-color: rgba(17, 24, 39, 0.26);
-  box-shadow: 0 20px 60px rgba(30, 41, 59, 0.24);
+  border-color: rgba(31, 42, 61, 0.38);
+  box-shadow:
+    0 18px 48px rgba(30, 41, 59, 0.26),
+    inset 0 1px 0 rgba(255, 255, 255, 0.44);
 }
 
 html.theme-light .settings-layout-card,
@@ -5279,8 +5292,8 @@ html.theme-light .settings-store-check,
 html.theme-light .check-filter,
 html.theme-light .theme-editor-card,
 html.theme-light .theme-upload-card {
-  background: rgba(220, 226, 236, 0.82);
-  border-color: rgba(17, 24, 39, 0.24);
+  background: rgba(211, 221, 234, 0.92);
+  border-color: rgba(31, 42, 61, 0.36);
 }
 
 html.theme-light .settings-preference-row .settings-theme-card,
@@ -5308,8 +5321,8 @@ html.theme-light textarea,
 html.theme-light .settings-theme-select select,
 html.theme-light .settings-sync-card .settings-visible-check {
   color: var(--text);
-  background-color: rgba(206, 214, 226, 0.92);
-  border-color: rgba(17, 24, 39, 0.28);
+  background-color: rgba(197, 208, 224, 0.94);
+  border-color: rgba(31, 42, 61, 0.38);
 }
 
 html.theme-light input::placeholder,
@@ -5319,8 +5332,8 @@ html.theme-light textarea::placeholder {
 
 html.theme-light .settings-theme-select select:hover,
 html.theme-light .settings-sync-card .settings-visible-check:hover {
-  border-color: color-mix(in srgb, var(--accent) 42%, rgba(17, 24, 39, 0.2));
-  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 12%, transparent);
+  border-color: color-mix(in srgb, var(--accent) 48%, rgba(31, 42, 61, 0.3));
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 16%, transparent);
 }
 
 html.theme-light .settings-wire span {
@@ -5336,12 +5349,23 @@ html.theme-light .panel,
 html.theme-light .search-panel,
 html.theme-light .settings-toolbar,
 html.theme-light .theme-editor-preview {
-  background-color: rgba(210, 217, 229, 0.88);
-  border-color: rgba(17, 24, 39, 0.28);
+  background-color: rgba(214, 224, 237, 0.94);
+  border-color: rgba(31, 42, 61, 0.38);
 }
 
 html.theme-light .game-card {
-  box-shadow: 0 16px 42px rgba(30, 41, 59, 0.18);
+  box-shadow:
+    0 14px 34px rgba(30, 41, 59, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.4);
+}
+
+html.theme-light .game-card.has-art::before {
+  opacity: 0.12;
+  filter: blur(3px) saturate(0.9) contrast(0.96);
+}
+
+html.theme-light .game-card.has-art:hover::before {
+  opacity: 0.18;
 }
 
 html.theme-light .game-card.playing-card h3,
@@ -5362,40 +5386,90 @@ html.theme-light .game-card.playing-card.digital-card {
   border-color: color-mix(in srgb, var(--accent) 58%, rgba(17, 24, 39, 0.36));
 }
 
+html.theme-light .game-card.owner-card-judy {
+  background:
+    linear-gradient(135deg, rgba(255, 158, 210, 0.2), rgba(255, 158, 210, 0.06) 42%, var(--owner-card-base)),
+    var(--panel);
+  border-color: rgba(179, 82, 139, 0.42);
+}
+
+html.theme-light .game-card.owner-card-jordi,
+html.theme-light .game-card.owner-card-cage {
+  background:
+    linear-gradient(135deg, rgba(255, 173, 95, 0.2), rgba(255, 173, 95, 0.07) 42%, var(--owner-card-base)),
+    var(--panel);
+  border-color: rgba(178, 101, 42, 0.44);
+}
+
+html.theme-light .game-card.digital-card,
+html.theme-light .game-card.digital-card.owner-card-judy,
+html.theme-light .game-card.digital-card.owner-card-jordi {
+  background:
+    linear-gradient(135deg, rgba(111, 124, 148, 0.18), rgba(111, 124, 148, 0.07) 48%, var(--owner-card-base)),
+    var(--panel);
+  border-color: rgba(73, 86, 108, 0.42);
+}
+
 html.theme-light .platform-badge,
 html.theme-light .chip,
 html.theme-light .price-link,
 html.theme-light .row-price-link {
-  background: rgba(54, 63, 78, 0.22);
-  border-color: rgba(17, 24, 39, 0.24);
+  color: #172033;
+  background: rgba(190, 201, 217, 0.66);
+  border-color: rgba(31, 42, 61, 0.28);
+}
+
+html.theme-light .platform-badge {
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.28);
 }
 
 html.theme-light .chip.genre {
-  color: #2f394d;
-  background: rgba(70, 82, 102, 0.18);
-  border-color: rgba(17, 24, 39, 0.18);
+  color: #26344a;
+  background: rgba(172, 184, 203, 0.54);
+  border-color: rgba(31, 42, 61, 0.24);
 }
 
 html.theme-light .time-pill,
 html.theme-light .prices {
   background:
-    linear-gradient(135deg, color-mix(in srgb, var(--time-color, var(--accent)) 16%, rgba(44, 52, 67, 0.22)), rgba(58, 68, 86, 0.16)),
-    rgba(82, 94, 116, 0.16);
-  border-color: color-mix(in srgb, var(--time-color, var(--accent)) 38%, rgba(17, 24, 39, 0.26));
+    linear-gradient(135deg, color-mix(in srgb, var(--time-color, var(--accent)) 18%, rgba(80, 94, 118, 0.24)), rgba(83, 98, 124, 0.18)),
+    rgba(167, 181, 203, 0.36);
+  border-color: color-mix(in srgb, var(--time-color, var(--accent)) 42%, rgba(31, 42, 61, 0.32));
 }
 
 html.theme-light .icon-button,
 html.theme-light .ghost-button,
 html.theme-light .primary-button,
 html.theme-light .danger-button {
-  background: rgba(54, 63, 78, 0.24);
-  border-color: rgba(17, 24, 39, 0.22);
+  background: rgba(178, 191, 211, 0.56);
+  border-color: rgba(31, 42, 61, 0.32);
+}
+
+html.theme-light .toolbar,
+html.theme-light .settings-toolbar,
+html.theme-light .search-panel {
+  background:
+    linear-gradient(135deg, rgba(228, 234, 243, 0.96), rgba(201, 213, 229, 0.94)),
+    var(--grid-texture);
+  border-color: rgba(31, 42, 61, 0.42);
+  box-shadow:
+    0 16px 42px rgba(30, 41, 59, 0.24),
+    inset 0 1px 0 rgba(255, 255, 255, 0.46);
+}
+
+html.theme-light .achievement-panel,
+html.theme-light .stats .glass,
+html.theme-light .release-months-frame.glass {
+  background:
+    linear-gradient(135deg, rgba(232, 238, 246, 0.95), rgba(205, 216, 231, 0.92)),
+    var(--grid-texture);
+  border-color: rgba(31, 42, 61, 0.36);
 }
 
 html.theme-light .check-filter input[type="checkbox"],
 html.theme-light .stream-check input[type="checkbox"] {
-  border-color: rgba(17, 24, 39, 0.38);
-  background: rgba(192, 201, 216, 0.9);
+  border-color: rgba(31, 42, 61, 0.48);
+  background: rgba(180, 193, 213, 0.96);
 }
 
 html.theme-light .check-filter input[type="checkbox"]:checked,
