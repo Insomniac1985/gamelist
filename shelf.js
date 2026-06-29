@@ -6,8 +6,8 @@ splitShelfPlayingModules();
 
 const SESSION_KEY = "gamelist-editor";
 const KASH_TWITCH_URL = "https://www.twitch.tv/kashhoward";
-const SITE_VERSION = "v256";
-const SITE_UPDATED_AT = "2026-06-29T01:45:00+02:00";
+const SITE_VERSION = "v257";
+const SITE_UPDATED_AT = "2026-06-29T01:50:00+02:00";
 const VERSION_STORAGE_KEY = "gamelist:site-version";
 const PULL_NAVIGATION_KEY = "gamelist:pull-navigation";
 const VIEW_KEY = "shelf:view-mode:v2";
@@ -1501,6 +1501,7 @@ function gamelistProjectionCard(game, options = {}) {
   card.dataset.gamelistId = game.id; card.setAttribute("role", "button"); card.tabIndex = 0;
   card.dataset.gamelistTitle = game.title || "";
   card.className += ` has-art${isReleaseDialog ? "" : " playing-card"}${ownerClasses}${game.digital ? " digital-card" : ""}${game.stream ? " stream-card" : ""}${game.platinum ? " completed-trophy-card" : ""}`;
+  card.classList.toggle("shelf-release-card", isReleaseDialog);
   card.style.setProperty("--card-art", `url('${escapeCss(cover)}')`);
   const trailer = card.querySelector(".card-trailer"); const trailerUrl = !isReleaseDialog && window.matchMedia("(min-width: 900px)").matches ? activityTrailerUrl(game.trailerUrl, window.location.origin) : ""; if (trailerUrl) { card.classList.add("has-trailer"); trailer.dataset.src = trailerUrl; const toggle = card.querySelector(".trailer-toggle"); toggle.hidden = false; toggle.innerHTML = pauseTrailerIcon(); } else { trailer.remove(); card.querySelector(".trailer-toggle")?.remove(); }
   const image = card.querySelector(".cover-button img"); image.src = cover; image.alt = `${game.title} cover`; image.loading = "eager"; image.fetchPriority = "high"; image.decoding = "async"; bindCoverFrame(image);
@@ -1514,10 +1515,22 @@ function gamelistProjectionCard(game, options = {}) {
   const dates = card.querySelector(".play-dates"); dates.innerHTML = game.startedAt && !isReleaseDialog ? `<span class="history-pill history-date-pill"><small>Started</small><strong>${escapeHtml(formatShortDate(game.startedAt))}</strong></span>` : ""; dates.hidden = !dates.innerHTML;
   card.querySelector(".chips").innerHTML = (game.genres || []).slice(0, 4).map((tag) => `<span class="chip genre">${escapeHtml(tag)}</span>`).join("");
   const trophies = card.querySelector(".card-trophies"); trophies.innerHTML = isReleaseDialog ? "" : shelfCardTrophies(game, { compactProgress: true }); trophies.hidden = !trophies.innerHTML;
-  card.querySelector(".card-actions").remove(); card.querySelector(".prices").remove();
+  card.querySelector(".card-actions").remove();
+  const prices = card.querySelector(".prices");
+  if (isReleaseDialog) prices.innerHTML = releaseDialogPriceLinks(game);
+  else prices.remove();
   if (isReleaseDialog) card.querySelector(".edit-action")?.remove();
   const note = card.querySelector(".notes"); note.textContent = shortDescription(game.description || ""); note.hidden = !note.textContent;
   return card.outerHTML;
+}
+function releaseDialogPriceLinks(game) {
+  const providers = [
+    { label: "Amazon", url: `https://www.amazon.com/s?k=${encodeURIComponent(game.title || "")}`, icon: "assets/sites/amazon.png" },
+    { label: "eBay", url: `https://www.ebay.com/sch/i.html?_nkw=${encodeURIComponent(game.title || "")}`, icon: "assets/sites/ebay.svg" },
+    { label: "Xtralife", url: `https://www.xtralife.com/buscar/${encodeURIComponent(game.title || "")}`, icon: "assets/sites/xtralife.png" },
+    { label: "GAME.es", url: `https://www.game.es/buscar/${encodeURIComponent(game.title || "")}`, icon: "assets/sites/game-es.png" },
+  ];
+  return providers.map((item) => `<a class="price-link" href="${escapeHtml(item.url)}" target="_blank" rel="noreferrer"><img class="store-icon" src="${escapeHtml(item.icon)}" alt=""><strong>${escapeHtml(item.label)}</strong></a>`).join("");
 }
 function projectionMeta(game, options = {}) { const release = activityReleaseStatus(game, { includePast: Boolean(options.includePast) }); return `${platformBadge(game.platform)}${game.digital ? `<span class="digital-pill">Digital</span>` : ""}${game.emulator ? `<span class="emulator-pill">Emulator</span>` : ""}${game.lengthHours ? timeBadgeMarkup(game.lengthHours, game.hltbUrl || game.howLongToBeatUrl || `https://howlongtobeat.com/?q=${encodeURIComponent(game.title)}`, escapeHtml) : ""}${game.stream ? `<span class="stream-pill">Stream</span>` : ""}${release ? releaseStatusPill(release) : ""}${game.coop ? `<span class="coop-pill">Coop</span>` : ""}${game.replayCount ? `<span class="replay-pill">Replay ${escapeHtml(game.replayCount)}</span>` : ""}`; }
 function releaseStatusPill(value) {

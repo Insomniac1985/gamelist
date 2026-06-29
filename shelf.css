@@ -169,6 +169,31 @@ html.theme-font-pokemon .intro-mark {
   object-fit: contain;
 }
 
+.release-dialog-list .game-card.shelf-release-card {
+  grid-template-columns: 104px minmax(0, 1fr);
+  min-height: 240px;
+  padding: 12px;
+  contain: layout;
+}
+
+.release-dialog-list .game-card.shelf-release-card .cover-button {
+  width: 104px;
+  height: 142px;
+  aspect-ratio: 104 / 142;
+  border: 0;
+  background: transparent;
+}
+
+.release-dialog-list .game-card.shelf-release-card .cover-button img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.release-dialog-list .game-card.shelf-release-card .prices {
+  display: grid;
+}
+
 .shelf-dialog .lookup-result {
   grid-template-columns: auto minmax(0, 1fr) auto;
 }
