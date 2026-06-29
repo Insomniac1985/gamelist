@@ -6,8 +6,8 @@ splitShelfPlayingModules();
 
 const SESSION_KEY = "gamelist-editor";
 const KASH_TWITCH_URL = "https://www.twitch.tv/kashhoward";
-const SITE_VERSION = "v244";
-const SITE_UPDATED_AT = "2026-06-28T22:56:39+02:00";
+const SITE_VERSION = "v245";
+const SITE_UPDATED_AT = "2026-06-29T00:00:00+02:00";
 const VERSION_STORAGE_KEY = "gamelist:site-version";
 const PULL_NAVIGATION_KEY = "gamelist:pull-navigation";
 const VIEW_KEY = "shelf:view-mode:v2";
@@ -35,7 +35,7 @@ const PLATFORM_OPTIONS = [
 ];
 const COUNTRY_OPTIONS = [
   ["Australia", "Australia"], ["China", "China"], ["Europe", "EU"], ["France", "France"], ["Germany", "Germany"],
-  ["Japan", "Japan"], ["Spain", "Spain"], ["Taiwan", "Taiwan"], ["United Kingdom", "United Kingdom"],
+  ["Italy", "Italy"], ["Japan", "Japan"], ["Spain", "Spain"], ["Taiwan", "Taiwan"], ["United Kingdom", "United Kingdom"],
   ["United States of America", "United States"], ["World", "World"],
 ];
 
@@ -360,19 +360,33 @@ function initPagePullTransition({ targetLabel, targetUrl }) {
     return pull;
   };
   const switchPage = () => {
-    if (document.body.classList.contains("page-switching")) return;
-    document.body.classList.add("page-switching");
-    document.body.classList.remove("page-pulling");
-    document.body.style.setProperty("--pull-distance", `${window.innerHeight}px`);
-    document.body.style.setProperty("--pull-handle-y", `${window.innerHeight}px`);
-    document.body.style.setProperty("--pull-blur", "0px");
-    document.body.style.setProperty("--pull-preview-opacity", "1");
-    document.body.style.setProperty("--pull-preview-scale", "1");
-    try {
-      sessionStorage.setItem(PULL_NAVIGATION_KEY, JSON.stringify({ version: SITE_VERSION, at: Date.now() }));
-      localStorage.setItem(VERSION_STORAGE_KEY, SITE_VERSION);
-    } catch {}
-    window.setTimeout(() => { window.location.href = pullNavigationUrl(targetUrl); }, 430);
+    if (document.body.classList.contains("page-switching") || document.body.classList.contains("page-switching-pending")) return;
+    const frame = curtain.querySelector(".page-pull-frame");
+    let committed = false;
+    const commit = () => {
+      if (committed) return;
+      committed = true;
+      document.body.classList.remove("page-switching-pending");
+      document.body.classList.add("page-switching");
+      document.body.classList.remove("page-pulling");
+      document.body.style.setProperty("--pull-distance", `${window.innerHeight}px`);
+      document.body.style.setProperty("--pull-handle-y", `${window.innerHeight}px`);
+      document.body.style.setProperty("--pull-blur", "0px");
+      document.body.style.setProperty("--pull-preview-opacity", "1");
+      document.body.style.setProperty("--pull-preview-scale", "1");
+      try {
+        sessionStorage.setItem(PULL_NAVIGATION_KEY, JSON.stringify({ version: SITE_VERSION, at: Date.now() }));
+        localStorage.setItem(VERSION_STORAGE_KEY, SITE_VERSION);
+      } catch {}
+      window.setTimeout(() => { window.location.href = pullNavigationUrl(targetUrl); }, 430);
+    };
+    if (frame?.dataset.loaded === "true") commit();
+    else {
+      document.body.classList.add("page-switching-pending");
+      document.body.classList.add("page-pulling");
+      frame?.addEventListener("load", commit, { once: true });
+      window.setTimeout(commit, 1800);
+    }
   };
   button.addEventListener("click", () => { if (!moved) switchPage(); moved = false; });
   button.addEventListener("pointerenter", () => document.body.classList.add("page-pull-hover"));
@@ -410,7 +424,7 @@ function initPagePullTransition({ targetLabel, targetUrl }) {
 }
 
 function pagePullPreviewMarkup(targetUrl) {
-  return `<div class="page-pull-preview"><iframe class="page-pull-frame" src="${escapeHtml(targetUrl)}" tabindex="-1" aria-hidden="true"></iframe></div>`;
+  return `<div class="page-pull-preview"><iframe class="page-pull-frame" src="${escapeHtml(targetUrl)}" tabindex="-1" aria-hidden="true" onload="this.dataset.loaded='true'"></iframe></div>`;
 }
 
 function pullNavigationUrl(targetUrl) {
@@ -1015,7 +1029,7 @@ function renderPhysicalSelection(physical, fallbackTitle = "") {
 function priceChartingPageUrl(value) { const match = String(value || "").trim().match(/^https:\/\/www\.pricecharting\.com\/(?:[a-z]{2}\/)?game\/[^?#]+/i); return match?.[0] || ""; }
 function priceChartingProductId(value) { return priceChartingPageUrl(value) ? "" : String(value || "").trim().replace(/[^a-zA-Z0-9_-]/g, ""); }
 function blankImage() { return "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw=="; }
-function applyPriceChartingRegion(consoleName) { const value = normalize(consoleName); if (value.startsWith("jp ")) el.fields.country.value = "Japan"; else if (value.startsWith("pal ") && !["United Kingdom", "Spain", "France", "Germany", "Europe", "Australia"].includes(el.fields.country.value)) el.fields.country.value = "Europe"; else if (!value.startsWith("pal ") && !value.startsWith("jp ") && ["Japan", "Europe"].includes(el.fields.country.value)) el.fields.country.value = "United States of America"; }
+function applyPriceChartingRegion(consoleName) { const value = normalize(consoleName); if (value.startsWith("jp ")) el.fields.country.value = "Japan"; else if (value.startsWith("pal ") && !["United Kingdom", "Spain", "Italy", "France", "Germany", "Europe", "Australia"].includes(el.fields.country.value)) el.fields.country.value = "Europe"; else if (!value.startsWith("pal ") && !value.startsWith("jp ") && ["Japan", "Europe"].includes(el.fields.country.value)) el.fields.country.value = "United States of America"; }
 
 async function saveEditor(event) {
   event.preventDefault();
@@ -1273,7 +1287,7 @@ function normalizePriceSettings(settings = {}) {
   const stores = settings.storeSettingsVersion === 2 || selectedStores.includes("eBay") ? selectedStores : [...selectedStores, "eBay"];
   return {
     currency: settings.currency === "USD" ? "USD" : "EUR",
-    region: ["ES", "US", "UK"].includes(settings.region) ? settings.region : "ES",
+    region: ["ES", "IT", "US", "UK"].includes(settings.region) ? settings.region : "ES",
     stores: stores.slice(0, MAX_PRICE_STORES),
   };
 }
@@ -1360,6 +1374,7 @@ function bindTextureParallax() { if (window.matchMedia("(prefers-reduced-motion:
 function renderGamelistModules() {
   const playing = state.gamelistGames.filter((game) => game.playing && !game.deletedAt).sort(comparePlayingGames);
   const finished = state.gamelistGames.filter((game) => game.completedAt && !game.deletedAt).sort((a, b) => String(b.completedAt).localeCompare(String(a.completedAt)) || String(a.title || "").localeCompare(String(b.title || ""), undefined, { sensitivity: "base" })).slice(0, 10);
+  el.playingCarousel.closest(".playing-section")?.classList.toggle("playing-single", playing.length === 1);
   el.playingCarousel.innerHTML = playing.map(gamelistProjectionCard).join("");
   el.finishedCarousel.innerHTML = finished.map(finishedProjectionCard).join("");
   el.playingCarousel.querySelectorAll(".game-card.has-art").forEach(bindActivityCardParallax);
@@ -1866,15 +1881,17 @@ function hltbUrlFor(game) {
 function nintendoSearchUrl(query, region = "ES") {
   if (region === "US") return `https://www.nintendo.com/us/search/?q=${query}`;
   if (region === "UK") return `https://www.nintendo.com/en-gb/Search/Search-299117.html?q=${query}`;
+  if (region === "IT") return `https://www.nintendo.com/it-it/Cerca/Cerca-299117.html?q=${query}`;
   return `https://www.nintendo.com/es-es/Buscar/Buscar-299117.html?q=${query}&f=147394-86`;
 }
 function playStationSearchUrl(query, region = "ES") {
   if (region === "US") return `https://www.playstation.com/en-us/search/?q=${query}`;
   if (region === "UK") return `https://www.playstation.com/en-gb/search/?q=${query}`;
+  if (region === "IT") return `https://www.playstation.com/it-it/search/?q=${query}`;
   return `https://www.playstation.com/es-es/search/?q=${query}`;
 }
 function xboxSearchUrl(query, region = "ES") {
-  const locale = region === "US" ? "en-US" : region === "UK" ? "en-GB" : "es-ES";
+  const locale = region === "US" ? "en-US" : region === "UK" ? "en-GB" : region === "IT" ? "it-IT" : "es-ES";
   return `https://www.xbox.com/${locale}/search?q=${query}`;
 }
 function cleanUrl(value) {
@@ -2142,7 +2159,7 @@ function syncRowCoverFrame(image) {
 }
 function platformFallback(platform) { return platformLogo(platform); }
 function shortPlatform(value) { return canonicalShelfPlatform(value); }
-function flagAsset(country) { return `assets/flags/${({ "United Kingdom": "gb", Spain: "es", "United States of America": "us", Japan: "jp", Taiwan: "tw", France: "fr", Germany: "de", Australia: "au", China: "cn", Europe: "eu", World: "world" })[country] || "world"}.svg`; }
+function flagAsset(country) { return `assets/flags/${({ "United Kingdom": "gb", Spain: "es", Italy: "it", "United States of America": "us", Japan: "jp", Taiwan: "tw", France: "fr", Germany: "de", Australia: "au", China: "cn", Europe: "eu", World: "world" })[country] || "world"}.svg`; }
 function flagIcon(country, withClass = false) { return `<img${withClass ? ` class="detail-flag"` : ""} src="${flagAsset(country)}" alt="" width="47" height="31" decoding="async">`; }
 function platformBadge(platform) { const label = shortPlatform(platform); return `<span class="platform-badge ${platformClass(platform)}" title="${escapeHtml(label)}"><span class="platform-icon"><img src="${platformLogo(platform)}" alt="" width="18" height="18" decoding="async"></span><span class="platform-label">${escapeHtml(label)}</span></span>`; }
 function platformLogo(platform) { const value = normalize(shortPlatform(platform)); if (value === "wii") return "assets/platforms/wii.png"; if (value === "wii u" || value === "wiiu") return "assets/platforms/wiiu.png"; if (value === "n64") return "assets/platforms/n64.png"; if (value === "gc" || value.includes("gamecube")) return "assets/platforms/gc.png"; if (value === "nes") return "assets/platforms/nes.png"; if (value === "snes") return "assets/platforms/snes.png"; if (value === "ds") return "assets/platforms/nds.png"; if (value === "3ds") return "assets/platforms/3ds.png"; if (value === "gba") return "assets/platforms/gba.png"; if (value === "gbc") return "assets/platforms/gbc.png"; if (value === "gb") return "assets/platforms/gb.png"; if (value === "dc" || value.includes("dreamcast")) return "assets/platforms/dreamcast.png"; if (isSegaPlatform(value)) return "assets/platforms/sega.png"; if (value.includes("switch")) return "assets/platforms/switch.png"; if (value === "ps1" || value === "ps2") return "assets/platforms/playstation_retro.png"; if (value === "ps5") return "assets/platforms/playstation_modern.png"; if (value.includes("xbox") || value === "x360" || value === "xone") return "assets/platforms/xbox.png"; if (value.includes("steam") || value === "pc") return "assets/platforms/steam.png"; if (value.includes("ps") || value.includes("playstation") || value.includes("psp") || value.includes("vita")) return "assets/platforms/playstation.png"; return "assets/Icon_shelf.png"; }
@@ -2171,7 +2188,7 @@ function canonicalShelfPlatform(value) {
   return aliases[key] || text;
 }
 function regionName(country) { return country === "United States of America" ? "United States" : country; }
-function regionFor(country) { if (country === "Japan") return "Japan"; if (country === "Taiwan") return "Taiwan"; if (country === "United States of America") return "USA"; if (["United Kingdom", "Spain", "France", "Germany", "Europe"].includes(country)) return country === "Spain" ? "Spain" : "Europe"; return country || "Other"; }
+function regionFor(country) { if (country === "Japan") return "Japan"; if (country === "Taiwan") return "Taiwan"; if (country === "United States of America") return "USA"; if (["United Kingdom", "Spain", "Italy", "France", "Germany", "Europe"].includes(country)) return country === "Spain" ? "Spain" : "Europe"; return country || "Other"; }
 function countValues(values) { const map = new Map(); values.filter(Boolean).forEach((value) => map.set(value, (map.get(value) || 0) + 1)); return [...map.entries()].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0])); }
 function conditionMatches(game, condition) { const label = conditionLabel(game).toLowerCase(); if (condition === "all") return true; if (condition === "complete") return label === "complete"; if (condition === "complete-plus") return label === "complete +"; if (condition === "loose") return label === "loose"; if (condition === "sealed") return label === "sealed"; return true; }
 function sorter(type) { const direction = state.filters.direction === "desc" ? -1 : 1; if (type === "custom") return (a, b) => direction * ((a.order ?? Number.MAX_SAFE_INTEGER) - (b.order ?? Number.MAX_SAFE_INTEGER) || a.title.localeCompare(b.title)); if (type === "title" || type === "name") return (a, b) => direction * a.title.localeCompare(b.title); if (type === "added") return (a, b) => direction * (new Date(a.createdAt || 0) - new Date(b.createdAt || 0)); if (type === "value") return (a, b) => direction * (collectionValueFor(a) - collectionValueFor(b)); if (type === "region") return (a, b) => direction * (a.country.localeCompare(b.country) || a.title.localeCompare(b.title)); return (a, b) => direction * (a.platform.localeCompare(b.platform) || a.title.localeCompare(b.title)); }

@@ -80,7 +80,7 @@ function normalizePlatform(platform) {
 
 function cleanRegion(value) {
   const region = String(value || "").toUpperCase();
-  return ["ES", "US", "UK"].includes(region) ? region : "ES";
+  return ["ES", "IT", "US", "UK"].includes(region) ? region : "ES";
 }
 
 function cleanCurrency(value) {
@@ -103,41 +103,47 @@ function unique(values) {
 function amazonStoreName(region) {
   if (region === "US") return "Amazon.com";
   if (region === "UK") return "Amazon.co.uk";
+  if (region === "IT") return "Amazon.it";
   return "Amazon.es";
 }
 
 function amazonSearchUrl(query, region) {
   if (region === "US") return `https://www.amazon.com/s?k=${encodeURIComponent(query)}`;
   if (region === "UK") return `https://www.amazon.co.uk/s?k=${encodeURIComponent(query)}`;
+  if (region === "IT") return `https://www.amazon.it/s?k=${encodeURIComponent(query)}`;
   return `https://www.amazon.es/s?k=${encodeURIComponent(query)}`;
 }
 
 function ebaySearchUrl(query, region) {
-  const host = region === "US" ? "www.ebay.com" : region === "UK" ? "www.ebay.co.uk" : "www.ebay.es";
+  const host = region === "US" ? "www.ebay.com" : region === "UK" ? "www.ebay.co.uk" : region === "IT" ? "www.ebay.it" : "www.ebay.es";
   return `https://${host}/sch/i.html?_nkw=${encodeURIComponent(query)}&LH_BIN=1`;
 }
 
 function nintendoStoreName(region) {
   if (region === "US") return "Nintendo US";
   if (region === "UK") return "Nintendo UK";
+  if (region === "IT") return "Nintendo Italia";
   return "Nintendo España";
 }
 
 function nintendoSearchUrl(query, region) {
   if (region === "US") return `https://www.nintendo.com/us/search/?q=${encodeURIComponent(query)}`;
   if (region === "UK") return `https://www.nintendo.com/en-gb/Search/Search-299117.html?q=${encodeURIComponent(query)}`;
+  if (region === "IT") return `https://www.nintendo.com/it-it/Cerca/Cerca-299117.html?q=${encodeURIComponent(query)}`;
   return `https://www.nintendo.com/es-es/Buscar/Buscar-299117.html?q=${encodeURIComponent(query)}&f=147394-86`;
 }
 
 function playStationStoreName(region) {
   if (region === "US") return "PlayStation US";
   if (region === "UK") return "PlayStation UK";
+  if (region === "IT") return "PlayStation Italia";
   return "PlayStation España";
 }
 
 function playStationSearchUrl(query, region) {
   if (region === "US") return `https://www.playstation.com/en-us/search/?q=${encodeURIComponent(query)}`;
   if (region === "UK") return `https://www.playstation.com/en-gb/search/?q=${encodeURIComponent(query)}`;
+  if (region === "IT") return `https://www.playstation.com/it-it/search/?q=${encodeURIComponent(query)}`;
   return `https://www.playstation.com/es-es/search/?q=${encodeURIComponent(query)}`;
 }
 
@@ -148,6 +154,7 @@ function xboxSearchUrl(query, region) {
 function xboxLocale(region) {
   if (region === "US") return "en-US";
   if (region === "UK") return "en-GB";
+  if (region === "IT") return "it-IT";
   return "es-ES";
 }
 

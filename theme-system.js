@@ -5,6 +5,7 @@ export const FONT_OPTIONS = [
   { value: "pokemon", label: "Pokemon GBA", family: "Pokemon GBA" },
   { value: "pixel", label: "04B 30", family: "04B 30" },
   { value: "michroma", label: "Michroma", family: "Michroma" },
+  { value: "minecraft", label: "Minecraft", family: "Minecraft" },
 ];
 
 const DEFAULT_THEME = {
@@ -15,9 +16,12 @@ const DEFAULT_THEME = {
   accentColor: "#79f2ce",
   accentColorReset: true,
   accent3: "#ee32b3",
+  extraColor: "#7c5cff",
   mode: "dark",
   backgroundImage: "",
   disableGlow: false,
+  glowPrimary: "main",
+  glowSecondary: "accent",
   bigLogo: false,
   accentFont: "",
   gamelistIcon: "",
@@ -52,11 +56,14 @@ export function normalizeThemeSettings(settings = {}) {
     gradientColor: hexColor(raw.gradientColor, DEFAULT_THEME.gradientColor),
     accentColor: hexColor(raw.accentColor, DEFAULT_THEME.accentColor),
     accent3: hexColor(raw.accent3, DEFAULT_THEME.accent3),
+    extraColor: hexColor(raw.extraColor, DEFAULT_THEME.extraColor),
     mainColorReset: raw.mainColorReset !== false,
     accentColorReset: raw.accentColorReset !== false,
     gradient: Boolean(raw.gradient),
     mode: raw.mode === "light" ? "light" : "dark",
     disableGlow: Boolean(raw.disableGlow),
+    glowPrimary: glowSource(raw.glowPrimary, DEFAULT_THEME.glowPrimary),
+    glowSecondary: glowSource(raw.glowSecondary, DEFAULT_THEME.glowSecondary),
     bigLogo: Boolean(raw.bigLogo),
     accentFont: FONT_OPTIONS.some((font) => font.value === raw.accentFont) ? raw.accentFont : "",
     backgroundImage: safeImage(raw.backgroundImage),
@@ -109,10 +116,11 @@ export function applySiteTheme(settings = {}, options = {}) {
   root.style.setProperty("--accent", theme.mainColor);
   root.style.setProperty("--accent-2", theme.accentColor);
   root.style.setProperty("--accent-3", theme.accent3);
+  root.style.setProperty("--extra-color", theme.extraColor);
   root.style.setProperty("--title-gradient-start", theme.gradient ? theme.gradientColor : theme.mainColor);
   root.style.setProperty("--title-gradient-end", theme.mainColor);
-  root.style.setProperty("--glow-primary", colorMix(theme.mainColor, 0.22));
-  root.style.setProperty("--glow-secondary", colorMix(theme.accentColor, 0.14));
+  root.style.setProperty("--glow-primary", colorMix(themeColorBySource(theme, theme.glowPrimary), 0.22));
+  root.style.setProperty("--glow-secondary", colorMix(themeColorBySource(theme, theme.glowSecondary), 0.14));
   root.style.setProperty("--default-backdrop-image", theme.mode === "light" ? "url(\"assets/backdrop_light.png\")" : "url(\"assets/backdrop.png\")");
   root.style.setProperty("--custom-backdrop-image", theme.backgroundImage ? `url("${cssEscape(theme.backgroundImage)}")` : "var(--default-backdrop-image)");
   root.style.setProperty("--display-title-font", fontFamily(theme.accentFont));
@@ -198,22 +206,25 @@ function renderThemeDialog(dialog, draft, settings, page, onSave) {
       </div>
       <section class="theme-editor-grid">
         ${colorField("mainColor", "Main color", draft.mainColor, draft.mainColorReset, true)}
-        ${draft.gradient ? colorField("gradientColor", "Gradient color", draft.gradientColor, false, false) : ""}
         ${colorField("accentColor", "Accent color", draft.accentColor, draft.accentColorReset, true)}
-        <label class="settings-detail-compact"><span>Light or dark</span><select name="mode"><option value="dark" ${draft.mode === "dark" ? "selected" : ""}>Dark</option><option value="light" ${draft.mode === "light" ? "selected" : ""}>Light</option></select></label>
         <label class="check-filter toggle-check theme-check"><input name="gradient" type="checkbox" ${draft.gradient ? "checked" : ""}><span>Gradient titles</span></label>
-        <label class="check-filter toggle-check theme-check"><input name="bigLogo" type="checkbox" ${draft.bigLogo ? "checked" : ""}><span>Big logo</span></label>
-        <label class="check-filter toggle-check theme-check"><input name="disableGlow" type="checkbox" ${draft.disableGlow ? "checked" : ""}><span>Disable background glow</span></label>
-        <label class="settings-detail-compact theme-font-field"><span>Accent font</span><select name="accentFont">${FONT_OPTIONS.map((font) => `<option value="${htmlEscape(font.value)}" style="font-family:${htmlEscape(font.family)}" ${draft.accentFont === font.value ? "selected" : ""}>${htmlEscape(font.label)}</option>`).join("")}</select></label>
+        ${colorField("gradientColor", "Gradient color", draft.gradientColor, false, false)}
+        <label class="settings-detail-compact"><span>Light or dark</span><select name="mode"><option value="dark" ${draft.mode === "dark" ? "selected" : ""}>Dark</option><option value="light" ${draft.mode === "light" ? "selected" : ""}>Light</option></select></label>
+        <label class="check-filter toggle-check theme-check"><input name="disableGlow" type="checkbox" ${draft.disableGlow ? "" : "checked"}><span>Enable background glow</span></label>
+        <label class="settings-detail-compact"><span>Glow 1</span>${glowSelect("glowPrimary", draft.glowPrimary)}</label>
+        <label class="settings-detail-compact"><span>Glow 2</span>${glowSelect("glowSecondary", draft.glowSecondary)}</label>
+        ${colorField("extraColor", "Extra color", draft.extraColor, false, false)}
+        <label class="settings-detail-compact theme-font-field"><span>Accent font</span><select name="accentFont" style="font-family:${htmlEscape(FONT_OPTIONS.find((font) => font.value === draft.accentFont)?.family || "Cascadia Code")}">${FONT_OPTIONS.map((font) => `<option value="${htmlEscape(font.value)}" style="font-family:${htmlEscape(font.family)}" ${draft.accentFont === font.value ? "selected" : ""}>${htmlEscape(font.label)}</option>`).join("")}</select></label>
         ${imageField("backgroundImage", "Background", draft.backgroundImage)}
         ${imageField("gamelistIcon", "Gamelist icon", draft.gamelistIcon)}
         ${imageField("shelfIcon", "Shelf icon", draft.shelfIcon)}
+        <label class="check-filter toggle-check theme-check"><input name="bigLogo" type="checkbox" ${draft.bigLogo ? "checked" : ""}><span>Big logo</span></label>
         ${imageField("appIcon", "Game app icon", draft.appIcon)}
       </section>
       <section class="settings-section">
         <h3>Custom Owner Colors</h3>
         <div class="theme-owner-table">
-          <div class="theme-owner-head"><span>Owner</span><span>Main color</span><span></span></div>
+          <div class="theme-owner-head"><span>Owner</span><span>Main color</span><span>Pick</span><span></span></div>
           <div data-owner-rows>${ownerRows.map(ownerRow).join("")}</div>
           <button class="ghost-button" type="button" data-owner-add>Add owner color</button>
         </div>
@@ -223,9 +234,8 @@ function renderThemeDialog(dialog, draft, settings, page, onSave) {
   `;
   const form = dialog.querySelector("form");
   dialog.querySelector("[data-theme-close]")?.addEventListener("click", () => dialog.close());
-  form.querySelector("[name='gradient']")?.addEventListener("change", () => {
-    draft.gradient = form.querySelector("[name='gradient']").checked;
-    renderThemeDialog(dialog, readThemeForm(form, draft), settings, page, onSave);
+  form.querySelector("[name='accentFont']")?.addEventListener("change", (event) => {
+    event.currentTarget.style.fontFamily = FONT_OPTIONS.find((font) => font.value === event.currentTarget.value)?.family || "Cascadia Code";
   });
   form.querySelector("[data-owner-add]")?.addEventListener("click", () => {
     const rows = form.querySelector("[data-owner-rows]");
@@ -262,6 +272,16 @@ function colorField(name, label, value, reset, hasReset) {
   `;
 }
 
+function glowSelect(name, value) {
+  const options = [
+    ["main", "Main"],
+    ["accent", "Accent"],
+    ["gradient", "Gradient"],
+    ["extra", "Extra Color"],
+  ];
+  return `<select name="${name}">${options.map(([source, label]) => `<option value="${source}" ${value === source ? "selected" : ""}>${label}</option>`).join("")}</select>`;
+}
+
 function imageField(name, label, value) {
   return `
     <label class="settings-detail-compact theme-image-field">
@@ -277,6 +297,7 @@ function ownerRow(owner) {
     <div class="theme-owner-row">
       <input name="ownerName" value="${htmlEscape(owner.name || "")}" placeholder="Owner">
       <input name="ownerColor" value="${htmlEscape(owner.color || "#79f2ce")}" pattern="#?[0-9a-fA-F]{6}">
+      <input class="theme-color-picker" type="color" value="${htmlEscape(owner.color || "#79f2ce")}" onchange="this.previousElementSibling.value=this.value">
       <button class="icon-button" type="button" data-owner-remove title="Remove" aria-label="Remove">×</button>
     </div>
   `;
@@ -295,8 +316,11 @@ function readThemeForm(form, draft) {
       gradientColor: normalizeHex(value("gradientColor")) || draft.gradientColor,
       accentColor: normalizeHex(value("accentColor")) || draft.accentColor,
       accentColorReset: Boolean(form.elements.accentColorReset?.checked),
+      extraColor: normalizeHex(value("extraColor")) || draft.extraColor,
       mode: value("mode") === "light" ? "light" : "dark",
-      disableGlow: Boolean(form.elements.disableGlow?.checked),
+      disableGlow: !Boolean(form.elements.disableGlow?.checked),
+      glowPrimary: value("glowPrimary") || draft.glowPrimary,
+      glowSecondary: value("glowSecondary") || draft.glowSecondary,
       bigLogo: Boolean(form.elements.bigLogo?.checked),
       accentFont: value("accentFont"),
       backgroundImage: value("backgroundImage"),
@@ -343,6 +367,10 @@ function applyOwnerStyle(ownerColors) {
     const border = colorMix(color, 0.36);
     return `
       .owner-color-${slug}, .owner-pill.owner-color-${slug} { color: ${color} !important; }
+      .owner-pill.owner-color-${slug} {
+        background: ${colorMix(color, 0.16)} !important;
+        border-color: ${colorMix(color, 0.48)} !important;
+      }
       .owner-color-card-${slug}, .owner-color-card-${slug}:hover {
         background: linear-gradient(135deg, ${fill}, ${faint} 42%, rgba(20, 22, 28, 0.58)), var(--panel) !important;
         border-color: ${border} !important;
@@ -376,6 +404,17 @@ function normalizeHex(value) {
   const raw = String(value || "").trim();
   const match = raw.match(/^#?([0-9a-fA-F]{6})$/);
   return match ? `#${match[1].toLowerCase()}` : "";
+}
+
+function glowSource(value, fallback) {
+  return ["main", "accent", "gradient", "extra"].includes(value) ? value : fallback;
+}
+
+function themeColorBySource(theme, source) {
+  if (source === "accent") return theme.accentColor;
+  if (source === "gradient") return theme.gradientColor;
+  if (source === "extra") return theme.extraColor;
+  return theme.mainColor;
 }
 
 function hexColor(value, fallback) {

@@ -1,4 +1,4 @@
-const CACHE_VERSION = "gamelist-cache-v244";
+const CACHE_VERSION = "gamelist-cache-v245";
 const STATIC_CACHE = `${CACHE_VERSION}:static`;
 const MEDIA_CACHE = `${CACHE_VERSION}:media`;
 const STATIC_ASSETS = [
@@ -24,6 +24,8 @@ const STATIC_ASSETS = [
   "/assets/fonts/pokemon-emerald.ttf",
   "/assets/fonts/04B_30.TTF",
   "/assets/fonts/Michroma.ttf",
+  "/assets/fonts/Minecraft.ttf",
+  "/assets/fonts/AntiqueOliveNord.woff2",
   "/assets/platforms/playstation.png",
   "/assets/platforms/playstation_retro.png",
   "/assets/platforms/playstation_modern.png",
@@ -45,6 +47,7 @@ const STATIC_ASSETS = [
   "/assets/platforms/dreamcast.png",
   "/assets/platforms/disk.png",
   "/assets/flags/eu.svg",
+  "/assets/flags/it.svg",
   "/assets/sites/howlongtobeat.png",
   "/assets/sites/neoseeker.png",
   "/assets/sites/nintendo.png",
@@ -58,9 +61,7 @@ const STATIC_ASSETS = [
   "/assets/stores/retroisland.png",
   "/assets/stores/xtralife.ico",
 ];
-const OPTIONAL_STATIC_ASSETS = [
-  "/assets/fonts/AntiqueOliveNord.woff2",
-];
+const OPTIONAL_STATIC_ASSETS = [];
 
 self.addEventListener("install", (event) => {
   event.waitUntil(

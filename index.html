@@ -25,9 +25,18 @@
         const custom = (settings, fallbackKey) => {
           const theme = settings.customTheme || {};
           const owner = String(settings.defaultOwner || "Owner").trim() || "Owner";
-          const main = theme.mainColorReset === false && /^#?[0-9a-fA-F]{6}$/.test(theme.mainColor || "") ? `#${String(theme.mainColor).replace("#", "")}` : themes[fallbackKey].color;
-          const accent = theme.accentColorReset === false && /^#?[0-9a-fA-F]{6}$/.test(theme.accentColor || "") ? `#${String(theme.accentColor).replace("#", "")}` : "#79f2ce";
-          return { title: `${owner}'s Gamelist`, shortName: "Gamelist", icon: theme.gamelistIcon || themes[fallbackKey].icon, appIcon: theme.appIcon || themes[fallbackKey].appIcon, color: main, accent, mode: theme.mode === "light" ? "light" : "dark" };
+          const hex = (value, fallback) => /^#?[0-9a-fA-F]{6}$/.test(value || "") ? `#${String(value).replace("#", "")}` : fallback;
+          const main = theme.mainColorReset === false ? hex(theme.mainColor, themes[fallbackKey].color) : themes[fallbackKey].color;
+          const accent = theme.accentColorReset === false ? hex(theme.accentColor, "#79f2ce") : "#79f2ce";
+          const gradient = hex(theme.gradientColor, main);
+          const extra = hex(theme.extraColor, "#7c5cff");
+          const fonts = { antique: "Antique Olive Nord", georgia: "Georgia Bold", pokemon: "Pokemon GBA", pixel: "04B 30", michroma: "Michroma", minecraft: "Minecraft" };
+          const source = (value) => ({ main, accent, gradient, extra })[value] || main;
+          const mix = (color, alpha) => {
+            const int = Number.parseInt(color.slice(1), 16);
+            return `rgba(${(int >> 16) & 255}, ${(int >> 8) & 255}, ${int & 255}, ${alpha})`;
+          };
+          return { title: `${owner}'s Gamelist`, shortName: "Gamelist", icon: theme.gamelistIcon || themes[fallbackKey].icon, appIcon: theme.appIcon || themes[fallbackKey].appIcon, color: main, accent, gradient, extra, glow1: mix(source(theme.glowPrimary), .22), glow2: mix(source(theme.glowSecondary || "accent"), .14), background: theme.backgroundImage || "", font: fonts[theme.accentFont] || "Cascadia Code", mode: theme.mode === "light" ? "light" : "dark", disableGlow: Boolean(theme.disableGlow), gradientOn: Boolean(theme.gradient), bigLogo: Boolean(theme.bigLogo) };
         };
         const apply = (key, settings = {}) => {
           const themeKey = themes[key] ? key : "shabii";
@@ -35,10 +44,23 @@
           root.dataset.initialTheme = themeKey;
           root.classList.toggle("theme-kash", themeKey === "kash");
           root.classList.toggle("theme-light", theme.mode === "light");
+          root.classList.toggle("theme-no-glow", theme.disableGlow);
+          root.classList.toggle("theme-gradient", theme.gradientOn);
+          root.classList.toggle("theme-big-logo", theme.bigLogo);
           root.style.setProperty("--accent", theme.color);
           root.style.setProperty("--accent-2", theme.accent);
+          root.style.setProperty("--title-gradient-start", theme.gradientOn ? theme.gradient : theme.color);
+          root.style.setProperty("--title-gradient-end", theme.color);
+          root.style.setProperty("--extra-color", theme.extra);
+          root.style.setProperty("--glow-primary", theme.glow1);
+          root.style.setProperty("--glow-secondary", theme.glow2);
+          root.style.setProperty("--custom-backdrop-image", theme.background ? `url("${theme.background.replace(/"/g, "%22")}")` : "var(--default-backdrop-image)");
+          root.style.setProperty("--display-title-font", `"${theme.font}", "Cascadia Code", ui-monospace, monospace`);
           document.body?.classList.toggle("theme-kash", themeKey === "kash");
           document.body?.classList.toggle("theme-light", theme.mode === "light");
+          document.body?.classList.toggle("theme-no-glow", theme.disableGlow);
+          document.body?.classList.toggle("theme-gradient", theme.gradientOn);
+          document.body?.classList.toggle("theme-big-logo", theme.bigLogo);
           document.title = theme.title;
           document.querySelector("meta[name='theme-color']")?.setAttribute("content", theme.color);
           document.querySelector("meta[name='apple-mobile-web-app-title']")?.setAttribute("content", theme.shortName);
@@ -46,10 +68,10 @@
           document.querySelector("link[rel='apple-touch-icon']")?.setAttribute("href", theme.appIcon);
           return themeKey;
         };
-        const saveTheme = (key) => {
+        const saveTheme = (key, nextSettings = null) => {
           try {
             const settings = JSON.parse(localStorage.getItem(settingsKey) || "{}");
-            localStorage.setItem(settingsKey, JSON.stringify({ ...settings, theme: key }));
+            localStorage.setItem(settingsKey, JSON.stringify({ ...settings, ...(nextSettings || {}), theme: key }));
           } catch {}
         };
         let savedSettings = {};
@@ -65,7 +87,7 @@
             .then((response) => response.ok ? response.json() : {})
             .then((data) => {
               const key = themes[data?.settings?.theme] ? data.settings.theme : "shabii";
-              saveTheme(key);
+              saveTheme(key, data?.settings || {});
               return apply(key, data?.settings || {});
             })
             .catch(() => apply("shabii", {}));
@@ -678,6 +700,7 @@
             <span>Region</span>
             <select id="settingsRegion">
               <option value="ES">Spain</option>
+              <option value="IT">Italy</option>
               <option value="US">US</option>
               <option value="UK">UK</option>
             </select>

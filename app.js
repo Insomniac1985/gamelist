@@ -14,8 +14,8 @@ const SETTINGS_KEY = "gamelist:settings:v1";
 const KASH_TWITCH_URL = "https://www.twitch.tv/kashhoward";
 const DEFAULT_PAGE_ORDER = ["trophies", "calendar", "highlights", "search", "gamelist", "finished"];
 const LAYOUT_SECTION_KEYS = ["playing", ...DEFAULT_PAGE_ORDER, "latestFinished"];
-const SITE_VERSION = "v244";
-const SITE_UPDATED_AT = "2026-06-28T22:56:39+02:00";
+const SITE_VERSION = "v245";
+const SITE_UPDATED_AT = "2026-06-29T00:00:00+02:00";
 const VERSION_STORAGE_KEY = "gamelist:site-version";
 const PULL_NAVIGATION_KEY = "gamelist:pull-navigation";
 const STORE_OPTIONS = ["Amazon", "eBay", "GAME.es", "Xtralife", "Retro Island NY", "GameStop", "Walmart"];
@@ -654,19 +654,33 @@ function initPagePullTransition({ targetLabel, targetUrl }) {
     return pull;
   };
   const switchPage = () => {
-    if (document.body.classList.contains("page-switching")) return;
-    document.body.classList.add("page-switching");
-    document.body.classList.remove("page-pulling");
-    document.body.style.setProperty("--pull-distance", `${window.innerHeight}px`);
-    document.body.style.setProperty("--pull-handle-y", `${window.innerHeight}px`);
-    document.body.style.setProperty("--pull-blur", "0px");
-    document.body.style.setProperty("--pull-preview-opacity", "1");
-    document.body.style.setProperty("--pull-preview-scale", "1");
-    try {
-      sessionStorage.setItem(PULL_NAVIGATION_KEY, JSON.stringify({ version: SITE_VERSION, at: Date.now() }));
-      localStorage.setItem(VERSION_STORAGE_KEY, SITE_VERSION);
-    } catch {}
-    window.setTimeout(() => { window.location.href = pullNavigationUrl(targetUrl); }, 430);
+    if (document.body.classList.contains("page-switching") || document.body.classList.contains("page-switching-pending")) return;
+    const frame = curtain.querySelector(".page-pull-frame");
+    let committed = false;
+    const commit = () => {
+      if (committed) return;
+      committed = true;
+      document.body.classList.remove("page-switching-pending");
+      document.body.classList.add("page-switching");
+      document.body.classList.remove("page-pulling");
+      document.body.style.setProperty("--pull-distance", `${window.innerHeight}px`);
+      document.body.style.setProperty("--pull-handle-y", `${window.innerHeight}px`);
+      document.body.style.setProperty("--pull-blur", "0px");
+      document.body.style.setProperty("--pull-preview-opacity", "1");
+      document.body.style.setProperty("--pull-preview-scale", "1");
+      try {
+        sessionStorage.setItem(PULL_NAVIGATION_KEY, JSON.stringify({ version: SITE_VERSION, at: Date.now() }));
+        localStorage.setItem(VERSION_STORAGE_KEY, SITE_VERSION);
+      } catch {}
+      window.setTimeout(() => { window.location.href = pullNavigationUrl(targetUrl); }, 430);
+    };
+    if (frame?.dataset.loaded === "true") commit();
+    else {
+      document.body.classList.add("page-switching-pending");
+      document.body.classList.add("page-pulling");
+      frame?.addEventListener("load", commit, { once: true });
+      window.setTimeout(commit, 1800);
+    }
   };
   button.addEventListener("click", () => { if (!moved) switchPage(); moved = false; });
   button.addEventListener("pointerenter", () => document.body.classList.add("page-pull-hover"));
@@ -704,7 +718,7 @@ function initPagePullTransition({ targetLabel, targetUrl }) {
 }
 
 function pagePullPreviewMarkup(targetUrl) {
-  return `<div class="page-pull-preview"><iframe class="page-pull-frame" src="${escapeHtml(targetUrl)}" tabindex="-1" aria-hidden="true"></iframe></div>`;
+  return `<div class="page-pull-preview"><iframe class="page-pull-frame" src="${escapeHtml(targetUrl)}" tabindex="-1" aria-hidden="true" onload="this.dataset.loaded='true'"></iframe></div>`;
 }
 
 function pullNavigationUrl(targetUrl) {
@@ -856,7 +870,7 @@ function normalizeSettings(settings = {}) {
     microsoftUser: cleanMicrosoftUser(settings.microsoftUser),
     steamUser: cleanSteamUser(settings.steamUser),
     currency: settings.currency === "USD" ? "USD" : "EUR",
-    region: ["ES", "US", "UK"].includes(settings.region) ? settings.region : DEFAULT_SETTINGS.region,
+    region: ["ES", "IT", "US", "UK"].includes(settings.region) ? settings.region : DEFAULT_SETTINGS.region,
     stores: stores.slice(0, MAX_PRICE_STORES),
     storeSettingsVersion: 2,
     defaultOwner: cleanOwnerLabel(settings.defaultOwner) || DEFAULT_SETTINGS.defaultOwner,
@@ -1181,6 +1195,7 @@ function renderPlayingSection() {
   games.sort(comparePlayingGames);
   el.playingCount.textContent = `Playing ${games.length} ${games.length === 1 ? "game" : "games"}`;
   el.playingList.innerHTML = "";
+  el.playingSection.classList.toggle("playing-single", games.length === 1);
   games.forEach((game) => el.playingList.appendChild(cardFor(game, { staticCard: true, imagePriority: "eager" })));
   bindPlayingTrailerFocus();
   renderPlayingFinished();
