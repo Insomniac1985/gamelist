@@ -6,8 +6,8 @@ splitShelfPlayingModules();
 
 const SESSION_KEY = "gamelist-editor";
 const KASH_TWITCH_URL = "https://www.twitch.tv/kashhoward";
-const SITE_VERSION = "v263";
-const SITE_UPDATED_AT = "2026-06-29T03:05:00+02:00";
+const SITE_VERSION = "v264";
+const SITE_UPDATED_AT = "2026-06-29T22:33:00+02:00";
 const VERSION_STORAGE_KEY = "gamelist:site-version";
 const PULL_NAVIGATION_KEY = "gamelist:pull-navigation";
 const VIEW_KEY = "shelf:view-mode:v2";
@@ -1436,7 +1436,7 @@ function showcaseHoverInfo(game, className) {
     game.developer || "",
     game.publisher || "",
   ].filter(Boolean);
-  return `<span class="${className} showcase-hover-info"><strong>${escapeHtml(game.title)}</strong>${studio.length ? `<small>${escapeHtml(studio.join(" · "))}</small>` : ""}<span class="showcase-hover-meta">${platformBadge(game.platform)}${shelfProgressPill(game)}${tags.map((tag) => `<span class="chip genre">${escapeHtml(tag)}</span>`).join("")}</span></span>`;
+  return `<span class="${className} showcase-hover-info"><strong>${escapeHtml(game.title)}</strong>${studio.length ? `<small>${escapeHtml(studio.join(" · "))}</small>` : ""}<span class="showcase-hover-meta"><span class="showcase-hover-main-pills">${platformBadge(game.platform)}${shelfProgressPill(game)}</span>${tags.map((tag) => `<span class="chip genre">${escapeHtml(tag)}</span>`).join("")}</span></span>`;
 }
 
 function showcaseGameTags(game) {

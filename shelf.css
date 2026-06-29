@@ -560,6 +560,12 @@ html.theme-font-pokemon .shelf-page .column-head h2 {
   gap: 5px;
 }
 
+.showcase-hover-main-pills {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+
 .showcase-picker-title .platform-badge,
 .showcase-hover-meta .platform-badge {
   min-height: 24px;
