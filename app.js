@@ -14,8 +14,8 @@ const SETTINGS_KEY = "gamelist:settings:v1";
 const KASH_TWITCH_URL = "https://www.twitch.tv/kashhoward";
 const DEFAULT_PAGE_ORDER = ["trophies", "calendar", "highlights", "search", "gamelist", "finished"];
 const LAYOUT_SECTION_KEYS = ["playing", ...DEFAULT_PAGE_ORDER, "latestFinished"];
-const SITE_VERSION = "v280";
-const SITE_UPDATED_AT = "2026-06-30T23:08:34+02:00";
+const SITE_VERSION = "v281";
+const SITE_UPDATED_AT = "2026-06-30T23:12:43+02:00";
 const VERSION_STORAGE_KEY = "gamelist:site-version";
 const PULL_NAVIGATION_KEY = "gamelist:pull-navigation";
 const STORE_OPTIONS = ["Amazon", "eBay", "GAME.es", "Xtralife", "Retro Island NY", "GameStop", "Walmart"];
@@ -336,7 +336,6 @@ const el = {
 init();
 
 async function init() {
-  initPullArrivalCover();
   if (await checkSiteVersion()) return;
   await window.__initialThemeReady?.catch(() => "shabii");
   registerServiceWorker();
@@ -351,7 +350,6 @@ async function init() {
   render();
   const cloudChanged = await pullCloudData();
   if (cloudChanged) render();
-  finishPullArrivalCover();
   const requestedGame = new URLSearchParams(location.search).get("game");
   if (requestedGame && state.games.some((game) => game.id === requestedGame && !game.deletedAt)) openDetail(requestedGame);
   refreshAchievements();
@@ -424,22 +422,19 @@ async function checkSiteVersion() {
 
 function consumeRecentPullNavigation() {
   try {
-    if (window.self !== window.top) return false;
     const url = new URL(window.location.href);
     const fromPullUrl = url.searchParams.get("pull") === "1";
-    if (fromPullUrl) stripPullNavigationParams(url);
+    if (fromPullUrl) {
+      url.searchParams.delete("pull");
+      url.searchParams.delete("v");
+      window.history.replaceState({}, "", `${url.pathname}${url.search}${url.hash}`);
+    }
     const value = JSON.parse(sessionStorage.getItem(PULL_NAVIGATION_KEY) || "{}");
     sessionStorage.removeItem(PULL_NAVIGATION_KEY);
-    return Date.now() - Number(value.at || 0) < 8000 && Boolean(value.fromUrl);
+    return fromPullUrl || Date.now() - Number(value.at || 0) < 8000;
   } catch {
     return false;
   }
-}
-
-function stripPullNavigationParams(url = new URL(window.location.href)) {
-  url.searchParams.delete("pull");
-  url.searchParams.delete("v");
-  window.history.replaceState({}, "", `${url.pathname}${url.search}${url.hash}`);
 }
 
 async function clearSiteCaches() {
@@ -660,6 +655,7 @@ function initPagePullTransition({ targetLabel, targetUrl }) {
   };
   const switchPage = () => {
     if (document.body.classList.contains("page-switching") || document.body.classList.contains("page-switching-pending")) return;
+    const frame = curtain.querySelector(".page-pull-frame");
     let committed = false;
     const commit = () => {
       if (committed) return;
@@ -673,12 +669,18 @@ function initPagePullTransition({ targetLabel, targetUrl }) {
       document.body.style.setProperty("--pull-preview-opacity", "1");
       document.body.style.setProperty("--pull-preview-scale", "1");
       try {
-        sessionStorage.setItem(PULL_NAVIGATION_KEY, JSON.stringify({ version: SITE_VERSION, at: Date.now(), fromUrl: window.location.href }));
+        sessionStorage.setItem(PULL_NAVIGATION_KEY, JSON.stringify({ version: SITE_VERSION, at: Date.now() }));
         localStorage.setItem(VERSION_STORAGE_KEY, SITE_VERSION);
       } catch {}
       window.setTimeout(() => { window.location.href = pullNavigationUrl(targetUrl); }, 430);
     };
-    commit();
+    if (frame?.dataset.loaded === "true") commit();
+    else {
+      document.body.classList.add("page-switching-pending");
+      document.body.classList.add("page-pulling");
+      frame?.addEventListener("load", commit, { once: true });
+      window.setTimeout(commit, 1800);
+    }
   };
   button.addEventListener("click", () => { if (!moved) switchPage(); moved = false; });
   button.addEventListener("pointerenter", () => document.body.classList.add("page-pull-hover"));
@@ -724,50 +726,6 @@ function pullNavigationUrl(targetUrl) {
   url.searchParams.set("pull", "1");
   url.searchParams.set("v", SITE_VERSION);
   return url.href;
-}
-
-let pullArrivalCover = null;
-
-function initPullArrivalCover() {
-  try {
-    if (window.self !== window.top) return;
-    const url = new URL(window.location.href);
-    if (url.searchParams.get("pullPreview") === "1") return;
-    const fromPullUrl = url.searchParams.get("pull") === "1";
-    const value = JSON.parse(sessionStorage.getItem(PULL_NAVIGATION_KEY) || "{}");
-    const recent = Date.now() - Number(value.at || 0) < 8000;
-    if (fromPullUrl) stripPullNavigationParams(url);
-    if (!recent || !value.fromUrl) return;
-    const fromUrl = new URL(value.fromUrl || "", window.location.href);
-    if (fromUrl.origin !== window.location.origin || fromUrl.href === window.location.href) return;
-    fromUrl.searchParams.delete("pull");
-    fromUrl.searchParams.delete("v");
-    fromUrl.searchParams.set("pullPreview", "1");
-    pullArrivalCover = document.createElement("div");
-    pullArrivalCover.className = "page-arrival-cover";
-    pullArrivalCover.setAttribute("aria-hidden", "true");
-    pullArrivalCover.innerHTML = `<iframe class="page-arrival-frame" src="${escapeHtml(fromUrl.href)}" tabindex="-1"></iframe>`;
-    document.body.appendChild(pullArrivalCover);
-    document.body.classList.add("page-arrival-covering");
-    window.setTimeout(finishPullArrivalCover, 1800);
-  } catch {
-    pullArrivalCover = null;
-  }
-}
-
-function finishPullArrivalCover() {
-  if (!pullArrivalCover) return;
-  const cover = pullArrivalCover;
-  pullArrivalCover = null;
-  requestAnimationFrame(() => {
-    document.body.classList.add("page-arrival-ready");
-    const remove = () => {
-      cover.remove();
-      document.body.classList.remove("page-arrival-covering", "page-arrival-ready");
-    };
-    cover.addEventListener("transitionend", remove, { once: true });
-    window.setTimeout(remove, 720);
-  });
 }
 
 function warmUiIcons() {
