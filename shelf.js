@@ -6,8 +6,8 @@ splitShelfPlayingModules();
 
 const SESSION_KEY = "gamelist-editor";
 const KASH_TWITCH_URL = "https://www.twitch.tv/kashhoward";
-const SITE_VERSION = "v270";
-const SITE_UPDATED_AT = "2026-06-30T00:42:00+02:00";
+const SITE_VERSION = "v271";
+const SITE_UPDATED_AT = "2026-06-30T12:44:10+02:00";
 const VERSION_STORAGE_KEY = "gamelist:site-version";
 const PULL_NAVIGATION_KEY = "gamelist:pull-navigation";
 const VIEW_KEY = "shelf:view-mode:v2";
@@ -63,6 +63,7 @@ const state = {
   releaseCalendarOffset: 0,
   playingTrailerFrame: 0,
   playingHeightFrame: 0,
+  priceFetchStatus: "",
   shelfSwipeStart: null,
   favoriteGameIds: [],
   showcaseDraftIds: [],
@@ -391,6 +392,7 @@ function renderChrome() {
   if (el.syncButton) el.syncButton.hidden = true;
   el.fetchPricesButton.hidden = !state.canEdit || !shelfPricesVisible();
   el.fetchPricesButton.innerHTML = `${currencyIcon()}<span class="button-label">Fetch New Prices</span>`;
+  updateFetchPricesButtonStatus();
   el.login.innerHTML = state.canEdit
     ? `<svg class="pause-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5v14M16 5v14"></path></svg><span class="button-label">Stop Editing</span>`
     : `<svg class="pencil-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h4l11-11a2.8 2.8 0 0 0-4-4L4 16v4Z"></path><path d="M13.5 6.5l4 4"></path></svg>`;
@@ -545,6 +547,8 @@ async function refreshAllShelfPrices() {
   const settings = normalizePriceSettings(state.gamelistSettings);
   if (!games.length) return;
   el.fetchPricesButton.disabled = true;
+  state.priceFetchStatus = `Fetching prices for ${games.length} games...`;
+  updateFetchPricesButtonStatus();
   showToast(`Fetching prices for ${games.length} games...`);
   let updated = 0;
   let failed = 0;
@@ -552,8 +556,8 @@ async function refreshAllShelfPrices() {
   try {
     for (const [index, game] of games.entries()) {
       el.fetchPricesButton.innerHTML = `${currencyIcon()}<span class="button-label">Prices ${index + 1}/${games.length}</span>`;
-      el.fetchPricesButton.title = `Prices ${index + 1}/${games.length}`;
-      el.fetchPricesButton.setAttribute("aria-label", el.fetchPricesButton.title);
+      state.priceFetchStatus = `Checking ${index + 1}/${games.length}: ${game.title}`;
+      updateFetchPricesButtonStatus();
       try {
         if (index) await delay(450);
         const data = await fetchCollectionPriceWithRetry(game, settings);
@@ -571,13 +575,20 @@ async function refreshAllShelfPrices() {
       emptyPriceGames.forEach((game) => console.log(`${game.title}${game.platform ? ` [${shortPlatform(game.platform)}]` : ""}`));
       console.groupEnd();
     }
+    state.priceFetchStatus = `Last fetch: ${updated}/${games.length} updated${failed ? `, ${failed} failed` : ""}${emptyPriceGames.length ? `, ${emptyPriceGames.length} empty prices` : ""}.`;
     showToast(`Updated prices for ${updated} games${failed ? `, ${failed} failed` : ""}.`, failed ? "error" : "info");
   } finally {
     el.fetchPricesButton.disabled = false;
     el.fetchPricesButton.innerHTML = `${currencyIcon()}<span class="button-label">Fetch New Prices</span>`;
-    el.fetchPricesButton.title = "Fetch New Prices";
-    el.fetchPricesButton.setAttribute("aria-label", "Fetch New Prices");
+    updateFetchPricesButtonStatus();
   }
+}
+
+function updateFetchPricesButtonStatus() {
+  if (!el.fetchPricesButton) return;
+  const label = state.priceFetchStatus || "Fetch New Prices";
+  el.fetchPricesButton.title = label;
+  el.fetchPricesButton.setAttribute("aria-label", label);
 }
 
 async function fetchCollectionPriceWithRetry(game, settings) {
