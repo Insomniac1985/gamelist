@@ -6,8 +6,8 @@ splitShelfPlayingModules();
 
 const SESSION_KEY = "gamelist-editor";
 const KASH_TWITCH_URL = "https://www.twitch.tv/kashhoward";
-const SITE_VERSION = "v274";
-const SITE_UPDATED_AT = "2026-06-30T21:32:52+02:00";
+const SITE_VERSION = "v275";
+const SITE_UPDATED_AT = "2026-06-30T21:40:16+02:00";
 const VERSION_STORAGE_KEY = "gamelist:site-version";
 const PULL_NAVIGATION_KEY = "gamelist:pull-navigation";
 const VIEW_KEY = "shelf:view-mode:v2";
@@ -1936,9 +1936,11 @@ function activityProgressFor(game) {
 function activityProgressSummary(game) {
   if (!shelfAllowsTrophyActivity(game.platform)) return null;
   const external = externalActivityFor(game);
+  if (external?.loading) return null;
   if (external && Number.isFinite(Number(external.earned)) && Number.isFinite(Number(external.total))) {
     const earned = Math.max(0, Number(external.earned) || 0);
     const total = Math.max(0, Number(external.total) || 0);
+    if (!total) return null;
     return { progress: total ? Math.round((earned / total) * 100) : 0, earned, total };
   }
   const remote = activityGameFor(game);
@@ -1947,7 +1949,12 @@ function activityProgressSummary(game) {
   if (cached && Number.isFinite(Number(cached.earned)) && Number.isFinite(Number(cached.total))) {
     const earned = Math.max(0, Number(cached.earned) || 0);
     const total = Math.max(0, Number(cached.total) || 0);
+    if (!total) return null;
     return { progress: total ? Math.round((earned / total) * 100) : 0, earned, total };
+  }
+  if (remote && cacheKey) {
+    loadShelfCardTrophies(game, remote);
+    return null;
   }
   const countMatch = String(remote?.game || "").match(/(\d+)\s*\/\s*(\d+)/);
   const match = String(remote?.game || "").match(/(\d{1,3})%/);
@@ -2083,7 +2090,7 @@ function externalActivityFor(game) {
   return null;
 }
 function steamAppIdForShelfGame(game) { const direct = String(game.steamAppId || "").replace(/\D/g, ""); if (direct) return direct; const value = game.storeLinks?.steam || ""; try { const parts = new URL(value).pathname.split("/").filter(Boolean); const index = parts.indexOf("app"); return index >= 0 ? String(parts[index + 1] || "").replace(/\D/g, "") : ""; } catch { return ""; } }
-async function loadShelfSteamCardAchievements(game, appId) { const key = `steam:${appId}`; if (state.cardTrophies[key]) return; state.cardTrophies[key] = { loading: true, achievements: [], earned: 0, total: 0 }; try { const params = new URLSearchParams({ appId, debug: "1" }); if (state.gamelistSettings.steamUser) params.set("user", state.gamelistSettings.steamUser); const response = await fetch(`/api/steam-achievements?${params}`); const data = await response.json(); const achievements = Array.isArray(data.achievements) ? data.achievements : []; state.cardTrophies[key] = { loading: false, achievements, earned: Number(data.earnedCount ?? achievements.filter((item) => item.earned).length), total: Number(data.count ?? achievements.length) }; } catch { state.cardTrophies[key] = { loading: false, achievements: [], earned: 0, total: 0 }; } updateShelfCardTrophyStrips(game.id); if (el.detailDialog.open && el.detailDialog.dataset.id === game.id) loadGamelistDetailTrophies(game); }
+async function loadShelfSteamCardAchievements(game, appId) { const key = `steam:${appId}`; if (state.cardTrophies[key]) return; state.cardTrophies[key] = { loading: true, achievements: [], earned: 0, total: 0 }; try { const params = new URLSearchParams({ appId, debug: "1" }); if (state.gamelistSettings.steamUser) params.set("user", state.gamelistSettings.steamUser); const response = await fetch(`/api/steam-achievements?${params}`); const data = await response.json(); const achievements = Array.isArray(data.achievements) ? data.achievements : []; state.cardTrophies[key] = { loading: false, achievements, earned: Number(data.earnedCount ?? achievements.filter((item) => item.earned).length), total: Number(data.count ?? achievements.length) }; } catch { state.cardTrophies[key] = { loading: false, achievements: [], earned: 0, total: 0 }; } refreshShelfProjectedActivity(game); if (el.detailDialog.open && el.detailDialog.dataset.id === game.id) loadGamelistDetailTrophies(game); }
 async function loadShelfCardTrophies(game, remote) {
   const cacheKey = remote?.npCommunicationId || remote?.id || "";
   if (!cacheKey || state.cardTrophies[cacheKey]) return;
@@ -2095,7 +2102,12 @@ async function loadShelfCardTrophies(game, remote) {
     const all = Array.isArray(data.trophies) ? data.trophies : [];
     state.cardTrophies[cacheKey] = { loading: false, trophies: all.filter((item) => item.earned).sort((a, b) => Date.parse(b.rawEarnedAt || b.earnedAt || 0) - Date.parse(a.rawEarnedAt || a.earnedAt || 0)).slice(0, 3), earned: all.filter((item) => item.earned).length, total: all.length };
   } catch { state.cardTrophies[cacheKey] = { loading: false, trophies: [], earned: 0, total: 0 }; }
+  refreshShelfProjectedActivity(game);
+}
+function refreshShelfProjectedActivity(game) {
   updateShelfCardTrophyStrips(game.id);
+  renderGamelistModules();
+  renderFavorites();
 }
 function updateShelfCardTrophyStrips(gameId) {
   const game = state.gamelistGames.find((item) => item.id === gameId && !item.deletedAt);
@@ -2142,6 +2154,7 @@ async function loadTrophyActivity() {
     updateAllShelfTrophyStrips();
     updateShelfPhysicalProgressPills();
     renderFavorites();
+    renderGamelistModules();
   } catch { el.trophyCard.innerHTML = `<span>Trophy activity is unavailable.</span>`; }
   module.hidden = state.layout.hidden.includes("trophies");
 }
