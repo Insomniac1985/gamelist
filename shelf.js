@@ -6,8 +6,8 @@ splitShelfPlayingModules();
 
 const SESSION_KEY = "gamelist-editor";
 const KASH_TWITCH_URL = "https://www.twitch.tv/kashhoward";
-const SITE_VERSION = "v273";
-const SITE_UPDATED_AT = "2026-06-30T21:21:29+02:00";
+const SITE_VERSION = "v274";
+const SITE_UPDATED_AT = "2026-06-30T21:32:52+02:00";
 const VERSION_STORAGE_KEY = "gamelist:site-version";
 const PULL_NAVIGATION_KEY = "gamelist:pull-navigation";
 const VIEW_KEY = "shelf:view-mode:v2";
@@ -1877,12 +1877,12 @@ function gamelistProjectionCard(game, options = {}) {
   const card = createGameCardShell(document);
   card.dataset.gamelistId = game.id; card.setAttribute("role", "button"); card.tabIndex = 0;
   card.dataset.gamelistTitle = game.title || "";
-  card.className += ` has-art${neutralReleaseCard ? "" : " playing-card"}${ownerClasses}${game.digital ? " digital-card" : ""}${game.stream ? " stream-card" : ""}${game.platinum ? " completed-trophy-card" : ""}`;
+  card.className += ` has-art${neutralReleaseCard ? "" : " playing-card"}${ownerClasses}${game.digital ? " digital-card" : ""}${game.stream ? " stream-card" : ""}${shelfShowsCompletedTrophyStyle(game) ? " completed-trophy-card" : ""}`;
   card.classList.toggle("shelf-release-card", isReleaseDialog);
   card.style.setProperty("--card-art", `url('${escapeCss(cover)}')`);
   const trailer = card.querySelector(".card-trailer"); const trailerUrl = !neutralReleaseCard && window.matchMedia("(min-width: 900px)").matches ? activityTrailerUrl(game.trailerUrl, window.location.origin) : ""; if (trailerUrl) { card.classList.add("has-trailer"); trailer.dataset.src = trailerUrl; const toggle = card.querySelector(".trailer-toggle"); toggle.hidden = false; toggle.innerHTML = pauseTrailerIcon(); } else { trailer.remove(); card.querySelector(".trailer-toggle")?.remove(); }
   const image = card.querySelector(".cover-button img"); image.src = cover; image.alt = `${game.title} cover`; image.loading = "eager"; image.fetchPriority = "high"; image.decoding = "async"; bindCoverFrame(image);
-  const title = card.querySelector("h3"); title.textContent = game.title; title.className = `${title.className.replace(/\bowner-[\w-]+/g, "").trim()} ${visibleOwners.map(ownerColorClass).join(" ")}`.trim(); title.classList.toggle("completed-achievements-title", Boolean(game.platinum));
+  const title = card.querySelector("h3"); title.textContent = game.title; title.className = `${title.className.replace(/\bowner-[\w-]+/g, "").trim()} ${visibleOwners.map(ownerColorClass).join(" ")}`.trim(); title.classList.toggle("completed-achievements-title", shelfShowsCompletedTrophyStyle(game));
   const titleOwners = card.querySelector(".title-owners");
   titleOwners.innerHTML = visibleOwners.map(ownerBadge).join("");
   titleOwners.hidden = !titleOwners.innerHTML;
@@ -2005,8 +2005,16 @@ function achievementKindForPlatform(platform) {
 }
 
 function shelfAllowsTrophyActivity(platform) {
-  const value = normalize(shortPlatform(platform));
-  return !/^(ps1|ps2|playstation|playstation 1|playstation 2|sony playstation|sony playstation 1|sony playstation 2)$/.test(value);
+  return !isImpossibleTrophyPlatform(platform);
+}
+
+function shelfShowsCompletedTrophyStyle(game) {
+  return Boolean(game?.platinum && shelfAllowsTrophyActivity(game.platform));
+}
+
+function isImpossibleTrophyPlatform(platform) {
+  const values = [platform, shortPlatform(platform)].map(normalize);
+  return values.some((value) => /^(ps1|ps2|playstation|playstation 1|playstation 2|sony playstation|sony playstation 1|sony playstation 2)$/.test(value));
 }
 
 async function loadGamelistDetailTrophies(game) {
@@ -2117,7 +2125,7 @@ function finishedProjectionCard(game) {
   const cover = coverUrl(game.cover || "") || platformFallback(game.platform);
   const progress = activityProgressFor(game);
   const badges = `${visibleProjectionOwners(game).map(ownerBadge).join("")}${platformBadge(game.platform)}${game.digital ? `<span class="digital-pill">Digital</span>` : ""}${game.emulator ? `<span class="emulator-pill">Emulator</span>` : ""}${game.coop ? `<span class="coop-pill">Coop</span>` : ""}${game.stream ? `<span class="stream-pill">Stream</span>` : ""}${game.replayCount ? `<span class="replay-pill">Replay ${escapeHtml(game.replayCount)}</span>` : ""}`;
-  return finishedGameMarkup({ id: game.id, title: game.title, cover, completedClass: game.platinum ? "completed-trophy-card" : "", itemClass: projectionOwnerCardClass(game), badges, dateText: [formatLongDate(game.completedAt), finishedDurationText(game.startedAt, game.completedAt)].filter(Boolean).join(" · "), progress, dataName: "gamelist-id", escape: escapeHtml });
+  return finishedGameMarkup({ id: game.id, title: game.title, cover, completedClass: shelfShowsCompletedTrophyStyle(game) ? "completed-trophy-card" : "", itemClass: projectionOwnerCardClass(game), badges, dateText: [formatLongDate(game.completedAt), finishedDurationText(game.startedAt, game.completedAt)].filter(Boolean).join(" · "), progress, dataName: "gamelist-id", escape: escapeHtml });
 }
 async function loadTrophyActivity() {
   const module = el.trophyCard.closest("[data-module]");
@@ -2526,7 +2534,7 @@ function renderPriceDetails(game) {
   const prices = game.collectionPrices || {};
   const rows = [["Loose", prices.loose], ["Complete", prices.complete], ["Sealed", prices.sealed]].filter(([, value]) => value != null);
   const currency = game.priceCurrency || "USD";
-  const identifiers = [["UPC", game.upc], ["SKU", game.sku], ["ASIN", game.asin], ["eBay ID", game.epid], ["PriceCharting", game.pricechartingId]].filter(([, value]) => value);
+  const identifiers = [["UPC", game.upc], ["SKU", game.sku], ["ASIN", game.asin], ["eBay ID", game.epid]].filter(([, value]) => value);
   const productUrl = game.collectionProductUrl || priceChartingPageUrl(game.pricechartingId);
   const priceMarkup = rows.length ? `<div class="collection-price-grid">${rows.map(([label, value]) => productUrl ? `<a href="${escapeHtml(productUrl)}" target="_blank" rel="noreferrer"><small>${label}</small><strong>${formatMoney(value, currency)}</strong></a>` : `<span><small>${label}</small><strong>${formatMoney(value, currency)}</strong></span>`).join("")}</div>` : `<span class="muted">No collection value fetched yet.</span>`;
   const identifierMarkup = identifiers.length ? `<div class="collection-product-meta">${identifiers.map(([label, value]) => `<span><small>${label}</small><strong>${escapeHtml(value)}</strong></span>`).join("")}</div>` : "";
