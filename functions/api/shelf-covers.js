@@ -136,8 +136,12 @@ function runnerHtml(apply, autorun) {
     main{max-width:980px;margin:auto;display:grid;gap:16px}
     button,a{border:1px solid #3d4655;border-radius:8px;background:#1e2530;color:#f6f7fb;padding:10px 12px;text-decoration:none;cursor:pointer}
     button.primary{border-color:#ff3b62;background:#ff0039}
-    pre{white-space:pre-wrap;background:#171b22;border:1px solid #303846;border-radius:8px;padding:14px;min-height:240px}
+    .lists{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+    section{display:grid;gap:8px}
+    h2{margin:0;font-size:15px}
+    pre{white-space:pre-wrap;background:#171b22;border:1px solid #303846;border-radius:8px;padding:14px;min-height:240px;max-height:58vh;overflow:auto}
     .bar{height:10px;background:#202733;border-radius:999px;overflow:hidden}.bar span{display:block;height:100%;width:0;background:#ff0039}
+    @media (max-width: 760px){.lists{grid-template-columns:1fr}}
   </style>
 </head>
 <body>
@@ -149,15 +153,25 @@ function runnerHtml(apply, autorun) {
       <a href="/shelf">Back to Shelf</a>
     </div>
     <div class="bar"><span id="bar"></span></div>
-    <pre id="log"></pre>
+    <div class="lists">
+      <section>
+        <h2>Found / updated</h2>
+        <pre id="foundLog"></pre>
+      </section>
+      <section>
+        <h2>Still missing</h2>
+        <pre id="missingLog"></pre>
+      </section>
+    </div>
   </main>
   <script>
     const apply = ${apply ? "true" : "false"};
-    const log = document.querySelector("#log");
+    const foundLog = document.querySelector("#foundLog");
+    const missingLog = document.querySelector("#missingLog");
     const bar = document.querySelector("#bar");
     const start = document.querySelector("#start");
     let running = false;
-    const line = (text) => { log.textContent += text + "\\n"; log.scrollTop = log.scrollHeight; };
+    const line = (target, text) => { target.textContent += text + "\\n"; target.scrollTop = target.scrollHeight; };
     start.addEventListener("click", async () => {
       if (running) return;
       running = true;
@@ -165,7 +179,9 @@ function runnerHtml(apply, autorun) {
       let cursor = 0;
       let total = 0;
       let updated = 0;
-      line("Starting IGDB cover refresh...");
+      foundLog.textContent = "";
+      missingLog.textContent = "";
+      line(foundLog, "Starting IGDB cover refresh...");
       while (cursor !== null) {
         const url = new URL("/api/shelf-covers", location.origin);
         url.searchParams.set("format", "json");
@@ -177,11 +193,14 @@ function runnerHtml(apply, autorun) {
         if (!response.ok) throw new Error(data.error || response.statusText);
         total = data.total;
         updated += data.updated;
-        data.results.forEach((item) => line((item.updated ? "UPDATED " : "checked ") + item.title + " - " + item.reason));
+        data.results.forEach((item) => {
+          const text = (item.updated ? "UPDATED " : "checked ") + item.title + " - " + item.reason;
+          line(item.cover ? foundLog : missingLog, text);
+        });
         cursor = data.nextCursor;
         bar.style.width = total ? Math.round(((cursor || total) / total) * 100) + "%" : "100%";
       }
-      line("Done. " + updated + " cover" + (updated === 1 ? "" : "s") + (apply ? " saved." : " would be updated."));
+      line(foundLog, "Done. " + updated + " cover" + (updated === 1 ? "" : "s") + (apply ? " saved." : " would be updated."));
       start.disabled = false;
       running = false;
     });
