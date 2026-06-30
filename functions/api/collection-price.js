@@ -39,7 +39,7 @@ export async function onRequestGet({ request, env = {} }) {
     ]);
     const product = convertCurrency(mergeProduct(apiProduct, publicProduct, retailProduct, { title, platform, searchUrl }), currency, publicProduct?.forexRates);
     if (!product.productId && !Object.values(product.prices).some((value) => value != null)) {
-      return json({ error: "No matching physical edition found", searchUrl, prices: {}, history: {} }, 404);
+      return json({ error: "No matching physical edition found", notFound: true, searchUrl, prices: {}, history: {} });
     }
     return json({ ...product, checkedAt: new Date().toISOString(), source: "PriceCharting", currency: product.currency || currency });
   } catch (error) {

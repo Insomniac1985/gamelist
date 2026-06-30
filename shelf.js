@@ -577,6 +577,7 @@ async function fetchCollectionPriceWithRetry(game, settings) {
   try {
     return await fetchCollectionPriceData(game, settings);
   } catch (error) {
+    if (error?.nonRetryable) throw error;
     await delay(950);
     return fetchCollectionPriceData(game, settings);
   }
@@ -586,7 +587,11 @@ async function fetchCollectionPriceData(game, settings) {
   const params = collectionPriceParams(game, settings);
   const response = await fetch(`/api/collection-price?${params}`);
   const data = await response.json();
-  if (!response.ok || data.error) throw new Error(data.error || "Price unavailable");
+  if (!response.ok || data.error) {
+    const error = new Error(data.error || "Price unavailable");
+    error.nonRetryable = Boolean(data.notFound);
+    throw error;
+  }
   return data;
 }
 
