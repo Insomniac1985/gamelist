@@ -4,6 +4,81 @@ A personal game backlog, preorder, price, trophy, and physical shelf tracker.
 
 The app is a static frontend served by a Cloudflare Worker. Saved data lives in Cloudflare KV, and API routes under `functions/api` handle sync, search, store prices, trophies, achievements, calendar events, and Shelf collection values.
 
+## App Tour
+
+The project has two connected pages:
+
+- **Gamelist** at `/`: the digital/backlog/preorder tracker.
+- **Shelf** at `/shelf`: the physical collection tracker.
+
+Both pages share edit mode, theme settings, account settings, price-store settings, achievement integrations, and the same `GAMELIST` KV namespace. Shelf Sync can link physical collection items back into the main Gamelist backlog/new-addition flow.
+
+### Gamelist Modules
+
+**Currently Playing**
+Shows games marked as currently playing, with cover art, owners, platform, start dates, trophy/achievement progress, and quick finish/backlog actions. The carousel also includes last finished games.
+
+**Achievements**
+Shows the combined PSN, Steam, and Xbox activity dashboard. Depending on the connected platform activity, the feed labels itself as trophies, achievements, or both. Completed/platinum games open into a filterable modal.
+
+**Calendar**
+Shows release dates for games in the list. Calendar popup cards are read-only release cards and do not repeat the release tag because the selected date already provides that context. Preordered games are visually marked on calendar days and in game cards.
+
+**Highlights**
+Shows summary counts for backlog, upcoming, available, completed, preordered, owner/status breakdowns, and other quick collection stats.
+
+**Search / Filters**
+Filters by title, platform, tag, preorder status, and sort order. The section can be reordered or hidden from Settings.
+
+**Gamelist Board**
+The main kanban-style list:
+
+- **New additions**: newly synced physical shelf games that still need setup.
+- **Backlog**: owned games waiting to be played.
+- **Upcoming**: unreleased games.
+- **Available**: released games you may want to buy.
+
+Cards support drag ordering, detail view, prices, store links, trailers, guides, ownership/owner metadata, and trophy/achievement status.
+
+**Finished Games**
+Shows completed history with filters, completion dates, duration, owners, platform, and trophy/achievement completion styling.
+
+### Shelf Modules
+
+**Currently Playing**
+Projects currently playing Gamelist games into Shelf so physical/digital activity can be seen from the collection page too.
+
+**Last Finished**
+Shows the latest finished Gamelist games as a compact carousel.
+
+**Showcase**
+A five-game featured shelf row. Editors can pick and reorder showcased games. Hover cards show title, developer/publisher, platform, console pill, trophy/achievement percentage when available, and tags.
+
+**Achievements**
+Shows the shared trophy/achievement dashboard on Shelf. Shelf game cards can show compact trophy/achievement progress and platform-aware trophy/achievement labels.
+
+**Calendar**
+Shows Gamelist release dates from the Shelf page. Calendar popup cards are neutral/read-only and omit repeated release tags and large trophy/achievement strips. Preordered games show a preorder chip.
+
+**Highlights**
+Shows physical collection stats such as owned count, estimated value, platforms, regions, conditions, and collection breakdowns.
+
+**Search / Filters**
+Filters the physical shelf by title, platform, region, condition, category, and sort direction.
+
+**Shelf Library**
+The main physical collection view. It supports grid/list view, owners, region flags, condition badges, categories, descriptions, collection value, store prices, trophy/achievement pills, and linked Gamelist entries.
+
+### Settings
+
+Settings are available in edit mode on both pages. They include:
+
+- Page/module ordering and visibility.
+- Theme editor, including dark/light mode, colors, logos, background glows, title font, gradient titles, and uppercase title toggle.
+- Default order, currency, region, default owner, selected price stores, Shelf Sync, and Shelf price visibility.
+- PSN, Microsoft/Xbox, and Steam account names.
+- CSV import/export for Gamelist and Shelf game rows.
+
 ## What You Need
 
 - Node.js 20 or newer
@@ -44,6 +119,8 @@ node --check functions/api/prices.js
 node --check functions/api/collection-price.js
 node --check functions/api/sync.js
 node --check functions/api/shelf.js
+node --check functions/api/shelf-covers.js
+node --check functions/api/search.js
 node --check scripts/test-shelf-sync.mjs
 node scripts/test-shelf-sync.mjs
 git diff --check
@@ -142,7 +219,7 @@ Then Cloudflare can keep running `npx wrangler deploy`, and Wrangler will deploy
 ## Required Cloudflare Pieces
 
 `GAMELIST` KV namespace:
-Stores saved Gamelist data, Shelf data, layout settings, and synced preferences.
+Stores saved Gamelist data, Shelf data, layout settings, favorite/showcase IDs, overrides, and synced preferences.
 
 `EDIT_PASSWORD` secret:
 Unlocks edit mode and allows saving to KV. Without it, the app can display data but cannot save edits to the cloud.
@@ -173,6 +250,12 @@ IGDB authentication uses Twitch developer credentials:
 11. Create/copy the app secret into `IGDB_CLIENT_SECRET`.
 
 The app requests Twitch app access tokens automatically. Without IGDB credentials, lookup falls back where possible, but results may be weaker.
+
+IGDB is used by:
+
+- Game lookup in Gamelist and Shelf.
+- Cover, description, publisher/developer, genre, release date, platform, trailer, and store-link enrichment.
+- The Shelf IGDB cover refresh tool.
 
 ## Recommended Integration
 
@@ -276,12 +359,79 @@ npx wrangler secret put GOOGLE_CALENDAR_ID
 
 Those settings are stored in the Worker KV namespace.
 
+## Common Workflows
+
+### Add A Gamelist Game
+
+1. Enter edit mode.
+2. Click **Add Game**.
+3. Search by title or paste an IGDB game URL.
+4. Choose the section: Backlog, Upcoming, Available, or New addition.
+5. Add platform, owners, preorder store, release date, store links, Steam App ID, trophy name, cover, and notes as needed.
+6. Save.
+
+If Google Calendar is configured, adding a new preorder store to an upcoming/wanted game with a release date can create a preorder calendar event.
+
+### Add A Shelf Game
+
+1. Open `/shelf`.
+2. Enter edit mode.
+3. Click **Add Game**.
+4. Search by title, UPC/SKU/ASIN/PriceCharting data, or enter details manually.
+5. Set platform, region, owners, condition parts, collection value fields, publisher/developer, genre, cover, and notes.
+6. Save.
+
+New physical games can sync into the Gamelist as setup-needed backlog/new-addition entries when Shelf Sync is enabled.
+
+### Import And Export CSV
+
+Both pages have **CSV data** controls at the bottom of Settings, after Stores.
+
+- **Export** downloads the current game rows as CSV.
+- **Import** replaces the current game rows from a CSV after confirmation.
+- Arrays and objects, such as owners, tags, store links, prices, and metadata, are preserved as JSON text inside CSV cells.
+
+Use CSV export before any large bulk operation if you want a quick backup.
+
+### Refresh Shelf Covers From IGDB
+
+After deploying the current Worker and logging into edit mode, open:
+
+```text
+https://YOUR_WORKER.workers.dev/api/shelf-covers?apply=1
+```
+
+Click **Start**. The page processes Shelf games in small batches so Cloudflare requests do not time out. It searches IGDB, accepts only `images.igdb.com` covers, and saves each batch to KV.
+
+Auto-start version:
+
+```text
+https://YOUR_WORKER.workers.dev/api/shelf-covers?apply=1&run=1
+```
+
+Dry run, without saving:
+
+```text
+https://YOUR_WORKER.workers.dev/api/shelf-covers
+```
+
+If the URL returns `404`, deploy the Worker again with:
+
+```bash
+npx wrangler deploy
+```
+
+If the URL says unauthorized, open the site, enter edit mode, and then open the URL again in the same browser. If it says IGDB credentials are missing, set `IGDB_CLIENT_ID` and `IGDB_CLIENT_SECRET` as Cloudflare secrets and redeploy.
+
 ## Data Notes
 
 - Main Gamelist KV key: `gamelist-data`
 - Shelf KV key: `shelf-data`
 - Cloud sync endpoint: `/api/sync`
 - Shelf sync endpoint: `/api/shelf`
+- Shelf IGDB cover refresh endpoint: `/api/shelf-covers`
+- Search/IGDB endpoint: `/api/search`
+- Auth endpoint: `/api/auth`
 - Local browser draft backup: `localStorage`
 
 To start clean, use a brand-new KV namespace. To clone existing data, copy the relevant KV values into the new namespace.
