@@ -424,8 +424,12 @@ export function preloadPausedActivityTrailers(list, escape = escapeHtml) {
     const trailer = card.querySelector(".card-trailer");
     if (!trailer?.dataset.src || trailer.firstElementChild) return;
     card.classList.add("trailer-paused");
-    trailer.innerHTML = activityTrailerFrameMarkup(trailer.dataset.src, escape, { autoplay: false });
-    trailer.querySelector("video")?.pause();
+    trailer.innerHTML = activityTrailerFrameMarkup(trailer.dataset.src, escape, { autoplay: true });
+    const video = trailer.querySelector("video");
+    if (video) {
+      video.pause();
+      video.load();
+    }
     const frame = trailer.querySelector("iframe");
     if (frame) frame.addEventListener("load", () => commandActivityTrailer(frame, "pauseVideo"), { once: true });
   });

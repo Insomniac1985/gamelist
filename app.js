@@ -14,8 +14,8 @@ const SETTINGS_KEY = "gamelist:settings:v1";
 const KASH_TWITCH_URL = "https://www.twitch.tv/kashhoward";
 const DEFAULT_PAGE_ORDER = ["trophies", "calendar", "highlights", "search", "gamelist", "finished"];
 const LAYOUT_SECTION_KEYS = ["playing", ...DEFAULT_PAGE_ORDER, "latestFinished"];
-const SITE_VERSION = "v277";
-const SITE_UPDATED_AT = "2026-06-30T22:50:39+02:00";
+const SITE_VERSION = "v278";
+const SITE_UPDATED_AT = "2026-06-30T22:58:05+02:00";
 const VERSION_STORAGE_KEY = "gamelist:site-version";
 const PULL_NAVIGATION_KEY = "gamelist:pull-navigation";
 const STORE_OPTIONS = ["Amazon", "eBay", "GAME.es", "Xtralife", "Retro Island NY", "GameStop", "Walmart"];
@@ -734,19 +734,25 @@ let pullArrivalCover = null;
 
 function initPullArrivalCover() {
   try {
+    if (window.self !== window.top) return;
     const url = new URL(window.location.href);
+    if (url.searchParams.get("pullPreview") === "1") return;
     const fromPullUrl = url.searchParams.get("pull") === "1";
     const value = JSON.parse(sessionStorage.getItem(PULL_NAVIGATION_KEY) || "{}");
     const recent = Date.now() - Number(value.at || 0) < 8000;
     if (!fromPullUrl && !recent) return;
     const fromUrl = new URL(value.fromUrl || "", window.location.href);
     if (fromUrl.origin !== window.location.origin || fromUrl.href === window.location.href) return;
+    fromUrl.searchParams.delete("pull");
+    fromUrl.searchParams.delete("v");
+    fromUrl.searchParams.set("pullPreview", "1");
     pullArrivalCover = document.createElement("div");
     pullArrivalCover.className = "page-arrival-cover";
     pullArrivalCover.setAttribute("aria-hidden", "true");
     pullArrivalCover.innerHTML = `<iframe class="page-arrival-frame" src="${escapeHtml(fromUrl.href)}" tabindex="-1"></iframe>`;
     document.body.appendChild(pullArrivalCover);
     document.body.classList.add("page-arrival-covering");
+    window.setTimeout(finishPullArrivalCover, 1800);
   } catch {
     pullArrivalCover = null;
   }
