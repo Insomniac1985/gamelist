@@ -143,7 +143,18 @@
   </head>
   <body>
     <script>
-      document.body.classList.toggle("theme-kash", document.documentElement.dataset.initialTheme === "kash");
+      (() => {
+        const theme = window.__initialTheme || {};
+        const themeKey = document.documentElement.dataset.initialTheme;
+        document.body.classList.toggle("theme-kash", themeKey === "kash");
+        document.body.classList.toggle("theme-light", theme.mode === "light");
+        document.body.classList.toggle("theme-no-glow", Boolean(theme.disableGlow));
+        document.body.classList.toggle("theme-gradient", Boolean(theme.gradientOn));
+        document.body.classList.toggle("theme-uppercase-titles", Boolean(theme.uppercaseTitles));
+        document.body.classList.toggle("theme-big-logo", Boolean(theme.bigLogo));
+        document.body.classList.toggle("theme-font-pokemon", theme.fontKey === "pokemon");
+        document.body.classList.toggle("can-edit", sessionStorage.getItem("gamelist-editor") === "true");
+      })();
     </script>
     <div class="backdrop"></div>
     <header class="topbar">
@@ -199,6 +210,9 @@
             </svg>
           </span>
         </button>
+        <script>
+          if (sessionStorage.getItem("gamelist-editor") === "true") document.querySelector("#addButton")?.removeAttribute("hidden");
+        </script>
       </div>
     </header>
 

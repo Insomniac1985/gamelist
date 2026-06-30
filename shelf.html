@@ -118,6 +118,20 @@
     <link rel="stylesheet" href="shelf.css">
   </head>
   <body class="shelf-page">
+    <script>
+      (() => {
+        const theme = window.__initialTheme || {};
+        const themeKey = document.documentElement.dataset.initialTheme;
+        document.body.classList.toggle("theme-kash", themeKey === "kash");
+        document.body.classList.toggle("theme-light", theme.mode === "light");
+        document.body.classList.toggle("theme-no-glow", Boolean(theme.disableGlow));
+        document.body.classList.toggle("theme-gradient", Boolean(theme.gradientOn));
+        document.body.classList.toggle("theme-uppercase-titles", Boolean(theme.uppercaseTitles));
+        document.body.classList.toggle("theme-big-logo", Boolean(theme.bigLogo));
+        document.body.classList.toggle("theme-font-pokemon", theme.fontKey === "pokemon");
+        document.body.classList.toggle("can-edit", sessionStorage.getItem("gamelist-editor") === "true");
+      })();
+    </script>
     <div class="backdrop" aria-hidden="true"></div>
 
     <header class="topbar shelf-topbar">
@@ -157,6 +171,9 @@
             <svg class="plus-icon" viewBox="0 0 24 24"><path d="M12 5v14"></path><path d="M5 12h14"></path></svg>
           </span>
         </button>
+        <script>
+          if (sessionStorage.getItem("gamelist-editor") === "true") document.querySelector("#addButton")?.removeAttribute("hidden");
+        </script>
       </div>
     </header>
 

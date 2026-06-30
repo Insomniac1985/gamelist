@@ -1,4 +1,4 @@
-import { normalizeSearchText, createGameCardShell, bindActivityCardParallax, mountActivitySlider, mountReleaseCalendar, finishedGameMarkup, achievementCardMarkup, achievementDashboardMarkup, achievementPanelMarkup, completedCardMarkup, horizontalCarouselState, syncViewModeButton, slideHorizontalCarousel, comparePlayingGames, finishedDurationText, timeBadgeMarkup, guideLinksMarkup, storeButtonsMarkup, activityTrailerUrl, syncFocusedActivityTrailer, activityReleaseStatus, activityCoverOverride, activityLocalGameForTitle, activityTitleMatchScore, activityAllowsPsnCardTrophies, formatFooterDate, formatFooterDateTime, confirmGameDelete } from "./activity-ui.js";
+import { normalizeSearchText, createGameCardShell, bindActivityCardParallax, mountActivitySlider, mountReleaseCalendar, finishedGameMarkup, achievementCardMarkup, achievementDashboardMarkup, achievementPanelMarkup, completedCardMarkup, horizontalCarouselState, syncViewModeButton, slideHorizontalCarousel, comparePlayingGames, finishedDurationText, timeBadgeMarkup, guideLinksMarkup, storeButtonsMarkup, activityTrailerUrl, preloadPausedActivityTrailers, syncFocusedActivityTrailer, activityReleaseStatus, activityCoverOverride, activityLocalGameForTitle, activityTitleMatchScore, activityAllowsPsnCardTrophies, formatFooterDate, formatFooterDateTime, confirmGameDelete } from "./activity-ui.js";
 import { applySiteTheme, normalizeThemeSettings, openThemeEditor, ownerCardColorClass, ownerColorClass, themeSettingsButton } from "./theme-system.js";
 
 mountActivitySlider(document.querySelector("[data-module='playing']"), { count: "shelfPlayingCount", previous: "shelfPlayingPrev", next: "shelfPlayingNext", list: "playingCarousel", finished: "shelfPlayingFinished", finishedList: "finishedCarousel" });
@@ -6,8 +6,8 @@ splitShelfPlayingModules();
 
 const SESSION_KEY = "gamelist-editor";
 const KASH_TWITCH_URL = "https://www.twitch.tv/kashhoward";
-const SITE_VERSION = "v276";
-const SITE_UPDATED_AT = "2026-06-30T22:10:31+02:00";
+const SITE_VERSION = "v277";
+const SITE_UPDATED_AT = "2026-06-30T22:50:39+02:00";
 const VERSION_STORAGE_KEY = "gamelist:site-version";
 const PULL_NAVIGATION_KEY = "gamelist:pull-navigation";
 const VIEW_KEY = "shelf:view-mode:v2";
@@ -170,6 +170,7 @@ let selectMeasureContext = null;
 init();
 
 async function init() {
+  initPullArrivalCover();
   if (await checkSiteVersion()) return;
   await window.__initialThemeReady?.catch(() => "shabii");
   applyTheme();
@@ -199,6 +200,7 @@ async function init() {
   loadTrophyActivity();
   rebuildGames();
   renderAll();
+  finishPullArrivalCover();
 }
 function loadSharedSettings() { try { return JSON.parse(localStorage.getItem("gamelist:settings:v1") || "{}"); } catch { return {}; } }
 
@@ -482,7 +484,7 @@ function initPagePullTransition({ targetLabel, targetUrl }) {
       document.body.style.setProperty("--pull-preview-opacity", "1");
       document.body.style.setProperty("--pull-preview-scale", "1");
       try {
-        sessionStorage.setItem(PULL_NAVIGATION_KEY, JSON.stringify({ version: SITE_VERSION, at: Date.now() }));
+        sessionStorage.setItem(PULL_NAVIGATION_KEY, JSON.stringify({ version: SITE_VERSION, at: Date.now(), fromUrl: window.location.href }));
         localStorage.setItem(VERSION_STORAGE_KEY, SITE_VERSION);
       } catch {}
       window.setTimeout(() => { window.location.href = pullNavigationUrl(targetUrl); }, 430);
@@ -539,6 +541,43 @@ function pullNavigationUrl(targetUrl) {
   url.searchParams.set("pull", "1");
   url.searchParams.set("v", SITE_VERSION);
   return url.href;
+}
+
+let pullArrivalCover = null;
+
+function initPullArrivalCover() {
+  try {
+    const url = new URL(window.location.href);
+    const fromPullUrl = url.searchParams.get("pull") === "1";
+    const value = JSON.parse(sessionStorage.getItem(PULL_NAVIGATION_KEY) || "{}");
+    const recent = Date.now() - Number(value.at || 0) < 8000;
+    if (!fromPullUrl && !recent) return;
+    const fromUrl = new URL(value.fromUrl || "", window.location.href);
+    if (fromUrl.origin !== window.location.origin || fromUrl.href === window.location.href) return;
+    pullArrivalCover = document.createElement("div");
+    pullArrivalCover.className = "page-arrival-cover";
+    pullArrivalCover.setAttribute("aria-hidden", "true");
+    pullArrivalCover.innerHTML = `<iframe class="page-arrival-frame" src="${escapeHtml(fromUrl.href)}" tabindex="-1"></iframe>`;
+    document.body.appendChild(pullArrivalCover);
+    document.body.classList.add("page-arrival-covering");
+  } catch {
+    pullArrivalCover = null;
+  }
+}
+
+function finishPullArrivalCover() {
+  if (!pullArrivalCover) return;
+  const cover = pullArrivalCover;
+  pullArrivalCover = null;
+  requestAnimationFrame(() => {
+    document.body.classList.add("page-arrival-ready");
+    const remove = () => {
+      cover.remove();
+      document.body.classList.remove("page-arrival-covering", "page-arrival-ready");
+    };
+    cover.addEventListener("transitionend", remove, { once: true });
+    window.setTimeout(remove, 720);
+  });
 }
 
 async function refreshAllShelfPrices() {
@@ -1861,6 +1900,7 @@ function renderGamelistModules() {
   el.finishedCarousel.innerHTML = finished.map(finishedProjectionCard).join("");
   el.playingCarousel.querySelectorAll(".game-card.has-art").forEach(bindActivityCardParallax);
   el.playingCarousel.querySelectorAll(".cover-button img").forEach((image) => { bindCoverFrame(image); image.addEventListener("load", schedulePlayingCardHeightSync, { once: true }); });
+  preloadPausedActivityTrailers(el.playingCarousel, escapeHtml);
   el.playingCarousel.querySelectorAll(".trailer-toggle").forEach((button) => button.addEventListener("click", (event) => { event.stopPropagation(); const card = button.closest(".game-card"); const paused = card.classList.toggle("trailer-user-paused"); button.innerHTML = paused ? playTrailerIcon() : pauseTrailerIcon(); button.title = paused ? "Play trailer" : "Pause trailer"; button.setAttribute("aria-label", button.title); scheduleShelfTrailerUpdate(); }));
   el.playingCarousel.querySelectorAll(".edit-action").forEach((button) => button.addEventListener("click", (event) => { event.stopPropagation(); const game = state.gamelistGames.find((item) => item.id === button.closest("[data-gamelist-id]")?.dataset.gamelistId); if (!state.canEdit) openAuth(); else if (game) openGamelistDetails(game); }));
   [...el.playingCarousel.querySelectorAll("[data-gamelist-id]"), ...el.finishedCarousel.querySelectorAll("[data-gamelist-id]")].forEach((card) => { const open = (event) => { if (event?.target.closest("a,.edit-action,.trailer-toggle")) return; const game = state.gamelistGames.find((item) => item.id === card.dataset.gamelistId); if (game) openGamelistDetails(game); }; card.addEventListener("click", open); card.addEventListener("keydown", (event) => { if (event.key === "Enter" || event.key === " ") { event.preventDefault(); open(); } }); });

@@ -393,10 +393,42 @@ export function activityTrailerUrl(value, origin = "") {
   return `https://www.youtube-nocookie.com/embed/${videoId}?${params}`;
 }
 
-export function activityTrailerFrameMarkup(url, escape = escapeHtml) {
+function trailerEmbedWithAutoplay(url, autoplay) {
+  if (autoplay) return url;
+  try {
+    const parsed = new URL(url, window.location.href);
+    parsed.searchParams.set("autoplay", "0");
+    return parsed.toString();
+  } catch {
+    return url;
+  }
+}
+
+function commandActivityTrailer(iframe, command) {
+  iframe.contentWindow?.postMessage(JSON.stringify({
+    event: "command",
+    func: command,
+    args: [],
+  }), "*");
+}
+
+export function activityTrailerFrameMarkup(url, escape = escapeHtml, { autoplay = true } = {}) {
+  const embedUrl = trailerEmbedWithAutoplay(url, autoplay);
   return /\.(?:mp4|webm|ogg)(?:[?#].*)?$/i.test(url)
-    ? `<video src="${escape(url)}" muted autoplay loop playsinline preload="metadata" aria-hidden="true"></video>`
-    : `<iframe src="${escape(url)}" title="" tabindex="-1" loading="eager" aria-hidden="true" allow="autoplay; encrypted-media; picture-in-picture"></iframe>`;
+    ? `<video src="${escape(url)}" muted ${autoplay ? "autoplay " : ""}loop playsinline preload="${autoplay ? "metadata" : "auto"}" aria-hidden="true"></video>`
+    : `<iframe src="${escape(embedUrl)}" title="" tabindex="-1" loading="eager" aria-hidden="true" allow="autoplay; encrypted-media; picture-in-picture"></iframe>`;
+}
+
+export function preloadPausedActivityTrailers(list, escape = escapeHtml) {
+  list.querySelectorAll(".game-card.has-trailer").forEach((card) => {
+    const trailer = card.querySelector(".card-trailer");
+    if (!trailer?.dataset.src || trailer.firstElementChild) return;
+    card.classList.add("trailer-paused");
+    trailer.innerHTML = activityTrailerFrameMarkup(trailer.dataset.src, escape, { autoplay: false });
+    trailer.querySelector("video")?.pause();
+    const frame = trailer.querySelector("iframe");
+    if (frame) frame.addEventListener("load", () => commandActivityTrailer(frame, "pauseVideo"), { once: true });
+  });
 }
 
 export function syncFocusedActivityTrailer(list, escape = escapeHtml) {
@@ -412,12 +444,14 @@ export function syncFocusedActivityTrailer(list, escape = escapeHtml) {
       if (!trailer.firstElementChild && trailer.dataset.src) trailer.innerHTML = activityTrailerFrameMarkup(trailer.dataset.src, escape);
       card.classList.remove("trailer-paused");
       trailer.querySelector("video")?.play().catch(() => {});
+      const frame = trailer.querySelector("iframe");
+      if (frame) commandActivityTrailer(frame, "playVideo");
     } else {
       card.classList.add("trailer-paused");
       const video = trailer.querySelector("video");
       if (video) video.pause();
       const frame = trailer.querySelector("iframe");
-      if (frame) frame.remove();
+      if (frame) commandActivityTrailer(frame, "pauseVideo");
     }
   });
 }

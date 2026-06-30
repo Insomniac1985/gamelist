@@ -1,4 +1,4 @@
-import { normalizeSearchText, createGameCardShell, bindActivityCardParallax, mountActivitySlider, mountReleaseCalendar, finishedGameMarkup, achievementCardMarkup, achievementDashboardMarkup, achievementPanelMarkup, completedCardMarkup, horizontalCarouselState, syncViewModeButton, slideHorizontalCarousel, comparePlayingGames, finishedDurationText, timeBadgeMarkup, guideLinksMarkup, storeButtonsMarkup, activityTrailerUrl, activityTrailerFrameMarkup, activityReleaseStatus, activityCoverOverride, activityAllowsPsnCardTrophies, formatFooterDate, formatFooterDateTime, confirmGameDelete } from "./activity-ui.js";
+import { normalizeSearchText, createGameCardShell, bindActivityCardParallax, mountActivitySlider, mountReleaseCalendar, finishedGameMarkup, achievementCardMarkup, achievementDashboardMarkup, achievementPanelMarkup, completedCardMarkup, horizontalCarouselState, syncViewModeButton, slideHorizontalCarousel, comparePlayingGames, finishedDurationText, timeBadgeMarkup, guideLinksMarkup, storeButtonsMarkup, activityTrailerUrl, activityTrailerFrameMarkup, preloadPausedActivityTrailers, activityReleaseStatus, activityCoverOverride, activityAllowsPsnCardTrophies, formatFooterDate, formatFooterDateTime, confirmGameDelete } from "./activity-ui.js";
 import { applySiteTheme, normalizeThemeSettings, openThemeEditor, ownerCardColorClass, ownerColorClass, themeSettingsButton } from "./theme-system.js";
 
 mountActivitySlider(document.querySelector("#playingSection"), { count: "playingCount", previous: "playingPrevButton", next: "playingNextButton", list: "playingList", dataSection: "playing", finished: "playingFinished", finishedList: "playingFinishedList" });
@@ -14,8 +14,8 @@ const SETTINGS_KEY = "gamelist:settings:v1";
 const KASH_TWITCH_URL = "https://www.twitch.tv/kashhoward";
 const DEFAULT_PAGE_ORDER = ["trophies", "calendar", "highlights", "search", "gamelist", "finished"];
 const LAYOUT_SECTION_KEYS = ["playing", ...DEFAULT_PAGE_ORDER, "latestFinished"];
-const SITE_VERSION = "v276";
-const SITE_UPDATED_AT = "2026-06-30T22:10:31+02:00";
+const SITE_VERSION = "v277";
+const SITE_UPDATED_AT = "2026-06-30T22:50:39+02:00";
 const VERSION_STORAGE_KEY = "gamelist:site-version";
 const PULL_NAVIGATION_KEY = "gamelist:pull-navigation";
 const STORE_OPTIONS = ["Amazon", "eBay", "GAME.es", "Xtralife", "Retro Island NY", "GameStop", "Walmart"];
@@ -336,6 +336,7 @@ const el = {
 init();
 
 async function init() {
+  initPullArrivalCover();
   if (await checkSiteVersion()) return;
   await window.__initialThemeReady?.catch(() => "shabii");
   registerServiceWorker();
@@ -350,6 +351,7 @@ async function init() {
   render();
   const cloudChanged = await pullCloudData();
   if (cloudChanged) render();
+  finishPullArrivalCover();
   const requestedGame = new URLSearchParams(location.search).get("game");
   if (requestedGame && state.games.some((game) => game.id === requestedGame && !game.deletedAt)) openDetail(requestedGame);
   refreshAchievements();
@@ -669,7 +671,7 @@ function initPagePullTransition({ targetLabel, targetUrl }) {
       document.body.style.setProperty("--pull-preview-opacity", "1");
       document.body.style.setProperty("--pull-preview-scale", "1");
       try {
-        sessionStorage.setItem(PULL_NAVIGATION_KEY, JSON.stringify({ version: SITE_VERSION, at: Date.now() }));
+        sessionStorage.setItem(PULL_NAVIGATION_KEY, JSON.stringify({ version: SITE_VERSION, at: Date.now(), fromUrl: window.location.href }));
         localStorage.setItem(VERSION_STORAGE_KEY, SITE_VERSION);
       } catch {}
       window.setTimeout(() => { window.location.href = pullNavigationUrl(targetUrl); }, 430);
@@ -726,6 +728,43 @@ function pullNavigationUrl(targetUrl) {
   url.searchParams.set("pull", "1");
   url.searchParams.set("v", SITE_VERSION);
   return url.href;
+}
+
+let pullArrivalCover = null;
+
+function initPullArrivalCover() {
+  try {
+    const url = new URL(window.location.href);
+    const fromPullUrl = url.searchParams.get("pull") === "1";
+    const value = JSON.parse(sessionStorage.getItem(PULL_NAVIGATION_KEY) || "{}");
+    const recent = Date.now() - Number(value.at || 0) < 8000;
+    if (!fromPullUrl && !recent) return;
+    const fromUrl = new URL(value.fromUrl || "", window.location.href);
+    if (fromUrl.origin !== window.location.origin || fromUrl.href === window.location.href) return;
+    pullArrivalCover = document.createElement("div");
+    pullArrivalCover.className = "page-arrival-cover";
+    pullArrivalCover.setAttribute("aria-hidden", "true");
+    pullArrivalCover.innerHTML = `<iframe class="page-arrival-frame" src="${escapeHtml(fromUrl.href)}" tabindex="-1"></iframe>`;
+    document.body.appendChild(pullArrivalCover);
+    document.body.classList.add("page-arrival-covering");
+  } catch {
+    pullArrivalCover = null;
+  }
+}
+
+function finishPullArrivalCover() {
+  if (!pullArrivalCover) return;
+  const cover = pullArrivalCover;
+  pullArrivalCover = null;
+  requestAnimationFrame(() => {
+    document.body.classList.add("page-arrival-ready");
+    const remove = () => {
+      cover.remove();
+      document.body.classList.remove("page-arrival-covering", "page-arrival-ready");
+    };
+    cover.addEventListener("transitionend", remove, { once: true });
+    window.setTimeout(remove, 720);
+  });
 }
 
 function warmUiIcons() {
@@ -1348,6 +1387,7 @@ function renderPlayingSection() {
   el.playingList.innerHTML = "";
   el.playingSection.classList.toggle("playing-single", games.length === 1);
   games.forEach((game) => el.playingList.appendChild(cardFor(game, { staticCard: true, imagePriority: "eager" })));
+  preloadPausedActivityTrailers(el.playingList, escapeHtml);
   bindPlayingTrailerFocus();
   renderPlayingFinished();
   const hidden = new Set(normalizeSettings(state.settings).hiddenSections);
@@ -3079,6 +3119,11 @@ function playCardTrailer(card) {
   const iframe = trailer.querySelector("iframe");
   if (iframe) {
     commandTrailer(iframe, "playVideo");
+    iframe.addEventListener("load", (event) => {
+      if (!card.classList.contains("trailer-paused") && !card.classList.contains("trailer-user-paused")) {
+        commandTrailer(event.currentTarget, "playVideo");
+      }
+    }, { once: true });
     return;
   }
   const video = trailer.querySelector("video");
