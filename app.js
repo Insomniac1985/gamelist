@@ -14,8 +14,8 @@ const SETTINGS_KEY = "gamelist:settings:v1";
 const KASH_TWITCH_URL = "https://www.twitch.tv/kashhoward";
 const DEFAULT_PAGE_ORDER = ["trophies", "calendar", "highlights", "search", "gamelist", "finished"];
 const LAYOUT_SECTION_KEYS = ["playing", ...DEFAULT_PAGE_ORDER, "latestFinished"];
-const SITE_VERSION = "v267";
-const SITE_UPDATED_AT = "2026-06-30T00:20:00+02:00";
+const SITE_VERSION = "v268";
+const SITE_UPDATED_AT = "2026-06-30T00:29:00+02:00";
 const VERSION_STORAGE_KEY = "gamelist:site-version";
 const PULL_NAVIGATION_KEY = "gamelist:pull-navigation";
 const STORE_OPTIONS = ["Amazon", "eBay", "GAME.es", "Xtralife", "Retro Island NY", "GameStop", "Walmart"];
@@ -2896,7 +2896,7 @@ function cardFor(game, options = {}) {
   playDates.hidden = !playDates.innerHTML;
   card.querySelector(".chips").innerHTML = cardChipsFor(game).join("");
   const trophyStrip = card.querySelector(".card-trophies");
-  trophyStrip.innerHTML = game.playing && !neutralReleaseCard ? cardTrophiesFor(game) : "";
+  trophyStrip.innerHTML = game.playing && !releaseDialog ? cardTrophiesFor(game) : "";
   trophyStrip.hidden = !trophyStrip.innerHTML;
   trophyStrip.addEventListener("click", (event) => {
     if (event.target.closest("a")) {
@@ -3733,7 +3733,7 @@ function cardTrophiesFor(game) {
   }
   if (!trophies.length) return guideLinks.length ? `<div class="guide-links card-guide-row">${guideLinks.join("")}</div>` : "";
   return `
-    <div class="card-trophy-head">${trophyIcon()}<span>Latest trophies</span>${psn ? psnProgressBadge(psn, { includeIcon: false, className: "card-trophy-progress" }) : ""}</div>
+    <div class="card-trophy-head">${trophyIcon()}<span>Trophies</span>${psn ? psnProgressBadge(psn, { includeIcon: false, className: "card-trophy-progress" }) : ""}</div>
     ${guideLinks.length ? `<div class="guide-links card-guide-row">${guideLinks.join("")}</div>` : ""}
     <div class="card-trophy-list">
       ${trophies.map((trophy) => `
@@ -3761,11 +3761,11 @@ function cardSteamAchievementsFor(game) {
     .slice(0, 3);
   const progress = steamProgressForGame(game);
   if (!achievements.length) {
-    const heading = progress ? `<div class="card-trophy-head">${trophyIcon()}<span>Latest achievements</span>${psnProgressBadge(progress, { includeIcon: false, className: "card-trophy-progress" })}</div>` : "";
+    const heading = progress ? `<div class="card-trophy-head">${trophyIcon()}<span>Achievements</span>${psnProgressBadge(progress, { includeIcon: false, className: "card-trophy-progress" })}</div>` : "";
     return `${heading}${guideLinks.length ? `<div class="guide-links card-guide-row">${guideLinks.join("")}</div>` : ""}`;
   }
   return `
-    <div class="card-trophy-head">${trophyIcon()}<span>Latest achievements</span>${progress ? psnProgressBadge(progress, { includeIcon: false, className: "card-trophy-progress" }) : ""}</div>
+    <div class="card-trophy-head">${trophyIcon()}<span>Achievements</span>${progress ? psnProgressBadge(progress, { includeIcon: false, className: "card-trophy-progress" }) : ""}</div>
     ${guideLinks.length ? `<div class="guide-links card-guide-row">${guideLinks.join("")}</div>` : ""}
     <div class="card-trophy-list">
       ${achievements.map((achievement) => `
@@ -3792,7 +3792,7 @@ function cardXboxAchievementsFor(game) {
     .slice(0, 3);
   const progress = xboxProgressForGame(game);
   const heading = progress
-    ? `<div class="card-trophy-head">${trophyIcon()}<span>Latest achievements</span>${psnProgressBadge(progress, { includeIcon: false, className: "card-trophy-progress" })}</div>`
+    ? `<div class="card-trophy-head">${trophyIcon()}<span>Achievements</span>${psnProgressBadge(progress, { includeIcon: false, className: "card-trophy-progress" })}</div>`
     : "";
   if (!achievements.length) return `${heading}${guideLinks.length ? `<div class="guide-links card-guide-row">${guideLinks.join("")}</div>` : ""}`;
   return `
