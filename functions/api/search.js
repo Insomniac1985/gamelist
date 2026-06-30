@@ -61,6 +61,15 @@ function igdbCredentials(env) {
   return clientId && clientSecret ? { clientId, clientSecret } : null;
 }
 
+export { igdbCredentials };
+
+export async function igdbLookup(rawQuery, credentials) {
+  const lookup = parseLookup(rawQuery || "");
+  const query = cleanTitle(lookup.query || "");
+  if (!query) return [];
+  return igdbSearch(query, credentials, lookup);
+}
+
 async function igdbSearch(query, credentials, lookup = {}) {
   const token = await getIgdbToken(credentials);
   const fields = "fields name,slug,summary,storyline,first_release_date,cover.image_id,genres.name,hypes,total_rating,total_rating_count,involved_companies.company.name,involved_companies.developer,involved_companies.publisher,platforms.name,release_dates.date,release_dates.platform.name,websites.url,websites.category,videos.name,videos.video_id;";

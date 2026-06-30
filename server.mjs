@@ -8,6 +8,7 @@ import { onRequestGet as prices } from "./functions/api/prices.js";
 import { onRequestGet as cover } from "./functions/api/cover.js";
 import * as auth from "./functions/api/auth.js";
 import * as shelf from "./functions/api/shelf.js";
+import * as shelfCovers from "./functions/api/shelf-covers.js";
 import { onRequestGet as collectionPrice } from "./functions/api/collection-price.js";
 import { onRequestGet as trophies } from "./functions/api/trophies.js";
 import { onRequestGet as achievements } from "./functions/api/achievements.js";
@@ -29,6 +30,7 @@ const server = http.createServer(async (req, res) => {
   if (url.pathname === "/api/prices") return sendFunction(res, prices, req, url);
   if (url.pathname === "/api/cover") return sendFunction(res, cover, req, url);
   if (url.pathname === "/api/shelf") return sendModule(res, shelf, req, url);
+  if (url.pathname === "/api/shelf-covers") return sendModule(res, shelfCovers, req, url);
   if (url.pathname === "/api/collection-price") return sendFunction(res, collectionPrice, req, url);
   if (url.pathname === "/api/trophies") return sendFunction(res, trophies, req, url);
   if (url.pathname === "/api/achievements") return sendFunction(res, achievements, req, url);
