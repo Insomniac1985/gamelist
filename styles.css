@@ -2680,9 +2680,16 @@ body.theme-kash .game-row.stream-card:hover {
   border-radius: 4px;
 }
 
-.game-row .time-pill strong,
 .game-row .psn-progress-pill strong {
   color: #ffe985;
+  font-size: 10px;
+}
+
+.game-row .time-pill::before {
+  height: 14px;
+}
+
+.game-row .time-pill strong {
   font-size: 10px;
 }
 
