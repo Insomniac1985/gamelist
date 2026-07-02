@@ -1722,7 +1722,6 @@ body.dialog-open .floating-edit-actions {
   grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 10px;
   padding: 0;
-  --release-day-size: 30px;
 }
 
 .release-month {
@@ -1760,8 +1759,7 @@ body.dialog-open .floating-edit-actions {
 .release-days {
   align-content: start;
   display: grid;
-  grid-template-columns: repeat(7, minmax(0, var(--release-day-size)));
-  justify-content: center;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
   gap: 4px;
 }
 
@@ -1780,9 +1778,8 @@ body.dialog-open .floating-edit-actions {
   position: relative;
   display: grid;
   place-items: center;
-  width: var(--release-day-size);
-  height: var(--release-day-size);
   min-width: 0;
+  aspect-ratio: 1;
   padding: 0;
   color: var(--muted);
   background: rgba(255, 255, 255, 0.045);
@@ -7640,27 +7637,8 @@ body.theme-kash .history-row.completed-trophy-card:hover {
     grid-template-columns: 1fr;
   }
 
-  .release-months {
-    gap: 8px;
-    --release-day-size: 24px;
-  }
-
-  .release-month {
-    padding: 8px;
-  }
-
-  .release-month header {
-    margin-bottom: 7px;
-  }
-
-  .release-weekdays,
   .release-days {
-    gap: 2px;
-  }
-
-  .release-day {
-    border-radius: 5px;
-    font-size: 10px;
+    row-gap: 2px;
   }
 }
 
@@ -7968,7 +7946,6 @@ body.theme-kash .history-row.completed-trophy-card:hover {
 
   .release-months {
     grid-template-columns: 1fr;
-    --release-day-size: 32px;
   }
 
   .release-month:nth-child(n + 2) {
