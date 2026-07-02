@@ -179,7 +179,7 @@ function releaseMonthMarkup(monthDate, releases, today) {
       </button>
     `);
   }
-  while (cells.length < 42) {
+  while (cells.length % 7 !== 0) {
     cells.push(`<span class="release-day empty" aria-hidden="true"></span>`);
   }
   return `
