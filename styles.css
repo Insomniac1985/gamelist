@@ -168,7 +168,7 @@ body.dialog-open {
 
 body.page-pull-hover,
 body.page-pulling {
-  --pull-ui-offset: 36px;
+  --pull-ui-offset: 28px;
 }
 
 button,
@@ -5361,7 +5361,8 @@ body.dialog-open .mobile-section-tabs {
   line-height: 1;
   text-align: center;
   background: var(--accent);
-  border: 1px solid color-mix(in srgb, var(--accent) 78%, rgba(255, 255, 255, 0.28));
+  border: 1px solid
+    color-mix(in srgb, var(--accent) 78%, rgba(255, 255, 255, 0.28));
   border-radius: 7px;
   text-shadow: 0 1px 8px rgba(0, 0, 0, 0.32);
   box-shadow: 0 12px 28px color-mix(in srgb, var(--accent) 22%, transparent);
@@ -5505,15 +5506,29 @@ html.theme-light .playing-section .play-dates {
 html.theme-light .game-card.playing-card,
 html.theme-light .game-card.playing-card.digital-card {
   background:
-    radial-gradient(circle at 22% 18%, color-mix(in srgb, var(--accent-2) 22%, transparent), transparent 28%),
-    linear-gradient(135deg, color-mix(in srgb, var(--accent) 38%, transparent), rgba(38, 45, 58, 0.5) 42%, rgba(26, 31, 42, 0.84)),
+    radial-gradient(
+      circle at 22% 18%,
+      color-mix(in srgb, var(--accent-2) 22%, transparent),
+      transparent 28%
+    ),
+    linear-gradient(
+      135deg,
+      color-mix(in srgb, var(--accent) 38%, transparent),
+      rgba(38, 45, 58, 0.5) 42%,
+      rgba(26, 31, 42, 0.84)
+    ),
     #202633;
   border-color: color-mix(in srgb, var(--accent) 58%, rgba(17, 24, 39, 0.36));
 }
 
 html.theme-light .game-card.owner-card-judy {
   background:
-    linear-gradient(135deg, rgba(255, 158, 210, 0.2), rgba(255, 158, 210, 0.06) 42%, var(--owner-card-base)),
+    linear-gradient(
+      135deg,
+      rgba(255, 158, 210, 0.2),
+      rgba(255, 158, 210, 0.06) 42%,
+      var(--owner-card-base)
+    ),
     var(--panel);
   border-color: rgba(179, 82, 139, 0.42);
 }
@@ -5521,7 +5536,12 @@ html.theme-light .game-card.owner-card-judy {
 html.theme-light .game-card.owner-card-jordi,
 html.theme-light .game-card.owner-card-cage {
   background:
-    linear-gradient(135deg, rgba(255, 173, 95, 0.2), rgba(255, 173, 95, 0.07) 42%, var(--owner-card-base)),
+    linear-gradient(
+      135deg,
+      rgba(255, 173, 95, 0.2),
+      rgba(255, 173, 95, 0.07) 42%,
+      var(--owner-card-base)
+    ),
     var(--panel);
   border-color: rgba(178, 101, 42, 0.44);
 }
@@ -5530,7 +5550,12 @@ html.theme-light .game-card.digital-card,
 html.theme-light .game-card.digital-card.owner-card-judy,
 html.theme-light .game-card.digital-card.owner-card-jordi {
   background:
-    linear-gradient(135deg, rgba(111, 124, 148, 0.18), rgba(111, 124, 148, 0.07) 48%, var(--owner-card-base)),
+    linear-gradient(
+      135deg,
+      rgba(111, 124, 148, 0.18),
+      rgba(111, 124, 148, 0.07) 48%,
+      var(--owner-card-base)
+    ),
     var(--panel);
   border-color: rgba(73, 86, 108, 0.42);
 }
@@ -5557,9 +5582,21 @@ html.theme-light .chip.genre {
 html.theme-light .time-pill,
 html.theme-light .prices {
   background:
-    linear-gradient(135deg, color-mix(in srgb, var(--time-color, var(--accent)) 18%, rgba(80, 94, 118, 0.24)), rgba(83, 98, 124, 0.18)),
+    linear-gradient(
+      135deg,
+      color-mix(
+        in srgb,
+        var(--time-color, var(--accent)) 18%,
+        rgba(80, 94, 118, 0.24)
+      ),
+      rgba(83, 98, 124, 0.18)
+    ),
     rgba(167, 181, 203, 0.36);
-  border-color: color-mix(in srgb, var(--time-color, var(--accent)) 42%, rgba(31, 42, 61, 0.32));
+  border-color: color-mix(
+    in srgb,
+    var(--time-color, var(--accent)) 42%,
+    rgba(31, 42, 61, 0.32)
+  );
 }
 
 html.theme-light .icon-button,
@@ -5574,7 +5611,11 @@ html.theme-light .toolbar,
 html.theme-light .settings-toolbar,
 html.theme-light .search-panel {
   background:
-    linear-gradient(135deg, rgba(228, 234, 243, 0.96), rgba(201, 213, 229, 0.94)),
+    linear-gradient(
+      135deg,
+      rgba(228, 234, 243, 0.96),
+      rgba(201, 213, 229, 0.94)
+    ),
     var(--grid-texture);
   border-color: rgba(31, 42, 61, 0.42);
   box-shadow:
@@ -5586,7 +5627,11 @@ html.theme-light .achievement-panel,
 html.theme-light .stats .glass,
 html.theme-light .release-months-frame.glass {
   background:
-    linear-gradient(135deg, rgba(232, 238, 246, 0.95), rgba(205, 216, 231, 0.92)),
+    linear-gradient(
+      135deg,
+      rgba(232, 238, 246, 0.95),
+      rgba(205, 216, 231, 0.92)
+    ),
     var(--grid-texture);
   border-color: rgba(31, 42, 61, 0.36);
 }
@@ -5636,7 +5681,11 @@ html.theme-light .release-month,
 html.theme-light .stat {
   color: #111827;
   background:
-    linear-gradient(135deg, rgba(226, 233, 243, 0.96), rgba(189, 202, 220, 0.91)),
+    linear-gradient(
+      135deg,
+      rgba(226, 233, 243, 0.96),
+      rgba(189, 202, 220, 0.91)
+    ),
     var(--grid-texture);
   border-color: rgba(24, 35, 54, 0.5);
   box-shadow:
@@ -5773,13 +5822,20 @@ html.theme-light .platform-dreamcast {
 html.theme-light .time-pill,
 html.theme-light .prices {
   color: #111827;
-  background:
-    linear-gradient(
-      135deg,
-      color-mix(in srgb, var(--time-color, var(--accent)) 20%, rgba(230, 236, 245, 0.98)),
-      rgba(176, 190, 210, 0.88)
-    );
-  border-color: color-mix(in srgb, var(--time-color, var(--accent)) 48%, rgba(31, 42, 61, 0.38));
+  background: linear-gradient(
+    135deg,
+    color-mix(
+      in srgb,
+      var(--time-color, var(--accent)) 20%,
+      rgba(230, 236, 245, 0.98)
+    ),
+    rgba(176, 190, 210, 0.88)
+  );
+  border-color: color-mix(
+    in srgb,
+    var(--time-color, var(--accent)) 48%,
+    rgba(31, 42, 61, 0.38)
+  );
 }
 
 html.theme-light .time-pill strong,
@@ -5864,7 +5920,11 @@ html.theme-light .restore-action:hover {
 html.theme-light .release-months-frame.glass,
 html.theme-light .achievement-panel.glass {
   background:
-    linear-gradient(135deg, rgba(221, 229, 240, 0.98), rgba(184, 198, 218, 0.95)),
+    linear-gradient(
+      135deg,
+      rgba(221, 229, 240, 0.98),
+      rgba(184, 198, 218, 0.95)
+    ),
     var(--grid-texture);
   border-color: rgba(24, 35, 54, 0.48);
 }
@@ -5876,7 +5936,11 @@ html.theme-light .achievement-section {
 html.theme-light .achievement-kpi .kpi-breakdown {
   color: #111827;
   background:
-    radial-gradient(circle at 50% 0%, var(--kpi-glow, rgba(31, 42, 61, 0.16)), transparent 72%),
+    radial-gradient(
+      circle at 50% 0%,
+      var(--kpi-glow, rgba(31, 42, 61, 0.16)),
+      transparent 72%
+    ),
     rgba(224, 232, 243, 0.98);
   border-color: rgba(31, 42, 61, 0.38);
 }
@@ -5973,7 +6037,11 @@ html.theme-light .release-day.has-release::after {
 }
 
 html.theme-light .completed-list.is-collapsed::after {
-  background: linear-gradient(180deg, rgba(185, 195, 209, 0), rgba(185, 195, 209, 0.94));
+  background: linear-gradient(
+    180deg,
+    rgba(185, 195, 209, 0),
+    rgba(185, 195, 209, 0.94)
+  );
 }
 
 html.theme-light .completed-more-button {
@@ -5991,7 +6059,11 @@ html.theme-light .history-row.completed-trophy-card:hover,
 html.theme-light .playing-finished-game.completed-trophy-card,
 html.theme-light .playing-finished-game.completed-trophy-card:hover {
   background:
-    linear-gradient(135deg, rgba(255, 237, 146, 0.2), rgba(214, 224, 237, 0.96)),
+    linear-gradient(
+      135deg,
+      rgba(255, 237, 146, 0.2),
+      rgba(214, 224, 237, 0.96)
+    ),
     var(--grid-texture);
   border-color: rgba(154, 106, 0, 0.58) !important;
   box-shadow:
@@ -6007,9 +6079,16 @@ html.theme-light .achievement-panel.glass,
 html.theme-light .stats .glass,
 html.theme-light .theme-editor-preview {
   background:
-    linear-gradient(135deg, rgba(216, 225, 238, 0.98), rgba(174, 190, 212, 0.95)),
+    linear-gradient(
+      135deg,
+      rgba(216, 225, 238, 0.98),
+      rgba(174, 190, 212, 0.95)
+    ),
     var(--grid-texture);
-  background-size: auto, 18px 18px, 18px 18px;
+  background-size:
+    auto,
+    18px 18px,
+    18px 18px;
   border-color: rgba(20, 30, 48, 0.56);
 }
 
@@ -6155,13 +6234,24 @@ html.theme-light .stat-release {
 
 html.theme-light .time-pill,
 html.theme-light .prices {
-  background:
-    linear-gradient(
-      135deg,
-      color-mix(in srgb, var(--time-color, var(--accent)) 34%, rgba(222, 230, 240, 0.98)),
-      color-mix(in srgb, var(--time-color, var(--accent)) 18%, rgba(159, 175, 199, 0.94))
-    );
-  border-color: color-mix(in srgb, var(--time-color, var(--accent)) 64%, rgba(31, 42, 61, 0.36));
+  background: linear-gradient(
+    135deg,
+    color-mix(
+      in srgb,
+      var(--time-color, var(--accent)) 34%,
+      rgba(222, 230, 240, 0.98)
+    ),
+    color-mix(
+      in srgb,
+      var(--time-color, var(--accent)) 18%,
+      rgba(159, 175, 199, 0.94)
+    )
+  );
+  border-color: color-mix(
+    in srgb,
+    var(--time-color, var(--accent)) 64%,
+    rgba(31, 42, 61, 0.36)
+  );
 }
 
 html.theme-light .primary-button,
@@ -6255,7 +6345,10 @@ html.theme-light .shelf-card-delete-action:hover {
 }
 
 .theme-controls-row {
-  grid-template-columns: minmax(92px, 0.7fr) minmax(190px, 1.45fr) repeat(3, minmax(132px, 1fr));
+  grid-template-columns: minmax(92px, 0.7fr) minmax(190px, 1.45fr) repeat(
+      3,
+      minmax(132px, 1fr)
+    );
   align-items: end;
 }
 
