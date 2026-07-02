@@ -1780,8 +1780,9 @@ body.dialog-open .floating-edit-actions {
   position: relative;
   display: grid;
   place-items: center;
+  width: var(--release-day-size);
+  height: var(--release-day-size);
   min-width: 0;
-  aspect-ratio: 1;
   padding: 0;
   color: var(--muted);
   background: rgba(255, 255, 255, 0.045);
@@ -7638,6 +7639,29 @@ body.theme-kash .history-row.completed-trophy-card:hover {
   .hero {
     grid-template-columns: 1fr;
   }
+
+  .release-months {
+    gap: 8px;
+    --release-day-size: 24px;
+  }
+
+  .release-month {
+    padding: 8px;
+  }
+
+  .release-month header {
+    margin-bottom: 7px;
+  }
+
+  .release-weekdays,
+  .release-days {
+    gap: 2px;
+  }
+
+  .release-day {
+    border-radius: 5px;
+    font-size: 10px;
+  }
 }
 
 @media (max-width: 760px) {
@@ -7944,7 +7968,7 @@ body.theme-kash .history-row.completed-trophy-card:hover {
 
   .release-months {
     grid-template-columns: 1fr;
-    --release-day-size: 34px;
+    --release-day-size: 32px;
   }
 
   .release-month:nth-child(n + 2) {
