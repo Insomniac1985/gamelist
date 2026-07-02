@@ -151,6 +151,7 @@ html {
 }
 
 body {
+  --pull-ui-offset: 0px;
   margin: 0;
   min-height: 100vh;
   overscroll-behavior-y: none;
@@ -163,6 +164,11 @@ body {
 
 body.dialog-open {
   overflow: hidden;
+}
+
+body.page-pull-hover,
+body.page-pulling {
+  --pull-ui-offset: 16px;
 }
 
 button,
@@ -1987,7 +1993,7 @@ body.dialog-open .floating-edit-actions {
 .toolbar {
   --toolbar-control-height: 42px;
   position: sticky;
-  top: 20px;
+  top: calc(20px + var(--pull-ui-offset, 0px));
   z-index: 12;
   display: grid;
   grid-template-columns: minmax(220px, 1fr) 136px 150px 150px 190px var(
@@ -1999,6 +2005,10 @@ body.dialog-open .floating-edit-actions {
   box-shadow:
     var(--shadow),
     0 10px 24px rgba(0, 0, 0, 0.24);
+  transition:
+    margin-top 180ms ease,
+    top 180ms ease,
+    transform 180ms ease;
 }
 
 .toolbar input:not([type="checkbox"]),
@@ -2188,7 +2198,7 @@ body.dialog-open .floating-edit-actions {
   --mobile-tab-index: 0;
   --mobile-tab-width: calc((100% - 24px) / 3);
   position: sticky;
-  top: 120px;
+  top: calc(120px + var(--pull-ui-offset, 0px));
   z-index: 11;
   display: grid;
   grid-template-columns: repeat(var(--mobile-tab-count), 1fr);
@@ -2201,6 +2211,9 @@ body.dialog-open .floating-edit-actions {
   backdrop-filter: blur(12px) saturate(1.15);
   overflow: hidden;
   box-shadow: 0 18px 42px rgba(0, 0, 0, 0.28);
+  transition:
+    top 180ms ease,
+    transform 180ms ease;
 }
 
 .mobile-section-tabs::before {
@@ -7780,6 +7793,7 @@ body.theme-kash .history-row.completed-trophy-card:hover {
     position: static;
     grid-template-columns: minmax(0, 1fr) var(--toolbar-control-height);
     gap: 8px;
+    margin-top: var(--pull-ui-offset, 0px);
   }
 
   .toolbar > label,
@@ -7802,7 +7816,7 @@ body.theme-kash .history-row.completed-trophy-card:hover {
   }
 
   .mobile-section-tabs {
-    top: 25px;
+    top: calc(25px + var(--pull-ui-offset, 0px));
     margin: 12px 0 16px;
   }
 

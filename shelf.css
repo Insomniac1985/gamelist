@@ -1012,7 +1012,7 @@ html.theme-font-pokemon .shelf-page .column-head h2 {
   --tab-index: 0;
   --tab-width: calc((100% - 18px) / 2);
   position: sticky;
-  top: 125px;
+  top: calc(125px + var(--pull-ui-offset, 0px));
   z-index: 11;
   display: grid;
   grid-template-columns: repeat(var(--tab-count), minmax(0, 1fr));
@@ -1028,6 +1028,9 @@ html.theme-font-pokemon .shelf-page .column-head h2 {
   border-radius: 12px;
   backdrop-filter: blur(12px) saturate(1.15);
   box-shadow: 0 18px 42px rgba(0, 0, 0, 0.28);
+  transition:
+    top 180ms ease,
+    transform 180ms ease;
 }
 
 .shelf-tabs::-webkit-scrollbar {
@@ -1674,7 +1677,7 @@ html.theme-font-pokemon .shelf-page .column-head h2 {
   }
   .shelf-tabs {
     --tab-width: calc((100% - 18px) / 2);
-    top: 25px;
+    top: calc(25px + var(--pull-ui-offset, 0px));
   }
   .shelf-grid {
     grid-template-columns: 1fr;
