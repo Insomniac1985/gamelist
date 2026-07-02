@@ -1722,14 +1722,12 @@ body.dialog-open .floating-edit-actions {
   grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 10px;
   padding: 0;
-  --release-day-size: 30px;
 }
 
 .release-month {
   min-width: 0;
   display: grid;
-  grid-template-rows: auto auto max-content;
-  align-content: start;
+  grid-template-rows: auto auto 1fr;
   padding: 10px;
   background: rgba(255, 255, 255, 0.045);
   border: 1px solid rgba(255, 255, 255, 0.1);
@@ -1760,8 +1758,7 @@ body.dialog-open .floating-edit-actions {
 .release-days {
   align-content: start;
   display: grid;
-  grid-template-columns: repeat(7, minmax(0, var(--release-day-size)));
-  justify-content: center;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
   gap: 4px;
 }
 
@@ -7944,7 +7941,6 @@ body.theme-kash .history-row.completed-trophy-card:hover {
 
   .release-months {
     grid-template-columns: 1fr;
-    --release-day-size: 34px;
   }
 
   .release-month:nth-child(n + 2) {
