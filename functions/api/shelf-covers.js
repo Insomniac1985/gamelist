@@ -16,7 +16,14 @@ export async function onRequestGet({ request, env }) {
   const igdb = igdbCredentials(env);
   if (!igdb) return wantsJson(url) ? json({ error: "Missing IGDB credentials" }, 503) : html(errorHtml("Missing IGDB_CLIENT_ID or IGDB_CLIENT_SECRET.", settings), 503);
 
-  if (!wantsJson(url) && !url.searchParams.has("cursor")) return html(runnerHtml(url.searchParams.get("apply") === "1", url.searchParams.get("run") === "1", settings));
+  if (!wantsJson(url) && !url.searchParams.has("cursor")) {
+    return html(runnerHtml({
+      apply: url.searchParams.get("apply") === "1",
+      force: url.searchParams.get("force") === "1",
+      autorun: url.searchParams.get("run") === "1",
+      settings,
+    }));
+  }
 
   const apply = url.searchParams.get("apply") === "1";
   const force = url.searchParams.get("force") === "1";
@@ -126,20 +133,22 @@ function stripShelfEdition(title) {
     .trim();
 }
 
-function runnerHtml(apply, autorun, settings = {}) {
+function runnerHtml({ apply = false, force = false, autorun = false, settings = {} } = {}) {
   return `<!doctype html>
 <html lang="en">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Shelf IGDB Cover Refresh</title>
+  <title>Mass Cover Add</title>
   ${runnerStyle({ settings, page: "shelf" })}
 </head>
 <body>
   <main>
-    <h1>Shelf IGDB Cover Refresh</h1>
-    <p>${apply ? "Apply mode is on. Covers will be saved after each batch." : "Dry run mode is on. Add <code>?apply=1</code> to the URL to save changes."}</p>
-    <div>
+    <h1>Mass Cover Add</h1>
+    <p>Find IGDB covers for Shelf games. Preview first, or turn on save mode to write covers back as batches finish.</p>
+    <div class="row">
+      <label><input id="applyMode" type="checkbox" ${apply ? "checked" : ""}>Save covers</label>
+      <label><input id="forceMode" type="checkbox" ${force ? "checked" : ""}>Refresh existing covers</label>
       <button class="primary" id="start">Start</button>
       <a href="/shelf">Back to Shelf</a>
     </div>
@@ -156,58 +165,72 @@ function runnerHtml(apply, autorun, settings = {}) {
     </div>
   </main>
   <script>
-    const apply = ${apply ? "true" : "false"};
     const foundLog = document.querySelector("#foundLog");
     const missingLog = document.querySelector("#missingLog");
     const bar = document.querySelector("#bar");
     const start = document.querySelector("#start");
+    const applyMode = document.querySelector("#applyMode");
+    const forceMode = document.querySelector("#forceMode");
     let running = false;
     const line = (target, text) => { target.textContent += text + "\\n"; target.scrollTop = target.scrollHeight; };
     start.addEventListener("click", async () => {
       if (running) return;
       running = true;
       start.disabled = true;
+      applyMode.disabled = true;
+      forceMode.disabled = true;
+      const apply = Boolean(applyMode.checked);
+      const force = Boolean(forceMode.checked);
       let cursor = 0;
       let total = 0;
       let updated = 0;
       const missing = [];
       foundLog.textContent = "";
       missingLog.textContent = "";
-      line(foundLog, "Starting IGDB cover refresh...");
-      console.log("Starting IGDB cover refresh...");
-      while (cursor !== null) {
-        const url = new URL("/api/shelf-covers", location.origin);
-        url.searchParams.set("format", "json");
-        url.searchParams.set("cursor", String(cursor));
-        url.searchParams.set("limit", "8");
-        if (apply) url.searchParams.set("apply", "1");
-        const response = await fetch(url, { cache: "no-store" });
-        const data = await response.json();
-        if (!response.ok) throw new Error(data.error || response.statusText);
-        total = data.total;
-        updated += data.updated;
-        data.results.forEach((item) => {
-          const text = (item.updated ? "UPDATED " : "checked ") + item.title + " - " + item.reason;
-          if (item.cover) line(foundLog, text);
-          else {
-            missing.push(item);
-            line(missingLog, text);
-            console.warn("Missing IGDB cover:", item.title, item.platform || "");
-          }
-        });
-        cursor = data.nextCursor;
-        bar.style.width = total ? Math.round(((cursor || total) / total) * 100) + "%" : "100%";
+      try {
+        line(foundLog, "Starting IGDB cover lookup" + (apply ? " in save mode" : " in preview mode") + (force ? " with existing covers refreshed" : "") + "...");
+        console.log("Starting IGDB cover lookup", { apply, force });
+        while (cursor !== null) {
+          const url = new URL("/api/shelf-covers", location.origin);
+          url.searchParams.set("format", "json");
+          url.searchParams.set("cursor", String(cursor));
+          url.searchParams.set("limit", "8");
+          if (apply) url.searchParams.set("apply", "1");
+          if (force) url.searchParams.set("force", "1");
+          const response = await fetch(url, { cache: "no-store" });
+          const data = await response.json();
+          if (!response.ok) throw new Error(data.error || response.statusText);
+          total = data.total;
+          updated += data.updated;
+          data.results.forEach((item) => {
+            const text = (item.updated ? "UPDATED " : "checked ") + item.title + " - " + item.reason;
+            if (item.cover) line(foundLog, text);
+            else {
+              missing.push(item);
+              line(missingLog, text);
+              console.warn("Missing IGDB cover:", item.title, item.platform || "");
+            }
+          });
+          cursor = data.nextCursor;
+          bar.style.width = total ? Math.round(((cursor || total) / total) * 100) + "%" : "100%";
+        }
+        line(foundLog, "Done. " + updated + " cover" + (updated === 1 ? "" : "s") + (apply ? " saved." : " would be updated."));
+        if (missing.length) {
+          console.group("Shelf games still missing IGDB covers (" + missing.length + ")");
+          missing.forEach((item) => console.log(item.title + (item.platform ? " [" + item.platform + "]" : "")));
+          console.groupEnd();
+        } else {
+          console.log("No missing IGDB covers.");
+        }
+      } catch (error) {
+        line(missingLog, "Error: " + (error.message || error));
+        console.error(error);
+      } finally {
+        start.disabled = false;
+        applyMode.disabled = false;
+        forceMode.disabled = false;
+        running = false;
       }
-      line(foundLog, "Done. " + updated + " cover" + (updated === 1 ? "" : "s") + (apply ? " saved." : " would be updated."));
-      if (missing.length) {
-        console.group("Shelf games still missing IGDB covers (" + missing.length + ")");
-        missing.forEach((item) => console.log(item.title + (item.platform ? " [" + item.platform + "]" : "")));
-        console.groupEnd();
-      } else {
-        console.log("No missing IGDB covers.");
-      }
-      start.disabled = false;
-      running = false;
     });
     if (${autorun ? "true" : "false"}) start.click();
   </script>
@@ -240,12 +263,12 @@ function errorHtml(message, settings = {}) {
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Shelf IGDB Cover Refresh</title>
+  <title>Mass Cover Add</title>
   ${runnerStyle({ settings, page: "shelf" })}
 </head>
 <body>
   <main>
-    <h1>Shelf IGDB Cover Refresh</h1>
+    <h1>Mass Cover Add</h1>
     <p>${escapeHtml(message)}</p>
     <div class="actions"><a href="/shelf">Back to Shelf</a></div>
   </main>

@@ -1672,7 +1672,6 @@ function settingsDevFeaturesCard(kind) {
     { href: "/api/shelf-metadata", label: "Fill metadata" },
     { href: "/api/shelf-price-audit", label: "Price audit" },
     { href: "/api/shelf-covers", label: "Mass cover add" },
-    { href: "/api/shelf-covers?apply=1", label: "Refresh covers" },
   ].map((link) => `<a class="ghost-button settings-dev-link" href="${escapeHtml(link.href)}" target="_blank" rel="noreferrer" data-dev-feature="${escapeHtml(kind)}">${escapeHtml(tt(link.label))}</a>`).join("");
 }
 
