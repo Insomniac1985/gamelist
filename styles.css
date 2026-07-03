@@ -2072,10 +2072,10 @@ body.dialog-open .floating-edit-actions {
 .platform-logo-button {
   display: flex;
   align-items: center;
-  justify-content: flex-start;
+  justify-content: center;
   height: var(--toolbar-control-height);
   min-height: var(--toolbar-control-height);
-  padding: 0 30px 0 11px;
+  padding: 0 30px;
   color: #ffffff;
   background-color: rgba(255, 255, 255, 0.065);
   background-image: url("data:image/svg+xml,%3Csvg width='14' height='14' viewBox='0 0 14 14' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M3.5 5.25 7 8.75l3.5-3.5' fill='none' stroke='%23f6f7fb' stroke-opacity='.78' stroke-width='1.7' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
@@ -2101,11 +2101,15 @@ body.dialog-open .floating-edit-actions {
   top: calc(100% + 6px);
   z-index: 70;
   display: none;
-  width: max(100%, 226px);
+  width: max(100%, 206px);
   max-height: 380px;
   padding: 3px;
   overflow: auto;
-  background: #222125;
+  background-color: rgba(34, 33, 37, 0.86);
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.035) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.035) 1px, transparent 1px);
+  background-size: 18px 18px;
   border: 1px solid rgba(255, 255, 255, 0.14);
   border-radius: 8px;
   box-shadow: 0 18px 44px rgba(0, 0, 0, 0.42);
@@ -2120,8 +2124,8 @@ body.dialog-open .floating-edit-actions {
   position: relative;
   display: flex;
   align-items: center;
-  min-height: 28px;
-  padding: 4px 10px 4px 9px;
+  min-height: 26px;
+  padding: 3px 6px 3px 8px;
   background: transparent;
   border: 1px solid transparent;
   border-radius: 4px;
@@ -2132,8 +2136,8 @@ body.dialog-open .floating-edit-actions {
 .platform-logo-option:focus-visible,
 .platform-logo-option.is-selected {
   color: #ffffff;
-  background: color-mix(in srgb, var(--accent) 18%, transparent);
-  border-color: color-mix(in srgb, var(--accent) 44%, transparent);
+  background: color-mix(in srgb, var(--accent-2) 10%, transparent);
+  border-color: color-mix(in srgb, var(--accent-2) 24%, transparent);
   outline: none;
 }
 
@@ -2166,11 +2170,15 @@ body.dialog-open .floating-edit-actions {
   gap: 7px;
   min-width: 0;
   width: 100%;
-  height: 100%;
+  min-height: 18px;
   color: #ffffff;
   background: transparent !important;
   border-color: transparent !important;
   border-radius: 0;
+}
+
+.platform-logo-button .platform-logo-choice {
+  justify-content: center;
 }
 
 .platform-logo-choice span {
@@ -2184,22 +2192,22 @@ body.dialog-open .floating-edit-actions {
 .platform-logo-choice-icon {
   display: grid;
   place-items: center;
-  width: 17px;
-  height: 17px;
-  flex: 0 0 17px;
+  width: 16px;
+  height: 16px;
+  flex: 0 0 16px;
 }
 
 .platform-logo-choice-icon img {
   display: block;
-  max-width: 17px;
-  max-height: 17px;
+  max-width: 16px;
+  max-height: 16px;
   object-fit: contain;
 }
 
 .platform-logo-option:hover .platform-logo-choice-label,
 .platform-logo-option:focus-visible .platform-logo-choice-label,
 .platform-logo-option.is-selected .platform-logo-choice-label {
-  color: color-mix(in srgb, var(--accent) 72%, #ffffff);
+  color: color-mix(in srgb, var(--accent-2) 46%, #ffffff);
 }
 
 .platform-logo-choice .platform-logo-choice-label {
@@ -2211,8 +2219,20 @@ body.dialog-open .floating-edit-actions {
   filter: brightness(0) invert(1);
 }
 
+.platform-logo-choice.platform-ps3 .platform-logo-choice-icon img {
+  filter: brightness(0);
+}
+
+.platform-logo-choice.platform-ps5 .platform-logo-choice-icon img {
+  filter: brightness(0) invert(1);
+}
+
 .platform-logo-choice-label {
+  display: flex;
+  align-items: center;
   min-width: 0;
+  min-height: 16px;
+  line-height: 1;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
