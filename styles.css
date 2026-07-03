@@ -4045,7 +4045,11 @@ body.theme-kash .game-card.stream-card.completed-trophy-card {
 }
 
 .platform-xbox .platform-label {
-  color: #62d470;
+  color: #7ed732;
+}
+
+.platform-xbox.platform-xbox360 .platform-label {
+  color: #29a750;
 }
 
 .platform-dreamcast .platform-label {
@@ -4104,8 +4108,8 @@ body.theme-kash .game-card.stream-card.completed-trophy-card {
 }
 
 .platform-xbox.platform-xbox360 {
-  background: rgba(255, 255, 255, 0.72);
-  border-color: rgba(255, 255, 255, 0.54);
+  background: rgba(220, 226, 232, 0.7);
+  border-color: rgba(235, 240, 246, 0.58);
 }
 
 .platform-xbox.platform-xbox-retro {
@@ -6238,8 +6242,8 @@ html.theme-light .platform-xbox {
 }
 
 html.theme-light .platform-xbox.platform-xbox360 {
-  background: rgba(255, 255, 255, 0.78);
-  border-color: rgba(150, 158, 174, 0.52);
+  background: rgba(226, 232, 238, 0.82);
+  border-color: rgba(145, 154, 166, 0.56);
 }
 
 html.theme-light .platform-xbox.platform-xbox-retro {
