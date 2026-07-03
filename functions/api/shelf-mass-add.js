@@ -160,11 +160,21 @@ function runnerHtml() {
     const password = () => sessionStorage.getItem("gamelist-editor:password") || "";
     const line = (text) => { log.textContent += text + "\\n"; log.scrollTop = log.scrollHeight; };
     const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+    async function readJson(response, label) {
+      const text = await response.text();
+      let data = null;
+      try { data = text ? JSON.parse(text) : {}; } catch {}
+      if (!response.ok || !data) {
+        const type = response.headers.get("content-type") || "unknown";
+        throw new Error(label + " returned " + response.status + " " + response.statusText + " (" + type + "): " + text.slice(0, 180));
+      }
+      return data;
+    }
     start.addEventListener("click", async () => {
       start.disabled = true;
       log.textContent = "";
       try {
-        const shelf = await fetch("/api/shelf", { cache: "no-store" }).then((response) => response.json());
+        const shelf = await fetch("/api/shelf", { cache: "no-store" }).then((response) => readJson(response, "GET /api/shelf"));
         const queue = (shelf.games || []).filter((game) => game.pendingCollection);
         const ids = queue.map((game) => game.id);
         if (!ids.length) { line("No pending Shelf additions found."); return; }
@@ -184,8 +194,7 @@ function runnerHtml() {
             headers: { "Content-Type": "application/json", "x-edit-password": password() },
             body: JSON.stringify({ ids: batch }),
           });
-          const data = await response.json();
-          if (!response.ok) throw new Error(data.error || response.statusText);
+          const data = await readJson(response, "POST /api/shelf-mass-add");
           accepted += data.accepted || 0;
           bar.style.width = Math.round(Math.min(ids.length, index + batch.length) / ids.length * 100) + "%";
           line("Batch " + (Math.floor(index / size) + 1) + ": accepted " + (data.accepted || 0) + ".");

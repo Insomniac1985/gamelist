@@ -336,6 +336,16 @@ function runnerHtml() {
     const password = () => sessionStorage.getItem("gamelist-editor:password") || "";
     const line = (text) => { log.textContent += text + "\\n"; log.scrollTop = log.scrollHeight; };
     const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+    async function readJson(response, label) {
+      const text = await response.text();
+      let data = null;
+      try { data = text ? JSON.parse(text) : {}; } catch {}
+      if (!response.ok || !data) {
+        const type = response.headers.get("content-type") || "unknown";
+        throw new Error(label + " returned " + response.status + " " + response.statusText + " (" + type + "): " + text.slice(0, 180));
+      }
+      return data;
+    }
     const missingIgdb = (game) => !game.cover || !game.releaseDate || !game.publisher || !game.developer || !game.genre || !game.description || !game.igdbUrl;
     const missingPrice = (game) => {
       const prices = game.collectionPrices || {};
@@ -346,7 +356,7 @@ function runnerHtml() {
       log.textContent = "";
       try {
         if (!igdb.checked && !pricecharting.checked) throw new Error("Choose IGDB, PriceCharting, or both.");
-        const shelf = await fetch("/api/shelf", { cache: "no-store" }).then((response) => response.json());
+        const shelf = await fetch("/api/shelf", { cache: "no-store" }).then((response) => readJson(response, "GET /api/shelf"));
         const games = [...(shelf.sourceGames || []), ...(shelf.games || [])];
         const queue = games
           .filter((game) => game.title && (pending.checked || !game.pendingCollection))
@@ -374,8 +384,7 @@ function runnerHtml() {
             headers: { "Content-Type": "application/json", "x-edit-password": password() },
             body: JSON.stringify({ ids: batch, limit: size, igdb: igdb.checked, pricecharting: pricecharting.checked, includePending: pending.checked }),
           });
-          const data = await response.json();
-          if (!response.ok) throw new Error(data.error || response.statusText);
+          const data = await readJson(response, "POST /api/shelf-metadata");
           updated += data.updated || 0;
           errors.push(...(data.errors || []));
           bar.style.width = Math.round(Math.min(ids.length, index + batch.length) / ids.length * 100) + "%";
