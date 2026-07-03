@@ -2063,7 +2063,7 @@ body.dialog-open .floating-edit-actions {
   min-width: 0;
   color: var(--text);
   font: inherit;
-  font-size: 13px;
+  font-size: 14px;
   line-height: 1;
   text-align: left;
   border: 0;
@@ -2085,13 +2085,22 @@ body.dialog-open .floating-edit-actions {
   border: 1px solid rgba(255, 255, 255, 0.14);
   border-radius: 7px;
   cursor: pointer;
+  transition:
+    background-color 160ms ease,
+    border-color 160ms ease,
+    box-shadow 160ms ease;
 }
 
+.platform-logo-button:hover,
+.platform-logo-button:focus-visible,
 .platform-logo-select.is-active .platform-logo-button,
 .platform-logo-select.is-open .platform-logo-button {
   color: #ffffff;
   border-color: color-mix(in srgb, var(--accent) 68%, transparent);
-  background-color: rgba(255, 255, 255, 0.075);
+  background-color: color-mix(in srgb, var(--accent) 17%, rgba(255, 255, 255, 0.075));
+  box-shadow:
+    0 0 0 1px color-mix(in srgb, var(--accent) 16%, transparent),
+    0 0 18px color-mix(in srgb, var(--accent) 12%, transparent);
 }
 
 .platform-logo-menu {
@@ -2199,6 +2208,7 @@ body.dialog-open .floating-edit-actions {
 }
 
 .platform-logo-button .platform-logo-choice {
+  min-height: var(--toolbar-control-height);
   justify-content: flex-start;
 }
 
@@ -2251,13 +2261,28 @@ body.dialog-open .floating-edit-actions {
 
 .platform-logo-choice-label {
   display: flex;
+  position: relative;
   align-items: center;
   min-width: 0;
-  min-height: 16px;
+  min-height: 18px;
   line-height: 1;
+  background-image: linear-gradient(color-mix(in srgb, var(--accent) 72%, transparent), color-mix(in srgb, var(--accent) 72%, transparent));
+  background-position: left calc(100% - 1px);
+  background-repeat: no-repeat;
+  background-size: 0 2px;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  transition:
+    color 160ms ease,
+    background-size 160ms ease;
+}
+
+.platform-logo-button:hover .platform-logo-choice-label,
+.platform-logo-button:focus-visible .platform-logo-choice-label,
+.platform-logo-select.is-active .platform-logo-button .platform-logo-choice-label,
+.platform-logo-select.is-open .platform-logo-button .platform-logo-choice-label {
+  background-size: 100% 2px;
 }
 
 .check-filter {
