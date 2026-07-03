@@ -25,7 +25,7 @@
           const accent = theme.accentColorReset === false ? hex(theme.accentColor, "#79f2ce") : "#79f2ce";
           const gradient = hex(theme.gradientColor, main);
           const extra = hex(theme.extraColor, "#7c5cff");
-          const fonts = { antique: "Antique Olive Nord", georgia: "Georgia Bold", pokemon: "Pokemon GBA", pixel: "04B 30", michroma: "Michroma", minecraft: "Minecraft" };
+          const fonts = { antique: "Antique Olive Nord", georgia: "Georgia Bold", pokemon: "Pokemon GBA", pixel: "04B 30", michroma: "Michroma", minecraft: "Minecraft", mata: "Mata Regular" };
           const source = (value) => ({ main, accent, gradient, extra })[value] || main;
           const mix = (color, alpha) => {
             const int = Number.parseInt(color.slice(1), 16);

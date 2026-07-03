@@ -58,6 +58,14 @@
   font-display: swap;
 }
 
+@font-face {
+  font-family: "Mata Regular";
+  src: url("assets/fonts/Mata Regular.otf") format("opentype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
 :root {
   --bg: #161619;
   --panel: rgba(20, 22, 28, 0.58);
@@ -3651,8 +3659,8 @@ body.theme-kash .game-card.stream-card.completed-trophy-card {
 }
 
 .platform-playstation.platform-ps5 {
-  background: #ffffff;
-  border-color: rgba(255, 255, 255, 0.92);
+  background: rgba(255, 255, 255, 0.82);
+  border-color: rgba(255, 255, 255, 0.72);
 }
 
 .platform-playstation.platform-ps5 .platform-count {
@@ -3673,7 +3681,7 @@ body.theme-kash .game-card.stream-card.completed-trophy-card {
 
 .platform-playstation.platform-ps3,
 .platform-playstation.platform-psp {
-  background: #05070b;
+  background: rgba(5, 7, 11, 0.82);
   border-color: rgba(255, 255, 255, 0.3);
 }
 

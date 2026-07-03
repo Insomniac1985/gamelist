@@ -6,6 +6,7 @@ export const FONT_OPTIONS = [
   { value: "pixel", label: "04B 30", family: "04B 30" },
   { value: "michroma", label: "Michroma", family: "Michroma" },
   { value: "minecraft", label: "Minecraft", family: "Minecraft" },
+  { value: "mata", label: "Spider-man or PS3", family: "Mata Regular" },
 ];
 
 const DEFAULT_THEME = {

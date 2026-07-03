@@ -1,4 +1,4 @@
-const CACHE_VERSION = "gamelist-cache-v297";
+const CACHE_VERSION = "gamelist-cache-v298";
 const STATIC_CACHE = `${CACHE_VERSION}:static`;
 const MEDIA_CACHE = `${CACHE_VERSION}:media`;
 const STATIC_ASSETS = [
@@ -26,6 +26,7 @@ const STATIC_ASSETS = [
   "/assets/fonts/Michroma.ttf",
   "/assets/fonts/Minecraft.ttf",
   "/assets/fonts/AntiqueOliveNord.woff2",
+  "/assets/fonts/Mata Regular.otf",
   "/assets/platforms/playstation.png",
   "/assets/platforms/playstation_retro.png",
   "/assets/platforms/playstation_modern.png",
