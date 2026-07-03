@@ -2074,6 +2074,10 @@ body.dialog-open .floating-edit-actions {
   min-width: 0;
 }
 
+.platform-logo-select.is-open {
+  z-index: 1300;
+}
+
 .platform-logo-button,
 .platform-logo-option {
   width: 100%;
@@ -2132,7 +2136,7 @@ body.dialog-open .floating-edit-actions {
   left: 0;
   right: auto;
   top: calc(100% + 6px);
-  z-index: 70;
+  z-index: 1301;
   display: none;
   width: max-content;
   min-width: min(100%, 96px);
@@ -2313,7 +2317,7 @@ body.dialog-open .floating-edit-actions {
   font-size: 14px;
   line-height: 1;
   overflow: hidden;
-  text-overflow: ellipsis;
+  text-overflow: "...";
   white-space: nowrap;
 }
 
