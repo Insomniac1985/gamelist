@@ -4,6 +4,10 @@ import { syncShelfGamesToBacklog } from "./shelf.js";
 const KV_KEY = "shelf-data";
 const MAX_GAMES = 1000;
 
+export async function onRequestGet() {
+  return html(runnerHtml());
+}
+
 export async function onRequestPost({ request, env }) {
   if (!env.GAMELIST) return json({ error: "Missing GAMELIST KV binding" }, 501);
   if (!env.EDIT_PASSWORD) return json({ error: "Missing EDIT_PASSWORD secret" }, 503);
@@ -113,4 +117,81 @@ function generatedId() {
 
 function json(data, status = 200) {
   return new Response(JSON.stringify(data), { status, headers: { "Content-Type": "application/json" } });
+}
+
+function html(markup, status = 200) {
+  return new Response(markup, { status, headers: { "Content-Type": "text/html; charset=utf-8" } });
+}
+
+function runnerHtml() {
+  return `<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Shelf Mass Add</title>
+  <style>
+    body{margin:0;padding:24px;font:14px/1.45 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;color:#f6f7fb;background:#111318}
+    main{max-width:900px;margin:auto;display:grid;gap:16px}
+    button,a,input{border:1px solid #3d4655;border-radius:8px;background:#1e2530;color:#f6f7fb;padding:10px 12px;text-decoration:none}
+    button{cursor:pointer}button.primary{border-color:#ff3b62;background:#ff0039}button:disabled{opacity:.55;cursor:wait}
+    .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}.bar{height:10px;background:#202733;border-radius:999px;overflow:hidden}.bar span{display:block;height:100%;width:0;background:#ff0039}
+    pre{white-space:pre-wrap;background:#171b22;border:1px solid #303846;border-radius:8px;padding:14px;min-height:260px;max-height:58vh;overflow:auto}
+    label{display:grid;gap:6px;max-width:180px}
+  </style>
+</head>
+<body>
+  <main>
+    <h1>Shelf Mass Add</h1>
+    <p>This accepts pending Shelf New additions into the physical collection in small batches.</p>
+    <div class="row">
+      <label>Batch size <input id="limit" type="number" min="1" max="50" value="10"></label>
+      <button class="primary" id="start" type="button">Accept pending additions</button>
+      <a href="/shelf">Back to Shelf</a>
+    </div>
+    <div class="bar"><span id="bar"></span></div>
+    <pre id="log"></pre>
+  </main>
+  <script>
+    const start = document.querySelector("#start");
+    const log = document.querySelector("#log");
+    const bar = document.querySelector("#bar");
+    const limit = document.querySelector("#limit");
+    const password = () => sessionStorage.getItem("gamelist-editor:password") || "";
+    const line = (text) => { log.textContent += text + "\\n"; log.scrollTop = log.scrollHeight; };
+    const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+    start.addEventListener("click", async () => {
+      start.disabled = true;
+      log.textContent = "";
+      try {
+        const shelf = await fetch("/api/shelf", { cache: "no-store" }).then((response) => response.json());
+        const ids = (shelf.games || []).filter((game) => game.pendingCollection).map((game) => game.id);
+        if (!ids.length) { line("No pending Shelf additions found."); return; }
+        const size = Math.max(1, Math.min(50, Number(limit.value) || 10));
+        line("Found " + ids.length + " pending additions. Running " + size + " at a time...");
+        let accepted = 0;
+        for (let index = 0; index < ids.length; index += size) {
+          const batch = ids.slice(index, index + size);
+          const response = await fetch("/api/shelf-mass-add", {
+            method: "POST",
+            headers: { "Content-Type": "application/json", "x-edit-password": password() },
+            body: JSON.stringify({ ids: batch }),
+          });
+          const data = await response.json();
+          if (!response.ok) throw new Error(data.error || response.statusText);
+          accepted += data.accepted || 0;
+          bar.style.width = Math.round(Math.min(ids.length, index + batch.length) / ids.length * 100) + "%";
+          line("Batch " + (Math.floor(index / size) + 1) + ": accepted " + (data.accepted || 0) + ".");
+          await sleep(350);
+        }
+        line("Done. Accepted " + accepted + " pending addition" + (accepted === 1 ? "" : "s") + ".");
+      } catch (error) {
+        line("Error: " + (error.message || error));
+      } finally {
+        start.disabled = false;
+      }
+    });
+  </script>
+</body>
+</html>`;
 }

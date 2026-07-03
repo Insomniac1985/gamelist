@@ -6,6 +6,10 @@ const KV_KEY = "shelf-data";
 const DEFAULT_LIMIT = 25;
 const MAX_LIMIT = 100;
 
+export async function onRequestGet() {
+  return html(runnerHtml());
+}
+
 export async function onRequestPost({ request, env }) {
   if (!env.GAMELIST) return json({ error: "Missing GAMELIST KV binding" }, 501);
   if (!env.EDIT_PASSWORD) return json({ error: "Missing EDIT_PASSWORD secret" }, 503);
@@ -283,4 +287,104 @@ function normalize(value) {
 
 function json(data, status = 200) {
   return new Response(JSON.stringify(data), { status, headers: { "Content-Type": "application/json" } });
+}
+
+function html(markup, status = 200) {
+  return new Response(markup, { status, headers: { "Content-Type": "text/html; charset=utf-8" } });
+}
+
+function runnerHtml() {
+  return `<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Shelf Metadata Fill</title>
+  <style>
+    body{margin:0;padding:24px;font:14px/1.45 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;color:#f6f7fb;background:#111318}
+    main{max-width:980px;margin:auto;display:grid;gap:16px}
+    button,a,input,label{border:1px solid #3d4655;border-radius:8px;background:#1e2530;color:#f6f7fb;padding:10px 12px;text-decoration:none}
+    button{cursor:pointer}button.primary{border-color:#ff3b62;background:#ff0039}button:disabled{opacity:.55;cursor:wait}
+    label{display:flex;gap:8px;align-items:center}.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}.bar{height:10px;background:#202733;border-radius:999px;overflow:hidden}.bar span{display:block;height:100%;width:0;background:#ff0039}
+    input[type=number]{width:70px}.control{display:grid;gap:6px;max-width:180px}
+    pre{white-space:pre-wrap;background:#171b22;border:1px solid #303846;border-radius:8px;padding:14px;min-height:300px;max-height:58vh;overflow:auto}
+  </style>
+</head>
+<body>
+  <main>
+    <h1>Shelf Metadata Fill</h1>
+    <p>This fills only missing Shelf fields from IGDB and PriceCharting. Existing values are left alone.</p>
+    <div class="row">
+      <label class="control">Batch size <input id="limit" type="number" min="1" max="25" value="5"></label>
+      <label><input id="igdb" type="checkbox" checked> IGDB</label>
+      <label><input id="pricecharting" type="checkbox" checked> PriceCharting</label>
+      <label><input id="pending" type="checkbox"> Include pending</label>
+      <button class="primary" id="start" type="button">Fill missing metadata</button>
+      <a href="/shelf">Back to Shelf</a>
+    </div>
+    <div class="bar"><span id="bar"></span></div>
+    <pre id="log"></pre>
+  </main>
+  <script>
+    const start = document.querySelector("#start");
+    const log = document.querySelector("#log");
+    const bar = document.querySelector("#bar");
+    const limit = document.querySelector("#limit");
+    const igdb = document.querySelector("#igdb");
+    const pricecharting = document.querySelector("#pricecharting");
+    const pending = document.querySelector("#pending");
+    const password = () => sessionStorage.getItem("gamelist-editor:password") || "";
+    const line = (text) => { log.textContent += text + "\\n"; log.scrollTop = log.scrollHeight; };
+    const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+    const missingIgdb = (game) => !game.cover || !game.releaseDate || !game.publisher || !game.developer || !game.genre || !game.description || !game.igdbUrl;
+    const missingPrice = (game) => {
+      const prices = game.collectionPrices || {};
+      return !game.pricechartingId || !game.collectionProductUrl || !Number(game.price) || !Object.values(prices).some((value) => Number(value) > 0);
+    };
+    start.addEventListener("click", async () => {
+      start.disabled = true;
+      log.textContent = "";
+      try {
+        if (!igdb.checked && !pricecharting.checked) throw new Error("Choose IGDB, PriceCharting, or both.");
+        const shelf = await fetch("/api/shelf", { cache: "no-store" }).then((response) => response.json());
+        const games = [...(shelf.sourceGames || []), ...(shelf.games || [])];
+        const ids = games
+          .filter((game) => game.title && (pending.checked || !game.pendingCollection))
+          .filter((game) => (igdb.checked && missingIgdb(game)) || (pricecharting.checked && missingPrice(game)))
+          .map((game) => game.id);
+        if (!ids.length) { line("No Shelf games are missing the selected metadata."); return; }
+        const size = Math.max(1, Math.min(25, Number(limit.value) || 5));
+        line("Found " + ids.length + " games missing selected metadata. Running " + size + " at a time...");
+        let updated = 0;
+        const errors = [];
+        for (let index = 0; index < ids.length; index += size) {
+          const batch = ids.slice(index, index + size);
+          const response = await fetch("/api/shelf-metadata", {
+            method: "POST",
+            headers: { "Content-Type": "application/json", "x-edit-password": password() },
+            body: JSON.stringify({ ids: batch, limit: size, igdb: igdb.checked, pricecharting: pricecharting.checked, includePending: pending.checked }),
+          });
+          const data = await response.json();
+          if (!response.ok) throw new Error(data.error || response.statusText);
+          updated += data.updated || 0;
+          errors.push(...(data.errors || []));
+          bar.style.width = Math.round(Math.min(ids.length, index + batch.length) / ids.length * 100) + "%";
+          line("Batch " + (Math.floor(index / size) + 1) + ": processed " + (data.processed || 0) + ", updated " + (data.updated || 0) + ", errors " + ((data.errors || []).length) + ".");
+          await sleep(600);
+        }
+        line("Done. Updated " + updated + " game" + (updated === 1 ? "" : "s") + ".");
+        if (errors.length) {
+          line("");
+          line("Errors:");
+          errors.forEach((item) => line("- " + item.title + ": " + item.error));
+        }
+      } catch (error) {
+        line("Error: " + (error.message || error));
+      } finally {
+        start.disabled = false;
+      }
+    });
+  </script>
+</body>
+</html>`;
 }
