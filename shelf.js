@@ -1668,12 +1668,10 @@ function settingsCsvDataCard(kind) {
 
 function settingsDevFeaturesCard(kind) {
   return [
-    { href: "/api/shelf", label: "Shelf data" },
     { href: "/api/shelf-mass-add", label: "Mass add" },
     { href: "/api/shelf-metadata", label: "Fill metadata" },
     { href: "/api/shelf-price-audit", label: "Price audit" },
-    { href: "/api/shelf-price-audit?format=json", label: "Price audit JSON" },
-    { href: "/api/shelf-covers", label: "Cover dry run" },
+    { href: "/api/shelf-covers", label: "Mass cover add" },
     { href: "/api/shelf-covers?apply=1", label: "Refresh covers" },
   ].map((link) => `<a class="ghost-button settings-dev-link" href="${escapeHtml(link.href)}" target="_blank" rel="noreferrer" data-dev-feature="${escapeHtml(kind)}">${escapeHtml(tt(link.label))}</a>`).join("");
 }
@@ -1681,7 +1679,7 @@ function settingsDevFeaturesCard(kind) {
 const CSV_NUMERIC_FIELDS = new Set(["order", "lengthHours", "replayCount", "numericPrice", "price", "estimatedValue", "purchasePrice"]);
 
 function exportShelfCsv() {
-  downloadCsv(state.games, `shelf-games-${dateStamp()}.csv`);
+  downloadCsv(state.games.map(shelfCsvRecord), `shelf-games-${dateStamp()}.csv`);
   showToast(`Exported ${state.games.length} shelf games.`);
 }
 
@@ -1700,7 +1698,7 @@ async function importShelfCsv() {
     state.additions = [];
     state.overrides = {};
     rows.forEach((row, index) => {
-      const game = stripRuntimeFields({ ...row, id: row.id || csvImportedId("shelf", index), updatedAt: row.updatedAt || now });
+      const game = normalizeShelfCsvGame(stripRuntimeFields({ ...row, id: row.id || csvImportedId("shelf", index), updatedAt: row.updatedAt || now }));
       if (row.sourceRecord === true) state.sourceGames.push(game);
       else state.additions.push(game);
     });
@@ -1792,10 +1790,50 @@ function parseCsvValue(key, value) {
   if ((text.startsWith("[") && text.endsWith("]")) || (text.startsWith("{") && text.endsWith("}"))) {
     try { return JSON.parse(text); } catch {}
   }
-  if (text === "true") return true;
-  if (text === "false") return false;
+  if (text.toLowerCase() === "true") return true;
+  if (text.toLowerCase() === "false") return false;
   if (CSV_NUMERIC_FIELDS.has(key) && /^-?\d+(\.\d+)?$/.test(text)) return Number(text);
   return value;
+}
+
+function normalizeShelfCsvGame(game) {
+  const next = { ...game };
+  const hasConditionColumns = ["game", "manual", "box", "other", "sealed"].some((key) => Object.prototype.hasOwnProperty.call(next, key));
+  if (hasConditionColumns) {
+    next.game = csvBoolean(next.game, true);
+    next.manual = csvBoolean(next.manual, false);
+    next.box = csvBoolean(next.box, false);
+    next.other = csvBoolean(next.other, false);
+    next.sealed = csvBoolean(next.sealed, false);
+  } else {
+    next.game = conditionValue(next, "game");
+    next.manual = conditionValue(next, "manual");
+    next.box = conditionValue(next, "box");
+    next.other = conditionValue(next, "other");
+    next.sealed = conditionValue(next, "sealed");
+  }
+  delete next.ownership;
+  return next;
+}
+
+function shelfCsvRecord(game) {
+  const next = { ...game };
+  next.game = conditionValue(next, "game");
+  next.manual = conditionValue(next, "manual");
+  next.box = conditionValue(next, "box");
+  next.other = conditionValue(next, "other");
+  next.sealed = conditionValue(next, "sealed");
+  delete next.ownership;
+  return next;
+}
+
+function csvBoolean(value, fallback = false) {
+  if (typeof value === "boolean") return value;
+  const text = String(value ?? "").trim().toLowerCase();
+  if (!text) return fallback;
+  if (["true", "1", "yes", "y", "on", "x", "checked"].includes(text)) return true;
+  if (["false", "0", "no", "n", "off", "unchecked"].includes(text)) return false;
+  return fallback;
 }
 
 function pickCsvFile() {

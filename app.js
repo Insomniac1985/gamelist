@@ -1183,9 +1183,8 @@ function settingsCsvDataItem(kind) {
 
 function settingsDevFeaturesItem(kind) {
   return [
-    { href: "/api/sync", label: "Gamelist data" },
-    { href: "/api/sync?settings=1", label: "Shared settings" },
-    { href: "/api/auth", label: "Edit auth status" },
+    { href: "/api/gamelist-mass-add", label: "Mass add" },
+    { href: "/api/gamelist-metadata", label: "Fill metadata" },
   ].map((link) => `
     <a class="ghost-button settings-dev-link" href="${escapeHtml(link.href)}" target="_blank" rel="noreferrer" data-dev-feature="${escapeHtml(kind)}">
       ${escapeHtml(tt(link.label))}

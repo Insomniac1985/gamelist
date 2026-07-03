@@ -3,6 +3,8 @@ import * as achievements from "./functions/api/achievements.js";
 import * as calendar from "./functions/api/calendar.js";
 import * as collectionPrice from "./functions/api/collection-price.js";
 import * as cover from "./functions/api/cover.js";
+import * as gamelistMassAdd from "./functions/api/gamelist-mass-add.js";
+import * as gamelistMetadata from "./functions/api/gamelist-metadata.js";
 import * as prices from "./functions/api/prices.js";
 import * as search from "./functions/api/search.js";
 import * as shelf from "./functions/api/shelf.js";
@@ -21,6 +23,8 @@ const routes = {
   "/api/calendar": calendar,
   "/api/collection-price": collectionPrice,
   "/api/cover": cover,
+  "/api/gamelist-mass-add": gamelistMassAdd,
+  "/api/gamelist-metadata": gamelistMetadata,
   "/api/prices": prices,
   "/api/search": search,
   "/api/shelf": shelf,

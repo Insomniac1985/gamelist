@@ -85,7 +85,6 @@ async function syncBacklogGamesToShelf(env, allGames, games) {
     manual: false,
     other: false,
     sealed: false,
-    ownership: "Loose",
     publisher: game.publisher || "",
     developer: game.developer || "",
     genre: (game.genres || []).join(", "),

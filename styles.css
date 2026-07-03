@@ -2106,7 +2106,7 @@ body.dialog-open .floating-edit-actions {
 
 .native-platform-filter,
 .native-styled-select {
-  display: none;
+  display: block;
 }
 
 #gameDialog #platformInput::-webkit-calendar-picker-indicator,
@@ -2126,6 +2126,7 @@ body.dialog-open .floating-edit-actions {
 
 .platform-logo-select {
   --dropdown-control-height: var(--toolbar-control-height, 42px);
+  display: none;
   position: relative;
   width: 100%;
   min-width: 0;
