@@ -749,7 +749,7 @@ function renderFilters() {
   syncStyledSelect(el.region, { activeValue: "all" });
   syncStyledSelect(el.condition, { activeValue: "all" });
   syncStyledSelect(el.category, { activeValue: "all" });
-  syncStyledSelect(el.sort, { activeValue: "platform" });
+  syncStyledSelect(el.sort, { activeValue: null });
   [el.platform, el.region, el.condition, el.category, el.sort].forEach(updateSelectOverflowTitle);
 }
 
@@ -771,7 +771,7 @@ function syncStyledSelect(select, options = {}) {
   }));
   const visibleOptions = selectOptions.filter((option) => !option.disabled);
   const selected = selectOptions.find((option) => option.selected) || visibleOptions[0] || { value: "all", label: "All platforms" };
-  control.classList.toggle("is-active", selected.value !== (options.activeValue ?? "all"));
+  control.classList.toggle("is-active", options.activeValue != null && selected.value !== options.activeValue);
   control.innerHTML = `
     <button class="platform-logo-button" type="button" aria-haspopup="listbox" aria-expanded="false">
       ${platformLogoChoiceMarkup(selected.value, selected.label, { logos: useLogos })}

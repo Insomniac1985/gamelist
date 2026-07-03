@@ -2327,7 +2327,7 @@ function renderFilters() {
   fillSelect(el.tagFilter, ["all", ...genres], state.filters.tag, tt("All categories"));
   syncStyledSelect(el.platformFilter, { logos: true, activeValue: "all" });
   syncStyledSelect(el.tagFilter, { activeValue: "all" });
-  syncStyledSelect(el.sortFilter, { activeValue: "custom" });
+  syncStyledSelect(el.sortFilter, { activeValue: null });
 }
 
 function fillSelect(select, values, selected, allLabel) {
@@ -2362,7 +2362,7 @@ function syncStyledSelect(select, options = {}) {
     selected: option.selected,
   }));
   const selected = selectOptions.find((option) => option.selected) || selectOptions[0] || { value: "all", label: "All platforms" };
-  control.classList.toggle("is-active", selected.value !== (options.activeValue ?? "all"));
+  control.classList.toggle("is-active", options.activeValue != null && selected.value !== options.activeValue);
   control.innerHTML = `
     <button class="platform-logo-button" type="button" aria-haspopup="listbox" aria-expanded="false">
       ${platformLogoChoiceMarkup(selected.value, selected.label, { logos: useLogos })}
