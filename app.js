@@ -921,6 +921,7 @@ function render() {
   if (el.fetchDataButton) el.fetchDataButton.hidden = true;
   el.fetchPricesButton.hidden = !state.canEdit;
   if (state.canEdit && !el.fetchPricesButton.disabled) el.fetchPricesButton.innerHTML = `${currencyIcon()}<span class="button-label">${escapeHtml(tt("Fetch New Prices"))}</span>`;
+  el.sortFilter.value = state.filters.sort;
   renderFilters();
   renderPlayingSection();
   renderStats();
@@ -934,7 +935,6 @@ function render() {
   renderCompleted();
   renderFooter();
   scheduleMobilePaintRefresh();
-  el.sortFilter.value = state.filters.sort;
   el.sortDirectionButton.innerHTML = sortArrowIcon(state.filters.direction === "desc");
   el.sortDirectionButton.title = state.filters.direction === "asc" ? tt("Sort ascending") : tt("Sort descending");
   el.sortDirectionButton.setAttribute("aria-label", el.sortDirectionButton.title);
