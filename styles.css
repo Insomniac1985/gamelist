@@ -2123,6 +2123,7 @@ body.dialog-open .floating-edit-actions {
   min-height: 28px;
   padding: 4px 10px 4px 9px;
   background: transparent;
+  border: 1px solid transparent;
   border-radius: 4px;
   cursor: pointer;
 }
@@ -2131,7 +2132,8 @@ body.dialog-open .floating-edit-actions {
 .platform-logo-option:focus-visible,
 .platform-logo-option.is-selected {
   color: #ffffff;
-  background: transparent;
+  background: color-mix(in srgb, var(--accent) 18%, transparent);
+  border-color: color-mix(in srgb, var(--accent) 44%, transparent);
   outline: none;
 }
 
@@ -2197,7 +2199,7 @@ body.dialog-open .floating-edit-actions {
 .platform-logo-option:hover .platform-logo-choice-label,
 .platform-logo-option:focus-visible .platform-logo-choice-label,
 .platform-logo-option.is-selected .platform-logo-choice-label {
-  color: #ffffff;
+  color: color-mix(in srgb, var(--accent) 72%, #ffffff);
 }
 
 .platform-logo-choice .platform-logo-choice-label {
