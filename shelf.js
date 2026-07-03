@@ -714,7 +714,7 @@ function renderFilters() {
   const platforms = uniqueSorted(visibleGames.map((game) => game.platform));
   const countries = uniqueSorted(visibleGames.map((game) => game.country));
   const categories = uniqueSorted(visibleGames.flatMap((game) => [...String(game.genre || "").split(","), ...(game.genres || [])].map((value) => value.trim()).filter(Boolean)));
-  el.platform.innerHTML = `<option value="all">All platforms</option>${platforms.map((value) => `<option value="${escapeHtml(value)}">${escapeHtml(shortPlatform(value))}</option>`).join("")}`;
+  el.platform.innerHTML = `<option value="all">All platforms</option>${platforms.map((value) => `<option value="${escapeHtml(value)}">${escapeHtml(platformDisplayName(value))}</option>`).join("")}`;
   el.region.innerHTML = `<option value="all">All regions</option>${countries.map((value) => `<option value="${escapeHtml(value)}">${escapeHtml(regionName(value))}</option>`).join("")}`;
   el.category.innerHTML = `<option value="all">All categories</option>${categories.map((value) => `<option value="${escapeHtml(value)}">${escapeHtml(value)}</option>`).join("")}`;
   el.platform.value = state.filters.platform;
@@ -1612,7 +1612,7 @@ function renderShowcaseFilters() {
   const platforms = uniqueSorted(games.map((game) => game.platform));
   const countries = uniqueSorted(games.map((game) => game.country));
   const categories = uniqueSorted(games.flatMap((game) => [...String(game.genre || "").split(","), ...(game.genres || [])].map((value) => value.trim()).filter(Boolean)));
-  el.showcasePlatform.innerHTML = `<option value="all">All platforms</option>${platforms.map((value) => `<option value="${escapeHtml(value)}">${escapeHtml(shortPlatform(value))}</option>`).join("")}`;
+  el.showcasePlatform.innerHTML = `<option value="all">All platforms</option>${platforms.map((value) => `<option value="${escapeHtml(value)}">${escapeHtml(platformDisplayName(value))}</option>`).join("")}`;
   el.showcaseRegion.innerHTML = `<option value="all">All regions</option>${countries.map((value) => `<option value="${escapeHtml(value)}">${escapeHtml(regionName(value))}</option>`).join("")}`;
   el.showcaseCategory.innerHTML = `<option value="all">All categories</option>${categories.map((value) => `<option value="${escapeHtml(value)}">${escapeHtml(value)}</option>`).join("")}`;
   el.showcasePlatform.value = state.showcaseFilters.platform;
@@ -1821,7 +1821,7 @@ function openDialog(dialog) { dialog.showModal(); document.body.classList.add("d
 function closeDialog(dialog) { if (dialog.open) dialog.close(); document.body.classList.toggle("dialog-open", document.querySelector("dialog[open]") !== null); }
 
 function populateEditorOptions() {
-  el.platformOptions.innerHTML = PLATFORM_OPTIONS.map((platform) => `<option value="${platform}">${shortPlatform(platform)}</option>`).join("");
+  el.platformOptions.innerHTML = PLATFORM_OPTIONS.map((platform) => `<option value="${platform}">${platformDisplayName(platform)}</option>`).join("");
   el.fields.country.innerHTML = COUNTRY_OPTIONS.map(([value, label]) => `<option value="${value}">${label}</option>`).join("");
 }
 
@@ -2801,6 +2801,26 @@ function syncRowCoverFrame(image) {
 }
 function platformFallback(platform) { return platformLogo(platform); }
 function shortPlatform(value) { return canonicalShelfPlatform(value); }
+function platformDisplayName(value) {
+  const platform = shortPlatform(value);
+  const labels = {
+    PS1: "Sony PlayStation",
+    PS2: "Sony PlayStation 2",
+    PS3: "Sony PlayStation 3",
+    PS4: "Sony PlayStation 4",
+    PS5: "Sony PlayStation 5",
+    PSP: "Sony PSP",
+    PSVita: "Sony PlayStation Vita",
+    X360: "Xbox 360",
+    XOne: "Xbox One",
+    GBC: "Game Boy Color",
+    GB: "Game Boy",
+    GC: "Nintendo GameCube",
+    Gen: "Sega Genesis",
+    DC: "Sega Dreamcast",
+  };
+  return labels[platform] || value || platform;
+}
 function flagAsset(country) { return `assets/flags/${({ "United Kingdom": "gb", Spain: "es", Italy: "it", "United States of America": "us", Japan: "jp", Taiwan: "tw", France: "fr", Germany: "de", Australia: "au", China: "cn", Europe: "eu", World: "world" })[country] || "world"}.svg`; }
 function flagIcon(country, withClass = false) { return `<img${withClass ? ` class="detail-flag"` : ""} src="${flagAsset(country)}" alt="" width="47" height="31" decoding="async">`; }
 function platformBadge(platform) { const label = shortPlatform(platform); return `<span class="platform-badge ${platformClass(platform)}" title="${escapeHtml(label)}"><span class="platform-icon"><img src="${platformLogo(platform)}" alt="" width="18" height="18" decoding="async"></span><span class="platform-label">${escapeHtml(label)}</span></span>`; }

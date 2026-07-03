@@ -3659,8 +3659,8 @@ body.theme-kash .game-card.stream-card.completed-trophy-card {
 }
 
 .platform-playstation.platform-ps5 {
-  background: rgba(255, 255, 255, 0.82);
-  border-color: rgba(255, 255, 255, 0.72);
+  background: #ffffff;
+  border-color: rgba(255, 255, 255, 0.92);
 }
 
 .platform-playstation.platform-ps5 .platform-count {
