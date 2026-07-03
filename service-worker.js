@@ -1,4 +1,4 @@
-const CACHE_VERSION = "gamelist-cache-v303";
+const CACHE_VERSION = "gamelist-cache-v304";
 const STATIC_CACHE = `${CACHE_VERSION}:static`;
 const MEDIA_CACHE = `${CACHE_VERSION}:media`;
 const STATIC_ASSETS = [
@@ -9,6 +9,7 @@ const STATIC_ASSETS = [
   "/app.js",
   "/activity-ui.js",
   "/theme-system.js",
+  "/i18n.js",
   "/shelf.html",
   "/shelf.css",
   "/shelf.js",

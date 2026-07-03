@@ -240,31 +240,31 @@
 
       <section class="toolbar glass">
         <label class="search">
-          <span>Search</span>
-          <input id="searchInput" type="search" placeholder="Game, platform, store, status...">
+          <span data-i18n="Search">Search</span>
+          <input id="searchInput" type="search" placeholder="Game, platform, store, status..." data-i18n-placeholder="Game, platform, store, status...">
         </label>
         <label class="check-filter toggle-check toolbar-check">
           <input id="preorderedFilter" type="checkbox">
-          <span>Preordered</span>
+          <span data-i18n="Preordered">Preordered</span>
         </label>
         <label>
-          <span>Platform</span>
+          <span data-i18n="Platform">Platform</span>
           <select id="platformFilter"></select>
         </label>
         <label>
-          <span>Category</span>
+          <span data-i18n="Category">Category</span>
           <select id="tagFilter"></select>
         </label>
         <label class="order-label">
-          <span>Order</span>
+          <span data-i18n="Order">Order</span>
           <div class="order-control">
             <select id="sortFilter">
-              <option value="custom" selected>Custom</option>
-              <option value="time">Time</option>
-              <option value="added">Last added</option>
-              <option value="title">Name</option>
-              <option value="platform">Platform</option>
-              <option value="playtime">Playtime</option>
+              <option value="custom" selected data-i18n="Custom">Custom</option>
+              <option value="time" data-i18n="Time">Time</option>
+              <option value="added" data-i18n="Last added">Last added</option>
+              <option value="title" data-i18n="Name">Name</option>
+              <option value="platform" data-i18n="Platform">Platform</option>
+              <option value="playtime" data-i18n="Playtime">Playtime</option>
             </select>
             <button class="direction-toggle" id="sortDirectionButton" type="button" title="Sort ascending" aria-label="Sort ascending">↑</button>
           </div>
@@ -715,68 +715,75 @@
       <form method="dialog" class="settings-modal glass" id="settingsForm">
         <div class="modal-head">
           <div>
-            <p class="eyebrow">Site settings</p>
-            <h2>Settings</h2>
+            <p class="eyebrow" data-i18n="Site settings">Site settings</p>
+            <h2 data-i18n="Settings">Settings</h2>
           </div>
           <div class="modal-head-actions">
-            <button class="primary-button modal-head-save" type="submit">Save</button>
+            <button class="primary-button modal-head-save" type="submit" data-i18n="Save">Save</button>
             <button class="icon-button" id="settingsCloseButton" type="button" title="Close">×</button>
           </div>
         </div>
 
         <section class="settings-section">
-          <h3>Page</h3>
+          <h3 data-i18n="Page">Page</h3>
           <div class="settings-layout" id="settingsLayoutList" aria-label="Page order"></div>
         </section>
 
-        <p class="eyebrow settings-detail-title">Details</p>
+        <p class="eyebrow settings-detail-title" data-i18n="Details">Details</p>
         <section class="settings-grid">
           <label class="settings-account-field">
-            <span>PlayStation account</span>
+            <span data-i18n="PlayStation account">PlayStation account</span>
             <input id="settingsPsnUser" autocomplete="off">
           </label>
           <label class="settings-account-field">
-            <span>Microsoft account</span>
-            <input id="settingsMicrosoftUser" autocomplete="off" placeholder="Xbox gamertag or XUID">
+            <span data-i18n="Microsoft account">Microsoft account</span>
+            <input id="settingsMicrosoftUser" autocomplete="off" placeholder="Xbox gamertag or XUID" data-i18n-placeholder="Xbox gamertag or XUID">
           </label>
           <label class="settings-account-field">
-            <span>Steam account</span>
-            <input id="settingsSteamUser" autocomplete="off" placeholder="SteamID64, profile URL, or vanity name">
+            <span data-i18n="Steam account">Steam account</span>
+            <input id="settingsSteamUser" autocomplete="off" placeholder="SteamID64, profile URL, or vanity name" data-i18n-placeholder="SteamID64, profile URL, or vanity name">
           </label>
           <label class="settings-detail-compact">
-            <span>Currency</span>
+            <span data-i18n="Currency">Currency</span>
             <select id="settingsCurrency">
               <option value="EUR">EUR</option>
               <option value="USD">USD</option>
             </select>
           </label>
           <label class="settings-detail-compact">
-            <span>Region</span>
+            <span data-i18n="Region">Region</span>
             <select id="settingsRegion">
-              <option value="ES">Spain</option>
-              <option value="IT">Italy</option>
+              <option value="ES" data-i18n="Spain">Spain</option>
+              <option value="IT" data-i18n="Italy">Italy</option>
               <option value="US">US</option>
               <option value="UK">UK</option>
             </select>
           </label>
           <label class="settings-detail-compact">
-            <span>Default owner</span>
+            <span data-i18n="Language">Language</span>
+            <select id="settingsLanguage">
+              <option value="en">English</option>
+              <option value="es-ES">Español (España)</option>
+            </select>
+          </label>
+          <label class="settings-detail-compact">
+            <span data-i18n="Default owner">Default owner</span>
             <input id="settingsDefaultOwner" autocomplete="off">
           </label>
         </section>
 
         <section class="settings-section">
-          <h3>Stores</h3>
+          <h3 data-i18n="Stores">Stores</h3>
           <div class="settings-store-list" id="settingsStores"></div>
         </section>
 
         <section class="settings-section settings-csv-section">
-          <h3>CSV data</h3>
+          <h3 data-i18n="CSV data">CSV data</h3>
           <div class="settings-csv-data" id="settingsCsvData"></div>
         </section>
 
         <div class="modal-actions">
-          <button class="primary-button" type="submit">Save</button>
+          <button class="primary-button" type="submit" data-i18n="Save">Save</button>
         </div>
       </form>
     </dialog>

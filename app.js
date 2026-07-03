@@ -1,5 +1,6 @@
 import { normalizeSearchText, createGameCardShell, bindActivityCardParallax, mountActivitySlider, mountReleaseCalendar, finishedGameMarkup, achievementCardMarkup, achievementDashboardMarkup, achievementPanelMarkup, completedCardMarkup, horizontalCarouselState, syncViewModeButton, slideHorizontalCarousel, comparePlayingGames, finishedDurationText, timeBadgeMarkup, guideLinksMarkup, storeButtonsMarkup, activityTrailerUrl, activityTrailerFrameMarkup, preloadPausedActivityTrailers, activityReleaseStatus, activityCoverOverride, activityAllowsPsnCardTrophies, formatFooterDate, formatFooterDateTime, confirmGameDelete } from "./activity-ui.js";
 import { applySiteTheme, normalizeThemeSettings, openThemeEditor, ownerCardColorClass, ownerColorClass, themeSettingsButton } from "./theme-system.js";
+import { applyDocumentTranslations, languageOptions, normalizeLanguage, t } from "./i18n.js";
 
 mountActivitySlider(document.querySelector("#playingSection"), { count: "playingCount", previous: "playingPrevButton", next: "playingNextButton", list: "playingList", dataSection: "playing", finished: "playingFinished", finishedList: "playingFinishedList" });
 
@@ -52,6 +53,7 @@ const DEFAULT_SETTINGS = {
   storeSettingsVersion: 2,
   defaultOwner: "Xavi",
   shelfSync: true,
+  language: "en",
 };
 const STATUS_OPTIONS = [
   "To Collect",
@@ -264,6 +266,7 @@ const el = {
   settingsSteamUser: document.querySelector("#settingsSteamUser"),
   settingsCurrency: document.querySelector("#settingsCurrency"),
   settingsRegion: document.querySelector("#settingsRegion"),
+  settingsLanguage: document.querySelector("#settingsLanguage"),
   settingsStores: document.querySelector("#settingsStores"),
   settingsDefaultOwner: document.querySelector("#settingsDefaultOwner"),
   detailTitle: document.querySelector("#detailTitle"),
@@ -878,6 +881,7 @@ function normalizeSettings(settings = {}) {
     steamUser: cleanSteamUser(settings.steamUser),
     currency: settings.currency === "USD" ? "USD" : "EUR",
     region: ["ES", "IT", "US", "UK"].includes(settings.region) ? settings.region : DEFAULT_SETTINGS.region,
+    language: normalizeLanguage(settings.language),
     stores: stores.slice(0, MAX_PRICE_STORES),
     storeSettingsVersion: 2,
     defaultOwner: cleanOwnerLabel(settings.defaultOwner) || DEFAULT_SETTINGS.defaultOwner,
@@ -903,18 +907,19 @@ async function persistCloud() {
 
 function render() {
   applyTheme();
+  applyLanguage();
   document.documentElement.classList.remove("theme-booting");
   document.body.classList.toggle("can-edit", state.canEdit);
   document.body.classList.toggle("list-view-mode", state.viewMode === "list");
-  el.loginButton.innerHTML = state.canEdit ? `${pauseIcon()}<span class="button-label">Stop Editing</span>` : pencilIcon();
-  el.loginButton.title = state.canEdit ? "Stop Editing" : "Edit";
+  el.loginButton.innerHTML = state.canEdit ? `${pauseIcon()}<span class="button-label">${escapeHtml(tt("Stop Editing"))}</span>` : pencilIcon();
+  el.loginButton.title = state.canEdit ? tt("Stop Editing") : tt("Edit");
   el.loginButton.setAttribute("aria-label", el.loginButton.title);
   el.addButton.hidden = false;
   el.syncButton.hidden = !state.canEdit;
   if (el.settingsButton) el.settingsButton.hidden = !state.canEdit;
   if (el.fetchDataButton) el.fetchDataButton.hidden = true;
   el.fetchPricesButton.hidden = !state.canEdit;
-  if (state.canEdit && !el.fetchPricesButton.disabled) el.fetchPricesButton.innerHTML = `${currencyIcon()}<span class="button-label">Fetch New Prices</span>`;
+  if (state.canEdit && !el.fetchPricesButton.disabled) el.fetchPricesButton.innerHTML = `${currencyIcon()}<span class="button-label">${escapeHtml(tt("Fetch New Prices"))}</span>`;
   renderFilters();
   renderPlayingSection();
   renderStats();
@@ -930,7 +935,7 @@ function render() {
   scheduleMobilePaintRefresh();
   el.sortFilter.value = state.filters.sort;
   el.sortDirectionButton.innerHTML = sortArrowIcon(state.filters.direction === "desc");
-  el.sortDirectionButton.title = state.filters.direction === "asc" ? "Sort ascending" : "Sort descending";
+  el.sortDirectionButton.title = state.filters.direction === "asc" ? tt("Sort ascending") : tt("Sort descending");
   el.sortDirectionButton.setAttribute("aria-label", el.sortDirectionButton.title);
   el.sortDirectionButton.classList.toggle("desc", state.filters.direction === "desc");
   el.sortDirectionButton.disabled = state.filters.sort === "custom";
@@ -940,6 +945,18 @@ function render() {
   el.platformFilter.classList.toggle("is-active", state.filters.platform !== "all");
   el.tagFilter.classList.toggle("is-active", state.filters.tag !== "all");
   updateScrollTopButton();
+}
+
+function currentLanguage() {
+  return normalizeLanguage(state.settings?.language);
+}
+
+function tt(key, values) {
+  return t(currentLanguage(), key, values);
+}
+
+function applyLanguage() {
+  applyDocumentTranslations(currentLanguage());
 }
 
 function applyTheme() {
@@ -1000,6 +1017,8 @@ function renderSettingsDialog() {
   el.settingsSteamUser.value = state.settings.steamUser;
   el.settingsCurrency.value = state.settings.currency;
   el.settingsRegion.value = state.settings.region;
+  el.settingsLanguage.innerHTML = languageOptions(state.settings.language, escapeHtml);
+  el.settingsLanguage.value = state.settings.language;
   el.settingsDefaultOwner.value = state.settings.defaultOwner;
   const pageIndex = new Map(state.settings.pageOrder.map((key, index) => [key, index]));
   el.settingsLayoutList.innerHTML = [
@@ -1050,6 +1069,7 @@ function renderSettingsDialog() {
   });
   document.querySelector("[data-export-csv='gamelist']")?.addEventListener("click", exportGamelistCsv);
   document.querySelector("[data-import-csv='gamelist']")?.addEventListener("click", importGamelistCsv);
+  applyLanguage();
 }
 
 function settingsLayoutItem(key, index, options = {}) {
@@ -1113,11 +1133,11 @@ function settingsDefaultOrderItem() {
     <article class="settings-layout-card settings-order-card" data-layout-key="default-order">
       <div class="settings-wire wire-order" aria-hidden="true"><span></span><span></span><span></span><span></span><span></span><span></span></div>
       <label class="settings-theme-select">
-        <span>Default order</span>
-        <select data-default-order aria-label="Default list order">
-          <option value="custom" ${state.settings.defaultOrder === "custom" ? "selected" : ""}>Custom</option>
-          <option value="time" ${state.settings.defaultOrder === "time" ? "selected" : ""}>Time</option>
-          <option value="name" ${state.settings.defaultOrder === "name" ? "selected" : ""}>Name</option>
+        <span>${escapeHtml(tt("Default order"))}</span>
+        <select data-default-order aria-label="${escapeHtml(tt("Default list order"))}">
+          <option value="custom" ${state.settings.defaultOrder === "custom" ? "selected" : ""}>${escapeHtml(tt("Custom"))}</option>
+          <option value="time" ${state.settings.defaultOrder === "time" ? "selected" : ""}>${escapeHtml(tt("Time"))}</option>
+          <option value="name" ${state.settings.defaultOrder === "name" ? "selected" : ""}>${escapeHtml(tt("Name"))}</option>
         </select>
       </label>
     </article>
@@ -1129,11 +1149,11 @@ function settingsShelfSyncItem() {
     <article class="settings-layout-card settings-sync-card" data-layout-key="shelf-sync">
       <div class="settings-wire wire-list" aria-hidden="true"><span></span><span></span><span></span></div>
       <div class="settings-theme-select">
-        <span>Shelf Sync</span>
+        <span>${escapeHtml(tt("Shelf Sync"))}</span>
         <div class="settings-check-field">
-          <label class="check-filter toggle-check settings-visible-check" title="Shelf Sync">
+          <label class="check-filter toggle-check settings-visible-check" title="${escapeHtml(tt("Shelf Sync"))}">
             <input type="checkbox" data-shelf-sync ${state.settings.shelfSync ? "checked" : ""}>
-            <span>Enabled</span>
+            <span>${escapeHtml(tt("Enabled"))}</span>
           </label>
         </div>
       </div>
@@ -1146,8 +1166,8 @@ function settingsCsvDataItem(kind) {
     <article class="settings-layout-card settings-data-card">
       <div class="settings-theme-select">
         <div class="settings-data-actions">
-          <button class="ghost-button" type="button" data-export-csv="${escapeHtml(kind)}">Export</button>
-          <button class="ghost-button" type="button" data-import-csv="${escapeHtml(kind)}">Import</button>
+          <button class="ghost-button" type="button" data-export-csv="${escapeHtml(kind)}">${escapeHtml(tt("Export"))}</button>
+          <button class="ghost-button" type="button" data-import-csv="${escapeHtml(kind)}">${escapeHtml(tt("Import"))}</button>
         </div>
       </div>
     </article>
@@ -1309,6 +1329,7 @@ async function saveSettingsFromForm(event) {
     steamUser: el.settingsSteamUser.value,
     currency: el.settingsCurrency.value,
     region: el.settingsRegion.value,
+    language: el.settingsLanguage.value,
     stores,
     defaultOwner: el.settingsDefaultOwner.value,
     shelfSync: Boolean(el.settingsLayoutList.querySelector("[data-shelf-sync]")?.checked),
@@ -2301,9 +2322,9 @@ function renderFilters() {
   const active = state.games.filter((game) => !game.deletedAt);
   const platforms = unique(active.map((game) => platformFilterGroup(game.platform)).filter(Boolean));
   const genres = unique(active.flatMap((game) => game.genres || []));
-  fillSelect(el.platformFilter, ["all", ...platforms], state.filters.platform, "All platforms");
+  fillSelect(el.platformFilter, ["all", ...platforms], state.filters.platform, tt("All platforms"));
   syncPlatformLogoSelect(el.platformFilter);
-  fillSelect(el.tagFilter, ["all", ...genres], state.filters.tag, "All categories");
+  fillSelect(el.tagFilter, ["all", ...genres], state.filters.tag, tt("All categories"));
 }
 
 function fillSelect(select, values, selected, allLabel) {
@@ -5834,13 +5855,14 @@ async function refreshAllPrices() {
   }
 
   el.fetchPricesButton.disabled = true;
-  showToast(`Fetching prices for ${games.length} games...`);
+  showToast(tt("Fetching prices for {count} games...", { count: games.length }));
   let updated = 0;
   let failed = 0;
 
   for (const [index, game] of games.entries()) {
-    el.fetchPricesButton.innerHTML = `${currencyIcon()}<span class="button-label">Prices ${index + 1}/${games.length}</span>`;
-    el.fetchPricesButton.title = `Prices ${index + 1}/${games.length}`;
+    const progressLabel = tt("Prices {current}/{total}", { current: index + 1, total: games.length });
+    el.fetchPricesButton.innerHTML = `${currencyIcon()}<span class="button-label">${escapeHtml(progressLabel)}</span>`;
+    el.fetchPricesButton.title = progressLabel;
     el.fetchPricesButton.setAttribute("aria-label", el.fetchPricesButton.title);
     game.prices = priceProvidersForGame(game).map((store) => ({
       ...fallbackPriceLinks(game).find((item) => item.store === store),
@@ -5859,10 +5881,10 @@ async function refreshAllPrices() {
   persistLocal();
   persistCloud();
   el.fetchPricesButton.disabled = false;
-  el.fetchPricesButton.innerHTML = `${currencyIcon()}<span class="button-label">Fetch New Prices</span>`;
-  el.fetchPricesButton.title = "Fetch New Prices";
-  el.fetchPricesButton.setAttribute("aria-label", "Fetch New Prices");
-  showToast(`Updated prices for ${updated} games${failed ? `, ${failed} failed` : ""}.`, failed ? "error" : "info");
+  el.fetchPricesButton.innerHTML = `${currencyIcon()}<span class="button-label">${escapeHtml(tt("Fetch New Prices"))}</span>`;
+  el.fetchPricesButton.title = tt("Fetch New Prices");
+  el.fetchPricesButton.setAttribute("aria-label", tt("Fetch New Prices"));
+  showToast(tt("Updated prices for {updated} games{failed}.", { updated, failed: failed ? tt(", {count} failed", { count: failed }) : "" }), failed ? "error" : "info");
 }
 
 function mergeFetchedPrices(game, fetchedPrices = []) {

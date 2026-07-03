@@ -1,5 +1,6 @@
 import { normalizeSearchText, createGameCardShell, bindActivityCardParallax, mountActivitySlider, mountReleaseCalendar, finishedGameMarkup, achievementCardMarkup, achievementDashboardMarkup, achievementPanelMarkup, completedCardMarkup, horizontalCarouselState, syncViewModeButton, slideHorizontalCarousel, comparePlayingGames, finishedDurationText, timeBadgeMarkup, guideLinksMarkup, storeButtonsMarkup, activityTrailerUrl, preloadPausedActivityTrailers, syncFocusedActivityTrailer, activityReleaseStatus, activityCoverOverride, activityLocalGameForTitle, activityTitleMatchScore, activityAllowsPsnCardTrophies, formatFooterDate, formatFooterDateTime, confirmGameDelete } from "./activity-ui.js";
 import { applySiteTheme, normalizeThemeSettings, openThemeEditor, ownerCardColorClass, ownerColorClass, themeSettingsButton } from "./theme-system.js";
+import { applyDocumentTranslations, languageOptions, normalizeLanguage, t } from "./i18n.js";
 
 mountActivitySlider(document.querySelector("[data-module='playing']"), { count: "shelfPlayingCount", previous: "shelfPlayingPrev", next: "shelfPlayingNext", list: "playingCarousel", finished: "shelfPlayingFinished", finishedList: "finishedCarousel" });
 splitShelfPlayingModules();
@@ -150,6 +151,7 @@ const el = {
   platformOptions: document.querySelector("#shelfPlatformOptions"),
   settingsTheme: document.querySelector("#shelfSettingsTheme"), settingsDefaultOrder: document.querySelector("#shelfSettingsDefaultOrder"),
   settingsCurrency: document.querySelector("#shelfSettingsCurrency"), settingsRegion: document.querySelector("#shelfSettingsRegion"),
+  settingsLanguage: document.querySelector("#shelfSettingsLanguage"),
   settingsStores: document.querySelector("#shelfSettingsStores"),
   settingsPsnUser: document.querySelector("#shelfSettingsPsnUser"), settingsMicrosoftUser: document.querySelector("#shelfSettingsMicrosoftUser"),
   settingsSteamUser: document.querySelector("#shelfSettingsSteamUser"), settingsDefaultOwner: document.querySelector("#shelfSettingsDefaultOwner"),
@@ -299,6 +301,7 @@ function rebuildGames() {
 }
 
 function renderAll() {
+  applyLanguage();
   applyLayout();
   renderChrome();
   renderFilters();
@@ -391,18 +394,18 @@ function renderChrome() {
   el.layoutButton.hidden = !state.canEdit;
   if (el.syncButton) el.syncButton.hidden = true;
   el.fetchPricesButton.hidden = !state.canEdit || !shelfPricesVisible();
-  el.fetchPricesButton.innerHTML = `${currencyIcon()}<span class="button-label">Fetch New Prices</span>`;
+  el.fetchPricesButton.innerHTML = `${currencyIcon()}<span class="button-label">${escapeHtml(tt("Fetch New Prices"))}</span>`;
   updateFetchPricesButtonStatus();
   el.login.innerHTML = state.canEdit
-    ? `<svg class="pause-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5v14M16 5v14"></path></svg><span class="button-label">Stop Editing</span>`
+    ? `<svg class="pause-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5v14M16 5v14"></path></svg><span class="button-label">${escapeHtml(tt("Stop Editing"))}</span>`
     : `<svg class="pencil-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h4l11-11a2.8 2.8 0 0 0-4-4L4 16v4Z"></path><path d="M13.5 6.5l4 4"></path></svg>`;
-  el.login.title = state.canEdit ? "Stop Editing" : "Edit";
+  el.login.title = state.canEdit ? tt("Stop Editing") : tt("Edit");
   el.login.setAttribute("aria-label", el.login.title);
   syncViewModeButton(el.view, state.viewMode, { gridIcon, linesIcon });
   el.sortDirection.innerHTML = sortArrowIcon(state.filters.direction === "desc");
   el.sortDirection.classList.toggle("desc", state.filters.direction === "desc");
-  el.sortDirection.title = `Sort ${state.filters.direction === "desc" ? "descending" : "ascending"}`;
-  el.footerUpdate.textContent = state.updatedAt ? `Last edit ${formatFooterDate(state.updatedAt)}` : "Last edit -";
+  el.sortDirection.title = state.filters.direction === "desc" ? tt("Sort descending") : tt("Sort ascending");
+  el.footerUpdate.textContent = state.updatedAt ? `${tt("Last edit")} ${formatFooterDate(state.updatedAt)}` : tt("Last edit -");
   el.footerVersion.textContent = siteVersion.version
     ? `${siteVersion.version} · Updated ${formatFooterDateTime(siteVersion.updatedAt)}`
     : "Version -";
@@ -440,6 +443,18 @@ async function syncShelfNow() {
   } finally {
     if (el.syncButton) el.syncButton.disabled = false;
   }
+}
+
+function currentLanguage() {
+  return normalizeLanguage(state.gamelistSettings?.language);
+}
+
+function tt(key, values) {
+  return t(currentLanguage(), key, values);
+}
+
+function applyLanguage() {
+  applyDocumentTranslations(currentLanguage());
 }
 
 function initPagePullTransition({ targetLabel, targetUrl }) {
@@ -549,9 +564,9 @@ async function refreshAllShelfPrices() {
   const settings = normalizePriceSettings(state.gamelistSettings);
   if (!games.length) return;
   el.fetchPricesButton.disabled = true;
-  state.priceFetchStatus = `Fetching prices for ${games.length} games...`;
+  state.priceFetchStatus = tt("Fetching prices for {count} games...", { count: games.length });
   updateFetchPricesButtonStatus();
-  showToast(`Fetching prices for ${games.length} games...`);
+  showToast(state.priceFetchStatus);
   let updated = 0;
   let failed = 0;
   let searched = 0;
@@ -559,8 +574,9 @@ async function refreshAllShelfPrices() {
   const currencyMismatchGames = [];
   try {
     for (const [index, game] of games.entries()) {
-      el.fetchPricesButton.innerHTML = `${currencyIcon()}<span class="button-label">Prices ${index + 1}/${games.length}</span>`;
-      state.priceFetchStatus = `Checking ${index + 1}/${games.length}: ${game.title}`;
+      const progressLabel = tt("Prices {current}/{total}", { current: index + 1, total: games.length });
+      el.fetchPricesButton.innerHTML = `${currencyIcon()}<span class="button-label">${escapeHtml(progressLabel)}</span>`;
+      state.priceFetchStatus = `${tt("Checking {current}/{total}", { current: index + 1, total: games.length })}: ${game.title}`;
       updateFetchPricesButtonStatus();
       try {
         if (index) await delay(450);
@@ -587,10 +603,10 @@ async function refreshAllShelfPrices() {
       console.groupEnd();
     }
     state.priceFetchStatus = `Last fetch: ${updated}/${games.length} updated${searched ? `, ${searched} via search` : ""}${failed ? `, ${failed} failed` : ""}${emptyPriceGames.length ? `, ${emptyPriceGames.length} empty prices` : ""}${currencyMismatchGames.length ? `, ${currencyMismatchGames.length} wrong currency` : ""}.`;
-    showToast(`Updated prices for ${updated} games${failed ? `, ${failed} failed` : ""}.`, failed ? "error" : "info");
+    showToast(tt("Updated prices for {updated} games{failed}.", { updated, failed: failed ? tt(", {count} failed", { count: failed }) : "" }), failed ? "error" : "info");
   } finally {
     el.fetchPricesButton.disabled = false;
-    el.fetchPricesButton.innerHTML = `${currencyIcon()}<span class="button-label">Fetch New Prices</span>`;
+    el.fetchPricesButton.innerHTML = `${currencyIcon()}<span class="button-label">${escapeHtml(tt("Fetch New Prices"))}</span>`;
     updateFetchPricesButtonStatus();
   }
 }
@@ -647,7 +663,7 @@ function ensureCollectionPriceCurrency(data, settings) {
 
 function updateFetchPricesButtonStatus() {
   if (!el.fetchPricesButton) return;
-  const label = state.priceFetchStatus || "Fetch New Prices";
+  const label = state.priceFetchStatus || tt("Fetch New Prices");
   el.fetchPricesButton.title = label;
   el.fetchPricesButton.setAttribute("aria-label", label);
 }
@@ -715,9 +731,9 @@ function renderFilters() {
   const platforms = uniqueSorted(visibleGames.map((game) => game.platform));
   const countries = uniqueSorted(visibleGames.map((game) => game.country));
   const categories = uniqueSorted(visibleGames.flatMap((game) => [...String(game.genre || "").split(","), ...(game.genres || [])].map((value) => value.trim()).filter(Boolean)));
-  el.platform.innerHTML = `<option value="all">All platforms</option>${platforms.map((value) => `<option value="${escapeHtml(value)}">${escapeHtml(platformDisplayName(value))}</option>`).join("")}`;
-  el.region.innerHTML = `<option value="all">All regions</option>${countries.map((value) => `<option value="${escapeHtml(value)}">${escapeHtml(regionName(value))}</option>`).join("")}`;
-  el.category.innerHTML = `<option value="all">All categories</option>${categories.map((value) => `<option value="${escapeHtml(value)}">${escapeHtml(value)}</option>`).join("")}`;
+  el.platform.innerHTML = `<option value="all">${escapeHtml(tt("All platforms"))}</option>${platforms.map((value) => `<option value="${escapeHtml(value)}">${escapeHtml(platformDisplayName(value))}</option>`).join("")}`;
+  el.region.innerHTML = `<option value="all">${escapeHtml(tt("All regions"))}</option>${countries.map((value) => `<option value="${escapeHtml(value)}">${escapeHtml(regionName(value))}</option>`).join("")}`;
+  el.category.innerHTML = `<option value="all">${escapeHtml(tt("All categories"))}</option>${categories.map((value) => `<option value="${escapeHtml(value)}">${escapeHtml(value)}</option>`).join("")}`;
   el.platform.value = state.filters.platform;
   syncPlatformLogoSelect(el.platform);
   el.region.value = state.filters.region;
@@ -1474,7 +1490,7 @@ function renderLayoutEditor() {
   el.layoutList.className = "settings-layout";
   el.layoutList.innerHTML = [
     ...state.layout.order.map((key, index) => settingsLayoutCard(key, index)),
-    `<div class="settings-preference-separator" role="presentation"></div><div class="settings-preference-row">${themeSettingsButton(state.gamelistSettings, escapeHtml)}${settingsSelectCard("order", "Default order", "shelfSettingsDefaultOrder", [{ value: "added", label: "Last added" }, { value: "title", label: "Name" }, { value: "platform", label: "Platform" }, { value: "region", label: "Region" }, { value: "value", label: "Value" }])}${settingsShelfSyncCard()}${settingsShelfPricesCard()}</div>`,
+    `<div class="settings-preference-separator" role="presentation"></div><div class="settings-preference-row">${themeSettingsButton(state.gamelistSettings, escapeHtml)}${settingsSelectCard("order", tt("Default order"), "shelfSettingsDefaultOrder", [{ value: "added", label: tt("Last added") }, { value: "title", label: tt("Name") }, { value: "platform", label: tt("Platform") }, { value: "region", label: tt("Region") }, { value: "value", label: tt("Value") }])}${settingsShelfSyncCard()}${settingsShelfPricesCard()}</div>`,
   ].join("");
   document.querySelector("#shelfSettingsCsvData").innerHTML = settingsCsvDataCard("shelf");
   el.settingsDefaultOrder = document.querySelector("#shelfSettingsDefaultOrder");
@@ -1482,6 +1498,8 @@ function renderLayoutEditor() {
   el.settingsDefaultOrder.value = shelfSortForDefault(state.gamelistSettings.shelfDefaultOrder ?? state.gamelistSettings.defaultOrder);
   el.settingsCurrency.value = settings.currency;
   el.settingsRegion.value = settings.region;
+  el.settingsLanguage.innerHTML = languageOptions(state.gamelistSettings.language, escapeHtml);
+  el.settingsLanguage.value = currentLanguage();
   el.settingsPsnUser.value = state.gamelistSettings.psnUser || "";
   el.settingsMicrosoftUser.value = state.gamelistSettings.microsoftUser || "";
   el.settingsSteamUser.value = state.gamelistSettings.steamUser || "";
@@ -1505,6 +1523,7 @@ function renderLayoutEditor() {
   }));
   document.querySelector("[data-export-csv='shelf']")?.addEventListener("click", exportShelfCsv);
   document.querySelector("[data-import-csv='shelf']")?.addEventListener("click", importShelfCsv);
+  applyLanguage();
 }
 
 function settingsLayoutCard(key, index) {
@@ -1518,15 +1537,15 @@ function settingsSelectCard(type, title, id, options) {
 }
 
 function settingsShelfSyncCard() {
-  return `<article class="settings-layout-card settings-sync-card"><div class="settings-wire wire-list" aria-hidden="true"><span></span><span></span><span></span></div><div class="settings-theme-select"><span>Shelf Sync</span><div class="settings-check-field"><label class="check-filter toggle-check settings-visible-check" title="Shelf Sync"><input type="checkbox" id="shelfSettingsSync" ${state.gamelistSettings.shelfSync === false ? "" : "checked"}><span>Enabled</span></label></div></div></article>`;
+  return `<article class="settings-layout-card settings-sync-card"><div class="settings-wire wire-list" aria-hidden="true"><span></span><span></span><span></span></div><div class="settings-theme-select"><span>${escapeHtml(tt("Shelf Sync"))}</span><div class="settings-check-field"><label class="check-filter toggle-check settings-visible-check" title="${escapeHtml(tt("Shelf Sync"))}"><input type="checkbox" id="shelfSettingsSync" ${state.gamelistSettings.shelfSync === false ? "" : "checked"}><span>${escapeHtml(tt("Enabled"))}</span></label></div></div></article>`;
 }
 
 function settingsShelfPricesCard() {
-  return `<article class="settings-layout-card settings-sync-card"><div class="settings-wire wire-list" aria-hidden="true"><span></span><span></span><span></span></div><div class="settings-theme-select"><span>Prices</span><div class="settings-check-field"><label class="check-filter toggle-check settings-visible-check" title="Show prices"><input type="checkbox" id="shelfSettingsShowPrices" ${state.gamelistSettings.shelfHidePrices ? "" : "checked"}><span>Show prices</span></label></div></div></article>`;
+  return `<article class="settings-layout-card settings-sync-card"><div class="settings-wire wire-list" aria-hidden="true"><span></span><span></span><span></span></div><div class="settings-theme-select"><span>${escapeHtml(tt("Prices"))}</span><div class="settings-check-field"><label class="check-filter toggle-check settings-visible-check" title="${escapeHtml(tt("Show prices"))}"><input type="checkbox" id="shelfSettingsShowPrices" ${state.gamelistSettings.shelfHidePrices ? "" : "checked"}><span>${escapeHtml(tt("Show prices"))}</span></label></div></div></article>`;
 }
 
 function settingsCsvDataCard(kind) {
-  return `<article class="settings-layout-card settings-data-card"><div class="settings-theme-select"><div class="settings-data-actions"><button class="ghost-button" type="button" data-export-csv="${escapeHtml(kind)}">Export</button><button class="ghost-button" type="button" data-import-csv="${escapeHtml(kind)}">Import</button></div></div></article>`;
+  return `<article class="settings-layout-card settings-data-card"><div class="settings-theme-select"><div class="settings-data-actions"><button class="ghost-button" type="button" data-export-csv="${escapeHtml(kind)}">${escapeHtml(tt("Export"))}</button><button class="ghost-button" type="button" data-import-csv="${escapeHtml(kind)}">${escapeHtml(tt("Import"))}</button></div></div></article>`;
 }
 
 const CSV_NUMERIC_FIELDS = new Set(["order", "lengthHours", "replayCount", "numericPrice", "price", "estimatedValue", "purchasePrice"]);
@@ -1817,7 +1836,7 @@ async function saveLayout(event) {
   state.layout.hidden = LAYOUT_KEYS.filter((key) => !el.layoutList.querySelector(`[data-layout-visible][value="${key}"]`)?.checked);
   localStorage.setItem(LAYOUT_KEY, JSON.stringify(state.layout));
   const stores = [...el.settingsStores.querySelectorAll("input:checked")].map((input) => input.value).filter((store) => STORE_OPTIONS.includes(store)).slice(0, MAX_PRICE_STORES);
-  state.gamelistSettings = { ...state.gamelistSettings, shelfDefaultOrder: el.settingsDefaultOrder.value, currency: el.settingsCurrency.value, region: el.settingsRegion.value, psnUser: el.settingsPsnUser.value.trim(), microsoftUser: el.settingsMicrosoftUser.value.trim(), steamUser: el.settingsSteamUser.value.trim(), defaultOwner: el.settingsDefaultOwner.value.trim(), stores, storeSettingsVersion: 2, shelfSync: document.querySelector("#shelfSettingsSync")?.checked !== false, shelfHidePrices: document.querySelector("#shelfSettingsShowPrices")?.checked === false };
+  state.gamelistSettings = { ...state.gamelistSettings, shelfDefaultOrder: el.settingsDefaultOrder.value, currency: el.settingsCurrency.value, region: el.settingsRegion.value, language: normalizeLanguage(el.settingsLanguage.value), psnUser: el.settingsPsnUser.value.trim(), microsoftUser: el.settingsMicrosoftUser.value.trim(), steamUser: el.settingsSteamUser.value.trim(), defaultOwner: el.settingsDefaultOwner.value.trim(), stores, storeSettingsVersion: 2, shelfSync: document.querySelector("#shelfSettingsSync")?.checked !== false, shelfHidePrices: document.querySelector("#shelfSettingsShowPrices")?.checked === false };
   localStorage.setItem("gamelist:settings:v1", JSON.stringify(state.gamelistSettings));
   applyShelfDefaultOrder(state.gamelistSettings.shelfDefaultOrder);
   await Promise.all([persistShelf(), persistGamelistSettings()]);

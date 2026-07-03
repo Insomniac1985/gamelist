@@ -197,32 +197,32 @@
 
         <section class="toolbar glass shelf-toolbar" data-module="filters">
           <label class="search shelf-search-wide">
-            <span>Search</span>
-            <input id="searchInput" type="search" placeholder="Game, publisher, genre...">
+            <span data-i18n="Search">Search</span>
+            <input id="searchInput" type="search" placeholder="Game, publisher, genre..." data-i18n-placeholder="Game, publisher, genre...">
           </label>
           <label>
-            <span>Platform</span>
+            <span data-i18n="Platform">Platform</span>
             <select id="platformFilter"></select>
           </label>
           <label>
-            <span>Region</span>
+            <span data-i18n="Region">Region</span>
             <select id="regionFilter"></select>
           </label>
           <label>
-            <span>Condition</span>
+            <span data-i18n="Condition">Condition</span>
             <select id="conditionFilter">
-              <option value="all">All conditions</option>
-              <option value="complete">Complete</option>
-              <option value="complete-plus">Complete +</option>
-              <option value="loose">Loose</option>
-              <option value="sealed">Sealed</option>
+              <option value="all" data-i18n="All conditions">All conditions</option>
+              <option value="complete" data-i18n="Complete">Complete</option>
+              <option value="complete-plus" data-i18n="Complete +">Complete +</option>
+              <option value="loose" data-i18n="Loose">Loose</option>
+              <option value="sealed" data-i18n="Sealed">Sealed</option>
             </select>
           </label>
-          <label><span>Category</span><select id="categoryFilter"></select></label>
+          <label><span data-i18n="Category">Category</span><select id="categoryFilter"></select></label>
           <label class="order-label shelf-order-short">
-            <span>Order</span>
+            <span data-i18n="Order">Order</span>
             <div class="order-control"><select id="sortFilter">
-              <option value="added">Last added</option><option value="title">Name</option><option value="platform">Platform</option><option value="region">Region</option><option value="value">Value</option>
+              <option value="added" data-i18n="Last added">Last added</option><option value="title" data-i18n="Name">Name</option><option value="platform" data-i18n="Platform">Platform</option><option value="region" data-i18n="Region">Region</option><option value="value" data-i18n="Value">Value</option>
             </select><button class="direction-toggle" id="sortDirectionButton" type="button" title="Sort ascending" aria-label="Sort ascending"></button></div>
           </label>
           <button class="icon-button view-toggle" id="viewToggleButton" type="button" title="Show as list" aria-label="Show as list">
@@ -359,34 +359,35 @@
     <dialog id="layoutDialog" class="settings-dialog">
       <form class="settings-modal glass" id="layoutForm">
         <div class="modal-head">
-          <div><p class="eyebrow">Shelf settings</p><h2>Settings</h2></div>
+          <div><p class="eyebrow" data-i18n="Shelf settings">Shelf settings</p><h2 data-i18n="Settings">Settings</h2></div>
           <div class="modal-head-actions">
-            <button class="primary-button modal-head-save" type="submit">Save</button>
+            <button class="primary-button modal-head-save" type="submit" data-i18n="Save">Save</button>
             <button class="icon-button" id="layoutClose" type="button" title="Close" aria-label="Close">×</button>
           </div>
         </div>
         <section class="settings-section">
-          <h3>Page</h3>
+          <h3 data-i18n="Page">Page</h3>
           <div class="settings-layout" id="layoutList" aria-label="Page order"></div>
         </section>
-        <p class="eyebrow settings-detail-title">Details</p>
+        <p class="eyebrow settings-detail-title" data-i18n="Details">Details</p>
         <section class="settings-grid">
-          <label class="settings-account-field"><span>PlayStation account</span><input id="shelfSettingsPsnUser" autocomplete="off"></label>
-          <label class="settings-account-field"><span>Microsoft account</span><input id="shelfSettingsMicrosoftUser" autocomplete="off" placeholder="Xbox gamertag or XUID"></label>
-          <label class="settings-account-field"><span>Steam account</span><input id="shelfSettingsSteamUser" autocomplete="off" placeholder="SteamID64, profile URL, or vanity name"></label>
-          <label class="settings-detail-compact"><span>Currency</span><select id="shelfSettingsCurrency"><option value="EUR">EUR</option><option value="USD">USD</option></select></label>
-          <label class="settings-detail-compact"><span>Region</span><select id="shelfSettingsRegion"><option value="ES">Spain</option><option value="IT">Italy</option><option value="US">US</option><option value="UK">UK</option></select></label>
-          <label class="settings-detail-compact"><span>Default owner</span><input id="shelfSettingsDefaultOwner" autocomplete="off"></label>
+          <label class="settings-account-field"><span data-i18n="PlayStation account">PlayStation account</span><input id="shelfSettingsPsnUser" autocomplete="off"></label>
+          <label class="settings-account-field"><span data-i18n="Microsoft account">Microsoft account</span><input id="shelfSettingsMicrosoftUser" autocomplete="off" placeholder="Xbox gamertag or XUID" data-i18n-placeholder="Xbox gamertag or XUID"></label>
+          <label class="settings-account-field"><span data-i18n="Steam account">Steam account</span><input id="shelfSettingsSteamUser" autocomplete="off" placeholder="SteamID64, profile URL, or vanity name" data-i18n-placeholder="SteamID64, profile URL, or vanity name"></label>
+          <label class="settings-detail-compact"><span data-i18n="Currency">Currency</span><select id="shelfSettingsCurrency"><option value="EUR">EUR</option><option value="USD">USD</option></select></label>
+          <label class="settings-detail-compact"><span data-i18n="Region">Region</span><select id="shelfSettingsRegion"><option value="ES" data-i18n="Spain">Spain</option><option value="IT" data-i18n="Italy">Italy</option><option value="US">US</option><option value="UK">UK</option></select></label>
+          <label class="settings-detail-compact"><span data-i18n="Language">Language</span><select id="shelfSettingsLanguage"><option value="en">English</option><option value="es-ES">Español (España)</option></select></label>
+          <label class="settings-detail-compact"><span data-i18n="Default owner">Default owner</span><input id="shelfSettingsDefaultOwner" autocomplete="off"></label>
         </section>
         <section class="settings-section">
-          <h3>Stores</h3>
+          <h3 data-i18n="Stores">Stores</h3>
           <div class="settings-store-list" id="shelfSettingsStores"></div>
         </section>
         <section class="settings-section settings-csv-section">
-          <h3>CSV data</h3>
+          <h3 data-i18n="CSV data">CSV data</h3>
           <div class="settings-csv-data" id="shelfSettingsCsvData"></div>
         </section>
-        <div class="modal-actions"><button class="primary-button" type="submit">Save</button></div>
+        <div class="modal-actions"><button class="primary-button" type="submit" data-i18n="Save">Save</button></div>
       </form>
     </dialog>
 
