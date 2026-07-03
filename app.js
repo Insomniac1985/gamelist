@@ -4446,6 +4446,7 @@ function platformLogo(platform) {
 
 function platformClass(platform, options = {}) {
   const value = String(canonicalPlatform(platform) || platform || "").toLowerCase();
+  const title = String(options.title || "").toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
   if (value === "wii") return "platform-wii";
   if (value === "wii u" || value === "wiiu") return "platform-wiiu";
   if (value === "n64") return "platform-n64";
@@ -4462,7 +4463,7 @@ function platformClass(platform, options = {}) {
   if (isSegaPlatform(value)) return "platform-sega";
   if (value.includes("switch")) return "platform-nintendo";
   if (value === "ps1") return "platform-playstation platform-ps1";
-  if (value === "ps3" && String(options.title || "").trim().toLowerCase() === "drakengard 3") return "platform-playstation platform-ps3-as-ps4";
+  if (value === "ps3" && PS3_BLUE_PILL_TITLES.has(title)) return "platform-playstation platform-ps3-as-ps4";
   if (value === "ps3") return "platform-playstation platform-ps3";
   if (value === "ps5") return "platform-playstation platform-ps5";
   if (value === "psp") return "platform-playstation platform-psp";
@@ -4473,6 +4474,22 @@ function platformClass(platform, options = {}) {
   if (value.includes("steam") || value.includes("pc")) return "platform-pc";
   return "platform-generic";
 }
+
+const PS3_BLUE_PILL_TITLES = new Set([
+  "deception iv blood ties",
+  "drakengard 3",
+  "dynasty warriors 8 xtreme legends",
+  "everybody dance 3",
+  "lego hobbit",
+  "mugen souls z",
+  "murdered soul suspect",
+  "rambo the video game",
+  "sports pack vol 1",
+  "the amazing spider man 2",
+  "ultra street fighter iv",
+  "watch dogs",
+  "wolfenstein the new order",
+]);
 
 function isSegaPlatform(value) {
   return /\b(gen|genesis|mega drive|megadrive|sega|saturn|cd|32x|master system|game gear)\b/i.test(value);
