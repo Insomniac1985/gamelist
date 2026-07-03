@@ -4163,7 +4163,7 @@ function psnProgressBadge(game, options = {}) {
 function completedBadges(game, options = {}) {
   const progress = achievementProgressForGame(game);
   return [
-    game.platform ? platformBadge(game.platform, null, { title: game.title }),
+    game.platform ? platformBadge(game.platform, null, { title: game.title }) : "",
     game.digital ? `<span class="digital-pill">Digital</span>` : "",
     game.emulator ? `<span class="emulator-pill">Emulator</span>` : "",
     game.coop ? `<span class="coop-pill">Coop</span>` : "",
