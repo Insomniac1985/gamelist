@@ -4475,15 +4475,24 @@ function platformFilterGroup(platform) {
 }
 
 function platformDisplayName(platform) {
+  const value = canonicalPlatform(platform) || platform;
   const labels = {
+    PS1: "Sony PlayStation",
+    PS2: "Sony PlayStation 2",
+    PS3: "Sony PlayStation 3",
+    PS4: "Sony PlayStation 4",
+    PS5: "Sony PlayStation 5",
+    PSP: "Sony PSP",
+    PSVita: "Sony PlayStation Vita",
     X360: "Xbox 360",
     XOne: "Xbox One",
-    GBC: "GameBoy Color",
-    GB: "GameBoy",
-    GC: "GameCube",
+    GBC: "Game Boy Color",
+    GB: "Game Boy",
+    GC: "Nintendo GameCube",
     Gen: "Sega Genesis",
+    DC: "Sega Dreamcast",
   };
-  return labels[canonicalPlatform(platform) || platform] || platform;
+  return labels[value] || value;
 }
 
 function normalizeGameRecords(games) {
