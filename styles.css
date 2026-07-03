@@ -2052,6 +2052,21 @@ body.dialog-open .floating-edit-actions {
   display: none;
 }
 
+#gameDialog #platformInput::-webkit-calendar-picker-indicator,
+#gameDialog #ownersInput::-webkit-calendar-picker-indicator,
+#gameDialog #statusesInput::-webkit-calendar-picker-indicator,
+#addDialog #platformInput::-webkit-calendar-picker-indicator {
+  display: none !important;
+  opacity: 0;
+}
+
+#gameDialog #platformInput,
+#gameDialog #ownersInput,
+#gameDialog #statusesInput,
+#addDialog #platformInput {
+  appearance: textfield;
+}
+
 .platform-logo-select {
   position: relative;
   width: 100%;
@@ -2213,6 +2228,8 @@ body.dialog-open .floating-edit-actions {
 }
 
 .platform-logo-option .platform-logo-choice {
+  position: relative;
+  z-index: 2;
   height: 100%;
   align-items: center;
 }
@@ -2233,6 +2250,8 @@ body.dialog-open .floating-edit-actions {
 }
 
 .platform-logo-choice-icon {
+  position: relative;
+  z-index: 2;
   display: grid;
   place-items: center;
   width: 16px;
@@ -2274,6 +2293,7 @@ body.dialog-open .floating-edit-actions {
 .platform-logo-choice-label {
   display: flex;
   position: relative;
+  z-index: 2;
   align-items: center;
   min-width: 0;
   min-height: 100%;

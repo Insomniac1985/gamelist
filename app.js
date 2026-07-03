@@ -1054,23 +1054,27 @@ function renderSettingsDialog() {
       renderSettingsDialog();
     });
   });
-  el.settingsLayoutList.querySelector("[data-theme-editor]")?.addEventListener("click", () => openThemeEditor({
-    settings: state.settings,
-    page: "gamelist",
-    onSave: async (settings) => {
-      state.settings = normalizeSettings(settings);
-      persistLocalSettings();
-      await persistCloud();
-      renderSettingsDialog();
-      render();
-    },
-  }));
+  el.settingsLayoutList.querySelector("[data-theme-editor]")?.addEventListener("click", () => {
+    openThemeEditor({
+      settings: state.settings,
+      page: "gamelist",
+      onSave: async (settings) => {
+        state.settings = normalizeSettings(settings);
+        persistLocalSettings();
+        await persistCloud();
+        renderSettingsDialog();
+        render();
+      },
+    });
+    requestAnimationFrame(() => syncStyledSelects(document.querySelector("#themeEditorDialog"), { activeValue: null }));
+  });
   el.settingsLayoutList.querySelector("[data-default-order]")?.addEventListener("change", (event) => {
     state.settings.defaultOrder = event.target.value;
   });
   document.querySelector("[data-export-csv='gamelist']")?.addEventListener("click", exportGamelistCsv);
   document.querySelector("[data-import-csv='gamelist']")?.addEventListener("click", importGamelistCsv);
   applyLanguage();
+  syncStyledSelects(el.settingsDialog, { activeValue: null });
 }
 
 function settingsLayoutItem(key, index, options = {}) {
@@ -1721,6 +1725,7 @@ function renderPlatinumDialog(platinums = platinumItems(), years = platinumYears
     state.platinumPlatform = el.platinumPlatformSelect.value || "all";
     renderPlatinumDialog(platinums, years);
   };
+  syncStyledSelects(el.platinumDialog, { activeValue: null });
   el.platinumList.innerHTML = visible.length ? visible.map(platinumCard).join("") : `<div class="empty">No completed games tracked yet.</div>`;
   el.platinumList.querySelectorAll("[data-game-id]").forEach((button) => {
     button.addEventListener("click", () => {
@@ -2360,15 +2365,17 @@ function syncStyledSelect(select, options = {}) {
     value: option.value,
     label: option.textContent.trim(),
     selected: option.selected,
+    disabled: option.disabled || option.hidden,
   }));
-  const selected = selectOptions.find((option) => option.selected) || selectOptions[0] || { value: "all", label: "All platforms" };
+  const visibleOptions = selectOptions.filter((option) => !option.disabled);
+  const selected = selectOptions.find((option) => option.selected) || visibleOptions[0] || { value: "all", label: "All platforms" };
   control.classList.toggle("is-active", options.activeValue != null && selected.value !== options.activeValue);
   control.innerHTML = `
     <button class="platform-logo-button" type="button" aria-haspopup="listbox" aria-expanded="false">
       ${platformLogoChoiceMarkup(selected.value, selected.label, { logos: useLogos })}
     </button>
     <div class="platform-logo-menu" role="listbox">
-      ${selectOptions.map((option) => `
+      ${visibleOptions.map((option) => `
         <button class="platform-logo-option ${option.selected ? "is-selected" : ""}" type="button" role="option" aria-selected="${option.selected ? "true" : "false"}" data-value="${escapeHtml(option.value)}" data-full-label="${escapeHtml(option.label)}">
           ${platformLogoChoiceMarkup(option.value, option.label, { logos: useLogos })}
         </button>
@@ -2378,7 +2385,10 @@ function syncStyledSelect(select, options = {}) {
   const button = control.querySelector(".platform-logo-button");
   button?.addEventListener("click", (event) => {
     event.stopPropagation();
-    const open = control.classList.toggle("is-open");
+    const shouldOpen = !control.classList.contains("is-open");
+    closePlatformLogoSelects({ target: control });
+    control.classList.toggle("is-open", shouldOpen);
+    const open = control.classList.contains("is-open");
     button.setAttribute("aria-expanded", open ? "true" : "false");
   });
   control.querySelectorAll(".platform-logo-option").forEach((option) => {
@@ -2394,6 +2404,9 @@ function syncStyledSelect(select, options = {}) {
       control.classList.remove("is-open");
       button?.setAttribute("aria-expanded", "false");
       select.dispatchEvent(new Event("change", { bubbles: true }));
+      requestAnimationFrame(() => {
+        if (select.isConnected) syncStyledSelect(select, options);
+      });
     });
   });
   requestAnimationFrame(() => {
@@ -2408,6 +2421,10 @@ function syncStyledSelect(select, options = {}) {
     button?.setAttribute("aria-expanded", "false");
     button?.focus();
   });
+}
+
+function syncStyledSelects(root = document, options = {}) {
+  root?.querySelectorAll?.("select").forEach((select) => syncStyledSelect(select, options));
 }
 
 function closePlatformLogoSelects(event) {
@@ -2764,6 +2781,7 @@ function renderCompletedYearFilter(years) {
     ...years.map((year) => `<option value="${escapeHtml(year)}">${escapeHtml(year)}</option>`),
   ].join("");
   el.completedYearFilter.value = state.completedYear;
+  syncStyledSelect(el.completedYearFilter, { activeValue: null });
 }
 
 function completedPageSize() {
@@ -5082,6 +5100,7 @@ async function openEditor(id = "") {
   el.fields.cover.value = game.cover || "";
   el.fields.notes.value = game.notes || "";
   syncDialogPriceVisibility();
+  syncStyledSelect(el.fields.section, { activeValue: null });
   pauseAllPlayingTrailers();
   el.dialog.showModal();
   syncScrollLock();

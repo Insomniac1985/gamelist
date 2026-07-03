@@ -787,7 +787,10 @@ function syncStyledSelect(select, options = {}) {
   const button = control.querySelector(".platform-logo-button");
   button?.addEventListener("click", (event) => {
     event.stopPropagation();
-    const open = control.classList.toggle("is-open");
+    const shouldOpen = !control.classList.contains("is-open");
+    closePlatformLogoSelects({ target: control });
+    control.classList.toggle("is-open", shouldOpen);
+    const open = control.classList.contains("is-open");
     button.setAttribute("aria-expanded", open ? "true" : "false");
   });
   control.querySelectorAll(".platform-logo-option").forEach((option) => {
@@ -803,6 +806,9 @@ function syncStyledSelect(select, options = {}) {
       control.classList.remove("is-open");
       button?.setAttribute("aria-expanded", "false");
       select.dispatchEvent(new Event("change", { bubbles: true }));
+      requestAnimationFrame(() => {
+        if (select.isConnected) syncStyledSelect(select, options);
+      });
     });
   });
   requestAnimationFrame(() => {
@@ -817,6 +823,10 @@ function syncStyledSelect(select, options = {}) {
     button?.setAttribute("aria-expanded", "false");
     button?.focus();
   });
+}
+
+function syncStyledSelects(root = document, options = {}) {
+  root?.querySelectorAll?.("select").forEach((select) => syncStyledSelect(select, options));
 }
 
 function closePlatformLogoSelects(event) {
@@ -1092,6 +1102,7 @@ function openEditor(game = null) {
   el.addForm.querySelector(".modal-head h2").textContent = game?.pendingCollection ? "Add to Collection" : game ? "Edit Game" : "Add Game";
   el.addForm.querySelectorAll("button[type='submit']").forEach((button) => { button.textContent = game?.pendingCollection ? "Add to Collection" : game ? "Save" : "Add to Shelf"; });
   el.editDelete.hidden = !game;
+  syncStyledSelects(el.addDialog, { activeValue: null });
   openDialog(el.addDialog);
 }
 
@@ -1549,21 +1560,25 @@ function renderLayoutEditor() {
     const checked = [...el.settingsStores.querySelectorAll("input:checked")];
     if (checked.length > MAX_PRICE_STORES) input.checked = false;
   }));
-  el.layoutList.querySelector("[data-theme-editor]")?.addEventListener("click", () => openThemeEditor({
-    settings: state.gamelistSettings,
-    page: "shelf",
-    onSave: async (settings) => {
-      state.gamelistSettings = { ...state.gamelistSettings, ...settings, customTheme: normalizeThemeSettings(settings) };
-      localStorage.setItem("gamelist:settings:v1", JSON.stringify(state.gamelistSettings));
-      await persistGamelistSettings();
-      applyTheme();
-      renderLayoutEditor();
-      renderAll();
-    },
-  }));
+  el.layoutList.querySelector("[data-theme-editor]")?.addEventListener("click", () => {
+    openThemeEditor({
+      settings: state.gamelistSettings,
+      page: "shelf",
+      onSave: async (settings) => {
+        state.gamelistSettings = { ...state.gamelistSettings, ...settings, customTheme: normalizeThemeSettings(settings) };
+        localStorage.setItem("gamelist:settings:v1", JSON.stringify(state.gamelistSettings));
+        await persistGamelistSettings();
+        applyTheme();
+        renderLayoutEditor();
+        renderAll();
+      },
+    });
+    requestAnimationFrame(() => syncStyledSelects(document.querySelector("#themeEditorDialog"), { activeValue: null }));
+  });
   document.querySelector("[data-export-csv='shelf']")?.addEventListener("click", exportShelfCsv);
   document.querySelector("[data-import-csv='shelf']")?.addEventListener("click", importShelfCsv);
   applyLanguage();
+  syncStyledSelects(el.layoutDialog, { activeValue: null });
 }
 
 function settingsLayoutCard(key, index) {
@@ -1749,6 +1764,7 @@ function renderShowcaseFilters() {
   el.showcasePlatform.value = state.showcaseFilters.platform;
   el.showcaseRegion.value = state.showcaseFilters.region;
   el.showcaseCategory.value = state.showcaseFilters.category;
+  syncStyledSelects(el.showcaseDialog, { activeValue: null });
   [el.showcasePlatform, el.showcaseRegion, el.showcaseCategory].forEach(updateSelectOverflowTitle);
 }
 
@@ -2411,6 +2427,7 @@ function renderCompletedGames(items) {
   el.completedDirection.innerHTML = sortArrowIcon(state.completedDirection === "desc");
   el.completedDirection.classList.toggle("desc", state.completedDirection === "desc");
   syncViewModeButton(el.completedView, state.completedView, { gridIcon, linesIcon });
+  syncStyledSelects(el.completedDialog, { activeValue: null });
   el.completedList.classList.toggle("list-view", state.completedView === "list");
   el.completedList.innerHTML = visible.map(completedCard).join("") || `<div class="empty">No completed games tracked yet.</div>`;
   el.completedList.querySelectorAll("[data-completed-title]").forEach((button) => button.addEventListener("click", () => { closeDialog(el.completedDialog); openGamelistGameByTitle(button.dataset.completedTitle); }));
