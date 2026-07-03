@@ -1,3 +1,5 @@
+import { runnerStyle } from "./runner-style.js";
+
 const KV_KEY = "shelf-data";
 
 export async function onRequestGet({ request, env }) {
@@ -101,18 +103,7 @@ function auditHtml({ dollars, zeros }) {
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Shelf Price Audit</title>
-  <style>
-    body{margin:0;padding:24px;font:14px/1.45 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;color:#f6f7fb;background:#111318}
-    main{max-width:1100px;margin:auto;display:grid;gap:16px}
-    .lists{display:grid;grid-template-columns:1fr 1fr;gap:16px}
-    section{background:#171b22;border:1px solid #303846;border-radius:8px;padding:14px;min-width:0}
-    h1,h2{margin:0}h1{font-size:22px}h2{font-size:15px;margin-bottom:10px}
-    ol{margin:0;padding-left:22px;display:grid;gap:6px}
-    li{word-break:break-word}small{color:#aab2c0}
-    a,button{border:1px solid #3d4655;border-radius:8px;background:#1e2530;color:#f6f7fb;padding:10px 12px;text-decoration:none;cursor:pointer}
-    .actions{display:flex;gap:10px;flex-wrap:wrap}
-    @media (max-width: 760px){.lists{grid-template-columns:1fr}}
-  </style>
+  ${runnerStyle({ maxWidth: "1100px" })}
 </head>
 <body>
   <main>

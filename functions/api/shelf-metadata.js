@@ -1,4 +1,5 @@
 import { isEditorRequest } from "./editor-auth.js";
+import { runnerStyle } from "./runner-style.js";
 import { onRequestGet as searchMetadata } from "./search.js";
 import { onRequestGet as collectionPrice } from "./collection-price.js";
 
@@ -300,15 +301,7 @@ function runnerHtml() {
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Shelf Metadata Fill</title>
-  <style>
-    body{margin:0;padding:24px;font:14px/1.45 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;color:#f6f7fb;background:#111318}
-    main{max-width:980px;margin:auto;display:grid;gap:16px}
-    button,a,input,label{border:1px solid #3d4655;border-radius:8px;background:#1e2530;color:#f6f7fb;padding:10px 12px;text-decoration:none}
-    button{cursor:pointer}button.primary{border-color:#ff3b62;background:#ff0039}button:disabled{opacity:.55;cursor:wait}
-    label{display:flex;gap:8px;align-items:center}.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}.bar{height:10px;background:#202733;border-radius:999px;overflow:hidden}.bar span{display:block;height:100%;width:0;background:#ff0039}
-    input[type=number]{width:70px}.control{display:grid;gap:6px;max-width:180px}
-    pre{white-space:pre-wrap;background:#171b22;border:1px solid #303846;border-radius:8px;padding:14px;min-height:300px;max-height:58vh;overflow:auto}
-  </style>
+  ${runnerStyle()}
 </head>
 <body>
   <main>

@@ -1,5 +1,6 @@
 import { isEditorRequest } from "./editor-auth.js";
 import { igdbCredentials, igdbLookup } from "./search.js";
+import { runnerStyle } from "./runner-style.js";
 
 const KV_KEY = "shelf-data";
 const DEFAULT_LIMIT = 8;
@@ -131,18 +132,7 @@ function runnerHtml(apply, autorun) {
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Shelf IGDB Cover Refresh</title>
-  <style>
-    body{margin:0;padding:24px;font:14px/1.45 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;color:#f6f7fb;background:#111318}
-    main{max-width:980px;margin:auto;display:grid;gap:16px}
-    button,a{border:1px solid #3d4655;border-radius:8px;background:#1e2530;color:#f6f7fb;padding:10px 12px;text-decoration:none;cursor:pointer}
-    button.primary{border-color:#ff3b62;background:#ff0039}
-    .lists{display:grid;grid-template-columns:1fr 1fr;gap:16px}
-    section{display:grid;gap:8px}
-    h2{margin:0;font-size:15px}
-    pre{white-space:pre-wrap;background:#171b22;border:1px solid #303846;border-radius:8px;padding:14px;min-height:240px;max-height:58vh;overflow:auto}
-    .bar{height:10px;background:#202733;border-radius:999px;overflow:hidden}.bar span{display:block;height:100%;width:0;background:#ff0039}
-    @media (max-width: 760px){.lists{grid-template-columns:1fr}}
-  </style>
+  ${runnerStyle()}
 </head>
 <body>
   <main>
@@ -225,11 +215,41 @@ function runnerHtml(apply, autorun) {
 }
 
 function authHtml() {
-  return "<!doctype html><meta charset=\"utf-8\"><title>Unauthorized</title><p>Log into edit mode first, then open this link again.</p><p><a href=\"/shelf\">Go to Shelf</a></p>";
+  return `<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Unauthorized</title>
+  ${runnerStyle()}
+</head>
+<body>
+  <main>
+    <h1>Unauthorized</h1>
+    <p>Log into edit mode first, then open this link again.</p>
+    <div class="actions"><a href="/shelf">Go to Shelf</a></div>
+  </main>
+</body>
+</html>`;
 }
 
 function errorHtml(message) {
-  return `<!doctype html><meta charset="utf-8"><title>Shelf IGDB Cover Refresh</title><p>${escapeHtml(message)}</p>`;
+  return `<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Shelf IGDB Cover Refresh</title>
+  ${runnerStyle()}
+</head>
+<body>
+  <main>
+    <h1>Shelf IGDB Cover Refresh</h1>
+    <p>${escapeHtml(message)}</p>
+    <div class="actions"><a href="/shelf">Back to Shelf</a></div>
+  </main>
+</body>
+</html>`;
 }
 
 function validLayout(value) {
