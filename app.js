@@ -4445,7 +4445,7 @@ function platformClass(platform, options = {}) {
   if (isSegaPlatform(value)) return "platform-sega";
   if (value.includes("switch")) return "platform-nintendo";
   if (value === "ps1") return "platform-playstation platform-ps1";
-  if (value === "ps3" && normalize(options.title) === "drakengard 3") return "platform-playstation platform-ps3-as-ps4";
+  if (value === "ps3" && String(options.title || "").trim().toLowerCase() === "drakengard 3") return "platform-playstation platform-ps3-as-ps4";
   if (value === "ps3") return "platform-playstation platform-ps3";
   if (value === "ps5") return "platform-playstation platform-ps5";
   if (value === "psp") return "platform-playstation platform-psp";
