@@ -2039,6 +2039,14 @@ body.dialog-open .floating-edit-actions {
   padding-right: 34px;
 }
 
+#platformFilter {
+  padding-right: 46px;
+}
+
+#platformFilter option {
+  padding-right: 24px;
+}
+
 .check-filter {
   display: flex;
   align-items: center;
