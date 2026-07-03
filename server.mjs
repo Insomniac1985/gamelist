@@ -8,6 +8,8 @@ import { onRequestGet as prices } from "./functions/api/prices.js";
 import { onRequestGet as cover } from "./functions/api/cover.js";
 import * as auth from "./functions/api/auth.js";
 import * as shelf from "./functions/api/shelf.js";
+import * as shelfMassAdd from "./functions/api/shelf-mass-add.js";
+import * as shelfMetadata from "./functions/api/shelf-metadata.js";
 import * as shelfCovers from "./functions/api/shelf-covers.js";
 import * as shelfPriceAudit from "./functions/api/shelf-price-audit.js";
 import { onRequestGet as collectionPrice } from "./functions/api/collection-price.js";
@@ -31,6 +33,8 @@ const server = http.createServer(async (req, res) => {
   if (url.pathname === "/api/prices") return sendFunction(res, prices, req, url);
   if (url.pathname === "/api/cover") return sendFunction(res, cover, req, url);
   if (url.pathname === "/api/shelf") return sendModule(res, shelf, req, url);
+  if (url.pathname === "/api/shelf-mass-add") return sendModule(res, shelfMassAdd, req, url);
+  if (url.pathname === "/api/shelf-metadata") return sendModule(res, shelfMetadata, req, url);
   if (url.pathname === "/api/shelf-covers") return sendModule(res, shelfCovers, req, url);
   if (url.pathname === "/api/shelf-price-audit") return sendModule(res, shelfPriceAudit, req, url);
   if (url.pathname === "/api/collection-price") return sendFunction(res, collectionPrice, req, url);

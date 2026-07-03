@@ -43,7 +43,7 @@ export async function onRequestDelete({ request, env }) {
   return json({ ok: true, updatedAt: data.updatedAt });
 }
 
-async function syncShelfGamesToBacklog(env, allShelfGames, games) {
+export async function syncShelfGamesToBacklog(env, allShelfGames, games) {
   const list = await env.GAMELIST.get("gamelist-data", "json") || { games: [], settings: {} };
   if (list.settings?.shelfSync === false) return;
   const shelfById = new Map(allShelfGames.map((game) => [game.id, game]));
