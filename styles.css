@@ -2011,7 +2011,7 @@ body.dialog-open .floating-edit-actions {
   top: calc(20px + var(--pull-ui-offset, 0px));
   z-index: 12;
   display: grid;
-  grid-template-columns: minmax(220px, 1fr) 126px 194px 150px 150px var(
+  grid-template-columns: minmax(180px, 0.72fr) 126px 220px 170px 150px var(
       --toolbar-control-height
     );
   gap: 10px;
@@ -3977,7 +3977,7 @@ body.theme-kash .game-card.stream-card.completed-trophy-card {
 
 .platform-playstation.platform-ps5 {
   background: #ffffff;
-  border-color: rgba(255, 255, 255, 0.92);
+  border-color: rgba(180, 186, 198, 0.72);
 }
 
 .platform-playstation.platform-ps5 .platform-count {
@@ -4025,7 +4025,6 @@ body.theme-kash .game-card.stream-card.completed-trophy-card {
   color: #9bd7ff;
 }
 
-.platform-n64 .platform-label,
 .platform-3ds .platform-label,
 .platform-gbc .platform-label {
   color: #ff5a66;
@@ -4033,9 +4032,17 @@ body.theme-kash .game-card.stream-card.completed-trophy-card {
 
 .platform-gamecube .platform-label,
 .platform-snes .platform-label,
-.platform-sega .platform-label,
 .platform-gba .platform-label {
   color: #c9a7ff;
+}
+
+.platform-n64 .platform-label {
+  color: #ff4f5d;
+}
+
+.platform-sega .platform-label,
+.platform-gamegear .platform-label {
+  color: #5aa7ff;
 }
 
 .platform-xbox .platform-label {
@@ -4068,24 +4075,43 @@ body.theme-kash .game-card.stream-card.completed-trophy-card {
   border-color: rgba(155, 215, 255, 0.34);
 }
 
-.platform-n64,
 .platform-3ds,
 .platform-gbc {
   background: rgba(255, 90, 102, 0.14);
   border-color: rgba(255, 90, 102, 0.34);
 }
 
+.platform-n64 {
+  background: rgba(52, 154, 76, 0.28);
+  border-color: rgba(80, 190, 102, 0.44);
+}
+
 .platform-gamecube,
 .platform-snes,
-.platform-sega,
 .platform-gba {
   background: rgba(150, 112, 255, 0.16);
   border-color: rgba(190, 160, 255, 0.36);
 }
 
+.platform-sega,
+.platform-gamegear {
+  background: rgba(42, 112, 224, 0.18);
+  border-color: rgba(90, 167, 255, 0.38);
+}
+
 .platform-xbox {
   background: rgba(98, 212, 112, 0.14);
   border-color: rgba(98, 212, 112, 0.38);
+}
+
+.platform-xbox.platform-xbox360 {
+  background: rgba(255, 255, 255, 0.72);
+  border-color: rgba(255, 255, 255, 0.54);
+}
+
+.platform-xbox.platform-xbox-retro {
+  background: rgba(5, 7, 11, 0.82);
+  border-color: rgba(255, 255, 255, 0.3);
 }
 
 .platform-ds {
@@ -6165,6 +6191,11 @@ html.theme-light .platform-playstation {
   border-color: rgba(0, 57, 214, 0.52);
 }
 
+html.theme-light .platform-playstation.platform-ps5 {
+  background: #ffffff;
+  border-color: rgba(150, 158, 174, 0.72);
+}
+
 html.theme-light .platform-wii,
 html.theme-light .platform-nes,
 html.theme-light .platform-ds,
@@ -6178,24 +6209,43 @@ html.theme-light .platform-wiiu {
   border-color: rgba(24, 113, 174, 0.48);
 }
 
-html.theme-light .platform-n64,
 html.theme-light .platform-3ds,
 html.theme-light .platform-gbc {
   background: rgba(255, 90, 102, 0.2);
   border-color: rgba(202, 60, 75, 0.48);
 }
 
+html.theme-light .platform-n64 {
+  background: rgba(52, 154, 76, 0.3);
+  border-color: rgba(43, 135, 65, 0.5);
+}
+
 html.theme-light .platform-gamecube,
 html.theme-light .platform-snes,
-html.theme-light .platform-sega,
 html.theme-light .platform-gba {
   background: rgba(125, 80, 220, 0.19);
   border-color: rgba(101, 65, 182, 0.48);
 }
 
+html.theme-light .platform-sega,
+html.theme-light .platform-gamegear {
+  background: rgba(42, 112, 224, 0.2);
+  border-color: rgba(42, 112, 224, 0.5);
+}
+
 html.theme-light .platform-xbox {
   background: rgba(39, 153, 63, 0.18);
   border-color: rgba(31, 124, 51, 0.5);
+}
+
+html.theme-light .platform-xbox.platform-xbox360 {
+  background: rgba(255, 255, 255, 0.78);
+  border-color: rgba(150, 158, 174, 0.52);
+}
+
+html.theme-light .platform-xbox.platform-xbox-retro {
+  background: rgba(5, 7, 11, 0.82);
+  border-color: rgba(255, 255, 255, 0.3);
 }
 
 html.theme-light .platform-dreamcast {

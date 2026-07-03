@@ -2694,7 +2694,7 @@ function rowCoreStats(game) {
   const progress = achievementProgressForGame(game);
   const release = releaseStatus(game);
   return [
-    game.platform ? platformBadge(game.platform) : "",
+    game.platform ? platformBadge(game.platform, null, { title: game.title }) : "",
     game.digital ? `<span class="digital-pill">Digital</span>` : "",
     game.emulator ? `<span class="emulator-pill">Emulator</span>` : "",
     game.lengthHours ? timeBadge(game.lengthHours, hltbUrlFor(game)) : "",
@@ -3592,7 +3592,7 @@ function sectionRank(section) {
 
 function metaFor(game, options = {}) {
   const values = [];
-  if (game.platform) values.push(platformBadge(game.platform));
+  if (game.platform) values.push(platformBadge(game.platform, null, { title: game.title }));
   if (game.digital) values.push(`<span class="digital-pill">Digital</span>`);
   if (game.emulator) values.push(`<span class="emulator-pill">Emulator</span>`);
   if (game.lengthHours) values.push(timeBadge(game.lengthHours, hltbUrlFor(game)));
@@ -4163,7 +4163,7 @@ function psnProgressBadge(game, options = {}) {
 function completedBadges(game, options = {}) {
   const progress = achievementProgressForGame(game);
   return [
-    game.platform ? platformBadge(game.platform) : "",
+    game.platform ? platformBadge(game.platform, null, { title: game.title }),
     game.digital ? `<span class="digital-pill">Digital</span>` : "",
     game.emulator ? `<span class="emulator-pill">Emulator</span>` : "",
     game.coop ? `<span class="coop-pill">Coop</span>` : "",
@@ -4231,8 +4231,8 @@ function stringCompare(a = "", b = "") {
   return a.localeCompare(b, undefined, { sensitivity: "base" });
 }
 
-function platformBadge(platform, count = null) {
-  const cls = platformClass(platform);
+function platformBadge(platform, count = null, options = {}) {
+  const cls = platformClass(platform, options);
   const logo = platformLogo(platform);
   const label = canonicalPlatform(platform) || platform;
   return `
@@ -4413,18 +4413,21 @@ function platformLogo(platform) {
   if (value === "gba") return "assets/platforms/gba.png";
   if (value === "gbc") return "assets/platforms/gbc.png";
   if (value === "gb") return "assets/platforms/gb.png";
+  if (value === "game gear") return "assets/platforms/gamegear.png";
   if (value === "dc" || value.includes("dreamcast")) return "assets/platforms/dreamcast.png";
   if (isSegaPlatform(value)) return "assets/platforms/sega.png";
   if (value.includes("switch")) return "assets/platforms/switch.png";
   if (value === "ps1" || value === "ps2") return "assets/platforms/playstation_retro.png";
   if (value === "ps5") return "assets/platforms/playstation_modern.png";
   if (/\bps\d*\b/.test(value) || value.includes("playstation") || value.includes("psp") || value.includes("vita")) return "assets/platforms/playstation.png";
-  if (value.includes("xbox") || value.includes("microsoft") || value === "x360" || value === "xone") return "assets/platforms/xbox.png";
+  if (value === "x360" || value === "xbox 360") return "assets/platforms/xbox360.png";
+  if (value === "xbox") return "assets/platforms/xbox_retro.png";
+  if (value.includes("xbox") || value.includes("microsoft") || value === "xone") return "assets/platforms/xbox.png";
   if (value.includes("steam") || value.includes("pc")) return "assets/platforms/steam.png";
   return "assets/Icon.png";
 }
 
-function platformClass(platform) {
+function platformClass(platform, options = {}) {
   const value = String(canonicalPlatform(platform) || platform || "").toLowerCase();
   if (value === "wii") return "platform-wii";
   if (value === "wii u" || value === "wiiu") return "platform-wiiu";
@@ -4437,15 +4440,19 @@ function platformClass(platform) {
   if (value === "gba") return "platform-gba";
   if (value === "gbc") return "platform-gbc";
   if (value === "gb") return "platform-gb";
+  if (value === "game gear") return "platform-gamegear";
   if (value === "dc" || value.includes("dreamcast")) return "platform-dreamcast";
   if (isSegaPlatform(value)) return "platform-sega";
   if (value.includes("switch")) return "platform-nintendo";
   if (value === "ps1") return "platform-playstation platform-ps1";
+  if (value === "ps3" && normalize(options.title) === "drakengard 3") return "platform-playstation platform-ps3-as-ps4";
   if (value === "ps3") return "platform-playstation platform-ps3";
   if (value === "ps5") return "platform-playstation platform-ps5";
   if (value === "psp") return "platform-playstation platform-psp";
   if (/\bps\d*\b/.test(value) || value.includes("playstation") || value.includes("psp") || value.includes("vita")) return "platform-playstation";
-  if (value.includes("xbox") || value.includes("microsoft") || value === "x360" || value === "xone") return "platform-xbox";
+  if (value === "x360" || value === "xbox 360") return "platform-xbox platform-xbox360";
+  if (value === "xbox") return "platform-xbox platform-xbox-retro";
+  if (value.includes("xbox") || value.includes("microsoft") || value === "xone") return "platform-xbox";
   if (value.includes("steam") || value.includes("pc")) return "platform-pc";
   return "platform-generic";
 }
