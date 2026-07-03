@@ -2449,7 +2449,9 @@ function closePlatformLogoSelects(event) {
 }
 
 function showPlatformLogoOverlay(option) {
-  if (!option.classList.contains("is-ellipsed")) return;
+  const label = option.querySelector(".platform-logo-choice-label");
+  const isOverflowing = Boolean(label && label.scrollWidth > label.clientWidth + 1);
+  if (!option.classList.contains("is-ellipsed") && !isOverflowing) return;
   if (!platformLogoOverlay) {
     platformLogoOverlay = document.createElement("div");
     platformLogoOverlay.className = "platform-logo-hover-overlay";

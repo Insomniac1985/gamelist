@@ -2012,7 +2012,7 @@ body.dialog-open .floating-edit-actions {
   top: calc(20px + var(--pull-ui-offset, 0px));
   z-index: 12;
   display: grid;
-  grid-template-columns: minmax(260px, 1.15fr) 116px minmax(190px, 210px) minmax(150px, 165px) 132px var(
+  grid-template-columns: minmax(240px, 1fr) 132px minmax(190px, 210px) minmax(150px, 165px) 132px var(
       --toolbar-control-height
     );
   gap: 10px;
@@ -2209,7 +2209,7 @@ body.dialog-open .floating-edit-actions {
 
 .platform-logo-hover-overlay {
   position: fixed;
-  z-index: 120;
+  z-index: 1500;
   max-width: min(320px, calc(100vw - 32px));
   padding: 7px 9px;
   color: #ffffff;
@@ -2309,24 +2309,21 @@ body.dialog-open .floating-edit-actions {
 }
 
 .platform-logo-choice-label {
-  display: flex;
+  display: block;
   position: relative;
   z-index: 2;
-  align-items: center;
+  flex: 1 1 auto;
   min-width: 0;
-  min-height: 100%;
   font-size: 14px;
-  line-height: 1;
+  line-height: 1.2;
   overflow: hidden;
-  text-overflow: "...";
+  text-overflow: ellipsis;
   white-space: nowrap;
 }
 
 .platform-logo-button .platform-logo-choice-label {
-  min-height: 100%;
-  align-items: center;
   font-size: 14px;
-  line-height: 1;
+  line-height: 1.2;
 }
 
 .platform-logo-button .platform-logo-choice-label,
@@ -2392,6 +2389,7 @@ body.dialog-open .floating-edit-actions {
 .toolbar-check {
   align-self: end;
   min-height: var(--toolbar-control-height);
+  padding-right: 18px;
 }
 
 .order-control {
