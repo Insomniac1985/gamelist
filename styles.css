@@ -2064,7 +2064,7 @@ body.dialog-open .floating-edit-actions {
   color: var(--text);
   font: inherit;
   font-size: 13px;
-  line-height: 1.2;
+  line-height: 1;
   text-align: left;
   border: 0;
 }
@@ -2072,10 +2072,10 @@ body.dialog-open .floating-edit-actions {
 .platform-logo-button {
   display: flex;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-start;
   height: var(--toolbar-control-height);
   min-height: var(--toolbar-control-height);
-  padding: 0 34px 0 18px;
+  padding: 0 34px 0 11px;
   color: #ffffff;
   background-color: rgba(255, 255, 255, 0.065);
   background-image: url("data:image/svg+xml,%3Csvg width='14' height='14' viewBox='0 0 14 14' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M3.5 5.25 7 8.75l3.5-3.5' fill='none' stroke='%23f6f7fb' stroke-opacity='.78' stroke-width='1.7' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
@@ -2090,7 +2090,7 @@ body.dialog-open .floating-edit-actions {
 .platform-logo-select.is-active .platform-logo-button,
 .platform-logo-select.is-open .platform-logo-button {
   color: #ffffff;
-  border-color: rgba(255, 255, 255, 0.24);
+  border-color: color-mix(in srgb, var(--accent) 68%, transparent);
   background-color: rgba(255, 255, 255, 0.075);
 }
 
@@ -2118,10 +2118,7 @@ body.dialog-open .floating-edit-actions {
 .platform-logo-select.is-open .platform-logo-menu {
   display: grid;
   gap: 1px;
-  box-shadow:
-    0 18px 44px rgba(0, 0, 0, 0.42),
-    0 0 0 1px color-mix(in srgb, var(--accent) 20%, transparent),
-    0 0 24px color-mix(in srgb, var(--accent) 16%, transparent);
+  box-shadow: 0 18px 44px rgba(0, 0, 0, 0.42);
 }
 
 .platform-logo-option {
@@ -2199,12 +2196,10 @@ body.dialog-open .floating-edit-actions {
   background: transparent !important;
   border-color: transparent !important;
   border-radius: 0;
-  transform: translateY(1px);
 }
 
 .platform-logo-button .platform-logo-choice {
-  justify-content: center;
-  transform: translate(-5px, 1px);
+  justify-content: flex-start;
 }
 
 .platform-logo-choice span {
@@ -2259,7 +2254,7 @@ body.dialog-open .floating-edit-actions {
   align-items: center;
   min-width: 0;
   min-height: 16px;
-  line-height: 1.1;
+  line-height: 1;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
