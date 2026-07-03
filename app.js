@@ -1,5 +1,6 @@
 import { normalizeSearchText, createGameCardShell, bindActivityCardParallax, mountActivitySlider, mountReleaseCalendar, finishedGameMarkup, achievementCardMarkup, achievementDashboardMarkup, achievementPanelMarkup, completedCardMarkup, horizontalCarouselState, syncViewModeButton, slideHorizontalCarousel, comparePlayingGames, finishedDurationText, timeBadgeMarkup, guideLinksMarkup, storeButtonsMarkup, activityTrailerUrl, activityTrailerFrameMarkup, preloadPausedActivityTrailers, activityReleaseStatus, activityCoverOverride, activityAllowsPsnCardTrophies, formatFooterDate, formatFooterDateTime, confirmGameDelete } from "./activity-ui.js";
 import { applySiteTheme, normalizeThemeSettings, openThemeEditor, ownerCardColorClass, ownerColorClass, themeSettingsButton } from "./theme-system.js";
+import { applyDocumentTranslations, languageOptions, normalizeLanguage, t } from "./i18n.js";
 
 mountActivitySlider(document.querySelector("#playingSection"), { count: "playingCount", previous: "playingPrevButton", next: "playingNextButton", list: "playingList", dataSection: "playing", finished: "playingFinished", finishedList: "playingFinishedList" });
 
@@ -52,6 +53,7 @@ const DEFAULT_SETTINGS = {
   storeSettingsVersion: 2,
   defaultOwner: "Xavi",
   shelfSync: true,
+  language: "en",
 };
 const STATUS_OPTIONS = [
   "To Collect",
@@ -140,6 +142,7 @@ const SEARCH_CACHE_TTL = 1000 * 60 * 60;
 let titleLookupTimer = 0;
 let selectMeasureContext = null;
 let selectOverflowPopover = null;
+let platformLogoOverlay = null;
 let playingTrailerFrame = 0;
 const searchCache = new Map();
 const searchInflight = new Map();
@@ -264,8 +267,10 @@ const el = {
   settingsSteamUser: document.querySelector("#settingsSteamUser"),
   settingsCurrency: document.querySelector("#settingsCurrency"),
   settingsRegion: document.querySelector("#settingsRegion"),
+  settingsLanguage: document.querySelector("#settingsLanguage"),
   settingsStores: document.querySelector("#settingsStores"),
   settingsDefaultOwner: document.querySelector("#settingsDefaultOwner"),
+  settingsDevFeatures: document.querySelector("#settingsDevFeatures"),
   detailTitle: document.querySelector("#detailTitle"),
   detailStudio: document.querySelector("#detailStudio"),
   detailMeta: document.querySelector("#detailMeta"),
@@ -517,6 +522,7 @@ function bindEvents() {
   document.addEventListener("focusin", handleSelectOverflowTitle);
   document.addEventListener("pointerout", handleSelectOverflowLeave);
   document.addEventListener("focusout", handleSelectOverflowLeave);
+  document.addEventListener("click", closePlatformLogoSelects);
   document.addEventListener("change", (event) => {
     if (event.target.matches?.("select")) updateSelectOverflowTitle(event.target);
   });
@@ -877,6 +883,7 @@ function normalizeSettings(settings = {}) {
     steamUser: cleanSteamUser(settings.steamUser),
     currency: settings.currency === "USD" ? "USD" : "EUR",
     region: ["ES", "IT", "US", "UK"].includes(settings.region) ? settings.region : DEFAULT_SETTINGS.region,
+    language: normalizeLanguage(settings.language),
     stores: stores.slice(0, MAX_PRICE_STORES),
     storeSettingsVersion: 2,
     defaultOwner: cleanOwnerLabel(settings.defaultOwner) || DEFAULT_SETTINGS.defaultOwner,
@@ -902,18 +909,20 @@ async function persistCloud() {
 
 function render() {
   applyTheme();
+  applyLanguage();
   document.documentElement.classList.remove("theme-booting");
   document.body.classList.toggle("can-edit", state.canEdit);
   document.body.classList.toggle("list-view-mode", state.viewMode === "list");
-  el.loginButton.innerHTML = state.canEdit ? `${pauseIcon()}<span class="button-label">Stop Editing</span>` : pencilIcon();
-  el.loginButton.title = state.canEdit ? "Stop Editing" : "Edit";
+  el.loginButton.innerHTML = state.canEdit ? `${pauseIcon()}<span class="button-label">${escapeHtml(tt("Stop Editing"))}</span>` : pencilIcon();
+  el.loginButton.title = state.canEdit ? tt("Stop Editing") : tt("Edit");
   el.loginButton.setAttribute("aria-label", el.loginButton.title);
   el.addButton.hidden = false;
   el.syncButton.hidden = !state.canEdit;
   if (el.settingsButton) el.settingsButton.hidden = !state.canEdit;
   if (el.fetchDataButton) el.fetchDataButton.hidden = true;
   el.fetchPricesButton.hidden = !state.canEdit;
-  if (state.canEdit && !el.fetchPricesButton.disabled) el.fetchPricesButton.innerHTML = `${currencyIcon()}<span class="button-label">Fetch New Prices</span>`;
+  if (state.canEdit && !el.fetchPricesButton.disabled) el.fetchPricesButton.innerHTML = `${currencyIcon()}<span class="button-label">${escapeHtml(tt("Fetch New Prices"))}</span>`;
+  el.sortFilter.value = state.filters.sort;
   renderFilters();
   renderPlayingSection();
   renderStats();
@@ -927,9 +936,8 @@ function render() {
   renderCompleted();
   renderFooter();
   scheduleMobilePaintRefresh();
-  el.sortFilter.value = state.filters.sort;
   el.sortDirectionButton.innerHTML = sortArrowIcon(state.filters.direction === "desc");
-  el.sortDirectionButton.title = state.filters.direction === "asc" ? "Sort ascending" : "Sort descending";
+  el.sortDirectionButton.title = state.filters.direction === "asc" ? tt("Sort ascending") : tt("Sort descending");
   el.sortDirectionButton.setAttribute("aria-label", el.sortDirectionButton.title);
   el.sortDirectionButton.classList.toggle("desc", state.filters.direction === "desc");
   el.sortDirectionButton.disabled = state.filters.sort === "custom";
@@ -939,6 +947,18 @@ function render() {
   el.platformFilter.classList.toggle("is-active", state.filters.platform !== "all");
   el.tagFilter.classList.toggle("is-active", state.filters.tag !== "all");
   updateScrollTopButton();
+}
+
+function currentLanguage() {
+  return normalizeLanguage(state.settings?.language);
+}
+
+function tt(key, values) {
+  return t(currentLanguage(), key, values);
+}
+
+function applyLanguage() {
+  applyDocumentTranslations(currentLanguage());
 }
 
 function applyTheme() {
@@ -999,6 +1019,8 @@ function renderSettingsDialog() {
   el.settingsSteamUser.value = state.settings.steamUser;
   el.settingsCurrency.value = state.settings.currency;
   el.settingsRegion.value = state.settings.region;
+  el.settingsLanguage.innerHTML = languageOptions(state.settings.language, escapeHtml);
+  el.settingsLanguage.value = state.settings.language;
   el.settingsDefaultOwner.value = state.settings.defaultOwner;
   const pageIndex = new Map(state.settings.pageOrder.map((key, index) => [key, index]));
   el.settingsLayoutList.innerHTML = [
@@ -1008,6 +1030,7 @@ function renderSettingsDialog() {
     `<div class="settings-preference-separator" role="presentation"></div><div class="settings-preference-row">${settingsThemeItem()}${settingsDefaultOrderItem()}${settingsShelfSyncItem()}</div>`,
   ].join("");
   document.querySelector("#settingsCsvData").innerHTML = settingsCsvDataItem("gamelist");
+  if (el.settingsDevFeatures) el.settingsDevFeatures.innerHTML = settingsDevFeaturesItem("gamelist");
   el.settingsStores.innerHTML = STORE_OPTIONS.map((store) => `
     <label class="check-filter toggle-check settings-store-check">
       <input type="checkbox" value="${escapeHtml(store)}" ${state.settings.stores.includes(store) ? "checked" : ""}>
@@ -1033,22 +1056,27 @@ function renderSettingsDialog() {
       renderSettingsDialog();
     });
   });
-  el.settingsLayoutList.querySelector("[data-theme-editor]")?.addEventListener("click", () => openThemeEditor({
-    settings: state.settings,
-    page: "gamelist",
-    onSave: async (settings) => {
-      state.settings = normalizeSettings(settings);
-      persistLocalSettings();
-      await persistCloud();
-      renderSettingsDialog();
-      render();
-    },
-  }));
+  el.settingsLayoutList.querySelector("[data-theme-editor]")?.addEventListener("click", () => {
+    openThemeEditor({
+      settings: state.settings,
+      page: "gamelist",
+      onSave: async (settings) => {
+        state.settings = normalizeSettings(settings);
+        persistLocalSettings();
+        await persistCloud();
+        renderSettingsDialog();
+        render();
+      },
+    });
+    requestAnimationFrame(() => syncStyledSelects(document.querySelector("#themeEditorDialog"), { activeValue: null }));
+  });
   el.settingsLayoutList.querySelector("[data-default-order]")?.addEventListener("change", (event) => {
     state.settings.defaultOrder = event.target.value;
   });
   document.querySelector("[data-export-csv='gamelist']")?.addEventListener("click", exportGamelistCsv);
   document.querySelector("[data-import-csv='gamelist']")?.addEventListener("click", importGamelistCsv);
+  applyLanguage();
+  syncStyledSelects(el.settingsDialog, { activeValue: null });
 }
 
 function settingsLayoutItem(key, index, options = {}) {
@@ -1112,11 +1140,11 @@ function settingsDefaultOrderItem() {
     <article class="settings-layout-card settings-order-card" data-layout-key="default-order">
       <div class="settings-wire wire-order" aria-hidden="true"><span></span><span></span><span></span><span></span><span></span><span></span></div>
       <label class="settings-theme-select">
-        <span>Default order</span>
-        <select data-default-order aria-label="Default list order">
-          <option value="custom" ${state.settings.defaultOrder === "custom" ? "selected" : ""}>Custom</option>
-          <option value="time" ${state.settings.defaultOrder === "time" ? "selected" : ""}>Time</option>
-          <option value="name" ${state.settings.defaultOrder === "name" ? "selected" : ""}>Name</option>
+        <span>${escapeHtml(tt("Default order"))}</span>
+        <select data-default-order aria-label="${escapeHtml(tt("Default list order"))}">
+          <option value="custom" ${state.settings.defaultOrder === "custom" ? "selected" : ""}>${escapeHtml(tt("Custom"))}</option>
+          <option value="time" ${state.settings.defaultOrder === "time" ? "selected" : ""}>${escapeHtml(tt("Time"))}</option>
+          <option value="name" ${state.settings.defaultOrder === "name" ? "selected" : ""}>${escapeHtml(tt("Name"))}</option>
         </select>
       </label>
     </article>
@@ -1128,11 +1156,11 @@ function settingsShelfSyncItem() {
     <article class="settings-layout-card settings-sync-card" data-layout-key="shelf-sync">
       <div class="settings-wire wire-list" aria-hidden="true"><span></span><span></span><span></span></div>
       <div class="settings-theme-select">
-        <span>Shelf Sync</span>
+        <span>${escapeHtml(tt("Shelf Sync"))}</span>
         <div class="settings-check-field">
-          <label class="check-filter toggle-check settings-visible-check" title="Shelf Sync">
+          <label class="check-filter toggle-check settings-visible-check" title="${escapeHtml(tt("Shelf Sync"))}">
             <input type="checkbox" data-shelf-sync ${state.settings.shelfSync ? "checked" : ""}>
-            <span>Enabled</span>
+            <span>${escapeHtml(tt("Enabled"))}</span>
           </label>
         </div>
       </div>
@@ -1145,12 +1173,24 @@ function settingsCsvDataItem(kind) {
     <article class="settings-layout-card settings-data-card">
       <div class="settings-theme-select">
         <div class="settings-data-actions">
-          <button class="ghost-button" type="button" data-export-csv="${escapeHtml(kind)}">Export</button>
-          <button class="ghost-button" type="button" data-import-csv="${escapeHtml(kind)}">Import</button>
+          <button class="ghost-button" type="button" data-export-csv="${escapeHtml(kind)}">${escapeHtml(tt("Export"))}</button>
+          <button class="ghost-button" type="button" data-import-csv="${escapeHtml(kind)}">${escapeHtml(tt("Import"))}</button>
         </div>
       </div>
     </article>
   `;
+}
+
+function settingsDevFeaturesItem(kind) {
+  return [
+    { href: "/api/sync", label: "Gamelist data" },
+    { href: "/api/sync?settings=1", label: "Shared settings" },
+    { href: "/api/auth", label: "Edit auth status" },
+  ].map((link) => `
+    <a class="ghost-button settings-dev-link" href="${escapeHtml(link.href)}" target="_blank" rel="noreferrer" data-dev-feature="${escapeHtml(kind)}">
+      ${escapeHtml(tt(link.label))}
+    </a>
+  `).join("");
 }
 
 const CSV_NUMERIC_FIELDS = new Set(["order", "lengthHours", "replayCount", "numericPrice", "price", "estimatedValue"]);
@@ -1308,6 +1348,7 @@ async function saveSettingsFromForm(event) {
     steamUser: el.settingsSteamUser.value,
     currency: el.settingsCurrency.value,
     region: el.settingsRegion.value,
+    language: el.settingsLanguage.value,
     stores,
     defaultOwner: el.settingsDefaultOwner.value,
     shelfSync: Boolean(el.settingsLayoutList.querySelector("[data-shelf-sync]")?.checked),
@@ -1698,6 +1739,7 @@ function renderPlatinumDialog(platinums = platinumItems(), years = platinumYears
     state.platinumPlatform = el.platinumPlatformSelect.value || "all";
     renderPlatinumDialog(platinums, years);
   };
+  syncStyledSelects(el.platinumDialog, { activeValue: null });
   el.platinumList.innerHTML = visible.length ? visible.map(platinumCard).join("") : `<div class="empty">No completed games tracked yet.</div>`;
   el.platinumList.querySelectorAll("[data-game-id]").forEach((button) => {
     button.addEventListener("click", () => {
@@ -2280,7 +2322,11 @@ function handleBoardSwipeEnd(event) {
 }
 
 function syncMobileSectionToResults() {
-  if (!state.filters.query && !state.filters.preordered) return;
+  const hasActiveFilter = Boolean(state.filters.query)
+    || state.filters.platform !== "all"
+    || state.filters.tag !== "all"
+    || state.filters.preordered;
+  if (!hasActiveFilter) return;
   const sections = state.filters.preordered ? mobileSections().filter((section) => section !== "new").sort((a, b) => ["upcoming", "backlog", "wanted"].indexOf(a) - ["upcoming", "backlog", "wanted"].indexOf(b)) : mobileSections();
   const hasCurrent = filteredGames().some((game) => (
     game.section === state.mobileSection
@@ -2298,10 +2344,13 @@ function syncMobileSectionToResults() {
 
 function renderFilters() {
   const active = state.games.filter((game) => !game.deletedAt);
-  const platforms = unique(active.map((game) => platformFilterGroup(game.platform)).filter(Boolean));
+  const platforms = orderedPlatforms(unique(active.map((game) => platformFilterGroup(game.platform)).filter(Boolean)));
   const genres = unique(active.flatMap((game) => game.genres || []));
-  fillSelect(el.platformFilter, ["all", ...platforms], state.filters.platform, "All platforms");
-  fillSelect(el.tagFilter, ["all", ...genres], state.filters.tag, "All categories");
+  fillSelect(el.platformFilter, ["all", ...platforms], state.filters.platform, tt("All platforms"));
+  fillSelect(el.tagFilter, ["all", ...genres], state.filters.tag, tt("All categories"));
+  syncStyledSelect(el.platformFilter, { logos: true, activeValue: "all" });
+  syncStyledSelect(el.tagFilter, { activeValue: "all" });
+  syncStyledSelect(el.sortFilter, { activeValue: null });
 }
 
 function fillSelect(select, values, selected, allLabel) {
@@ -2313,11 +2362,139 @@ function fillSelect(select, values, selected, allLabel) {
     return;
   }
   select.innerHTML = values.map((value) => {
-    const label = value === "all" ? allLabel : platformDisplayName(value);
+    const label = value === "all" ? allLabel : (select === el.platformFilter ? platformFilterDisplayName(value) : platformDisplayName(value));
     return `<option value="${escapeHtml(value)}">${escapeHtml(label)}</option>`;
   }).join("");
   select.value = values.includes(selected) ? selected : "all";
   updateSelectOverflowTitle(select);
+}
+
+function syncStyledSelect(select, options = {}) {
+  if (!select) return;
+  const useLogos = Boolean(options.logos);
+  select.classList.add(useLogos ? "native-platform-filter" : "native-styled-select");
+  let control = select.nextElementSibling;
+  if (!control?.classList?.contains("platform-logo-select")) {
+    control = document.createElement("div");
+    control.className = "platform-logo-select";
+    select.insertAdjacentElement("afterend", control);
+  }
+  const selectOptions = [...select.options].map((option) => ({
+    value: option.value,
+    label: option.textContent.trim(),
+    selected: option.selected,
+    disabled: option.disabled || option.hidden,
+  }));
+  const visibleOptions = selectOptions.filter((option) => !option.disabled);
+  const selected = selectOptions.find((option) => option.selected) || visibleOptions[0] || { value: "all", label: "All platforms" };
+  control.classList.toggle("is-active", options.activeValue != null && selected.value !== options.activeValue);
+  control.innerHTML = `
+    <button class="platform-logo-button" type="button" aria-haspopup="listbox" aria-expanded="false" data-full-label="${escapeHtml(selected.label)}" aria-label="${escapeHtml(selected.label)}">
+      ${platformLogoChoiceMarkup(selected.value, selected.label, { logos: useLogos })}
+    </button>
+    <div class="platform-logo-menu" role="listbox">
+      ${visibleOptions.map((option) => `
+        <button class="platform-logo-option ${option.selected ? "is-selected" : ""}" type="button" role="option" aria-selected="${option.selected ? "true" : "false"}" data-value="${escapeHtml(option.value)}" data-full-label="${escapeHtml(option.label)}">
+          ${platformLogoChoiceMarkup(option.value, option.label, { logos: useLogos })}
+        </button>
+      `).join("")}
+    </div>
+  `;
+  const button = control.querySelector(".platform-logo-button");
+  const buttonLabel = button?.querySelector(".platform-logo-choice-label");
+  button?.classList.toggle("is-ellipsed", Boolean(buttonLabel && buttonLabel.scrollWidth > buttonLabel.clientWidth));
+  button?.addEventListener("pointerenter", () => showPlatformLogoOverlay(button));
+  button?.addEventListener("focus", () => showPlatformLogoOverlay(button));
+  button?.addEventListener("pointerleave", hidePlatformLogoOverlay);
+  button?.addEventListener("blur", hidePlatformLogoOverlay);
+  button?.addEventListener("click", (event) => {
+    event.stopPropagation();
+    const shouldOpen = !control.classList.contains("is-open");
+    closePlatformLogoSelects({ target: control });
+    control.classList.toggle("is-open", shouldOpen);
+    const open = control.classList.contains("is-open");
+    button.setAttribute("aria-expanded", open ? "true" : "false");
+  });
+  control.querySelectorAll(".platform-logo-option").forEach((option) => {
+    const label = option.querySelector(".platform-logo-choice-label");
+    option.classList.toggle("is-ellipsed", Boolean(label && label.scrollWidth > label.clientWidth));
+    option.addEventListener("pointerenter", () => showPlatformLogoOverlay(option));
+    option.addEventListener("focus", () => showPlatformLogoOverlay(option));
+    option.addEventListener("pointerleave", hidePlatformLogoOverlay);
+    option.addEventListener("blur", hidePlatformLogoOverlay);
+    option.addEventListener("click", (event) => {
+      event.stopPropagation();
+      select.value = option.dataset.value || "all";
+      control.classList.remove("is-open");
+      button?.setAttribute("aria-expanded", "false");
+      select.dispatchEvent(new Event("change", { bubbles: true }));
+      requestAnimationFrame(() => {
+        if (select.isConnected) syncStyledSelect(select, options);
+      });
+    });
+  });
+  requestAnimationFrame(() => {
+    const buttonLabel = button?.querySelector(".platform-logo-choice-label");
+    button?.classList.toggle("is-ellipsed", Boolean(buttonLabel && buttonLabel.scrollWidth > buttonLabel.clientWidth));
+    control.querySelectorAll(".platform-logo-option").forEach((option) => {
+      const label = option.querySelector(".platform-logo-choice-label");
+      option.classList.toggle("is-ellipsed", Boolean(label && label.scrollWidth > label.clientWidth));
+    });
+  });
+  control.addEventListener("keydown", (event) => {
+    if (event.key !== "Escape") return;
+    control.classList.remove("is-open");
+    button?.setAttribute("aria-expanded", "false");
+    button?.focus();
+  });
+}
+
+function syncStyledSelects(root = document, options = {}) {
+  root?.querySelectorAll?.("select").forEach((select) => syncStyledSelect(select, options));
+}
+
+function closePlatformLogoSelects(event) {
+  hidePlatformLogoOverlay();
+  document.querySelectorAll(".platform-logo-select.is-open").forEach((control) => {
+    if (event?.target && control.contains(event.target)) return;
+    control.classList.remove("is-open");
+    control.querySelector(".platform-logo-button")?.setAttribute("aria-expanded", "false");
+  });
+}
+
+function showPlatformLogoOverlay(option) {
+  const label = option.querySelector(".platform-logo-choice-label");
+  const isOverflowing = Boolean(label && label.scrollWidth > label.clientWidth + 1);
+  if (!option.classList.contains("is-ellipsed") && !isOverflowing) return;
+  if (!platformLogoOverlay) {
+    platformLogoOverlay = document.createElement("div");
+    platformLogoOverlay.className = "platform-logo-hover-overlay";
+    document.body.appendChild(platformLogoOverlay);
+  }
+  platformLogoOverlay.textContent = option.dataset.fullLabel || "";
+  const rect = option.getBoundingClientRect();
+  platformLogoOverlay.style.left = `${Math.min(rect.right + 8, window.innerWidth - 24)}px`;
+  platformLogoOverlay.style.top = `${rect.top + rect.height / 2}px`;
+  platformLogoOverlay.classList.add("visible");
+}
+
+function hidePlatformLogoOverlay() {
+  platformLogoOverlay?.classList.remove("visible");
+}
+
+function platformLogoChoiceMarkup(value, label, options = {}) {
+  const showLogo = options.logos && value && value !== "all";
+  const cls = showLogo ? platformClass(value) : "platform-generic";
+  return `
+    <span class="platform-logo-choice ${escapeHtml(cls)}">
+      ${showLogo ? `<span class="platform-logo-choice-icon"><img src="${escapeHtml(platformLogo(value))}" alt="" width="18" height="18" decoding="async"></span>` : ""}
+      <span class="platform-logo-choice-label">${escapeHtml(label)}</span>
+    </span>
+  `;
+}
+
+function platformFilterDisplayName(value) {
+  return platformDisplayName(value);
 }
 
 function handleSelectOverflowTitle(event) {
@@ -2535,7 +2712,7 @@ function rowCoreStats(game) {
   const progress = achievementProgressForGame(game);
   const release = releaseStatus(game);
   return [
-    game.platform ? platformBadge(game.platform) : "",
+    game.platform ? platformBadge(game.platform, null, { title: game.title }) : "",
     game.digital ? `<span class="digital-pill">Digital</span>` : "",
     game.emulator ? `<span class="emulator-pill">Emulator</span>` : "",
     game.lengthHours ? timeBadge(game.lengthHours, hltbUrlFor(game)) : "",
@@ -2630,6 +2807,7 @@ function renderCompletedYearFilter(years) {
     ...years.map((year) => `<option value="${escapeHtml(year)}">${escapeHtml(year)}</option>`),
   ].join("");
   el.completedYearFilter.value = state.completedYear;
+  syncStyledSelect(el.completedYearFilter, { activeValue: null });
 }
 
 function completedPageSize() {
@@ -3432,7 +3610,7 @@ function sectionRank(section) {
 
 function metaFor(game, options = {}) {
   const values = [];
-  if (game.platform) values.push(platformBadge(game.platform));
+  if (game.platform) values.push(platformBadge(game.platform, null, { title: game.title }));
   if (game.digital) values.push(`<span class="digital-pill">Digital</span>`);
   if (game.emulator) values.push(`<span class="emulator-pill">Emulator</span>`);
   if (game.lengthHours) values.push(timeBadge(game.lengthHours, hltbUrlFor(game)));
@@ -4003,7 +4181,7 @@ function psnProgressBadge(game, options = {}) {
 function completedBadges(game, options = {}) {
   const progress = achievementProgressForGame(game);
   return [
-    game.platform ? platformBadge(game.platform) : "",
+    game.platform ? platformBadge(game.platform, null, { title: game.title }) : "",
     game.digital ? `<span class="digital-pill">Digital</span>` : "",
     game.emulator ? `<span class="emulator-pill">Emulator</span>` : "",
     game.coop ? `<span class="coop-pill">Coop</span>` : "",
@@ -4071,8 +4249,8 @@ function stringCompare(a = "", b = "") {
   return a.localeCompare(b, undefined, { sensitivity: "base" });
 }
 
-function platformBadge(platform, count = null) {
-  const cls = platformClass(platform);
+function platformBadge(platform, count = null, options = {}) {
+  const cls = platformClass(platform, options);
   const logo = platformLogo(platform);
   const label = canonicalPlatform(platform) || platform;
   return `
@@ -4253,18 +4431,21 @@ function platformLogo(platform) {
   if (value === "gba") return "assets/platforms/gba.png";
   if (value === "gbc") return "assets/platforms/gbc.png";
   if (value === "gb") return "assets/platforms/gb.png";
+  if (value === "game gear") return "assets/platforms/gamegear.png";
   if (value === "dc" || value.includes("dreamcast")) return "assets/platforms/dreamcast.png";
   if (isSegaPlatform(value)) return "assets/platforms/sega.png";
   if (value.includes("switch")) return "assets/platforms/switch.png";
   if (value === "ps1" || value === "ps2") return "assets/platforms/playstation_retro.png";
   if (value === "ps5") return "assets/platforms/playstation_modern.png";
   if (/\bps\d*\b/.test(value) || value.includes("playstation") || value.includes("psp") || value.includes("vita")) return "assets/platforms/playstation.png";
-  if (value.includes("xbox") || value.includes("microsoft") || value === "x360" || value === "xone") return "assets/platforms/xbox.png";
+  if (value === "x360" || value === "xbox 360") return "assets/platforms/xbox360.png";
+  if (value === "xbox") return "assets/platforms/xbox_retro.png";
+  if (value.includes("xbox") || value.includes("microsoft") || value === "xone") return "assets/platforms/xbox.png";
   if (value.includes("steam") || value.includes("pc")) return "assets/platforms/steam.png";
   return "assets/Icon.png";
 }
 
-function platformClass(platform) {
+function platformClass(platform, options = {}) {
   const value = String(canonicalPlatform(platform) || platform || "").toLowerCase();
   if (value === "wii") return "platform-wii";
   if (value === "wii u" || value === "wiiu") return "platform-wiiu";
@@ -4277,11 +4458,19 @@ function platformClass(platform) {
   if (value === "gba") return "platform-gba";
   if (value === "gbc") return "platform-gbc";
   if (value === "gb") return "platform-gb";
+  if (value === "game gear") return "platform-gamegear";
   if (value === "dc" || value.includes("dreamcast")) return "platform-dreamcast";
   if (isSegaPlatform(value)) return "platform-sega";
   if (value.includes("switch")) return "platform-nintendo";
+  if (value === "ps1") return "platform-playstation platform-ps1";
+  if (value === "ps3" && String(options.title || "").trim().toLowerCase() === "drakengard 3") return "platform-playstation platform-ps3-as-ps4";
+  if (value === "ps3") return "platform-playstation platform-ps3";
+  if (value === "ps5") return "platform-playstation platform-ps5";
+  if (value === "psp") return "platform-playstation platform-psp";
   if (/\bps\d*\b/.test(value) || value.includes("playstation") || value.includes("psp") || value.includes("vita")) return "platform-playstation";
-  if (value.includes("xbox") || value.includes("microsoft") || value === "x360" || value === "xone") return "platform-xbox";
+  if (value === "x360" || value === "xbox 360") return "platform-xbox platform-xbox360";
+  if (value === "xbox") return "platform-xbox platform-xbox-retro";
+  if (value.includes("xbox") || value.includes("microsoft") || value === "xone") return "platform-xbox";
   if (value.includes("steam") || value.includes("pc")) return "platform-pc";
   return "platform-generic";
 }
@@ -4387,8 +4576,10 @@ function canonicalPlatform(value) {
     ps2: "PS2",
     playstation3: "PS3",
     ps3: "PS3",
+    sonyplaystationportable: "PSP",
     playstationportable: "PSP",
     psp: "PSP",
+    sonyplaystationvita: "PSVita",
     playstationvita: "PSVita",
     psvita: "PSVita",
     vita: "PSVita",
@@ -4438,6 +4629,7 @@ function canonicalPlatform(value) {
     threeds: "3DS",
     "3ds": "3DS",
     gameboyadvance: "GBA",
+    gameboyadvanced: "GBA",
     gba: "GBA",
     gameboycolor: "GBC",
     gbc: "GBC",
@@ -4467,19 +4659,54 @@ function canonicalPlatform(value) {
 
 function platformFilterGroup(platform) {
   const value = canonicalPlatform(platform);
-  return ["Steam", "Xbox PC"].includes(value) ? "PC" : value;
+  return value;
 }
 
 function platformDisplayName(platform) {
+  const value = canonicalPlatform(platform) || platform;
   const labels = {
+    PC: "PC",
+    PS1: "Sony PlayStation",
+    PS2: "Sony PlayStation 2",
+    PS3: "Sony PlayStation 3",
+    PS4: "Sony PlayStation 4",
+    PS5: "Sony Playstation 5",
+    PSP: "Sony Playstation Portable",
+    PSVita: "Sony Playstation Vita",
     X360: "Xbox 360",
     XOne: "Xbox One",
-    GBC: "GameBoy Color",
-    GB: "GameBoy",
-    GC: "GameCube",
+    GBC: "Game Boy Color",
+    GB: "Game Boy",
+    GC: "Nintendo Gamecube",
+    GBA: "Game Boy Advanced",
+    NES: "Nintendo Entertainment System",
+    SNES: "Super Nintendo Entertainment System",
+    N64: "Nintendo 64",
+    DS: "Nintendo DS",
+    Wii: "Nintendo Wii",
+    "Wii U": "Nintendo Wii U",
+    "3DS": "Nintendo 3DS",
     Gen: "Sega Genesis",
+    DC: "Sega Dreamcast",
   };
-  return labels[canonicalPlatform(platform) || platform] || platform;
+  return labels[value] || value;
+}
+
+function orderedPlatforms(values) {
+  return [...values].sort((a, b) => platformOrderRank(a) - platformOrderRank(b) || stringCompare(platformDisplayName(a), platformDisplayName(b)));
+}
+
+function platformOrderRank(platform) {
+  const value = platformFilterGroup(platform);
+  const order = [
+    "Steam", "PC",
+    "Game Gear", "Gen", "DC",
+    "GB", "GBC", "NES", "SNES", "N64", "GC", "GBA", "DS", "Wii", "Wii U", "3DS", "Switch", "Switch 2",
+    "PS1", "PS2", "PS3", "PSP", "PSVita", "PS4", "PS5",
+    "Xbox", "X360", "XOne", "Xbox PC", "Xbox Series",
+  ];
+  const index = order.indexOf(value);
+  return index >= 0 ? index : 1000;
 }
 
 function normalizeGameRecords(games) {
@@ -4934,6 +5161,7 @@ async function openEditor(id = "") {
   el.fields.cover.value = game.cover || "";
   el.fields.notes.value = game.notes || "";
   syncDialogPriceVisibility();
+  syncStyledSelect(el.fields.section, { activeValue: null });
   pauseAllPlayingTrailers();
   el.dialog.showModal();
   syncScrollLock();
@@ -5749,13 +5977,14 @@ async function refreshAllPrices() {
   }
 
   el.fetchPricesButton.disabled = true;
-  showToast(`Fetching prices for ${games.length} games...`);
+  showToast(tt("Fetching prices for {count} games...", { count: games.length }));
   let updated = 0;
   let failed = 0;
 
   for (const [index, game] of games.entries()) {
-    el.fetchPricesButton.innerHTML = `${currencyIcon()}<span class="button-label">Prices ${index + 1}/${games.length}</span>`;
-    el.fetchPricesButton.title = `Prices ${index + 1}/${games.length}`;
+    const progressLabel = tt("Prices {current}/{total}", { current: index + 1, total: games.length });
+    el.fetchPricesButton.innerHTML = `${currencyIcon()}<span class="button-label">${escapeHtml(progressLabel)}</span>`;
+    el.fetchPricesButton.title = progressLabel;
     el.fetchPricesButton.setAttribute("aria-label", el.fetchPricesButton.title);
     game.prices = priceProvidersForGame(game).map((store) => ({
       ...fallbackPriceLinks(game).find((item) => item.store === store),
@@ -5774,10 +6003,10 @@ async function refreshAllPrices() {
   persistLocal();
   persistCloud();
   el.fetchPricesButton.disabled = false;
-  el.fetchPricesButton.innerHTML = `${currencyIcon()}<span class="button-label">Fetch New Prices</span>`;
-  el.fetchPricesButton.title = "Fetch New Prices";
-  el.fetchPricesButton.setAttribute("aria-label", "Fetch New Prices");
-  showToast(`Updated prices for ${updated} games${failed ? `, ${failed} failed` : ""}.`, failed ? "error" : "info");
+  el.fetchPricesButton.innerHTML = `${currencyIcon()}<span class="button-label">${escapeHtml(tt("Fetch New Prices"))}</span>`;
+  el.fetchPricesButton.title = tt("Fetch New Prices");
+  el.fetchPricesButton.setAttribute("aria-label", tt("Fetch New Prices"));
+  showToast(tt("Updated prices for {updated} games{failed}.", { updated, failed: failed ? tt(", {count} failed", { count: failed }) : "" }), failed ? "error" : "info");
 }
 
 function mergeFetchedPrices(game, fetchedPrices = []) {

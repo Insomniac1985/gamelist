@@ -423,15 +423,92 @@ npx wrangler deploy
 
 If the URL says unauthorized, open the site, enter edit mode, and then open the URL again in the same browser. If it says IGDB credentials are missing, set `IGDB_CLIENT_ID` and `IGDB_CLIENT_SECRET` as Cloudflare secrets and redeploy.
 
+### Run Shelf Price Audit
+
+After logging into edit mode, open:
+
+```text
+https://YOUR_WORKER.workers.dev/api/shelf-price-audit
+```
+
+The audit page lists Shelf games that still look dollar-priced or have zero/missing values. JSON version:
+
+```text
+https://YOUR_WORKER.workers.dev/api/shelf-price-audit?format=json
+```
+
+### Bulk Shelf API
+
+Bulk Shelf write endpoints require edit authentication. Send the edit password in the same header used by the app:
+
+```text
+x-edit-password: YOUR_EDIT_PASSWORD
+```
+
+Mass add owned physical games to Shelf:
+
+```bash
+curl -X POST https://YOUR_WORKER.workers.dev/api/shelf-mass-add \
+  -H "Content-Type: application/json" \
+  -H "x-edit-password: YOUR_EDIT_PASSWORD" \
+  --data '{"games":[{"title":"Game Title","platform":"Sony PlayStation 5","country":"Spain","owners":["Owner"]}]}'
+```
+
+Accept all pending Shelf **New additions** into the physical collection:
+
+```bash
+curl -X POST https://YOUR_WORKER.workers.dev/api/shelf-mass-add \
+  -H "Content-Type: application/json" \
+  -H "x-edit-password: YOUR_EDIT_PASSWORD" \
+  --data '{"acceptPending":true}'
+```
+
+You can also accept selected pending additions with:
+
+```json
+{ "ids": ["shelf-id-1", "shelf-id-2"] }
+```
+
+Mass fill missing Shelf metadata from IGDB and PriceCharting:
+
+```bash
+curl -X POST https://YOUR_WORKER.workers.dev/api/shelf-metadata \
+  -H "Content-Type: application/json" \
+  -H "x-edit-password: YOUR_EDIT_PASSWORD" \
+  --data '{"all":true,"limit":25}'
+```
+
+By default, `/api/shelf-metadata` only fills missing fields and leaves existing metadata, PriceCharting IDs, prices, and collection values alone. Use `ids` to target specific Shelf games, and use `igdb:false` or `pricecharting:false` to run only one metadata source:
+
+```json
+{ "ids": ["shelf-id-1"], "igdb": true, "pricecharting": false }
+```
+
+`overwrite:true` is available for intentional replacement, but use CSV export first if you are doing a large overwrite.
+
 ## Data Notes
 
 - Main Gamelist KV key: `gamelist-data`
 - Shelf KV key: `shelf-data`
 - Cloud sync endpoint: `/api/sync`
+- Settings-only sync endpoint: `/api/sync?settings=1`
 - Shelf sync endpoint: `/api/shelf`
+- Shelf mass add endpoint: `/api/shelf-mass-add`
+- Shelf missing metadata endpoint: `/api/shelf-metadata`
 - Shelf IGDB cover refresh endpoint: `/api/shelf-covers`
+- Shelf price audit endpoint: `/api/shelf-price-audit`
 - Search/IGDB endpoint: `/api/search`
+- Store price endpoint: `/api/prices`
+- Shelf collection price endpoint: `/api/collection-price`
+- Cover proxy endpoint: `/api/cover`
+- PSN trophy endpoint: `/api/trophies`
+- PSN activity endpoint: `/api/achievements`
+- Steam achievements endpoint: `/api/steam-achievements`
+- Xbox achievements endpoint: `/api/xbox-achievements`
+- Google Calendar preorder endpoint: `/api/calendar`
 - Auth endpoint: `/api/auth`
 - Local browser draft backup: `localStorage`
+
+In edit mode, Settings also exposes page-specific **Dev features** links. Gamelist shows data/settings/auth endpoints. Shelf shows Shelf data, mass add, metadata fill, Shelf price audit, and Shelf IGDB cover refresh tools.
 
 To start clean, use a brand-new KV namespace. To clone existing data, copy the relevant KV values into the new namespace.

@@ -1,5 +1,6 @@
 import { normalizeSearchText, createGameCardShell, bindActivityCardParallax, mountActivitySlider, mountReleaseCalendar, finishedGameMarkup, achievementCardMarkup, achievementDashboardMarkup, achievementPanelMarkup, completedCardMarkup, horizontalCarouselState, syncViewModeButton, slideHorizontalCarousel, comparePlayingGames, finishedDurationText, timeBadgeMarkup, guideLinksMarkup, storeButtonsMarkup, activityTrailerUrl, preloadPausedActivityTrailers, syncFocusedActivityTrailer, activityReleaseStatus, activityCoverOverride, activityLocalGameForTitle, activityTitleMatchScore, activityAllowsPsnCardTrophies, formatFooterDate, formatFooterDateTime, confirmGameDelete } from "./activity-ui.js";
 import { applySiteTheme, normalizeThemeSettings, openThemeEditor, ownerCardColorClass, ownerColorClass, themeSettingsButton } from "./theme-system.js";
+import { applyDocumentTranslations, languageOptions, normalizeLanguage, t } from "./i18n.js";
 
 mountActivitySlider(document.querySelector("[data-module='playing']"), { count: "shelfPlayingCount", previous: "shelfPlayingPrev", next: "shelfPlayingNext", list: "playingCarousel", finished: "shelfPlayingFinished", finishedList: "finishedCarousel" });
 splitShelfPlayingModules();
@@ -11,6 +12,7 @@ const PULL_NAVIGATION_KEY = "gamelist:pull-navigation";
 const VIEW_KEY = "shelf:view-mode:v2";
 const LAYOUT_KEY = "shelf:layout:v2";
 const LOCAL_DRAFT_KEY = "shelf:draft-data:v2";
+const MODULE_CACHE_KEY = "shelf:module-cache:v1";
 const DEFAULT_LAYOUT = ["playing", "latestFinished", "favorites", "trophies", "calendar", "kpis", "filters", "library"];
 const LAYOUT_KEYS = [...DEFAULT_LAYOUT];
 const DEFAULT_HIDDEN_MODULES = ["playing", "trophies"];
@@ -24,13 +26,13 @@ const THEMES = {
 const siteVersion = { version: "", updatedAt: "" };
 const MODULE_NAMES = { playing: "Currently Playing", latestFinished: "Last Finished", favorites: "Showcase", trophies: "Achievements", calendar: "Calendar", kpis: "Highlights", filters: "Search", library: "Shelf" };
 const PLATFORM_OPTIONS = [
-  "Nintendo Switch", "Nintendo Switch 2", "Sony PlayStation 5", "Sony PlayStation 4",
-  "Sony PlayStation 2", "Sony PlayStation", "Nintendo 3DS", "Nintendo DS", "Nintendo 64",
-  "Nintendo GameCube", "Super Nintendo Entertainment System", "Nintendo Entertainment System",
-  "Game Boy Advance", "Game Boy Color", "Game Boy", "Nintendo Wii U", "Nintendo Wii",
-  "Sega Game Gear", "Sega Genesis", "Sega Mega Drive", "Sega Saturn", "Sega Dreamcast",
-  "Sega Master System", "Sega CD", "Sega 32X",
-  "Xbox Series", "Xbox One", "Xbox 360", "Steam",
+  "Steam",
+  "Sega Game Gear", "Sega Genesis", "Sega Dreamcast",
+  "Game Boy", "Game Boy Color", "Nintendo Entertainment System", "Super Nintendo Entertainment System",
+  "Nintendo 64", "Nintendo GameCube", "Game Boy Advance", "Nintendo DS", "Nintendo Wii", "Nintendo Wii U", "Nintendo 3DS",
+  "Nintendo Switch", "Nintendo Switch 2",
+  "Sony PlayStation", "Sony PlayStation 2", "Sony PlayStation 3", "Sony Playstation Portable", "Sony Playstation Vita", "Sony PlayStation 4", "Sony Playstation 5",
+  "Xbox", "Xbox 360", "Xbox One", "Xbox PC", "Xbox Series",
 ];
 const COUNTRY_OPTIONS = [
   ["Australia", "Australia"], ["China", "China"], ["Europe", "EU"], ["France", "France"], ["Germany", "Germany"],
@@ -150,9 +152,11 @@ const el = {
   platformOptions: document.querySelector("#shelfPlatformOptions"),
   settingsTheme: document.querySelector("#shelfSettingsTheme"), settingsDefaultOrder: document.querySelector("#shelfSettingsDefaultOrder"),
   settingsCurrency: document.querySelector("#shelfSettingsCurrency"), settingsRegion: document.querySelector("#shelfSettingsRegion"),
+  settingsLanguage: document.querySelector("#shelfSettingsLanguage"),
   settingsStores: document.querySelector("#shelfSettingsStores"),
   settingsPsnUser: document.querySelector("#shelfSettingsPsnUser"), settingsMicrosoftUser: document.querySelector("#shelfSettingsMicrosoftUser"),
   settingsSteamUser: document.querySelector("#shelfSettingsSteamUser"), settingsDefaultOwner: document.querySelector("#shelfSettingsDefaultOwner"),
+  settingsDevFeatures: document.querySelector("#shelfSettingsDevFeatures"),
   showcaseDialog: document.querySelector("#showcaseDialog"), showcaseForm: document.querySelector("#showcaseForm"), showcaseClose: document.querySelector("#showcaseClose"),
   showcaseSelected: document.querySelector("#showcaseSelected"), showcaseSearch: document.querySelector("#showcaseSearch"), showcasePlatform: document.querySelector("#showcasePlatform"), showcaseRegion: document.querySelector("#showcaseRegion"), showcaseCategory: document.querySelector("#showcaseCategory"), showcaseDirection: document.querySelector("#showcaseSortDirection"), showcaseCount: document.querySelector("#showcaseCount"), showcaseList: document.querySelector("#showcaseList"),
   completedDialog: document.querySelector("#shelfCompletedDialog"), completedClose: document.querySelector("#shelfCompletedClose"), completedTitle: document.querySelector("#shelfCompletedTitle"), completedCount: document.querySelector("#shelfCompletedCount"), completedYear: document.querySelector("#shelfCompletedYear"), completedPlatform: document.querySelector("#shelfCompletedPlatform"), completedSort: document.querySelector("#shelfCompletedSort"), completedDirection: document.querySelector("#shelfCompletedDirection"), completedView: document.querySelector("#shelfCompletedView"), completedList: document.querySelector("#shelfCompletedList"),
@@ -165,6 +169,7 @@ const el = {
 };
 let selectOverflowPopover = null;
 let selectMeasureContext = null;
+let platformLogoOverlay = null;
 
 init();
 
@@ -178,6 +183,7 @@ async function init() {
   populateEditorOptions();
   bindEvents();
   if (window.self === window.top) initPagePullTransition({ targetLabel: "Gamelist", targetUrl: "./" });
+  hydrateModuleCache();
   const [shelfData, auth, gamelistData] = await Promise.all([
     fetch("/api/shelf", { cache: "no-store" }).then((response) => response.ok ? response.json() : null).catch(() => null),
     fetch("/api/auth", { cache: "no-store" }).then((response) => response.ok).catch(() => false),
@@ -210,11 +216,11 @@ function bindEvents() {
     }
     scrollToShelfLibrary();
   });
-  el.search.addEventListener("input", () => { state.filters.query = normalizeSearchText(el.search.value); renderLibrary(); });
-  el.platform.addEventListener("change", () => { state.filters.platform = el.platform.value; renderLibrary(); });
-  el.region.addEventListener("change", () => { state.filters.region = el.region.value; renderLibrary(); });
-  el.condition.addEventListener("change", () => { state.filters.condition = el.condition.value; renderLibrary(); });
-  el.category.addEventListener("change", () => { state.filters.category = el.category.value; renderLibrary(); });
+  el.search.addEventListener("input", () => { state.filters.query = normalizeSearchText(el.search.value); renderFilteredShelf(); });
+  el.platform.addEventListener("change", () => { state.filters.platform = el.platform.value; renderFilteredShelf(); });
+  el.region.addEventListener("change", () => { state.filters.region = el.region.value; renderFilteredShelf(); });
+  el.condition.addEventListener("change", () => { state.filters.condition = el.condition.value; renderFilteredShelf(); });
+  el.category.addEventListener("change", () => { state.filters.category = el.category.value; renderFilteredShelf(); });
   el.sort.addEventListener("change", () => { state.filters.sort = el.sort.value; if (["added", "value"].includes(state.filters.sort)) state.filters.direction = "desc"; renderChrome(); renderLibrary(); });
   el.sortDirection.addEventListener("click", () => { state.filters.direction = state.filters.direction === "asc" ? "desc" : "asc"; renderChrome(); renderLibrary(); });
   el.view.addEventListener("click", toggleView);
@@ -223,6 +229,7 @@ function bindEvents() {
   el.playingCarousel.addEventListener("scroll", () => { updatePlayingControls(); scheduleShelfTrailerUpdate(); }, { passive: true });
   el.finishedCarousel.addEventListener("scroll", updateFinishedControls, { passive: true });
   el.clear.addEventListener("click", clearFilters);
+  document.addEventListener("click", closePlatformLogoSelects);
   el.login.addEventListener("click", toggleEditMode);
   el.addButton.addEventListener("click", () => openEditor());
   el.floatingAdd.addEventListener("click", () => state.canEdit ? openEditor() : openAuth());
@@ -298,6 +305,7 @@ function rebuildGames() {
 }
 
 function renderAll() {
+  applyLanguage();
   applyLayout();
   renderChrome();
   renderFilters();
@@ -306,6 +314,39 @@ function renderAll() {
   renderReleaseCalendar();
   renderGamelistModules();
   renderLibrary();
+  saveModuleCache();
+}
+
+function hydrateModuleCache() {
+  try {
+    const cache = JSON.parse(localStorage.getItem(MODULE_CACHE_KEY) || "{}");
+    if (!cache || typeof cache !== "object") return;
+    if (cache.playing) el.playingCarousel.innerHTML = cache.playing;
+    if (cache.finished) el.finishedCarousel.innerHTML = cache.finished;
+    if (cache.favorites) el.favorites.innerHTML = cache.favorites;
+    if (cache.stats) el.stats.innerHTML = cache.stats;
+    if (cache.calendar) el.releaseCalendar.innerHTML = cache.calendar;
+    if (cache.playingCount) el.playingCount.textContent = cache.playingCount;
+    syncShelfActivityVisibility();
+  } catch {
+    localStorage.removeItem(MODULE_CACHE_KEY);
+  }
+}
+
+function saveModuleCache() {
+  try {
+    localStorage.setItem(MODULE_CACHE_KEY, JSON.stringify({
+      playing: el.playingCarousel.innerHTML,
+      finished: el.finishedCarousel.innerHTML,
+      favorites: el.favorites.innerHTML,
+      stats: el.stats.innerHTML,
+      calendar: el.releaseCalendar.innerHTML,
+      playingCount: el.playingCount.textContent,
+      savedAt: Date.now(),
+    }));
+  } catch {
+    // Module cache is only a paint-speed hint.
+  }
 }
 
 function renderFavorites() {
@@ -390,18 +431,18 @@ function renderChrome() {
   el.layoutButton.hidden = !state.canEdit;
   if (el.syncButton) el.syncButton.hidden = true;
   el.fetchPricesButton.hidden = !state.canEdit || !shelfPricesVisible();
-  el.fetchPricesButton.innerHTML = `${currencyIcon()}<span class="button-label">Fetch New Prices</span>`;
+  el.fetchPricesButton.innerHTML = `${currencyIcon()}<span class="button-label">${escapeHtml(tt("Fetch New Prices"))}</span>`;
   updateFetchPricesButtonStatus();
   el.login.innerHTML = state.canEdit
-    ? `<svg class="pause-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5v14M16 5v14"></path></svg><span class="button-label">Stop Editing</span>`
+    ? `<svg class="pause-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5v14M16 5v14"></path></svg><span class="button-label">${escapeHtml(tt("Stop Editing"))}</span>`
     : `<svg class="pencil-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h4l11-11a2.8 2.8 0 0 0-4-4L4 16v4Z"></path><path d="M13.5 6.5l4 4"></path></svg>`;
-  el.login.title = state.canEdit ? "Stop Editing" : "Edit";
+  el.login.title = state.canEdit ? tt("Stop Editing") : tt("Edit");
   el.login.setAttribute("aria-label", el.login.title);
   syncViewModeButton(el.view, state.viewMode, { gridIcon, linesIcon });
   el.sortDirection.innerHTML = sortArrowIcon(state.filters.direction === "desc");
   el.sortDirection.classList.toggle("desc", state.filters.direction === "desc");
-  el.sortDirection.title = `Sort ${state.filters.direction === "desc" ? "descending" : "ascending"}`;
-  el.footerUpdate.textContent = state.updatedAt ? `Last edit ${formatFooterDate(state.updatedAt)}` : "Last edit -";
+  el.sortDirection.title = state.filters.direction === "desc" ? tt("Sort descending") : tt("Sort ascending");
+  el.footerUpdate.textContent = state.updatedAt ? `${tt("Last edit")} ${formatFooterDate(state.updatedAt)}` : tt("Last edit -");
   el.footerVersion.textContent = siteVersion.version
     ? `${siteVersion.version} · Updated ${formatFooterDateTime(siteVersion.updatedAt)}`
     : "Version -";
@@ -439,6 +480,18 @@ async function syncShelfNow() {
   } finally {
     if (el.syncButton) el.syncButton.disabled = false;
   }
+}
+
+function currentLanguage() {
+  return normalizeLanguage(state.gamelistSettings?.language);
+}
+
+function tt(key, values) {
+  return t(currentLanguage(), key, values);
+}
+
+function applyLanguage() {
+  applyDocumentTranslations(currentLanguage());
 }
 
 function initPagePullTransition({ targetLabel, targetUrl }) {
@@ -548,9 +601,9 @@ async function refreshAllShelfPrices() {
   const settings = normalizePriceSettings(state.gamelistSettings);
   if (!games.length) return;
   el.fetchPricesButton.disabled = true;
-  state.priceFetchStatus = `Fetching prices for ${games.length} games...`;
+  state.priceFetchStatus = tt("Fetching prices for {count} games...", { count: games.length });
   updateFetchPricesButtonStatus();
-  showToast(`Fetching prices for ${games.length} games...`);
+  showToast(state.priceFetchStatus);
   let updated = 0;
   let failed = 0;
   let searched = 0;
@@ -558,8 +611,9 @@ async function refreshAllShelfPrices() {
   const currencyMismatchGames = [];
   try {
     for (const [index, game] of games.entries()) {
-      el.fetchPricesButton.innerHTML = `${currencyIcon()}<span class="button-label">Prices ${index + 1}/${games.length}</span>`;
-      state.priceFetchStatus = `Checking ${index + 1}/${games.length}: ${game.title}`;
+      const progressLabel = tt("Prices {current}/{total}", { current: index + 1, total: games.length });
+      el.fetchPricesButton.innerHTML = `${currencyIcon()}<span class="button-label">${escapeHtml(progressLabel)}</span>`;
+      state.priceFetchStatus = `${tt("Checking {current}/{total}", { current: index + 1, total: games.length })}: ${game.title}`;
       updateFetchPricesButtonStatus();
       try {
         if (index) await delay(450);
@@ -586,10 +640,10 @@ async function refreshAllShelfPrices() {
       console.groupEnd();
     }
     state.priceFetchStatus = `Last fetch: ${updated}/${games.length} updated${searched ? `, ${searched} via search` : ""}${failed ? `, ${failed} failed` : ""}${emptyPriceGames.length ? `, ${emptyPriceGames.length} empty prices` : ""}${currencyMismatchGames.length ? `, ${currencyMismatchGames.length} wrong currency` : ""}.`;
-    showToast(`Updated prices for ${updated} games${failed ? `, ${failed} failed` : ""}.`, failed ? "error" : "info");
+    showToast(tt("Updated prices for {updated} games{failed}.", { updated, failed: failed ? tt(", {count} failed", { count: failed }) : "" }), failed ? "error" : "info");
   } finally {
     el.fetchPricesButton.disabled = false;
-    el.fetchPricesButton.innerHTML = `${currencyIcon()}<span class="button-label">Fetch New Prices</span>`;
+    el.fetchPricesButton.innerHTML = `${currencyIcon()}<span class="button-label">${escapeHtml(tt("Fetch New Prices"))}</span>`;
     updateFetchPricesButtonStatus();
   }
 }
@@ -646,7 +700,7 @@ function ensureCollectionPriceCurrency(data, settings) {
 
 function updateFetchPricesButtonStatus() {
   if (!el.fetchPricesButton) return;
-  const label = state.priceFetchStatus || "Fetch New Prices";
+  const label = state.priceFetchStatus || tt("Fetch New Prices");
   el.fetchPricesButton.title = label;
   el.fetchPricesButton.setAttribute("aria-label", label);
 }
@@ -693,7 +747,7 @@ function delay(ms) {
 }
 
 function renderStats() {
-  const visibleGames = visibleShelfGames();
+  const visibleGames = filteredShelfStatsGames();
   const collectionGames = visibleGames.filter((game) => !isPendingCollectionGame(game));
   const value = collectionGames.reduce((sum, game) => sum + (collectionValueFor(game) || 0), 0);
   const valueText = normalizePriceSettings(state.gamelistSettings).currency === "USD" ? `$${Math.round(value).toLocaleString("en")}` : `${Math.round(value).toLocaleString("en")}€`;
@@ -711,14 +765,15 @@ function renderFilters() {
     state.filters.direction = "asc";
   }
   const visibleGames = visibleShelfGames();
-  const platforms = uniqueSorted(visibleGames.map((game) => game.platform));
+  const platforms = orderedPlatforms(uniqueSorted(visibleGames.map((game) => game.platform)));
   const countries = uniqueSorted(visibleGames.map((game) => game.country));
   const categories = uniqueSorted(visibleGames.flatMap((game) => [...String(game.genre || "").split(","), ...(game.genres || [])].map((value) => value.trim()).filter(Boolean)));
-  el.platform.innerHTML = `<option value="all">All platforms</option>${platforms.map((value) => `<option value="${escapeHtml(value)}">${escapeHtml(shortPlatform(value))}</option>`).join("")}`;
-  el.region.innerHTML = `<option value="all">All regions</option>${countries.map((value) => `<option value="${escapeHtml(value)}">${escapeHtml(regionName(value))}</option>`).join("")}`;
-  el.category.innerHTML = `<option value="all">All categories</option>${categories.map((value) => `<option value="${escapeHtml(value)}">${escapeHtml(value)}</option>`).join("")}`;
+  el.platform.innerHTML = `<option value="all">${escapeHtml(tt("All platforms"))}</option>${platforms.map((value) => `<option value="${escapeHtml(value)}">${escapeHtml(platformDisplayName(value))}</option>`).join("")}`;
+  el.region.innerHTML = `<option value="all">${escapeHtml(tt("All regions"))}</option>${countries.map((value) => `<option value="${escapeHtml(value)}">${escapeHtml(regionName(value))}</option>`).join("")}`;
+  el.category.innerHTML = `<option value="all">${escapeHtml(tt("All categories"))}</option>${categories.map((value) => `<option value="${escapeHtml(value)}">${escapeHtml(value)}</option>`).join("")}`;
   el.platform.value = state.filters.platform;
   el.region.value = state.filters.region;
+  el.condition.value = state.filters.condition;
   el.category.value = state.filters.category;
   const valueOption = el.sort.querySelector("option[value='value']");
   if (valueOption) {
@@ -726,7 +781,136 @@ function renderFilters() {
     valueOption.disabled = !shelfPricesVisible();
   }
   el.sort.value = state.filters.sort;
+  syncStyledSelect(el.platform, { logos: true, activeValue: "all" });
+  syncStyledSelect(el.region, { activeValue: "all" });
+  syncStyledSelect(el.condition, { activeValue: "all" });
+  syncStyledSelect(el.category, { activeValue: "all" });
+  syncStyledSelect(el.sort, { activeValue: null });
   [el.platform, el.region, el.condition, el.category, el.sort].forEach(updateSelectOverflowTitle);
+}
+
+function syncStyledSelect(select, options = {}) {
+  if (!select) return;
+  const useLogos = Boolean(options.logos);
+  select.classList.add(useLogos ? "native-platform-filter" : "native-styled-select");
+  let control = select.nextElementSibling;
+  if (!control?.classList?.contains("platform-logo-select")) {
+    control = document.createElement("div");
+    control.className = "platform-logo-select";
+    select.insertAdjacentElement("afterend", control);
+  }
+  const selectOptions = [...select.options].map((option) => ({
+    value: option.value,
+    label: option.textContent.trim(),
+    selected: option.selected,
+    disabled: option.disabled || option.hidden,
+  }));
+  const visibleOptions = selectOptions.filter((option) => !option.disabled);
+  const selected = selectOptions.find((option) => option.selected) || visibleOptions[0] || { value: "all", label: "All platforms" };
+  control.classList.toggle("is-active", options.activeValue != null && selected.value !== options.activeValue);
+  control.innerHTML = `
+    <button class="platform-logo-button" type="button" aria-haspopup="listbox" aria-expanded="false" data-full-label="${escapeHtml(selected.label)}" aria-label="${escapeHtml(selected.label)}">
+      ${platformLogoChoiceMarkup(selected.value, selected.label, { logos: useLogos })}
+    </button>
+    <div class="platform-logo-menu" role="listbox">
+      ${visibleOptions.map((option) => `
+        <button class="platform-logo-option ${option.selected ? "is-selected" : ""}" type="button" role="option" aria-selected="${option.selected ? "true" : "false"}" data-value="${escapeHtml(option.value)}" data-full-label="${escapeHtml(option.label)}">
+          ${platformLogoChoiceMarkup(option.value, option.label, { logos: useLogos })}
+        </button>
+      `).join("")}
+    </div>
+  `;
+  const button = control.querySelector(".platform-logo-button");
+  const buttonLabel = button?.querySelector(".platform-logo-choice-label");
+  button?.classList.toggle("is-ellipsed", Boolean(buttonLabel && buttonLabel.scrollWidth > buttonLabel.clientWidth));
+  button?.addEventListener("pointerenter", () => showPlatformLogoOverlay(button));
+  button?.addEventListener("focus", () => showPlatformLogoOverlay(button));
+  button?.addEventListener("pointerleave", hidePlatformLogoOverlay);
+  button?.addEventListener("blur", hidePlatformLogoOverlay);
+  button?.addEventListener("click", (event) => {
+    event.stopPropagation();
+    const shouldOpen = !control.classList.contains("is-open");
+    closePlatformLogoSelects({ target: control });
+    control.classList.toggle("is-open", shouldOpen);
+    const open = control.classList.contains("is-open");
+    button.setAttribute("aria-expanded", open ? "true" : "false");
+  });
+  control.querySelectorAll(".platform-logo-option").forEach((option) => {
+    const label = option.querySelector(".platform-logo-choice-label");
+    option.classList.toggle("is-ellipsed", Boolean(label && label.scrollWidth > label.clientWidth));
+    option.addEventListener("pointerenter", () => showPlatformLogoOverlay(option));
+    option.addEventListener("focus", () => showPlatformLogoOverlay(option));
+    option.addEventListener("pointerleave", hidePlatformLogoOverlay);
+    option.addEventListener("blur", hidePlatformLogoOverlay);
+    option.addEventListener("click", (event) => {
+      event.stopPropagation();
+      select.value = option.dataset.value || "all";
+      control.classList.remove("is-open");
+      button?.setAttribute("aria-expanded", "false");
+      select.dispatchEvent(new Event("change", { bubbles: true }));
+      requestAnimationFrame(() => {
+        if (select.isConnected) syncStyledSelect(select, options);
+      });
+    });
+  });
+  requestAnimationFrame(() => {
+    const buttonLabel = button?.querySelector(".platform-logo-choice-label");
+    button?.classList.toggle("is-ellipsed", Boolean(buttonLabel && buttonLabel.scrollWidth > buttonLabel.clientWidth));
+    control.querySelectorAll(".platform-logo-option").forEach((option) => {
+      const label = option.querySelector(".platform-logo-choice-label");
+      option.classList.toggle("is-ellipsed", Boolean(label && label.scrollWidth > label.clientWidth));
+    });
+  });
+  control.addEventListener("keydown", (event) => {
+    if (event.key !== "Escape") return;
+    control.classList.remove("is-open");
+    button?.setAttribute("aria-expanded", "false");
+    button?.focus();
+  });
+}
+
+function syncStyledSelects(root = document, options = {}) {
+  root?.querySelectorAll?.("select").forEach((select) => syncStyledSelect(select, options));
+}
+
+function closePlatformLogoSelects(event) {
+  hidePlatformLogoOverlay();
+  document.querySelectorAll(".platform-logo-select.is-open").forEach((control) => {
+    if (event?.target && control.contains(event.target)) return;
+    control.classList.remove("is-open");
+    control.querySelector(".platform-logo-button")?.setAttribute("aria-expanded", "false");
+  });
+}
+
+function showPlatformLogoOverlay(option) {
+  const label = option.querySelector(".platform-logo-choice-label");
+  const isOverflowing = Boolean(label && label.scrollWidth > label.clientWidth + 1);
+  if (!option.classList.contains("is-ellipsed") && !isOverflowing) return;
+  if (!platformLogoOverlay) {
+    platformLogoOverlay = document.createElement("div");
+    platformLogoOverlay.className = "platform-logo-hover-overlay";
+    document.body.appendChild(platformLogoOverlay);
+  }
+  platformLogoOverlay.textContent = option.dataset.fullLabel || "";
+  const rect = option.getBoundingClientRect();
+  platformLogoOverlay.style.left = `${Math.min(rect.right + 8, window.innerWidth - 24)}px`;
+  platformLogoOverlay.style.top = `${rect.top + rect.height / 2}px`;
+  platformLogoOverlay.classList.add("visible");
+}
+
+function hidePlatformLogoOverlay() {
+  platformLogoOverlay?.classList.remove("visible");
+}
+
+function platformLogoChoiceMarkup(value, label, options = {}) {
+  const showLogo = options.logos && value && value !== "all";
+  const cls = showLogo ? platformClass(value) : "platform-generic";
+  return `
+    <span class="platform-logo-choice ${escapeHtml(cls)}">
+      ${showLogo ? `<span class="platform-logo-choice-icon"><img src="${escapeHtml(platformLogo(value))}" alt="" width="18" height="18" decoding="async"></span>` : ""}
+      <span class="platform-logo-choice-label">${escapeHtml(label)}</span>
+    </span>
+  `;
 }
 
 function renderLibrary() {
@@ -752,6 +936,11 @@ function renderLibrary() {
     el.shelf.appendChild(fragment);
   }
   el.empty.hidden = games.length > 0;
+}
+
+function renderFilteredShelf() {
+  renderStats();
+  renderLibrary();
 }
 
 function normalizedShelfTab(tab) {
@@ -804,6 +993,17 @@ function filteredGames() {
       && (!state.filters.query || haystack.includes(state.filters.query));
   }).sort(sorter(state.filters.sort));
 }
+function filteredShelfStatsGames() {
+  return visibleShelfGames().filter((game) => {
+    const haystack = normalizeSearchText(`${game.title} ${game.platform} ${game.publisher} ${game.developer} ${game.genre} ${game.notes} ${(game.tags || []).join(" ")} ${(game.owners || []).join(" ")}`);
+    return !game.deletedAt
+      && (state.filters.platform === "all" || game.platform === state.filters.platform)
+      && (state.filters.region === "all" || game.country === state.filters.region)
+      && conditionMatches(game, state.filters.condition)
+      && (state.filters.category === "all" || [...String(game.genre || "").split(","), ...(game.genres || [])].map((value) => value.trim()).includes(state.filters.category))
+      && (!state.filters.query || haystack.includes(state.filters.query));
+  });
+}
 function isPendingCollectionGame(game) { return Boolean(game?.pendingCollection); }
 function visibleShelfGames() { return state.canEdit ? state.games : state.games.filter((game) => !isPendingCollectionGame(game)); }
 function ownedShelfGames() { return state.games.filter((game) => !isPendingCollectionGame(game)); }
@@ -839,7 +1039,7 @@ function gameCard(game, options = {}) {
   titleOwners.hidden = !titleOwners.innerHTML;
   const edit = card.querySelector(".edit-action"); edit.dataset.action = "edit";
   card.querySelector(".studio-line").textContent = studio || game.genre || "Physical edition";
-  card.querySelector(".meta").innerHTML = `<span class="region-flag" title="${escapeHtml(game.country)}">${flagIcon(game.country)}</span>${platformBadge(game.platform)}${conditionBadge(condition)}${shelfProgressPill(game)}`;
+  card.querySelector(".meta").innerHTML = `<span class="region-flag" title="${escapeHtml(game.country)}">${flagIcon(game.country)}</span>${platformBadge(game.platform, { title: game.title })}${conditionBadge(condition)}${shelfProgressPill(game)}`;
   card.querySelector(".play-dates").remove();
   card.querySelector(".chips").innerHTML = tags.map((tag) => `<span class="chip genre">${escapeHtml(tag)}</span>`).join("");
   card.querySelector(".card-trophies").remove();
@@ -859,7 +1059,7 @@ function gameRow(game) {
   const tags = [...(game.tags || []), game.category && game.category !== "Game" ? game.category : "", ...String(game.genre || "").split(",")].map((tag) => String(tag).trim()).filter((tag, index, list) => tag && normalize(tag) !== "game" && list.indexOf(tag) === index);
   const description = game.description || "";
   const actions = isPendingCollectionGame(game) ? `<div class="game-row-actions-top"><button class="primary-button add-collection-action" data-action="add-collection" type="button">Add to Collection</button></div><div class="game-row-actions-bottom"><button class="icon-button danger-button row-delete-action" data-action="delete" type="button" title="Delete" aria-label="Delete">${trashIcon()}</button></div>` : `<div class="game-row-actions-top"><button class="icon-button row-edit-action" data-action="edit" type="button" title="Edit" aria-label="Edit">${pencilIcon()}</button><button class="icon-button danger-button row-delete-action" data-action="delete" type="button" title="Delete" aria-label="Delete">${trashIcon()}</button></div><div class="game-row-actions-bottom"><button class="ghost-button shelf-add-backlog-action" data-action="add-backlog" type="button">Add to Backlog</button></div>`;
-  return `<article class="game-row${ownerClasses}" data-id="${escapeHtml(game.id)}" role="button" tabindex="0" aria-label="${escapeHtml(`Open ${game.title}`)}"><span class="game-row-cover-wrap"><img class="game-row-cover" src="${escapeHtml(cover)}" alt="" loading="lazy" decoding="async"><img class="game-row-cover-preview" src="${escapeHtml(cover)}" alt="" loading="lazy" decoding="async" aria-hidden="true"></span><div class="game-row-identity"><strong class="${visibleOwners.map(ownerColorClass).join(" ")}">${escapeHtml(game.title)}</strong><span class="game-row-owner-line">${visibleOwners.map(ownerBadge).join("")}</span>${studio ? `<span>${escapeHtml(studio)}</span>` : ""}</div><div class="game-row-core"><span class="region-flag" title="${escapeHtml(game.country)}">${flagIcon(game.country)}</span>${platformBadge(game.platform)}${conditionBadge(conditionLabel(game))}${shelfProgressPill(game)}</div><div class="game-row-tags">${tags.map((tag) => `<span class="chip genre">${escapeHtml(tag)}</span>`).join("")}</div>${description ? `<div class="game-row-description shelf-row-description">${escapeHtml(description)}</div>` : ""}<div class="game-row-actions">${actions}</div></article>`;
+  return `<article class="game-row${ownerClasses}" data-id="${escapeHtml(game.id)}" role="button" tabindex="0" aria-label="${escapeHtml(`Open ${game.title}`)}"><span class="game-row-cover-wrap"><img class="game-row-cover" src="${escapeHtml(cover)}" alt="" loading="lazy" decoding="async"><img class="game-row-cover-preview" src="${escapeHtml(cover)}" alt="" loading="lazy" decoding="async" aria-hidden="true"></span><div class="game-row-identity"><strong class="${visibleOwners.map(ownerColorClass).join(" ")}">${escapeHtml(game.title)}</strong><span class="game-row-owner-line">${visibleOwners.map(ownerBadge).join("")}</span>${studio ? `<span>${escapeHtml(studio)}</span>` : ""}</div><div class="game-row-core"><span class="region-flag" title="${escapeHtml(game.country)}">${flagIcon(game.country)}</span>${platformBadge(game.platform, { title: game.title })}${conditionBadge(conditionLabel(game))}${shelfProgressPill(game)}</div><div class="game-row-tags">${tags.map((tag) => `<span class="chip genre">${escapeHtml(tag)}</span>`).join("")}</div>${description ? `<div class="game-row-description shelf-row-description">${escapeHtml(description)}</div>` : ""}<div class="game-row-actions">${actions}</div></article>`;
 }
 
 function visibleShelfCardOwners(owners = []) {
@@ -902,7 +1102,7 @@ function openDetails(game) {
   el.detailTitle.textContent = game.title;
   el.detailTitle.className = `${el.detailTitle.className.replace(/\bowner-[\w-]+/g, "").trim()} ${(game.owners || []).map(ownerColorClass).join(" ")}`.trim();
   el.detailStudio.textContent = [game.developer, game.publisher && game.publisher !== game.developer ? game.publisher : ""].filter(Boolean).join(" · ");
-  el.detailMeta.innerHTML = `${game.country ? `<span class="region-flag" title="${escapeHtml(game.country)}">${flagIcon(game.country)}</span>` : ""}${platformBadge(game.platform)}`;
+  el.detailMeta.innerHTML = `${game.country ? `<span class="region-flag" title="${escapeHtml(game.country)}">${flagIcon(game.country)}</span>` : ""}${platformBadge(game.platform, { title: game.title })}`;
   const fallbackCover = coverUrl(game.cover || "") || platformFallback(game.platform);
   el.detailCover.src = fallbackCover;
   el.detailCover.dataset.coverFallback = fallbackCover;
@@ -950,7 +1150,7 @@ function openEditor(game = null) {
   el.lookupResults.classList.remove("loaded");
   el.lookupResults.innerHTML = "";
   el.lookupInput.value = game?.title || "";
-  const values = game || { platform: "Nintendo Switch", country: defaultShelfCountry(), owners: defaultShelfOwners(), game: true, box: true, manual: true };
+  const values = game || { platform: "", country: defaultShelfCountry(), owners: defaultShelfOwners(), game: true, box: true, manual: true };
   for (const [key, input] of Object.entries(el.fields)) input.value = values[key] ?? "";
   el.fields.owners.value = (values.owners || []).join(", ");
   const links = normalizedStoreLinks(values);
@@ -964,6 +1164,7 @@ function openEditor(game = null) {
   el.addForm.querySelector(".modal-head h2").textContent = game?.pendingCollection ? "Add to Collection" : game ? "Edit Game" : "Add Game";
   el.addForm.querySelectorAll("button[type='submit']").forEach((button) => { button.textContent = game?.pendingCollection ? "Add to Collection" : game ? "Save" : "Add to Shelf"; });
   el.editDelete.hidden = !game;
+  syncStyledSelects(el.addDialog, { activeValue: null });
   openDialog(el.addDialog);
 }
 
@@ -1233,7 +1434,7 @@ async function saveEditor(event) {
   const game = {
     ...(existing || {}),
     id: existing?.id || `shelf-${crypto.randomUUID()}`,
-    title: el.fields.title.value.trim(), platform: el.fields.platform.value, country: el.fields.country.value,
+    title: el.fields.title.value.trim(), platform: el.fields.platform.value.trim(), country: el.fields.country.value,
     region: regionFor(el.fields.country.value), ...conditionFromInputs(),
     price: numberOrNull(el.fields.price.value), publisher: el.fields.publisher.value.trim(), developer: el.fields.developer.value.trim(),
     genre: el.fields.genre.value.trim(), cover: rawCoverUrl(el.fields.cover.value.trim()), notes: el.fields.notes.value.trim(),
@@ -1402,14 +1603,17 @@ function renderLayoutEditor() {
   el.layoutList.className = "settings-layout";
   el.layoutList.innerHTML = [
     ...state.layout.order.map((key, index) => settingsLayoutCard(key, index)),
-    `<div class="settings-preference-separator" role="presentation"></div><div class="settings-preference-row">${themeSettingsButton(state.gamelistSettings, escapeHtml)}${settingsSelectCard("order", "Default order", "shelfSettingsDefaultOrder", [{ value: "added", label: "Last added" }, { value: "title", label: "Name" }, { value: "platform", label: "Platform" }, { value: "region", label: "Region" }, { value: "value", label: "Value" }])}${settingsShelfSyncCard()}${settingsShelfPricesCard()}</div>`,
+    `<div class="settings-preference-separator" role="presentation"></div><div class="settings-preference-row">${themeSettingsButton(state.gamelistSettings, escapeHtml)}${settingsSelectCard("order", tt("Default order"), "shelfSettingsDefaultOrder", [{ value: "added", label: tt("Last added") }, { value: "title", label: tt("Name") }, { value: "platform", label: tt("Platform") }, { value: "region", label: tt("Region") }, { value: "value", label: tt("Value") }])}${settingsShelfSyncCard()}${settingsShelfPricesCard()}</div>`,
   ].join("");
   document.querySelector("#shelfSettingsCsvData").innerHTML = settingsCsvDataCard("shelf");
+  if (el.settingsDevFeatures) el.settingsDevFeatures.innerHTML = settingsDevFeaturesCard("shelf");
   el.settingsDefaultOrder = document.querySelector("#shelfSettingsDefaultOrder");
   const settings = normalizePriceSettings(state.gamelistSettings);
   el.settingsDefaultOrder.value = shelfSortForDefault(state.gamelistSettings.shelfDefaultOrder ?? state.gamelistSettings.defaultOrder);
   el.settingsCurrency.value = settings.currency;
   el.settingsRegion.value = settings.region;
+  el.settingsLanguage.innerHTML = languageOptions(state.gamelistSettings.language, escapeHtml);
+  el.settingsLanguage.value = currentLanguage();
   el.settingsPsnUser.value = state.gamelistSettings.psnUser || "";
   el.settingsMicrosoftUser.value = state.gamelistSettings.microsoftUser || "";
   el.settingsSteamUser.value = state.gamelistSettings.steamUser || "";
@@ -1419,20 +1623,25 @@ function renderLayoutEditor() {
     const checked = [...el.settingsStores.querySelectorAll("input:checked")];
     if (checked.length > MAX_PRICE_STORES) input.checked = false;
   }));
-  el.layoutList.querySelector("[data-theme-editor]")?.addEventListener("click", () => openThemeEditor({
-    settings: state.gamelistSettings,
-    page: "shelf",
-    onSave: async (settings) => {
-      state.gamelistSettings = { ...state.gamelistSettings, ...settings, customTheme: normalizeThemeSettings(settings) };
-      localStorage.setItem("gamelist:settings:v1", JSON.stringify(state.gamelistSettings));
-      await persistGamelistSettings();
-      applyTheme();
-      renderLayoutEditor();
-      renderAll();
-    },
-  }));
+  el.layoutList.querySelector("[data-theme-editor]")?.addEventListener("click", () => {
+    openThemeEditor({
+      settings: state.gamelistSettings,
+      page: "shelf",
+      onSave: async (settings) => {
+        state.gamelistSettings = { ...state.gamelistSettings, ...settings, customTheme: normalizeThemeSettings(settings) };
+        localStorage.setItem("gamelist:settings:v1", JSON.stringify(state.gamelistSettings));
+        await persistGamelistSettings();
+        applyTheme();
+        renderLayoutEditor();
+        renderAll();
+      },
+    });
+    requestAnimationFrame(() => syncStyledSelects(document.querySelector("#themeEditorDialog"), { activeValue: null }));
+  });
   document.querySelector("[data-export-csv='shelf']")?.addEventListener("click", exportShelfCsv);
   document.querySelector("[data-import-csv='shelf']")?.addEventListener("click", importShelfCsv);
+  applyLanguage();
+  syncStyledSelects(el.layoutDialog, { activeValue: null });
 }
 
 function settingsLayoutCard(key, index) {
@@ -1446,15 +1655,27 @@ function settingsSelectCard(type, title, id, options) {
 }
 
 function settingsShelfSyncCard() {
-  return `<article class="settings-layout-card settings-sync-card"><div class="settings-wire wire-list" aria-hidden="true"><span></span><span></span><span></span></div><div class="settings-theme-select"><span>Shelf Sync</span><div class="settings-check-field"><label class="check-filter toggle-check settings-visible-check" title="Shelf Sync"><input type="checkbox" id="shelfSettingsSync" ${state.gamelistSettings.shelfSync === false ? "" : "checked"}><span>Enabled</span></label></div></div></article>`;
+  return `<article class="settings-layout-card settings-sync-card"><div class="settings-wire wire-list" aria-hidden="true"><span></span><span></span><span></span></div><div class="settings-theme-select"><span>${escapeHtml(tt("Shelf Sync"))}</span><div class="settings-check-field"><label class="check-filter toggle-check settings-visible-check" title="${escapeHtml(tt("Shelf Sync"))}"><input type="checkbox" id="shelfSettingsSync" ${state.gamelistSettings.shelfSync === false ? "" : "checked"}><span>${escapeHtml(tt("Enabled"))}</span></label></div></div></article>`;
 }
 
 function settingsShelfPricesCard() {
-  return `<article class="settings-layout-card settings-sync-card"><div class="settings-wire wire-list" aria-hidden="true"><span></span><span></span><span></span></div><div class="settings-theme-select"><span>Prices</span><div class="settings-check-field"><label class="check-filter toggle-check settings-visible-check" title="Show prices"><input type="checkbox" id="shelfSettingsShowPrices" ${state.gamelistSettings.shelfHidePrices ? "" : "checked"}><span>Show prices</span></label></div></div></article>`;
+  return `<article class="settings-layout-card settings-sync-card"><div class="settings-wire wire-list" aria-hidden="true"><span></span><span></span><span></span></div><div class="settings-theme-select"><span>${escapeHtml(tt("Prices"))}</span><div class="settings-check-field"><label class="check-filter toggle-check settings-visible-check" title="${escapeHtml(tt("Show Prices"))}"><input type="checkbox" id="shelfSettingsShowPrices" ${state.gamelistSettings.shelfHidePrices ? "" : "checked"}><span>${escapeHtml(tt("Show Prices"))}</span></label></div></div></article>`;
 }
 
 function settingsCsvDataCard(kind) {
-  return `<article class="settings-layout-card settings-data-card"><div class="settings-theme-select"><div class="settings-data-actions"><button class="ghost-button" type="button" data-export-csv="${escapeHtml(kind)}">Export</button><button class="ghost-button" type="button" data-import-csv="${escapeHtml(kind)}">Import</button></div></div></article>`;
+  return `<article class="settings-layout-card settings-data-card"><div class="settings-theme-select"><div class="settings-data-actions"><button class="ghost-button" type="button" data-export-csv="${escapeHtml(kind)}">${escapeHtml(tt("Export"))}</button><button class="ghost-button" type="button" data-import-csv="${escapeHtml(kind)}">${escapeHtml(tt("Import"))}</button></div></div></article>`;
+}
+
+function settingsDevFeaturesCard(kind) {
+  return [
+    { href: "/api/shelf", label: "Shelf data" },
+    { href: "/api/shelf-mass-add", label: "Mass add" },
+    { href: "/api/shelf-metadata", label: "Fill metadata" },
+    { href: "/api/shelf-price-audit", label: "Price audit" },
+    { href: "/api/shelf-price-audit?format=json", label: "Price audit JSON" },
+    { href: "/api/shelf-covers", label: "Cover dry run" },
+    { href: "/api/shelf-covers?apply=1", label: "Refresh covers" },
+  ].map((link) => `<a class="ghost-button settings-dev-link" href="${escapeHtml(link.href)}" target="_blank" rel="noreferrer" data-dev-feature="${escapeHtml(kind)}">${escapeHtml(tt(link.label))}</a>`).join("");
 }
 
 const CSV_NUMERIC_FIELDS = new Set(["order", "lengthHours", "replayCount", "numericPrice", "price", "estimatedValue", "purchasePrice"]);
@@ -1609,15 +1830,16 @@ function openShowcaseEditor() {
 
 function renderShowcaseFilters() {
   const games = ownedShelfGames();
-  const platforms = uniqueSorted(games.map((game) => game.platform));
+  const platforms = orderedPlatforms(uniqueSorted(games.map((game) => game.platform)));
   const countries = uniqueSorted(games.map((game) => game.country));
   const categories = uniqueSorted(games.flatMap((game) => [...String(game.genre || "").split(","), ...(game.genres || [])].map((value) => value.trim()).filter(Boolean)));
-  el.showcasePlatform.innerHTML = `<option value="all">All platforms</option>${platforms.map((value) => `<option value="${escapeHtml(value)}">${escapeHtml(shortPlatform(value))}</option>`).join("")}`;
+  el.showcasePlatform.innerHTML = `<option value="all">All platforms</option>${platforms.map((value) => `<option value="${escapeHtml(value)}">${escapeHtml(platformDisplayName(value))}</option>`).join("")}`;
   el.showcaseRegion.innerHTML = `<option value="all">All regions</option>${countries.map((value) => `<option value="${escapeHtml(value)}">${escapeHtml(regionName(value))}</option>`).join("")}`;
   el.showcaseCategory.innerHTML = `<option value="all">All categories</option>${categories.map((value) => `<option value="${escapeHtml(value)}">${escapeHtml(value)}</option>`).join("")}`;
   el.showcasePlatform.value = state.showcaseFilters.platform;
   el.showcaseRegion.value = state.showcaseFilters.region;
   el.showcaseCategory.value = state.showcaseFilters.category;
+  syncStyledSelects(el.showcaseDialog, { activeValue: null });
   [el.showcasePlatform, el.showcaseRegion, el.showcaseCategory].forEach(updateSelectOverflowTitle);
 }
 
@@ -1654,7 +1876,7 @@ function filteredShowcaseGames() {
 
 function showcasePickerCard(game, selected) {
   const cover = coverUrl(game.cover || "") || platformFallback(game.platform);
-  return `<button class="showcase-picker-card ${selected ? "is-selected" : ""}" type="button" data-showcase-id="${escapeHtml(game.id)}" title="${escapeHtml(game.title)}"><span class="showcase-picker-cover"><img src="${escapeHtml(cover)}" alt=""></span><span class="showcase-picker-title"><strong>${showcaseTitleMarkup(game.title)}</strong>${platformBadge(game.platform)}</span></button>`;
+  return `<button class="showcase-picker-card ${selected ? "is-selected" : ""}" type="button" data-showcase-id="${escapeHtml(game.id)}" title="${escapeHtml(game.title)}"><span class="showcase-picker-cover"><img src="${escapeHtml(cover)}" alt=""></span><span class="showcase-picker-title"><strong>${showcaseTitleMarkup(game.title)}</strong>${platformBadge(game.platform, { title: game.title })}</span></button>`;
 }
 
 function showcaseHoverInfo(game, className) {
@@ -1663,7 +1885,7 @@ function showcaseHoverInfo(game, className) {
     game.developer || "",
     game.publisher || "",
   ].filter(Boolean);
-  return `<span class="${className} showcase-hover-info"><strong>${showcaseTitleMarkup(game.title)}</strong>${studio.length ? `<small>${escapeHtml(studio.join(" · "))}</small>` : ""}<span class="showcase-hover-meta"><span class="showcase-hover-main-pills">${platformBadge(game.platform)}${shelfProgressPill(game)}</span>${tags.map((tag) => `<span class="chip genre">${escapeHtml(tag)}</span>`).join("")}</span></span>`;
+  return `<span class="${className} showcase-hover-info"><strong>${showcaseTitleMarkup(game.title)}</strong>${studio.length ? `<small>${escapeHtml(studio.join(" · "))}</small>` : ""}<span class="showcase-hover-meta"><span class="showcase-hover-main-pills">${platformBadge(game.platform, { title: game.title })}${shelfProgressPill(game)}</span>${tags.map((tag) => `<span class="chip genre">${escapeHtml(tag)}</span>`).join("")}</span></span>`;
 }
 
 function showcaseTitleMarkup(title) {
@@ -1745,7 +1967,7 @@ async function saveLayout(event) {
   state.layout.hidden = LAYOUT_KEYS.filter((key) => !el.layoutList.querySelector(`[data-layout-visible][value="${key}"]`)?.checked);
   localStorage.setItem(LAYOUT_KEY, JSON.stringify(state.layout));
   const stores = [...el.settingsStores.querySelectorAll("input:checked")].map((input) => input.value).filter((store) => STORE_OPTIONS.includes(store)).slice(0, MAX_PRICE_STORES);
-  state.gamelistSettings = { ...state.gamelistSettings, shelfDefaultOrder: el.settingsDefaultOrder.value, currency: el.settingsCurrency.value, region: el.settingsRegion.value, psnUser: el.settingsPsnUser.value.trim(), microsoftUser: el.settingsMicrosoftUser.value.trim(), steamUser: el.settingsSteamUser.value.trim(), defaultOwner: el.settingsDefaultOwner.value.trim(), stores, storeSettingsVersion: 2, shelfSync: document.querySelector("#shelfSettingsSync")?.checked !== false, shelfHidePrices: document.querySelector("#shelfSettingsShowPrices")?.checked === false };
+  state.gamelistSettings = { ...state.gamelistSettings, shelfDefaultOrder: el.settingsDefaultOrder.value, currency: el.settingsCurrency.value, region: el.settingsRegion.value, language: normalizeLanguage(el.settingsLanguage.value), psnUser: el.settingsPsnUser.value.trim(), microsoftUser: el.settingsMicrosoftUser.value.trim(), steamUser: el.settingsSteamUser.value.trim(), defaultOwner: el.settingsDefaultOwner.value.trim(), stores, storeSettingsVersion: 2, shelfSync: document.querySelector("#shelfSettingsSync")?.checked !== false, shelfHidePrices: document.querySelector("#shelfSettingsShowPrices")?.checked === false };
   localStorage.setItem("gamelist:settings:v1", JSON.stringify(state.gamelistSettings));
   applyShelfDefaultOrder(state.gamelistSettings.shelfDefaultOrder);
   await Promise.all([persistShelf(), persistGamelistSettings()]);
@@ -1814,14 +2036,14 @@ function clearFilters() {
   el.condition.value = "all";
   el.category.value = "all";
   renderFilters();
-  renderLibrary();
+  renderFilteredShelf();
 }
 
 function openDialog(dialog) { dialog.showModal(); document.body.classList.add("dialog-open"); }
 function closeDialog(dialog) { if (dialog.open) dialog.close(); document.body.classList.toggle("dialog-open", document.querySelector("dialog[open]") !== null); }
 
 function populateEditorOptions() {
-  el.platformOptions.innerHTML = PLATFORM_OPTIONS.map((platform) => `<option value="${platform}">${shortPlatform(platform)}</option>`).join("");
+  el.platformOptions.innerHTML = PLATFORM_OPTIONS.map((platform) => `<option value="${platform}">${platformDisplayName(platform)}</option>`).join("");
   el.fields.country.innerHTML = COUNTRY_OPTIONS.map(([value, label]) => `<option value="${value}">${label}</option>`).join("");
 }
 
@@ -1941,7 +2163,7 @@ function gamelistProjectionCard(game, options = {}) {
   card.className += ` has-art${neutralReleaseCard ? "" : " playing-card"}${ownerClasses}${game.digital ? " digital-card" : ""}${game.stream ? " stream-card" : ""}${shelfShowsCompletedTrophyStyle(game) ? " completed-trophy-card" : ""}`;
   card.classList.toggle("shelf-release-card", isReleaseDialog);
   card.style.setProperty("--card-art", `url('${escapeCss(cover)}')`);
-  const trailer = card.querySelector(".card-trailer"); const trailerUrl = !neutralReleaseCard && window.matchMedia("(min-width: 900px)").matches ? activityTrailerUrl(game.trailerUrl, window.location.origin) : ""; if (trailerUrl) { card.classList.add("has-trailer"); trailer.dataset.src = trailerUrl; const toggle = card.querySelector(".trailer-toggle"); toggle.hidden = false; toggle.innerHTML = pauseTrailerIcon(); } else { trailer.remove(); card.querySelector(".trailer-toggle")?.remove(); }
+  const trailer = card.querySelector(".card-trailer"); const trailerUrl = !isReleaseDialog && !neutralReleaseCard && window.matchMedia("(min-width: 900px)").matches ? activityTrailerUrl(game.trailerUrl, window.location.origin) : ""; if (trailerUrl) { card.classList.add("has-trailer"); trailer.dataset.src = trailerUrl; const toggle = card.querySelector(".trailer-toggle"); toggle.hidden = false; toggle.innerHTML = pauseTrailerIcon(); } else { trailer.remove(); card.querySelector(".trailer-toggle")?.remove(); }
   const image = card.querySelector(".cover-button img"); image.src = cover; image.alt = `${game.title} cover`; image.loading = "eager"; image.fetchPriority = "high"; image.decoding = "async"; bindCoverFrame(image);
   const title = card.querySelector("h3"); title.textContent = game.title; title.className = `${title.className.replace(/\bowner-[\w-]+/g, "").trim()} ${visibleOwners.map(ownerColorClass).join(" ")}`.trim(); title.classList.toggle("completed-achievements-title", shelfShowsCompletedTrophyStyle(game));
   const titleOwners = card.querySelector(".title-owners");
@@ -1968,7 +2190,7 @@ function gamelistProjectionCard(game, options = {}) {
   const note = card.querySelector(".notes"); note.textContent = shortDescription(game.description || ""); note.hidden = !note.textContent;
   return card.outerHTML;
 }
-function projectionMeta(game, options = {}) { const release = options.includeRelease === false ? "" : activityReleaseStatus(game, { includePast: Boolean(options.includePast) }); return `${platformBadge(game.platform)}${options.includeProgress ? shelfProgressPill(game) : ""}${game.digital ? `<span class="digital-pill">Digital</span>` : ""}${game.emulator ? `<span class="emulator-pill">Emulator</span>` : ""}${game.lengthHours ? timeBadgeMarkup(game.lengthHours, game.hltbUrl || game.howLongToBeatUrl || `https://howlongtobeat.com/?q=${encodeURIComponent(game.title)}`, escapeHtml) : ""}${game.stream ? `<span class="stream-pill">Stream</span>` : ""}${release ? releaseStatusPill(release) : ""}${game.coop ? `<span class="coop-pill">Coop</span>` : ""}${game.replayCount ? `<span class="replay-pill">Replay ${escapeHtml(game.replayCount)}</span>` : ""}`; }
+function projectionMeta(game, options = {}) { const release = options.includeRelease === false ? "" : activityReleaseStatus(game, { includePast: Boolean(options.includePast) }); return `${platformBadge(game.platform, { title: game.title })}${options.includeProgress ? shelfProgressPill(game) : ""}${game.digital ? `<span class="digital-pill">Digital</span>` : ""}${game.emulator ? `<span class="emulator-pill">Emulator</span>` : ""}${game.lengthHours ? timeBadgeMarkup(game.lengthHours, game.hltbUrl || game.howLongToBeatUrl || `https://howlongtobeat.com/?q=${encodeURIComponent(game.title)}`, escapeHtml) : ""}${game.stream ? `<span class="stream-pill">Stream</span>` : ""}${release ? releaseStatusPill(release) : ""}${game.coop ? `<span class="coop-pill">Coop</span>` : ""}${game.replayCount ? `<span class="replay-pill">Replay ${escapeHtml(game.replayCount)}</span>` : ""}`; }
 function projectionChips(game) {
   return [
     game.preorderStore ? chip(`Preordered: ${game.preorderStore}`, "accent") : "",
@@ -2197,7 +2419,7 @@ function updateShelfPhysicalProgressPills() {
 function finishedProjectionCard(game) {
   const cover = coverUrl(game.cover || "") || platformFallback(game.platform);
   const progress = activityProgressFor(game);
-  const badges = `${visibleProjectionOwners(game).map(ownerBadge).join("")}${platformBadge(game.platform)}${game.digital ? `<span class="digital-pill">Digital</span>` : ""}${game.emulator ? `<span class="emulator-pill">Emulator</span>` : ""}${game.coop ? `<span class="coop-pill">Coop</span>` : ""}${game.stream ? `<span class="stream-pill">Stream</span>` : ""}${game.replayCount ? `<span class="replay-pill">Replay ${escapeHtml(game.replayCount)}</span>` : ""}`;
+  const badges = `${visibleProjectionOwners(game).map(ownerBadge).join("")}${platformBadge(game.platform, { title: game.title })}${game.digital ? `<span class="digital-pill">Digital</span>` : ""}${game.emulator ? `<span class="emulator-pill">Emulator</span>` : ""}${game.coop ? `<span class="coop-pill">Coop</span>` : ""}${game.stream ? `<span class="stream-pill">Stream</span>` : ""}${game.replayCount ? `<span class="replay-pill">Replay ${escapeHtml(game.replayCount)}</span>` : ""}`;
   return finishedGameMarkup({ id: game.id, title: game.title, cover, completedClass: shelfShowsCompletedTrophyStyle(game) ? "completed-trophy-card" : "", itemClass: projectionOwnerCardClass(game), badges, dateText: [formatLongDate(game.completedAt), finishedDurationText(game.startedAt, game.completedAt)].filter(Boolean).join(" · "), progress, dataName: "gamelist-id", escape: escapeHtml });
 }
 async function loadTrophyActivity() {
@@ -2265,7 +2487,7 @@ async function hydrateCompletedCovers(items) {
 }
 function renderCompletedGames(items) {
   const years = uniqueSorted(items.map(completedYearFor).filter(Boolean)).reverse();
-  const platforms = uniqueSorted(items.map((item) => completedPlatformFor(item.platform)));
+  const platforms = orderedPlatforms(uniqueSorted(items.map((item) => completedPlatformFor(item.platform))));
   if (state.completedYear !== "all" && !years.includes(state.completedYear)) state.completedYear = "all";
   if (state.completedPlatform !== "all" && !platforms.includes(state.completedPlatform)) state.completedPlatform = "all";
   const direction = state.completedDirection === "asc" ? 1 : -1;
@@ -2274,12 +2496,13 @@ function renderCompletedGames(items) {
   el.completedCount.textContent = `${visible.length} completed`;
   el.completedYear.innerHTML = `<option value="all">All</option>${years.map((year) => `<option value="${year}">${year}</option>`).join("")}`;
   el.completedYear.value = state.completedYear;
-  el.completedPlatform.innerHTML = `<option value="all">All</option>${platforms.map((platform) => `<option value="${escapeHtml(platform)}">${escapeHtml(platform)}</option>`).join("")}`;
+  el.completedPlatform.innerHTML = `<option value="all">All</option>${platforms.map((platform) => `<option value="${escapeHtml(platform)}">${escapeHtml(platformDisplayName(platform))}</option>`).join("")}`;
   el.completedPlatform.value = state.completedPlatform;
   el.completedSort.value = state.completedSort;
   el.completedDirection.innerHTML = sortArrowIcon(state.completedDirection === "desc");
   el.completedDirection.classList.toggle("desc", state.completedDirection === "desc");
   syncViewModeButton(el.completedView, state.completedView, { gridIcon, linesIcon });
+  syncStyledSelects(el.completedDialog, { activeValue: null });
   el.completedList.classList.toggle("list-view", state.completedView === "list");
   el.completedList.innerHTML = visible.map(completedCard).join("") || `<div class="empty">No completed games tracked yet.</div>`;
   el.completedList.querySelectorAll("[data-completed-title]").forEach((button) => button.addEventListener("click", () => { closeDialog(el.completedDialog); openGamelistGameByTitle(button.dataset.completedTitle); }));
@@ -2801,11 +3024,39 @@ function syncRowCoverFrame(image) {
 }
 function platformFallback(platform) { return platformLogo(platform); }
 function shortPlatform(value) { return canonicalShelfPlatform(value); }
+function platformDisplayName(value) {
+  const platform = shortPlatform(value);
+  const labels = {
+    PS1: "Sony PlayStation",
+    PS2: "Sony PlayStation 2",
+    PS3: "Sony PlayStation 3",
+    PS4: "Sony PlayStation 4",
+    PS5: "Sony Playstation 5",
+    PSP: "Sony Playstation Portable",
+    PSVita: "Sony Playstation Vita",
+    X360: "Xbox 360",
+    XOne: "Xbox One",
+    GBC: "Game Boy Color",
+    GB: "Game Boy",
+    GC: "Nintendo Gamecube",
+    GBA: "Game Boy Advanced",
+    NES: "Nintendo Entertainment System",
+    SNES: "Super Nintendo Entertainment System",
+    N64: "Nintendo 64",
+    DS: "Nintendo DS",
+    Wii: "Nintendo Wii",
+    "Wii U": "Nintendo Wii U",
+    "3DS": "Nintendo 3DS",
+    Gen: "Sega Genesis",
+    DC: "Sega Dreamcast",
+  };
+  return labels[platform] || value || platform;
+}
 function flagAsset(country) { return `assets/flags/${({ "United Kingdom": "gb", Spain: "es", Italy: "it", "United States of America": "us", Japan: "jp", Taiwan: "tw", France: "fr", Germany: "de", Australia: "au", China: "cn", Europe: "eu", World: "world" })[country] || "world"}.svg`; }
 function flagIcon(country, withClass = false) { return `<img${withClass ? ` class="detail-flag"` : ""} src="${flagAsset(country)}" alt="" width="47" height="31" decoding="async">`; }
-function platformBadge(platform) { const label = shortPlatform(platform); return `<span class="platform-badge ${platformClass(platform)}" title="${escapeHtml(label)}"><span class="platform-icon"><img src="${platformLogo(platform)}" alt="" width="18" height="18" decoding="async"></span><span class="platform-label">${escapeHtml(label)}</span></span>`; }
-function platformLogo(platform) { const value = normalize(shortPlatform(platform)); if (value === "wii") return "assets/platforms/wii.png"; if (value === "wii u" || value === "wiiu") return "assets/platforms/wiiu.png"; if (value === "n64") return "assets/platforms/n64.png"; if (value === "gc" || value.includes("gamecube")) return "assets/platforms/gc.png"; if (value === "nes") return "assets/platforms/nes.png"; if (value === "snes") return "assets/platforms/snes.png"; if (value === "ds") return "assets/platforms/nds.png"; if (value === "3ds") return "assets/platforms/3ds.png"; if (value === "gba") return "assets/platforms/gba.png"; if (value === "gbc") return "assets/platforms/gbc.png"; if (value === "gb") return "assets/platforms/gb.png"; if (value === "dc" || value.includes("dreamcast")) return "assets/platforms/dreamcast.png"; if (isSegaPlatform(value)) return "assets/platforms/sega.png"; if (value.includes("switch")) return "assets/platforms/switch.png"; if (value === "ps1" || value === "ps2") return "assets/platforms/playstation_retro.png"; if (value === "ps5") return "assets/platforms/playstation_modern.png"; if (value.includes("xbox") || value === "x360" || value === "xone") return "assets/platforms/xbox.png"; if (value.includes("steam") || value === "pc") return "assets/platforms/steam.png"; if (value.includes("ps") || value.includes("playstation") || value.includes("psp") || value.includes("vita")) return "assets/platforms/playstation.png"; return "assets/Icon_shelf.png"; }
-function platformClass(platform) { const value = normalize(shortPlatform(platform)); if (value === "wii") return "platform-wii"; if (value === "wii u" || value === "wiiu") return "platform-wiiu"; if (value === "n64") return "platform-n64"; if (value === "gc" || value.includes("gamecube")) return "platform-gamecube"; if (value === "nes") return "platform-nes"; if (value === "snes") return "platform-snes"; if (value === "ds") return "platform-ds"; if (value === "3ds") return "platform-3ds"; if (value === "gba") return "platform-gba"; if (value === "gbc") return "platform-gbc"; if (value === "gb") return "platform-gb"; if (value === "dc" || value.includes("dreamcast")) return "platform-dreamcast"; if (isSegaPlatform(value)) return "platform-sega"; if (value.includes("switch")) return "platform-nintendo"; if (value.includes("xbox") || value === "x360" || value === "xone") return "platform-xbox"; if (value.includes("steam") || value === "pc") return "platform-pc"; if (value.includes("ps") || value.includes("playstation") || value.includes("psp") || value.includes("vita")) return "platform-playstation"; return "platform-generic"; }
+function platformBadge(platform, options = {}) { const label = shortPlatform(platform); return `<span class="platform-badge ${platformClass(platform, options)}" title="${escapeHtml(label)}"><span class="platform-icon"><img src="${platformLogo(platform)}" alt="" width="18" height="18" decoding="async"></span><span class="platform-label">${escapeHtml(label)}</span></span>`; }
+function platformLogo(platform) { const value = normalize(shortPlatform(platform)); if (value === "wii") return "assets/platforms/wii.png"; if (value === "wii u" || value === "wiiu") return "assets/platforms/wiiu.png"; if (value === "n64") return "assets/platforms/n64.png"; if (value === "gc" || value.includes("gamecube")) return "assets/platforms/gc.png"; if (value === "nes") return "assets/platforms/nes.png"; if (value === "snes") return "assets/platforms/snes.png"; if (value === "ds") return "assets/platforms/nds.png"; if (value === "3ds") return "assets/platforms/3ds.png"; if (value === "gba") return "assets/platforms/gba.png"; if (value === "gbc") return "assets/platforms/gbc.png"; if (value === "gb") return "assets/platforms/gb.png"; if (value === "game gear") return "assets/platforms/gamegear.png"; if (value === "dc" || value.includes("dreamcast")) return "assets/platforms/dreamcast.png"; if (isSegaPlatform(value)) return "assets/platforms/sega.png"; if (value.includes("switch")) return "assets/platforms/switch.png"; if (value === "ps1" || value === "ps2") return "assets/platforms/playstation_retro.png"; if (value === "ps5") return "assets/platforms/playstation_modern.png"; if (value === "x360" || value === "xbox 360") return "assets/platforms/xbox360.png"; if (value === "xbox") return "assets/platforms/xbox_retro.png"; if (value.includes("xbox") || value === "xone") return "assets/platforms/xbox.png"; if (value.includes("steam") || value === "pc") return "assets/platforms/steam.png"; if (value.includes("ps") || value.includes("playstation") || value.includes("psp") || value.includes("vita")) return "assets/platforms/playstation.png"; return "assets/Icon_shelf.png"; }
+function platformClass(platform, options = {}) { const value = normalize(shortPlatform(platform)); if (value === "wii") return "platform-wii"; if (value === "wii u" || value === "wiiu") return "platform-wiiu"; if (value === "n64") return "platform-n64"; if (value === "gc" || value.includes("gamecube")) return "platform-gamecube"; if (value === "nes") return "platform-nes"; if (value === "snes") return "platform-snes"; if (value === "ds") return "platform-ds"; if (value === "3ds") return "platform-3ds"; if (value === "gba") return "platform-gba"; if (value === "gbc") return "platform-gbc"; if (value === "gb") return "platform-gb"; if (value === "game gear") return "platform-gamegear"; if (value === "dc" || value.includes("dreamcast")) return "platform-dreamcast"; if (isSegaPlatform(value)) return "platform-sega"; if (value.includes("switch")) return "platform-nintendo"; if (value === "ps1") return "platform-playstation platform-ps1"; if (value === "ps3" && normalize(options.title) === "drakengard 3") return "platform-playstation platform-ps3-as-ps4"; if (value === "ps3") return "platform-playstation platform-ps3"; if (value === "ps5") return "platform-playstation platform-ps5"; if (value === "psp") return "platform-playstation platform-psp"; if (value === "x360" || value === "xbox 360") return "platform-xbox platform-xbox360"; if (value === "xbox") return "platform-xbox platform-xbox-retro"; if (value.includes("xbox") || value === "xone") return "platform-xbox"; if (value.includes("steam") || value === "pc") return "platform-pc"; if (value.includes("ps") || value.includes("playstation") || value.includes("psp") || value.includes("vita")) return "platform-playstation"; return "platform-generic"; }
 function isSegaPlatform(value) { return /\b(gen|genesis|mega drive|megadrive|sega|saturn|cd|32x|master system|game gear)\b/i.test(value); }
 function canonicalShelfPlatform(value) {
   const text = String(value || "").trim();
@@ -2816,16 +3067,16 @@ function canonicalShelfPlatform(value) {
     sonyplaystation3: "PS3", playstation3: "PS3", ps3: "PS3",
     sonyplaystation4: "PS4", playstation4: "PS4", ps4: "PS4",
     sonyplaystation5: "PS5", playstation5: "PS5", ps5: "PS5",
-    playstationportable: "PSP", psp: "PSP", playstationvita: "PSVita", psvita: "PSVita", vita: "PSVita",
+    sonyplaystationportable: "PSP", playstationportable: "PSP", psp: "PSP", sonyplaystationvita: "PSVita", playstationvita: "PSVita", psvita: "PSVita", vita: "PSVita",
     nintendoswitch: "Switch", switch: "Switch", nintendoswitch2: "Switch 2", switch2: "Switch 2",
     nintendo64: "N64", n64: "N64", nintendogamecube: "GC", gamecube: "GC", gc: "GC",
     nintendoentertainmentsystem: "NES", nes: "NES", supernintendo: "SNES", supernintendoentertainmentsystem: "SNES", snes: "SNES",
     nintendods: "DS", nds: "DS", ds: "DS", nintendo3ds: "3DS", n3ds: "3DS", "3ds": "3DS",
-    gameboyadvance: "GBA", gba: "GBA", gameboycolor: "GBC", gbc: "GBC", gameboy: "GB", gb: "GB",
+    gameboyadvance: "GBA", gameboyadvanced: "GBA", gba: "GBA", gameboycolor: "GBC", gbc: "GBC", gameboy: "GB", gb: "GB",
     genesis: "Gen", megadrive: "Gen", segamegadrive: "Gen", segagenesis: "Gen", sega: "Sega",
     dreamcast: "DC", segadreamcast: "DC", dc: "DC", segacd: "Sega CD", saturn: "Saturn", segasaturn: "Saturn",
     mastersystem: "Master System", segamastersystem: "Master System", gamegear: "Game Gear", segagamegear: "Game Gear", sega32x: "32X", "32x": "32X",
-    steam: "Steam", pc: "Steam", xbox360: "X360", x360: "X360", xboxone: "XOne", xone: "XOne", xboxseries: "Xbox Series", xbox: "Xbox",
+    steam: "Steam", pc: "Steam", xboxpc: "Xbox PC", microsoftpc: "Xbox PC", xbox360: "X360", x360: "X360", xboxone: "XOne", xone: "XOne", xboxseries: "Xbox Series", xbox: "Xbox",
   };
   return aliases[key] || text;
 }
@@ -2835,6 +3086,19 @@ function countValues(values) { const map = new Map(); values.filter(Boolean).for
 function conditionMatches(game, condition) { const label = conditionLabel(game).toLowerCase(); if (condition === "all") return true; if (condition === "complete") return label === "complete"; if (condition === "complete-plus") return label === "complete +"; if (condition === "loose") return label === "loose"; if (condition === "sealed") return label === "sealed"; return true; }
 function sorter(type) { const direction = state.filters.direction === "desc" ? -1 : 1; if (type === "custom") return (a, b) => direction * ((a.order ?? Number.MAX_SAFE_INTEGER) - (b.order ?? Number.MAX_SAFE_INTEGER) || a.title.localeCompare(b.title)); if (type === "title" || type === "name") return (a, b) => direction * a.title.localeCompare(b.title); if (type === "added") return (a, b) => direction * (new Date(a.createdAt || 0) - new Date(b.createdAt || 0)); if (type === "value") return (a, b) => direction * (collectionValueFor(a) - collectionValueFor(b)); if (type === "region") return (a, b) => direction * (a.country.localeCompare(b.country) || a.title.localeCompare(b.title)); return (a, b) => direction * (a.platform.localeCompare(b.platform) || a.title.localeCompare(b.title)); }
 function uniqueSorted(values) { return [...new Set(values.filter(Boolean))].sort((a, b) => String(a).localeCompare(String(b), undefined, { sensitivity: "base" })); }
+function orderedPlatforms(values) { return [...values].sort((a, b) => platformOrderRank(a) - platformOrderRank(b) || platformDisplayName(a).localeCompare(platformDisplayName(b), undefined, { sensitivity: "base" })); }
+function platformOrderRank(platform) {
+  const value = shortPlatform(platform);
+  const order = [
+    "Steam", "PC",
+    "Game Gear", "Gen", "DC",
+    "GB", "GBC", "NES", "SNES", "N64", "GC", "GBA", "DS", "Wii", "Wii U", "3DS", "Switch", "Switch 2",
+    "PS1", "PS2", "PS3", "PSP", "PSVita", "PS4", "PS5",
+    "Xbox", "X360", "XOne", "Xbox PC", "Xbox Series",
+  ];
+  const index = order.indexOf(value);
+  return index >= 0 ? index : 1000;
+}
 function shelfSortForDefault(value) { if (value === "time") return "added"; if (value === "name") return "title"; return ["added", "title", "platform", "region", "value"].includes(value) ? value : "platform"; }
 function applyShelfDefaultOrder(value) { state.filters.sort = shelfSortForDefault(value); state.filters.direction = ["added", "value"].includes(state.filters.sort) ? "desc" : "asc"; }
 function bestCollectionPlatform(platforms, fallback) {
@@ -2843,6 +3107,7 @@ function bestCollectionPlatform(platforms, fallback) {
   if (value.includes("nintendo switch")) return "Nintendo Switch";
   if (value.includes("playstation 5")) return "Sony PlayStation 5";
   if (value.includes("playstation 4")) return "Sony PlayStation 4";
+  if (value.includes("playstation 3")) return "Sony PlayStation 3";
   if (value.includes("playstation 2")) return "Sony PlayStation 2";
   if (value.includes("playstation")) return "Sony PlayStation";
   if (value.includes("nintendo 3ds")) return "Nintendo 3DS";
