@@ -2011,7 +2011,7 @@ body.dialog-open .floating-edit-actions {
   top: calc(20px + var(--pull-ui-offset, 0px));
   z-index: 12;
   display: grid;
-  grid-template-columns: minmax(220px, 1fr) 194px 150px 150px 190px var(
+  grid-template-columns: minmax(220px, 1fr) 126px 194px 150px 190px var(
       --toolbar-control-height
     );
   gap: 10px;
@@ -2105,10 +2105,10 @@ body.dialog-open .floating-edit-actions {
   max-height: 380px;
   padding: 3px;
   overflow: auto;
-  background-color: rgba(34, 33, 37, 0.86);
+  background-color: rgba(34, 33, 37, 0.96);
   background-image:
-    linear-gradient(rgba(255, 255, 255, 0.035) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255, 255, 255, 0.035) 1px, transparent 1px);
+    linear-gradient(rgba(255, 255, 255, 0.018) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.018) 1px, transparent 1px);
   background-size: 18px 18px;
   border: 1px solid rgba(255, 255, 255, 0.14);
   border-radius: 8px;
@@ -2124,7 +2124,7 @@ body.dialog-open .floating-edit-actions {
   position: relative;
   display: flex;
   align-items: center;
-  min-height: 26px;
+  min-height: 28px;
   padding: 3px 6px 3px 8px;
   background: transparent;
   border: 1px solid transparent;
@@ -2132,13 +2132,34 @@ body.dialog-open .floating-edit-actions {
   cursor: pointer;
 }
 
+.platform-logo-option::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: inherit;
+  pointer-events: none;
+}
+
 .platform-logo-option:hover,
 .platform-logo-option:focus-visible,
 .platform-logo-option.is-selected {
   color: #ffffff;
-  background: color-mix(in srgb, var(--accent-2) 10%, transparent);
-  border-color: color-mix(in srgb, var(--accent-2) 24%, transparent);
+  background: transparent;
+  border-color: transparent;
   outline: none;
+}
+
+.platform-logo-option:hover::before,
+.platform-logo-option:focus-visible::before,
+.platform-logo-option.is-selected::before {
+  background: color-mix(in srgb, var(--accent-2) 7%, transparent);
+  border-color: color-mix(in srgb, var(--accent-2) 18%, transparent);
+  box-shadow:
+    0 0 0 1px color-mix(in srgb, var(--accent) 16%, transparent),
+    0 0 16px color-mix(in srgb, var(--accent) 16%, transparent);
 }
 
 .platform-logo-hover-overlay {
@@ -2165,6 +2186,8 @@ body.dialog-open .floating-edit-actions {
 }
 
 .platform-logo-choice {
+  position: relative;
+  z-index: 1;
   display: flex;
   align-items: center;
   gap: 7px;
@@ -2232,7 +2255,8 @@ body.dialog-open .floating-edit-actions {
   align-items: center;
   min-width: 0;
   min-height: 16px;
-  line-height: 1;
+  padding-top: 1px;
+  line-height: 1.1;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
