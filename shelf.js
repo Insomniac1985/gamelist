@@ -1596,7 +1596,7 @@ function settingsShelfSyncCard() {
 }
 
 function settingsShelfPricesCard() {
-  return `<article class="settings-layout-card settings-sync-card"><div class="settings-wire wire-list" aria-hidden="true"><span></span><span></span><span></span></div><div class="settings-theme-select"><span>${escapeHtml(tt("Prices"))}</span><div class="settings-check-field"><label class="check-filter toggle-check settings-visible-check" title="${escapeHtml(tt("Show prices"))}"><input type="checkbox" id="shelfSettingsShowPrices" ${state.gamelistSettings.shelfHidePrices ? "" : "checked"}><span>${escapeHtml(tt("Show prices"))}</span></label></div></div></article>`;
+  return `<article class="settings-layout-card settings-sync-card"><div class="settings-wire wire-list" aria-hidden="true"><span></span><span></span><span></span></div><div class="settings-theme-select"><span>${escapeHtml(tt("Prices"))}</span><div class="settings-check-field"><label class="check-filter toggle-check settings-visible-check" title="${escapeHtml(tt("Show Prices"))}"><input type="checkbox" id="shelfSettingsShowPrices" ${state.gamelistSettings.shelfHidePrices ? "" : "checked"}><span>${escapeHtml(tt("Show Prices"))}</span></label></div></div></article>`;
 }
 
 function settingsCsvDataCard(kind) {

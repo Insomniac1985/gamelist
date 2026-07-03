@@ -90,6 +90,7 @@ const STRINGS = {
     "Updated prices for {updated} games{failed}.": "Precios actualizados para {updated} juegos{failed}.",
     ", {count} failed": ", {count} fallidos",
     "Show prices": "Mostrar precios",
+    "Show Prices": "Mostrar precios",
     Export: "Exportar",
     Import: "Importar",
     "Shelf Sync": "Sincronizar Shelf",
