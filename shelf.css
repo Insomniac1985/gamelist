@@ -2,15 +2,6 @@
   padding-top: 26px;
 }
 
-.native-platform-filter,
-.native-styled-select {
-  display: block;
-}
-
-.platform-logo-select {
-  display: none;
-}
-
 .shelf-intro {
   display: flex;
   align-items: end;

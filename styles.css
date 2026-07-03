@@ -2106,7 +2106,7 @@ body.dialog-open .floating-edit-actions {
 
 .native-platform-filter,
 .native-styled-select {
-  display: block;
+  display: none;
 }
 
 #gameDialog #platformInput::-webkit-calendar-picker-indicator,
@@ -2126,7 +2126,6 @@ body.dialog-open .floating-edit-actions {
 
 .platform-logo-select {
   --dropdown-control-height: var(--toolbar-control-height, 42px);
-  display: none;
   position: relative;
   width: 100%;
   min-width: 0;
@@ -4661,9 +4660,7 @@ a.time-pill {
   border-radius: 7px;
   padding: 8px 12px;
   color: var(--text);
-  background: var(--theme-control-bg);
-  background-size: cover;
-  background-position: center;
+  background: rgba(255, 255, 255, 0.08);
 }
 
 .icon-button {
