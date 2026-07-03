@@ -101,7 +101,7 @@ body:not(.can-edit) .showcase-edit-button {
 }
 
 .shelf-toolbar {
-  grid-template-columns: minmax(260px, 2.2fr) 140px 130px 130px 150px 185px 42px;
+  grid-template-columns: minmax(260px, 2.2fr) 194px 130px 130px 150px 185px 42px;
 }
 
 .shelf-page .detail-cover {
