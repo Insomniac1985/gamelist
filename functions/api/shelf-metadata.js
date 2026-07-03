@@ -348,17 +348,27 @@ function runnerHtml() {
         if (!igdb.checked && !pricecharting.checked) throw new Error("Choose IGDB, PriceCharting, or both.");
         const shelf = await fetch("/api/shelf", { cache: "no-store" }).then((response) => response.json());
         const games = [...(shelf.sourceGames || []), ...(shelf.games || [])];
-        const ids = games
+        const queue = games
           .filter((game) => game.title && (pending.checked || !game.pendingCollection))
-          .filter((game) => (igdb.checked && missingIgdb(game)) || (pricecharting.checked && missingPrice(game)))
-          .map((game) => game.id);
+          .map((game) => ({ game, needsIgdb: igdb.checked && missingIgdb(game), needsPrice: pricecharting.checked && missingPrice(game) }))
+          .filter((item) => item.needsIgdb || item.needsPrice);
+        const ids = queue.map((item) => item.game.id);
         if (!ids.length) { line("No Shelf games are missing the selected metadata."); return; }
         const size = Math.max(1, Math.min(25, Number(limit.value) || 5));
         line("Found " + ids.length + " games missing selected metadata. Running " + size + " at a time...");
+        line("");
+        line("Games queued:");
+        queue.forEach((item, index) => {
+          const sources = [item.needsIgdb ? "IGDB" : "", item.needsPrice ? "PriceCharting" : ""].filter(Boolean).join(" + ");
+          line((index + 1) + ". " + (item.game.title || item.game.id) + (item.game.platform ? " [" + item.game.platform + "]" : "") + " - " + sources);
+        });
+        line("");
         let updated = 0;
         const errors = [];
         for (let index = 0; index < ids.length; index += size) {
-          const batch = ids.slice(index, index + size);
+          const batchItems = queue.slice(index, index + size);
+          const batch = batchItems.map((item) => item.game.id);
+          line("Fetching batch " + (Math.floor(index / size) + 1) + ": " + batchItems.map((item) => item.game.title || item.game.id).join(", "));
           const response = await fetch("/api/shelf-metadata", {
             method: "POST",
             headers: { "Content-Type": "application/json", "x-edit-password": password() },

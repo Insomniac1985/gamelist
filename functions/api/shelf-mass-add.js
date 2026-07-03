@@ -165,13 +165,20 @@ function runnerHtml() {
       log.textContent = "";
       try {
         const shelf = await fetch("/api/shelf", { cache: "no-store" }).then((response) => response.json());
-        const ids = (shelf.games || []).filter((game) => game.pendingCollection).map((game) => game.id);
+        const queue = (shelf.games || []).filter((game) => game.pendingCollection);
+        const ids = queue.map((game) => game.id);
         if (!ids.length) { line("No pending Shelf additions found."); return; }
         const size = Math.max(1, Math.min(50, Number(limit.value) || 10));
         line("Found " + ids.length + " pending additions. Running " + size + " at a time...");
+        line("");
+        line("Games queued:");
+        queue.forEach((game, index) => line((index + 1) + ". " + (game.title || game.id) + (game.platform ? " [" + game.platform + "]" : "")));
+        line("");
         let accepted = 0;
         for (let index = 0; index < ids.length; index += size) {
-          const batch = ids.slice(index, index + size);
+          const batchGames = queue.slice(index, index + size);
+          const batch = batchGames.map((game) => game.id);
+          line("Fetching batch " + (Math.floor(index / size) + 1) + ": " + batchGames.map((game) => game.title || game.id).join(", "));
           const response = await fetch("/api/shelf-mass-add", {
             method: "POST",
             headers: { "Content-Type": "application/json", "x-edit-password": password() },
