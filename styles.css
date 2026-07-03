@@ -2068,6 +2068,7 @@ body.dialog-open .floating-edit-actions {
 }
 
 .platform-logo-select {
+  --dropdown-control-height: var(--toolbar-control-height, 42px);
   position: relative;
   width: 100%;
   min-width: 0;
@@ -2086,12 +2087,13 @@ body.dialog-open .floating-edit-actions {
 }
 
 .platform-logo-button {
-  display: flex;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
   align-items: center;
-  justify-content: flex-start;
-  height: var(--toolbar-control-height);
-  min-height: var(--toolbar-control-height);
-  padding: 1px 34px 0 11px;
+  justify-content: stretch;
+  height: var(--dropdown-control-height);
+  min-height: var(--dropdown-control-height);
+  padding: 0 34px 0 11px;
   color: #ffffff;
   font-size: 16px;
   line-height: 1;
@@ -2238,7 +2240,7 @@ body.dialog-open .floating-edit-actions {
   height: 100%;
   min-height: 100%;
   justify-content: flex-start;
-  transform: none;
+  transform: translateY(2px);
 }
 
 .platform-logo-choice span {
@@ -5600,8 +5602,13 @@ body.dialog-open .mobile-section-tabs {
 }
 
 .settings-theme-select {
+  --dropdown-control-height: var(--settings-control-height, 42px);
   display: grid;
   gap: 0;
+}
+
+.settings-theme-select .platform-logo-select {
+  --dropdown-control-height: var(--settings-control-height, 42px);
 }
 
 .settings-check-field {
@@ -6699,6 +6706,10 @@ html.theme-light .shelf-card-delete-action:hover {
   min-height: 42px;
 }
 
+.theme-editor-dialog .platform-logo-select {
+  --dropdown-control-height: 42px;
+}
+
 .theme-glow-row,
 .theme-icon-row,
 .theme-media-row {
@@ -7176,6 +7187,17 @@ body.theme-kash .history-row.completed-trophy-card:hover {
   font-size: 12px;
 }
 
+.detail-trophy-tools .platform-logo-select {
+  --dropdown-control-height: 32px;
+  min-width: 128px;
+  width: auto;
+}
+
+.detail-trophy-tools .platform-logo-button {
+  font-size: 12px;
+  padding-left: 9px;
+}
+
 .detail-trophy-tools .direction-toggle {
   width: 32px;
   height: 32px;
@@ -7416,6 +7438,19 @@ body.theme-kash .history-row.completed-trophy-card:hover {
   min-height: 34px;
   padding: 5px 34px 5px 9px;
   font-size: 12px;
+}
+
+.platinum-year-select .platform-logo-select,
+.platinum-platform-select .platform-logo-select,
+.platinum-order-control .platform-logo-select {
+  --dropdown-control-height: 34px;
+}
+
+.platinum-year-select .platform-logo-button,
+.platinum-platform-select .platform-logo-button,
+.platinum-order-control .platform-logo-button {
+  font-size: 12px;
+  padding-left: 9px;
 }
 
 .platinum-count-pill {
