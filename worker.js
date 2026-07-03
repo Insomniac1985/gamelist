@@ -7,8 +7,6 @@ import * as prices from "./functions/api/prices.js";
 import * as search from "./functions/api/search.js";
 import * as shelf from "./functions/api/shelf.js";
 import * as shelfCovers from "./functions/api/shelf-covers.js";
-import * as shelfMassAdd from "./functions/api/shelf-mass-add.js";
-import * as shelfMetadata from "./functions/api/shelf-metadata.js";
 import * as shelfPriceAudit from "./functions/api/shelf-price-audit.js";
 import * as sync from "./functions/api/sync.js";
 import * as steamAchievements from "./functions/api/steam-achievements.js";
@@ -25,8 +23,6 @@ const routes = {
   "/api/search": search,
   "/api/shelf": shelf,
   "/api/shelf-covers": shelfCovers,
-  "/api/shelf-mass-add": shelfMassAdd,
-  "/api/shelf-metadata": shelfMetadata,
   "/api/shelf-price-audit": shelfPriceAudit,
   "/api/steam-achievements": steamAchievements,
   "/api/sync": sync,
@@ -44,8 +40,6 @@ const shelfOnlyPaths = new Set([
   "/api/cover",
   "/api/shelf",
   "/api/shelf-covers",
-  "/api/shelf-mass-add",
-  "/api/shelf-metadata",
   "/api/shelf-price-audit",
 ]);
 

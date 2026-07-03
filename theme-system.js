@@ -6,7 +6,6 @@ export const FONT_OPTIONS = [
   { value: "pixel", label: "04B 30", family: "04B 30" },
   { value: "michroma", label: "Michroma", family: "Michroma" },
   { value: "minecraft", label: "Minecraft", family: "Minecraft" },
-  { value: "mata", label: "Spider-man or PS3", family: "Mata Regular" },
 ];
 
 const DEFAULT_THEME = {
@@ -121,7 +120,6 @@ export function applySiteTheme(settings = {}, options = {}) {
   body?.classList.toggle("theme-big-logo", theme.bigLogo);
   body?.classList.toggle("theme-font-pokemon", theme.accentFont === "pokemon");
   root.style.setProperty("--accent", theme.mainColor);
-  root.style.setProperty("--accent-1", theme.accentColor);
   root.style.setProperty("--accent-2", theme.accentColor);
   root.style.setProperty("--accent-3", theme.accent3);
   root.style.setProperty("--extra-color", theme.extraColor);

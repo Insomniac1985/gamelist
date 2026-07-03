@@ -43,7 +43,7 @@ export async function onRequestDelete({ request, env }) {
   return json({ ok: true, updatedAt: data.updatedAt });
 }
 
-export async function syncShelfGamesToBacklog(env, allShelfGames, games) {
+async function syncShelfGamesToBacklog(env, allShelfGames, games) {
   const list = await env.GAMELIST.get("gamelist-data", "json") || { games: [], settings: {} };
   if (list.settings?.shelfSync === false) return;
   const shelfById = new Map(allShelfGames.map((game) => [game.id, game]));
@@ -97,12 +97,11 @@ function cleanTransferTags(tags) {
 }
 
 function shortPlatform(value) {
-  const clean = String(value || "").trim();
   return ({
     "Sony PlayStation": "PS1", "Sony PlayStation 2": "PS2", "Sony PlayStation 3": "PS3",
     "Sony PlayStation 4": "PS4", "Sony PlayStation 5": "PS5", "Nintendo Switch": "Switch",
     "Nintendo Switch 2": "Switch 2", "Nintendo DS": "DS", "Nintendo 3DS": "3DS", "Nintendo 64": "N64",
-  })[clean] || clean;
+  })[value] || value || "Unknown";
 }
 
 function validLayout(value) {

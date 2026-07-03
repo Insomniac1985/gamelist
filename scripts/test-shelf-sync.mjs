@@ -2,7 +2,6 @@ import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import { onRequestPut as putGamelist } from "../functions/api/sync.js";
 import { onRequestPut as putShelf, onRequestDelete as deleteShelf } from "../functions/api/shelf.js";
-import { onRequestPost as postShelfMassAdd } from "../functions/api/shelf-mass-add.js";
 import { activityAllowsPsnCardTrophies, activityCoverOverride, activityTitleMatchScore, normalizeSearchText, releaseGamesByDate } from "../activity-ui.js";
 
 const [appSource, shelfSource, shelfCss, shelfHtml, sharedCss, appHtml, collectionPriceSource, themeSource, swSource] = await Promise.all([
@@ -264,7 +263,6 @@ class MemoryKv {
 const kv = new MemoryKv();
 const env = { GAMELIST: kv, EDIT_PASSWORD: "test" };
 const request = (url, body) => new Request(url, { method: "PUT", headers: { "Content-Type": "application/json", "x-edit-password": "test" }, body: JSON.stringify(body) });
-const postRequest = (url, body) => new Request(url, { method: "POST", headers: { "Content-Type": "application/json", "x-edit-password": "test" }, body: JSON.stringify(body) });
 
 await putGamelist({ request: request("https://example.test/api/sync", { games: [{ id: "g1", title: "Physical", platform: "PS5", section: "backlog", digital: false, owners: ["Judy"] }], settings: {} }), env });
 let shelf = await kv.get("shelf-data", "json");
@@ -293,24 +291,6 @@ assert.equal(shelf.games.some((game) => game.gamelistId === "g2"), false);
 await putShelf({ request: request("https://example.test/api/shelf", { games: [...shelf.games, { id: "s3", title: "No Back Sync", platform: "Nintendo Switch", country: "Spain" }], overrides: {}, layout }), env });
 list = await kv.get("gamelist-data", "json");
 assert.equal(list.games.some((game) => game.shelfId === "s3"), false);
-
-await putGamelist({ request: request("https://example.test/api/sync", { games: list.games, settings: {} }), env });
-let massAddResponse = await postShelfMassAdd({ request: postRequest("https://example.test/api/shelf-mass-add", { games: [{ title: "Mass Physical", platform: "Sony PlayStation 5", country: "Spain", owners: ["Marta"] }] }), env });
-assert.equal(massAddResponse.status, 200);
-shelf = await kv.get("shelf-data", "json");
-assert.equal(shelf.games.some((game) => game.title === "Mass Physical" && game.pendingCollection === false), true, "Shelf mass add API must add owned collection games");
-list = await kv.get("gamelist-data", "json");
-assert.equal(list.games.some((game) => game.title === "Mass Physical" && game.section === "new"), true, "Shelf mass add API must keep normal Shelf-to-Gamelist sync");
-
-await putGamelist({ request: request("https://example.test/api/sync", { games: [{ id: "pending-source", title: "Pending Source", platform: "PS5", section: "backlog", digital: false }], settings: {} }), env });
-shelf = await kv.get("shelf-data", "json");
-const pendingId = shelf.games.find((game) => game.title === "Pending Source")?.id;
-massAddResponse = await postShelfMassAdd({ request: postRequest("https://example.test/api/shelf-mass-add", { acceptPending: true }), env });
-assert.equal(massAddResponse.status, 200);
-shelf = await kv.get("shelf-data", "json");
-assert.equal(shelf.games.find((game) => game.id === pendingId)?.pendingCollection, false, "Shelf mass add API must accept pending New additions");
-list = await kv.get("gamelist-data", "json");
-assert.equal(list.games.filter((game) => game.shelfId === pendingId).length, 0, "Accepting pending games through the API must not create duplicate Gamelist rows");
 
 const gameCount = list.games.length;
 await putGamelist({ request: request("https://example.test/api/sync", { settingsOnly: true, settings: { stores: ["Amazon", "eBay"], region: "ES", currency: "EUR" } }), env });

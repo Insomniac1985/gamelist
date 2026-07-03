@@ -25,7 +25,7 @@
           const accent = theme.accentColorReset === false ? hex(theme.accentColor, "#79f2ce") : "#79f2ce";
           const gradient = hex(theme.gradientColor, main);
           const extra = hex(theme.extraColor, "#7c5cff");
-          const fonts = { antique: "Antique Olive Nord", georgia: "Georgia Bold", pokemon: "Pokemon GBA", pixel: "04B 30", michroma: "Michroma", minecraft: "Minecraft", mata: "Mata Regular" };
+          const fonts = { antique: "Antique Olive Nord", georgia: "Georgia Bold", pokemon: "Pokemon GBA", pixel: "04B 30", michroma: "Michroma", minecraft: "Minecraft" };
           const source = (value) => ({ main, accent, gradient, extra })[value] || main;
           const mix = (color, alpha) => {
             const int = Number.parseInt(color.slice(1), 16);
@@ -50,7 +50,6 @@
           root.classList.toggle("theme-big-logo", theme.bigLogo);
           root.classList.toggle("theme-font-pokemon", theme.fontKey === "pokemon");
           root.style.setProperty("--accent", theme.color);
-          root.style.setProperty("--accent-1", theme.accent);
           root.style.setProperty("--accent-2", theme.accent);
           root.style.setProperty("--title-gradient-start", theme.gradientOn ? theme.gradient : theme.color);
           root.style.setProperty("--title-gradient-end", theme.color);
@@ -198,32 +197,32 @@
 
         <section class="toolbar glass shelf-toolbar" data-module="filters">
           <label class="search shelf-search-wide">
-            <span data-i18n="Search">Search</span>
-            <input id="searchInput" type="search" placeholder="Game, publisher, genre..." data-i18n-placeholder="Game, publisher, genre...">
+            <span>Search</span>
+            <input id="searchInput" type="search" placeholder="Game, publisher, genre...">
           </label>
           <label>
-            <span data-i18n="Platform">Platform</span>
+            <span>Platform</span>
             <select id="platformFilter"></select>
           </label>
           <label>
-            <span data-i18n="Region">Region</span>
+            <span>Region</span>
             <select id="regionFilter"></select>
           </label>
           <label>
-            <span data-i18n="Condition">Condition</span>
+            <span>Condition</span>
             <select id="conditionFilter">
-              <option value="all" data-i18n="All conditions">All conditions</option>
-              <option value="complete" data-i18n="Complete">Complete</option>
-              <option value="complete-plus" data-i18n="Complete +">Complete +</option>
-              <option value="loose" data-i18n="Loose">Loose</option>
-              <option value="sealed" data-i18n="Sealed">Sealed</option>
+              <option value="all">All conditions</option>
+              <option value="complete">Complete</option>
+              <option value="complete-plus">Complete +</option>
+              <option value="loose">Loose</option>
+              <option value="sealed">Sealed</option>
             </select>
           </label>
-          <label><span data-i18n="Category">Category</span><select id="categoryFilter"></select></label>
+          <label><span>Category</span><select id="categoryFilter"></select></label>
           <label class="order-label shelf-order-short">
-            <span data-i18n="Order">Order</span>
+            <span>Order</span>
             <div class="order-control"><select id="sortFilter">
-              <option value="added" data-i18n="Last added">Last added</option><option value="title" data-i18n="Name">Name</option><option value="platform" data-i18n="Platform">Platform</option><option value="region" data-i18n="Region">Region</option><option value="value" data-i18n="Value">Value</option>
+              <option value="added">Last added</option><option value="title">Name</option><option value="platform">Platform</option><option value="region">Region</option><option value="value">Value</option>
             </select><button class="direction-toggle" id="sortDirectionButton" type="button" title="Sort ascending" aria-label="Sort ascending"></button></div>
           </label>
           <button class="icon-button view-toggle" id="viewToggleButton" type="button" title="Show as list" aria-label="Show as list">
@@ -305,7 +304,7 @@
           <h3>Collecting Information</h3>
           <div class="form-grid">
             <label><span>Title</span><input id="titleInput" required></label>
-            <label><span>Console</span><input id="platformInput" list="shelfPlatformOptions"><datalist id="shelfPlatformOptions"></datalist></label>
+            <label><span>Console</span><input id="platformInput" list="shelfPlatformOptions" required><datalist id="shelfPlatformOptions"></datalist></label>
             <label><span>Region</span><select id="countryInput" required></select></label>
             <label><span>Release Date</span><input id="releaseDateInput" type="date"></label>
             <label><span>Owners</span><input id="ownersInput" placeholder="Judy, Jordi, Cage"></label>
@@ -360,35 +359,34 @@
     <dialog id="layoutDialog" class="settings-dialog">
       <form class="settings-modal glass" id="layoutForm">
         <div class="modal-head">
-          <div><p class="eyebrow" data-i18n="Shelf settings">Shelf settings</p><h2 data-i18n="Settings">Settings</h2></div>
+          <div><p class="eyebrow">Shelf settings</p><h2>Settings</h2></div>
           <div class="modal-head-actions">
-            <button class="primary-button modal-head-save" type="submit" data-i18n="Save">Save</button>
+            <button class="primary-button modal-head-save" type="submit">Save</button>
             <button class="icon-button" id="layoutClose" type="button" title="Close" aria-label="Close">×</button>
           </div>
         </div>
         <section class="settings-section">
-          <h3 data-i18n="Page">Page</h3>
+          <h3>Page</h3>
           <div class="settings-layout" id="layoutList" aria-label="Page order"></div>
         </section>
-        <p class="eyebrow settings-detail-title" data-i18n="Details">Details</p>
+        <p class="eyebrow settings-detail-title">Details</p>
         <section class="settings-grid">
-          <label class="settings-account-field"><span data-i18n="PlayStation account">PlayStation account</span><input id="shelfSettingsPsnUser" autocomplete="off"></label>
-          <label class="settings-account-field"><span data-i18n="Microsoft account">Microsoft account</span><input id="shelfSettingsMicrosoftUser" autocomplete="off" placeholder="Xbox gamertag or XUID" data-i18n-placeholder="Xbox gamertag or XUID"></label>
-          <label class="settings-account-field"><span data-i18n="Steam account">Steam account</span><input id="shelfSettingsSteamUser" autocomplete="off" placeholder="SteamID64, profile URL, or vanity name" data-i18n-placeholder="SteamID64, profile URL, or vanity name"></label>
-          <label class="settings-detail-compact"><span data-i18n="Currency">Currency</span><select id="shelfSettingsCurrency"><option value="EUR">EUR</option><option value="USD">USD</option></select></label>
-          <label class="settings-detail-compact"><span data-i18n="Region">Region</span><select id="shelfSettingsRegion"><option value="ES" data-i18n="Spain">Spain</option><option value="IT" data-i18n="Italy">Italy</option><option value="US">US</option><option value="UK">UK</option></select></label>
-          <label class="settings-detail-compact"><span data-i18n="Language">Language</span><select id="shelfSettingsLanguage"><option value="en">English</option><option value="es-ES">Español (España)</option></select></label>
-          <label class="settings-detail-compact"><span data-i18n="Default owner">Default owner</span><input id="shelfSettingsDefaultOwner" autocomplete="off"></label>
+          <label class="settings-account-field"><span>PlayStation account</span><input id="shelfSettingsPsnUser" autocomplete="off"></label>
+          <label class="settings-account-field"><span>Microsoft account</span><input id="shelfSettingsMicrosoftUser" autocomplete="off" placeholder="Xbox gamertag or XUID"></label>
+          <label class="settings-account-field"><span>Steam account</span><input id="shelfSettingsSteamUser" autocomplete="off" placeholder="SteamID64, profile URL, or vanity name"></label>
+          <label class="settings-detail-compact"><span>Currency</span><select id="shelfSettingsCurrency"><option value="EUR">EUR</option><option value="USD">USD</option></select></label>
+          <label class="settings-detail-compact"><span>Region</span><select id="shelfSettingsRegion"><option value="ES">Spain</option><option value="IT">Italy</option><option value="US">US</option><option value="UK">UK</option></select></label>
+          <label class="settings-detail-compact"><span>Default owner</span><input id="shelfSettingsDefaultOwner" autocomplete="off"></label>
         </section>
         <section class="settings-section">
-          <h3 data-i18n="Stores">Stores</h3>
+          <h3>Stores</h3>
           <div class="settings-store-list" id="shelfSettingsStores"></div>
         </section>
         <section class="settings-section settings-csv-section">
-          <h3 data-i18n="CSV data">CSV data</h3>
+          <h3>CSV data</h3>
           <div class="settings-csv-data" id="shelfSettingsCsvData"></div>
         </section>
-        <div class="modal-actions"><button class="primary-button" type="submit" data-i18n="Save">Save</button></div>
+        <div class="modal-actions"><button class="primary-button" type="submit">Save</button></div>
       </form>
     </dialog>
 

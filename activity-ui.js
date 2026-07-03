@@ -37,12 +37,7 @@ export function achievementCardMarkup({ index, tone, href, game, title, icon, me
 }
 
 export function achievementDashboardMarkup({ completedCount, completedBreakdown = "", trophyTotal, trophyBreakdown = "", level, levelLabel, counts, sourceUrl, trophyIconHtml, barHeight, escape }) {
-  const levelCard = levelLabel ? `<a class="achievement-kpi" href="${escape(sourceUrl)}" target="_blank" rel="noreferrer"><strong>${escape(String(level))}</strong><span>${levelLabel}</span></a>` : "";
-  const rarityGraph = `<div class="rarity-graph" aria-label="Trophy rarity graph">${counts.map(([type, count]) => {
-    const value = Number(count) || 0;
-    return `<span class="rarity-bar rarity-${escape(type.toLowerCase())} ${value ? "" : "rarity-zero"}" title="${escape(`${type}: ${value}`)}"><em style="--bar:${barHeight(value, counts)}%"></em><small>${escape(type)}</small>${value ? `<strong>${escape(String(value))}</strong>` : ""}</span>`;
-  }).join("")}</div>`;
-  return `<div class="achievement-summary ${levelLabel ? "" : "achievement-summary-no-level"}"><button class="achievement-kpi platinum-highlight ${completedCount ? "has-platinum" : ""}" type="button" data-action="platinums"><strong class="kpi-with-icon">${trophyIconHtml}${escape(String(completedCount))}</strong><span>COMPLETED</span>${completedBreakdown}</button><a class="achievement-kpi trophy-kpi" href="${escape(sourceUrl)}" target="_blank" rel="noreferrer"><strong>${escape(String(trophyTotal))}</strong><span>TROPHIES</span>${trophyBreakdown}</a>${levelCard}${rarityGraph}</div>`;
+  return `<div class="achievement-summary"><button class="achievement-kpi platinum-highlight ${completedCount ? "has-platinum" : ""}" type="button" data-action="platinums"><strong class="kpi-with-icon">${trophyIconHtml}${escape(String(completedCount))}</strong><span>COMPLETED</span>${completedBreakdown}</button><a class="achievement-kpi trophy-kpi" href="${escape(sourceUrl)}" target="_blank" rel="noreferrer"><strong>${escape(String(trophyTotal))}</strong><span>TROPHIES</span>${trophyBreakdown}</a><a class="achievement-kpi" href="${escape(sourceUrl)}" target="_blank" rel="noreferrer"><strong>${escape(String(level))}</strong><span>${levelLabel}</span></a><div class="rarity-graph" aria-label="Trophy rarity graph">${counts.map(([type, count]) => `<span class="rarity-bar rarity-${escape(type.toLowerCase())}" title="${escape(`${type}: ${count}`)}"><em style="--bar:${barHeight(count, counts)}%"></em><small>${escape(type)}</small><strong>${escape(String(count))}</strong></span>`).join("")}</div></div>`;
 }
 
 export function achievementPanelMarkup({ psn = {}, steam = {}, xbox = {}, trophyIconHtml, platformBadge, platformLogo, trophyTone, escape }) {
@@ -79,14 +74,15 @@ export function achievementPanelMarkup({ psn = {}, steam = {}, xbox = {}, trophy
   const psnTotal = counts.reduce((sum, [, count]) => sum + count, 0);
   const total = psnTotal + Number(steam.totalEarned || 0) + Number(xbox.totalEarned || 0);
   const breakdown = (rows) => `<span class="kpi-breakdown" aria-hidden="true">${rows.map(([value, totalValue, platform]) => `<small class="kpi-breakdown-pill kpi-breakdown-${escape(normalizeTitle(platform))}"><strong>${escape(String(value))}</strong> out of ${escape(String(totalValue))} on ${escape(platform)}</small>`).join("")}</span>`;
-  const psnLevel = psn.summary?.level || "";
+  const games = Array.isArray(psn.games) ? psn.games.slice(0, 3) : [];
+  const average = games.length ? Math.round(games.reduce((sum, game) => sum + progressFromText(game.game), 0) / games.length) : 0;
   const dashboard = achievementDashboardMarkup({
     completedCount: completed,
     completedBreakdown: breakdown([[pcCompleted, completed, "PC"], [xboxCompleted, completed, "Xbox"], [psnCompleted, completed, "PlayStation"]]),
     trophyTotal: total,
     trophyBreakdown: breakdown([[steam.totalEarned || 0, total, "PC"], [xbox.totalEarned || 0, total, "Xbox"], [psnTotal, total, "PlayStation"]]),
-    level: psnLevel,
-    levelLabel: psnLevel ? `LEVEL <small>${escape(String(psn.summary.progress || 0))}% next</small>` : "",
+    level: psn.summary?.level || average || 0,
+    levelLabel: psn.summary?.level ? `LEVEL <small>${escape(String(psn.summary.progress || 0))}% next</small>` : "LATEST GAME AVG",
     counts, sourceUrl, trophyIconHtml, barHeight: sharedTrophyBarHeight, escape,
   });
   const cards = achievements.map((item, index) => {
@@ -264,6 +260,7 @@ export function activityAllowsPsnCardTrophies(platform) {
 
 function earnedTime(item) { const time = Date.parse(item?.rawEarnedAt || item?.earnedAt || 0); return Number.isNaN(time) ? 0 : time; }
 function sharedTrophyBarHeight(count, counts) { const max = Math.max(1, ...counts.map(([, value]) => value)); if (!count) return 8; return Math.round(18 + (Math.log1p(count) / Math.log1p(max)) * 82); }
+function progressFromText(value) { const match = String(value || "").match(/(\d{1,3})%/); return match ? Math.min(100, Number(match[1])) : 0; }
 function normalizeTitle(value) { return String(value || "").toLowerCase().normalize("NFKD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]+/g, ""); }
 function titleParts(value) { const phrase = String(value || "").toLowerCase().replace(/&/g, " and ").replace(/\btrophies\b/g, " ").replace(/\bxii\b/g, "12").replace(/\bxi\b/g, "11").replace(/\bviii\b/g, "8").replace(/\bvii\b/g, "7").replace(/\bvi\b/g, "6").replace(/\bix\b/g, "9").replace(/\biv\b/g, "4").replace(/\biii\b/g, "3").replace(/\bii\b/g, "2").replace(/\bx\b/g, "10").replace(/[^a-z0-9]+/g, " ").trim().replace(/\s+/g, " "); const tokens = phrase.split(" ").filter(Boolean); return { phrase, tokens, compact: tokens.join(""), acronym: tokens.map((token) => token[0]).join("") }; }
 

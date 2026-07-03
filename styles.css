@@ -58,14 +58,6 @@
   font-display: swap;
 }
 
-@font-face {
-  font-family: "Mata Regular";
-  src: url("assets/fonts/Mata Regular.otf") format("opentype");
-  font-weight: 400;
-  font-style: normal;
-  font-display: swap;
-}
-
 :root {
   --bg: #161619;
   --panel: rgba(20, 22, 28, 0.58);
@@ -77,7 +69,6 @@
   --muted: #a6adbd;
   --dim: #6f7789;
   --accent: #ff0039;
-  --accent-1: #79f2ce;
   --accent-2: #79f2ce;
   --accent-3: #ee32b3;
   --title-gradient-start: var(--accent);
@@ -351,6 +342,7 @@ body.theme-kash .brand span:last-child {
 }
 
 body.theme-big-logo .brand-mark {
+  filter: unset !important;
   width: 70px !important;
   height: 70px !important;
 }
@@ -735,10 +727,6 @@ html.theme-font-pokemon {
   gap: 10px;
 }
 
-.achievement-summary-no-level {
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-}
-
 .achievement-kpi,
 .rarity-graph {
   position: relative;
@@ -958,10 +946,6 @@ button.achievement-kpi {
 .rarity-bar:hover strong {
   opacity: 1;
   transform: translateY(0);
-}
-
-.rarity-bar.rarity-zero strong {
-  display: none;
 }
 
 .rarity-platinum em,
@@ -1815,8 +1799,8 @@ body.dialog-open .floating-edit-actions {
 }
 
 .release-day.today {
-  border-color: var(--accent-1, var(--accent));
-  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent-1, var(--accent)) 42%, transparent);
+  border-color: #ffffff;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.42);
 }
 
 .release-day.today:disabled {
@@ -2012,7 +1996,7 @@ body.dialog-open .floating-edit-actions {
   top: calc(20px + var(--pull-ui-offset, 0px));
   z-index: 12;
   display: grid;
-  grid-template-columns: minmax(240px, 1fr) 132px minmax(190px, 210px) minmax(150px, 165px) 132px var(
+  grid-template-columns: minmax(220px, 1fr) 136px 150px 150px 190px var(
       --toolbar-control-height
     );
   gap: 10px;
@@ -2032,303 +2016,12 @@ body.dialog-open .floating-edit-actions {
   height: var(--toolbar-control-height);
   min-height: var(--toolbar-control-height);
   padding: 0 11px;
-  font-size: 15px;
-  line-height: var(--toolbar-control-height);
+  font-size: 13px;
+  line-height: 1.2;
 }
 
 .toolbar select {
   padding-right: 34px;
-}
-
-#platformFilter {
-  padding-right: 46px;
-}
-
-#platformFilter option {
-  padding-right: 24px;
-}
-
-.native-platform-filter,
-.native-styled-select {
-  display: none;
-}
-
-#gameDialog #platformInput::-webkit-calendar-picker-indicator,
-#gameDialog #ownersInput::-webkit-calendar-picker-indicator,
-#gameDialog #statusesInput::-webkit-calendar-picker-indicator,
-#addDialog #platformInput::-webkit-calendar-picker-indicator {
-  display: none !important;
-  opacity: 0;
-}
-
-#gameDialog #platformInput,
-#gameDialog #ownersInput,
-#gameDialog #statusesInput,
-#addDialog #platformInput {
-  appearance: textfield;
-}
-
-.platform-logo-select {
-  --dropdown-control-height: var(--toolbar-control-height, 42px);
-  position: relative;
-  width: 100%;
-  min-width: 0;
-}
-
-.platform-logo-select.is-open {
-  z-index: 1300;
-}
-
-.platform-logo-button,
-.platform-logo-option {
-  width: 100%;
-  min-width: 0;
-  color: var(--text);
-  font: inherit;
-  font-size: 14px;
-  line-height: 1;
-  text-align: left;
-  border: 0;
-}
-
-.platform-logo-button {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr);
-  align-items: center;
-  justify-content: stretch;
-  height: var(--dropdown-control-height);
-  min-height: var(--dropdown-control-height);
-  padding: 0 34px 0 11px;
-  color: #ffffff;
-  font-size: 14px;
-  line-height: 1;
-  background-color: rgba(255, 255, 255, 0.065);
-  background-image: url("data:image/svg+xml,%3Csvg width='14' height='14' viewBox='0 0 14 14' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M3.5 5.25 7 8.75l3.5-3.5' fill='none' stroke='%23f6f7fb' stroke-opacity='.78' stroke-width='1.7' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
-  background-position: right 15px center;
-  background-repeat: no-repeat;
-  background-size: 14px 14px;
-  border: 1px solid rgba(255, 255, 255, 0.14);
-  border-radius: 7px;
-  cursor: pointer;
-  transition:
-    background-color 160ms ease,
-    border-color 160ms ease,
-    box-shadow 160ms ease;
-}
-
-.platform-logo-button:hover,
-.platform-logo-button:focus-visible,
-.platform-logo-select.is-active .platform-logo-button,
-.platform-logo-select.is-open .platform-logo-button {
-  color: #ffffff;
-  border-color: color-mix(in srgb, var(--accent) 68%, transparent);
-  background-color: color-mix(
-    in srgb,
-    var(--accent) 17%,
-    rgba(255, 255, 255, 0.075)
-  );
-  box-shadow:
-    0 0 0 1px color-mix(in srgb, var(--accent) 16%, transparent),
-    0 0 18px color-mix(in srgb, var(--accent) 12%, transparent);
-}
-
-.platform-logo-menu {
-  position: absolute;
-  left: 0;
-  right: auto;
-  top: calc(100% + 6px);
-  z-index: 1301;
-  display: none;
-  width: max-content;
-  min-width: min(100%, 96px);
-  max-width: 100%;
-  max-height: 380px;
-  padding: 3px;
-  overflow: auto;
-  background-color: rgba(34, 33, 37, 0.96);
-  background-image:
-    linear-gradient(rgba(255, 255, 255, 0.018) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255, 255, 255, 0.018) 1px, transparent 1px);
-  background-size: 18px 18px;
-  border: 1px solid rgba(255, 255, 255, 0.14);
-  border-radius: 8px;
-  box-shadow: 0 18px 44px rgba(0, 0, 0, 0.42);
-}
-
-.platform-logo-select.is-open .platform-logo-menu {
-  display: grid;
-  gap: 1px;
-  box-shadow: 0 18px 44px rgba(0, 0, 0, 0.42);
-}
-
-.platform-logo-option {
-  position: relative;
-  display: flex;
-  align-items: center;
-  height: 32px;
-  min-height: 32px;
-  padding: 2px 6px 0 8px;
-  background: transparent;
-  border: 1px solid transparent;
-  border-radius: 4px;
-  cursor: pointer;
-  box-sizing: border-box;
-}
-
-.platform-logo-button,
-.platform-logo-option {
-  overflow: hidden;
-}
-
-.platform-logo-option::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  z-index: 0;
-  background: transparent;
-  border: 1px solid transparent;
-  border-radius: inherit;
-  pointer-events: none;
-}
-
-.platform-logo-option:hover,
-.platform-logo-option:focus-visible,
-.platform-logo-option.is-selected {
-  color: #ffffff;
-  background: transparent;
-  border-color: transparent;
-  outline: none;
-}
-
-.platform-logo-option:hover::before,
-.platform-logo-option:focus-visible::before,
-.platform-logo-option.is-selected::before {
-  background: color-mix(in srgb, var(--accent-2) 7%, transparent);
-  border-color: color-mix(in srgb, var(--accent-2) 18%, transparent);
-}
-
-.platform-logo-hover-overlay {
-  position: fixed;
-  z-index: 1500;
-  max-width: min(320px, calc(100vw - 32px));
-  padding: 7px 9px;
-  color: #ffffff;
-  font-size: 12px;
-  font-weight: 700;
-  line-height: 1.2;
-  white-space: nowrap;
-  background: #07070b;
-  border: 1px solid rgba(255, 255, 255, 0.14);
-  border-radius: 6px;
-  box-shadow: 0 12px 34px rgba(0, 0, 0, 0.44);
-  transform: translateY(-50%);
-  pointer-events: none;
-  opacity: 0;
-}
-
-.platform-logo-hover-overlay.visible {
-  opacity: 1;
-}
-
-.platform-logo-choice {
-  position: relative;
-  z-index: 2;
-  display: flex;
-  align-items: center;
-  gap: 7px;
-  min-width: 0;
-  width: 100%;
-  min-height: 100%;
-  color: #ffffff;
-  background: transparent !important;
-  border-color: transparent !important;
-  border-radius: 0;
-}
-
-.platform-logo-option .platform-logo-choice {
-  position: relative;
-  z-index: 2;
-  height: 100%;
-  align-items: center;
-}
-
-.platform-logo-button .platform-logo-choice {
-  height: 100%;
-  min-height: 100%;
-  justify-content: flex-start;
-  transform: translateY(2px);
-}
-
-.platform-logo-choice span {
-  margin-bottom: 0;
-  color: inherit;
-  font-size: inherit;
-  font-weight: inherit;
-  text-transform: none;
-}
-
-.platform-logo-choice-icon {
-  position: relative;
-  z-index: 2;
-  display: grid;
-  place-items: center;
-  width: 16px;
-  height: 16px;
-  flex: 0 0 16px;
-}
-
-.platform-logo-choice-icon img {
-  display: block;
-  max-width: 16px;
-  max-height: 16px;
-  object-fit: contain;
-  transform: translateY(0);
-}
-
-.platform-logo-option:hover .platform-logo-choice-label,
-.platform-logo-option:focus-visible .platform-logo-choice-label,
-.platform-logo-option.is-selected .platform-logo-choice-label {
-  color: color-mix(in srgb, var(--accent-2) 46%, #ffffff);
-}
-
-.platform-logo-choice .platform-logo-choice-label {
-  color: #ffffff;
-}
-
-.platform-logo-choice.platform-ps3 .platform-logo-choice-icon img,
-.platform-logo-choice.platform-psp .platform-logo-choice-icon img {
-  filter: brightness(0) invert(1);
-}
-
-.platform-logo-choice.platform-ps3 .platform-logo-choice-icon img {
-  filter: brightness(0);
-}
-
-.platform-logo-choice.platform-ps5 .platform-logo-choice-icon img {
-  filter: brightness(0) invert(1);
-}
-
-.platform-logo-choice-label {
-  display: block;
-  position: relative;
-  z-index: 2;
-  flex: 1 1 auto;
-  min-width: 0;
-  font-size: 14px;
-  line-height: 1.2;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.platform-logo-button .platform-logo-choice-label {
-  font-size: 14px;
-  line-height: 1.2;
-}
-
-.platform-logo-button .platform-logo-choice-label,
-.platform-logo-option .platform-logo-choice-label {
-  font-size: 14px !important;
 }
 
 .check-filter {
@@ -2389,7 +2082,6 @@ body.dialog-open .floating-edit-actions {
 .toolbar-check {
   align-self: end;
   min-height: var(--toolbar-control-height);
-  padding-right: 18px;
 }
 
 .order-control {
@@ -2615,67 +2307,44 @@ textarea {
 input:hover,
 select:hover,
 textarea:hover {
-  border-color: color-mix(in srgb, var(--accent) 68%, transparent);
-}
-
-select:hover {
-  background-color: color-mix(
-    in srgb,
-    var(--accent) 17%,
-    rgba(255, 255, 255, 0.075)
-  );
-  box-shadow:
-    0 0 0 1px color-mix(in srgb, var(--accent) 16%, transparent),
-    0 0 18px color-mix(in srgb, var(--accent) 12%, transparent);
+  border-color: color-mix(in srgb, var(--accent) 34%, transparent);
 }
 
 select {
   appearance: none;
   padding-right: 34px;
-  font-size: 15px;
-  line-height: 1;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  background-color: rgba(255, 255, 255, 0.065);
+  background-color: rgba(255, 255, 255, 0.07);
   background-image: url("data:image/svg+xml,%3Csvg width='14' height='14' viewBox='0 0 14 14' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M3.5 5.25 7 8.75l3.5-3.5' fill='none' stroke='%23f6f7fb' stroke-opacity='.78' stroke-width='1.7' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
   background-position: right 15px center;
   background-repeat: no-repeat;
   background-size: 14px 14px;
-  transition:
-    background-color 160ms ease,
-    border-color 160ms ease,
-    box-shadow 160ms ease;
 }
 
 select option {
   color: var(--text);
-  background: #222125;
+  background: #161619;
 }
 
 input:focus,
 select:focus,
 textarea:focus {
-  border-color: color-mix(in srgb, var(--accent) 68%, transparent);
-  box-shadow:
-    0 0 0 1px color-mix(in srgb, var(--accent) 16%, transparent),
-    0 0 18px color-mix(in srgb, var(--accent) 12%, transparent);
+  border-color: color-mix(in srgb, var(--accent) 62%, transparent);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 12%, transparent);
 }
 
 select.is-active {
   color: #ffffff;
   border-color: color-mix(in srgb, var(--accent) 68%, transparent);
-  background-color: color-mix(
-    in srgb,
-    var(--accent) 17%,
-    rgba(255, 255, 255, 0.075)
-  );
+  background-color: rgba(255, 255, 255, 0.08);
   background-image:
     url("data:image/svg+xml,%3Csvg width='14' height='14' viewBox='0 0 14 14' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M3.5 5.25 7 8.75l3.5-3.5' fill='none' stroke='%23ffffff' stroke-opacity='.92' stroke-width='1.7' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E"),
     linear-gradient(
       135deg,
-      color-mix(in srgb, var(--accent) 12%, transparent),
-      transparent
+      color-mix(in srgb, var(--accent) 22%, transparent),
+      color-mix(in srgb, var(--accent-2) 11%, transparent)
     );
   background-position:
     right 15px center,
@@ -2686,7 +2355,7 @@ select.is-active {
     auto;
   box-shadow:
     inset 0 0 0 1px rgba(255, 255, 255, 0.08),
-    0 0 18px color-mix(in srgb, var(--accent) 12%, transparent);
+    0 0 22px color-mix(in srgb, var(--accent) 14%, transparent);
 }
 
 .select-overflow-popover {
@@ -3970,49 +3639,6 @@ body.theme-kash .game-card.stream-card.completed-trophy-card {
   color: var(--playstation);
 }
 
-.platform-playstation.platform-ps5 .platform-label {
-  color: #05070b;
-}
-
-.platform-playstation.platform-ps5 {
-  background: #ffffff;
-  border-color: rgba(180, 186, 198, 0.72);
-}
-
-.platform-playstation.platform-ps5 .platform-count {
-  color: #05070b;
-  background: rgba(0, 0, 0, 0.08);
-  border-color: rgba(0, 0, 0, 0.12);
-}
-
-.platform-playstation.platform-ps1 {
-  background: rgba(142, 148, 160, 0.18);
-  border-color: rgba(183, 189, 202, 0.36);
-}
-
-.platform-playstation.platform-ps1 .platform-label,
-.platform-playstation.platform-ps1 .platform-count {
-  color: #aeb4c0;
-}
-
-.platform-playstation.platform-ps3,
-.platform-playstation.platform-psp {
-  background: rgba(5, 7, 11, 0.82);
-  border-color: rgba(255, 255, 255, 0.3);
-}
-
-.platform-playstation.platform-ps3 .platform-label,
-.platform-playstation.platform-ps3 .platform-count,
-.platform-playstation.platform-psp .platform-label,
-.platform-playstation.platform-psp .platform-count {
-  color: #ffffff;
-}
-
-.platform-playstation.platform-ps3 .platform-icon img,
-.platform-playstation.platform-psp .platform-icon img {
-  filter: brightness(0) invert(1);
-}
-
 .platform-wii .platform-label,
 .platform-nes .platform-label,
 .platform-ds .platform-label,
@@ -4024,6 +3650,7 @@ body.theme-kash .game-card.stream-card.completed-trophy-card {
   color: #9bd7ff;
 }
 
+.platform-n64 .platform-label,
 .platform-3ds .platform-label,
 .platform-gbc .platform-label {
   color: #ff5a66;
@@ -4031,25 +3658,13 @@ body.theme-kash .game-card.stream-card.completed-trophy-card {
 
 .platform-gamecube .platform-label,
 .platform-snes .platform-label,
+.platform-sega .platform-label,
 .platform-gba .platform-label {
   color: #c9a7ff;
 }
 
-.platform-n64 .platform-label {
-  color: #ff4f5d;
-}
-
-.platform-sega .platform-label,
-.platform-gamegear .platform-label {
-  color: #5aa7ff;
-}
-
 .platform-xbox .platform-label {
-  color: #7ed732;
-}
-
-.platform-xbox.platform-xbox360 .platform-label {
-  color: #29a750;
+  color: #62d470;
 }
 
 .platform-dreamcast .platform-label {
@@ -4078,38 +3693,24 @@ body.theme-kash .game-card.stream-card.completed-trophy-card {
   border-color: rgba(155, 215, 255, 0.34);
 }
 
+.platform-n64,
 .platform-3ds,
 .platform-gbc {
   background: rgba(255, 90, 102, 0.14);
   border-color: rgba(255, 90, 102, 0.34);
 }
 
-.platform-n64 {
-  background: rgba(52, 154, 76, 0.28);
-  border-color: rgba(80, 190, 102, 0.44);
-}
-
 .platform-gamecube,
 .platform-snes,
+.platform-sega,
 .platform-gba {
   background: rgba(150, 112, 255, 0.16);
   border-color: rgba(190, 160, 255, 0.36);
 }
 
-.platform-sega,
-.platform-gamegear {
-  background: rgba(42, 112, 224, 0.18);
-  border-color: rgba(90, 167, 255, 0.38);
-}
-
 .platform-xbox {
   background: rgba(98, 212, 112, 0.14);
   border-color: rgba(98, 212, 112, 0.38);
-}
-
-.platform-xbox.platform-xbox-retro {
-  background: rgba(5, 7, 11, 0.82);
-  border-color: rgba(255, 255, 255, 0.3);
 }
 
 .platform-ds {
@@ -5660,13 +5261,8 @@ body.dialog-open .mobile-section-tabs {
 }
 
 .settings-theme-select {
-  --dropdown-control-height: var(--settings-control-height, 42px);
   display: grid;
   gap: 0;
-}
-
-.settings-theme-select .platform-logo-select {
-  --dropdown-control-height: var(--settings-control-height, 42px);
 }
 
 .settings-check-field {
@@ -5729,20 +5325,16 @@ body.dialog-open .mobile-section-tabs {
   font-weight: 800;
   margin: 0;
   white-space: nowrap;
-  text-transform: none;
+  text-transform: uppercase;
 }
 
-.settings-theme-select > span {
+.settings-theme-select span {
   margin-bottom: 6px;
   color: var(--dim);
   font-size: 11px;
   font-weight: 740;
   line-height: 1;
   text-transform: uppercase;
-}
-
-.settings-theme-select .platform-logo-choice-label {
-  text-transform: none;
 }
 
 .settings-theme-select select {
@@ -5843,7 +5435,7 @@ html.theme-light .settings-preference-separator {
 
 html.theme-light .settings-layout-card strong,
 html.theme-light .settings-section h3,
-html.theme-light .settings-theme-select > span,
+html.theme-light .settings-theme-select span,
 html.theme-light .theme-field label,
 html.theme-light .theme-editor-card h3 {
   color: #233047;
@@ -6189,11 +5781,6 @@ html.theme-light .platform-playstation {
   border-color: rgba(0, 57, 214, 0.52);
 }
 
-html.theme-light .platform-playstation.platform-ps5 {
-  background: #ffffff;
-  border-color: rgba(150, 158, 174, 0.72);
-}
-
 html.theme-light .platform-wii,
 html.theme-light .platform-nes,
 html.theme-light .platform-ds,
@@ -6207,38 +5794,24 @@ html.theme-light .platform-wiiu {
   border-color: rgba(24, 113, 174, 0.48);
 }
 
+html.theme-light .platform-n64,
 html.theme-light .platform-3ds,
 html.theme-light .platform-gbc {
   background: rgba(255, 90, 102, 0.2);
   border-color: rgba(202, 60, 75, 0.48);
 }
 
-html.theme-light .platform-n64 {
-  background: rgba(52, 154, 76, 0.3);
-  border-color: rgba(43, 135, 65, 0.5);
-}
-
 html.theme-light .platform-gamecube,
 html.theme-light .platform-snes,
+html.theme-light .platform-sega,
 html.theme-light .platform-gba {
   background: rgba(125, 80, 220, 0.19);
   border-color: rgba(101, 65, 182, 0.48);
 }
 
-html.theme-light .platform-sega,
-html.theme-light .platform-gamegear {
-  background: rgba(42, 112, 224, 0.2);
-  border-color: rgba(42, 112, 224, 0.5);
-}
-
 html.theme-light .platform-xbox {
   background: rgba(39, 153, 63, 0.18);
   border-color: rgba(31, 124, 51, 0.5);
-}
-
-html.theme-light .platform-xbox.platform-xbox-retro {
-  background: rgba(5, 7, 11, 0.82);
-  border-color: rgba(255, 255, 255, 0.3);
 }
 
 html.theme-light .platform-dreamcast {
@@ -6440,10 +6013,10 @@ html.theme-light .release-day {
 
 html.theme-light .release-day.today {
   color: #111827;
-  border-color: var(--accent-1, var(--accent));
+  border-color: rgba(31, 42, 61, 0.7);
   box-shadow:
-    inset 0 0 0 1px color-mix(in srgb, var(--accent-1, var(--accent)) 38%, #ffffff),
-    0 0 0 3px color-mix(in srgb, var(--accent-1, var(--accent)) 12%, transparent);
+    inset 0 0 0 1px rgba(255, 255, 255, 0.6),
+    0 0 0 3px rgba(31, 42, 61, 0.08);
 }
 
 html.theme-light .release-day.has-release {
@@ -6785,10 +6358,6 @@ html.theme-light .shelf-card-delete-action:hover {
 
 .theme-controls-row select {
   min-height: 42px;
-}
-
-.theme-editor-dialog .platform-logo-select {
-  --dropdown-control-height: 42px;
 }
 
 .theme-glow-row,
@@ -7268,17 +6837,6 @@ body.theme-kash .history-row.completed-trophy-card:hover {
   font-size: 12px;
 }
 
-.detail-trophy-tools .platform-logo-select {
-  --dropdown-control-height: 32px;
-  min-width: 128px;
-  width: auto;
-}
-
-.detail-trophy-tools .platform-logo-button {
-  font-size: 14px;
-  padding-left: 9px;
-}
-
 .detail-trophy-tools .direction-toggle {
   width: 32px;
   height: 32px;
@@ -7491,8 +7049,6 @@ body.theme-kash .history-row.completed-trophy-card:hover {
 }
 
 .platinum-filter-bar {
-  position: relative;
-  z-index: 30;
   display: grid;
   grid-template-columns: 110px 132px auto;
   align-items: end;
@@ -7500,29 +7056,19 @@ body.theme-kash .history-row.completed-trophy-card:hover {
   gap: 8px;
   width: 100%;
   margin: 6px 0 14px;
-  padding: 12px 10px;
+  padding: 7px 8px;
+  background: rgba(255, 255, 255, 0.055);
   border: 1px solid var(--line);
   border-radius: 8px;
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05);
-  background: var(--panel-dark);
-  box-shadow:
-    var(--shadow),
-    0 10px 24px rgba(0, 0, 0, 0.24);
-  backdrop-filter: blur(20px) saturate(1.15);
 }
 
 .platinum-year-select,
 .platinum-platform-select,
 .platinum-order-label {
-  position: relative;
   display: grid;
-  z-index: 1;
   min-width: 0;
   margin: 0;
-}
-
-.platinum-filter-bar .platform-logo-select.is-open {
-  z-index: 60;
 }
 
 .platinum-year-select select,
@@ -7531,19 +7077,6 @@ body.theme-kash .history-row.completed-trophy-card:hover {
   min-height: 34px;
   padding: 5px 34px 5px 9px;
   font-size: 12px;
-}
-
-.platinum-year-select .platform-logo-select,
-.platinum-platform-select .platform-logo-select,
-.platinum-order-control .platform-logo-select {
-  --dropdown-control-height: 34px;
-}
-
-.platinum-year-select .platform-logo-button,
-.platinum-platform-select .platform-logo-button,
-.platinum-order-control .platform-logo-button {
-  font-size: 14px;
-  padding-left: 9px;
 }
 
 .platinum-count-pill {
@@ -7578,8 +7111,6 @@ body.theme-kash .history-row.completed-trophy-card:hover {
 }
 
 .platinum-list {
-  position: relative;
-  z-index: 1;
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 10px;
