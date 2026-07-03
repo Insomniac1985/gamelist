@@ -156,15 +156,13 @@ function releaseMonthMarkup(monthDate, releases, today) {
   const totalDays = new Date(year, month + 1, 0).getDate();
   const leading = mondayWeekdayIndex(new Date(year, month, 1));
   const cells = [];
-  for (let index = 0; index < leading; index += 1) {
-    cells.push(`<span class="release-day empty" aria-hidden="true"></span>`);
-  }
   for (let day = 1; day <= totalDays; day += 1) {
     const date = localDateKey(new Date(year, month, day));
     const games = releases.get(date) || [];
     const preordered = games.some((game) => game.preorderStore);
     const platformTone = releasePlatformTone(games);
     const titles = games.map((game) => game.title).join("\n");
+    const gridColumn = day === 1 && leading ? ` style="grid-column: ${leading + 1}"` : "";
     cells.push(`
       <button
         class="release-day ${games.length ? "has-release" : ""} ${platformTone} ${preordered ? "has-preorder" : ""} ${date === today ? "today" : ""}"
@@ -172,6 +170,7 @@ function releaseMonthMarkup(monthDate, releases, today) {
         data-date="${escapeHtml(date)}"
         data-games="${escapeHtml(games.map((game) => game.title).join(" · "))}"
         title="${escapeHtml(titles)}"
+        ${gridColumn}
         ${games.length ? "" : "disabled"}
       >
         <span>${day}</span>
@@ -179,7 +178,7 @@ function releaseMonthMarkup(monthDate, releases, today) {
       </button>
     `);
   }
-  while (cells.length < 42) {
+  while ((cells.length + leading) < 42) {
     cells.push(`<span class="release-day empty" aria-hidden="true"></span>`);
   }
   return `
