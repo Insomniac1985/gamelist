@@ -3647,6 +3647,10 @@ body.theme-kash .game-card.stream-card.completed-trophy-card {
   color: var(--playstation);
 }
 
+.platform-ps5 .platform-label {
+  color: #ffffff;
+}
+
 .platform-wii .platform-label,
 .platform-nes .platform-label,
 .platform-ds .platform-label,
