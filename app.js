@@ -4677,7 +4677,7 @@ function platformDisplayName(platform) {
     GBC: "Game Boy Color",
     GB: "Game Boy",
     GC: "Nintendo Gamecube",
-    GBA: "Game Boy Advanced",
+    GBA: "Game Boy Advance",
     NES: "Nintendo Entertainment System",
     SNES: "Super Nintendo Entertainment System",
     N64: "Nintendo 64",
