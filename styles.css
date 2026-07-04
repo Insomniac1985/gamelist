@@ -5002,6 +5002,42 @@ body:not(.can-edit) .game-card:focus-within .edit-action {
   line-height: normal;
 }
 
+.completed-year-control .platform-logo-select {
+  --dropdown-control-height: 34px;
+  width: 96px;
+}
+
+.completed-year-control .platform-logo-button {
+  padding-left: 12px;
+  font-weight: 820;
+  text-transform: none;
+}
+
+.completed-year-control .platform-logo-button .platform-logo-choice {
+  transform: none;
+}
+
+.completed-year-control .platform-logo-button .platform-logo-choice,
+.completed-year-control .platform-logo-option .platform-logo-choice {
+  align-items: center;
+}
+
+.completed-year-control .platform-logo-button .platform-logo-choice-label,
+.completed-year-control .platform-logo-option .platform-logo-choice-label {
+  line-height: 1.2;
+}
+
+.completed-year-control .platform-logo-menu {
+  min-width: 100%;
+  max-width: 100%;
+}
+
+.completed-year-control .platform-logo-option {
+  height: 42px;
+  min-height: 42px;
+  padding: 0 8px 0 12px;
+}
+
 .completed-head-actions #completedCount {
   align-self: center;
   line-height: 34px;
