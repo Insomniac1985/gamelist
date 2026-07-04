@@ -12,6 +12,7 @@ const PLATINUM_VIEW_MODE_KEY = "gamelist:platinum-view-mode";
 const PLATINUM_META_CACHE_KEY = "gamelist:platinum-meta:v1";
 const PLATINUM_COVER_CACHE_KEY = "gamelist:platinum-covers:v1";
 const SETTINGS_KEY = "gamelist:settings:v1";
+const ACHIEVEMENT_CACHE_KEY = "gamelist:achievement-cache:v1";
 const KASH_TWITCH_URL = "https://www.twitch.tv/kashhoward";
 const DEFAULT_PAGE_ORDER = ["trophies", "calendar", "highlights", "search", "gamelist", "finished"];
 const LAYOUT_SECTION_KEYS = ["playing", ...DEFAULT_PAGE_ORDER, "latestFinished"];
@@ -1511,25 +1512,36 @@ function equalizeMobilePlayingCards() {
 
 async function refreshAchievements() {
   const psnUser = state.settings.psnUser || DEFAULT_SETTINGS.psnUser;
+  const cacheKey = achievementSettingsKey(state.settings);
+  const forceRefresh = state.settings.forceCacheOnLoad === true;
+  const cached = forceRefresh ? null : readAchievementCache(cacheKey);
+  if (cached) {
+    renderAchievements(cached.psn || {}, cached.steam || emptySteamActivity(), cached.xbox || emptyXboxActivity());
+    render();
+    return;
+  }
   const psnRequest = (async () => {
-    const response = await fetch(`/api/achievements?user=${encodeURIComponent(psnUser)}&schema=3`);
+    const params = achievementParams({ user: psnUser, schema: "3" }, forceRefresh);
+    const response = await fetch(`/api/achievements?${params}`);
     return response.json();
   })();
-  const [psnResult, steamResult, xboxResult] = await Promise.allSettled([psnRequest, fetchSteamActivity(), fetchXboxActivity()]);
+  const [psnResult, steamResult, xboxResult] = await Promise.allSettled([psnRequest, fetchSteamActivity(forceRefresh), fetchXboxActivity(forceRefresh)]);
   const psnData = psnResult.status === "fulfilled"
     ? psnResult.value
     : { user: psnUser, achievements: [], sourceUrl: "https://www.playstation.com/", source: "psn", authError: true };
+  const steamData = steamResult.status === "fulfilled" ? steamResult.value : emptySteamActivity();
+  const xboxData = xboxResult.status === "fulfilled" ? xboxResult.value : emptyXboxActivity();
+  writeAchievementCache(cacheKey, { psn: psnData, steam: steamData, xbox: xboxData });
   renderAchievements(
     psnData,
-    steamResult.status === "fulfilled" ? steamResult.value : emptySteamActivity(),
-    xboxResult.status === "fulfilled" ? xboxResult.value : emptyXboxActivity()
+    steamData,
+    xboxData
   );
   render();
 }
 
-async function fetchXboxActivity() {
-  const params = new URLSearchParams();
-  params.set("schema", "2");
+async function fetchXboxActivity(forceRefresh = state.settings.forceCacheOnLoad === true) {
+  const params = achievementParams({ schema: "2" }, forceRefresh);
   if (state.settings.microsoftUser) params.set("user", state.settings.microsoftUser);
   const response = await fetch(`/api/xbox-achievements?${params}`, { cache: "no-store" });
   const data = await response.json().catch(() => emptyXboxActivity());
@@ -1544,9 +1556,9 @@ function emptyXboxActivity() {
   return { achievements: [], games: [], completed: [], totalEarned: 0, sourceUrl: "" };
 }
 
-async function fetchSteamActivity() {
+async function fetchSteamActivity(forceRefresh = state.settings.forceCacheOnLoad === true) {
   const steamUser = state.settings.steamUser || "";
-  const steamGames = await fetchSteamAccountActivity(steamUser);
+  const steamGames = await fetchSteamAccountActivity(steamUser, forceRefresh);
   state.steamOwnedAppIds = new Set(steamGames.map((game) => game.appId));
   const results = steamGames.map((steamGame) => {
     const game = steamActivityGame(steamGame);
@@ -1600,11 +1612,11 @@ async function fetchSteamActivity() {
   };
 }
 
-async function fetchSteamAccountActivity(steamUser = state.settings.steamUser || "") {
+async function fetchSteamAccountActivity(steamUser = state.settings.steamUser || "", forceRefresh = state.settings.forceCacheOnLoad === true) {
   const games = [];
   let cursor = 0;
   for (let page = 0; page < 20 && cursor !== null; page += 1) {
-    const params = new URLSearchParams({ activity: "1", cursor: String(cursor), limit: "20", debug: "1" });
+    const params = achievementParams({ activity: "1", cursor: String(cursor), limit: "20", debug: "1" }, forceRefresh);
     if (steamUser) params.set("user", steamUser);
     const response = await fetch(`/api/steam-achievements?${params}`);
     const data = await response.json().catch(() => ({ games: [], error: "Invalid Steam activity response" }));
@@ -1622,6 +1634,37 @@ async function fetchSteamAccountActivity(steamUser = state.settings.steamUser ||
     cursor = data.nextCursor !== null && Number.isFinite(Number(data.nextCursor)) ? Number(data.nextCursor) : null;
   }
   return games;
+}
+
+function achievementParams(values = {}, forceRefresh = state.settings.forceCacheOnLoad === true) {
+  const params = new URLSearchParams(values);
+  if (forceRefresh) params.set("fresh", String(Date.now()));
+  return params;
+}
+
+function achievementSettingsKey(settings = state.settings) {
+  return [
+    cleanPsnUser(settings.psnUser) || DEFAULT_SETTINGS.psnUser,
+    cleanSteamUser(settings.steamUser),
+    cleanMicrosoftUser(settings.microsoftUser),
+  ].join("|");
+}
+
+function readAchievementCache(key) {
+  try {
+    const cached = JSON.parse(localStorage.getItem(ACHIEVEMENT_CACHE_KEY) || "{}");
+    return cached?.key === key && cached.data ? cached.data : null;
+  } catch {
+    return null;
+  }
+}
+
+function writeAchievementCache(key, data) {
+  try {
+    localStorage.setItem(ACHIEVEMENT_CACHE_KEY, JSON.stringify({ key, data, updatedAt: Date.now() }));
+  } catch {
+    // Achievement cache is only a load-time shortcut.
+  }
 }
 
 function steamActivityGame(steamGame) {
@@ -1665,7 +1708,7 @@ function emptySteamActivity() {
 }
 
 function steamAchievementParams(appId, steamUser = state.settings.steamUser || "") {
-  const params = new URLSearchParams({ appId, debug: "1" });
+  const params = achievementParams({ appId, debug: "1" });
   if (steamUser) params.set("user", steamUser);
   return params;
 }
@@ -3434,7 +3477,7 @@ async function renderDetailTrophies(game) {
   el.detailTrophyList.innerHTML = `<div class="detail-trophy-empty">Loading earned trophies...</div>`;
 
   try {
-    const params = new URLSearchParams({
+    const params = achievementParams({
       id: trophyId,
       service: psn.npServiceName || "trophy",
       user: state.settings.psnUser || "",
@@ -3750,7 +3793,7 @@ function xboxAchievementCacheKey(xboxGame) {
 }
 
 async function fetchXboxTitleAchievements(xboxGame) {
-  const params = new URLSearchParams({ titleId: xboxGame.titleId });
+  const params = achievementParams({ titleId: xboxGame.titleId });
   if (state.settings.microsoftUser) params.set("user", state.settings.microsoftUser);
   const response = await fetch(`/api/xbox-achievements?${params}`);
   const data = await response.json().catch(() => ({ error: "Invalid Xbox achievements response" }));
@@ -4068,7 +4111,7 @@ async function loadCardTrophies(game, psn) {
   if (!cacheKey || state.cardTrophies[cacheKey]) return;
   state.cardTrophies[cacheKey] = { loading: true, trophies: [] };
   try {
-    const params = new URLSearchParams({
+    const params = achievementParams({
       id: cacheKey,
       service: psn.npServiceName || "trophy",
       user: state.settings.psnUser || "",

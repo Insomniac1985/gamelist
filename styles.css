@@ -5764,6 +5764,8 @@ body.dialog-open .mobile-section-tabs {
 .settings-dev-links {
   display: flex;
   flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-start;
   gap: 8px;
 }
 
@@ -5772,6 +5774,11 @@ body.dialog-open .mobile-section-tabs {
   padding-inline: 12px;
   color: #ffffff;
   text-decoration: none;
+}
+
+.settings-dev-links .settings-dev-toggle {
+  min-height: 38px;
+  margin-left: 0;
 }
 
 .settings-sync-card .settings-visible-check {
