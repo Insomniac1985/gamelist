@@ -5002,6 +5002,10 @@ body:not(.can-edit) .game-card:focus-within .edit-action {
   line-height: normal;
 }
 
+.completed-year-control .platform-logo-choice span {
+  margin-bottom: 0;
+}
+
 .completed-head-actions #completedCount {
   align-self: center;
   line-height: 34px;
