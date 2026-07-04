@@ -53,6 +53,7 @@ const DEFAULT_SETTINGS = {
   storeSettingsVersion: 2,
   defaultOwner: "Xavi",
   shelfSync: true,
+  forceCacheOnLoad: false,
   language: "en",
 };
 const STATUS_OPTIONS = [
@@ -411,6 +412,7 @@ async function checkSiteVersion() {
       localStorage.setItem(VERSION_STORAGE_KEY, remoteVersion);
       return false;
     }
+    if (!forceCacheOnLoadEnabled()) return false;
     if (fromPullNavigation) {
       clearSiteCaches().catch(() => {});
       localStorage.setItem(VERSION_STORAGE_KEY, remoteVersion);
@@ -420,6 +422,14 @@ async function checkSiteVersion() {
     localStorage.setItem(VERSION_STORAGE_KEY, remoteVersion);
     window.location.reload();
     return true;
+  } catch {
+    return false;
+  }
+}
+
+function forceCacheOnLoadEnabled() {
+  try {
+    return JSON.parse(localStorage.getItem(SETTINGS_KEY) || "{}")?.forceCacheOnLoad === true;
   } catch {
     return false;
   }
@@ -888,6 +898,7 @@ function normalizeSettings(settings = {}) {
     storeSettingsVersion: 2,
     defaultOwner: cleanOwnerLabel(settings.defaultOwner) || DEFAULT_SETTINGS.defaultOwner,
     shelfSync: settings.shelfSync !== false,
+    forceCacheOnLoad: settings.forceCacheOnLoad === true,
   };
 }
 
@@ -1182,7 +1193,7 @@ function settingsCsvDataItem(kind) {
 }
 
 function settingsDevFeaturesItem(kind) {
-  return [
+  const links = [
     { href: "/api/gamelist-mass-add", label: "Mass add" },
     { href: "/api/gamelist-metadata", label: "Fill metadata" },
   ].map((link) => `
@@ -1190,6 +1201,12 @@ function settingsDevFeaturesItem(kind) {
       ${escapeHtml(tt(link.label))}
     </a>
   `).join("");
+  return `${links}
+    <label class="check-filter toggle-check settings-visible-check settings-dev-toggle" title="${escapeHtml(tt("Force cache on page load"))}">
+      <input type="checkbox" id="settingsForceCacheOnLoad" ${state.settings.forceCacheOnLoad ? "checked" : ""}>
+      <span>${escapeHtml(tt("Force cache on page load"))}</span>
+    </label>
+  `;
 }
 
 const CSV_NUMERIC_FIELDS = new Set(["order", "lengthHours", "replayCount", "numericPrice", "price", "estimatedValue"]);
@@ -1351,6 +1368,7 @@ async function saveSettingsFromForm(event) {
     stores,
     defaultOwner: el.settingsDefaultOwner.value,
     shelfSync: Boolean(el.settingsLayoutList.querySelector("[data-shelf-sync]")?.checked),
+    forceCacheOnLoad: document.querySelector("#settingsForceCacheOnLoad")?.checked === true,
   });
   persistLocalSettings();
   await persistCloud();
