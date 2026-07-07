@@ -501,6 +501,12 @@ By default, `/api/shelf-metadata` only fills missing fields and leaves existing 
 - Store price endpoint: `/api/prices`
 - Shelf collection price endpoint: `/api/collection-price`
 - Cover proxy endpoint: `/api/cover`
+- Gamelist games by list endpoint: `/api/gamelist-games-by-list`
+- Completed Gamelist games by year endpoint: `/api/completed-games-by-year`
+- Shelf games and platforms endpoint: `/api/shelf-games-platforms`
+- PSN trophies and platinums by year endpoint: `/api/psn-trophies-by-year`
+- Steam achievements and completed games by year endpoint: `/api/steam-trophies-by-year`
+- Xbox achievements, gamerscore, and completed games by year endpoint: `/api/xbox-trophies-by-year`
 - PSN trophy endpoint: `/api/trophies`
 - PSN activity endpoint: `/api/achievements`
 - Steam achievements endpoint: `/api/steam-achievements`
