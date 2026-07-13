@@ -632,7 +632,7 @@ function bindEvents() {
     state.gotyYear = el.gotyYearSelect.value || currentGameOfTheYear();
     renderGameOfTheYear();
   });
-  el.gotyEditButton?.addEventListener("click", () => openGameOfTheYearDialog(currentGameOfTheYear()));
+  el.gotyEditButton?.addEventListener("click", () => openGameOfTheYearDialog(currentGameOfTheYear(), { force: true }));
   el.gotySaveButton?.addEventListener("click", downloadGameOfTheYearImage);
   el.gotyCloseButton?.addEventListener("click", () => el.gotyDialog.close());
   el.gotyDialog?.addEventListener("click", (event) => {
@@ -1577,8 +1577,8 @@ function maybePromptGameOfTheYear() {
   window.setTimeout(() => showGameOfTheYearCallout(year), 300);
 }
 
-function openGameOfTheYearDialog(year = currentGameOfTheYear()) {
-  if (!state.canEdit || year !== currentGameOfTheYear()) return;
+function openGameOfTheYearDialog(year = currentGameOfTheYear(), options = {}) {
+  if (!options.force && (!state.canEdit || year !== currentGameOfTheYear())) return;
   const games = completedGamesForYear(year);
   if (!games.length) {
     showToast("No finished games found for this year.", "error");
@@ -1659,7 +1659,7 @@ function showGameOfTheYearCallout(year) {
     event.preventDefault();
     event.stopPropagation();
     callout.classList.remove("visible");
-    if (action === "choose") openGameOfTheYearDialog(currentGameOfTheYear());
+    if (action === "choose") openGameOfTheYearDialog(currentGameOfTheYear(), { force: true });
   };
   requestAnimationFrame(() => callout.classList.add("visible"));
 }

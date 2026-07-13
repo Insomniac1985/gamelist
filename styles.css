@@ -771,6 +771,29 @@ html.theme-font-pokemon {
   --dropdown-control-height: 36px;
 }
 
+.goty-year-select .platform-logo-button,
+.completed-year-control .platform-logo-button {
+  display: flex;
+  align-items: center;
+  line-height: 1;
+}
+
+.goty-year-select .platform-logo-button .platform-logo-choice,
+.completed-year-control .platform-logo-button .platform-logo-choice {
+  height: auto;
+  min-height: 0;
+  align-items: center;
+  transform: none;
+}
+
+.goty-year-select .platform-logo-button .platform-logo-choice-label,
+.completed-year-control .platform-logo-button .platform-logo-choice-label {
+  display: block;
+  line-height: 1;
+  margin: 0;
+  transform: translateY(-1px);
+}
+
 .goty-save-button,
 .goty-edit-button {
   min-height: 36px;
@@ -5386,20 +5409,6 @@ body:not(.can-edit) .game-card:focus-within .edit-action {
   min-height: 34px;
   padding: 0 34px 0 9px;
   line-height: 1;
-}
-
-.completed-year-control .platform-logo-button .platform-logo-choice {
-  height: auto;
-  min-height: 0;
-  align-items: center;
-  transform: none;
-}
-
-.completed-year-control .platform-logo-button .platform-logo-choice-label {
-  display: block;
-  line-height: 1;
-  margin: 0;
-  transform: translateY(-1px);
 }
 
 .completed-head-actions .platform-logo-choice span {
