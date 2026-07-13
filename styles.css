@@ -822,7 +822,7 @@ html.theme-font-pokemon {
   position: relative;
   display: grid;
   grid-template-rows: auto minmax(0, 1fr);
-  gap: 7px;
+  gap: 4px;
   min-width: 0;
   overflow: visible;
   padding: 0;
@@ -848,7 +848,7 @@ html.theme-font-pokemon {
   height: 100%;
   overflow: hidden;
   aspect-ratio: 2 / 3;
-  border-radius: 12px;
+  border-radius: 14px;
   box-shadow: 0 20px 44px rgba(0, 0, 0, 0.28);
 }
 
@@ -861,14 +861,19 @@ html.theme-font-pokemon {
 }
 
 .goty-category {
-  display: block;
-  min-height: 30px;
-  color: var(--accent);
-  font-size: 11px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 32px;
+  padding: 6px 7px;
+  color: #fff;
+  font-size: 10px;
   font-weight: 920;
   line-height: 1.05;
-  text-align: left;
+  text-align: center;
   text-transform: uppercase;
+  background: var(--accent);
+  border-radius: 8px;
   overflow: hidden;
   text-overflow: ellipsis;
 }
