@@ -946,6 +946,12 @@ html.theme-font-pokemon {
 
 .goty-dialog .goty-modal {
   width: min(920px, calc(100vw - 28px));
+  max-width: calc(100vw - 28px);
+  overflow-x: hidden;
+}
+
+.goty-dialog[open] {
+  overflow-x: hidden;
 }
 
 .goty-dialog-copy {
@@ -973,9 +979,10 @@ html.theme-font-pokemon {
 }
 
 .goty-picker-head span {
-  color: var(--muted);
-  font-size: 11px;
+  color: var(--accent);
+  font-size: 14px;
   font-weight: 900;
+  letter-spacing: 0;
   text-transform: uppercase;
 }
 
@@ -989,14 +996,46 @@ html.theme-font-pokemon {
   white-space: nowrap;
 }
 
+.goty-choice-strip {
+  display: grid;
+  grid-template-columns: 34px minmax(0, 1fr) 34px;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  max-width: 100%;
+}
+
+.goty-choice-nav {
+  width: 34px;
+  min-width: 34px;
+  height: 46px;
+  min-height: 46px;
+  align-self: center;
+}
+
+.goty-choice-nav[hidden] {
+  display: none;
+}
+
+.goty-choice-strip.no-overflow {
+  grid-template-columns: minmax(0, 1fr);
+}
+
 .goty-choice-list {
   display: grid;
   grid-auto-flow: column;
   grid-auto-columns: 92px;
   gap: 8px;
-  overflow-x: auto;
-  padding: 2px 2px 8px;
+  min-width: 0;
+  max-width: 100%;
+  overflow-x: hidden;
+  padding: 2px;
   scroll-snap-type: x proximity;
+  scrollbar-width: none;
+}
+
+.goty-choice-list::-webkit-scrollbar {
+  display: none;
 }
 
 .goty-choice-card {
@@ -1004,13 +1043,14 @@ html.theme-font-pokemon {
   display: grid;
   gap: 6px;
   min-width: 0;
-  padding: 0;
+  padding: 6px;
   color: #fff;
-  background: transparent;
-  border: 0;
+  background: rgba(255, 255, 255, 0.025);
+  border: 1px solid transparent;
+  border-radius: 8px;
   cursor: pointer;
   scroll-snap-align: start;
-  transition: transform 160ms ease, filter 160ms ease;
+  transition: transform 160ms ease, filter 160ms ease, background 160ms ease, border-color 160ms ease, box-shadow 160ms ease;
 }
 
 .goty-choice-card:hover,
@@ -1035,9 +1075,11 @@ html.theme-font-pokemon {
 }
 
 .goty-choice-title {
+  position: relative;
   display: grid;
   gap: 4px;
   min-height: 48px;
+  min-width: 0;
   color: var(--text);
   font-size: 10px;
   line-height: 1.1;
@@ -1045,17 +1087,40 @@ html.theme-font-pokemon {
 }
 
 .goty-choice-title strong {
-  display: -webkit-box;
+  display: block;
+  min-width: 0;
   overflow: hidden;
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: 2;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.goty-choice-title strong:hover::after,
+.goty-choice-title strong:focus-visible::after {
+  content: attr(data-full-title);
+  position: absolute;
+  left: 0;
+  bottom: calc(100% + 6px);
+  z-index: 20;
+  width: max-content;
+  max-width: min(260px, calc(100vw - 48px));
+  padding: 7px 9px;
+  color: var(--text);
+  background: var(--panel-strong);
+  border: 1px solid color-mix(in srgb, var(--accent) 36%, var(--line));
+  border-radius: 7px;
+  box-shadow: var(--shadow);
+  white-space: normal;
+}
+
+.goty-choice-card.is-selected {
+  background: color-mix(in srgb, var(--accent) 24%, rgba(255, 255, 255, 0.06));
+  border-color: color-mix(in srgb, var(--accent) 58%, #fff);
+  box-shadow: 0 16px 30px color-mix(in srgb, var(--accent) 18%, transparent);
 }
 
 .goty-choice-card.is-selected .goty-choice-cover {
   border-color: color-mix(in srgb, var(--accent) 72%, #fff);
-  box-shadow:
-    0 0 0 2px color-mix(in srgb, var(--accent) 34%, transparent),
-    0 16px 30px color-mix(in srgb, var(--accent) 18%, transparent);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent) 34%, transparent);
 }
 
 .goty-callout {

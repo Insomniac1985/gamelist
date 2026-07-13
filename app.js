@@ -1587,26 +1587,9 @@ function openGameOfTheYearDialog(year = currentGameOfTheYear(), options = {}) {
   state.gotyYear = String(year);
   el.gotyForm.dataset.gotyYear = String(year);
   const entry = state.settings.gameOfTheYear?.[year] || {};
-  const picks = entry.picks || {};
+  const picks = { ...(entry.picks || {}) };
   el.gotyDialogTitle.textContent = `Games of the Year ${year}`;
-  el.gotyPickerGrid.innerHTML = GAME_OF_YEAR_CATEGORIES.map(([key, label]) => `
-    <section class="goty-picker-field" data-goty-category="${escapeHtml(key)}">
-      <div class="goty-picker-head">
-        <span>${escapeHtml(label)}</span>
-        <strong>${escapeHtml(gameById(picks[key])?.title || "Choose one")}</strong>
-      </div>
-      <div class="goty-choice-list">
-        ${games.map((game) => gameOfTheYearChoiceCard(game, picks[key] === game.id)).join("")}
-      </div>
-    </section>
-  `).join("");
-  el.gotyPickerGrid.querySelectorAll(".goty-choice-card").forEach((button) => {
-    button.addEventListener("click", () => {
-      const field = button.closest(".goty-picker-field");
-      field.querySelectorAll(".goty-choice-card").forEach((item) => item.classList.toggle("is-selected", item === button));
-      field.querySelector(".goty-picker-head strong").textContent = button.dataset.title || "Choose one";
-    });
-  });
+  renderGameOfTheYearPicker(games, picks);
   try {
     if (!el.gotyDialog.open) el.gotyDialog.showModal();
   } catch (error) {
@@ -1620,6 +1603,72 @@ function openGameOfTheYearDialog(year = currentGameOfTheYear(), options = {}) {
   }
   syncScrollLock();
   return true;
+}
+
+function renderGameOfTheYearPicker(games, picks) {
+  const pickedIds = new Set(Object.values(picks).filter(Boolean));
+  el.gotyPickerGrid.innerHTML = GAME_OF_YEAR_CATEGORIES.map(([key, label]) => {
+    const selectedId = picks[key] || "";
+    const pickedElsewhere = new Set([...pickedIds].filter((id) => id !== selectedId));
+    const choices = [
+      ...games.filter((game) => game.id === selectedId),
+      ...games.filter((game) => game.id !== selectedId && !pickedElsewhere.has(game.id)),
+    ];
+    return `
+    <section class="goty-picker-field" data-goty-category="${escapeHtml(key)}">
+      <div class="goty-picker-head">
+        <span>${escapeHtml(label)}</span>
+        <strong>${escapeHtml(gameById(picks[key])?.title || "Choose one")}</strong>
+      </div>
+      <div class="goty-choice-strip">
+        <button class="direction-toggle goty-choice-nav" type="button" data-goty-scroll="-1" title="Previous games" aria-label="Previous games">${gotyPickerArrowIcon("left")}</button>
+        <div class="goty-choice-list">
+          ${choices.map((game) => gameOfTheYearChoiceCard(game, selectedId === game.id)).join("")}
+        </div>
+        <button class="direction-toggle goty-choice-nav" type="button" data-goty-scroll="1" title="Next games" aria-label="Next games">${gotyPickerArrowIcon("right")}</button>
+      </div>
+    </section>
+  `;
+  }).join("");
+  el.gotyPickerGrid.querySelectorAll(".goty-choice-card").forEach((button) => {
+    button.addEventListener("click", () => {
+      const field = button.closest(".goty-picker-field");
+      picks[field.dataset.gotyCategory] = button.dataset.gameId || "";
+      renderGameOfTheYearPicker(games, picks);
+    });
+  });
+  el.gotyPickerGrid.querySelectorAll(".goty-choice-nav").forEach((button) => {
+    button.addEventListener("click", () => {
+      const field = button.closest(".goty-picker-field");
+      const list = field?.querySelector(".goty-choice-list");
+      const card = list?.querySelector(".goty-choice-card");
+      if (!list) return;
+      const gap = Number.parseFloat(getComputedStyle(list).columnGap) || 0;
+      const step = card ? card.getBoundingClientRect().width + gap : list.clientWidth;
+      list.scrollBy({ left: Number(button.dataset.gotyScroll || 1) * step, behavior: "smooth" });
+      window.setTimeout(() => updateGameOfTheYearPickerNav(field), 220);
+    });
+  });
+  el.gotyPickerGrid.querySelectorAll(".goty-picker-field").forEach((field) => {
+    const list = field.querySelector(".goty-choice-list");
+    list?.addEventListener("scroll", () => updateGameOfTheYearPickerNav(field), { passive: true });
+    updateGameOfTheYearPickerNav(field);
+  });
+}
+
+function updateGameOfTheYearPickerNav(field) {
+  if (!field) return;
+  const list = field.querySelector(".goty-choice-list");
+  const prev = field.querySelector("[data-goty-scroll='-1']");
+  const next = field.querySelector("[data-goty-scroll='1']");
+  if (!list || !prev || !next) return;
+  const maxScroll = Math.max(0, list.scrollWidth - list.clientWidth - 1);
+  const hasOverflow = maxScroll > 2;
+  field.querySelector(".goty-choice-strip")?.classList.toggle("no-overflow", !hasOverflow);
+  prev.hidden = !hasOverflow;
+  next.hidden = !hasOverflow;
+  prev.disabled = list.scrollLeft <= 2;
+  next.disabled = list.scrollLeft >= maxScroll;
 }
 
 async function saveGameOfTheYearFromForm(event) {
@@ -1681,9 +1730,14 @@ function gameOfTheYearChoiceCard(game, selected) {
   return `
     <button class="goty-choice-card ${selected ? "is-selected" : ""}" type="button" data-game-id="${escapeHtml(game.id)}" data-title="${escapeHtml(game.title)}">
       <span class="goty-choice-cover"><img src="${escapeHtml(cover)}" alt="" loading="lazy" decoding="async"></span>
-      <span class="goty-choice-title"><strong>${escapeHtml(game.title)}</strong>${platformBadge(game.platform)}</span>
+      <span class="goty-choice-title"><strong data-full-title="${escapeHtml(game.title)}">${escapeHtml(game.title)}</strong>${platformBadge(game.platform)}</span>
     </button>
   `;
+}
+
+function gotyPickerArrowIcon(direction) {
+  const path = direction === "left" ? "M15 18l-6-6 6-6" : "M9 6l6 6-6 6";
+  return `<svg class="sort-arrow-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="${path}"></path></svg>`;
 }
 
 function gameOfTheYearHoverInfo(game, className) {
