@@ -21,6 +21,15 @@ const CACHE_HOUR_STORAGE_KEY = "gamelist:cache-hour";
 const PULL_NAVIGATION_KEY = "gamelist:pull-navigation";
 const STORE_OPTIONS = ["Amazon", "eBay", "GAME.es", "Xtralife", "Retro Island NY", "GameStop", "Walmart"];
 const MAX_PRICE_STORES = 5;
+const GAME_OF_YEAR_CATEGORIES = [
+  ["singleplayer", "FAVORITE SINGLEPLAYER GAME"],
+  ["multiplayer", "FAVORITE MULTIPLAYER GAME"],
+  ["fun", "MOST FUN GAME"],
+  ["soundtrack", "FAVORITE SOUNDTRACK"],
+  ["indie", "FAVORITE INDIE"],
+  ["surprise", "BIGGEST SURPRISE"],
+  ["disappointment", "BIGGEST DISAPPOINTMENT"],
+];
 const THEMES = {
   shabii: {
     name: "Shabii",
@@ -56,6 +65,8 @@ const DEFAULT_SETTINGS = {
   defaultOwner: "Xavi",
   shelfSync: true,
   forceCacheOnLoad: false,
+  gotyAlwaysShow: false,
+  gameOfTheYear: {},
   language: "en",
 };
 const STATUS_OPTIONS = [
@@ -173,6 +184,8 @@ const state = {
   mobileSwipeStart: null,
   completedYear: "all",
   completedVisiblePages: 1,
+  gotyYear: String(new Date().getFullYear()),
+  gotyPromptShown: false,
   historyYear: String(new Date().getFullYear()),
   platinumYear: "all",
   platinumPlatform: "all",
@@ -204,6 +217,12 @@ const el = {
   playingFinishedList: document.querySelector(".playing-finished-list"),
   playingPrevButton: document.querySelector("#playingPrevButton"),
   playingNextButton: document.querySelector("#playingNextButton"),
+  gotySection: document.querySelector("#gotySection"),
+  gotyTitle: document.querySelector("#gotyTitle"),
+  gotyYearSelect: document.querySelector("#gotyYearSelect"),
+  gotySaveButton: document.querySelector("#gotySaveButton"),
+  gotyEditButton: document.querySelector("#gotyEditButton"),
+  gotyGrid: document.querySelector("#gotyGrid"),
   achievementSection: document.querySelector("#achievementSection"),
   calendarSection: document.querySelector(".calendar-section"),
   highlightsSection: document.querySelector(".highlights-section"),
@@ -239,6 +258,11 @@ const el = {
   historyCloseButton: document.querySelector("#historyCloseButton"),
   historyYearTabs: document.querySelector("#historyYearTabs"),
   historyList: document.querySelector("#historyList"),
+  gotyDialog: document.querySelector("#gotyDialog"),
+  gotyForm: document.querySelector("#gotyForm"),
+  gotyDialogTitle: document.querySelector("#gotyDialogTitle"),
+  gotyCloseButton: document.querySelector("#gotyCloseButton"),
+  gotyPickerGrid: document.querySelector("#gotyPickerGrid"),
   platinumDialog: document.querySelector("#platinumDialog"),
   platinumCloseButton: document.querySelector("#platinumCloseButton"),
   platinumTitle: document.querySelector("#platinumTitle"),
@@ -604,6 +628,18 @@ function bindEvents() {
     state.completedVisiblePages += 1;
     renderCompleted();
   });
+  el.gotyYearSelect?.addEventListener("change", () => {
+    state.gotyYear = el.gotyYearSelect.value || currentGameOfTheYear();
+    renderGameOfTheYear();
+  });
+  el.gotyEditButton?.addEventListener("click", () => openGameOfTheYearDialog(currentGameOfTheYear()));
+  el.gotySaveButton?.addEventListener("click", downloadGameOfTheYearImage);
+  el.gotyCloseButton?.addEventListener("click", () => el.gotyDialog.close());
+  el.gotyDialog?.addEventListener("click", (event) => {
+    if (event.target === el.gotyDialog) el.gotyDialog.close();
+  });
+  el.gotyDialog?.addEventListener("close", syncScrollLock);
+  el.gotyForm?.addEventListener("submit", saveGameOfTheYearFromForm);
   el.footerVersion?.addEventListener("click", clearSiteCachesAndReload);
   el.scrollTopButton.addEventListener("click", () => {
     if (document.body.classList.contains("dialog-open")) return;
@@ -899,6 +935,7 @@ function normalizeSettings(settings = {}) {
     : DEFAULT_SETTINGS.stores;
   const stores = selectedStores;
   const hiddenSections = migratedHidden.filter((item) => LAYOUT_SECTION_KEYS.includes(item));
+  const gameOfTheYear = normalizeGameOfTheYear(settings.gameOfTheYear);
   return {
     ...DEFAULT_SETTINGS,
     ...settings,
@@ -918,7 +955,28 @@ function normalizeSettings(settings = {}) {
     defaultOwner: cleanOwnerLabel(settings.defaultOwner) || DEFAULT_SETTINGS.defaultOwner,
     shelfSync: settings.shelfSync !== false,
     forceCacheOnLoad: settings.forceCacheOnLoad === true,
+    gotyAlwaysShow: settings.gotyAlwaysShow === true,
+    gameOfTheYear,
   };
+}
+
+function normalizeGameOfTheYear(value = {}) {
+  if (!value || typeof value !== "object" || Array.isArray(value)) return {};
+  return Object.fromEntries(Object.entries(value).map(([year, entry]) => {
+    const cleanYear = String(year || "").match(/\b(19|20)\d{2}\b/)?.[0];
+    if (!cleanYear || !entry || typeof entry !== "object") return null;
+    const picks = entry.picks && typeof entry.picks === "object" ? entry.picks : entry;
+    const cleanPicks = Object.fromEntries(GAME_OF_YEAR_CATEGORIES.map(([key]) => [key, String(picks[key] || "")]));
+    return [cleanYear, {
+      picks: cleanPicks,
+      published: gameOfTheYearComplete(cleanPicks),
+      updatedAt: String(entry.updatedAt || ""),
+    }];
+  }).filter(Boolean));
+}
+
+function gameOfTheYearComplete(picks = {}) {
+  return GAME_OF_YEAR_CATEGORIES.every(([key]) => Boolean(picks[key]));
 }
 
 async function persistCloud() {
@@ -955,6 +1013,7 @@ function render() {
   el.sortFilter.value = state.filters.sort;
   renderFilters();
   renderPlayingSection();
+  renderGameOfTheYear();
   renderStats();
   renderReleaseCalendar();
   syncMobileSectionToResults();
@@ -977,6 +1036,7 @@ function render() {
   el.platformFilter.classList.toggle("is-active", state.filters.platform !== "all");
   el.tagFilter.classList.toggle("is-active", state.filters.tag !== "all");
   updateScrollTopButton();
+  maybePromptGameOfTheYear();
 }
 
 function currentLanguage() {
@@ -1016,6 +1076,7 @@ function applyPageOrder() {
   const hasPlayingGames = activeGames().some((game) => game.playing);
   const hasFinishedGames = state.games.some((game) => !game.deletedAt && game.completedAt);
   el.playingSection.style.order = "0";
+  if (el.gotySection) el.gotySection.style.order = "0";
   el.achievementSection.style.order = String(orderMap.get("trophies") || 1);
   el.calendarSection.style.order = String(orderMap.get("calendar") || 2);
   el.highlightsSection.style.order = String(orderMap.get("highlights") || 3);
@@ -1225,6 +1286,10 @@ function settingsDevFeaturesItem(kind) {
       <input type="checkbox" id="settingsForceCacheOnLoad" ${state.settings.forceCacheOnLoad ? "checked" : ""}>
       <span>${escapeHtml(tt("Force cache on page load"))}</span>
     </label>
+    <label class="check-filter toggle-check settings-visible-check settings-dev-toggle" title="${escapeHtml(tt("Always show Game of the Year"))}">
+      <input type="checkbox" id="settingsGotyAlwaysShow" ${state.settings.gotyAlwaysShow ? "checked" : ""}>
+      <span>${escapeHtml(tt("Always show Game of the Year"))}</span>
+    </label>
   `;
 }
 
@@ -1388,6 +1453,7 @@ async function saveSettingsFromForm(event) {
     defaultOwner: el.settingsDefaultOwner.value,
     shelfSync: Boolean(el.settingsLayoutList.querySelector("[data-shelf-sync]")?.checked),
     forceCacheOnLoad: document.querySelector("#settingsForceCacheOnLoad")?.checked === true,
+    gotyAlwaysShow: document.querySelector("#settingsGotyAlwaysShow")?.checked === true,
   });
   persistLocalSettings();
   await persistCloud();
@@ -1407,7 +1473,7 @@ function renderModeToggle(button, mode) {
 }
 
 function syncScrollLock() {
-  document.body.classList.toggle("dialog-open", el.dialog.open || el.detailDialog.open || el.historyDialog.open || el.releaseDialog.open || el.platinumDialog.open || Boolean(el.settingsDialog?.open) || Boolean(el.authDialog?.open));
+  document.body.classList.toggle("dialog-open", el.dialog.open || el.detailDialog.open || el.historyDialog.open || el.releaseDialog.open || el.platinumDialog.open || Boolean(el.gotyDialog?.open) || Boolean(el.settingsDialog?.open) || Boolean(el.authDialog?.open));
   if (document.body.classList.contains("dialog-open")) pauseAllPlayingTrailers();
   else scheduleFocusedPlayingTrailerUpdate();
   updateScrollTopButton();
@@ -1464,6 +1530,270 @@ function renderPlayingFinished() {
     });
   });
   requestAnimationFrame(updatePlayingFinishedEdges);
+}
+
+function renderGameOfTheYear() {
+  if (!el.gotySection) return;
+  const years = gameOfTheYearYears();
+  if (!gameOfTheYearVisible() || !years.length) {
+    el.gotySection.hidden = true;
+    return;
+  }
+  if (!years.includes(state.gotyYear)) state.gotyYear = years.includes(currentGameOfTheYear()) ? currentGameOfTheYear() : years[0];
+  const year = state.gotyYear;
+  const entry = state.settings.gameOfTheYear?.[year] || {};
+  const picks = entry.picks || {};
+  el.gotySection.hidden = false;
+  el.gotyTitle.textContent = `Games of the Year ${year}`;
+  el.gotyYearSelect.innerHTML = years.map((item) => `<option value="${escapeHtml(item)}">${escapeHtml(item)}</option>`).join("");
+  el.gotyYearSelect.value = year;
+  syncStyledSelect(el.gotyYearSelect, { activeValue: null });
+  const canEditCurrent = state.canEdit && year === currentGameOfTheYear();
+  el.gotyEditButton.hidden = !canEditCurrent;
+  el.gotySaveButton.hidden = !gameOfTheYearComplete(picks);
+  el.gotyGrid.innerHTML = GAME_OF_YEAR_CATEGORIES.map(([key, label]) => {
+    const game = gameById(picks[key]);
+    if (!game) return "";
+    const cover = coverUrl(game.cover || "") || platformLogo(game.platform || "PS5");
+    const details = [
+      completedOwnerBadges(game),
+      completedBadges(game, { includePsn: false }),
+      game.completedAt ? `<span class="history-pill history-date-pill"><small>Finished</small><strong>${escapeHtml(formatLongDate(game.completedAt))}</strong></span>` : "",
+      completedDurationLine(game),
+    ].join("");
+    return `
+      <button class="goty-card ${ownerCardClass(game)}" type="button" data-id="${escapeHtml(game.id)}" aria-label="${escapeHtml(`${label}: ${game.title}`)}">
+        <span class="goty-category">${escapeHtml(label)}</span>
+        <img src="${escapeHtml(cover)}" alt="" loading="lazy" decoding="async">
+        <span class="goty-overlay">
+          <strong>${escapeHtml(game.title)}</strong>
+          <span class="goty-meta">${details}</span>
+        </span>
+      </button>
+    `;
+  }).join("");
+  el.gotyGrid.querySelectorAll(".goty-card").forEach((button) => {
+    button.addEventListener("click", () => openDetail(button.dataset.id));
+  });
+}
+
+function maybePromptGameOfTheYear() {
+  if (!state.canEdit || state.gotyPromptShown || !gameOfTheYearVisible()) return;
+  const year = currentGameOfTheYear();
+  if (gameOfTheYearComplete(state.settings.gameOfTheYear?.[year]?.picks || {})) return;
+  if (!completedGamesForYear(year).length) return;
+  state.gotyPromptShown = true;
+  window.setTimeout(() => {
+    if (state.canEdit && !el.gotyDialog.open) openGameOfTheYearDialog(year);
+  }, 300);
+}
+
+function openGameOfTheYearDialog(year = currentGameOfTheYear()) {
+  if (!state.canEdit || year !== currentGameOfTheYear()) return;
+  const games = completedGamesForYear(year);
+  const entry = state.settings.gameOfTheYear?.[year] || {};
+  const picks = entry.picks || {};
+  el.gotyDialogTitle.textContent = `Games of the Year ${year}`;
+  el.gotyPickerGrid.innerHTML = GAME_OF_YEAR_CATEGORIES.map(([key, label]) => `
+    <label class="goty-picker-field">
+      <span>${escapeHtml(label)}</span>
+      <select data-goty-category="${escapeHtml(key)}" required>
+        <option value="">Choose a finished game</option>
+        ${games.map((game) => `<option value="${escapeHtml(game.id)}" ${picks[key] === game.id ? "selected" : ""}>${escapeHtml(game.title)}</option>`).join("")}
+      </select>
+    </label>
+  `).join("");
+  syncStyledSelects(el.gotyDialog, { activeValue: null });
+  el.gotyDialog.showModal();
+  syncScrollLock();
+}
+
+async function saveGameOfTheYearFromForm(event) {
+  event.preventDefault();
+  const year = currentGameOfTheYear();
+  const picks = Object.fromEntries([...el.gotyPickerGrid.querySelectorAll("[data-goty-category]")]
+    .map((select) => [select.dataset.gotyCategory, select.value]));
+  if (!gameOfTheYearComplete(picks)) {
+    showToast("Choose a game for every category.", "error");
+    return;
+  }
+  state.settings = normalizeSettings({
+    ...state.settings,
+    gameOfTheYear: {
+      ...(state.settings.gameOfTheYear || {}),
+      [year]: { picks, published: true, updatedAt: new Date().toISOString() },
+    },
+  });
+  state.gotyYear = year;
+  persistLocalSettings();
+  await persistCloud();
+  el.gotyDialog.close();
+  render();
+  showToast(`Published Games of the Year ${year}.`);
+}
+
+function gameOfTheYearVisible() {
+  return state.settings.gotyAlwaysShow || isGameOfTheYearSeason();
+}
+
+function isGameOfTheYearSeason(date = new Date()) {
+  return date.getMonth() === 11;
+}
+
+function currentGameOfTheYear() {
+  return String(new Date().getFullYear());
+}
+
+function gameOfTheYearYears() {
+  return Object.entries(state.settings.gameOfTheYear || {})
+    .filter(([, entry]) => gameOfTheYearComplete(entry?.picks || {}))
+    .map(([year]) => year)
+    .sort((a, b) => b.localeCompare(a));
+}
+
+function gameById(id) {
+  return state.games.find((game) => game.id === id && !game.deletedAt) || null;
+}
+
+async function downloadGameOfTheYearImage() {
+  const year = state.gotyYear;
+  const picks = state.settings.gameOfTheYear?.[year]?.picks || {};
+  if (!gameOfTheYearComplete(picks)) return;
+  const owner = cleanOwnerLabel(state.settings.defaultOwner) || DEFAULT_SETTINGS.defaultOwner;
+  const rows = GAME_OF_YEAR_CATEGORIES.map(([key, label]) => ({ label, game: gameById(picks[key]) })).filter((item) => item.game);
+  const canvas = document.createElement("canvas");
+  canvas.width = 1400;
+  canvas.height = 1800;
+  const ctx = canvas.getContext("2d");
+  const theme = normalizeThemeSettings(state.settings);
+  const logo = await loadCanvasImage(document.querySelector(".brand-mark")?.src || THEMES.shabii.icon);
+  await drawGameOfTheYearImage(ctx, { owner, year, rows, logo, theme, withCovers: true });
+  try {
+    await downloadCanvas(canvas, `games-of-the-year-${year}.png`);
+  } catch {
+    canvas.width = canvas.width;
+    await drawGameOfTheYearImage(ctx, { owner, year, rows, logo, theme, withCovers: false });
+    await downloadCanvas(canvas, `games-of-the-year-${year}.png`);
+  }
+}
+
+async function drawGameOfTheYearImage(ctx, { owner, year, rows, logo, theme, withCovers }) {
+  const { width, height } = ctx.canvas;
+  ctx.clearRect(0, 0, width, height);
+  const main = theme.mainColorReset ? DEFAULT_SETTINGS.theme === "kash" ? THEMES.kash.themeColor : THEMES.shabii.themeColor : theme.mainColor;
+  ctx.fillStyle = "#101116";
+  ctx.fillRect(0, 0, width, height);
+  const gradient = ctx.createLinearGradient(0, 0, width, height);
+  gradient.addColorStop(0, canvasRgba(main, 0.34));
+  gradient.addColorStop(0.55, "#101116");
+  gradient.addColorStop(1, canvasRgba(theme.accentColor || "#79f2ce", 0.27));
+  ctx.fillStyle = gradient;
+  ctx.fillRect(0, 0, width, height);
+  if (logo) {
+    ctx.drawImage(logo, 82, 76, 112, 112);
+  }
+  ctx.fillStyle = "#f6f7fb";
+  ctx.font = "900 58px Arial";
+  wrapCanvasText(ctx, `${owner}'s Games of the Year ${year}`, 220, 106, 1000, 66);
+  ctx.font = "700 24px Arial";
+  ctx.fillStyle = "#a6adbd";
+  ctx.fillText("Gamelist", 224, 190);
+  const cardW = 380;
+  const cardH = 360;
+  const gap = 36;
+  const startX = 82;
+  const startY = 270;
+  for (let index = 0; index < rows.length; index += 1) {
+    const col = index % 3;
+    const row = Math.floor(index / 3);
+    const x = startX + col * (cardW + gap);
+    const y = startY + row * (cardH + gap);
+    drawRoundedRect(ctx, x, y, cardW, cardH, 18, "rgba(255,255,255,.08)");
+    const cover = withCovers ? await loadCanvasImage(coverUrl(rows[index].game.cover || "")) : null;
+    if (cover) ctx.drawImage(cover, x + 18, y + 72, 124, 172);
+    else drawRoundedRect(ctx, x + 18, y + 72, 124, 172, 12, "rgba(255,255,255,.12)");
+    ctx.fillStyle = main;
+    ctx.font = "900 20px Arial";
+    wrapCanvasText(ctx, rows[index].label, x + 18, y + 34, cardW - 36, 24);
+    ctx.fillStyle = "#f6f7fb";
+    ctx.font = "900 30px Arial";
+    wrapCanvasText(ctx, rows[index].game.title || "", x + 160, y + 86, cardW - 184, 34, 4);
+    ctx.fillStyle = "#a6adbd";
+    ctx.font = "700 19px Arial";
+    wrapCanvasText(ctx, rows[index].game.platform || "Finished game", x + 160, y + 244, cardW - 184, 24, 2);
+  }
+}
+
+function drawRoundedRect(ctx, x, y, width, height, radius, fill) {
+  ctx.beginPath();
+  if (typeof ctx.roundRect === "function") ctx.roundRect(x, y, width, height, radius);
+  else {
+    ctx.moveTo(x + radius, y);
+    ctx.lineTo(x + width - radius, y);
+    ctx.quadraticCurveTo(x + width, y, x + width, y + radius);
+    ctx.lineTo(x + width, y + height - radius);
+    ctx.quadraticCurveTo(x + width, y + height, x + width - radius, y + height);
+    ctx.lineTo(x + radius, y + height);
+    ctx.quadraticCurveTo(x, y + height, x, y + height - radius);
+    ctx.lineTo(x, y + radius);
+    ctx.quadraticCurveTo(x, y, x + radius, y);
+  }
+  ctx.fillStyle = fill;
+  ctx.fill();
+}
+
+function canvasRgba(hex, alpha) {
+  const value = String(hex || "").replace("#", "");
+  const number = /^[0-9a-fA-F]{6}$/.test(value) ? Number.parseInt(value, 16) : 0xff0039;
+  return `rgba(${(number >> 16) & 255}, ${(number >> 8) & 255}, ${number & 255}, ${alpha})`;
+}
+
+function wrapCanvasText(ctx, text, x, y, maxWidth, lineHeight, maxLines = 2) {
+  const words = String(text || "").split(/\s+/);
+  let line = "";
+  let lines = 0;
+  for (const word of words) {
+    const test = line ? `${line} ${word}` : word;
+    if (ctx.measureText(test).width > maxWidth && line) {
+      ctx.fillText(line, x, y + lines * lineHeight);
+      line = word;
+      lines += 1;
+      if (lines >= maxLines) return;
+    } else line = test;
+  }
+  if (line && lines < maxLines) ctx.fillText(line, x, y + lines * lineHeight);
+}
+
+function loadCanvasImage(src) {
+  return new Promise((resolve) => {
+    if (!src) return resolve(null);
+    const image = new Image();
+    image.crossOrigin = "anonymous";
+    image.onload = () => resolve(image);
+    image.onerror = () => resolve(null);
+    image.src = src;
+  });
+}
+
+function downloadCanvas(canvas, filename) {
+  return new Promise((resolve, reject) => {
+    try {
+      canvas.toBlob((blob) => {
+        if (!blob) return reject(new Error("Canvas export failed"));
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = filename;
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+        window.setTimeout(() => URL.revokeObjectURL(url), 1000);
+        resolve();
+      }, "image/png");
+    } catch (error) {
+      reject(error);
+    }
+  });
 }
 
 function scrollToSearchArea() {

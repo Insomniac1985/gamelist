@@ -220,6 +220,23 @@
     <main class="shell">
       <section class="playing-section" id="playingSection" hidden></section>
 
+      <section class="goty-section" id="gotySection" hidden>
+        <div class="column-head">
+          <div>
+            <h2 id="gotyTitle">Games of the Year</h2>
+          </div>
+          <div class="goty-head-actions">
+            <label class="goty-year-select">
+              <span>Year</span>
+              <select id="gotyYearSelect" aria-label="Game of the year picks year"></select>
+            </label>
+            <button class="ghost-button goty-save-button" id="gotySaveButton" type="button">Save</button>
+            <button class="ghost-button goty-edit-button" id="gotyEditButton" type="button" hidden>Edit</button>
+          </div>
+        </div>
+        <div class="goty-grid" id="gotyGrid"></div>
+      </section>
+
       <section class="achievement-section" id="achievementSection">
         <div class="column-head">
           <div>
@@ -662,6 +679,23 @@
         <div class="year-tabs" id="historyYearTabs"></div>
         <div class="history-list" id="historyList"></div>
       </article>
+    </dialog>
+
+    <dialog id="gotyDialog" class="goty-dialog">
+      <form method="dialog" class="goty-modal glass" id="gotyForm">
+        <div class="modal-head">
+          <div>
+            <p class="eyebrow">Game of the year</p>
+            <h2 id="gotyDialogTitle">Pick your favorites</h2>
+          </div>
+          <div class="modal-head-actions">
+            <button class="primary-button modal-head-save" type="submit">Publish</button>
+            <button class="icon-button" id="gotyCloseButton" type="button" title="Close">×</button>
+          </div>
+        </div>
+        <p class="goty-dialog-copy">Choose one finished game for every category.</p>
+        <div class="goty-picker-grid" id="gotyPickerGrid"></div>
+      </form>
     </dialog>
 
     <dialog id="platinumDialog" class="platinum-dialog">
