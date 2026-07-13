@@ -1043,12 +1043,7 @@ html.theme-font-pokemon {
 }
 
 .goty-choice-nav {
-  width: 34px;
-  min-width: 34px;
-  height: 34px;
-  min-height: 34px;
   align-self: center;
-  border-radius: 6px;
 }
 
 .goty-choice-nav[hidden] {

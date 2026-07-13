@@ -1624,8 +1624,8 @@ function renderGameOfTheYearPicker(games, picks) {
       <div class="goty-picker-head">
         <span>${escapeHtml(label)}</span>
         <span class="goty-picker-navs">
-          <button class="direction-toggle goty-choice-nav" type="button" data-goty-scroll="-1" title="Previous games" aria-label="Previous games">${gotyPickerArrowIcon("left")}</button>
-          <button class="direction-toggle goty-choice-nav" type="button" data-goty-scroll="1" title="Next games" aria-label="Next games">${gotyPickerArrowIcon("right")}</button>
+          <button class="icon-button playing-slider-button goty-choice-nav" type="button" data-goty-scroll="-1" title="Previous games" aria-label="Previous games">${gotyPickerArrowIcon("left")}</button>
+          <button class="icon-button playing-slider-button goty-choice-nav" type="button" data-goty-scroll="1" title="Next games" aria-label="Next games">${gotyPickerArrowIcon("right")}</button>
         </span>
         <strong>${escapeHtml(gameById(picks[key])?.title || "Choose one")}</strong>
       </div>
