@@ -907,6 +907,18 @@ html.theme-font-pokemon {
   transition: opacity 160ms ease, transform 160ms ease;
 }
 
+.goty-card-edge-right .goty-hover-info {
+  left: auto;
+  right: 0;
+  width: min(100%, 220px);
+}
+
+.goty-card-edge-left .goty-hover-info {
+  left: 0;
+  right: auto;
+  width: min(100%, 220px);
+}
+
 .goty-card:hover img,
 .goty-card:focus-visible img {
   filter: saturate(1.08) brightness(0.94);
