@@ -1578,11 +1578,11 @@ function maybePromptGameOfTheYear() {
 }
 
 function openGameOfTheYearDialog(year = currentGameOfTheYear(), options = {}) {
-  if (!options.force && (!state.canEdit || year !== currentGameOfTheYear())) return;
+  if (!options.force && (!state.canEdit || year !== currentGameOfTheYear())) return false;
   const games = completedGamesForYear(year);
   if (!games.length) {
     showToast("No finished games found for this year.", "error");
-    return;
+    return false;
   }
   state.gotyYear = String(year);
   el.gotyForm.dataset.gotyYear = String(year);
@@ -1608,11 +1608,18 @@ function openGameOfTheYearDialog(year = currentGameOfTheYear(), options = {}) {
     });
   });
   try {
-    el.gotyDialog.showModal();
-  } catch {
-    el.gotyDialog.show();
+    if (!el.gotyDialog.open) el.gotyDialog.showModal();
+  } catch (error) {
+    try {
+      if (!el.gotyDialog.open) el.gotyDialog.show();
+    } catch (fallbackError) {
+      console.error("Unable to open Games of the Year dialog", fallbackError || error);
+      showToast("Could not open Game of the Year picks.", "error");
+      return false;
+    }
   }
   syncScrollLock();
+  return true;
 }
 
 async function saveGameOfTheYearFromForm(event) {
@@ -1655,15 +1662,17 @@ function showGameOfTheYearCallout(year) {
     <button class="primary-button" type="button" data-goty-callout-action="choose">Choose now</button>
     <button class="icon-button" type="button" data-goty-callout-action="dismiss" title="Dismiss" aria-label="Dismiss">×</button>
   `;
-  callout.onclick = (event) => {
-    const target = event.target instanceof Element ? event.target : event.target?.parentElement;
-    const action = target?.closest("[data-goty-callout-action]")?.dataset.gotyCalloutAction;
-    if (!action) return;
+  callout.querySelector("[data-goty-callout-action='choose']")?.addEventListener("click", (event) => {
+    event.preventDefault();
+    event.stopPropagation();
+    const opened = openGameOfTheYearDialog(year, { force: true });
+    if (opened) callout.classList.remove("visible");
+  });
+  callout.querySelector("[data-goty-callout-action='dismiss']")?.addEventListener("click", (event) => {
     event.preventDefault();
     event.stopPropagation();
     callout.classList.remove("visible");
-    if (action === "choose") openGameOfTheYearDialog(year, { force: true });
-  };
+  });
   requestAnimationFrame(() => callout.classList.add("visible"));
 }
 
