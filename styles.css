@@ -5433,10 +5433,10 @@ body:not(.can-edit) .game-card:focus-within .edit-action {
 }
 
 .completed-year-control .platform-logo-button .platform-logo-choice-label {
-  height: 34px;
-  line-height: 34px;
+  height: auto;
+  line-height: 1;
   margin: 0;
-  transform: none;
+  transform: translateY(2px);
 }
 
 .completed-head-actions #completedCount {
