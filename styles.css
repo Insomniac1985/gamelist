@@ -5033,6 +5033,20 @@ body:not(.can-edit) .game-card:focus-within .edit-action {
   line-height: 34px;
 }
 
+.completed-year-control .platform-logo-select {
+  --dropdown-control-height: 34px;
+  width: 88px;
+  flex: 0 0 88px;
+}
+
+.completed-year-control .platform-logo-button {
+  padding: 0 34px 0 9px;
+}
+
+.completed-year-control .platform-logo-button .platform-logo-choice {
+  transform: none;
+}
+
 .completed-head-actions .platform-logo-choice span {
   margin-bottom: 0;
 }
