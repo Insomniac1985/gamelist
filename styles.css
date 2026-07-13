@@ -5411,8 +5411,23 @@ body:not(.can-edit) .game-card:focus-within .edit-action {
   line-height: 1;
 }
 
+.completed-year-control .platform-logo-button .platform-logo-choice {
+  display: flex;
+  align-items: center;
+  height: 34px;
+  min-height: 34px;
+  transform: none;
+}
+
 .completed-head-actions .platform-logo-choice span {
   margin-bottom: 0;
+}
+
+.completed-year-control .platform-logo-button .platform-logo-choice-label {
+  height: 34px;
+  line-height: 34px;
+  margin: 0;
+  transform: none;
 }
 
 .completed-head-actions #completedCount {
