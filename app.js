@@ -1584,7 +1584,7 @@ function renderGameOfTheYear() {
     const cover = coverDisplayUrl(game.cover || "") || platformLogo(game.platform || "PS5");
     const edgeClass = index >= GAME_OF_YEAR_CATEGORIES.length - 2 ? "goty-card-edge-right" : index === 0 ? "goty-card-edge-left" : "";
     return `
-      <button class="goty-card ${ownerCardClass(game)} ${edgeClass}" type="button" data-id="${escapeHtml(game.id)}" aria-label="${escapeHtml(`${label}: ${game.title}`)}">
+      <button class="goty-card ${edgeClass}" type="button" data-id="${escapeHtml(game.id)}" aria-label="${escapeHtml(`${label}: ${game.title}`)}">
         <span class="goty-category">${escapeHtml(label)}</span>
         <span class="goty-cover"><img src="${escapeHtml(cover)}" alt="" loading="lazy" decoding="async"></span>
         ${gameOfTheYearHoverInfo(game, "goty-hover-info")}
