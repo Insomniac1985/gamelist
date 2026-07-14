@@ -233,6 +233,7 @@
               <select id="gotyYearSelect" aria-label="Game of the year picks year"></select>
             </label>
             <button class="ghost-button goty-save-button" id="gotySaveButton" type="button">Save</button>
+            <button class="ghost-button goty-stats-button" id="gotyStatsButton" type="button" title="Stats" aria-label="Game of the Year stats" hidden></button>
             <button class="ghost-button goty-edit-button" id="gotyEditButton" type="button" hidden>Edit</button>
           </div>
         </div>
@@ -352,6 +353,7 @@
                 <option value="all">All</option>
               </select>
             </label>
+            <button class="icon-button completed-stats-button" id="completedStatsButton" type="button" title="Stats" aria-label="Finished games stats"></button>
             <span id="completedCount"></span>
           </div>
         </div>
@@ -712,6 +714,19 @@
           <button class="primary-button goty-publish-button" type="submit">Save</button>
         </div>
       </form>
+    </dialog>
+
+    <dialog id="finishedStatsDialog" class="finished-stats-dialog">
+      <article class="finished-stats-modal glass">
+        <div class="modal-head">
+          <div>
+            <p class="eyebrow">Finished games</p>
+            <h2 id="finishedStatsTitle">Stats</h2>
+          </div>
+          <button class="icon-button" id="finishedStatsCloseButton" type="button" title="Close">×</button>
+        </div>
+        <div class="finished-stats-body" id="finishedStatsBody"></div>
+      </article>
     </dialog>
 
     <dialog id="platinumDialog" class="platinum-dialog">

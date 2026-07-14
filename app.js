@@ -233,6 +233,7 @@ const el = {
   gotyYearSelect: document.querySelector("#gotyYearSelect"),
   gotyYearCount: document.querySelector("#gotyYearCount"),
   gotySaveButton: document.querySelector("#gotySaveButton"),
+  gotyStatsButton: document.querySelector("#gotyStatsButton"),
   gotyEditButton: document.querySelector("#gotyEditButton"),
   gotyResetButton: document.querySelector("#gotyResetButton"),
   gotyGrid: document.querySelector("#gotyGrid"),
@@ -257,6 +258,7 @@ const el = {
   completedCount: document.querySelector("#completedCount"),
   completedYearControl: document.querySelector("#completedYearControl"),
   completedYearFilter: document.querySelector("#completedYearFilter"),
+  completedStatsButton: document.querySelector("#completedStatsButton"),
   completedMoreButton: document.querySelector("#completedMoreButton"),
   footerDataUpdate: document.querySelector("#footerDataUpdate"),
   footerVersion: document.querySelector("#footerVersion"),
@@ -278,6 +280,10 @@ const el = {
   gotyPickerOrder: document.querySelector("#gotyPickerOrder"),
   gotyPickerGrid: document.querySelector("#gotyPickerGrid"),
   platinumDialog: document.querySelector("#platinumDialog"),
+  finishedStatsDialog: document.querySelector("#finishedStatsDialog"),
+  finishedStatsCloseButton: document.querySelector("#finishedStatsCloseButton"),
+  finishedStatsTitle: document.querySelector("#finishedStatsTitle"),
+  finishedStatsBody: document.querySelector("#finishedStatsBody"),
   platinumCloseButton: document.querySelector("#platinumCloseButton"),
   platinumTitle: document.querySelector("#platinumTitle"),
   platinumCount: document.querySelector("#platinumCount"),
@@ -570,6 +576,11 @@ function bindEvents() {
     if (event.target === el.platinumDialog) el.platinumDialog.close();
   });
   el.platinumDialog.addEventListener("close", syncScrollLock);
+  el.finishedStatsCloseButton?.addEventListener("click", () => el.finishedStatsDialog.close());
+  el.finishedStatsDialog?.addEventListener("click", (event) => {
+    if (event.target === el.finishedStatsDialog) el.finishedStatsDialog.close();
+  });
+  el.finishedStatsDialog?.addEventListener("close", syncScrollLock);
   window.addEventListener("scroll", () => {
     updateScrollTopButton();
     scheduleFocusedPlayingTrailerUpdate();
@@ -643,6 +654,7 @@ function bindEvents() {
     render();
   });
   el.completedYearFilter?.addEventListener("change", handleCompletedYearChange);
+  el.completedStatsButton?.addEventListener("click", () => openFinishedStatsDialog(state.completedYear || "all"));
   el.completedMoreButton?.addEventListener("click", () => {
     state.completedVisiblePages += 1;
     renderCompleted();
@@ -653,6 +665,7 @@ function bindEvents() {
   });
   el.gotyEditButton?.addEventListener("click", () => openGameOfTheYearDialog(currentGameOfTheYear(), { force: true }));
   el.gotySaveButton?.addEventListener("click", downloadGameOfTheYearImage);
+  el.gotyStatsButton?.addEventListener("click", () => openFinishedStatsDialog(state.gotyYear || currentGameOfTheYear()));
   el.gotyResetButton?.addEventListener("click", resetGameOfTheYearFromForm);
   el.gotyPickerOrder?.addEventListener("change", () => {
     state.gotyPickerOrder = el.gotyPickerOrder.value || gotyOrderForDefault(state.settings.defaultOrder);
@@ -1529,7 +1542,7 @@ function renderModeToggle(button, mode) {
 }
 
 function syncScrollLock() {
-  document.body.classList.toggle("dialog-open", el.dialog.open || el.detailDialog.open || el.historyDialog.open || el.releaseDialog.open || el.platinumDialog.open || Boolean(el.gotyDialog?.open) || Boolean(el.settingsDialog?.open) || Boolean(el.authDialog?.open));
+  document.body.classList.toggle("dialog-open", el.dialog.open || el.detailDialog.open || el.historyDialog.open || el.releaseDialog.open || el.platinumDialog.open || Boolean(el.finishedStatsDialog?.open) || Boolean(el.gotyDialog?.open) || Boolean(el.settingsDialog?.open) || Boolean(el.authDialog?.open));
   if (document.body.classList.contains("dialog-open")) pauseAllPlayingTrailers();
   else scheduleFocusedPlayingTrailerUpdate();
   updateScrollTopButton();
@@ -1618,6 +1631,12 @@ function renderGameOfTheYear() {
   el.gotySaveButton.innerHTML = downloadIcon();
   el.gotySaveButton.title = "Download";
   el.gotySaveButton.setAttribute("aria-label", "Download");
+  if (el.gotyStatsButton) {
+    el.gotyStatsButton.hidden = !completedGamesForYear(year).length;
+    el.gotyStatsButton.innerHTML = graphIcon();
+    el.gotyStatsButton.title = "Stats";
+    el.gotyStatsButton.setAttribute("aria-label", `Stats for ${year}`);
+  }
   el.gotyGrid.innerHTML = GAME_OF_YEAR_CATEGORIES.map(([key, label], index) => {
     const game = gameById(picks[key]);
     if (!game) return "";
@@ -2853,9 +2872,13 @@ function renderAchievements(data = {}, steamData = state.steamActivity || emptyS
   scheduleMobilePaintRefresh();
 }
 
-function openPlatinumDialog() {
+function openPlatinumDialog(year = null) {
   const platinums = platinumItems();
-  const years = platinumYears(platinums);
+  const requestedYear = year == null ? "" : String(year);
+  const years = requestedYear && requestedYear !== "all"
+    ? unique([requestedYear, ...platinumYears(platinums)]).sort((a, b) => b.localeCompare(a))
+    : platinumYears(platinums);
+  if (year != null) state.platinumYear = String(year);
   if (state.platinumYear !== "all" && !years.includes(state.platinumYear)) state.platinumYear = "all";
   renderPlatinumDialog(platinums, years);
   el.platinumDialog.showModal();
@@ -3918,6 +3941,10 @@ function renderCompleted() {
   state.completedYear = selectedYear;
   if (state.completedYear !== "all" && !years.includes(state.completedYear)) state.completedYear = "all";
   renderCompletedYearFilter(years);
+  if (el.completedStatsButton) {
+    el.completedStatsButton.hidden = !filteredGames({ applyPreorder: false }).some((game) => game.completedAt);
+    el.completedStatsButton.innerHTML = graphIcon();
+  }
   const filteredFinishedGames = filteredGames({ applyPreorder: false }).filter((game) => game.completedAt);
   const visibleFinishedGames = filteredFinishedGames.filter((game) => state.completedYear === "all" || completionYear(game) === state.completedYear);
   const games = sortedCompletedGames(visibleFinishedGames);
@@ -4019,6 +4046,151 @@ function completedCountForSelectedYear() {
   return state.games.filter((game) => !game.deletedAt
     && game.completedAt
     && (state.completedYear === "all" || completionYear(game) === state.completedYear)).length;
+}
+
+function openFinishedStatsDialog(year = "all") {
+  const scope = String(year || "all");
+  const games = finishedStatsGames(scope);
+  const completed = finishedStatsCompleted(scope);
+  el.finishedStatsTitle.textContent = scope === "all" ? "Finished stats" : `Finished stats ${scope}`;
+  el.finishedStatsBody.innerHTML = finishedStatsMarkup(scope, games, completed);
+  el.finishedStatsBody.querySelector("[data-stats-action='completed']")?.addEventListener("click", () => {
+    el.finishedStatsDialog.close();
+    openPlatinumDialog(scope);
+  });
+  el.finishedStatsDialog.showModal();
+  syncScrollLock();
+}
+
+function finishedStatsGames(year = "all") {
+  return state.games
+    .filter((game) => !game.deletedAt && game.completedAt && (year === "all" || completionYear(game) === String(year)));
+}
+
+function finishedStatsCompleted(year = "all") {
+  return platinumItems()
+    .filter((item) => year === "all" || platinumYearFor(item) === String(year));
+}
+
+function finishedStatsMarkup(year, games, completed) {
+  const platforms = countBy(games, (game) => canonicalPlatform(game.platform) || game.platform || "Unknown");
+  const categories = countBy(games, gameStatsCategory);
+  const months = countBy(games, (game) => monthShortName(game.completedAt));
+  const streamed = games.filter((game) => game.stream);
+  const otherOwnerGames = games.filter((game) => visibleOwnerTags(game).length);
+  const cards = [
+    statsKpiCard("Finished games", games.length, statsBreakdownList(platforms)),
+    statsKpiCard("Completed games", completed.length, statsBreakdownList(countBy(completed, (item) => platinumPlatformLabel(platinumPlatformFor(item)) || "Unknown")), { action: "completed" }),
+    streamed.length ? statsKpiCard("Streamed games", streamed.length, statsGameList(streamed)) : "",
+    otherOwnerGames.length ? statsKpiCard("Other owners", otherOwnerGames.length, statsOwnerBreakdown(otherOwnerGames)) : "",
+  ].filter(Boolean).join("");
+  return `
+    <div class="finished-stats-kpis">${cards}</div>
+    <div class="finished-stats-charts">
+      ${statsDonutCard("Platforms", platforms, "platform")}
+      ${statsDonutCard("Game categories", categories, "category")}
+    </div>
+    <section class="finished-stats-months">
+      <h3>By month</h3>
+      <div>${statsMonthBars(months, games.length)}</div>
+    </section>
+    ${games.length ? "" : `<div class="empty">No finished games${year === "all" ? "" : ` in ${escapeHtml(year)}`}.</div>`}
+  `;
+}
+
+function statsKpiCard(label, value, detail = "", options = {}) {
+  return `
+    <button class="finished-stats-kpi ${options.action ? "is-clickable" : ""}" type="button" ${options.action ? `data-stats-action="${escapeHtml(options.action)}"` : ""}>
+      <strong>${escapeHtml(String(value))}</strong>
+      <span>${escapeHtml(label)}</span>
+      ${detail ? `<span class="finished-stats-breakdown">${detail}</span>` : ""}
+    </button>
+  `;
+}
+
+function statsDonutCard(title, counts, tone) {
+  const total = counts.reduce((sum, item) => sum + item.count, 0);
+  const segments = donutSegments(counts, tone);
+  return `
+    <article class="finished-stats-chart">
+      <div class="finished-stats-donut ${tone === "category" ? "is-category" : "is-platform"}" style="--donut:${escapeHtml(segments)}"><span>${escapeHtml(String(total))}</span></div>
+      <h3>${escapeHtml(title)}</h3>
+      <div class="finished-stats-breakdown">${statsBreakdownList(counts)}</div>
+    </article>
+  `;
+}
+
+function donutSegments(counts, tone) {
+  const total = counts.reduce((sum, item) => sum + item.count, 0);
+  if (!total) return "rgba(255,255,255,.08) 0 360deg";
+  let cursor = 0;
+  return counts.map((item, index) => {
+    const start = cursor;
+    cursor += (item.count / total) * 360;
+    const color = tone === "category" ? categoryStatsColor(index) : platformStatsColor(item.label, index);
+    return `${color} ${start.toFixed(2)}deg ${cursor.toFixed(2)}deg`;
+  }).join(", ");
+}
+
+function statsMonthBars(counts, total) {
+  const order = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+  const byLabel = new Map(counts.map((item) => [item.label, item.count]));
+  const max = Math.max(1, ...counts.map((item) => item.count));
+  return order.map((label) => {
+    const count = byLabel.get(label) || 0;
+    return `<div class="finished-stats-month" title="${escapeHtml(`${label}: ${count}`)}"><span>${escapeHtml(label)}</span><em style="--month:${count / max}"></em><strong>${count}</strong></div>`;
+  }).join("") + `<small>${total} total</small>`;
+}
+
+function statsBreakdownList(counts) {
+  return counts.length
+    ? counts.map((item) => `<span><b>${escapeHtml(item.label)}</b><em>${item.count}</em></span>`).join("")
+    : `<span><b>None</b><em>0</em></span>`;
+}
+
+function statsGameList(games) {
+  return games.slice(0, 12).map((game) => `<span><b>${escapeHtml(game.title)}</b><em>${escapeHtml(canonicalPlatform(game.platform) || game.platform || "")}</em></span>`).join("")
+    + (games.length > 12 ? `<span><b>More</b><em>+${games.length - 12}</em></span>` : "");
+}
+
+function statsOwnerBreakdown(games) {
+  return statsBreakdownList(countBy(games.flatMap((game) => visibleOwnerTags(game).map((owner) => ({ owner }))), (item) => item.owner));
+}
+
+function countBy(items, getter) {
+  const map = new Map();
+  items.forEach((item) => {
+    const label = String(getter(item) || "Unknown").trim() || "Unknown";
+    map.set(label, (map.get(label) || 0) + 1);
+  });
+  return [...map.entries()]
+    .map(([label, count]) => ({ label, count }))
+    .sort((a, b) => b.count - a.count || stringCompare(a.label, b.label));
+}
+
+function gameStatsCategory(game) {
+  return [...(game.genres || []), ...(game.tags || []), canonicalStatus(game.section)]
+    .map((value) => String(value || "").trim())
+    .find((value) => value && normalizeTag(value) !== "game") || "Uncategorized";
+}
+
+function monthShortName(value) {
+  const date = new Date(`${dateOnly(value)}T00:00:00`);
+  return Number.isNaN(date.getTime()) ? "Unknown" : new Intl.DateTimeFormat("en-US", { month: "short" }).format(date);
+}
+
+function categoryStatsColor(index) {
+  const shade = Math.max(76, 202 - index * 22);
+  return `rgb(${shade} ${shade} ${shade})`;
+}
+
+function platformStatsColor(platform, index = 0) {
+  const value = normalizeSearchText(platform);
+  if (value.includes("playstation") || /\bps/.test(value)) return "#4d7cff";
+  if (value.includes("xbox")) return "#62d470";
+  if (value.includes("switch") || value.includes("nintendo")) return "#ff365f";
+  if (value.includes("steam") || value.includes("pc")) return "#66c0f4";
+  return ["#aa8bff", "#f2d06b", "#ff9ed2", "#7cc7ff"][index % 4];
 }
 
 function sortedCompletedGames(games) {
@@ -5501,6 +5673,17 @@ function downloadIcon() {
       <path d="M12 2.5v13.5"></path>
       <path d="M6.5 10.5l5.5 5.5 5.5-5.5"></path>
       <path d="M4.5 20.5h15"></path>
+    </svg>
+  `;
+}
+
+function graphIcon() {
+  return `
+    <svg class="graph-icon" viewBox="0 0 24 24" aria-hidden="true">
+      <path d="M4 19h16"></path>
+      <path d="M7 16V9"></path>
+      <path d="M12 16V5"></path>
+      <path d="M17 16v-4"></path>
     </svg>
   `;
 }
