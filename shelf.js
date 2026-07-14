@@ -1551,8 +1551,10 @@ async function persistShelf() {
     const data = await response.json();
     state.updatedAt = data.updatedAt || new Date().toISOString();
     localStorage.removeItem(LOCAL_DRAFT_KEY);
+    return true;
   } catch {
     state.updatedAt = new Date().toISOString();
+    return false;
   }
 }
 
@@ -1985,7 +1987,11 @@ function handleShowcaseSelectedClick(event) {
 async function saveShowcase(event) {
   event.preventDefault();
   state.favoriteGameIds = normalizeFavoriteGameIds(state.showcaseDraftIds);
-  await persistShelf();
+  const saved = await persistShelf();
+  if (!saved) {
+    showToast("Showcase could not be saved. Please try again.", "error");
+    return;
+  }
   renderChrome();
   renderFavorites();
   closeDialog(el.showcaseDialog);

@@ -2554,6 +2554,7 @@ body.dialog-open .scroll-top-button {
 
 .release-calendar-actions .icon-button:hover,
 #closeDialogButton:hover,
+#detailClose:hover,
 #detailCloseButton:hover,
 #historyCloseButton:hover,
 #releaseCloseButton:hover,
@@ -2583,6 +2584,7 @@ body.dialog-open .scroll-top-button {
 .backlog-action:hover,
 .complete-action:hover,
 .delete-action:hover,
+.game-card .trailer-toggle:hover,
 .restore-action:hover {
   color: #ffffff;
   border-color: color-mix(in srgb, var(--accent) 58%, transparent);
@@ -7314,6 +7316,7 @@ html.theme-light .settings-theme-edit-button span {
 
 html.theme-light .release-calendar-actions .icon-button:hover,
 html.theme-light #closeDialogButton:hover,
+html.theme-light #detailClose:hover,
 html.theme-light #detailCloseButton:hover,
 html.theme-light #historyCloseButton:hover,
 html.theme-light #releaseCloseButton:hover,
