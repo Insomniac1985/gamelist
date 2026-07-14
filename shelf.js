@@ -41,6 +41,15 @@ const COUNTRY_OPTIONS = [
   ["Italy", "Italy"], ["Japan", "Japan"], ["Spain", "Spain"], ["Taiwan", "Taiwan"], ["United Kingdom", "United Kingdom"],
   ["United States of America", "United States"], ["World", "World"],
 ];
+const WEEK_START_OPTIONS = [
+  ["monday", "Monday"],
+  ["tuesday", "Tuesday"],
+  ["wednesday", "Wednesday"],
+  ["thursday", "Thursday"],
+  ["friday", "Friday"],
+  ["saturday", "Saturday"],
+  ["sunday", "Sunday"],
+];
 
 const state = {
   sourceGames: [],
@@ -395,6 +404,7 @@ function renderReleaseCalendar() {
   mountReleaseCalendar(el.releaseCalendar, {
     games: state.gamelistGames,
     offset: state.releaseCalendarOffset,
+    weekStart: normalizeWeekStart(state.gamelistSettings.weekStart),
     onShift: (value) => {
       state.releaseCalendarOffset += value;
       renderReleaseCalendar();
@@ -1636,13 +1646,15 @@ function renderLayoutEditor() {
   el.layoutList.className = "settings-layout";
   el.layoutList.innerHTML = [
     ...state.layout.order.map((key, index) => settingsLayoutCard(key, index)),
-    `<div class="settings-preference-separator" role="presentation"></div><div class="settings-preference-row">${themeSettingsButton(state.gamelistSettings, escapeHtml)}${settingsSelectCard("order", tt("Default order"), "shelfSettingsDefaultOrder", [{ value: "added", label: tt("Last added") }, { value: "title", label: tt("Name") }, { value: "platform", label: tt("Platform") }, { value: "region", label: tt("Region") }, { value: "value", label: tt("Value") }])}${settingsShelfSyncCard()}${settingsShelfPricesCard()}</div>`,
+    `<div class="settings-preference-separator" role="presentation"></div><div class="settings-preference-row">${themeSettingsButton(state.gamelistSettings, escapeHtml)}${settingsSelectCard("order", tt("Default order"), "shelfSettingsDefaultOrder", [{ value: "added", label: tt("Last added") }, { value: "title", label: tt("Name") }, { value: "platform", label: tt("Platform") }, { value: "region", label: tt("Region") }, { value: "value", label: tt("Value") }])}${settingsSelectCard("calendar", tt("Week starts"), "shelfSettingsWeekStart", WEEK_START_OPTIONS.map(([value, label]) => ({ value, label: tt(label) })))}${settingsShelfSyncCard()}${settingsShelfPricesCard()}</div>`,
   ].join("");
   document.querySelector("#shelfSettingsCsvData").innerHTML = settingsCsvDataCard("shelf");
   if (el.settingsDevFeatures) el.settingsDevFeatures.innerHTML = settingsDevFeaturesCard("shelf");
   el.settingsDefaultOrder = document.querySelector("#shelfSettingsDefaultOrder");
+  el.settingsWeekStart = document.querySelector("#shelfSettingsWeekStart");
   const settings = normalizePriceSettings(state.gamelistSettings);
   el.settingsDefaultOrder.value = shelfSortForDefault(state.gamelistSettings.shelfDefaultOrder ?? state.gamelistSettings.defaultOrder);
+  el.settingsWeekStart.value = normalizeWeekStart(state.gamelistSettings.weekStart);
   el.settingsCurrency.value = settings.currency;
   el.settingsRegion.value = settings.region;
   el.settingsLanguage.innerHTML = languageOptions(state.gamelistSettings.language, escapeHtml);
@@ -1684,7 +1696,12 @@ function settingsLayoutCard(key, index) {
 }
 
 function settingsSelectCard(type, title, id, options) {
-  return `<article class="settings-layout-card settings-${type === "theme" ? "theme" : "order"}-card"><div class="settings-wire wire-${type}" aria-hidden="true">${Array.from({ length: 3 }, () => "<span></span>").join("")}</div><label class="settings-theme-select"><span>${escapeHtml(title)}</span><select id="${id}">${options.map((option) => `<option value="${option.value}">${escapeHtml(option.label)}</option>`).join("")}</select></label></article>`;
+  const wireCount = type === "calendar" ? 5 : 3;
+  return `<article class="settings-layout-card settings-${type === "theme" ? "theme" : "order"}-card"><div class="settings-wire wire-${type}" aria-hidden="true">${Array.from({ length: wireCount }, () => "<span></span>").join("")}</div><label class="settings-theme-select"><span>${escapeHtml(title)}</span><select id="${id}">${options.map((option) => `<option value="${option.value}">${escapeHtml(option.label)}</option>`).join("")}</select></label></article>`;
+}
+
+function normalizeWeekStart(value) {
+  return WEEK_START_OPTIONS.some(([key]) => key === value) ? value : "monday";
 }
 
 function settingsShelfSyncCard() {
@@ -2097,7 +2114,7 @@ async function saveLayout(event) {
   state.layout.hidden = LAYOUT_KEYS.filter((key) => !el.layoutList.querySelector(`[data-layout-visible][value="${key}"]`)?.checked);
   localStorage.setItem(LAYOUT_KEY, JSON.stringify(state.layout));
   const stores = [...el.settingsStores.querySelectorAll("input:checked")].map((input) => input.value).filter((store) => STORE_OPTIONS.includes(store)).slice(0, MAX_PRICE_STORES);
-  state.gamelistSettings = { ...state.gamelistSettings, shelfDefaultOrder: el.settingsDefaultOrder.value, currency: el.settingsCurrency.value, region: el.settingsRegion.value, language: normalizeLanguage(el.settingsLanguage.value), psnUser: el.settingsPsnUser.value.trim(), microsoftUser: el.settingsMicrosoftUser.value.trim(), steamUser: el.settingsSteamUser.value.trim(), defaultOwner: el.settingsDefaultOwner.value.trim(), stores, storeSettingsVersion: 2, shelfSync: document.querySelector("#shelfSettingsSync")?.checked !== false, shelfHidePrices: document.querySelector("#shelfSettingsShowPrices")?.checked === false, forceCacheOnLoad: document.querySelector("#shelfSettingsForceCacheOnLoad")?.checked === true };
+  state.gamelistSettings = { ...state.gamelistSettings, shelfDefaultOrder: el.settingsDefaultOrder.value, weekStart: normalizeWeekStart(el.settingsWeekStart?.value || state.gamelistSettings.weekStart), currency: el.settingsCurrency.value, region: el.settingsRegion.value, language: normalizeLanguage(el.settingsLanguage.value), psnUser: el.settingsPsnUser.value.trim(), microsoftUser: el.settingsMicrosoftUser.value.trim(), steamUser: el.settingsSteamUser.value.trim(), defaultOwner: el.settingsDefaultOwner.value.trim(), stores, storeSettingsVersion: 2, shelfSync: document.querySelector("#shelfSettingsSync")?.checked !== false, shelfHidePrices: document.querySelector("#shelfSettingsShowPrices")?.checked === false, forceCacheOnLoad: document.querySelector("#shelfSettingsForceCacheOnLoad")?.checked === true };
   localStorage.setItem("gamelist:settings:v1", JSON.stringify(state.gamelistSettings));
   applyShelfDefaultOrder(state.gamelistSettings.shelfDefaultOrder);
   await Promise.all([persistShelf(), persistGamelistSettings()]);

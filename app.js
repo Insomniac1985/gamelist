@@ -67,8 +67,18 @@ const DEFAULT_SETTINGS = {
   forceCacheOnLoad: false,
   gotyAlwaysShow: false,
   gameOfTheYear: {},
+  weekStart: "monday",
   language: "en",
 };
+const WEEK_START_OPTIONS = [
+  ["monday", "Monday"],
+  ["tuesday", "Tuesday"],
+  ["wednesday", "Wednesday"],
+  ["thursday", "Thursday"],
+  ["friday", "Friday"],
+  ["saturday", "Saturday"],
+  ["sunday", "Sunday"],
+];
 const STATUS_OPTIONS = [
   "To Collect",
   "Scarce",
@@ -979,7 +989,12 @@ function normalizeSettings(settings = {}) {
     forceCacheOnLoad: settings.forceCacheOnLoad === true,
     gotyAlwaysShow: settings.gotyAlwaysShow === true,
     gameOfTheYear,
+    weekStart: normalizeWeekStart(settings.weekStart),
   };
+}
+
+function normalizeWeekStart(value) {
+  return WEEK_START_OPTIONS.some(([key]) => key === value) ? value : "monday";
 }
 
 function normalizeGameOfTheYear(value = {}) {
@@ -1140,7 +1155,7 @@ function renderSettingsDialog() {
     settingsLayoutItem("playing", -1, { fixed: true }),
     settingsLayoutItem("latestFinished", -1, { fixed: true }),
     ...state.settings.pageOrder.map((key) => settingsLayoutItem(key, pageIndex.get(key) ?? 0)),
-    `<div class="settings-preference-separator" role="presentation"></div><div class="settings-preference-row">${settingsThemeItem()}${settingsDefaultOrderItem()}${settingsShelfSyncItem()}</div>`,
+    `<div class="settings-preference-separator" role="presentation"></div><div class="settings-preference-row">${settingsThemeItem()}${settingsDefaultOrderItem()}${settingsWeekStartItem()}${settingsShelfSyncItem()}</div>`,
   ].join("");
   document.querySelector("#settingsCsvData").innerHTML = settingsCsvDataItem("gamelist");
   if (el.settingsDevFeatures) el.settingsDevFeatures.innerHTML = settingsDevFeaturesItem("gamelist");
@@ -1185,6 +1200,10 @@ function renderSettingsDialog() {
   });
   el.settingsLayoutList.querySelector("[data-default-order]")?.addEventListener("change", (event) => {
     state.settings.defaultOrder = event.target.value;
+  });
+  el.settingsLayoutList.querySelector("[data-week-start]")?.addEventListener("change", (event) => {
+    state.settings.weekStart = normalizeWeekStart(event.target.value);
+    renderReleaseCalendar();
   });
   document.querySelector("[data-export-csv='gamelist']")?.addEventListener("click", exportGamelistCsv);
   document.querySelector("[data-import-csv='gamelist']")?.addEventListener("click", importGamelistCsv);
@@ -1258,6 +1277,20 @@ function settingsDefaultOrderItem() {
           <option value="custom" ${state.settings.defaultOrder === "custom" ? "selected" : ""}>${escapeHtml(tt("Custom"))}</option>
           <option value="time" ${state.settings.defaultOrder === "time" ? "selected" : ""}>${escapeHtml(tt("Time"))}</option>
           <option value="name" ${state.settings.defaultOrder === "name" ? "selected" : ""}>${escapeHtml(tt("Name"))}</option>
+        </select>
+      </label>
+    </article>
+  `;
+}
+
+function settingsWeekStartItem() {
+  return `
+    <article class="settings-layout-card settings-order-card" data-layout-key="week-start">
+      <div class="settings-wire wire-calendar" aria-hidden="true"><span></span><span></span><span></span><span></span><span></span></div>
+      <label class="settings-theme-select">
+        <span>${escapeHtml(tt("Week starts"))}</span>
+        <select data-week-start aria-label="${escapeHtml(tt("Calendar week starts on"))}">
+          ${WEEK_START_OPTIONS.map(([value, label]) => `<option value="${value}" ${state.settings.weekStart === value ? "selected" : ""}>${escapeHtml(tt(label))}</option>`).join("")}
         </select>
       </label>
     </article>
@@ -1474,6 +1507,7 @@ async function saveSettingsFromForm(event) {
     stores,
     defaultOwner: el.settingsDefaultOwner.value,
     shelfSync: Boolean(el.settingsLayoutList.querySelector("[data-shelf-sync]")?.checked),
+    weekStart: normalizeWeekStart(el.settingsLayoutList.querySelector("[data-week-start]")?.value || state.settings.weekStart),
     forceCacheOnLoad: document.querySelector("#settingsForceCacheOnLoad")?.checked === true,
     gotyAlwaysShow: document.querySelector("#settingsGotyAlwaysShow")?.checked === true,
   });
@@ -3319,6 +3353,7 @@ function renderReleaseCalendar() {
   mountReleaseCalendar(el.releaseCalendar, {
     games: state.games,
     offset: state.releaseCalendarOffset,
+    weekStart: state.settings.weekStart,
     onShift: (value) => {
       state.releaseCalendarOffset += value;
       renderReleaseCalendar();

@@ -2,6 +2,16 @@ export function normalizeSearchText(value) {
   return String(value || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]+/g, " ").trim();
 }
 
+const WEEKDAYS = [
+  ["sunday", "S"],
+  ["monday", "M"],
+  ["tuesday", "T"],
+  ["wednesday", "W"],
+  ["thursday", "T"],
+  ["friday", "F"],
+  ["saturday", "S"],
+];
+
 export function createGameCardShell(doc = document) {
   const template = doc.createElement("template");
   template.innerHTML = `<article class="game-card glass" draggable="false"><div class="card-trailer" aria-hidden="true"></div><button class="icon-button trailer-toggle" type="button" title="Pause trailer" aria-label="Pause trailer" hidden></button><button class="cover-button" type="button"><img alt=""></button><div class="game-main"><div class="title-line"><div class="title-wrap"><h3></h3><div class="title-owners"></div></div><button class="icon-button edit-action" type="button" title="Edit" aria-label="Edit"><svg class="pencil-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h4l11-11a2.8 2.8 0 0 0-4-4L4 16v4Z"></path><path d="M13.5 6.5l4 4"></path></svg></button></div><div class="studio-line"></div><div class="meta"></div><div class="play-dates"></div><div class="chips"></div><div class="card-trophies"></div><div class="card-actions"><button class="ghost-button price-refresh-action" type="button">Prices</button><button class="ghost-button bought-action" type="button">Got it</button><button class="primary-button complete-action" type="button">Finished</button><button class="ghost-button backlog-action" type="button" title="Backlog" aria-label="Move back to backlog"><svg class="back-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M10 6 4 12l6 6"></path><path d="M4 12h10a6 6 0 0 1 6 6"></path></svg><span class="action-label">Backlog</span></button><button class="ghost-button trophy-action" type="button" title="Completed" aria-label="Completed"><svg class="trophy-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 4h8v4a4 4 0 0 1-8 0V4Z"></path><path d="M8 6H5a3 3 0 0 0 3 3"></path><path d="M16 6h3a3 3 0 0 1-3 3"></path><path d="M12 12v4"></path><path d="M9 20h6"></path><path d="M10 16h4v4h-4z"></path></svg></button><button class="danger-button icon-only-button delete-action" type="button" title="Delete" aria-label="Delete"><svg class="trash-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6h18"></path><path d="M8 6V4h8v2"></path><path d="M19 6l-1 14H6L5 6"></path><path d="M10 11v5"></path><path d="M14 11v5"></path></svg></button></div></div><p class="notes"></p><div class="prices"></div></article>`;
@@ -103,7 +113,8 @@ export function mountReleaseCalendar(container, options = {}) {
   const months = releaseCalendarMonths(4, options.offset || 0);
   const releases = releaseGamesByDate(options.games || []);
   const today = localDateKey(new Date());
-  container.innerHTML = releaseCalendarMarkup(months, releases, today);
+  const weekStart = normalizedWeekStart(options.weekStart);
+  container.innerHTML = releaseCalendarMarkup(months, releases, today, weekStart);
   container.querySelectorAll("[data-calendar-shift]").forEach((button) => {
     button.addEventListener("click", () => options.onShift?.(Number(button.dataset.calendarShift || 0)));
   });
@@ -130,7 +141,7 @@ export function releaseGamesByDate(games = []) {
   return groups;
 }
 
-function releaseCalendarMarkup(months, releases, today) {
+function releaseCalendarMarkup(months, releases, today, weekStart) {
   return `
     <div class="release-calendar-head">
       <div class="release-calendar-actions">
@@ -141,7 +152,7 @@ function releaseCalendarMarkup(months, releases, today) {
     </div>
     <div class="release-months-frame glass">
       <div class="release-months">
-        ${months.map((month) => releaseMonthMarkup(month, releases, today)).join("")}
+        ${months.map((month) => releaseMonthMarkup(month, releases, today, weekStart)).join("")}
       </div>
     </div>
   `;
@@ -154,11 +165,11 @@ function releaseCalendarMonths(count, offset = 0) {
   return Array.from({ length: count }, (_, index) => new Date(start.getFullYear(), start.getMonth() + offset + index, 1));
 }
 
-function releaseMonthMarkup(monthDate, releases, today) {
+function releaseMonthMarkup(monthDate, releases, today, weekStart) {
   const year = monthDate.getFullYear();
   const month = monthDate.getMonth();
   const totalDays = new Date(year, month + 1, 0).getDate();
-  const leading = mondayWeekdayIndex(new Date(year, month, 1));
+  const leading = weekdayIndex(new Date(year, month, 1), weekStart);
   const cells = [];
   for (let day = 1; day <= totalDays; day += 1) {
     const date = localDateKey(new Date(year, month, day));
@@ -192,7 +203,7 @@ function releaseMonthMarkup(monthDate, releases, today) {
         <span>${year}</span>
       </header>
       <div class="release-weekdays" aria-hidden="true">
-        <span>M</span><span>T</span><span>W</span><span>T</span><span>F</span><span>S</span><span>S</span>
+        ${weekdayLabels(weekStart).map((label) => `<span>${label}</span>`).join("")}
       </div>
       <div class="release-days">${cells.join("")}</div>
     </article>
@@ -210,8 +221,18 @@ function releasePlatformTone(games) {
   return "release-platform-generic";
 }
 
-function mondayWeekdayIndex(date) {
-  return (date.getDay() + 6) % 7;
+function normalizedWeekStart(value) {
+  return WEEKDAYS.some(([key]) => key === value) ? value : "monday";
+}
+
+function weekdayIndex(date, weekStart) {
+  const startIndex = WEEKDAYS.findIndex(([key]) => key === normalizedWeekStart(weekStart));
+  return (date.getDay() - startIndex + 7) % 7;
+}
+
+function weekdayLabels(weekStart) {
+  const startIndex = WEEKDAYS.findIndex(([key]) => key === normalizedWeekStart(weekStart));
+  return [...WEEKDAYS.slice(startIndex), ...WEEKDAYS.slice(0, startIndex)].map(([, label]) => label);
 }
 
 function monthName(date) {
