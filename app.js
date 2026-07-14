@@ -1568,7 +1568,7 @@ function renderGameOfTheYear() {
   syncStyledSelect(el.gotyYearSelect, { activeValue: null });
   if (el.gotyYearCount) {
     const count = completedGamesForYear(year).length;
-    el.gotyYearCount.textContent = `${count} ${count === 1 ? "game" : "games"}`;
+    el.gotyYearCount.textContent = `${count} ${count === 1 ? "game" : "games"} played`;
   }
   const canEditCurrent = state.canEdit && year === currentGameOfTheYear();
   el.gotyEditButton.hidden = !canEditCurrent;
