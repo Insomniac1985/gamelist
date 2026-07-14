@@ -4085,7 +4085,7 @@ function completedStatsYearFor(item) {
 
 function finishedStatsMarkup(year, games, completed) {
   const platforms = countBy(games, (game) => canonicalPlatform(game.platform) || game.platform || "Unknown");
-  const categories = countBy(games, gameStatsCategory);
+  const tags = countTags(games);
   const months = countBy(games, (game) => monthShortName(game.completedAt));
   const streamed = games.filter((game) => game.stream);
   const otherOwnerGames = games.filter((game) => visibleOwnerTags(game).length);
@@ -4101,7 +4101,7 @@ function finishedStatsMarkup(year, games, completed) {
     <div class="finished-stats-kpis">${cards}</div>
     <div class="finished-stats-charts">
       ${statsDonutCard("Platforms", platforms, "platform")}
-      ${statsDonutCard("Game categories", categories, "category")}
+      ${statsDonutCard("Tags", tags, "category", 5)}
     </div>
     <section class="finished-stats-months">
       <h3>${allYears ? "By year" : "By month"}</h3>
@@ -4121,13 +4121,16 @@ function statsKpiCard(label, value, detail = "", options = {}) {
   `;
 }
 
-function statsDonutCard(title, counts, tone) {
-  const total = counts.reduce((sum, item) => sum + item.count, 0);
+function statsDonutCard(title, counts, tone, visibleLimit = counts.length) {
   const segments = donutSegments(counts, tone);
+  const visibleCounts = counts.slice(0, visibleLimit);
   return `
     <article class="finished-stats-chart">
-      <div class="finished-stats-donut ${tone === "category" ? "is-category" : "is-platform"}" style="--donut:${escapeHtml(segments)}"><span>${escapeHtml(String(total))}</span></div>
-      <h3>${escapeHtml(title)}</h3>
+      <div class="finished-stats-donut ${tone === "category" ? "is-category" : "is-platform"}" style="--donut:${escapeHtml(segments)}"></div>
+      <div class="finished-stats-chart-copy">
+        <h3>${escapeHtml(title)}</h3>
+        <div class="finished-stats-chart-list">${statsBreakdownList(visibleCounts, tone)}</div>
+      </div>
       <div class="finished-stats-breakdown">${statsBreakdownList(counts, tone)}</div>
     </article>
   `;
@@ -4211,10 +4214,16 @@ function countBy(items, getter) {
     .sort((a, b) => b.count - a.count || stringCompare(a.label, b.label));
 }
 
-function gameStatsCategory(game) {
-  return (game.genres || [])
+function countTags(games) {
+  const items = games.flatMap((game) => gameStatsTags(game).map((label) => ({ label })));
+  return countBy(items, (item) => item.label);
+}
+
+function gameStatsTags(game) {
+  const tags = [...(game.genres || []), ...(game.tags || [])]
     .map((value) => String(value || "").trim())
-    .find((value) => value && normalizeTag(value) !== "game") || "Uncategorized";
+    .filter((value) => value && normalizeTag(value) !== "game");
+  return unique(tags).length ? unique(tags) : ["Uncategorized"];
 }
 
 function monthShortName(value) {
