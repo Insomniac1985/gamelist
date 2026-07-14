@@ -1898,20 +1898,284 @@ async function downloadGameOfTheYearImage() {
   if (!gameOfTheYearComplete(picks)) return;
   const owner = cleanOwnerLabel(state.settings.defaultOwner) || DEFAULT_SETTINGS.defaultOwner;
   const rows = GAME_OF_YEAR_CATEGORIES.map(([key, label]) => ({ label, game: gameById(picks[key]) })).filter((item) => item.game);
-  const canvas = document.createElement("canvas");
-  canvas.width = 1920;
-  canvas.height = 1080;
-  const ctx = canvas.getContext("2d");
   const theme = normalizeThemeSettings(state.settings);
-  const logo = await loadCanvasImage(document.querySelector(".brand-mark")?.src || THEMES.shabii.icon);
-  const background = await loadCanvasImage(theme.backgroundImage || (theme.mode === "light" ? "assets/backdrop_light.png" : "assets/backdrop.png"));
-  await drawGameOfTheYearImage(ctx, { owner, year, rows, logo, theme, background, withCovers: true });
+  const assetRows = await Promise.all(rows.map(async (row) => ({
+    ...row,
+    coverSrc: await imageToDataUrl(coverDisplayUrl(row.game.cover || "") || platformLogo(row.game.platform || "PS5")),
+  })));
+  const logo = await imageToDataUrl(document.querySelector(".brand-mark")?.src || THEMES.shabii.icon);
+  const background = await imageToDataUrl(theme.backgroundImage || (theme.mode === "light" ? "assets/backdrop_light.png" : "assets/backdrop.png"));
+  const html = gameOfTheYearExportMarkup({ owner, year, rows: assetRows, theme, logo, background });
+  await downloadHtmlPosterPng(html, `games-of-the-year-${year}.png`);
+}
+
+function gameOfTheYearExportMarkup({ owner, year, rows, theme, logo, background }) {
+  const main = theme.mainColorReset ? DEFAULT_SETTINGS.theme === "kash" ? THEMES.kash.themeColor : THEMES.shabii.themeColor : theme.mainColor;
+  const accent = theme.accentColor || "#79f2ce";
+  const gradient = theme.gradient ? theme.gradientColor : main;
+  const bg = background || theme.backgroundImage || (theme.mode === "light" ? "assets/backdrop_light.png" : "assets/backdrop.png");
+  const glowPrimary = canvasThemeColorBySource(theme, theme.glowPrimary || "main", main, accent);
+  const glowSecondary = canvasThemeColorBySource(theme, theme.glowSecondary || "accent", main, accent);
+  const siteUrl = cleanCanvasSiteUrl(window.location.origin && window.location.origin !== "null" ? window.location.origin : window.location.hostname || "Gamelist");
+  const logoSrc = logo || document.querySelector(".brand-mark")?.src || THEMES.shabii.icon;
+  return `
+  <div xmlns="http://www.w3.org/1999/xhtml" class="goty-export-poster">
+    <style>${gameOfTheYearExportCss({ theme, main, accent, gradient, bg, glowPrimary, glowSecondary })}</style>
+    <img class="goty-export-logo" src="${escapeHtml(logoSrc)}" alt="" />
+    <header class="goty-export-head">
+      <h1>${escapeHtml(`${owner}'s Games of the Year ${year}`)}</h1>
+    </header>
+    <main class="goty-export-grid">
+      ${rows.map((row, index) => gameOfTheYearExportCard({ ...row, index })).join("")}
+    </main>
+    <footer>${escapeHtml(siteUrl)}</footer>
+  </div>`;
+}
+
+function gameOfTheYearExportCard({ label, game, coverSrc, index }) {
+  const cover = coverSrc || coverDisplayUrl(game.cover || "") || platformLogo(game.platform || "PS5");
+  const progress = achievementProgressForGame(game);
+  const progressNumber = progress ? Math.round(Number(progress.progress ?? progressValue(progress.game)) || 0) : 0;
+  const progressCount = progress ? canvasProgressCount(progress.label) : "";
+  const studio = game.developer || game.publisher || "";
+  const tags = [
+    ...String(game.genres || "").split(","),
+    ...(Array.isArray(game.tags) ? game.tags : []),
+  ].map((tag) => tag.trim()).filter(Boolean).slice(0, 2);
+  return `
+    <article class="goty-export-card ${index >= 4 ? "is-bottom" : ""}">
+      <div class="goty-export-cover-wrap"><img class="goty-export-cover" src="${escapeHtml(cover)}" alt="" /></div>
+      <div class="goty-export-info">
+        <strong class="goty-export-category">${escapeHtml(label)}</strong>
+        <h2>${escapeHtml(game.title || "")}</h2>
+        <p>${escapeHtml(studio || "Finished game")}</p>
+        <div class="goty-export-pills">
+          ${progress ? `<span class="goty-export-pill goty-export-progress" style="--progress:${progressNumber}%"><em></em><b>${progressNumber}%</b>${progressCount ? `<span>${escapeHtml(progressCount)}</span>` : ""}</span>` : ""}
+          <span class="goty-export-pill">${escapeHtml(platformDisplayName(game.platform || "Game"))}</span>
+          ${tags.map((tag) => `<span class="goty-export-pill goty-export-tag">${escapeHtml(tag)}</span>`).join("")}
+        </div>
+      </div>
+    </article>`;
+}
+
+function gameOfTheYearExportCss({ theme, main, accent, gradient, bg, glowPrimary, glowSecondary }) {
+  const text = theme.mode === "light" ? "#151925" : "#f6f7fb";
+  const muted = theme.mode === "light" ? "rgba(22,28,42,.68)" : "rgba(246,247,251,.68)";
+  const panel = theme.mode === "light" ? "rgba(255,255,255,.62)" : "rgba(255,255,255,.075)";
+  const line = theme.mode === "light" ? "rgba(18,24,36,.16)" : "rgba(255,255,255,.14)";
+  const sweep = theme.mode === "light" ? "rgba(255,255,255,.58)" : "rgba(255,255,255,.055)";
+  const titleFont = canvasTitleFont(theme);
+  const bodyFont = canvasBodyFont();
+  return `
+    @font-face { font-family: "Cascadia Code"; src: url("assets/fonts/CascadiaCode.woff2") format("woff2"); font-display: swap; }
+    @font-face { font-family: "Antique Olive Nord"; src: url("assets/fonts/AntiqueOliveNord.woff2") format("woff2"); font-display: swap; }
+    @font-face { font-family: "Georgia Bold"; src: url("assets/fonts/Georgia-Bold.ttf") format("truetype"); font-display: swap; }
+    @font-face { font-family: "Pokemon GBA"; src: url("assets/fonts/pokemon-emerald.ttf") format("truetype"); font-display: swap; }
+    @font-face { font-family: "04B 30"; src: url("assets/fonts/04B_30.TTF") format("truetype"); font-display: swap; }
+    @font-face { font-family: "Michroma"; src: url("assets/fonts/Michroma.ttf") format("truetype"); font-display: swap; }
+    @font-face { font-family: "Minecraft"; src: url("assets/fonts/Minecraft.ttf") format("truetype"); font-display: swap; }
+    @font-face { font-family: "Mata Regular"; src: url("assets/fonts/Mata Regular.otf") format("opentype"); font-display: swap; }
+    .goty-export-poster {
+      position: relative;
+      box-sizing: border-box;
+      width: 1920px;
+      height: 1080px;
+      overflow: hidden;
+      padding: 68px 62px 52px;
+      color: ${text};
+      font-family: ${bodyFont};
+      background:
+        radial-gradient(circle at 78% 9%, ${canvasRgba(glowPrimary, theme.disableGlow ? 0 : 0.24)}, transparent 30%),
+        radial-gradient(circle at 11% 84%, ${canvasRgba(glowSecondary, theme.disableGlow ? 0 : 0.16)}, transparent 34%),
+        linear-gradient(120deg, ${sweep}, transparent 38%),
+        url("${cssUrl(bg)}") top left / cover repeat,
+        ${theme.mode === "light" ? "#e8edf5" : "#161619"};
+    }
+    .goty-export-logo {
+      position: absolute;
+      left: 84px;
+      top: 68px;
+      width: 112px;
+      height: 112px;
+      object-fit: cover;
+      border-radius: 22px;
+    }
+    .goty-export-head {
+      margin-left: 158px;
+      min-height: 150px;
+    }
+    .goty-export-head h1 {
+      width: 1260px;
+      margin: 0;
+      color: transparent;
+      font: 900 64px/1.08 ${titleFont};
+      background: linear-gradient(135deg, ${gradient}, ${main});
+      -webkit-background-clip: text;
+      background-clip: text;
+    }
+    .goty-export-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 425px);
+      grid-template-rows: repeat(2, 342px);
+      gap: 36px 26px;
+      margin-top: 34px;
+    }
+    .goty-export-card {
+      box-sizing: border-box;
+      display: grid;
+      grid-template-columns: 154px minmax(0, 1fr);
+      gap: 18px;
+      width: 425px;
+      height: 342px;
+      padding: 34px 22px 30px;
+      background: ${panel};
+      border: 1px solid ${line};
+      border-radius: 18px;
+    }
+    .goty-export-card.is-bottom:first-of-type {
+      grid-column: 1;
+    }
+    .goty-export-card:nth-child(5) {
+      grid-column: 2;
+    }
+    .goty-export-cover-wrap {
+      align-self: end;
+      width: 154px;
+      height: 216px;
+      filter:
+        drop-shadow(0 16px 18px ${canvasRgba(main, 0.34)})
+        drop-shadow(0 0 16px ${canvasRgba(main, 0.26)});
+    }
+    .goty-export-cover {
+      width: 154px;
+      height: 216px;
+      object-fit: contain;
+      border-radius: 12px;
+    }
+    .goty-export-info {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      min-width: 0;
+      text-align: right;
+    }
+    .goty-export-category {
+      min-height: 48px;
+      color: ${accent};
+      font: 900 20px/1.15 ${titleFont};
+      text-transform: uppercase;
+    }
+    .goty-export-info h2 {
+      margin: 10px 0 0;
+      color: ${text};
+      font: 900 31px/1.12 ${bodyFont};
+    }
+    .goty-export-info p {
+      margin: 14px 0 0;
+      color: ${muted};
+      font: 700 19px/1.25 ${bodyFont};
+    }
+    .goty-export-pills {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+      gap: 7px;
+      margin-top: auto;
+    }
+    .goty-export-pill {
+      position: relative;
+      overflow: hidden;
+      min-height: 28px;
+      box-sizing: border-box;
+      padding: 6px 12px;
+      color: ${text};
+      font: 800 15px/1 ${bodyFont};
+      background: ${theme.mode === "light" ? "rgba(255,255,255,.76)" : "rgba(255,255,255,.11)"};
+      border: 1px solid ${line};
+      border-radius: 10px;
+    }
+    .goty-export-progress em {
+      position: absolute;
+      inset: 4px auto 4px 4px;
+      width: var(--progress);
+      max-width: calc(100% - 8px);
+      background: ${canvasRgba(main, theme.mode === "light" ? 0.32 : 0.42)};
+      border-radius: 8px;
+    }
+    .goty-export-progress b,
+    .goty-export-progress span {
+      position: relative;
+      z-index: 1;
+    }
+    .goty-export-progress span::before {
+      content: " · ";
+    }
+    footer {
+      position: absolute;
+      right: 82px;
+      bottom: 52px;
+      color: ${muted};
+      font: 800 24px/1 ${bodyFont};
+    }
+  `;
+}
+
+function downloadHtmlPosterPng(html, filename) {
+  return new Promise((resolve, reject) => {
+    const svg = `<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1920" height="1080" viewBox="0 0 1920 1080">
+  <foreignObject width="1920" height="1080">${html}</foreignObject>
+</svg>`;
+    const svgUrl = URL.createObjectURL(new Blob([svg], { type: "image/svg+xml;charset=utf-8" }));
+    const image = new Image();
+    image.onload = () => {
+      try {
+        const canvas = document.createElement("canvas");
+        canvas.width = 1920;
+        canvas.height = 1080;
+        const context = canvas.getContext("2d");
+        context.drawImage(image, 0, 0);
+        URL.revokeObjectURL(svgUrl);
+        canvas.toBlob((blob) => {
+          if (!blob) return reject(new Error("PNG export failed"));
+          const url = URL.createObjectURL(blob);
+          const link = document.createElement("a");
+          link.href = url;
+          link.download = filename;
+          document.body.appendChild(link);
+          link.click();
+          link.remove();
+          window.setTimeout(() => URL.revokeObjectURL(url), 1000);
+          resolve();
+        }, "image/png");
+      } catch (error) {
+        URL.revokeObjectURL(svgUrl);
+        reject(error);
+      }
+    };
+    image.onerror = () => {
+      URL.revokeObjectURL(svgUrl);
+      reject(new Error("Could not render poster"));
+    };
+    image.src = svgUrl;
+  });
+}
+
+async function imageToDataUrl(src) {
+  if (!src) return "";
+  if (String(src).startsWith("data:")) return src;
   try {
-    await downloadCanvas(canvas, `games-of-the-year-${year}.png`);
+    const response = await fetch(src);
+    if (!response.ok) return src;
+    const blob = await response.blob();
+    return await new Promise((resolve) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(String(reader.result || src));
+      reader.onerror = () => resolve(src);
+      reader.readAsDataURL(blob);
+    });
   } catch {
-    canvas.width = canvas.width;
-    await drawGameOfTheYearImage(ctx, { owner, year, rows, logo, theme, background, withCovers: false });
-    await downloadCanvas(canvas, `games-of-the-year-${year}.png`);
+    return src;
   }
 }
 
