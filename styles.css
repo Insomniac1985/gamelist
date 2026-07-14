@@ -741,7 +741,7 @@ html.theme-font-pokemon {
 
 .goty-section {
   display: grid;
-  gap: 14px;
+  gap: 8px;
   margin: 0 0 28px;
   background:
     linear-gradient(rgba(0, 0, 0, 0), rgba(0, 0, 0, 0)),
@@ -765,12 +765,16 @@ html.theme-font-pokemon {
   margin-left: auto;
 }
 
+.goty-section .column-head {
+  padding-bottom: 6px;
+}
+
 .goty-title-row {
   display: flex;
   align-items: center;
   gap: 10px;
   min-width: 0;
-  transform: translateY(5px);
+  transform: translateY(8px);
 }
 
 .goty-section .column-head h2,
