@@ -197,9 +197,7 @@ async function init() {
   state.additions = shelfData?.games || draft.games || [];
   state.overrides = shelfData?.overrides || draft.overrides || {};
   state.layout = normalizeLayout(shelfData?.layout || state.layout);
-  state.favoriteGameIds = Array.isArray(shelfData?.favoriteGameIds)
-    ? shelfData.favoriteGameIds.slice(0, 5)
-    : Array.isArray(draft.favoriteGameIds) ? draft.favoriteGameIds.slice(0, 5) : [];
+  state.favoriteGameIds = shelfFavoriteIdsFromSources(shelfData, gamelistData, draft);
   state.canEdit = state.canEdit || auth;
   state.updatedAt = shelfData?.updatedAt || "";
   state.gamelistGames = gamelistData?.games || [];
@@ -369,6 +367,13 @@ function favoriteGames() {
   return normalizeFavoriteGameIds(state.favoriteGameIds).map((id) => byId.get(id)).filter(Boolean);
 }
 
+function shelfFavoriteIdsFromSources(shelfData, gamelistData, draft = {}) {
+  const shelfIds = Array.isArray(shelfData?.favoriteGameIds) ? shelfData.favoriteGameIds : [];
+  const settingsIds = Array.isArray(gamelistData?.settings?.shelfShowcaseFavoriteGameIds) ? gamelistData.settings.shelfShowcaseFavoriteGameIds : [];
+  const draftIds = Array.isArray(draft.favoriteGameIds) ? draft.favoriteGameIds : [];
+  return (shelfIds.length ? shelfIds : settingsIds.length ? settingsIds : draftIds).slice(0, 5);
+}
+
 function favoriteCoverCard(game, index = 0) {
   if (!game) return `<button class="favorite-cover-card favorite-cover-empty" type="button" data-action="showcase-edit" title="Add showcase game" aria-label="Add showcase game ${index + 1}"></button>`;
   const cover = coverUrl(game.cover || "") || platformFallback(game.platform);
@@ -474,7 +479,7 @@ async function syncShelfNow() {
       state.additions = shelfData.games || [];
       state.overrides = shelfData.overrides || {};
       state.layout = normalizeLayout(shelfData.layout || state.layout);
-      state.favoriteGameIds = Array.isArray(shelfData.favoriteGameIds) ? shelfData.favoriteGameIds.slice(0, 5) : [];
+      state.favoriteGameIds = shelfFavoriteIdsFromSources(shelfData, gamelistData, { favoriteGameIds: state.favoriteGameIds });
       state.updatedAt = shelfData.updatedAt || state.updatedAt;
     }
     if (gamelistData) {
@@ -2027,8 +2032,12 @@ async function saveShowcase(event) {
 
 async function persistShowcaseFavorites(ids) {
   const favoriteGameIds = normalizeFavoriteGameIds(ids);
+  state.gamelistSettings = { ...state.gamelistSettings, shelfShowcaseFavoriteGameIds: favoriteGameIds };
+  localStorage.setItem("gamelist:settings:v1", JSON.stringify(state.gamelistSettings));
+  const password = sessionStorage.getItem(`${SESSION_KEY}:password`) || "";
+  let shelfSaved = false;
+  let settingsSaved = false;
   try {
-    const password = sessionStorage.getItem(`${SESSION_KEY}:password`) || "";
     const response = await fetch("/api/shelf", {
       method: "PUT",
       headers: { "Content-Type": "application/json", "x-edit-password": password },
@@ -2038,16 +2047,41 @@ async function persistShowcaseFavorites(ids) {
     const saved = await response.json();
     const savedIds = Array.isArray(saved.favoriteGameIds) ? saved.favoriteGameIds.map((id) => String(id || "").trim()).filter(Boolean) : [];
     if (JSON.stringify(savedIds) !== JSON.stringify(favoriteGameIds)) throw new Error("Showcase save mismatch");
+    shelfSaved = true;
+    state.updatedAt = saved.updatedAt || new Date().toISOString();
+  } catch (error) {
+    console.warn("Shelf showcase save failed", error);
+  }
+  try {
+    const response = await fetch("/api/sync", {
+      method: "PUT",
+      headers: { "Content-Type": "application/json", "x-edit-password": password },
+      body: JSON.stringify({ settingsOnly: true, settings: state.gamelistSettings }),
+    });
+    if (!response.ok) throw new Error("Showcase settings save failed");
+    settingsSaved = true;
+  } catch (error) {
+    console.warn("Showcase settings fallback save failed", error);
+  }
+  try {
     const fresh = await fetch("/api/shelf", { cache: "no-store" }).then((result) => result.ok ? result.json() : null);
     const freshIds = Array.isArray(fresh?.favoriteGameIds) ? fresh.favoriteGameIds.map((id) => String(id || "").trim()).filter(Boolean) : [];
-    if (JSON.stringify(freshIds) !== JSON.stringify(favoriteGameIds)) throw new Error("Showcase reload verification failed");
-    state.updatedAt = saved.updatedAt || new Date().toISOString();
+    if (JSON.stringify(freshIds) === JSON.stringify(favoriteGameIds)) shelfSaved = true;
+  } catch (error) {
+    console.warn("Showcase shelf readback failed", error);
+  }
+  try {
+    const fresh = await fetch("/api/sync", { cache: "no-store" }).then((result) => result.ok ? result.json() : null);
+    const freshIds = Array.isArray(fresh?.settings?.shelfShowcaseFavoriteGameIds) ? fresh.settings.shelfShowcaseFavoriteGameIds.map((id) => String(id || "").trim()).filter(Boolean) : [];
+    if (JSON.stringify(freshIds) === JSON.stringify(favoriteGameIds)) settingsSaved = true;
+  } catch (error) {
+    console.warn("Showcase settings readback failed", error);
+  }
+  if (shelfSaved || settingsSaved) {
     localStorage.removeItem(LOCAL_DRAFT_KEY);
     return true;
-  } catch (error) {
-    console.warn("Showcase save failed", error);
-    return false;
   }
+  return false;
 }
 
 function handleLayoutMove(event) {

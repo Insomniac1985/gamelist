@@ -5561,6 +5561,13 @@ a.time-pill {
     0 10px 28px color-mix(in srgb, var(--accent) 12%, transparent);
 }
 
+#floatingAddButton:hover,
+html.theme-light #floatingAddButton:hover {
+  color: #ffffff !important;
+  background: var(--accent) !important;
+  border-color: color-mix(in srgb, var(--accent) 72%, #ffffff) !important;
+}
+
 .icon-button.view-toggle {
   align-self: end;
   width: var(--toolbar-control-height);
