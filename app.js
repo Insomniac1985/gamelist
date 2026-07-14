@@ -1615,23 +1615,22 @@ function renderGameOfTheYearPicker(games, picks) {
   el.gotyPickerGrid.innerHTML = GAME_OF_YEAR_CATEGORIES.map(([key, label]) => {
     const selectedId = picks[key] || "";
     const pickedElsewhere = new Set([...pickedIds].filter((id) => id !== selectedId));
-    const choices = [
-      ...games.filter((game) => game.id === selectedId),
-      ...games.filter((game) => game.id !== selectedId && !pickedElsewhere.has(game.id)),
-    ];
+    const selectedGame = games.find((game) => game.id === selectedId);
+    const choices = games.filter((game) => game.id !== selectedId && !pickedElsewhere.has(game.id));
     return `
     <section class="goty-picker-field" data-goty-category="${escapeHtml(key)}">
       <div class="goty-picker-head">
-        <span>${escapeHtml(label)}</span>
-        <span class="goty-picker-navs">
+        <span class="goty-picker-category">${escapeHtml(label)}</span>
+        <strong>${escapeHtml(gameById(picks[key])?.title || "Choose one")}</strong>
+        <div class="goty-picker-navs">
           <button class="icon-button playing-slider-button goty-choice-nav" type="button" data-goty-scroll="-1" title="Previous games" aria-label="Previous games">${gotyPickerArrowIcon("left")}</button>
           <button class="icon-button playing-slider-button goty-choice-nav" type="button" data-goty-scroll="1" title="Next games" aria-label="Next games">${gotyPickerArrowIcon("right")}</button>
-        </span>
-        <strong>${escapeHtml(gameById(picks[key])?.title || "Choose one")}</strong>
+        </div>
       </div>
       <div class="goty-choice-strip">
+        ${selectedGame ? `<div class="goty-choice-selected">${gameOfTheYearChoiceCard(selectedGame, true)}</div>` : ""}
         <div class="goty-choice-list">
-          ${choices.map((game) => gameOfTheYearChoiceCard(game, selectedId === game.id)).join("")}
+          ${choices.map((game) => gameOfTheYearChoiceCard(game, false)).join("")}
         </div>
       </div>
     </section>
@@ -1680,6 +1679,9 @@ function updateGameOfTheYearPickerNav(field) {
   const maxScroll = Math.max(0, list.scrollWidth - list.clientWidth - 1);
   const hasOverflow = maxScroll > 2;
   field.querySelector(".goty-choice-strip")?.classList.toggle("no-overflow", !hasOverflow);
+  field.querySelector(".goty-choice-strip")?.classList.toggle("has-selected", Boolean(field.querySelector(".goty-choice-selected")));
+  field.querySelector(".goty-choice-strip")?.classList.toggle("at-start", !hasOverflow || list.scrollLeft <= 2);
+  field.querySelector(".goty-choice-strip")?.classList.toggle("at-end", !hasOverflow || list.scrollLeft >= maxScroll);
   prev.hidden = !hasOverflow;
   next.hidden = !hasOverflow;
   prev.disabled = list.scrollLeft <= 2;
@@ -1757,7 +1759,7 @@ function showGameOfTheYearTitleOverlay(target) {
   const overlay = document.createElement("div");
   overlay.className = "goty-title-overlay";
   overlay.textContent = text;
-  document.body.appendChild(overlay);
+  (el.gotyDialog?.open ? el.gotyDialog : document.body).appendChild(overlay);
   const rect = target.getBoundingClientRect();
   const maxWidth = Math.min(520, window.innerWidth - 32);
   overlay.style.maxWidth = `${maxWidth}px`;

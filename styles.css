@@ -850,8 +850,8 @@ html.theme-font-pokemon {
   height: 100%;
   overflow: hidden;
   aspect-ratio: 2 / 3;
-  border-radius: 20px;
-  clip-path: inset(0 round 20px);
+  border-radius: 7px;
+  clip-path: inset(0 round 7px);
   box-shadow: 0 20px 44px rgba(0, 0, 0, 0.28);
 }
 
@@ -859,9 +859,9 @@ html.theme-font-pokemon {
   display: block;
   width: 100%;
   height: 100%;
-  object-fit: cover;
+  object-fit: contain;
   background: transparent;
-  border-radius: 20px;
+  border-radius: 7px;
   transition: filter 180ms ease;
 }
 
@@ -871,7 +871,7 @@ html.theme-font-pokemon {
   justify-content: center;
   min-height: 32px;
   padding: 0 2px;
-  color: var(--accent);
+  color: var(--accent-2);
   font-size: 13px;
   font-weight: 920;
   line-height: 1.05;
@@ -1032,12 +1032,12 @@ html.theme-font-pokemon {
 
 .goty-picker-head {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-columns: auto minmax(0, 1fr) auto;
   align-items: center;
-  gap: 12px;
+  gap: 8px;
 }
 
-.goty-picker-head span {
+.goty-picker-category {
   color: var(--accent);
   font-size: 14px;
   font-weight: 900;
@@ -1046,7 +1046,6 @@ html.theme-font-pokemon {
 }
 
 .goty-picker-head strong {
-  grid-column: 1 / -1;
   min-width: 0;
   color: var(--text);
   font-size: 12px;
@@ -1063,9 +1062,11 @@ html.theme-font-pokemon {
 }
 
 .goty-choice-strip {
+  position: relative;
   display: grid;
-  grid-template-columns: minmax(0, 1fr);
+  grid-template-columns: auto minmax(0, 1fr);
   align-items: center;
+  gap: 10px;
   min-width: 0;
   max-width: 100%;
 }
@@ -1079,10 +1080,24 @@ html.theme-font-pokemon {
 }
 
 .goty-choice-strip.no-overflow {
-  grid-template-columns: minmax(0, 1fr);
+  grid-template-columns: auto minmax(0, 1fr);
+}
+
+.goty-choice-selected {
+  width: 112px;
+  align-self: start;
+}
+
+.goty-choice-selected:empty {
+  display: none;
+}
+
+.goty-choice-selected .goty-choice-card {
+  transform: none;
 }
 
 .goty-choice-list {
+  position: relative;
   display: grid;
   grid-auto-flow: column;
   grid-auto-columns: 92px;
@@ -1093,6 +1108,40 @@ html.theme-font-pokemon {
   padding: 2px;
   scroll-snap-type: x proximity;
   scrollbar-width: none;
+}
+
+.goty-choice-strip::before,
+.goty-choice-strip::after {
+  content: "";
+  position: absolute;
+  top: 2px;
+  bottom: 2px;
+  z-index: 3;
+  width: 36px;
+  pointer-events: none;
+  opacity: 1;
+  transition: opacity 150ms ease;
+}
+
+.goty-choice-strip::before {
+  left: var(--goty-fade-left, 0);
+  background: linear-gradient(90deg, var(--panel-strong), transparent);
+}
+
+.goty-choice-strip::after {
+  right: 0;
+  background: linear-gradient(270deg, var(--panel-strong), transparent);
+}
+
+.goty-choice-strip.at-start::before,
+.goty-choice-strip.at-end::after,
+.goty-choice-strip.no-overflow::before,
+.goty-choice-strip.no-overflow::after {
+  opacity: 0;
+}
+
+.goty-choice-strip.has-selected {
+  --goty-fade-left: 122px;
 }
 
 .goty-choice-list::-webkit-scrollbar {
