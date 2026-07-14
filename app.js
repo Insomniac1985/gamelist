@@ -1899,66 +1899,122 @@ async function downloadGameOfTheYearImage() {
   const owner = cleanOwnerLabel(state.settings.defaultOwner) || DEFAULT_SETTINGS.defaultOwner;
   const rows = GAME_OF_YEAR_CATEGORIES.map(([key, label]) => ({ label, game: gameById(picks[key]) })).filter((item) => item.game);
   const canvas = document.createElement("canvas");
-  canvas.width = 1400;
-  canvas.height = 1800;
+  canvas.width = 1920;
+  canvas.height = 1080;
   const ctx = canvas.getContext("2d");
   const theme = normalizeThemeSettings(state.settings);
   const logo = await loadCanvasImage(document.querySelector(".brand-mark")?.src || THEMES.shabii.icon);
-  await drawGameOfTheYearImage(ctx, { owner, year, rows, logo, theme, withCovers: true });
+  const background = await loadCanvasImage(theme.backgroundImage || (theme.mode === "light" ? "assets/backdrop_light.png" : "assets/backdrop.png"));
+  await drawGameOfTheYearImage(ctx, { owner, year, rows, logo, theme, background, withCovers: true });
   try {
     await downloadCanvas(canvas, `games-of-the-year-${year}.png`);
   } catch {
     canvas.width = canvas.width;
-    await drawGameOfTheYearImage(ctx, { owner, year, rows, logo, theme, withCovers: false });
+    await drawGameOfTheYearImage(ctx, { owner, year, rows, logo, theme, background, withCovers: false });
     await downloadCanvas(canvas, `games-of-the-year-${year}.png`);
   }
 }
 
-async function drawGameOfTheYearImage(ctx, { owner, year, rows, logo, theme, withCovers }) {
+async function drawGameOfTheYearImage(ctx, { owner, year, rows, logo, theme, background, withCovers }) {
   const { width, height } = ctx.canvas;
   ctx.clearRect(0, 0, width, height);
   const main = theme.mainColorReset ? DEFAULT_SETTINGS.theme === "kash" ? THEMES.kash.themeColor : THEMES.shabii.themeColor : theme.mainColor;
-  ctx.fillStyle = "#101116";
+  const accent = theme.accentColor || "#79f2ce";
+  const titleGradient = theme.gradient ? theme.gradientColor : main;
+  ctx.fillStyle = theme.mode === "light" ? "#e8edf5" : "#08090d";
   ctx.fillRect(0, 0, width, height);
+  if (background) {
+    ctx.globalAlpha = 0.42;
+    drawCanvasImageCover(ctx, background, 0, 0, width, height);
+    ctx.globalAlpha = 1;
+  }
   const gradient = ctx.createLinearGradient(0, 0, width, height);
-  gradient.addColorStop(0, canvasRgba(main, 0.34));
-  gradient.addColorStop(0.55, "#101116");
-  gradient.addColorStop(1, canvasRgba(theme.accentColor || "#79f2ce", 0.27));
+  gradient.addColorStop(0, canvasRgba(main, 0.44));
+  gradient.addColorStop(0.44, theme.mode === "light" ? "rgba(232,237,245,.76)" : "rgba(8,9,13,.88)");
+  gradient.addColorStop(1, canvasRgba(accent, 0.32));
   ctx.fillStyle = gradient;
   ctx.fillRect(0, 0, width, height);
-  if (logo) {
-    ctx.drawImage(logo, 82, 76, 112, 112);
+  drawCanvasGlow(ctx, 190, 128, 420, main, 0.26);
+  drawCanvasGlow(ctx, 1640, 940, 520, accent, 0.18);
+  ctx.strokeStyle = theme.mode === "light" ? "rgba(18,24,36,.13)" : "rgba(255,255,255,.045)";
+  ctx.lineWidth = 1;
+  for (let x = 0; x <= width; x += 48) {
+    ctx.beginPath();
+    ctx.moveTo(x, 0);
+    ctx.lineTo(x, height);
+    ctx.stroke();
   }
-  ctx.fillStyle = "#f6f7fb";
-  ctx.font = "900 58px Arial";
-  wrapCanvasText(ctx, `${owner}'s Games of the Year ${year}`, 220, 106, 1000, 66);
-  ctx.font = "700 24px Arial";
-  ctx.fillStyle = "#a6adbd";
-  ctx.fillText("Gamelist", 224, 190);
-  const cardW = 380;
-  const cardH = 360;
-  const gap = 36;
-  const startX = 82;
-  const startY = 270;
+  for (let y = 0; y <= height; y += 48) {
+    ctx.beginPath();
+    ctx.moveTo(0, y);
+    ctx.lineTo(width, y);
+    ctx.stroke();
+  }
+  if (logo) {
+    drawCanvasImageCover(ctx, logo, 84, 68, 112, 112, 22);
+  }
+  const titleFill = ctx.createLinearGradient(220, 78, 980, 154);
+  titleFill.addColorStop(0, titleGradient);
+  titleFill.addColorStop(1, main);
+  ctx.fillStyle = titleFill;
+  ctx.font = "900 64px Arial";
+  wrapCanvasText(ctx, `${owner}'s Games of the Year ${year}`, 220, 108, 1260, 70);
+  ctx.font = "700 25px Arial";
+  ctx.fillStyle = theme.mode === "light" ? "rgba(22,28,42,.72)" : "#a6adbd";
+  ctx.fillText(`${rows.length} picks from ${year}`, 224, 190);
+  const siteUrl = window.location.origin && window.location.origin !== "null" ? window.location.origin : "Gamelist";
+  ctx.font = "800 24px Arial";
+  ctx.textAlign = "right";
+  ctx.fillStyle = theme.mode === "light" ? "rgba(22,28,42,.72)" : "rgba(246,247,251,.74)";
+  ctx.fillText(siteUrl, width - 82, height - 52);
+  ctx.textAlign = "left";
+  const cardW = 425;
+  const cardH = 342;
+  const gap = 26;
+  const topX = 62;
+  const topY = 252;
+  const bottomY = 630;
+  const bottomX = Math.round((width - (3 * cardW + 2 * gap)) / 2);
   for (let index = 0; index < rows.length; index += 1) {
-    const col = index % 3;
-    const row = Math.floor(index / 3);
-    const x = startX + col * (cardW + gap);
-    const y = startY + row * (cardH + gap);
-    drawRoundedRect(ctx, x, y, cardW, cardH, 18, "rgba(255,255,255,.08)");
+    const topRow = index < 4;
+    const col = topRow ? index : index - 4;
+    const x = (topRow ? topX : bottomX) + col * (cardW + gap);
+    const y = topRow ? topY : bottomY;
+    const game = rows[index].game;
+    const progress = achievementProgressForGame(game);
+    const progressText = progress ? `${Math.round(progressValue(progress.game))}% trophies` : "";
+    const details = [game.platform || "", game.developer || game.publisher || ""].filter(Boolean).join(" · ");
+    const tags = [
+      ...String(game.genres || "").split(","),
+      ...(Array.isArray(game.tags) ? game.tags : []),
+    ].map((tag) => tag.trim()).filter(Boolean).slice(0, 2).join(" · ");
+    drawCanvasGlow(ctx, x + 88, y + 182, 170, main, 0.18);
+    drawRoundedRect(ctx, x, y, cardW, cardH, 18, theme.mode === "light" ? "rgba(255,255,255,.62)" : "rgba(255,255,255,.075)");
+    drawRoundedStroke(ctx, x, y, cardW, cardH, 18, theme.mode === "light" ? "rgba(18,24,36,.16)" : "rgba(255,255,255,.14)");
     const cover = withCovers ? await loadCanvasImage(coverDisplayUrl(rows[index].game.cover || "")) : null;
-    if (cover) ctx.drawImage(cover, x + 18, y + 72, 124, 172);
-    else drawRoundedRect(ctx, x + 18, y + 72, 124, 172, 12, "rgba(255,255,255,.12)");
-    ctx.fillStyle = main;
+    if (cover) drawCanvasImageContain(ctx, cover, x + 22, y + 78, 154, 216, 12);
+    else drawRoundedRect(ctx, x + 22, y + 78, 154, 216, 12, "rgba(255,255,255,.12)");
+    ctx.fillStyle = accent;
     ctx.font = "900 20px Arial";
     wrapCanvasText(ctx, rows[index].label, x + 18, y + 34, cardW - 36, 24);
-    ctx.fillStyle = "#f6f7fb";
-    ctx.font = "900 30px Arial";
-    wrapCanvasText(ctx, rows[index].game.title || "", x + 160, y + 86, cardW - 184, 34, 4);
-    ctx.fillStyle = "#a6adbd";
+    ctx.fillStyle = theme.mode === "light" ? "#151925" : "#f6f7fb";
+    ctx.font = "900 31px Arial";
+    wrapCanvasText(ctx, game.title || "", x + 194, y + 92, cardW - 214, 35, 3);
+    ctx.fillStyle = theme.mode === "light" ? "rgba(22,28,42,.72)" : "#a6adbd";
     ctx.font = "700 19px Arial";
-    wrapCanvasText(ctx, rows[index].game.platform || "Finished game", x + 160, y + 244, cardW - 184, 24, 2);
+    wrapCanvasText(ctx, details || "Finished game", x + 194, y + 212, cardW - 214, 24, 2);
+    ctx.fillStyle = theme.mode === "light" ? "rgba(22,28,42,.62)" : "rgba(246,247,251,.68)";
+    ctx.font = "700 17px Arial";
+    wrapCanvasText(ctx, [progressText, tags].filter(Boolean).join(" · "), x + 194, y + 268, cardW - 214, 22, 2);
   }
+}
+
+function drawCanvasGlow(ctx, x, y, radius, color, alpha) {
+  const glow = ctx.createRadialGradient(x, y, 0, x, y, radius);
+  glow.addColorStop(0, canvasRgba(color, alpha));
+  glow.addColorStop(1, canvasRgba(color, 0));
+  ctx.fillStyle = glow;
+  ctx.fillRect(x - radius, y - radius, radius * 2, radius * 2);
 }
 
 function drawRoundedRect(ctx, x, y, width, height, radius, fill) {
@@ -1977,6 +2033,68 @@ function drawRoundedRect(ctx, x, y, width, height, radius, fill) {
   }
   ctx.fillStyle = fill;
   ctx.fill();
+}
+
+function drawRoundedStroke(ctx, x, y, width, height, radius, stroke) {
+  ctx.beginPath();
+  if (typeof ctx.roundRect === "function") ctx.roundRect(x, y, width, height, radius);
+  else {
+    ctx.moveTo(x + radius, y);
+    ctx.lineTo(x + width - radius, y);
+    ctx.quadraticCurveTo(x + width, y, x + width, y + radius);
+    ctx.lineTo(x + width, y + height - radius);
+    ctx.quadraticCurveTo(x + width, y + height, x + width - radius, y + height);
+    ctx.lineTo(x + radius, y + height);
+    ctx.quadraticCurveTo(x, y + height, x, y + height - radius);
+    ctx.lineTo(x, y + radius);
+    ctx.quadraticCurveTo(x, y, x + radius, y);
+  }
+  ctx.strokeStyle = stroke;
+  ctx.lineWidth = 1;
+  ctx.stroke();
+}
+
+function drawCanvasImageContain(ctx, image, x, y, width, height, radius = 0) {
+  ctx.save();
+  if (radius) {
+    drawRoundedPath(ctx, x, y, width, height, radius);
+    ctx.clip();
+  }
+  const scale = Math.min(width / image.width, height / image.height);
+  const drawW = image.width * scale;
+  const drawH = image.height * scale;
+  ctx.drawImage(image, x + (width - drawW) / 2, y + (height - drawH) / 2, drawW, drawH);
+  ctx.restore();
+}
+
+function drawCanvasImageCover(ctx, image, x, y, width, height, radius = 0) {
+  ctx.save();
+  if (radius) {
+    drawRoundedPath(ctx, x, y, width, height, radius);
+    ctx.clip();
+  }
+  const scale = Math.max(width / image.width, height / image.height);
+  const drawW = image.width * scale;
+  const drawH = image.height * scale;
+  ctx.drawImage(image, x + (width - drawW) / 2, y + (height - drawH) / 2, drawW, drawH);
+  ctx.restore();
+}
+
+function drawRoundedPath(ctx, x, y, width, height, radius) {
+  ctx.beginPath();
+  if (typeof ctx.roundRect === "function") {
+    ctx.roundRect(x, y, width, height, radius);
+    return;
+  }
+  ctx.moveTo(x + radius, y);
+  ctx.lineTo(x + width - radius, y);
+  ctx.quadraticCurveTo(x + width, y, x + width, y + radius);
+  ctx.lineTo(x + width, y + height - radius);
+  ctx.quadraticCurveTo(x + width, y + height, x + width - radius, y + height);
+  ctx.lineTo(x + radius, y + height);
+  ctx.quadraticCurveTo(x, y + height, x, y + height - radius);
+  ctx.lineTo(x, y + radius);
+  ctx.quadraticCurveTo(x, y, x + radius, y);
 }
 
 function canvasRgba(hex, alpha) {
