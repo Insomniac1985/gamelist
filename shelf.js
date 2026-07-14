@@ -191,11 +191,6 @@ async function init() {
     fetch("/api/auth", { cache: "no-store" }).then((response) => response.ok).catch(() => false),
     fetch("/api/sync", { cache: "no-store" }).then((response) => response.ok ? response.json() : null).catch(() => null),
   ]);
-  logShowcaseDebug("init:api", {
-    shelfFavoriteGameIds: shelfData?.favoriteGameIds,
-    settingsFavoriteGameIds: gamelistData?.settings?.shelfShowcaseFavoriteGameIds,
-    shelfUpdatedAt: shelfData?.updatedAt,
-  });
   const draft = loadDraft();
   if (shelfData) localStorage.removeItem(LOCAL_DRAFT_KEY);
   state.sourceGames = shelfData?.sourceGames || draft.sourceGames || [];
@@ -203,7 +198,6 @@ async function init() {
   state.overrides = shelfData?.overrides || draft.overrides || {};
   state.layout = normalizeLayout(shelfData?.layout || state.layout);
   state.favoriteGameIds = shelfFavoriteIdsFromSources(shelfData, gamelistData, draft);
-  logShowcaseDebug("init:selected-source", { favoriteGameIds: state.favoriteGameIds });
   state.canEdit = state.canEdit || auth;
   state.updatedAt = shelfData?.updatedAt || "";
   state.gamelistGames = gamelistData?.games || [];
@@ -332,12 +326,7 @@ function hydrateModuleCache() {
   try {
     const cache = JSON.parse(localStorage.getItem(MODULE_CACHE_KEY) || "{}");
     if (!cache || typeof cache !== "object") return;
-    if (cache.playing) el.playingCarousel.innerHTML = cache.playing;
-    if (cache.finished) el.finishedCarousel.innerHTML = cache.finished;
-    if (cache.favorites) el.favorites.innerHTML = cache.favorites;
     if (cache.stats) el.stats.innerHTML = cache.stats;
-    if (cache.calendar) el.releaseCalendar.innerHTML = cache.calendar;
-    if (cache.playingCount) el.playingCount.textContent = cache.playingCount;
     syncShelfActivityVisibility();
   } catch {
     localStorage.removeItem(MODULE_CACHE_KEY);
@@ -347,12 +336,7 @@ function hydrateModuleCache() {
 function saveModuleCache() {
   try {
     localStorage.setItem(MODULE_CACHE_KEY, JSON.stringify({
-      playing: el.playingCarousel.innerHTML,
-      finished: el.finishedCarousel.innerHTML,
-      favorites: el.favorites.innerHTML,
       stats: el.stats.innerHTML,
-      calendar: el.releaseCalendar.innerHTML,
-      playingCount: el.playingCount.textContent,
       savedAt: Date.now(),
     }));
   } catch {
@@ -361,17 +345,7 @@ function saveModuleCache() {
 }
 
 function renderFavorites() {
-  const before = state.favoriteGameIds.slice();
   state.favoriteGameIds = normalizeFavoriteGameIds(state.favoriteGameIds);
-  const missing = before.filter((id) => !ownedShelfGames().some((game) => game.id === id));
-  if (JSON.stringify(before) !== JSON.stringify(state.favoriteGameIds) || missing.length) {
-    logShowcaseDebug("renderFavorites:normalize", {
-      before,
-      after: state.favoriteGameIds,
-      ownedCount: ownedShelfGames().length,
-      missing,
-    });
-  }
   const games = favoriteGames();
   el.favorites.innerHTML = Array.from({ length: 5 }, (_, index) => favoriteCoverCard(games[index], index)).join("");
   el.favorites.closest("[data-module='favorites']").hidden = state.layout.hidden.includes("favorites");
@@ -391,12 +365,6 @@ function shelfFavoriteIdsFromSources(shelfData, gamelistData, draft = {}) {
   const draftIds = Array.isArray(draft.favoriteGameIds) ? draft.favoriteGameIds : [];
   if (hasSettingsIds) return settingsIds.slice(0, 5);
   return (shelfIds.length ? shelfIds : draftIds).slice(0, 5);
-}
-
-function logShowcaseDebug(stage, data = {}) {
-  try {
-    console.info(`[showcase] ${stage}`, data);
-  } catch {}
 }
 
 function favoriteCoverCard(game, index = 0) {
@@ -2048,9 +2016,7 @@ function handleShowcaseSelectedClick(event) {
 
 async function saveShowcase(event) {
   event.preventDefault();
-  logShowcaseDebug("save:submit", { draftIds: state.showcaseDraftIds });
   state.favoriteGameIds = normalizeFavoriteGameIds(state.showcaseDraftIds);
-  logShowcaseDebug("save:normalized", { favoriteGameIds: state.favoriteGameIds });
   const saved = await persistShowcaseFavorites(state.favoriteGameIds);
   if (!saved) {
     showToast("Showcase could not be saved. Please try again.", "error");
@@ -2063,7 +2029,6 @@ async function saveShowcase(event) {
 
 async function persistShowcaseFavorites(ids) {
   const favoriteGameIds = normalizeFavoriteGameIds(ids);
-  logShowcaseDebug("persist:start", { favoriteGameIds });
   state.gamelistSettings = { ...state.gamelistSettings, shelfShowcaseFavoriteGameIds: favoriteGameIds };
   localStorage.setItem("gamelist:settings:v1", JSON.stringify(state.gamelistSettings));
   const password = sessionStorage.getItem(`${SESSION_KEY}:password`) || "";
@@ -2077,7 +2042,6 @@ async function persistShowcaseFavorites(ids) {
     });
     if (!response.ok) throw new Error("Showcase save failed");
     const saved = await response.json();
-    logShowcaseDebug("persist:shelf-response", saved);
     const savedIds = Array.isArray(saved.favoriteGameIds) ? saved.favoriteGameIds.map((id) => String(id || "").trim()).filter(Boolean) : [];
     if (JSON.stringify(savedIds) !== JSON.stringify(favoriteGameIds)) throw new Error("Showcase save mismatch");
     shelfSaved = true;
@@ -2092,7 +2056,6 @@ async function persistShowcaseFavorites(ids) {
       body: JSON.stringify({ settingsOnly: true, settings: state.gamelistSettings }),
     });
     if (!response.ok) throw new Error("Showcase settings save failed");
-    logShowcaseDebug("persist:settings-response", { ok: true });
     settingsSaved = true;
   } catch (error) {
     console.warn("Showcase settings fallback save failed", error);
@@ -2100,7 +2063,6 @@ async function persistShowcaseFavorites(ids) {
   try {
     const fresh = await fetch("/api/shelf", { cache: "no-store" }).then((result) => result.ok ? result.json() : null);
     const freshIds = Array.isArray(fresh?.favoriteGameIds) ? fresh.favoriteGameIds.map((id) => String(id || "").trim()).filter(Boolean) : [];
-    logShowcaseDebug("persist:shelf-readback", { freshIds, updatedAt: fresh?.updatedAt });
     if (JSON.stringify(freshIds) === JSON.stringify(favoriteGameIds)) shelfSaved = true;
   } catch (error) {
     console.warn("Showcase shelf readback failed", error);
@@ -2108,17 +2070,14 @@ async function persistShowcaseFavorites(ids) {
   try {
     const fresh = await fetch("/api/sync", { cache: "no-store" }).then((result) => result.ok ? result.json() : null);
     const freshIds = Array.isArray(fresh?.settings?.shelfShowcaseFavoriteGameIds) ? fresh.settings.shelfShowcaseFavoriteGameIds.map((id) => String(id || "").trim()).filter(Boolean) : [];
-    logShowcaseDebug("persist:settings-readback", { freshIds });
     if (JSON.stringify(freshIds) === JSON.stringify(favoriteGameIds)) settingsSaved = true;
   } catch (error) {
     console.warn("Showcase settings readback failed", error);
   }
   if (shelfSaved || settingsSaved) {
-    logShowcaseDebug("persist:done", { shelfSaved, settingsSaved });
     localStorage.removeItem(LOCAL_DRAFT_KEY);
     return true;
   }
-  logShowcaseDebug("persist:failed", { shelfSaved, settingsSaved });
   return false;
 }
 
@@ -2562,7 +2521,6 @@ async function loadShelfCardTrophies(game, remote) {
 function refreshShelfProjectedActivity(game) {
   updateShelfCardTrophyStrips(game.id);
   renderGamelistModules();
-  renderFavorites();
 }
 function updateShelfCardTrophyStrips(gameId) {
   const game = state.gamelistGames.find((item) => item.id === gameId && !item.deletedAt);
@@ -2571,7 +2529,6 @@ function updateShelfCardTrophyStrips(gameId) {
     node.innerHTML = game.playing ? shelfCardTrophies(game, { compactProgress: true }) : "";
     node.hidden = !node.innerHTML;
   });
-  renderFavorites();
   if (game.playing) schedulePlayingCardHeightSync();
 }
 function updateAllShelfTrophyStrips() {
@@ -2609,7 +2566,6 @@ async function loadTrophyActivity() {
     el.trophyCard.querySelector("[data-action='platinums']")?.addEventListener("click", openCompletedGames);
     updateAllShelfTrophyStrips();
     updateShelfPhysicalProgressPills();
-    renderFavorites();
     renderGamelistModules();
     module.hidden = state.layout.hidden.includes("trophies");
     return;
@@ -2627,7 +2583,6 @@ async function loadTrophyActivity() {
     el.trophyCard.querySelector("[data-action='platinums']")?.addEventListener("click", openCompletedGames);
     updateAllShelfTrophyStrips();
     updateShelfPhysicalProgressPills();
-    renderFavorites();
     renderGamelistModules();
   } catch { el.trophyCard.innerHTML = `<span>Trophy activity is unavailable.</span>`; }
   module.hidden = state.layout.hidden.includes("trophies");
