@@ -1561,7 +1561,8 @@ function renderGameOfTheYear() {
   const entry = state.settings.gameOfTheYear?.[year] || {};
   const picks = entry.picks || {};
   el.gotySection.hidden = false;
-  el.gotyTitle.innerHTML = `${trophyIcon()} <span>My Games of the Year ${escapeHtml(year)}</span>`;
+  const sectionTitle = window.matchMedia("(max-width: 520px)").matches ? `My GOTYs ${year}` : `My Games of the Year ${year}`;
+  el.gotyTitle.innerHTML = `${trophyIcon()} <span>${escapeHtml(sectionTitle)}</span>`;
   el.gotyYearSelect.innerHTML = years.map((item) => `<option value="${escapeHtml(item)}">${escapeHtml(item)}</option>`).join("");
   el.gotyYearSelect.value = year;
   syncStyledSelect(el.gotyYearSelect, { activeValue: null });
@@ -1616,7 +1617,7 @@ function openGameOfTheYearDialog(year = currentGameOfTheYear(), options = {}) {
   el.gotyForm.dataset.gotyYear = String(year);
   const entry = state.settings.gameOfTheYear?.[year] || {};
   const picks = { ...(entry.picks || {}) };
-  const dialogTitle = window.matchMedia("(max-width: 520px)").matches ? `GOTY ${year}` : `Games of the Year ${year}`;
+  const dialogTitle = window.matchMedia("(max-width: 520px)").matches ? `GOTYs ${year}` : `Games of the Year ${year}`;
   el.gotyDialogTitle.innerHTML = `${trophyIcon()} <span>${escapeHtml(dialogTitle)}</span>`;
   if (el.gotyPickerOrder) {
     state.gotyPickerOrder = state.gotyPickerOrder || gotyOrderForDefault(state.settings.defaultOrder);
