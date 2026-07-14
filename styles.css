@@ -743,14 +743,6 @@ html.theme-font-pokemon {
   display: grid;
   gap: 8px;
   margin: 0 0 28px;
-  background:
-    linear-gradient(rgba(0, 0, 0, 0), rgba(0, 0, 0, 0)),
-    repeating-linear-gradient(0deg, rgba(255, 255, 255, 0.018) 0 1px, transparent 1px 14px),
-    repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.014) 0 1px, transparent 1px 14px);
-  background-position:
-    center,
-    var(--grid-x) var(--grid-y),
-    var(--grid-x) var(--grid-y);
 }
 
 .goty-section[hidden] {
@@ -933,10 +925,12 @@ html.theme-gradient .goty-section .column-head h2 .trophy-icon {
   background-position:
     center,
     var(--grid-x) var(--grid-y),
+    var(--grid-x) var(--grid-y),
     center;
   background-size:
     auto,
-    auto,
+    24px 24px,
+    24px 24px,
     auto;
 }
 
@@ -975,7 +969,7 @@ html.theme-gradient .goty-section .column-head h2 .trophy-icon {
   overflow: clip;
   border-radius: 8px;
   clip-path: inset(0 round 7px);
-  box-shadow: none;
+  box-shadow: 0 14px 30px color-mix(in srgb, var(--accent) 18%, transparent);
 }
 
 .goty-card img {
