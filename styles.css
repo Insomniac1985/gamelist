@@ -10079,14 +10079,14 @@ body.theme-kash .history-row.completed-trophy-card:hover {
 @media (max-width: 460px) {
   .goty-section .column-head {
     display: grid;
-    grid-template-columns: minmax(0, 1fr) 36px 36px;
+    grid-template-columns: minmax(0, 1fr) auto;
     align-items: start;
-    gap: 6px 8px;
+    gap: 6px 10px;
   }
 
   .goty-section .column-head > div:first-child {
     grid-column: 1;
-    grid-row: 1;
+    grid-row: 1 / span 2;
     min-width: 0;
   }
 
@@ -10104,14 +10104,22 @@ body.theme-kash .history-row.completed-trophy-card:hover {
   }
 
   .goty-head-actions {
-    display: contents;
+    display: grid;
+    grid-column: 2;
+    grid-row: 1 / span 2;
+    grid-template-columns: 36px 36px;
+    gap: 6px 8px;
+    justify-content: end;
+    justify-self: end;
+    margin-left: 0;
   }
 
   .goty-year-select {
     grid-column: 1 / -1;
     grid-row: 2;
     width: 88px;
-    margin-left: calc(1.02em + 8px);
+    margin: 0;
+    justify-self: end;
   }
 
   .goty-save-button,
@@ -10125,7 +10133,7 @@ body.theme-kash .history-row.completed-trophy-card:hover {
   }
 
   .goty-save-button {
-    grid-column: 3;
+    grid-column: 1;
   }
 
   .goty-grid {
