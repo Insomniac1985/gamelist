@@ -369,9 +369,12 @@ function favoriteGames() {
 
 function shelfFavoriteIdsFromSources(shelfData, gamelistData, draft = {}) {
   const shelfIds = Array.isArray(shelfData?.favoriteGameIds) ? shelfData.favoriteGameIds : [];
-  const settingsIds = Array.isArray(gamelistData?.settings?.shelfShowcaseFavoriteGameIds) ? gamelistData.settings.shelfShowcaseFavoriteGameIds : [];
+  const settings = gamelistData?.settings || {};
+  const hasSettingsIds = Object.prototype.hasOwnProperty.call(settings, "shelfShowcaseFavoriteGameIds");
+  const settingsIds = Array.isArray(settings.shelfShowcaseFavoriteGameIds) ? settings.shelfShowcaseFavoriteGameIds : [];
   const draftIds = Array.isArray(draft.favoriteGameIds) ? draft.favoriteGameIds : [];
-  return (shelfIds.length ? shelfIds : settingsIds.length ? settingsIds : draftIds).slice(0, 5);
+  if (hasSettingsIds) return settingsIds.slice(0, 5);
+  return (shelfIds.length ? shelfIds : draftIds).slice(0, 5);
 }
 
 function favoriteCoverCard(game, index = 0) {
