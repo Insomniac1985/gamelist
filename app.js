@@ -1616,7 +1616,8 @@ function openGameOfTheYearDialog(year = currentGameOfTheYear(), options = {}) {
   el.gotyForm.dataset.gotyYear = String(year);
   const entry = state.settings.gameOfTheYear?.[year] || {};
   const picks = { ...(entry.picks || {}) };
-  el.gotyDialogTitle.innerHTML = `${trophyIcon()} <span>Games of the Year ${escapeHtml(year)}</span>`;
+  const dialogTitle = window.matchMedia("(max-width: 520px)").matches ? `GOTY ${year}` : `Games of the Year ${year}`;
+  el.gotyDialogTitle.innerHTML = `${trophyIcon()} <span>${escapeHtml(dialogTitle)}</span>`;
   if (el.gotyPickerOrder) {
     state.gotyPickerOrder = state.gotyPickerOrder || gotyOrderForDefault(state.settings.defaultOrder);
     el.gotyPickerOrder.value = state.gotyPickerOrder;

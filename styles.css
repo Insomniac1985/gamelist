@@ -1164,7 +1164,7 @@ html.theme-gradient .goty-section .column-head h2 .trophy-icon {
 
 .goty-picker-toolbar {
   display: flex;
-  align-items: end;
+  align-items: center;
   justify-content: space-between;
   gap: 12px;
   margin: -4px 0 10px;
