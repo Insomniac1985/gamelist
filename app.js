@@ -1758,7 +1758,9 @@ async function saveGameOfTheYearFromForm(event) {
   showToast(`Saved Games of the Year ${year}.`);
 }
 
-async function resetGameOfTheYearFromForm() {
+function resetGameOfTheYearFromForm(event) {
+  event?.preventDefault();
+  event?.stopPropagation();
   const year = el.gotyForm.dataset.gotyYear || currentGameOfTheYear();
   const gameOfTheYear = { ...(state.settings.gameOfTheYear || {}) };
   delete gameOfTheYear[year];
@@ -1766,11 +1768,13 @@ async function resetGameOfTheYearFromForm() {
   state.gotyYear = year;
   state.gotyPromptShown = false;
   persistLocalSettings();
-  await persistCloud();
   el.gotyDialog.close();
+  document.querySelector(".goty-callout")?.remove();
   render();
-  window.setTimeout(() => showGameOfTheYearCallout(year), 250);
+  state.gotyPromptShown = false;
+  window.setTimeout(() => showGameOfTheYearCallout(year), 120);
   showToast(`Reset Games of the Year ${year}.`);
+  persistCloud().catch(() => showToast("Could not sync the reset yet.", "error"));
 }
 
 function showGameOfTheYearCallout(year) {

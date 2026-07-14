@@ -743,6 +743,18 @@ html.theme-font-pokemon {
   display: grid;
   gap: 14px;
   margin: 0 0 28px;
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--grid-fade), var(--grid-texture), color-mix(in srgb, var(--panel) 42%, transparent);
+  background-position:
+    center,
+    var(--grid-x) var(--grid-y),
+    center;
+  background-size:
+    auto,
+    auto,
+    auto;
 }
 
 .goty-section[hidden] {
@@ -771,9 +783,9 @@ html.theme-font-pokemon {
 
 .goty-section .column-head h2 .trophy-icon,
 #gotyDialogTitle .trophy-icon {
-  width: 0.78em;
-  height: 0.78em;
-  min-width: 0.78em;
+  width: 1.02em;
+  height: 1.02em;
+  min-width: 1.02em;
   color: var(--accent);
   stroke: currentColor;
 }
@@ -786,7 +798,7 @@ html.theme-font-pokemon {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  color: var(--accent-2);
+  color: #ffffff;
 }
 
 #gotyDialogTitle .trophy-icon {
@@ -891,18 +903,10 @@ html.theme-font-pokemon {
   grid-template-columns: repeat(7, minmax(0, 1fr));
   gap: 10px;
   overflow: visible;
-  padding: 12px;
-  border: 1px solid var(--line);
-  border-radius: 8px;
-  background: var(--grid-fade), var(--grid-texture), color-mix(in srgb, var(--panel) 42%, transparent);
-  background-position:
-    center,
-    var(--grid-x) var(--grid-y),
-    center;
-  background-size:
-    auto,
-    auto,
-    auto;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
 }
 
 .goty-card {
@@ -914,16 +918,15 @@ html.theme-font-pokemon {
   overflow: visible;
   padding: 7px;
   color: #fff;
-  border: 1px solid color-mix(in srgb, var(--accent) 18%, var(--line));
+  border: 1px solid var(--line);
   border-radius: 8px;
   background: color-mix(in srgb, var(--panel) 36%, rgba(255, 255, 255, 0.03));
-  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.025);
+  box-shadow: none;
   cursor: pointer;
   transition:
     transform 170ms ease,
     filter 170ms ease,
     border-color 170ms ease,
-    box-shadow 170ms ease,
     z-index 170ms ease;
 }
 
@@ -932,10 +935,7 @@ html.theme-font-pokemon {
   z-index: 8;
   transform: translateY(-2px);
   filter: saturate(1.08);
-  border-color: color-mix(in srgb, var(--accent) 44%, var(--line));
-  box-shadow:
-    inset 0 0 0 1px rgba(255, 255, 255, 0.04),
-    0 18px 34px rgba(0, 0, 0, 0.2);
+  border-color: var(--line);
 }
 
 .goty-cover {
@@ -1127,7 +1127,7 @@ html.theme-font-pokemon {
 }
 
 .goty-dialog-copy {
-  margin: -4px 0 16px;
+  margin: -4px 0 8px;
   color: var(--muted);
   font-size: 13px;
 }
@@ -1135,7 +1135,7 @@ html.theme-font-pokemon {
 .goty-picker-toolbar {
   display: flex;
   justify-content: flex-end;
-  margin: -6px 0 12px;
+  margin: -4px 0 8px;
 }
 
 .goty-picker-order {
@@ -1468,7 +1468,11 @@ html.theme-font-pokemon {
   max-width: min(460px, calc(100vw - 32px));
   padding: 10px;
   color: var(--text);
-  background: var(--grid-fade), var(--grid-texture), var(--panel-strong);
+  background:
+    linear-gradient(135deg, color-mix(in srgb, var(--accent) 10%, transparent), transparent 58%),
+    repeating-linear-gradient(0deg, rgba(255, 255, 255, 0.045) 0 1px, transparent 1px 12px),
+    repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.035) 0 1px, transparent 1px 12px),
+    var(--panel-strong);
   border: 1px solid color-mix(in srgb, var(--accent) 34%, var(--line));
   border-radius: 8px;
   box-shadow: var(--shadow);
