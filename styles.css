@@ -751,10 +751,54 @@ html.theme-font-pokemon {
 
 .goty-head-actions {
   display: inline-flex;
-  align-items: end;
+  align-items: center;
   justify-content: flex-end;
   gap: 8px;
   margin-left: auto;
+}
+
+.goty-title-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.goty-section .column-head h2,
+.goty-dialog-title {
+  gap: 8px;
+}
+
+.goty-section .column-head h2 .trophy-icon,
+#gotyDialogTitle .trophy-icon {
+  width: 0.78em;
+  height: 0.78em;
+  min-width: 0.78em;
+  color: var(--accent);
+  stroke: currentColor;
+}
+
+.goty-section .column-head h2 .trophy-icon {
+  color: var(--accent);
+}
+
+#gotyDialogTitle {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--accent-2);
+}
+
+#gotyDialogTitle .trophy-icon {
+  color: currentColor;
+}
+
+.goty-year-count {
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 820;
+  line-height: 1;
+  white-space: nowrap;
 }
 
 .goty-year-select {
@@ -820,8 +864,10 @@ html.theme-font-pokemon {
 
 .goty-edit-button .pencil-icon,
 .goty-save-button .download-icon {
-  width: 20px;
-  height: 20px;
+  width: 18px;
+  height: 18px;
+  min-width: 18px;
+  flex: 0 0 18px;
 }
 
 .goty-save-button .download-icon {
@@ -848,26 +894,36 @@ html.theme-font-pokemon {
   padding: 12px;
   border: 1px solid var(--line);
   border-radius: 8px;
-  background: color-mix(in srgb, var(--panel) 42%, transparent);
+  background: var(--grid-fade), var(--grid-texture), color-mix(in srgb, var(--panel) 42%, transparent);
+  background-position:
+    center,
+    var(--grid-x) var(--grid-y),
+    center;
+  background-size:
+    auto,
+    auto,
+    auto;
 }
 
 .goty-card {
   position: relative;
   display: grid;
   grid-template-rows: auto minmax(0, 1fr);
-  gap: 0;
+  gap: 2px;
   min-width: 0;
   overflow: visible;
-  padding: 0;
+  padding: 7px;
   color: #fff;
-  border: 0;
+  border: 1px solid color-mix(in srgb, var(--accent) 18%, var(--line));
   border-radius: 8px;
-  background: transparent;
-  box-shadow: none;
+  background: color-mix(in srgb, var(--panel) 36%, rgba(255, 255, 255, 0.03));
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.025);
   cursor: pointer;
   transition:
     transform 170ms ease,
     filter 170ms ease,
+    border-color 170ms ease,
+    box-shadow 170ms ease,
     z-index 170ms ease;
 }
 
@@ -876,6 +932,10 @@ html.theme-font-pokemon {
   z-index: 8;
   transform: translateY(-2px);
   filter: saturate(1.08);
+  border-color: color-mix(in srgb, var(--accent) 44%, var(--line));
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.04),
+    0 18px 34px rgba(0, 0, 0, 0.2);
 }
 
 .goty-cover {
@@ -910,7 +970,7 @@ html.theme-font-pokemon {
   align-items: center;
   justify-content: center;
   min-height: 28px;
-  padding: 0 2px;
+  padding: 0 2px 1px;
   color: var(--accent-2);
   font-size: 13px;
   font-weight: 920;
@@ -1070,6 +1130,48 @@ html.theme-font-pokemon {
   margin: -4px 0 16px;
   color: var(--muted);
   font-size: 13px;
+}
+
+.goty-picker-toolbar {
+  display: flex;
+  justify-content: flex-end;
+  margin: -6px 0 12px;
+}
+
+.goty-picker-order {
+  display: grid;
+  gap: 5px;
+  width: 126px;
+}
+
+.goty-picker-order > span {
+  color: var(--dim);
+  font-size: 10px;
+  font-weight: 820;
+  text-transform: uppercase;
+}
+
+.goty-picker-order .platform-logo-select {
+  --dropdown-control-height: 34px;
+}
+
+.goty-picker-order .platform-logo-button {
+  height: 34px;
+  min-height: 34px;
+  padding: 0 32px 0 10px;
+  font-size: 12px;
+}
+
+.goty-picker-order .platform-logo-button .platform-logo-choice,
+.goty-picker-order .platform-logo-option .platform-logo-choice {
+  height: auto;
+  min-height: 0;
+  align-items: center;
+}
+
+.goty-picker-order .platform-logo-button .platform-logo-choice-label,
+.goty-picker-order .platform-logo-option .platform-logo-choice-label {
+  line-height: 1;
 }
 
 .goty-picker-grid {
@@ -1390,6 +1492,19 @@ html.theme-font-pokemon {
   color: var(--text);
   font-size: 12px;
   font-weight: 850;
+}
+
+.goty-callout-title {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.goty-callout-title .trophy-icon {
+  width: 16px;
+  height: 16px;
+  color: var(--accent);
+  stroke: currentColor;
 }
 
 .goty-callout .primary-button,
@@ -5573,11 +5688,10 @@ body.can-edit #loginButton .pause-icon {
 
 .goty-edit-button .pencil-icon,
 .goty-save-button .download-icon {
-  width: 24px !important;
-  height: 24px !important;
-  min-width: 24px;
-  flex: 0 0 24px;
-  stroke-width: 2.4;
+  width: 18px;
+  height: 18px;
+  min-width: 18px;
+  flex: 0 0 18px;
 }
 
 .primary-button {

@@ -223,7 +223,10 @@
       <section class="goty-section" id="gotySection" hidden>
         <div class="column-head">
           <div>
-            <h2 id="gotyTitle">Games of the Year</h2>
+            <div class="goty-title-row">
+              <h2 id="gotyTitle">Games of the Year</h2>
+              <span class="goty-year-count" id="gotyYearCount"></span>
+            </div>
           </div>
           <div class="goty-head-actions">
             <label class="goty-year-select">
@@ -688,15 +691,25 @@
             <h2 id="gotyDialogTitle">Pick your favorites</h2>
           </div>
           <div class="modal-head-actions">
-            <button class="primary-button modal-head-save" type="submit">Publish</button>
+            <button class="primary-button modal-head-save" type="submit">Save</button>
             <button class="icon-button" id="gotyCloseButton" type="button" title="Close">×</button>
           </div>
         </div>
         <p class="goty-dialog-copy">Choose one finished game for every category.</p>
+        <div class="goty-picker-toolbar">
+          <label class="goty-picker-order">
+            <span>Order</span>
+            <select id="gotyPickerOrder" aria-label="Game of the Year picker order">
+              <option value="time">Time</option>
+              <option value="name">Name</option>
+              <option value="platform">Platform</option>
+            </select>
+          </label>
+        </div>
         <div class="goty-picker-grid" id="gotyPickerGrid"></div>
         <div class="goty-dialog-actions">
           <button class="danger-button icon-only-button goty-reset-button" id="gotyResetButton" type="button" title="Reset" aria-label="Reset Game of the Year picks"></button>
-          <button class="primary-button goty-publish-button" type="submit">Publish</button>
+          <button class="primary-button goty-publish-button" type="submit">Save</button>
         </div>
       </form>
     </dialog>

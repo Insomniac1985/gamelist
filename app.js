@@ -22,9 +22,9 @@ const PULL_NAVIGATION_KEY = "gamelist:pull-navigation";
 const STORE_OPTIONS = ["Amazon", "eBay", "GAME.es", "Xtralife", "Retro Island NY", "GameStop", "Walmart"];
 const MAX_PRICE_STORES = 5;
 const GAME_OF_YEAR_CATEGORIES = [
+  ["fun", "MOST FUN"],
   ["singleplayer", "FAVORITE SINGLEPLAYER"],
   ["multiplayer", "FAVORITE MULTIPLAYER"],
-  ["fun", "MOST FUN GAME"],
   ["soundtrack", "FAVORITE SOUNDTRACK"],
   ["indie", "FAVORITE INDIE"],
   ["surprise", "BIGGEST SURPRISE"],
@@ -185,6 +185,7 @@ const state = {
   completedYear: "all",
   completedVisiblePages: 1,
   gotyYear: String(new Date().getFullYear()),
+  gotyPickerOrder: gotyOrderForDefault(initialSettings.defaultOrder),
   gotyPromptShown: false,
   historyYear: String(new Date().getFullYear()),
   platinumYear: "all",
@@ -220,6 +221,7 @@ const el = {
   gotySection: document.querySelector("#gotySection"),
   gotyTitle: document.querySelector("#gotyTitle"),
   gotyYearSelect: document.querySelector("#gotyYearSelect"),
+  gotyYearCount: document.querySelector("#gotyYearCount"),
   gotySaveButton: document.querySelector("#gotySaveButton"),
   gotyEditButton: document.querySelector("#gotyEditButton"),
   gotyResetButton: document.querySelector("#gotyResetButton"),
@@ -263,6 +265,7 @@ const el = {
   gotyForm: document.querySelector("#gotyForm"),
   gotyDialogTitle: document.querySelector("#gotyDialogTitle"),
   gotyCloseButton: document.querySelector("#gotyCloseButton"),
+  gotyPickerOrder: document.querySelector("#gotyPickerOrder"),
   gotyPickerGrid: document.querySelector("#gotyPickerGrid"),
   platinumDialog: document.querySelector("#platinumDialog"),
   platinumCloseButton: document.querySelector("#platinumCloseButton"),
@@ -636,6 +639,11 @@ function bindEvents() {
   el.gotyEditButton?.addEventListener("click", () => openGameOfTheYearDialog(currentGameOfTheYear(), { force: true }));
   el.gotySaveButton?.addEventListener("click", downloadGameOfTheYearImage);
   el.gotyResetButton?.addEventListener("click", resetGameOfTheYearFromForm);
+  el.gotyPickerOrder?.addEventListener("change", () => {
+    state.gotyPickerOrder = el.gotyPickerOrder.value || gotyOrderForDefault(state.settings.defaultOrder);
+    const year = el.gotyForm.dataset.gotyYear || currentGameOfTheYear();
+    renderGameOfTheYearPicker(sortedGameOfTheYearChoices(completedGamesForYear(year)), currentGameOfTheYearDraftPicks());
+  });
   el.gotyCloseButton?.addEventListener("click", () => el.gotyDialog.close());
   el.gotyDialog?.addEventListener("click", (event) => {
     if (event.target === el.gotyDialog) el.gotyDialog.close();
@@ -917,9 +925,16 @@ function listSortForDefault(value) {
   return value === "name" ? "name" : "time";
 }
 
+function gotyOrderForDefault(value) {
+  if (value === "name") return "name";
+  if (value === "platform") return "platform";
+  return "time";
+}
+
 function applyDefaultOrder(value) {
   state.filters.sort = mainSortForDefault(value);
   state.platinumSort = listSortForDefault(value);
+  state.gotyPickerOrder = gotyOrderForDefault(value);
 }
 
 function normalizeSettings(settings = {}) {
@@ -1546,10 +1561,14 @@ function renderGameOfTheYear() {
   const entry = state.settings.gameOfTheYear?.[year] || {};
   const picks = entry.picks || {};
   el.gotySection.hidden = false;
-  el.gotyTitle.textContent = `Games of the Year ${year}`;
+  el.gotyTitle.innerHTML = `${trophyIcon()} <span>My Games of the Year ${escapeHtml(year)}</span>`;
   el.gotyYearSelect.innerHTML = years.map((item) => `<option value="${escapeHtml(item)}">${escapeHtml(item)}</option>`).join("");
   el.gotyYearSelect.value = year;
   syncStyledSelect(el.gotyYearSelect, { activeValue: null });
+  if (el.gotyYearCount) {
+    const count = completedGamesForYear(year).length;
+    el.gotyYearCount.textContent = `${count} ${count === 1 ? "game" : "games"}`;
+  }
   const canEditCurrent = state.canEdit && year === currentGameOfTheYear();
   el.gotyEditButton.hidden = !canEditCurrent;
   el.gotyEditButton.innerHTML = pencilIcon();
@@ -1588,7 +1607,7 @@ function maybePromptGameOfTheYear() {
 
 function openGameOfTheYearDialog(year = currentGameOfTheYear(), options = {}) {
   if (!options.force && (!state.canEdit || year !== currentGameOfTheYear())) return false;
-  const games = completedGamesForYear(year);
+  const games = sortedGameOfTheYearChoices(completedGamesForYear(year));
   if (!games.length) {
     showToast("No finished games found for this year.", "error");
     return false;
@@ -1597,7 +1616,12 @@ function openGameOfTheYearDialog(year = currentGameOfTheYear(), options = {}) {
   el.gotyForm.dataset.gotyYear = String(year);
   const entry = state.settings.gameOfTheYear?.[year] || {};
   const picks = { ...(entry.picks || {}) };
-  el.gotyDialogTitle.textContent = `Games of the Year ${year}`;
+  el.gotyDialogTitle.innerHTML = `${trophyIcon()} <span>My Games of the Year ${escapeHtml(year)}</span>`;
+  if (el.gotyPickerOrder) {
+    state.gotyPickerOrder = state.gotyPickerOrder || gotyOrderForDefault(state.settings.defaultOrder);
+    el.gotyPickerOrder.value = state.gotyPickerOrder;
+    syncStyledSelect(el.gotyPickerOrder, { activeValue: null });
+  }
   if (el.gotyResetButton) el.gotyResetButton.innerHTML = trashIcon();
   renderGameOfTheYearPicker(games, picks);
   try {
@@ -1678,6 +1702,20 @@ function renderGameOfTheYearPicker(games, picks) {
   });
 }
 
+function sortedGameOfTheYearChoices(games) {
+  const order = state.gotyPickerOrder || gotyOrderForDefault(state.settings.defaultOrder);
+  return [...games].sort((a, b) => {
+    if (order === "name") return stringCompare(a.title, b.title) || String(b.completedAt).localeCompare(String(a.completedAt));
+    if (order === "platform") return stringCompare(canonicalPlatform(a.platform), canonicalPlatform(b.platform)) || stringCompare(a.title, b.title);
+    return String(b.completedAt).localeCompare(String(a.completedAt)) || stringCompare(a.title, b.title);
+  });
+}
+
+function currentGameOfTheYearDraftPicks() {
+  return Object.fromEntries([...el.gotyPickerGrid.querySelectorAll(".goty-picker-field")]
+    .map((field) => [field.dataset.gotyCategory, field.querySelector(".goty-choice-card.is-selected")?.dataset.gameId || ""]));
+}
+
 function updateGameOfTheYearPickerNav(field) {
   if (!field) return;
   const list = field.querySelector(".goty-choice-list");
@@ -1699,8 +1737,7 @@ function updateGameOfTheYearPickerNav(field) {
 async function saveGameOfTheYearFromForm(event) {
   event.preventDefault();
   const year = el.gotyForm.dataset.gotyYear || currentGameOfTheYear();
-  const picks = Object.fromEntries([...el.gotyPickerGrid.querySelectorAll(".goty-picker-field")]
-    .map((field) => [field.dataset.gotyCategory, field.querySelector(".goty-choice-card.is-selected")?.dataset.gameId || ""]));
+  const picks = currentGameOfTheYearDraftPicks();
   if (!gameOfTheYearComplete(picks)) {
     showToast("Choose a game for every category.", "error");
     return;
@@ -1718,7 +1755,7 @@ async function saveGameOfTheYearFromForm(event) {
   document.querySelector(".goty-callout")?.classList.remove("visible");
   el.gotyDialog.close();
   render();
-  showToast(`Published Games of the Year ${year}.`);
+  showToast(`Saved Games of the Year ${year}.`);
 }
 
 async function resetGameOfTheYearFromForm() {
@@ -1747,7 +1784,7 @@ function showGameOfTheYearCallout(year) {
     document.body.appendChild(callout);
   }
   callout.innerHTML = `
-    <span>Choose your games of this year.</span>
+    <span class="goty-callout-title">${trophyIcon()}<span>Choose your games of this year.</span></span>
     <button class="primary-button" type="button" data-goty-callout-action="choose">Choose now</button>
     <button class="icon-button" type="button" data-goty-callout-action="dismiss" title="Dismiss" aria-label="Dismiss">×</button>
   `;
