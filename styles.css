@@ -6085,16 +6085,18 @@ body:not(.can-edit) .game-card:focus-within .edit-action {
   align-items: center;
   gap: 14px;
   padding: 14px;
+  overflow: visible;
 }
 
 .finished-stats-chart-copy {
   display: grid;
+  grid-template-columns: minmax(76px, max-content) minmax(0, 1fr);
+  align-items: start;
   gap: 8px;
   min-width: 0;
 }
 
-.finished-stats-chart h3,
-.finished-stats-months h3 {
+.finished-stats-chart h3 {
   margin: 0;
   color: var(--accent);
   font-size: 14px;
@@ -6103,7 +6105,11 @@ body:not(.can-edit) .game-card:focus-within .edit-action {
 }
 
 .finished-stats-months h3 {
+  margin: 0;
   color: var(--text);
+  font-size: 14px;
+  font-weight: 900;
+  text-transform: uppercase;
 }
 
 .finished-stats-donut {
@@ -6113,7 +6119,6 @@ body:not(.can-edit) .game-card:focus-within .edit-action {
   aspect-ratio: 1;
   border-radius: 50%;
   background: conic-gradient(var(--donut));
-  box-shadow: inset 0 0 0 14px rgba(6, 7, 10, 0.86);
 }
 
 .finished-stats-chart-list {
@@ -6159,7 +6164,7 @@ body:not(.can-edit) .game-card:focus-within .edit-action {
   z-index: 8;
   display: grid;
   gap: 5px;
-  width: min(260px, calc(100vw - 42px));
+  width: min(360px, calc(100vw - 42px));
   max-height: 270px;
   padding: 10px;
   overflow: auto;
@@ -6182,6 +6187,7 @@ body:not(.can-edit) .game-card:focus-within .edit-action {
 .finished-stats-month:focus-within .finished-stats-breakdown {
   opacity: 1;
   transform: translateY(0);
+  pointer-events: auto;
 }
 
 .finished-stats-breakdown span {
@@ -6240,7 +6246,7 @@ body:not(.can-edit) .game-card:focus-within .edit-action {
 }
 
 .finished-stats-game-row .platform-badge {
-  max-width: 96px;
+  max-width: 128px;
 }
 
 .finished-stats-platform-row .platform-icon,
