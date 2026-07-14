@@ -635,8 +635,7 @@ html.theme-font-pokemon .shelf-page .column-head h2 {
   box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent) 42%, transparent);
 }
 
-.showcase-picker-card.is-selected::after {
-  content: "✓";
+.showcase-picker-check {
   position: absolute;
   right: 8px;
   top: 8px;
@@ -644,11 +643,21 @@ html.theme-font-pokemon .shelf-page .column-head h2 {
   place-items: center;
   width: 24px;
   height: 24px;
-  color: #111;
-  font-size: 14px;
-  font-weight: 950;
-  background: var(--accent);
-  border-radius: 999px;
+  color: #ffffff;
+  background: color-mix(in srgb, var(--accent) 92%, rgba(0, 0, 0, 0.2));
+  border: 1px solid rgba(255, 255, 255, 0.36);
+  border-radius: 6px;
+  box-shadow: 0 8px 20px color-mix(in srgb, var(--accent) 26%, rgba(0, 0, 0, 0.34));
+}
+
+.showcase-picker-check .check-icon {
+  width: 17px;
+  height: 17px;
+  fill: none;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 2.8;
 }
 
 .shelf-grid {

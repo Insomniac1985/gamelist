@@ -13,6 +13,21 @@ export async function onRequestPut({ request, env }) {
   if (!env.EDIT_PASSWORD) return json({ error: "Missing EDIT_PASSWORD secret" }, 503);
   if (!await isEditorRequest(request, env)) return json({ error: "Unauthorized" }, 401);
   const body = await request.json().catch(() => null);
+  if (body?.favoriteGameIdsOnly === true) {
+    if (!validFavoriteGameIds(body.favoriteGameIds)) return json({ error: "Expected { favoriteGameIds: [] }" }, 400);
+    const existing = await env.GAMELIST.get(KV_KEY, "json") || {};
+    const data = {
+      ...existing,
+      sourceGames: Array.isArray(existing.sourceGames) ? existing.sourceGames : [],
+      games: Array.isArray(existing.games) ? existing.games : [],
+      overrides: existing.overrides && typeof existing.overrides === "object" ? existing.overrides : {},
+      layout: validLayout(existing.layout) ? existing.layout : null,
+      favoriteGameIds: body.favoriteGameIds.slice(0, 5),
+      updatedAt: new Date().toISOString(),
+    };
+    await env.GAMELIST.put(KV_KEY, JSON.stringify(data));
+    return json({ ok: true, updatedAt: data.updatedAt, favoriteGameIds: data.favoriteGameIds });
+  }
   if (!body || !Array.isArray(body.games) || !body.overrides || typeof body.overrides !== "object") {
     return json({ error: "Expected { games: [], overrides: {} }" }, 400);
   }

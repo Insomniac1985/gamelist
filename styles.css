@@ -2644,7 +2644,7 @@ body.dialog-open .scroll-top-button {
 .floating-action-button:hover {
   color: #ffffff;
   border-color: color-mix(in srgb, var(--accent) 58%, transparent);
-  background: color-mix(in srgb, var(--accent) 88%, rgba(255, 255, 255, 0.08));
+  background: color-mix(in srgb, var(--accent) 96%, #ffffff);
 }
 
 .floating-action-button .pencil-icon {
@@ -5555,7 +5555,7 @@ a.time-pill {
 .icon-button.floating-action-button:hover {
   color: #ffffff;
   border-color: color-mix(in srgb, var(--accent) 58%, transparent);
-  background: color-mix(in srgb, var(--accent) 88%, rgba(255, 255, 255, 0.08));
+  background: color-mix(in srgb, var(--accent) 96%, #ffffff);
   box-shadow:
     0 0 0 3px color-mix(in srgb, var(--accent) 12%, transparent),
     0 10px 28px color-mix(in srgb, var(--accent) 12%, transparent);

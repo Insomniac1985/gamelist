@@ -1945,7 +1945,8 @@ function filteredShowcaseGames() {
 
 function showcasePickerCard(game, selected) {
   const cover = coverUrl(game.cover || "") || platformFallback(game.platform);
-  return `<button class="showcase-picker-card ${selected ? "is-selected" : ""}" type="button" data-showcase-id="${escapeHtml(game.id)}" title="${escapeHtml(game.title)}"><span class="showcase-picker-cover"><img src="${escapeHtml(cover)}" alt=""></span><span class="showcase-picker-title"><strong>${showcaseTitleMarkup(game.title)}</strong>${platformBadge(game.platform, { title: game.title })}</span></button>`;
+  const check = selected ? `<span class="showcase-picker-check" aria-hidden="true">${checkIcon()}</span>` : "";
+  return `<button class="showcase-picker-card ${selected ? "is-selected" : ""}" type="button" data-showcase-id="${escapeHtml(game.id)}" title="${escapeHtml(game.title)}"><span class="showcase-picker-cover"><img src="${escapeHtml(cover)}" alt=""></span><span class="showcase-picker-title"><strong>${showcaseTitleMarkup(game.title)}</strong>${platformBadge(game.platform, { title: game.title })}</span>${check}</button>`;
 }
 
 function showcaseHoverInfo(game, className) {
@@ -2014,7 +2015,7 @@ function handleShowcaseSelectedClick(event) {
 async function saveShowcase(event) {
   event.preventDefault();
   state.favoriteGameIds = normalizeFavoriteGameIds(state.showcaseDraftIds);
-  const saved = await persistShelf({ verifyFavorites: state.favoriteGameIds });
+  const saved = await persistShowcaseFavorites(state.favoriteGameIds);
   if (!saved) {
     showToast("Showcase could not be saved. Please try again.", "error");
     return;
@@ -2022,6 +2023,31 @@ async function saveShowcase(event) {
   renderChrome();
   renderFavorites();
   closeDialog(el.showcaseDialog);
+}
+
+async function persistShowcaseFavorites(ids) {
+  const favoriteGameIds = normalizeFavoriteGameIds(ids);
+  try {
+    const password = sessionStorage.getItem(`${SESSION_KEY}:password`) || "";
+    const response = await fetch("/api/shelf", {
+      method: "PUT",
+      headers: { "Content-Type": "application/json", "x-edit-password": password },
+      body: JSON.stringify({ favoriteGameIdsOnly: true, favoriteGameIds }),
+    });
+    if (!response.ok) throw new Error("Showcase save failed");
+    const saved = await response.json();
+    const savedIds = Array.isArray(saved.favoriteGameIds) ? saved.favoriteGameIds.map((id) => String(id || "").trim()).filter(Boolean) : [];
+    if (JSON.stringify(savedIds) !== JSON.stringify(favoriteGameIds)) throw new Error("Showcase save mismatch");
+    const fresh = await fetch("/api/shelf", { cache: "no-store" }).then((result) => result.ok ? result.json() : null);
+    const freshIds = Array.isArray(fresh?.favoriteGameIds) ? fresh.favoriteGameIds.map((id) => String(id || "").trim()).filter(Boolean) : [];
+    if (JSON.stringify(freshIds) !== JSON.stringify(favoriteGameIds)) throw new Error("Showcase reload verification failed");
+    state.updatedAt = saved.updatedAt || new Date().toISOString();
+    localStorage.removeItem(LOCAL_DRAFT_KEY);
+    return true;
+  } catch (error) {
+    console.warn("Showcase save failed", error);
+    return false;
+  }
 }
 
 function handleLayoutMove(event) {
@@ -3027,6 +3053,7 @@ function pencilIcon() { return `<svg class="pencil-icon" viewBox="0 0 24 24" ari
 function trashIcon() { return `<svg class="trash-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6h18"></path><path d="M8 6V4h8v2"></path><path d="M19 6l-1 14H6L5 6"></path><path d="M10 11v5"></path><path d="M14 11v5"></path></svg>`; }
 function pauseTrailerIcon() { return `<svg class="pause-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5v14M16 5v14"></path></svg>`; }
 function playTrailerIcon() { return `<svg class="play-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m8 5 11 7-11 7Z"></path></svg>`; }
+function checkIcon() { return `<svg class="check-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5 9.5 17 19 7"></path></svg>`; }
 function currencyIcon() { const currency = normalizePriceSettings(state.gamelistSettings).currency === "USD" ? "dollar" : "euro"; return currency === "dollar" ? `<svg class="dollar-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M16.8 7.2c-1.1-1-2.7-1.7-4.8-1.7-2.8 0-4.8 1.4-4.8 3.5 0 5.3 9.8 2.1 9.8 7 0 2.1-2 3.5-5 3.5-2.3 0-4.2-.8-5.4-2"></path><path d="M12 3v18"></path></svg>` : `<svg class="euro-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M19 5.5A7 7 0 0 0 8.2 7.1 7.4 7.4 0 0 0 7 12a7.4 7.4 0 0 0 1.2 4.9A7 7 0 0 0 19 18.5"></path><path d="M4 10h10"></path><path d="M4 14h10"></path></svg>`; }
 function trophyIcon() { return `<svg class="trophy-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 4h8v4a4 4 0 0 1-8 0V4Z"></path><path d="M8 6H5a3 3 0 0 0 3 3"></path><path d="M16 6h3a3 3 0 0 1-3 3"></path><path d="M12 12v4"></path><path d="M9 20h6"></path><path d="M10 16h4v4h-4z"></path></svg>`; }
 function carouselArrowIcon(direction = "right") { return `<svg class="sort-arrow-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="${direction === "left" ? "M15.5 5.5 9 12l6.5 6.5" : "M8.5 5.5 15 12l-6.5 6.5"}"></path></svg>`; }
