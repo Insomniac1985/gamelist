@@ -4069,7 +4069,12 @@ function finishedStatsGames(year = "all") {
 
 function finishedStatsCompleted(year = "all") {
   return platinumItems()
-    .filter((item) => year === "all" || platinumYearFor(item) === String(year));
+    .filter((item) => year === "all" || completedStatsYearFor(item) === String(year));
+}
+
+function completedStatsYearFor(item) {
+  const localGame = item.gameId ? state.games.find((game) => game.id === item.gameId && !game.deletedAt) : null;
+  return localGame?.completedAt ? completionYear(localGame) : platinumYearFor(item);
 }
 
 function finishedStatsMarkup(year, games, completed) {
@@ -4078,11 +4083,12 @@ function finishedStatsMarkup(year, games, completed) {
   const months = countBy(games, (game) => monthShortName(game.completedAt));
   const streamed = games.filter((game) => game.stream);
   const otherOwnerGames = games.filter((game) => visibleOwnerTags(game).length);
+  const allYears = year === "all";
   const cards = [
-    statsKpiCard("Finished games", games.length, statsBreakdownList(platforms)),
-    statsKpiCard("Completed games", completed.length, statsBreakdownList(countBy(completed, (item) => platinumPlatformLabel(platinumPlatformFor(item)) || "Unknown")), { action: "completed" }),
-    streamed.length ? statsKpiCard("Streamed games", streamed.length, statsGameList(streamed)) : "",
-    otherOwnerGames.length ? statsKpiCard("Other owners", otherOwnerGames.length, statsOwnerBreakdown(otherOwnerGames)) : "",
+    statsKpiCard("Finished games", games.length, "", { tone: "finished" }),
+    statsKpiCard("Completed games", completed.length, "", { action: "completed", tone: "completed", icon: trophyIcon() }),
+    streamed.length ? statsKpiCard("Streamed games", streamed.length, statsGameList(streamed), { tone: "streamed" }) : "",
+    otherOwnerGames.length ? statsKpiCard("Other owners", otherOwnerGames.length, statsOwnerBreakdown(otherOwnerGames), { tone: "owners" }) : "",
   ].filter(Boolean).join("");
   return `
     <div class="finished-stats-kpis">${cards}</div>
@@ -4091,8 +4097,8 @@ function finishedStatsMarkup(year, games, completed) {
       ${statsDonutCard("Game categories", categories, "category")}
     </div>
     <section class="finished-stats-months">
-      <h3>By month</h3>
-      <div>${statsMonthBars(months, games.length)}</div>
+      <h3>${allYears ? "By year" : "By month"}</h3>
+      <div class="finished-stats-period-grid ${allYears ? "is-yearly" : ""}">${allYears ? statsYearBars(games) : statsMonthBars(games, months, games.length)}</div>
     </section>
     ${games.length ? "" : `<div class="empty">No finished games${year === "all" ? "" : ` in ${escapeHtml(year)}`}.</div>`}
   `;
@@ -4100,8 +4106,8 @@ function finishedStatsMarkup(year, games, completed) {
 
 function statsKpiCard(label, value, detail = "", options = {}) {
   return `
-    <button class="finished-stats-kpi ${options.action ? "is-clickable" : ""}" type="button" ${options.action ? `data-stats-action="${escapeHtml(options.action)}"` : ""}>
-      <strong>${escapeHtml(String(value))}</strong>
+    <button class="finished-stats-kpi ${options.action ? "is-clickable" : ""} ${options.tone ? `is-${escapeHtml(options.tone)}` : ""}" type="button" ${options.action ? `data-stats-action="${escapeHtml(options.action)}"` : ""}>
+      <strong>${options.icon || ""}${escapeHtml(String(value))}</strong>
       <span>${escapeHtml(label)}</span>
       ${detail ? `<span class="finished-stats-breakdown">${detail}</span>` : ""}
     </button>
@@ -4115,7 +4121,7 @@ function statsDonutCard(title, counts, tone) {
     <article class="finished-stats-chart">
       <div class="finished-stats-donut ${tone === "category" ? "is-category" : "is-platform"}" style="--donut:${escapeHtml(segments)}"><span>${escapeHtml(String(total))}</span></div>
       <h3>${escapeHtml(title)}</h3>
-      <div class="finished-stats-breakdown">${statsBreakdownList(counts)}</div>
+      <div class="finished-stats-breakdown">${statsBreakdownList(counts, tone)}</div>
     </article>
   `;
 }
@@ -4132,20 +4138,44 @@ function donutSegments(counts, tone) {
   }).join(", ");
 }
 
-function statsMonthBars(counts, total) {
+function statsMonthBars(games, counts, total) {
   const order = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
   const byLabel = new Map(counts.map((item) => [item.label, item.count]));
   const max = Math.max(1, ...counts.map((item) => item.count));
   return order.map((label) => {
     const count = byLabel.get(label) || 0;
-    return `<div class="finished-stats-month" title="${escapeHtml(`${label}: ${count}`)}"><span>${escapeHtml(label)}</span><em style="--month:${count / max}"></em><strong>${count}</strong></div>`;
+    const monthGames = games
+      .filter((game) => monthShortName(game.completedAt) === label)
+      .sort((a, b) => String(a.completedAt || "").localeCompare(String(b.completedAt || "")) || stringCompare(a.title, b.title));
+    return `<div class="finished-stats-month" title="${escapeHtml(`${label}: ${count}`)}"><span>${escapeHtml(label)}</span><em style="--month:${count / max}"></em><strong>${count}</strong>${count ? `<span class="finished-stats-breakdown">${statsGameList(monthGames)}</span>` : ""}</div>`;
   }).join("") + `<small>${total} total</small>`;
 }
 
-function statsBreakdownList(counts) {
+function statsYearBars(games) {
+  const counts = countBy(games, completionYear);
+  const max = Math.max(1, ...counts.map((item) => item.count));
+  return counts
+    .sort((a, b) => b.label.localeCompare(a.label))
+    .map(({ label, count }) => `<div class="finished-stats-month finished-stats-year" title="${escapeHtml(`${label}: ${count}`)}"><span>${escapeHtml(label)}</span><em style="--month:${count / max}"></em><strong>${count}</strong></div>`)
+    .join("") + `<small>${games.length} total</small>`;
+}
+
+function statsBreakdownList(counts, tone = "") {
   return counts.length
-    ? counts.map((item) => `<span><b>${escapeHtml(item.label)}</b><em>${item.count}</em></span>`).join("")
+    ? counts.map((item, index) => statsBreakdownRow(item, tone, index)).join("")
     : `<span><b>None</b><em>0</em></span>`;
+}
+
+function statsBreakdownRow(item, tone, index) {
+  if (tone === "platform") {
+    const color = platformStatsColor(item.label, index);
+    return `<span class="finished-stats-platform-row" style="--platform-stat-color:${escapeHtml(color)}"><b><img src="${escapeHtml(platformLogo(item.label))}" alt="" width="18" height="18" decoding="async"><i>${escapeHtml(item.label)}</i></b><em>${item.count}</em></span>`;
+  }
+  if (tone === "category") {
+    const color = categoryStatsColor(index);
+    return `<span class="finished-stats-category-row" style="--category-stat-color:${escapeHtml(color)}"><b><i></i>${escapeHtml(item.label)}</b><em>${item.count}</em></span>`;
+  }
+  return `<span><b>${escapeHtml(item.label)}</b><em>${item.count}</em></span>`;
 }
 
 function statsGameList(games) {
