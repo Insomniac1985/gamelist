@@ -760,7 +760,9 @@ html.theme-font-pokemon {
 .goty-year-select {
   display: grid;
   gap: 5px;
-  min-width: 116px;
+  width: 88px;
+  min-width: 88px;
+  flex: 0 0 88px;
   margin: 0;
 }
 
@@ -772,13 +774,18 @@ html.theme-font-pokemon {
 }
 
 .goty-year-select .platform-logo-select {
-  --dropdown-control-height: 36px;
+  --dropdown-control-height: 34px;
+  width: 88px;
+  flex: 0 0 88px;
 }
 
 .goty-year-select .platform-logo-button,
 .completed-year-control .platform-logo-button {
   display: flex;
   align-items: center;
+  height: 34px;
+  min-height: 34px;
+  padding: 0 34px 0 9px;
   line-height: 1;
 }
 
@@ -793,9 +800,10 @@ html.theme-font-pokemon {
 .goty-year-select .platform-logo-button .platform-logo-choice-label,
 .completed-year-control .platform-logo-button .platform-logo-choice-label {
   display: block;
+  height: auto;
   line-height: 1;
   margin: 0;
-  transform: translateY(-1px);
+  transform: translateY(2px);
 }
 
 .goty-save-button,
@@ -810,8 +818,8 @@ html.theme-font-pokemon {
 
 .goty-edit-button .pencil-icon,
 .goty-save-button .download-icon {
-  width: 18px;
-  height: 18px;
+  width: 20px;
+  height: 20px;
 }
 
 .goty-save-button .download-icon {
@@ -9880,12 +9888,12 @@ body.theme-kash .history-row.completed-trophy-card:hover {
   }
 
   .goty-year-select {
-    flex: 1 1 120px;
+    flex: 0 0 88px;
   }
 
   .goty-save-button,
   .goty-edit-button {
-    flex: 1 1 74px;
+    flex: 0 0 36px;
   }
 
   .goty-grid {
