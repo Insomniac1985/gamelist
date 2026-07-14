@@ -4100,7 +4100,7 @@ function finishedStatsMarkup(year, games, completed) {
   return `
     <div class="finished-stats-kpis">${cards}</div>
     <div class="finished-stats-charts">
-      ${statsDonutCard("Platforms", platforms, "platform")}
+      ${statsDonutCard("Platforms", platforms, "platform", 5)}
       ${statsDonutCard("Tags", tags, "category", 5)}
     </div>
     <section class="finished-stats-months">
@@ -4124,12 +4124,13 @@ function statsKpiCard(label, value, detail = "", options = {}) {
 function statsDonutCard(title, counts, tone, visibleLimit = counts.length) {
   const segments = donutSegments(counts, tone);
   const visibleCounts = counts.slice(0, visibleLimit);
+  const hasMore = counts.length > visibleCounts.length;
   return `
     <article class="finished-stats-chart">
       <div class="finished-stats-donut ${tone === "category" ? "is-category" : "is-platform"}" style="--donut:${escapeHtml(segments)}"></div>
       <div class="finished-stats-chart-copy">
         <h3>${escapeHtml(title)}</h3>
-        <div class="finished-stats-chart-list">${statsBreakdownList(visibleCounts, tone)}</div>
+        <div class="finished-stats-chart-list">${statsBreakdownList(visibleCounts, tone)}${hasMore ? `<span class="finished-stats-more-row" aria-hidden="true">...</span>` : ""}</div>
       </div>
       <div class="finished-stats-breakdown">${statsBreakdownList(counts, tone)}</div>
     </article>

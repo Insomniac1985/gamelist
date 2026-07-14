@@ -6157,6 +6157,16 @@ body:not(.can-edit) .game-card:focus-within .edit-action {
   white-space: nowrap;
 }
 
+.finished-stats-chart-list .finished-stats-more-row {
+  justify-content: center;
+  min-height: 18px;
+  padding: 0 5px 2px;
+  color: var(--muted);
+  font-size: 13px;
+  letter-spacing: 0;
+  background: transparent;
+}
+
 .finished-stats-breakdown {
   position: absolute;
   right: 10px;
