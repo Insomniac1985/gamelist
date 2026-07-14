@@ -1646,6 +1646,7 @@ function renderGameOfTheYearPicker(games, picks) {
     });
   });
   el.gotyPickerGrid.querySelectorAll(".goty-choice-title strong").forEach((title) => {
+    title.classList.toggle("is-overflowing", title.scrollWidth > title.clientWidth + 1);
     title.addEventListener("pointerenter", () => showGameOfTheYearTitleOverlay(title));
     title.addEventListener("focus", () => showGameOfTheYearTitleOverlay(title));
     title.addEventListener("pointerleave", hideGameOfTheYearTitleOverlay);
@@ -1754,6 +1755,7 @@ function gameOfTheYearChoiceCard(game, selected) {
 
 function showGameOfTheYearTitleOverlay(target) {
   hideGameOfTheYearTitleOverlay();
+  if (!target?.classList?.contains("is-overflowing") && target.scrollWidth <= target.clientWidth + 1) return;
   const text = target?.dataset.fullTitle || target?.textContent || "";
   if (!text) return;
   const overlay = document.createElement("div");
