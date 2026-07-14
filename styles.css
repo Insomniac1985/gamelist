@@ -2739,7 +2739,7 @@ body.dialog-open .floating-edit-actions {
 }
 
 .release-day.weekend {
-  opacity: 0.34;
+  background: rgb(255 255 255 / 17%);
 }
 
 .release-day.weekend.has-release {
@@ -5576,7 +5576,11 @@ a.time-pill {
 #floatingAddButton:hover,
 html.theme-light #floatingAddButton:hover {
   color: #ffffff !important;
-  background: color-mix(in srgb, var(--accent) 82%, rgba(255, 255, 255, 0.08)) !important;
+  background: color-mix(
+    in srgb,
+    var(--accent) 82%,
+    rgba(255, 255, 255, 0.08)
+  ) !important;
   border-color: color-mix(in srgb, var(--accent) 72%, #ffffff) !important;
 }
 
