@@ -172,15 +172,17 @@ function releaseMonthMarkup(monthDate, releases, today, weekStart) {
   const leading = weekdayIndex(new Date(year, month, 1), weekStart);
   const cells = [];
   for (let day = 1; day <= totalDays; day += 1) {
-    const date = localDateKey(new Date(year, month, day));
+    const dayDate = new Date(year, month, day);
+    const date = localDateKey(dayDate);
     const games = releases.get(date) || [];
     const preordered = games.some((game) => game.preorderStore);
     const platformTone = releasePlatformTone(games);
     const titles = games.map((game) => game.title).join("\n");
+    const weekend = dayDate.getDay() === 0 || dayDate.getDay() === 6;
     const gridColumn = day === 1 && leading ? ` style="grid-column: ${leading + 1}"` : "";
     cells.push(`
       <button
-        class="release-day ${games.length ? "has-release" : ""} ${platformTone} ${preordered ? "has-preorder" : ""} ${date === today ? "today" : ""}"
+        class="release-day ${weekend ? "weekend" : ""} ${games.length ? "has-release" : ""} ${platformTone} ${preordered ? "has-preorder" : ""} ${date === today ? "today" : ""}"
         type="button"
         data-date="${escapeHtml(date)}"
         data-games="${escapeHtml(games.map((game) => game.title).join(" · "))}"

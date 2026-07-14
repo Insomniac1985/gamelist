@@ -2738,6 +2738,14 @@ body.dialog-open .floating-edit-actions {
   opacity: 0.42;
 }
 
+.release-day.weekend {
+  opacity: 0.34;
+}
+
+.release-day.weekend.has-release {
+  opacity: 0.86;
+}
+
 .release-day.today {
   border-color: var(--accent-1, var(--accent));
   box-shadow: inset 0 0 0 1px
@@ -2746,6 +2754,10 @@ body.dialog-open .floating-edit-actions {
 
 .release-day.today:disabled {
   opacity: 1;
+}
+
+.release-day.today.weekend {
+  opacity: 0.92;
 }
 
 .release-day.has-release {
