@@ -102,6 +102,7 @@ async function syncBacklogGamesToShelf(env, allGames, games) {
     games: [...additions, ...shelfGames].slice(0, 1000),
     overrides: shelf.overrides || {},
     layout: shelf.layout || null,
+    favoriteGameIds: Array.isArray(shelf.favoriteGameIds) ? shelf.favoriteGameIds.slice(0, 5) : [],
     updatedAt: new Date().toISOString(),
   }));
 }

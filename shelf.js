@@ -196,7 +196,9 @@ async function init() {
   state.additions = draft.games || shelfData?.games || [];
   state.overrides = draft.overrides || shelfData?.overrides || {};
   state.layout = normalizeLayout(shelfData?.layout || state.layout);
-  state.favoriteGameIds = Array.isArray(draft.favoriteGameIds || shelfData?.favoriteGameIds) ? (draft.favoriteGameIds || shelfData?.favoriteGameIds).slice(0, 5) : [];
+  state.favoriteGameIds = Array.isArray(shelfData?.favoriteGameIds)
+    ? shelfData.favoriteGameIds.slice(0, 5)
+    : Array.isArray(draft.favoriteGameIds) ? draft.favoriteGameIds.slice(0, 5) : [];
   state.canEdit = state.canEdit || auth;
   state.updatedAt = shelfData?.updatedAt || "";
   state.gamelistGames = gamelistData?.games || [];
