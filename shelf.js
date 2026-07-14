@@ -1060,9 +1060,13 @@ function isPendingCollectionGame(game) { return Boolean(game?.pendingCollection)
 function visibleShelfGames() { return state.canEdit ? state.games : state.games.filter((game) => !isPendingCollectionGame(game)); }
 function ownedShelfGames() { return state.games.filter((game) => !isPendingCollectionGame(game)); }
 function normalizeFavoriteGameIds(ids) {
-  const owned = new Set(ownedShelfGames().map((game) => game.id));
+  const ownedGames = ownedShelfGames();
+  const owned = new Set(ownedGames.map((game) => game.id));
   const seen = new Set();
-  return (Array.isArray(ids) ? ids : []).map((id) => String(id || "").trim()).filter((id) => id && owned.has(id) && !seen.has(id) && seen.add(id)).slice(0, 5);
+  return (Array.isArray(ids) ? ids : [])
+    .map((id) => String(id || "").trim())
+    .filter((id) => id && (ownedGames.length === 0 || owned.has(id)) && !seen.has(id) && seen.add(id))
+    .slice(0, 5);
 }
 
 function gameCard(game, options = {}) {
