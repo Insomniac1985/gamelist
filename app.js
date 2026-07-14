@@ -1554,6 +1554,9 @@ function renderGameOfTheYear() {
   el.gotyEditButton.title = "Edit";
   el.gotyEditButton.setAttribute("aria-label", "Edit");
   el.gotySaveButton.hidden = !gameOfTheYearComplete(picks);
+  el.gotySaveButton.innerHTML = downloadIcon();
+  el.gotySaveButton.title = "Download";
+  el.gotySaveButton.setAttribute("aria-label", "Download");
   el.gotyGrid.innerHTML = GAME_OF_YEAR_CATEGORIES.map(([key, label], index) => {
     const game = gameById(picks[key]);
     if (!game) return "";
@@ -4903,6 +4906,16 @@ function plusIcon() {
     <svg class="plus-icon" viewBox="0 0 24 24">
       <path d="M12 5v14"></path>
       <path d="M5 12h14"></path>
+    </svg>
+  `;
+}
+
+function downloadIcon() {
+  return `
+    <svg class="download-icon" viewBox="0 0 24 24" aria-hidden="true">
+      <path d="M12 3v12"></path>
+      <path d="M7 10l5 5 5-5"></path>
+      <path d="M5 20h14"></path>
     </svg>
   `;
 }

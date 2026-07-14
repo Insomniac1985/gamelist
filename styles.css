@@ -796,19 +796,15 @@ html.theme-font-pokemon {
 
 .goty-save-button,
 .goty-edit-button {
+  width: 36px;
+  min-width: 36px;
+  height: 36px;
   min-height: 36px;
-  padding-inline: 14px;
-}
-
-.goty-edit-button {
-  width: 42px;
-  min-width: 42px;
-  height: 42px;
-  min-height: 42px;
   padding-inline: 0;
 }
 
-.goty-edit-button .pencil-icon {
+.goty-edit-button .pencil-icon,
+.goty-save-button .download-icon {
   width: 18px;
   height: 18px;
 }
@@ -865,6 +861,11 @@ html.theme-font-pokemon {
   border-radius: 7px;
   clip-path: inset(0 round 7px);
   transition: filter 180ms ease;
+}
+
+.goty-cover img {
+  border-radius: 7px;
+  clip-path: inset(0 round 7px);
 }
 
 .goty-category {
@@ -1040,7 +1041,7 @@ html.theme-font-pokemon {
 }
 
 .goty-picker-category {
-  color: var(--accent);
+  color: var(--accent-2);
   font-size: 14px;
   font-weight: 900;
   letter-spacing: 0;
@@ -5390,6 +5391,7 @@ body:not(.can-edit) #loginButton,
 .dollar-icon,
 .reload-icon,
 .settings-icon,
+.download-icon,
 .check-icon {
   width: 18px;
   height: 18px;
