@@ -4166,7 +4166,12 @@ function statsYearBars(games) {
   const max = Math.max(1, ...counts.map((item) => item.count));
   return counts
     .sort((a, b) => b.label.localeCompare(a.label))
-    .map(({ label, count }) => `<div class="finished-stats-month finished-stats-year" title="${escapeHtml(`${label}: ${count}`)}"><span>${escapeHtml(label)}</span><em style="--month:${count / max}"></em><strong>${count}</strong></div>`)
+    .map(({ label, count }) => {
+      const yearGames = games
+        .filter((game) => completionYear(game) === label)
+        .sort((a, b) => String(a.completedAt || "").localeCompare(String(b.completedAt || "")) || stringCompare(a.title, b.title));
+      return `<div class="finished-stats-month finished-stats-year" title="${escapeHtml(`${label}: ${count}`)}"><span>${escapeHtml(label)}</span><em style="--month:${count / max}"></em><strong>${count}</strong>${count ? `<span class="finished-stats-breakdown">${statsGameList(yearGames)}</span>` : ""}</div>`;
+    })
     .join("") + `<small>${games.length} total</small>`;
 }
 

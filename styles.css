@@ -6227,6 +6227,20 @@ body:not(.can-edit) .game-card:focus-within .edit-action {
   height: 20px;
   padding: 0 7px 0 5px;
   font-size: 9px;
+  flex: 0 0 auto;
+}
+
+.finished-stats-platform-row b {
+  overflow: visible;
+}
+
+.finished-stats-game-row b {
+  flex: 1 1 auto;
+  max-width: 100%;
+}
+
+.finished-stats-game-row .platform-badge {
+  max-width: 96px;
 }
 
 .finished-stats-platform-row .platform-icon,
