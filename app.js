@@ -4094,7 +4094,7 @@ function finishedStatsMarkup(year, games, completed) {
   const cards = [
     statsKpiCard("Finished games", games.length, showYearlyDetail ? statsGameList(games) : "", { tone: "finished" }),
     statsKpiCard("Completed games", completed.length, showYearlyDetail ? statsCompletedGameList(completed) : "", { action: "completed", tone: "completed", icon: trophyIcon() }),
-    streamed.length ? statsKpiCard("Streamed games", streamed.length, statsGameList(streamed), { tone: "streamed" }) : "",
+    streamed.length ? statsKpiCard("Streamed games", streamed.length, showYearlyDetail ? statsGameList(streamed) : "", { tone: "streamed" }) : "",
     otherOwnerGames.length ? statsKpiCard("Other owners", otherOwnerGames.length, statsOwnerBreakdown(otherOwnerGames), { tone: "owners" }) : "",
   ].filter(Boolean).join("");
   return `
