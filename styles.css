@@ -969,9 +969,9 @@ html.theme-gradient .goty-section .column-head h2 .trophy-icon {
   overflow: clip;
   border-radius: 8px;
   clip-path: inset(0 round 7px);
-  box-shadow:
-    0 16px 34px color-mix(in srgb, var(--accent) 30%, transparent),
-    0 0 18px color-mix(in srgb, var(--accent) 20%, transparent);
+  filter:
+    drop-shadow(0 16px 18px color-mix(in srgb, var(--accent) 34%, transparent))
+    drop-shadow(0 0 16px color-mix(in srgb, var(--accent) 26%, transparent));
 }
 
 .goty-card img {
