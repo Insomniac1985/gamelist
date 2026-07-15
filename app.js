@@ -2036,7 +2036,6 @@ function gameOfTheYearExportTopStatsMarkup(year, games = []) {
   const otherYearGames = games.filter((game) => releaseYear(game) !== String(year));
   const coopGames = games.filter((game) => game.coop);
   const completed = finishedStatsCompleted(String(year));
-  const platforms = countBy(games, statsPlatformLabel);
   return `
     <section class="goty-export-top-kpis">
       <article class="goty-export-small-kpi goty-export-total-kpi"><strong>${games.length}</strong><span>Total played</span></article>
@@ -2044,19 +2043,23 @@ function gameOfTheYearExportTopStatsMarkup(year, games = []) {
       <article class="goty-export-small-kpi"><strong>${yearGames.length}</strong><span>New releases</span></article>
       <article class="goty-export-small-kpi"><strong>${otherYearGames.length}</strong><span>Older games</span></article>
       ${coopGames.length ? `<article class="goty-export-small-kpi"><strong>${coopGames.length}</strong><span>Coop games</span></article>` : ""}
-      <div class="goty-export-top-platforms">${platforms.map((item) => platformBadge(item.label, item.count)).join("")}</div>
     </section>
   `;
 }
 
 function gameOfTheYearExportBottomStatsMarkup(games = []) {
+  const platforms = countBy(games, statsPlatformLabel);
   const months = gameOfTheYearExportMonthCounts(games);
   const maxMonth = Math.max(1, ...months.map((item) => item.count));
   return `
     <section class="goty-export-bottom-stats">
+      <article class="goty-export-stat goty-export-stat-platforms">
+        <span>Platforms</span>
+        <div>${platforms.map((item) => platformBadge(item.label, item.count)).join("") || "<b>0</b>"}</div>
+      </article>
       <article class="goty-export-stat goty-export-stat-months">
         <span>Monthly breakdown</span>
-        <div>${months.map((item) => `<b style="--month:${(item.count / maxMonth).toFixed(3)};--month-platforms:${statsPlatformBar(item.games)}"><i></i><span>${escapeHtml(item.label)} - ${item.count}</span></b>`).join("")}</div>
+        <div>${months.map((item) => `<b style="--month:${(item.count / maxMonth).toFixed(3)};--month-platforms:${statsPlatformBar(item.games)}"><span>${escapeHtml(item.label)}</span><i></i><em>${item.count}</em></b>`).join("")}</div>
       </article>
     </section>
   `;
@@ -2172,9 +2175,9 @@ function gameOfTheYearExportCss({ theme, main, accent, gradient, bg, glowPrimary
       top: 47px;
       right: 12px;
       display: grid;
-      grid-template-columns: 122px 148px repeat(3, 108px);
-      gap: 8px;
-      width: 682px;
+      grid-template-columns: 142px 168px repeat(3, 120px);
+      gap: 10px;
+      width: 700px;
     }
     .goty-export-small-kpi,
     .goty-export-stat {
@@ -2194,16 +2197,16 @@ function gameOfTheYearExportCss({ theme, main, accent, gradient, bg, glowPrimary
       text-transform: uppercase;
     }
     .goty-export-small-kpi {
-      height: 82px;
+      height: 96px;
       min-width: 0;
-      padding: 11px 10px 9px;
+      padding: 13px 12px 10px;
     }
     .goty-export-small-kpi strong {
       display: flex;
       align-items: center;
       gap: 5px;
       color: ${text};
-      font: 900 33px/1 ${bodyFont};
+      font: 900 40px/1 ${bodyFont};
     }
     .goty-export-completed-kpi strong,
     .goty-export-completed-kpi .trophy-icon {
@@ -2215,38 +2218,28 @@ function gameOfTheYearExportCss({ theme, main, accent, gradient, bg, glowPrimary
       flex: 0 0 auto;
     }
     .goty-export-small-kpi span {
-      margin-top: 8px;
+      margin-top: 9px;
       line-height: 1.05;
-    }
-    .goty-export-top-platforms {
-      grid-column: 1 / -1;
-      display: flex;
-      flex-wrap: nowrap;
-      justify-content: flex-end;
-      gap: 4px;
-      min-width: 0;
-      overflow: visible;
-    }
-    .goty-export-top-platforms .platform-badge {
-      max-width: none;
-      flex: 0 0 auto;
     }
     .goty-export-bottom-stats {
       position: absolute;
       left: 62px;
-      right: 660px;
+      right: 540px;
       bottom: 40px;
-      display: block;
+      display: grid;
+      grid-template-columns: 360px minmax(0, 1fr);
+      gap: 12px;
     }
     .goty-export-stat {
       min-width: 0;
-      height: 92px;
-      padding: 10px 12px;
+      height: 76px;
+      padding: 9px 11px;
       overflow: hidden;
     }
     .goty-export-stat > span {
       display: block;
-      margin: 0 0 8px;
+      margin: 0 0 6px;
+      color: ${accent};
     }
     .goty-export-stat > div {
       display: flex;
@@ -2273,8 +2266,15 @@ function gameOfTheYearExportCss({ theme, main, accent, gradient, bg, glowPrimary
       font-style: normal;
       font-weight: 800;
     }
+    .goty-export-stat-platforms .platform-badge {
+      max-width: none;
+    }
+    .goty-export-stat-platforms .platform-label {
+      overflow: visible;
+      text-overflow: clip;
+    }
     .goty-export-stat-months {
-      padding-bottom: 8px;
+      padding-bottom: 7px;
       background:
         linear-gradient(${theme.mode === "light" ? "rgba(18,24,36,.045)" : "rgba(255,255,255,.045)"} 1px, transparent 1px),
         linear-gradient(90deg, ${theme.mode === "light" ? "rgba(18,24,36,.045)" : "rgba(255,255,255,.045)"} 1px, transparent 1px),
@@ -2286,12 +2286,12 @@ function gameOfTheYearExportCss({ theme, main, accent, gradient, bg, glowPrimary
       grid-template-columns: repeat(12, minmax(0, 1fr));
       align-items: end;
       gap: 5px;
-      height: 58px;
+      height: 45px;
     }
     .goty-export-stat-months b {
       position: relative;
       display: grid;
-      grid-template-rows: 40px 15px;
+      grid-template-rows: 12px 24px 9px;
       align-items: end;
       justify-items: center;
       min-height: 0;
@@ -2303,7 +2303,7 @@ function gameOfTheYearExportCss({ theme, main, accent, gradient, bg, glowPrimary
     .goty-export-stat-months b i {
       display: block;
       width: 100%;
-      height: calc(7px + (32px * var(--month)));
+      height: calc(5px + (20px * var(--month)));
       background: var(--month-platforms);
       border: 1px solid rgba(255,255,255,.16);
       border-radius: 5px 5px 2px 2px;
@@ -2312,6 +2312,11 @@ function gameOfTheYearExportCss({ theme, main, accent, gradient, bg, glowPrimary
       color: ${muted};
       font: 900 11px/1 ${bodyFont};
       white-space: nowrap;
+    }
+    .goty-export-stat-months b em {
+      color: ${text};
+      font: 900 10px/1 ${bodyFont};
+      font-style: normal;
     }
     .goty-export-grid {
       display: grid;
