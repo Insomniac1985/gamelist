@@ -4386,9 +4386,12 @@ function statsGameList(games) {
   return games.map((game) => {
     const progress = achievementProgressForGame(game);
     const progressNumber = progress ? Math.round(Number(progress.progress ?? progressValue(progress.game)) || 0) : 0;
-    const completed = game.platinum || progressNumber >= 100;
+    const forceCompleted = game.statsCompleted === true;
+    const completed = forceCompleted || game.platinum || progressNumber >= 100;
     const ownerTitleClass = ownerTitleClasses(visibleOwnerTags(game));
-    const progressPill = progress
+    const progressPill = forceCompleted
+      ? psnProgressBadge({ title: game.title, progress: 100 }, { className: "finished-stats-progress-pill" })
+      : progress
       ? psnProgressBadge(progress, { className: "finished-stats-progress-pill" })
       : (completed ? psnProgressBadge({ title: game.title, progress: 100 }, { className: "finished-stats-progress-pill" }) : "");
     return `<span class="finished-stats-game-row ${completed ? "is-complete" : ""}"><b class="${escapeHtml(ownerTitleClass)}">${escapeHtml(game.title)}</b>${game.platform ? platformBadge(game.platform) : ""}${progressPill}</span>`;
@@ -4484,6 +4487,7 @@ function statsCompletedGameList(items) {
     title: item.title,
     platform: item.platform || platinumPlatformFor(item),
     platinum: true,
+    statsCompleted: true,
   })));
 }
 
