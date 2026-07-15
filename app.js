@@ -4358,11 +4358,39 @@ function statsPlatformBar(games) {
   const counts = countBy(games, (game) => canonicalPlatform(game.platform) || game.platform || "Unknown");
   const total = counts.reduce((sum, item) => sum + item.count, 0);
   let cursor = 0;
+  let previousColor = "";
   return `linear-gradient(to top, ${counts.map((item, index) => {
     const start = cursor;
     cursor += (item.count / total) * 100;
-    return `${platformStatsColor(item.label, index)} ${start.toFixed(2)}% ${cursor.toFixed(2)}%`;
+    const color = platformStatsBarColor(item.label, index, previousColor);
+    previousColor = platformStatsColor(item.label, index);
+    return `${color} ${start.toFixed(2)}% ${cursor.toFixed(2)}%`;
   }).join(", ")})`;
+}
+
+function platformStatsBarColor(platform, index, previousColor) {
+  const color = platformStatsColor(platform, index);
+  if (!previousColor || !statsColorsAreSimilar(color, previousColor)) return color;
+  return `color-mix(in srgb, ${color} ${index % 2 ? 78 : 90}%, transparent)`;
+}
+
+function statsColorsAreSimilar(a, b) {
+  const first = hexColorParts(a);
+  const second = hexColorParts(b);
+  if (!first || !second) return a === b;
+  const distance = Math.hypot(first.r - second.r, first.g - second.g, first.b - second.b);
+  return distance < 82;
+}
+
+function hexColorParts(color) {
+  const match = String(color || "").trim().match(/^#([0-9a-f]{6})$/i);
+  if (!match) return null;
+  const value = Number.parseInt(match[1], 16);
+  return {
+    r: (value >> 16) & 255,
+    g: (value >> 8) & 255,
+    b: value & 255,
+  };
 }
 
 function statsPlatformLabel(game) {

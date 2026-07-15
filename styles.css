@@ -6670,7 +6670,7 @@ body:not(.can-edit) .game-card:focus-within .edit-action {
 .finished-stats-month {
   position: relative;
   display: grid;
-  grid-template-rows: auto 70px auto;
+  grid-template-rows: auto 70px;
   gap: 5px;
   min-width: 0;
   color: var(--muted);
@@ -6688,8 +6688,15 @@ body:not(.can-edit) .game-card:focus-within .edit-action {
 }
 
 .finished-stats-month strong {
+  position: absolute;
+  bottom: 35px;
+  left: 50%;
+  z-index: 1;
   color: var(--text);
   font-size: 11px;
+  line-height: 1;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.48);
+  transform: translate(-50%, 50%);
 }
 
 .finished-stats-months small {
