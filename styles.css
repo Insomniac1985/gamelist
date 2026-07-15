@@ -5995,7 +5995,7 @@ body:not(.can-edit) .game-card:focus-within .edit-action {
 .finished-stats-dialog {
   width: min(920px, calc(100vw - 24px));
   max-height: calc(100vh - 24px);
-  overflow: hidden;
+  overflow: visible;
   border: 0;
   padding: 0;
   background: transparent;
