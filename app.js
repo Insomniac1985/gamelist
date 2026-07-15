@@ -4157,7 +4157,7 @@ function statsReleaseKpisCard(insights) {
       <div class="finished-stats-release-kpis">
         ${statsReleaseMiniKpi({
           value: insights.interested.length,
-          label: insights.scopeYear ? `Interested upcoming ${insights.scopeYear}` : "Interested upcoming",
+          label: insights.scopeYear ? `Upcoming interesting games ${insights.scopeYear}` : "Upcoming interesting games",
         })}
         ${statsReleaseMiniKpi({
           value: insights.playedFromYear.length,
