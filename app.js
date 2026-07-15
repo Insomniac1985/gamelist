@@ -2040,10 +2040,7 @@ function gameOfTheYearExportTopStatsMarkup(year, games = []) {
   const platforms = countBy(games, statsPlatformLabel);
   return `
     <section class="goty-export-top-kpis">
-      <article class="goty-export-big-kpi">
-        <span>Total played</span>
-        <strong>${games.length}</strong>
-      </article>
+      <article class="goty-export-small-kpi goty-export-total-kpi"><strong>${games.length}</strong><span>Total played</span></article>
       <article class="goty-export-small-kpi goty-export-completed-kpi"><strong>${trophyIcon()}${completed.length}</strong><span>Completed games</span></article>
       <article class="goty-export-small-kpi"><strong>${yearGames.length}</strong><span>New releases</span></article>
       <article class="goty-export-small-kpi"><strong>${otherYearGames.length}</strong><span>Older games</span></article>
@@ -2165,18 +2162,21 @@ function gameOfTheYearExportCss({ theme, main, accent, gradient, bg, glowPrimary
     }
     .goty-export-head h1 {
       position: absolute;
-      top: 52px;
+      top: 42px;
       left: 164px;
-      width: 890px;
+      width: 965px;
       margin: 0;
       overflow: hidden;
       color: transparent;
-      font: 900 64px/1.08 ${titleFont};
+      font: 900 53px/1.02 ${titleFont};
       text-overflow: ellipsis;
-      white-space: nowrap;
+      white-space: normal;
       background: linear-gradient(135deg, ${gradient}, ${main});
       -webkit-background-clip: text;
       background-clip: text;
+      display: -webkit-box;
+      -webkit-box-orient: vertical;
+      -webkit-line-clamp: 2;
     }
     .goty-export-top-kpis {
       position: absolute;
@@ -2187,22 +2187,16 @@ function gameOfTheYearExportCss({ theme, main, accent, gradient, bg, glowPrimary
       gap: 10px;
       width: 650px;
     }
-    .goty-export-big-kpi,
     .goty-export-small-kpi,
     .goty-export-stat,
     .goty-export-categories-card {
-      background:
-        linear-gradient(135deg, ${canvasRgba(main, 0.14)}, transparent 65%),
-        ${theme.mode === "light" ? "rgba(255,255,255,.52)" : "rgba(255,255,255,.06)"};
+      background: ${theme.mode === "light" ? "rgba(255,255,255,.5)" : "rgba(255,255,255,.065)"};
       border: 1px solid ${line};
       border-radius: 12px;
       box-sizing: border-box;
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
     }
-    .goty-export-big-kpi {
-      height: 82px;
-      padding: 10px 12px;
-    }
-    .goty-export-big-kpi span,
     .goty-export-small-kpi span,
     .goty-export-stat > span,
     .goty-export-categories-card > span {
@@ -2211,12 +2205,6 @@ function gameOfTheYearExportCss({ theme, main, accent, gradient, bg, glowPrimary
       font: 900 11px/1 ${bodyFont};
       letter-spacing: 0;
       text-transform: uppercase;
-    }
-    .goty-export-big-kpi strong {
-      display: block;
-      margin-top: 7px;
-      color: ${text};
-      font: 900 43px/1 ${bodyFont};
     }
     .goty-export-small-kpi {
       height: 82px;
@@ -2250,7 +2238,10 @@ function gameOfTheYearExportCss({ theme, main, accent, gradient, bg, glowPrimary
       justify-content: flex-end;
       gap: 5px;
       min-width: 0;
-      overflow: hidden;
+      overflow: visible;
+    }
+    .goty-export-top-platforms .platform-badge {
+      max-width: none;
     }
     .goty-export-bottom-stats {
       position: absolute;
@@ -2296,6 +2287,11 @@ function gameOfTheYearExportCss({ theme, main, accent, gradient, bg, glowPrimary
     }
     .goty-export-stat-months {
       padding-bottom: 8px;
+      background:
+        linear-gradient(${theme.mode === "light" ? "rgba(18,24,36,.045)" : "rgba(255,255,255,.045)"} 1px, transparent 1px),
+        linear-gradient(90deg, ${theme.mode === "light" ? "rgba(18,24,36,.045)" : "rgba(255,255,255,.045)"} 1px, transparent 1px),
+        ${theme.mode === "light" ? "rgba(255,255,255,.5)" : "rgba(255,255,255,.065)"};
+      background-size: 26px 26px, 26px 26px, auto;
     }
     .goty-export-stat-months > div {
       display: grid;
@@ -2332,17 +2328,17 @@ function gameOfTheYearExportCss({ theme, main, accent, gradient, bg, glowPrimary
     .goty-export-grid {
       display: grid;
       grid-template-columns: repeat(4, 425px);
-      grid-template-rows: repeat(2, 356px);
+      grid-template-rows: repeat(2, 338px);
       gap: 34px 26px;
       margin-top: 8px;
       margin-bottom: 0;
     }
     .goty-export-item {
       display: grid;
-      grid-template-rows: 34px 322px;
+      grid-template-rows: 34px 304px;
       gap: 8px;
       width: 425px;
-      height: 356px;
+      height: 338px;
     }
     .goty-export-category {
       align-self: end;
@@ -2364,6 +2360,11 @@ function gameOfTheYearExportCss({ theme, main, accent, gradient, bg, glowPrimary
       margin-top: 72px;
       padding: 14px;
       overflow: hidden;
+      background:
+        linear-gradient(${theme.mode === "light" ? "rgba(18,24,36,.045)" : "rgba(255,255,255,.045)"} 1px, transparent 1px),
+        linear-gradient(90deg, ${theme.mode === "light" ? "rgba(18,24,36,.045)" : "rgba(255,255,255,.045)"} 1px, transparent 1px),
+        ${theme.mode === "light" ? "rgba(255,255,255,.5)" : "rgba(255,255,255,.065)"};
+      background-size: 26px 26px, 26px 26px, auto;
     }
     .goty-export-categories-card > span {
       margin-bottom: 10px;
@@ -2401,7 +2402,7 @@ function gameOfTheYearExportCss({ theme, main, accent, gradient, bg, glowPrimary
       grid-template-columns: 198px minmax(0, 1fr);
       gap: 16px;
       width: 435px;
-      height: 320px;
+      height: 302px;
       padding: 20px;
       overflow: hidden;
       background:
@@ -2437,12 +2438,12 @@ function gameOfTheYearExportCss({ theme, main, accent, gradient, bg, glowPrimary
       z-index: 1;
       align-self: start;
       width: 198px;
-      height: 280px;
+      height: 262px;
       filter: drop-shadow(0 12px 16px ${theme.mode === "light" ? "rgba(18,24,36,.16)" : "rgba(0,0,0,.34)"});
     }
     .goty-export-cover {
       width: 198px;
-      height: 280px;
+      height: 262px;
       object-fit: cover;
       border-radius: 12px;
     }
