@@ -6260,6 +6260,7 @@ body:not(.can-edit) .game-card:focus-within .edit-action {
   position: absolute;
   left: var(--dot-x);
   top: var(--dot-y);
+  z-index: 35;
   display: inline-grid;
   width: 18px;
   height: 18px;
@@ -6291,6 +6292,7 @@ body:not(.can-edit) .game-card:focus-within .edit-action {
   left: 50%;
   top: 100%;
   bottom: auto;
+  z-index: 60;
   text-align: left;
 }
 
