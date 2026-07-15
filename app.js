@@ -4058,6 +4058,7 @@ function openFinishedStatsDialog(year = "all") {
     el.finishedStatsDialog.close();
     openPlatinumDialog(scope);
   });
+  bindFinishedStatsMobileOverlays();
   el.finishedStatsDialog.showModal();
   syncScrollLock();
 }
@@ -4116,7 +4117,7 @@ function finishedStatsMarkup(year, games, completed) {
 
 function statsKpiCard(label, value, detail = "", options = {}) {
   return `
-    <button class="finished-stats-kpi ${options.action ? "is-clickable" : ""} ${options.tone ? `is-${escapeHtml(options.tone)}` : ""}" type="button" ${options.action ? `data-stats-action="${escapeHtml(options.action)}"` : ""}>
+    <button class="finished-stats-kpi ${options.action ? "is-clickable" : ""} ${options.tone ? `is-${escapeHtml(options.tone)}` : ""}" type="button" ${options.action ? `data-stats-action="${escapeHtml(options.action)}"` : ""} ${detail && !options.action ? `data-stats-overlay-title="${escapeHtml(label)}"` : ""}>
       <strong class="${options.valueClass ? escapeHtml(options.valueClass) : ""}">${options.icon || ""}${escapeHtml(String(value))}</strong>
       <span>${escapeHtml(label)}</span>
       ${detail ? `<span class="finished-stats-breakdown">${detail}</span>` : ""}
@@ -4132,7 +4133,7 @@ function statsDonutCard(title, counts, tone, visibleLimit = counts.length) {
       <h3>${escapeHtml(title)}</h3>
       <div class="finished-stats-donut ${tone === "category" ? "is-category" : "is-platform"}">${statsPieMarkup(counts, tone)}</div>
       <div class="finished-stats-chart-copy">
-        <div class="finished-stats-chart-list">${statsBreakdownList(visibleCounts, tone)}${hasMore ? `<span class="finished-stats-more-row" aria-hidden="true">...</span>` : ""}<div class="finished-stats-breakdown">${statsBreakdownList(counts, tone)}</div></div>
+        <div class="finished-stats-chart-list" data-stats-overlay-title="${escapeHtml(title)}">${statsBreakdownList(visibleCounts, tone)}${hasMore ? `<span class="finished-stats-more-row" aria-hidden="true">...</span>` : ""}<div class="finished-stats-breakdown">${statsBreakdownList(counts, tone)}</div></div>
       </div>
     </article>
   `;
@@ -4182,7 +4183,7 @@ function statsPieSegmentData(item, startDeg, endDeg, color, total, index, tone) 
     : `<path class="finished-stats-pie-shape" d="M 50 50 L ${start.x.toFixed(3)} ${start.y.toFixed(3)} A 46 46 0 ${sweep > 180 ? 1 : 0} 1 ${end.x.toFixed(3)} ${end.y.toFixed(3)} Z" fill="${escapeHtml(color)}"></path>`;
   const label = tone === "platform" ? platformBadge(item.label) : `<b>${escapeHtml(item.label)}</b>`;
   return {
-    shape: `<g class="finished-stats-pie-segment finished-stats-pie-segment-${index}" tabindex="0">${shape}</g>`,
+    shape: `<g class="finished-stats-pie-segment finished-stats-pie-segment-${index}" style="--slice-opacity:${index % 2 ? 0.78 : 0.96}" tabindex="0">${shape}</g>`,
     tip: `<div class="finished-stats-segment-tip finished-stats-segment-tip-${index}" style="--tip-x:${left.toFixed(2)}%;--tip-y:${top.toFixed(2)}%"><span class="finished-stats-segment-percent">${percent}%</span>${label}<span class="finished-stats-segment-count">${escapeHtml(String(item.count))}</span></div>`,
   };
 }
@@ -4208,7 +4209,7 @@ function statsMonthBars(games, counts) {
     const monthGames = games
       .filter((game) => monthShortName(game.completedAt) === label)
       .sort((a, b) => String(a.completedAt || "").localeCompare(String(b.completedAt || "")) || stringCompare(a.title, b.title));
-    return `<div class="finished-stats-month" title="${escapeHtml(`${label}: ${count}`)}"><span>${escapeHtml(label)}</span><em style="--month:${count / max};--platform-bar:${statsPlatformBar(monthGames)}"></em><strong>${count}</strong>${count ? `<span class="finished-stats-breakdown">${statsGameList(monthGames)}</span>` : ""}</div>`;
+    return `<div class="finished-stats-month" title="${escapeHtml(`${label}: ${count}`)}" ${count ? `data-stats-overlay-title="${escapeHtml(label)}"` : ""}><span>${escapeHtml(label)}</span><em style="--month:${count / max};--platform-bar:${statsPlatformBar(monthGames)}"></em><strong>${count}</strong>${count ? `<span class="finished-stats-breakdown">${statsGameList(monthGames)}</span>` : ""}</div>`;
   }).join("");
 }
 
@@ -4221,7 +4222,7 @@ function statsYearBars(games) {
       const yearGames = games
         .filter((game) => completionYear(game) === label)
         .sort((a, b) => String(a.completedAt || "").localeCompare(String(b.completedAt || "")) || stringCompare(a.title, b.title));
-      return `<div class="finished-stats-month finished-stats-year" title="${escapeHtml(`${label}: ${count}`)}"><span>${escapeHtml(label)}</span><em style="--month:${count / max};--platform-bar:${statsPlatformBar(yearGames)}"></em><strong>${count}</strong>${count ? `<span class="finished-stats-breakdown">${statsGameList(yearGames)}</span>` : ""}</div>`;
+      return `<div class="finished-stats-month finished-stats-year" title="${escapeHtml(`${label}: ${count}`)}" ${count ? `data-stats-overlay-title="${escapeHtml(label)}"` : ""}><span>${escapeHtml(label)}</span><em style="--month:${count / max};--platform-bar:${statsPlatformBar(yearGames)}"></em><strong>${count}</strong>${count ? `<span class="finished-stats-breakdown">${statsGameList(yearGames)}</span>` : ""}</div>`;
     })
     .join("");
 }
@@ -4263,6 +4264,45 @@ function statsPlatformBar(games) {
     cursor += (item.count / total) * 100;
     return `${platformStatsColor(item.label, index)} ${start.toFixed(2)}% ${cursor.toFixed(2)}%`;
   }).join(", ")})`;
+}
+
+function bindFinishedStatsMobileOverlays() {
+  el.finishedStatsBody.querySelectorAll("[data-stats-overlay-title]").forEach((node) => {
+    node.addEventListener("click", (event) => {
+      if (!window.matchMedia("(max-width: 760px)").matches) return;
+      if (event.target.closest(".finished-stats-breakdown")) return;
+      const breakdown = node.querySelector(".finished-stats-breakdown");
+      if (!breakdown?.innerHTML.trim()) return;
+      event.preventDefault();
+      event.stopPropagation();
+      openFinishedStatsMiniOverlay(node.dataset.statsOverlayTitle || "Stats", breakdown.innerHTML);
+    });
+  });
+}
+
+function openFinishedStatsMiniOverlay(title, content) {
+  let overlay = el.finishedStatsDialog.querySelector(".finished-stats-mini-overlay");
+  if (!overlay) {
+    overlay = document.createElement("div");
+    overlay.className = "finished-stats-mini-overlay";
+    el.finishedStatsDialog.querySelector(".finished-stats-modal")?.appendChild(overlay);
+  }
+  overlay.innerHTML = `
+    <div class="finished-stats-mini-panel">
+      <div class="finished-stats-mini-head">
+        <strong>${escapeHtml(title)}</strong>
+        <button class="icon-button" type="button" data-stats-mini-close title="Close" aria-label="Close">×</button>
+      </div>
+      <div class="finished-stats-mini-list">${content}</div>
+    </div>
+  `;
+  overlay.hidden = false;
+  overlay.querySelector("[data-stats-mini-close]")?.addEventListener("click", () => {
+    overlay.hidden = true;
+  });
+  overlay.onclick = (event) => {
+    if (event.target === overlay) overlay.hidden = true;
+  };
 }
 
 function statsCompletedGameList(items) {

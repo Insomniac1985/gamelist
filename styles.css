@@ -6026,6 +6026,7 @@ body:not(.can-edit) .game-card:focus-within .edit-action {
   min-height: 88px;
   padding: 14px;
   text-align: left;
+  cursor: default;
 }
 
 .finished-stats-kpi strong {
@@ -6136,6 +6137,7 @@ body:not(.can-edit) .game-card:focus-within .edit-action {
 }
 
 .finished-stats-pie-shape {
+  opacity: var(--slice-opacity, 0.96);
   transition: filter 140ms ease, opacity 140ms ease, transform 140ms ease;
   transform-box: fill-box;
   transform-origin: center;
@@ -6359,7 +6361,8 @@ body:not(.can-edit) .game-card:focus-within .edit-action {
 
 .finished-stats-breakdown .platform-badge,
 .finished-stats-chart-list .platform-badge,
-.finished-stats-segment-tip .platform-badge {
+.finished-stats-segment-tip .platform-badge,
+.finished-stats-mini-list .platform-badge {
   width: max-content;
   max-width: 128px;
   min-width: max-content;
@@ -6373,7 +6376,8 @@ body:not(.can-edit) .game-card:focus-within .edit-action {
 
 .finished-stats-breakdown .platform-icon,
 .finished-stats-chart-list .platform-icon,
-.finished-stats-segment-tip .platform-icon {
+.finished-stats-segment-tip .platform-icon,
+.finished-stats-mini-list .platform-icon {
   width: 13px;
   height: 13px;
   border-radius: 4px;
@@ -6381,14 +6385,16 @@ body:not(.can-edit) .game-card:focus-within .edit-action {
 
 .finished-stats-breakdown .platform-icon img,
 .finished-stats-chart-list .platform-icon img,
-.finished-stats-segment-tip .platform-icon img {
+.finished-stats-segment-tip .platform-icon img,
+.finished-stats-mini-list .platform-icon img {
   width: 12px;
   height: 12px;
 }
 
 .finished-stats-breakdown .platform-label,
 .finished-stats-chart-list .platform-label,
-.finished-stats-segment-tip .platform-label {
+.finished-stats-segment-tip .platform-label,
+.finished-stats-mini-list .platform-label {
   font-size: 8px;
 }
 
@@ -6497,6 +6503,90 @@ body:not(.can-edit) .game-card:focus-within .edit-action {
   color: var(--dim);
   font-size: 11px;
   text-align: right;
+}
+
+.finished-stats-mini-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 80;
+  display: grid;
+  align-items: end;
+  padding: 14px;
+  background: rgba(0, 0, 0, 0.42);
+  border-radius: inherit;
+}
+
+.finished-stats-mini-overlay[hidden] {
+  display: none;
+}
+
+.finished-stats-mini-panel {
+  display: grid;
+  gap: 10px;
+  width: min(420px, 100%);
+  max-height: min(520px, 72vh);
+  padding: 12px;
+  overflow: hidden;
+  color: var(--text);
+  background: var(--grid-fade), var(--grid-texture), rgba(8, 9, 12, 0.98);
+  background-size: auto, 22px 22px, auto;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 8px;
+  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.48);
+}
+
+.finished-stats-mini-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.finished-stats-mini-head strong {
+  min-width: 0;
+  overflow: hidden;
+  color: var(--accent);
+  font-size: 13px;
+  font-weight: 900;
+  text-overflow: ellipsis;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.finished-stats-mini-list {
+  display: grid;
+  gap: 5px;
+  max-height: min(420px, 58vh);
+  overflow: auto;
+}
+
+.finished-stats-mini-list > span {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-width: 0;
+  min-height: 28px;
+  padding: 4px 6px;
+  font-size: 12px;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.finished-stats-mini-list b {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.finished-stats-mini-list em {
+  min-width: 0;
+  font-style: normal;
 }
 
 .completed-row {
