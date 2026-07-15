@@ -6074,6 +6074,15 @@ body:not(.can-edit) .game-card:focus-within .edit-action {
   background: color-mix(in srgb, var(--accent) 14%, rgba(255, 255, 255, 0.06));
 }
 
+.finished-stats-kpi.is-completed:hover,
+.finished-stats-kpi.is-completed:focus-visible {
+  border-color: rgba(255, 225, 101, 0.48);
+  background: rgba(255, 225, 101, 0.12);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.08),
+    0 0 0 3px rgba(255, 225, 101, 0.11);
+}
+
 .finished-stats-charts {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));

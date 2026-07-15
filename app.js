@@ -4389,22 +4389,22 @@ function statsSegmentColor(label, tone, index = 0) {
 
 function platformStatsColor(platform, index = 0) {
   const value = normalizeSearchText(platform);
-  if (value.includes("switch") || value.includes("nintendo")) return "rgba(255, 59, 69, 0.13)";
+  if (value.includes("switch") || value.includes("nintendo")) return "#ff3b45";
   if (value === "ps5") return "#ffffff";
-  if (value === "ps1") return "rgba(142, 148, 160, 0.18)";
-  if (value === "ps3" || value === "psp") return "rgba(5, 7, 11, 0.82)";
-  if (value.includes("playstation") || /\bps/.test(value)) return "rgb(111 120 255 / 22%)";
-  if (value.includes("xbox 360") || value === "x360") return "rgba(98, 212, 112, 0.14)";
-  if (value === "xbox") return "rgba(5, 7, 11, 0.82)";
-  if (value.includes("xbox") || value.includes("microsoft") || value === "xone") return "rgba(98, 212, 112, 0.14)";
-  if (value.includes("wiiu")) return "rgba(155, 215, 255, 0.14)";
-  if (value.includes("3ds") || value.includes("gbc")) return "rgba(255, 90, 102, 0.14)";
-  if (value.includes("n64")) return "rgba(52, 154, 76, 0.28)";
-  if (value.includes("gamecube") || value.includes("snes") || value.includes("gba")) return "rgba(150, 112, 255, 0.16)";
-  if (value.includes("sega") || value.includes("game gear")) return "rgba(42, 112, 224, 0.18)";
-  if (value.includes("dreamcast")) return "rgba(255, 132, 45, 0.15)";
-  if (value.includes("wii") || value.includes("nes") || value.includes("gb")) return "rgba(217, 221, 230, 0.12)";
-  return ["rgba(255, 255, 255, 0.07)", "rgba(170, 139, 255, 0.16)", "rgba(242, 208, 107, 0.16)", "rgba(255, 158, 210, 0.16)"][index % 4];
+  if (value === "ps1") return "#8e94a0";
+  if (value === "ps3" || value === "psp") return "#05070b";
+  if (value.includes("playstation") || /\bps/.test(value)) return "#6f78ff";
+  if (value.includes("xbox 360") || value === "x360") return "#62d470";
+  if (value === "xbox") return "#05070b";
+  if (value.includes("xbox") || value.includes("microsoft") || value === "xone") return "#62d470";
+  if (value.includes("wiiu")) return "#9bd7ff";
+  if (value.includes("3ds") || value.includes("gbc")) return "#ff5a66";
+  if (value.includes("n64")) return "#349a4c";
+  if (value.includes("gamecube") || value.includes("snes") || value.includes("gba")) return "#9670ff";
+  if (value.includes("sega") || value.includes("game gear")) return "#2a70e0";
+  if (value.includes("dreamcast")) return "#ff842d";
+  if (value.includes("wii") || value.includes("nes") || value.includes("gb")) return "#d9dde6";
+  return ["#8b93a6", "#aa8bff", "#f2d06b", "#ff9ed2"][index % 4];
 }
 
 function sortedCompletedGames(games) {
