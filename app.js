@@ -4222,24 +4222,32 @@ function statsPieMarkup(counts, tone, games = []) {
   });
   const tipCss = segments.map((_, index) => `
     .finished-stats-donut:has(.finished-stats-pie-segment-${index}:hover) .finished-stats-pie-shape,
-    .finished-stats-donut:has(.finished-stats-pie-segment-${index}:focus-visible) .finished-stats-pie-shape {
+    .finished-stats-donut:has(.finished-stats-pie-segment-${index}:focus-visible) .finished-stats-pie-shape,
+    .finished-stats-donut:has(.finished-stats-segment-tip-${index}:hover) .finished-stats-pie-shape,
+    .finished-stats-donut:has(.finished-stats-segment-tip-${index}:focus-within) .finished-stats-pie-shape {
       filter: saturate(0.42) brightness(0.72);
       opacity: 0.5;
     }
     .finished-stats-donut:has(.finished-stats-pie-segment-${index}:hover) .finished-stats-pie-segment-${index} .finished-stats-pie-shape,
-    .finished-stats-donut:has(.finished-stats-pie-segment-${index}:focus-visible) .finished-stats-pie-segment-${index} .finished-stats-pie-shape {
+    .finished-stats-donut:has(.finished-stats-pie-segment-${index}:focus-visible) .finished-stats-pie-segment-${index} .finished-stats-pie-shape,
+    .finished-stats-donut:has(.finished-stats-segment-tip-${index}:hover) .finished-stats-pie-segment-${index} .finished-stats-pie-shape,
+    .finished-stats-donut:has(.finished-stats-segment-tip-${index}:focus-within) .finished-stats-pie-segment-${index} .finished-stats-pie-shape {
       filter: brightness(1.18) saturate(1.12);
       opacity: 0.98;
       transform: scale(1.025);
     }
     .finished-stats-donut:has(.finished-stats-pie-segment-${index}:hover) .finished-stats-segment-tip-${index},
-    .finished-stats-donut:has(.finished-stats-pie-segment-${index}:focus-visible) .finished-stats-segment-tip-${index} {
+    .finished-stats-donut:has(.finished-stats-pie-segment-${index}:focus-visible) .finished-stats-segment-tip-${index},
+    .finished-stats-donut:has(.finished-stats-segment-tip-${index}:hover) .finished-stats-segment-tip-${index},
+    .finished-stats-donut:has(.finished-stats-segment-tip-${index}:focus-within) .finished-stats-segment-tip-${index} {
       opacity: 1;
       transform: translate(-50%, -50%) scale(1);
       pointer-events: auto;
     }
     .finished-stats-donut:has(.finished-stats-pie-segment-${index}:hover) .finished-stats-segment-tip-${index} .finished-stats-segment-games,
-    .finished-stats-donut:has(.finished-stats-pie-segment-${index}:focus-visible) .finished-stats-segment-tip-${index} .finished-stats-segment-games {
+    .finished-stats-donut:has(.finished-stats-pie-segment-${index}:focus-visible) .finished-stats-segment-tip-${index} .finished-stats-segment-games,
+    .finished-stats-donut:has(.finished-stats-segment-tip-${index}:hover) .finished-stats-segment-tip-${index} .finished-stats-segment-games,
+    .finished-stats-donut:has(.finished-stats-segment-tip-${index}:focus-within) .finished-stats-segment-tip-${index} .finished-stats-segment-games {
       opacity: 1;
       transform: translate(-50%, 0);
       pointer-events: auto;
@@ -4268,7 +4276,10 @@ function statsBellMarkup(counts, tone, games = []) {
     const bucketGames = games
       .filter((game) => playtimeBucketLabel(game) === point.item.label)
       .sort(statsGameListSort);
-    return `<span class="finished-stats-bell-dot" style="--dot-x:${point.x.toFixed(2)}%;--dot-y:${point.y.toFixed(2)}%;--dot-color:${escapeHtml(color)}" title="${escapeHtml(`${point.item.label}: ${point.item.count}`)}"><b>${escapeHtml(String(point.item.count))}</b>${bucketGames.length ? `<span class="finished-stats-breakdown">${statsGameList(bucketGames)}</span>` : ""}</span>`;
+    const bucketList = bucketGames.length
+      ? `<span class="finished-stats-breakdown"><span class="finished-stats-breakdown-title">${escapeHtml(point.item.label)}</span>${statsGameList(bucketGames)}</span>`
+      : "";
+    return `<span class="finished-stats-bell-dot" style="--dot-x:${point.x.toFixed(2)}%;--dot-y:${point.y.toFixed(2)}%;--dot-color:${escapeHtml(color)}" title="${escapeHtml(`${point.item.label}: ${point.item.count}`)}"><b>${escapeHtml(String(point.item.count))}</b>${bucketList}</span>`;
   }).join("");
   return `
     <svg viewBox="0 0 100 100" aria-hidden="true">
