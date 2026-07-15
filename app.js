@@ -2090,7 +2090,7 @@ function gameOfTheYearExportPlatformSegment(item, index, startDeg, endDeg, color
   const sweep = Math.max(0.01, endDeg - startDeg);
   const start = polarPoint(110, 110, 96, startDeg - 90);
   const end = polarPoint(110, 110, 96, endDeg - 90);
-  const label = polarPoint(50, 50, 44, startDeg + sweep / 2 - 90);
+  const label = polarPoint(50, 50, 48, startDeg + sweep / 2 - 90);
   const shape = sweep >= 359.99
     ? `<circle class="goty-export-platform-slice" cx="110" cy="110" r="96" fill="${escapeHtml(color)}"></circle>`
     : `<path class="goty-export-platform-slice" d="M 110 110 L ${start.x.toFixed(3)} ${start.y.toFixed(3)} A 96 96 0 ${sweep > 180 ? 1 : 0} 1 ${end.x.toFixed(3)} ${end.y.toFixed(3)} Z" fill="${escapeHtml(color)}"></path>`;
@@ -2492,7 +2492,7 @@ function gameOfTheYearExportCss({ theme, main, accent, gradient, bg, glowPrimary
       position: absolute;
       left: var(--label-x);
       top: var(--label-y);
-      z-index: 2;
+      z-index: 5;
       transform: translate(-50%, -50%);
     }
     .goty-export-platform-label .platform-badge {
