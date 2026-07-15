@@ -2173,7 +2173,7 @@ function gameOfTheYearExportCss({ theme, main, accent, gradient, bg, glowPrimary
     .goty-export-top-kpis {
       position: absolute;
       top: 47px;
-      right: 12px;
+      right: 78px;
       display: grid;
       grid-template-columns: 142px 168px repeat(3, 120px);
       gap: 10px;
@@ -2225,14 +2225,14 @@ function gameOfTheYearExportCss({ theme, main, accent, gradient, bg, glowPrimary
       position: absolute;
       left: 62px;
       right: 540px;
-      bottom: 40px;
+      bottom: 35px;
       display: grid;
       grid-template-columns: 360px minmax(0, 1fr);
       gap: 12px;
     }
     .goty-export-stat {
       min-width: 0;
-      height: 76px;
+      height: 125px;
       padding: 9px 11px;
       overflow: hidden;
     }
@@ -2453,8 +2453,9 @@ function gameOfTheYearExportCss({ theme, main, accent, gradient, bg, glowPrimary
       border-radius: 7px;
     }
     .goty-export-tag {
-      background: ${theme.mode === "light" ? "rgba(18,24,36,.08)" : "rgba(8,9,13,.58)"};
-      border-color: ${theme.mode === "light" ? "rgba(18,24,36,.13)" : "rgba(255,255,255,.12)"};
+      color: rgba(246, 247, 251, 0.56);
+      background: rgba(14, 16, 22, 0.3);
+      border-color: rgba(255, 255, 255, 0.07);
     }
     .goty-export-coop {
       color: #79f2ce;
