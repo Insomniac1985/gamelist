@@ -282,6 +282,7 @@ const el = {
   platinumDialog: document.querySelector("#platinumDialog"),
   finishedStatsDialog: document.querySelector("#finishedStatsDialog"),
   finishedStatsCloseButton: document.querySelector("#finishedStatsCloseButton"),
+  finishedStatsBrow: document.querySelector("#finishedStatsBrow"),
   finishedStatsTitle: document.querySelector("#finishedStatsTitle"),
   finishedStatsBody: document.querySelector("#finishedStatsBody"),
   platinumCloseButton: document.querySelector("#platinumCloseButton"),
@@ -4056,6 +4057,7 @@ function openFinishedStatsDialog(year = "all") {
   const scope = finishedStatsScope(year);
   const games = finishedStatsGames(scope);
   const completed = finishedStatsCompleted(scope);
+  el.finishedStatsBrow.textContent = scope === "all" ? "All-time statistics" : "YEARLY STATISTICS";
   el.finishedStatsTitle.textContent = scope === "all" ? "Finished games" : `Finished games ${scope}`;
   el.finishedStatsBody.innerHTML = finishedStatsMarkup(scope, games, completed);
   el.finishedStatsBody.querySelector("[data-stats-action='completed']")?.addEventListener("click", () => {
@@ -4157,7 +4159,7 @@ function statsReleaseKpisCard(insights) {
         })}
         ${statsReleaseMiniKpi({
           value: insights.playedFromYear.length,
-          label: insights.scopeYear ? `Played new releases from ${insights.scopeYear}` : "Played new releases",
+          label: insights.scopeYear ? `Played new games from ${insights.scopeYear}` : "Played new games",
           detail: insights.hoverable ? statsGameList(insights.playedFromYear) : "",
           tone: "played",
         })}

@@ -6115,8 +6115,7 @@ body:not(.can-edit) .game-card:focus-within .edit-action {
 
 .finished-stats-charts.is-all .finished-stats-chart:last-child {
   grid-column: 1 / -1;
-  width: calc((100% - 12px) / 2);
-  justify-self: center;
+  width: 100%;
 }
 
 .finished-stats-chart {
@@ -6665,6 +6664,9 @@ body:not(.can-edit) .game-card:focus-within .edit-action {
 
 .finished-stats-period-grid.is-yearly {
   grid-template-columns: repeat(auto-fit, minmax(56px, 1fr));
+  max-height: 178px;
+  overflow-y: auto;
+  padding-right: 4px;
 }
 
 .finished-stats-month {
