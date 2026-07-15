@@ -2190,6 +2190,9 @@ function gameOfTheYearExportCss({ theme, main, accent, gradient, bg, glowPrimary
   const titleFont = canvasTitleFont(theme);
   const titleSize = theme.accentFont === "pokemon" ? 66 : 53;
   const titleLineHeight = theme.accentFont === "pokemon" ? 0.82 : 1.02;
+  const categoryTitleSize = theme.accentFont === "pokemon" ? 26 : 22;
+  const logoSize = theme.bigLogo ? 104 : 82;
+  const logoTop = theme.bigLogo ? 42 : 52;
   const bodyFont = canvasBodyFont();
   return `
     .goty-export-poster {
@@ -2211,9 +2214,9 @@ function gameOfTheYearExportCss({ theme, main, accent, gradient, bg, glowPrimary
     .goty-export-logo {
       position: absolute;
       left: 62px;
-      top: 52px;
-      width: 82px;
-      height: 82px;
+      top: ${logoTop}px;
+      width: ${logoSize}px;
+      height: ${logoSize}px;
       object-fit: cover;
       filter:
         drop-shadow(0 0 18px ${canvasRgba(glowPrimary, theme.disableGlow ? 0 : 0.52)})
@@ -2439,7 +2442,7 @@ function gameOfTheYearExportCss({ theme, main, accent, gradient, bg, glowPrimary
       margin-left: 5px;
       overflow: hidden;
       color: ${accent};
-      font: 900 22px/1.05 ${titleFont};
+      font: 900 ${categoryTitleSize}px/1.05 ${titleFont};
       text-overflow: ellipsis;
       text-transform: uppercase;
       white-space: nowrap;
@@ -2889,7 +2892,8 @@ async function drawGameOfTheYearImage(ctx, { owner, year, rows, logo, theme, bac
   ctx.fillStyle = sweep;
   ctx.fillRect(0, 0, width, height);
   if (logo) {
-    drawCanvasImageCover(ctx, logo, 84, 68, 112, 112, 22);
+    const logoSize = theme.bigLogo ? 138 : 112;
+    drawCanvasImageCover(ctx, logo, 84, theme.bigLogo ? 54 : 68, logoSize, logoSize, theme.bigLogo ? 28 : 22);
   }
   const titleFill = ctx.createLinearGradient(220, 78, 980, 154);
   titleFill.addColorStop(0, titleGradient);
