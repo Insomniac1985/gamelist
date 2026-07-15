@@ -6286,6 +6286,21 @@ body:not(.can-edit) .game-card:focus-within .edit-action {
   transform: scale(1);
 }
 
+.finished-stats-bell-dot .finished-stats-breakdown {
+  right: auto;
+  left: 50%;
+  top: 100%;
+  bottom: auto;
+  text-align: left;
+}
+
+.finished-stats-bell-dot:hover .finished-stats-breakdown,
+.finished-stats-bell-dot:focus-visible .finished-stats-breakdown {
+  opacity: 1;
+  transform: translate(-50%, 8px);
+  pointer-events: auto;
+}
+
 .finished-stats-pie-segment {
   cursor: default;
   outline: 0;
@@ -6340,8 +6355,8 @@ body:not(.can-edit) .game-card:focus-within .edit-action {
   z-index: 1;
 }
 
-.finished-stats-segment-tip b,
-.finished-stats-segment-tip span {
+.finished-stats-segment-tip > b,
+.finished-stats-segment-tip > span {
   overflow: hidden;
   font-size: 10px;
   line-height: 1.15;
@@ -6351,6 +6366,40 @@ body:not(.can-edit) .game-card:focus-within .edit-action {
 
 .finished-stats-segment-count {
   color: var(--muted);
+}
+
+.finished-stats-segment-games {
+  position: absolute;
+  left: 50%;
+  top: calc(100% + 8px);
+  z-index: 5;
+  display: grid;
+  gap: 5px;
+  width: min(320px, calc(100vw - 42px));
+  max-height: min(240px, calc(100vh - 160px));
+  padding: 10px;
+  overflow: auto;
+  color: var(--text);
+  text-align: left;
+  background: rgba(8, 9, 12, 0.96);
+  border-radius: 8px;
+  box-shadow: 0 18px 42px rgba(0, 0, 0, 0.42);
+  opacity: 0;
+  transform: translate(-50%, 6px);
+  transition: opacity 140ms ease, transform 140ms ease;
+  pointer-events: none;
+}
+
+.finished-stats-segment-tip > .finished-stats-segment-games {
+  position: absolute;
+  z-index: 5;
+}
+
+.finished-stats-segment-tip:hover .finished-stats-segment-games,
+.finished-stats-segment-tip:focus-within .finished-stats-segment-games {
+  opacity: 1;
+  transform: translate(-50%, 0);
+  pointer-events: auto;
 }
 
 .finished-stats-segment-percent {
@@ -6465,6 +6514,8 @@ body:not(.can-edit) .game-card:focus-within .edit-action {
 .finished-stats-kpi:focus-visible .finished-stats-breakdown,
 .finished-stats-release-kpi:hover .finished-stats-breakdown,
 .finished-stats-release-kpi:focus-visible .finished-stats-breakdown,
+.finished-stats-bell-dot:hover .finished-stats-breakdown,
+.finished-stats-bell-dot:focus-visible .finished-stats-breakdown,
 .finished-stats-chart-list:hover .finished-stats-breakdown,
 .finished-stats-chart-list:focus-within .finished-stats-breakdown,
 .finished-stats-month:hover .finished-stats-breakdown,

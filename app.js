@@ -4142,8 +4142,8 @@ function statsDonutCard(title, counts, tone, visibleLimit = counts.length, games
     <article class="finished-stats-chart">
       <h3>${escapeHtml(title)}</h3>
       ${tone === "time"
-        ? `<div class="finished-stats-bell">${statsBellMarkup(counts, tone)}</div>`
-        : `<div class="finished-stats-donut ${tone === "category" ? "is-category" : "is-platform"}">${statsPieMarkup(counts, tone)}</div>`}
+        ? `<div class="finished-stats-bell">${statsBellMarkup(counts, tone, games)}</div>`
+        : `<div class="finished-stats-donut ${tone === "category" ? "is-category" : "is-platform"}">${statsPieMarkup(counts, tone, games)}</div>`}
       <div class="finished-stats-chart-copy">
         <div class="finished-stats-chart-list" data-stats-overlay-title="${escapeHtml(title)}">${statsBreakdownList(visibleCounts, tone)}${hasMore ? `<span class="finished-stats-more-row" aria-hidden="true">...</span>` : ""}<div class="finished-stats-breakdown">${statsBreakdownList(counts, tone, games)}</div></div>
       </div>
@@ -4210,7 +4210,7 @@ function statsReleaseYearInsights(year, games) {
   };
 }
 
-function statsPieMarkup(counts, tone) {
+function statsPieMarkup(counts, tone, games = []) {
   const total = counts.reduce((sum, item) => sum + item.count, 0);
   if (!total) return `<svg viewBox="0 0 100 100" aria-hidden="true"><circle cx="50" cy="50" r="46" fill="rgba(255,255,255,.08)"></circle></svg>`;
   let cursor = 0;
@@ -4218,7 +4218,7 @@ function statsPieMarkup(counts, tone) {
     const start = cursor;
     cursor += (item.count / total) * 360;
     const color = statsSegmentColor(item.label, tone, index);
-    return statsPieSegmentData(item, start, cursor, color, total, index, tone);
+    return statsPieSegmentData(item, start, cursor, color, total, index, tone, games);
   });
   const tipCss = segments.map((_, index) => `
     .finished-stats-donut:has(.finished-stats-pie-segment-${index}:hover) .finished-stats-pie-shape,
@@ -4237,11 +4237,17 @@ function statsPieMarkup(counts, tone) {
       opacity: 1;
       transform: translate(-50%, -50%) scale(1);
     }
+    .finished-stats-donut:has(.finished-stats-pie-segment-${index}:hover) .finished-stats-segment-tip-${index} .finished-stats-segment-games,
+    .finished-stats-donut:has(.finished-stats-pie-segment-${index}:focus-visible) .finished-stats-segment-tip-${index} .finished-stats-segment-games {
+      opacity: 1;
+      transform: translate(-50%, 0);
+      pointer-events: auto;
+    }
   `).join("");
   return `<svg viewBox="0 0 100 100" role="img" aria-label="Stats breakdown">${segments.map((segment) => segment.shape).join("")}</svg><div class="finished-stats-pie-tips">${segments.map((segment) => segment.tip).join("")}</div><style>${tipCss}</style>`;
 }
 
-function statsBellMarkup(counts, tone) {
+function statsBellMarkup(counts, tone, games = []) {
   const max = Math.max(1, ...counts.map((item) => item.count));
   const slots = Math.max(5, counts.length || 5);
   const points = counts.length
@@ -4258,7 +4264,10 @@ function statsBellMarkup(counts, tone) {
   const area = `M ${points[0].x.toFixed(2)} 88 L ${points[0].x.toFixed(2)} ${points[0].y.toFixed(2)} ${line.replace(/^M\s+[0-9.]+\s+[0-9.]+/, "")} L ${points[points.length - 1].x.toFixed(2)} 88 Z`;
   const dots = points.map((point) => {
     const color = statsSegmentColor(point.item.label, tone, point.index);
-    return `<span class="finished-stats-bell-dot" style="--dot-x:${point.x.toFixed(2)}%;--dot-y:${point.y.toFixed(2)}%;--dot-color:${escapeHtml(color)}" title="${escapeHtml(`${point.item.label}: ${point.item.count}`)}"><b>${escapeHtml(String(point.item.count))}</b></span>`;
+    const bucketGames = games
+      .filter((game) => playtimeBucketLabel(game) === point.item.label)
+      .sort(statsGameListSort);
+    return `<span class="finished-stats-bell-dot" style="--dot-x:${point.x.toFixed(2)}%;--dot-y:${point.y.toFixed(2)}%;--dot-color:${escapeHtml(color)}" title="${escapeHtml(`${point.item.label}: ${point.item.count}`)}"><b>${escapeHtml(String(point.item.count))}</b>${bucketGames.length ? `<span class="finished-stats-breakdown">${statsGameList(bucketGames)}</span>` : ""}</span>`;
   }).join("");
   return `
     <svg viewBox="0 0 100 100" aria-hidden="true">
@@ -4279,7 +4288,7 @@ function smoothStatsPath(points) {
   }, "") + ` T ${points[points.length - 1].x.toFixed(2)} ${points[points.length - 1].y.toFixed(2)}`;
 }
 
-function statsPieSegmentData(item, startDeg, endDeg, color, total, index, tone) {
+function statsPieSegmentData(item, startDeg, endDeg, color, total, index, tone, games = []) {
   const sweep = Math.max(0.01, endDeg - startDeg);
   const start = polarPoint(50, 50, 46, startDeg - 90);
   const end = polarPoint(50, 50, 46, endDeg - 90);
@@ -4291,10 +4300,22 @@ function statsPieSegmentData(item, startDeg, endDeg, color, total, index, tone) 
     ? `<circle class="finished-stats-pie-shape" cx="50" cy="50" r="46" fill="${escapeHtml(color)}"></circle>`
     : `<path class="finished-stats-pie-shape" d="M 50 50 L ${start.x.toFixed(3)} ${start.y.toFixed(3)} A 46 46 0 ${sweep > 180 ? 1 : 0} 1 ${end.x.toFixed(3)} ${end.y.toFixed(3)} Z" fill="${escapeHtml(color)}"></path>`;
   const label = tone === "platform" ? platformBadge(item.label) : `<b>${escapeHtml(item.label)}</b>`;
+  const segmentGames = statsSegmentGames(item.label, tone, games);
   return {
     shape: `<g class="finished-stats-pie-segment finished-stats-pie-segment-${index}" style="--slice-opacity:${index % 2 ? 0.78 : 0.96}" tabindex="0">${shape}</g>`,
-    tip: `<div class="finished-stats-segment-tip finished-stats-segment-tip-${index}" style="--tip-x:${left.toFixed(2)}%;--tip-y:${top.toFixed(2)}%"><span class="finished-stats-segment-percent">${percent}%</span>${label}<span class="finished-stats-segment-count">${escapeHtml(String(item.count))}</span></div>`,
+    tip: `<div class="finished-stats-segment-tip finished-stats-segment-tip-${index}" style="--tip-x:${left.toFixed(2)}%;--tip-y:${top.toFixed(2)}%"><span class="finished-stats-segment-percent">${percent}%</span>${label}<span class="finished-stats-segment-count">${escapeHtml(String(item.count))}</span>${segmentGames.length ? `<div class="finished-stats-segment-games">${statsGameList(segmentGames)}</div>` : ""}</div>`,
   };
+}
+
+function statsSegmentGames(label, tone, games = []) {
+  if (!games.length) return [];
+  if (tone === "platform") {
+    return games.filter((game) => statsPlatformLabel(game) === label).sort(statsGameListSort);
+  }
+  if (tone === "category") {
+    return games.filter((game) => gameStatsTags(game).includes(label)).sort(statsGameListSort);
+  }
+  return [];
 }
 
 function polarPoint(cx, cy, radius, angleDeg) {
