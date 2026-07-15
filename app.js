@@ -4086,6 +4086,7 @@ function completedStatsYearFor(item) {
 function finishedStatsMarkup(year, games, completed) {
   const platforms = countBy(games, (game) => canonicalPlatform(game.platform) || game.platform || "Unknown");
   const tags = countTags(games);
+  const timeBuckets = countCompletionTimeBuckets(games);
   const months = countBy(games, (game) => monthShortName(game.completedAt));
   const streamed = games.filter((game) => game.stream);
   const otherOwnerGames = games.filter((game) => visibleOwnerTags(game).length);
@@ -4102,6 +4103,7 @@ function finishedStatsMarkup(year, games, completed) {
     <div class="finished-stats-charts">
       ${statsDonutCard("Platforms", platforms, "platform", 5)}
       ${statsDonutCard("Tags", tags, "category", 5)}
+      ${statsDonutCard("Time", timeBuckets, "time", 5)}
     </div>
     <section class="finished-stats-months">
       <h3>${allYears ? "By year" : "By month"}</h3>
@@ -4142,7 +4144,7 @@ function statsPieMarkup(counts, tone) {
   const paths = counts.map((item, index) => {
     const start = cursor;
     cursor += (item.count / total) * 360;
-    const color = tone === "category" ? categoryStatsColor(index) : platformStatsColor(item.label, index);
+    const color = statsSegmentColor(item.label, tone, index);
     return statsPieSegmentMarkup(item, start, cursor, color, total);
   }).join("");
   return `<svg viewBox="0 0 100 100" role="img" aria-label="Stats breakdown">${paths}</svg>`;
@@ -4218,8 +4220,8 @@ function statsBreakdownRow(item, tone, index) {
   if (tone === "platform") {
     return `<span class="finished-stats-platform-row"><b>${platformBadge(item.label)}</b><em>${item.count}</em></span>`;
   }
-  if (tone === "category") {
-    const color = categoryStatsColor(index);
+  if (tone === "category" || tone === "time") {
+    const color = statsSegmentColor(item.label, tone, index);
     return `<span class="finished-stats-category-row" style="--category-stat-color:${escapeHtml(color)}"><b><i></i>${escapeHtml(item.label)}</b><em>${item.count}</em></span>`;
   }
   if (tone === "owner") {
@@ -4229,8 +4231,7 @@ function statsBreakdownRow(item, tone, index) {
 }
 
 function statsGameList(games) {
-  return games.slice(0, 12).map((game) => `<span class="finished-stats-game-row"><b>${escapeHtml(game.title)}</b>${game.platform ? platformBadge(game.platform) : ""}</span>`).join("")
-    + (games.length > 12 ? `<span><b>More</b><em>+${games.length - 12}</em></span>` : "");
+  return games.map((game) => `<span class="finished-stats-game-row"><b>${escapeHtml(game.title)}</b>${game.platform ? platformBadge(game.platform) : ""}</span>`).join("");
 }
 
 function statsCompletedGameList(items) {
@@ -4260,6 +4261,34 @@ function countTags(games) {
   return countBy(items, (item) => item.label);
 }
 
+function countCompletionTimeBuckets(games) {
+  const bucketMap = new Map();
+  let noStart = 0;
+  games.forEach((game) => {
+    const days = completedSpanDays(game);
+    if (days == null) {
+      noStart += 1;
+      return;
+    }
+    const start = Math.floor(days / 10) * 10;
+    const label = start === 0 ? "<10" : `${start}-${start + 10}`;
+    bucketMap.set(label, (bucketMap.get(label) || 0) + 1);
+  });
+  const buckets = [...bucketMap.entries()]
+    .map(([label, count]) => ({ label, count, order: label === "<10" ? 0 : Number(label.split("-")[0]) }))
+    .sort((a, b) => a.order - b.order)
+    .map(({ label, count }) => ({ label, count }));
+  if (noStart) buckets.push({ label: "No start", count: noStart });
+  return buckets;
+}
+
+function completedSpanDays(game) {
+  const start = Date.parse(dateOnly(game.startedAt));
+  const done = Date.parse(dateOnly(game.completedAt));
+  if (Number.isNaN(start) || Number.isNaN(done) || done < start) return null;
+  return Math.max(1, Math.ceil((done - start) / 86400000));
+}
+
 function gameStatsTags(game) {
   const tags = [...(game.genres || []), ...(game.tags || [])]
     .map((value) => String(value || "").trim())
@@ -4275,6 +4304,16 @@ function monthShortName(value) {
 function categoryStatsColor(index) {
   const shade = Math.max(76, 202 - index * 22);
   return `rgb(${shade} ${shade} ${shade})`;
+}
+
+function timeStatsColor(index) {
+  return ["#79f2ce", "#7cc7ff", "#aa8bff", "#f2d06b", "#ff9ed2", "#ff7a8a", "#9ba6bd"][index % 7];
+}
+
+function statsSegmentColor(label, tone, index = 0) {
+  if (tone === "platform") return platformStatsColor(label, index);
+  if (tone === "time") return timeStatsColor(index);
+  return categoryStatsColor(index);
 }
 
 function platformStatsColor(platform, index = 0) {

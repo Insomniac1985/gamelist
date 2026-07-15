@@ -6303,12 +6303,12 @@ body:not(.can-edit) .game-card:focus-within .edit-action {
 .finished-stats-platform-row .platform-badge,
 .finished-stats-game-row .platform-badge {
   min-width: 0;
-  height: 18px;
   min-height: 18px;
-  padding: 0 6px 0 4px;
-  font-size: 9px;
+  gap: 4px;
+  padding: 3px 5px 3px 3px;
+  font-size: 8px;
   flex: 0 0 auto;
-  border-radius: 5px;
+  border-radius: 7px;
 }
 
 .finished-stats-platform-row b {
@@ -6334,14 +6334,20 @@ body:not(.can-edit) .game-card:focus-within .edit-action {
 
 .finished-stats-platform-row .platform-icon,
 .finished-stats-game-row .platform-icon {
-  width: 12px;
-  height: 12px;
+  width: 13px;
+  height: 13px;
+  border-radius: 4px;
 }
 
 .finished-stats-platform-row .platform-icon img,
 .finished-stats-game-row .platform-icon img {
-  width: 11px;
-  height: 11px;
+  width: 12px;
+  height: 12px;
+}
+
+.finished-stats-platform-row .platform-label,
+.finished-stats-game-row .platform-label {
+  font-size: 8px;
 }
 
 .finished-stats-category-row b i {
