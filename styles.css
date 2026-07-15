@@ -6359,6 +6359,35 @@ body:not(.can-edit) .game-card:focus-within .edit-action {
   max-width: 128px;
 }
 
+.finished-stats-game-row .finished-stats-progress-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  min-width: max-content;
+  min-height: 18px;
+  padding: 3px 5px;
+  color: var(--text);
+  font-size: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 7px;
+  background: rgba(255, 255, 255, 0.07);
+}
+
+.finished-stats-game-row .finished-stats-progress-pill em {
+  display: none;
+}
+
+.finished-stats-game-row .finished-stats-progress-pill .trophy-icon {
+  width: 13px;
+  height: 13px;
+  min-width: 13px;
+}
+
+.finished-stats-game-row .finished-stats-progress-pill strong {
+  font-size: 9px;
+  line-height: 1;
+}
+
 .finished-stats-owner-row .owner-pill {
   min-height: 18px;
   padding: 1px 6px;
