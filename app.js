@@ -4141,34 +4141,38 @@ function statsPieMarkup(counts, tone) {
   const total = counts.reduce((sum, item) => sum + item.count, 0);
   if (!total) return `<svg viewBox="0 0 100 100" aria-hidden="true"><circle cx="50" cy="50" r="46" fill="rgba(255,255,255,.08)"></circle></svg>`;
   let cursor = 0;
-  const paths = counts.map((item, index) => {
+  const segments = counts.map((item, index) => {
     const start = cursor;
     cursor += (item.count / total) * 360;
     const color = statsSegmentColor(item.label, tone, index);
-    return statsPieSegmentMarkup(item, start, cursor, color, total);
-  }).join("");
-  return `<svg viewBox="0 0 100 100" role="img" aria-label="Stats breakdown">${paths}</svg>`;
+    return statsPieSegmentData(item, start, cursor, color, total, index, tone);
+  });
+  const tipCss = segments.map((_, index) => `
+    .finished-stats-donut:has(.finished-stats-pie-segment-${index}:hover) .finished-stats-segment-tip-${index},
+    .finished-stats-donut:has(.finished-stats-pie-segment-${index}:focus-visible) .finished-stats-segment-tip-${index} {
+      opacity: 1;
+      transform: translate(-50%, -50%) scale(1);
+    }
+  `).join("");
+  return `<svg viewBox="0 0 100 100" role="img" aria-label="Stats breakdown">${segments.map((segment) => segment.shape).join("")}</svg><div class="finished-stats-pie-tips">${segments.map((segment) => segment.tip).join("")}</div><style>${tipCss}</style>`;
 }
 
-function statsPieSegmentMarkup(item, startDeg, endDeg, color, total) {
+function statsPieSegmentData(item, startDeg, endDeg, color, total, index, tone) {
   const sweep = Math.max(0.01, endDeg - startDeg);
   const start = polarPoint(50, 50, 46, startDeg - 90);
   const end = polarPoint(50, 50, 46, endDeg - 90);
-  const mid = polarPoint(50, 50, 24, startDeg + sweep / 2 - 90);
+  const mid = polarPoint(50, 50, 34, startDeg + sweep / 2 - 90);
   const percent = total ? Math.round((item.count / total) * 100) : 0;
-  const tooltipX = clampNumber(mid.x - 31, 3, 67);
-  const tooltipY = clampNumber(mid.y - 16, 3, 73);
+  const left = clampNumber(mid.x, 16, 84);
+  const top = clampNumber(mid.y, 14, 86);
   const shape = sweep >= 359.99
     ? `<circle class="finished-stats-pie-shape" cx="50" cy="50" r="46" fill="${escapeHtml(color)}"></circle>`
     : `<path class="finished-stats-pie-shape" d="M 50 50 L ${start.x.toFixed(3)} ${start.y.toFixed(3)} A 46 46 0 ${sweep > 180 ? 1 : 0} 1 ${end.x.toFixed(3)} ${end.y.toFixed(3)} Z" fill="${escapeHtml(color)}"></path>`;
-  return `
-    <g class="finished-stats-pie-segment" tabindex="0">
-      ${shape}
-      <foreignObject class="finished-stats-segment-tip" x="${tooltipX.toFixed(2)}" y="${tooltipY.toFixed(2)}" width="62" height="34">
-        <div xmlns="http://www.w3.org/1999/xhtml"><b>${escapeHtml(item.label)}</b><span>${escapeHtml(String(item.count))} · ${percent}%</span></div>
-      </foreignObject>
-    </g>
-  `;
+  const label = tone === "platform" ? platformBadge(item.label) : `<b>${escapeHtml(item.label)}</b>`;
+  return {
+    shape: `<g class="finished-stats-pie-segment finished-stats-pie-segment-${index}" tabindex="0">${shape}</g>`,
+    tip: `<div class="finished-stats-segment-tip finished-stats-segment-tip-${index}" style="--tip-x:${left.toFixed(2)}%;--tip-y:${top.toFixed(2)}%">${label}<span>(${escapeHtml(String(item.count))}) ${percent}%</span></div>`,
+  };
 }
 
 function polarPoint(cx, cy, radius, angleDeg) {

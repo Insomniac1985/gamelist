@@ -6114,11 +6114,13 @@ body:not(.can-edit) .game-card:focus-within .edit-action {
 }
 
 .finished-stats-donut {
+  position: relative;
   display: grid;
   place-items: center;
   width: 150px;
   aspect-ratio: 1;
   border-radius: 50%;
+  overflow: visible;
 }
 
 .finished-stats-donut svg {
@@ -6146,40 +6148,69 @@ body:not(.can-edit) .game-card:focus-within .edit-action {
   transform: scale(1.025);
 }
 
+.finished-stats-pie-tips {
+  position: absolute;
+  inset: 0;
+  z-index: 30;
+  pointer-events: none;
+}
+
 .finished-stats-segment-tip {
+  position: absolute;
+  left: var(--tip-x);
+  top: var(--tip-y);
+  z-index: 30;
+  display: grid;
+  gap: 3px;
+  min-width: 76px;
+  max-width: 132px;
+  padding: 5px 7px;
+  color: var(--text);
+  background: rgba(8, 9, 12, 0.96);
+  border-radius: 6px;
+  box-shadow: 0 14px 34px rgba(0, 0, 0, 0.42);
   opacity: 0;
   overflow: visible;
   pointer-events: none;
+  transform: translate(-50%, -50%) scale(0.98);
   transition: opacity 120ms ease;
-}
-
-.finished-stats-pie-segment:hover .finished-stats-segment-tip,
-.finished-stats-pie-segment:focus-visible .finished-stats-segment-tip {
-  opacity: 1;
-}
-
-.finished-stats-segment-tip div {
-  display: grid;
-  gap: 1px;
-  min-width: 0;
-  padding: 4px 6px;
-  color: var(--text);
-  background: rgba(8, 9, 12, 0.94);
-  border-radius: 6px;
-  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.34);
 }
 
 .finished-stats-segment-tip b,
 .finished-stats-segment-tip span {
   overflow: hidden;
-  font-size: 6px;
-  line-height: 1.1;
+  font-size: 10px;
+  line-height: 1.15;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
 .finished-stats-segment-tip span {
   color: var(--muted);
+}
+
+.finished-stats-segment-tip .platform-badge {
+  width: max-content;
+  max-width: 100%;
+  min-height: 18px;
+  gap: 4px;
+  padding: 3px 5px 3px 3px;
+  font-size: 8px;
+}
+
+.finished-stats-segment-tip .platform-icon {
+  width: 13px;
+  height: 13px;
+  border-radius: 4px;
+}
+
+.finished-stats-segment-tip .platform-icon img {
+  width: 12px;
+  height: 12px;
+}
+
+.finished-stats-segment-tip .platform-label {
+  font-size: 8px;
 }
 
 .finished-stats-chart-list {
