@@ -11148,8 +11148,7 @@ body.theme-kash .history-row.completed-trophy-card:hover {
     width: 92px;
   }
 
-  .finished-stats-chart .finished-stats-breakdown,
-  .finished-stats-months .finished-stats-breakdown,
+  .finished-stats-breakdown,
   .finished-stats-segment-tip,
   .finished-stats-segment-games,
   .finished-stats-bell-dot .finished-stats-breakdown {
@@ -11176,6 +11175,19 @@ body.theme-kash .history-row.completed-trophy-card:hover {
 
   .finished-stats-bell-line {
     stroke-width: 4;
+  }
+
+  .finished-stats-mini-overlay {
+    position: fixed;
+    inset: 0;
+    align-items: center;
+    justify-items: center;
+    padding: 18px;
+  }
+
+  .finished-stats-mini-panel {
+    width: min(420px, 100%);
+    max-height: min(520px, calc(100dvh - 44px));
   }
 
   .finished-stats-months > div {
