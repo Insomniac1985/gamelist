@@ -677,7 +677,7 @@ function bindEvents() {
   el.gotyPickerOrder?.addEventListener("change", () => {
     state.gotyPickerOrder = el.gotyPickerOrder.value || gotyOrderForDefault(state.settings.defaultOrder);
     const year = el.gotyForm.dataset.gotyYear || currentGameOfTheYear();
-    renderGameOfTheYearPicker(sortedGameOfTheYearChoices(completedGamesForYear(year)), currentGameOfTheYearDraftPicks());
+    renderGameOfTheYearPicker(sortedGameOfTheYearChoices(gameOfTheYearCandidateGames(year)), currentGameOfTheYearDraftPicks());
   });
   el.gotyCloseButton?.addEventListener("click", () => el.gotyDialog.close());
   el.gotyDialog?.addEventListener("click", (event) => {
@@ -1630,7 +1630,7 @@ function renderGameOfTheYear() {
   el.gotyYearSelect.value = year;
   syncStyledSelect(el.gotyYearSelect, { activeValue: null });
   if (el.gotyYearCount) {
-    const count = completedGamesForYear(year).length;
+    const count = gameOfTheYearCandidateGames(year).length;
     el.gotyYearCount.textContent = `${count} ${count === 1 ? "game" : "games"} played`;
   }
   const canEditCurrent = state.canEdit && year === currentGameOfTheYear();
@@ -1670,16 +1670,16 @@ function maybePromptGameOfTheYear() {
   if (!state.canEdit || state.gotyPromptShown || !gameOfTheYearVisible()) return;
   const year = currentGameOfTheYear();
   if (gameOfTheYearComplete(state.settings.gameOfTheYear?.[year]?.picks || {})) return;
-  if (!completedGamesForYear(year).length) return;
+  if (!gameOfTheYearCandidateGames(year).length) return;
   state.gotyPromptShown = true;
   window.setTimeout(() => showGameOfTheYearCallout(year), 300);
 }
 
 function openGameOfTheYearDialog(year = currentGameOfTheYear(), options = {}) {
   if (!options.force && (!state.canEdit || year !== currentGameOfTheYear())) return false;
-  const games = sortedGameOfTheYearChoices(completedGamesForYear(year));
+  const games = sortedGameOfTheYearChoices(gameOfTheYearCandidateGames(year));
   if (!games.length) {
-    showToast("No finished games found for this year.", "error");
+    showToast("No finished or currently playing games found.", "error");
     return false;
   }
   state.gotyYear = String(year);
@@ -1776,9 +1776,9 @@ function renderGameOfTheYearPicker(games, picks) {
 function sortedGameOfTheYearChoices(games) {
   const order = state.gotyPickerOrder || gotyOrderForDefault(state.settings.defaultOrder);
   return [...games].sort((a, b) => {
-    if (order === "name") return stringCompare(a.title, b.title) || String(b.completedAt).localeCompare(String(a.completedAt));
+    if (order === "name") return stringCompare(a.title, b.title) || gameOfTheYearTimeValue(b) - gameOfTheYearTimeValue(a);
     if (order === "platform") return stringCompare(canonicalPlatform(a.platform), canonicalPlatform(b.platform)) || stringCompare(a.title, b.title);
-    return String(b.completedAt).localeCompare(String(a.completedAt)) || stringCompare(a.title, b.title);
+    return gameOfTheYearTimeValue(b) - gameOfTheYearTimeValue(a) || stringCompare(a.title, b.title);
   });
 }
 
@@ -2135,11 +2135,14 @@ function gameOfTheYearExportCss({ theme, main, accent, gradient, bg, glowPrimary
       gap: 18px;
       width: 435px;
       height: 340px;
-      padding: 34px 22px 30px;
+      padding: 20px;
       overflow: hidden;
-      background: ${panel};
+      background:
+        linear-gradient(135deg, ${canvasRgba(main, 0.13)}, transparent 58%),
+        ${panel};
       border: 1px solid ${line};
-      border-radius: 18px;
+      border-radius: 8px;
+      box-shadow: inset 0 1px 0 ${theme.mode === "light" ? "rgba(255,255,255,.5)" : "rgba(255,255,255,.08)"};
     }
     .goty-export-item.is-bottom:first-of-type {
       grid-column: 1;
@@ -2154,7 +2157,7 @@ function gameOfTheYearExportCss({ theme, main, accent, gradient, bg, glowPrimary
       height: calc(100% + 64px);
       object-fit: cover;
       opacity: ${theme.mode === "light" ? ".22" : ".30"};
-      filter: blur(8px) saturate(1.18);
+      filter: blur(4px) saturate(1.08);
       transform: scale(1.04);
     }
     .goty-export-card::after {
@@ -2162,7 +2165,7 @@ function gameOfTheYearExportCss({ theme, main, accent, gradient, bg, glowPrimary
       position: absolute;
       inset: 0;
       background:
-        linear-gradient(90deg, ${theme.mode === "light" ? "rgba(255,255,255,.72)" : "rgba(8,9,13,.68)"}, ${theme.mode === "light" ? "rgba(255,255,255,.42)" : "rgba(8,9,13,.38)"}),
+        linear-gradient(90deg, ${theme.mode === "light" ? "rgba(255,255,255,.76)" : "rgba(9,10,13,.72)"}, ${theme.mode === "light" ? "rgba(255,255,255,.52)" : "rgba(9,10,13,.44)"}),
         linear-gradient(135deg, ${canvasRgba(main, 0.12)}, transparent 62%);
     }
     .goty-export-cover-wrap {
@@ -2172,8 +2175,8 @@ function gameOfTheYearExportCss({ theme, main, accent, gradient, bg, glowPrimary
       width: 154px;
       height: 216px;
       filter:
-        drop-shadow(0 16px 18px ${canvasRgba(main, 0.34)})
-        drop-shadow(0 0 16px ${canvasRgba(main, 0.26)});
+        drop-shadow(0 12px 16px ${canvasRgba(main, 0.26)})
+        drop-shadow(0 0 12px ${canvasRgba(main, 0.2)});
     }
     .goty-export-cover {
       width: 154px;
@@ -2210,7 +2213,7 @@ function gameOfTheYearExportCss({ theme, main, accent, gradient, bg, glowPrimary
       display: flex;
       flex-wrap: wrap;
       justify-content: flex-start;
-      gap: 7px;
+      gap: 5px;
       margin-top: auto;
     }
     .goty-export-pill,
@@ -2220,14 +2223,14 @@ function gameOfTheYearExportCss({ theme, main, accent, gradient, bg, glowPrimary
       align-items: center;
       gap: 5px;
       overflow: hidden;
-      min-height: 28px;
+      min-height: 26px;
       box-sizing: border-box;
-      padding: 6px 12px;
+      padding: 5px 9px;
       color: ${text};
-      font: 800 15px/1 ${bodyFont};
+      font: 800 13px/1 ${bodyFont};
       background: ${theme.mode === "light" ? "rgba(255,255,255,.76)" : "rgba(255,255,255,.11)"};
       border: 1px solid ${line};
-      border-radius: 10px;
+      border-radius: 7px;
     }
     .goty-export-poster .platform-badge {
       position: relative;
@@ -2235,14 +2238,60 @@ function gameOfTheYearExportCss({ theme, main, accent, gradient, bg, glowPrimary
       align-items: center;
       gap: 5px;
       overflow: hidden;
-      min-height: 28px;
+      min-height: 26px;
       box-sizing: border-box;
       width: auto;
-      max-width: 138px;
+      max-width: 132px;
       min-width: 0;
-      padding: 5px 10px 5px 7px;
-      border-radius: 10px;
+      padding: 4px 8px 4px 4px;
+      color: ${text};
+      border: 1px solid ${line};
+      border-radius: 7px;
     }
+    .goty-export-poster .platform-nintendo { background: rgba(255,59,69,.18); border-color: rgba(255,59,69,.38); }
+    .goty-export-poster .platform-playstation { background: rgb(111 120 255 / 22%); border-color: rgb(75 73 225 / 86%); }
+    .goty-export-poster .platform-playstation.platform-ps5 { background: #ffffff; border-color: rgba(180,186,198,.72); }
+    .goty-export-poster .platform-playstation.platform-ps5 .platform-label { color: #05070b; }
+    .goty-export-poster .platform-playstation.platform-ps3,
+    .goty-export-poster .platform-playstation.platform-psp,
+    .goty-export-poster .platform-xbox.platform-xbox-retro { background: rgba(5,7,11,.86); border-color: rgba(255,255,255,.3); }
+    .goty-export-poster .platform-pc { background: rgba(8,17,31,.92); border-color: rgba(72,78,88,.72); }
+    .goty-export-poster .platform-xbox { background: rgba(98,212,112,.2); border-color: rgba(98,212,112,.44); }
+    .goty-export-poster .platform-wii,
+    .goty-export-poster .platform-nes,
+    .goty-export-poster .platform-gb,
+    .goty-export-poster .platform-ds { background: rgba(217,221,230,.14); border-color: rgba(217,221,230,.3); }
+    .goty-export-poster .platform-wiiu { background: rgba(155,215,255,.18); border-color: rgba(155,215,255,.38); }
+    .goty-export-poster .platform-3ds,
+    .goty-export-poster .platform-gbc { background: rgba(255,90,102,.18); border-color: rgba(255,90,102,.38); }
+    .goty-export-poster .platform-n64 { background: rgba(52,154,76,.32); border-color: rgba(80,190,102,.5); }
+    .goty-export-poster .platform-gamecube,
+    .goty-export-poster .platform-snes,
+    .goty-export-poster .platform-gba { background: rgba(150,112,255,.2); border-color: rgba(190,160,255,.4); }
+    .goty-export-poster .platform-sega,
+    .goty-export-poster .platform-gamegear { background: rgba(42,112,224,.22); border-color: rgba(90,167,255,.42); }
+    .goty-export-poster .platform-dreamcast { background: rgba(255,132,45,.2); border-color: rgba(255,173,95,.4); }
+    .goty-export-poster .platform-nintendo .platform-label { color: #ff3b45; }
+    .goty-export-poster .platform-playstation .platform-label { color: #7d8cff; }
+    .goty-export-poster .platform-playstation.platform-ps3 .platform-label,
+    .goty-export-poster .platform-playstation.platform-psp .platform-label,
+    .goty-export-poster .platform-pc .platform-label,
+    .goty-export-poster .platform-xbox.platform-xbox-retro .platform-label { color: #ffffff; }
+    .goty-export-poster .platform-xbox .platform-label { color: #7ed732; }
+    .goty-export-poster .platform-wii .platform-label,
+    .goty-export-poster .platform-nes .platform-label,
+    .goty-export-poster .platform-ds .platform-label,
+    .goty-export-poster .platform-gb .platform-label { color: #d9dde6; }
+    .goty-export-poster .platform-wiiu .platform-label { color: #9bd7ff; }
+    .goty-export-poster .platform-3ds .platform-label,
+    .goty-export-poster .platform-gbc .platform-label { color: #ff5a66; }
+    .goty-export-poster .platform-gamecube .platform-label,
+    .goty-export-poster .platform-snes .platform-label,
+    .goty-export-poster .platform-gba .platform-label { color: #c9a7ff; }
+    .goty-export-poster .platform-n64 .platform-label { color: #ff4f5d; }
+    .goty-export-poster .platform-sega .platform-label,
+    .goty-export-poster .platform-gamegear .platform-label { color: #5aa7ff; }
+    .goty-export-poster .platform-dreamcast .platform-label { color: #ffad5f; }
     .goty-export-poster .platform-icon {
       display: inline-grid;
       place-items: center;
@@ -2256,8 +2305,8 @@ function gameOfTheYearExportCss({ theme, main, accent, gradient, bg, glowPrimary
     }
     .goty-export-poster .platform-icon img,
     .goty-export-progress .trophy-icon {
-      width: 17px;
-      height: 17px;
+      width: 16px;
+      height: 16px;
     }
     .goty-export-poster .platform-label {
       overflow: hidden;
@@ -2266,18 +2315,26 @@ function gameOfTheYearExportCss({ theme, main, accent, gradient, bg, glowPrimary
       white-space: nowrap;
     }
     .goty-export-progress {
-      min-width: 104px;
+      min-width: 0;
       color: #ffe985;
-      border-color: rgba(255,225,101,.36);
-      background: rgba(255,225,101,.12);
+      border-color: rgba(255,225,101,.38);
+      background: rgba(255,225,101,.1);
     }
     .goty-export-progress em {
-      position: absolute;
-      inset: 4px auto 4px 4px;
+      display: block;
+      width: 34px;
+      height: 5px;
+      overflow: hidden;
+      background: rgba(255,255,255,.12);
+      border-radius: 999px;
+    }
+    .goty-export-progress em::before {
+      content: "";
+      display: block;
       width: var(--progress);
-      max-width: calc(100% - 8px);
-      background: rgba(255,225,101,.22);
-      border-radius: 8px;
+      height: 100%;
+      border-radius: inherit;
+      background: linear-gradient(90deg, #b98419, #ffe985);
     }
     .goty-export-progress .trophy-icon,
     .goty-export-progress strong,
@@ -2285,7 +2342,7 @@ function gameOfTheYearExportCss({ theme, main, accent, gradient, bg, glowPrimary
       position: relative;
       z-index: 1;
       color: #ffe985;
-      font: 900 13px/1 ${bodyFont};
+      font: 900 12px/1 ${bodyFont};
     }
     .goty-export-progress > span b {
       padding: 0 3px;
@@ -4938,6 +4995,20 @@ function completedGamesForYear(year) {
   return state.games
     .filter((game) => !game.deletedAt && game.completedAt && completionYear(game) === String(year))
     .sort((a, b) => String(b.completedAt).localeCompare(String(a.completedAt)) || stringCompare(a.title, b.title));
+}
+
+function gameOfTheYearCandidateGames(year) {
+  const games = new Map();
+  completedGamesForYear(year).forEach((game) => games.set(game.id, game));
+  activeGames()
+    .filter((game) => game.playing)
+    .forEach((game) => games.set(game.id, game));
+  return [...games.values()];
+}
+
+function gameOfTheYearTimeValue(game) {
+  const time = Date.parse(dateOnly(game.completedAt) || dateOnly(game.startedAt) || game.updatedAt || game.createdAt || "");
+  return Number.isNaN(time) ? 0 : time;
 }
 
 function completionTimeValue(game) {
