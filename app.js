@@ -2170,11 +2170,10 @@ function gameOfTheYearExportCss({ theme, main, accent, gradient, bg, glowPrimary
     .goty-export-top-kpis {
       position: absolute;
       top: 47px;
-      right: 62px;
+      right: 12px;
       display: grid;
       grid-template-columns: 122px 148px repeat(3, 96px);
       gap: 8px;
-      row-gap: 4px;
       width: 646px;
     }
     .goty-export-small-kpi,
@@ -2230,12 +2229,13 @@ function gameOfTheYearExportCss({ theme, main, accent, gradient, bg, glowPrimary
     }
     .goty-export-top-platforms .platform-badge {
       max-width: none;
+      flex: 0 0 auto;
     }
     .goty-export-bottom-stats {
       position: absolute;
       left: 62px;
-      right: 360px;
-      bottom: 72px;
+      right: 660px;
+      bottom: 40px;
       display: block;
     }
     .goty-export-stat {
@@ -2317,8 +2317,8 @@ function gameOfTheYearExportCss({ theme, main, accent, gradient, bg, glowPrimary
       display: grid;
       grid-template-columns: repeat(4, 425px);
       grid-template-rows: repeat(2, 338px);
-      gap: 34px 26px;
-      margin-top: 8px;
+      gap: 18px 26px;
+      margin-top: -20px;
       margin-bottom: 0;
     }
     .goty-export-item {
@@ -2539,6 +2539,10 @@ function gameOfTheYearExportCss({ theme, main, accent, gradient, bg, glowPrimary
       font: 800 13px/1 ${bodyFont};
       text-overflow: ellipsis;
       white-space: nowrap;
+    }
+    .goty-export-top-platforms .platform-label {
+      overflow: visible;
+      text-overflow: clip;
     }
     .goty-export-poster .platform-count {
       display: inline-grid;
