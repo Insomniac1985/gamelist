@@ -4250,7 +4250,9 @@ function statsBreakdownRow(item, tone, index) {
 function statsGameList(games) {
   return games.map((game) => {
     const progress = achievementProgressForGame(game);
-    return `<span class="finished-stats-game-row"><b>${escapeHtml(game.title)}</b>${game.platform ? platformBadge(game.platform) : ""}${progress ? psnProgressBadge(progress, { className: "finished-stats-progress-pill" }) : ""}</span>`;
+    const progressNumber = progress ? Math.round(Number(progress.progress ?? progressValue(progress.game)) || 0) : 0;
+    const completed = game.platinum || progressNumber >= 100;
+    return `<span class="finished-stats-game-row ${completed ? "is-complete" : ""}"><b>${escapeHtml(game.title)}</b>${game.platform ? platformBadge(game.platform) : ""}${progress ? psnProgressBadge(progress, { className: "finished-stats-progress-pill" }) : ""}</span>`;
   }).join("");
 }
 

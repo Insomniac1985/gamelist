@@ -6343,6 +6343,12 @@ body:not(.can-edit) .game-card:focus-within .edit-action {
   background: rgba(255, 255, 255, 0.035);
 }
 
+.finished-stats-breakdown .finished-stats-game-row.is-complete,
+.finished-stats-mini-list .finished-stats-game-row.is-complete {
+  background: rgba(255, 225, 101, 0.12);
+  box-shadow: inset 0 0 0 1px rgba(255, 225, 101, 0.22);
+}
+
 .finished-stats-breakdown b,
 .finished-stats-breakdown em {
   min-width: 0;
