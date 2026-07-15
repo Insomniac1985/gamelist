@@ -6131,21 +6131,24 @@ body:not(.can-edit) .game-card:focus-within .edit-action {
 }
 
 .finished-stats-release-card {
+  display: block;
   grid-template-columns: 1fr;
+  padding: 14px;
 }
 
 .finished-stats-release-kpis {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: 1fr;
   gap: 10px;
+  height: 100%;
 }
 
 .finished-stats-release-kpi {
   position: relative;
   display: grid;
-  align-content: start;
+  align-content: center;
   gap: 5px;
-  min-height: 126px;
+  min-height: 75px;
   padding: 14px;
   color: var(--text);
   text-align: left;
@@ -6161,7 +6164,7 @@ body:not(.can-edit) .game-card:focus-within .edit-action {
 
 .finished-stats-release-kpi strong {
   color: var(--text);
-  font-size: 30px;
+  font-size: 32px;
   line-height: 1;
 }
 
@@ -10947,8 +10950,7 @@ body.theme-kash .history-row.completed-trophy-card:hover {
     grid-template-columns: 92px minmax(0, 1fr);
   }
 
-  .finished-stats-release-card,
-  .finished-stats-release-kpis {
+  .finished-stats-release-card {
     grid-template-columns: 1fr;
   }
 

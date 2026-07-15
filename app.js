@@ -4144,7 +4144,6 @@ function statsDonutCard(title, counts, tone, visibleLimit = counts.length) {
 function statsReleaseKpisCard(insights) {
   return `
     <article class="finished-stats-chart finished-stats-release-card">
-      <h3>Release year</h3>
       <div class="finished-stats-release-kpis">
         ${statsReleaseMiniKpi({
           value: `${insights.interested.length}/${insights.playedFromYear.length}`,
