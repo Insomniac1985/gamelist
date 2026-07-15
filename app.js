@@ -4105,7 +4105,7 @@ function finishedStatsMarkup(year, games, completed) {
     <div class="finished-stats-kpis">${cards}</div>
     <div class="finished-stats-charts ${allYears ? "is-all" : ""}">
       ${statsDonutCard("Platforms", platforms, "platform", 5)}
-      ${statsDonutCard("Tags", tags, "category", 5)}
+      ${statsDonutCard("Categories", tags, "category", 5)}
       ${statsDonutCard("Aproximate playtime", timeBuckets, "time", 5)}
       ${allYears ? "" : statsReleaseKpisCard(releaseInsights)}
     </div>
@@ -4148,11 +4148,11 @@ function statsReleaseKpisCard(insights) {
         ${statsReleaseMiniKpi({
           value: `${insights.interested.length}/${insights.playedFromYear.length}`,
           label: insights.scopeYear ? `Interested vs played released in ${insights.scopeYear}` : "Interested vs same-year played",
-          detail: insights.hoverable ? statsReleaseCompareDetail(insights) : "",
+          detail: insights.hoverable ? statsGameList(insights.playedFromYear) : "",
         })}
         ${statsReleaseMiniKpi({
           value: insights.playedOutsideYear.length,
-          label: insights.scopeYear ? "Total games played not from that year" : "Played outside release year",
+          label: insights.scopeYear ? `Played games not from ${insights.scopeYear}` : "Played outside release year",
           detail: insights.hoverable ? statsGameList(insights.playedOutsideYear) : "",
         })}
       </div>
@@ -4167,19 +4167,6 @@ function statsReleaseMiniKpi({ value, label, detail = "" }) {
       <span>${escapeHtml(label)}</span>
       ${detail ? `<span class="finished-stats-breakdown">${detail}</span>` : ""}
     </button>
-  `;
-}
-
-function statsReleaseCompareDetail(insights) {
-  return `
-    <div class="finished-stats-release-group">
-      <b>Interested in ${escapeHtml(insights.scopeYear || "release years")}</b>
-      <div>${insights.interested.length ? statsGameList(insights.interested) : `<span><b>None</b><em>0</em></span>`}</div>
-    </div>
-    <div class="finished-stats-release-group">
-      <b>Played from ${escapeHtml(insights.scopeYear || "release years")}</b>
-      <div>${insights.playedFromYear.length ? statsGameList(insights.playedFromYear) : `<span><b>None</b><em>0</em></span>`}</div>
-    </div>
   `;
 }
 

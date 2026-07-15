@@ -5048,7 +5048,7 @@ body.theme-kash .game-card.stream-card.completed-trophy-card {
 
 .platform-pc {
   background: rgba(8, 17, 31, 0.9);
-  border-color: rgba(48, 82, 118, 0.58);
+  border-color: rgba(116, 124, 136, 0.52);
 }
 
 .platform-pc .platform-label {
@@ -6384,6 +6384,8 @@ body:not(.can-edit) .game-card:focus-within .edit-action {
 
 .finished-stats-kpi:hover .finished-stats-breakdown,
 .finished-stats-kpi:focus-visible .finished-stats-breakdown,
+.finished-stats-release-kpi:hover .finished-stats-breakdown,
+.finished-stats-release-kpi:focus-visible .finished-stats-breakdown,
 .finished-stats-chart-list:hover .finished-stats-breakdown,
 .finished-stats-chart-list:focus-within .finished-stats-breakdown,
 .finished-stats-month:hover .finished-stats-breakdown,
@@ -6394,8 +6396,7 @@ body:not(.can-edit) .game-card:focus-within .edit-action {
 }
 
 .finished-stats-breakdown > span,
-.finished-stats-owner-games > .finished-stats-game-row,
-.finished-stats-release-group .finished-stats-game-row {
+.finished-stats-owner-games > .finished-stats-game-row {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -6410,34 +6411,8 @@ body:not(.can-edit) .game-card:focus-within .edit-action {
 
 .finished-stats-breakdown > .finished-stats-game-row,
 .finished-stats-owner-games > .finished-stats-game-row,
-.finished-stats-release-group .finished-stats-game-row,
 .finished-stats-mini-list > .finished-stats-game-row {
   gap: 4px;
-}
-
-.finished-stats-release-group {
-  display: grid;
-  gap: 5px;
-  min-width: 0;
-}
-
-.finished-stats-release-group + .finished-stats-release-group {
-  margin-top: 5px;
-  padding-top: 6px;
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.finished-stats-release-group > b {
-  color: var(--accent-1);
-  font-size: 10px;
-  font-weight: 900;
-  text-transform: uppercase;
-}
-
-.finished-stats-release-group > div {
-  display: grid;
-  gap: 4px;
-  min-width: 0;
 }
 
 .finished-stats-breakdown .finished-stats-game-row.is-complete,
@@ -6469,7 +6444,7 @@ body:not(.can-edit) .game-card:focus-within .edit-action {
   flex: 0 0 8px;
   border-radius: 999px;
   background: currentColor;
-  box-shadow: 0 0 12px currentColor;
+  box-shadow: none;
 }
 
 .finished-stats-breakdown .platform-badge,
@@ -6537,10 +6512,14 @@ body:not(.can-edit) .game-card:focus-within .edit-action {
 }
 
 .finished-stats-game-row b {
+  display: block;
   flex: 1 1 auto;
   max-width: 100%;
   min-width: 0;
   width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .finished-stats-game-row .platform-badge {
@@ -6636,7 +6615,7 @@ body:not(.can-edit) .game-card:focus-within .edit-action {
 
 .finished-stats-category-row b i {
   background: var(--category-stat-color);
-  box-shadow: 0 0 10px color-mix(in srgb, var(--category-stat-color) 42%, transparent);
+  box-shadow: none;
 }
 
 .finished-stats-months {
