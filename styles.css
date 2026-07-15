@@ -558,6 +558,10 @@ html.theme-font-pokemon {
   min-height: 36px;
 }
 
+.playing-count-number {
+  color: var(--text);
+}
+
 .playing-slider-button {
   color: #ffffff;
   border-color: color-mix(in srgb, var(--accent) 28%, transparent);
