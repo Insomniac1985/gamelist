@@ -11143,8 +11143,39 @@ body.theme-kash .history-row.completed-trophy-card:hover {
     grid-template-columns: 1fr;
   }
 
-  .finished-stats-donut {
+  .finished-stats-donut,
+  .finished-stats-bell {
     width: 92px;
+  }
+
+  .finished-stats-chart .finished-stats-breakdown,
+  .finished-stats-months .finished-stats-breakdown,
+  .finished-stats-segment-tip,
+  .finished-stats-segment-games,
+  .finished-stats-bell-dot .finished-stats-breakdown {
+    display: none !important;
+  }
+
+  .finished-stats-pie-segment,
+  .finished-stats-bell-dot {
+    pointer-events: none;
+  }
+
+  .finished-stats-pie-segment:hover .finished-stats-pie-shape,
+  .finished-stats-pie-segment:focus-visible .finished-stats-pie-shape {
+    filter: none;
+    opacity: var(--slice-opacity, 0.96);
+    transform: none;
+  }
+
+  .finished-stats-bell-dot {
+    width: 14px;
+    height: 14px;
+    box-shadow: 0 6px 14px rgba(0, 0, 0, 0.32);
+  }
+
+  .finished-stats-bell-line {
+    stroke-width: 4;
   }
 
   .finished-stats-months > div {
