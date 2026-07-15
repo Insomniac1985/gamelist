@@ -4480,8 +4480,10 @@ function openFinishedStatsMiniOverlay(title, content) {
 
 function statsCompletedGameList(items) {
   return statsGameList(items.map((item) => ({
+    id: item.gameId || item.id || item.title,
     title: item.title,
     platform: item.platform || platinumPlatformFor(item),
+    platinum: true,
   })));
 }
 
