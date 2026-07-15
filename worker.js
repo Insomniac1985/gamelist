@@ -83,6 +83,15 @@ export default {
       return handler({ request, env, ctx });
     }
 
+    if (url.pathname === "/goty-export" || url.pathname === "/goty-export/") {
+      const target = new URL(request.url);
+      const year = target.searchParams.get("year") || target.searchParams.get("gotyExport") || "";
+      target.pathname = "/";
+      if (year) target.searchParams.set("gotyExport", year);
+      else target.searchParams.set("gotyExport", "1");
+      return Response.redirect(target.toString(), 302);
+    }
+
     return env.ASSETS.fetch(request);
   },
 };

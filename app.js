@@ -400,8 +400,9 @@ async function init() {
   warmUiIcons();
   bindTextureParallax();
   await loadData();
-  render();
   const cloudChanged = await pullCloudData();
+  if (await maybeRenderGameOfTheYearExportPreview()) return;
+  render();
   if (cloudChanged) render();
   const requestedGame = new URLSearchParams(location.search).get("game");
   if (requestedGame && state.games.some((game) => game.id === requestedGame && !game.deletedAt)) openDetail(requestedGame);
@@ -1964,8 +1965,34 @@ function gameById(id) {
 
 async function downloadGameOfTheYearImage() {
   const year = state.gotyYear;
+  const html = await gameOfTheYearExportHtml(year);
+  if (!html) return;
+  try {
+    await downloadHtmlPosterPng(html, `games-of-the-year-${year}.png`);
+  } catch (error) {
+    console.error("Unable to export GOTY poster", error);
+    showToast("PNG export failed.", "error");
+  }
+}
+
+async function maybeRenderGameOfTheYearExportPreview() {
+  const params = new URLSearchParams(location.search);
+  const isExportPath = location.pathname.replace(/\/+$/, "") === "/goty-export";
+  const requested = isExportPath || params.has("gotyExport") || params.has("goty-export");
+  if (!requested) return false;
+  const year = params.get("year") || params.get("gotyExport") || params.get("goty-export") || state.gotyYear || currentGameOfTheYear();
+  const html = await gameOfTheYearExportHtml(year);
+  applyTheme();
+  document.documentElement.classList.remove("theme-booting");
+  document.title = html ? `GOTY Export ${year}` : "GOTY Export";
+  document.body.className = "goty-export-preview-page";
+  document.body.innerHTML = html || `<main class="goty-export-preview-empty"><h1>No Game of the Year picks for ${escapeHtml(year)}</h1></main>`;
+  return true;
+}
+
+async function gameOfTheYearExportHtml(year = state.gotyYear) {
   const picks = state.settings.gameOfTheYear?.[year]?.picks || {};
-  if (!gameOfTheYearComplete(picks)) return;
+  if (!gameOfTheYearComplete(picks)) return "";
   const owner = cleanOwnerLabel(state.settings.defaultOwner) || DEFAULT_SETTINGS.defaultOwner;
   const rows = GAME_OF_YEAR_CATEGORIES.map(([key, label]) => ({ label, game: gameById(picks[key]) })).filter((item) => item.game);
   const theme = normalizeThemeSettings(state.settings);
@@ -1975,13 +2002,7 @@ async function downloadGameOfTheYearImage() {
   })));
   const logo = await exportImageDataUrl(document.querySelector(".brand-mark")?.src || THEMES.shabii.icon, THEMES.shabii.icon);
   const background = await exportImageDataUrl(theme.backgroundImage || "", theme.mode === "light" ? "assets/backdrop_light.png" : "assets/backdrop.png");
-  const html = gameOfTheYearExportMarkup({ owner, year, rows: assetRows, theme, logo, background });
-  try {
-    await downloadHtmlPosterPng(html, `games-of-the-year-${year}.png`);
-  } catch (error) {
-    console.error("Unable to export GOTY poster", error);
-    showToast("PNG export failed.", "error");
-  }
+  return gameOfTheYearExportMarkup({ owner, year, rows: assetRows, theme, logo, background });
 }
 
 function gameOfTheYearExportMarkup({ owner, year, rows, theme, logo, background }) {

@@ -92,7 +92,7 @@ function sendJson(res, data, status = 200) {
 
 async function sendFile(res, pathname) {
   const decoded = decodeURIComponent(pathname);
-  const safePath = pathname === "/" ? "/index.html" : decoded === "/shelf" ? "/shelf.html" : decoded;
+  const safePath = pathname === "/" || decoded === "/goty-export" || decoded === "/goty-export/" ? "/index.html" : decoded === "/shelf" ? "/shelf.html" : decoded;
   const filePath = path.normalize(path.join(root, safePath));
   if (!filePath.startsWith(root) || !existsSync(filePath)) {
     res.writeHead(404, { "Content-Type": "text/plain" });
