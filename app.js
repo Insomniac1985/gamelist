@@ -2886,7 +2886,7 @@ function openPlatinumDialog(year = null) {
   if (year != null) state.platinumYear = String(year);
   if (state.platinumYear !== "all" && !years.includes(state.platinumYear)) state.platinumYear = "all";
   renderPlatinumDialog(platinums, years);
-  el.platinumDialog.showModal();
+  if (!el.platinumDialog.open) el.platinumDialog.showModal();
   syncScrollLock();
   hydratePlatinumCovers(platinums);
 }
@@ -4061,7 +4061,6 @@ function openFinishedStatsDialog(year = "all") {
   el.finishedStatsTitle.textContent = scope === "all" ? "Finished games" : `Finished games ${scope}`;
   el.finishedStatsBody.innerHTML = finishedStatsMarkup(scope, games, completed);
   el.finishedStatsBody.querySelector("[data-stats-action='completed']")?.addEventListener("click", () => {
-    el.finishedStatsDialog.close();
     openPlatinumDialog(scope);
   });
   bindFinishedStatsMobileOverlays();
