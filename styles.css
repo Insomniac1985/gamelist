@@ -11102,32 +11102,25 @@ body.theme-kash .history-row.completed-trophy-card:hover {
   }
 
   .finished-stats-modal {
-    display: grid;
-    grid-template-rows: auto minmax(0, 1fr);
     width: 100%;
     max-height: calc(100dvh - 14px);
     padding: 14px;
-    overflow: hidden !important;
+    overflow-x: hidden !important;
+    overflow-y: auto !important;
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
   }
 
   .finished-stats-modal .modal-head {
-    position: sticky;
-    top: 0;
-    z-index: 12;
-    margin: -14px -14px 0;
-    padding: 14px 14px 10px;
-    background: var(--grid-fade), var(--grid-texture), var(--panel-dark);
-    background-size: auto, 22px 22px, auto;
-    border-radius: 8px 8px 0 0;
+    position: static;
+    margin: 0 0 12px;
+    padding: 0;
+    background: transparent;
   }
 
   .finished-stats-body {
-    min-height: 0;
     padding: 0 1px 18px;
-    overflow-x: hidden;
-    overflow-y: auto;
-    overscroll-behavior: contain;
-    -webkit-overflow-scrolling: touch;
+    overflow: visible;
   }
 
   .finished-stats-charts {
