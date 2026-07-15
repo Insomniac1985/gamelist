@@ -583,6 +583,8 @@ function bindEvents() {
   });
   el.finishedStatsDialog?.addEventListener("close", () => {
     el.finishedStatsDialog.classList.remove("has-mini-overlay");
+    el.finishedStatsDialog.querySelector(".finished-stats-hover-float")?.remove();
+    el.finishedStatsBody?.querySelector(".finished-stats-floating-source")?.classList.remove("finished-stats-floating-source");
     syncScrollLock();
   });
   window.addEventListener("scroll", () => {
@@ -4066,6 +4068,7 @@ function openFinishedStatsDialog(year = "all") {
   el.finishedStatsBody.querySelector("[data-stats-action='completed']")?.addEventListener("click", () => {
     openPlatinumDialog(scope);
   });
+  bindFinishedStatsDesktopOverlays();
   bindFinishedStatsMobileOverlays();
   el.finishedStatsDialog.showModal();
   syncScrollLock();
@@ -4367,7 +4370,7 @@ function statsYearBars(games) {
       const yearGames = games
         .filter((game) => completionYear(game) === label)
         .sort((a, b) => String(a.completedAt || "").localeCompare(String(b.completedAt || "")) || stringCompare(a.title, b.title));
-      const edgeClass = index % 6 === 0 ? " is-start-edge" : (index % 6 === 5 || index === items.length - 1 ? " is-end-edge" : "");
+      const edgeClass = index % 12 === 0 ? " is-start-edge" : (index % 12 === 11 || index === items.length - 1 ? " is-end-edge" : "");
       return `<div class="finished-stats-month finished-stats-year${edgeClass}" title="${escapeHtml(`${label}: ${count}`)}" ${count ? `data-stats-overlay-title="${escapeHtml(label)}"` : ""}><span>${escapeHtml(label)}</span><em style="--month:${count / max};--platform-bar:${statsPlatformBar(yearGames)}"></em><strong>${count}</strong>${count ? `<span class="finished-stats-breakdown">${statsGameList(yearGames)}</span>` : ""}</div>`;
     })
     .join("");
@@ -4491,6 +4494,64 @@ function bindFinishedStatsMobileOverlays() {
       openFinishedStatsMiniOverlay(node.dataset.statsOverlayTitle || "Stats", breakdown.innerHTML);
     });
   });
+}
+
+function bindFinishedStatsDesktopOverlays() {
+  let closeTimer = null;
+  const closeFloatingOverlay = () => {
+    closeTimer = null;
+    el.finishedStatsDialog.querySelector(".finished-stats-hover-float")?.remove();
+    el.finishedStatsBody.querySelector(".finished-stats-floating-source")?.classList.remove("finished-stats-floating-source");
+  };
+  const scheduleClose = () => {
+    clearTimeout(closeTimer);
+    closeTimer = setTimeout(closeFloatingOverlay, 90);
+  };
+  const openFloatingOverlay = (node) => {
+    if (window.matchMedia("(max-width: 760px)").matches) return;
+    const breakdown = node.querySelector(".finished-stats-breakdown");
+    if (!breakdown?.innerHTML.trim()) return;
+    clearTimeout(closeTimer);
+    el.finishedStatsDialog.querySelector(".finished-stats-hover-float")?.remove();
+    el.finishedStatsBody.querySelector(".finished-stats-floating-source")?.classList.remove("finished-stats-floating-source");
+    node.classList.add("finished-stats-floating-source");
+
+    const floating = document.createElement("div");
+    floating.className = "finished-stats-breakdown finished-stats-hover-float";
+    floating.innerHTML = breakdown.innerHTML;
+    el.finishedStatsDialog.appendChild(floating);
+
+    const dialogRect = el.finishedStatsDialog.getBoundingClientRect();
+    const sourceRect = node.getBoundingClientRect();
+    const width = Math.min(340, Math.max(220, dialogRect.width - 32));
+    floating.style.width = `${width}px`;
+    floating.style.maxWidth = `${Math.max(180, dialogRect.width - 32)}px`;
+    floating.style.maxHeight = `${Math.max(140, Math.min(250, dialogRect.height - 44))}px`;
+
+    const floatRect = floating.getBoundingClientRect();
+    const gap = 8;
+    const minLeft = 12;
+    const maxLeft = Math.max(minLeft, dialogRect.width - floatRect.width - 12);
+    const centeredLeft = sourceRect.left - dialogRect.left + (sourceRect.width / 2) - (floatRect.width / 2);
+    const left = clampNumber(centeredLeft, minLeft, maxLeft);
+    const belowTop = sourceRect.bottom - dialogRect.top + gap;
+    const aboveTop = sourceRect.top - dialogRect.top - floatRect.height - gap;
+    const canFitBelow = belowTop + floatRect.height <= dialogRect.height - 12;
+    const top = clampNumber(canFitBelow ? belowTop : aboveTop, 12, Math.max(12, dialogRect.height - floatRect.height - 12));
+    floating.style.left = `${left}px`;
+    floating.style.top = `${top}px`;
+
+    floating.addEventListener("mouseenter", () => clearTimeout(closeTimer));
+    floating.addEventListener("mouseleave", scheduleClose);
+  };
+
+  el.finishedStatsBody.querySelectorAll("[data-stats-overlay-title]").forEach((node) => {
+    node.addEventListener("mouseenter", () => openFloatingOverlay(node));
+    node.addEventListener("mouseleave", scheduleClose);
+    node.addEventListener("focusin", () => openFloatingOverlay(node));
+    node.addEventListener("focusout", scheduleClose);
+  });
+  el.finishedStatsBody.addEventListener("scroll", closeFloatingOverlay, { passive: true });
 }
 
 function openFinishedStatsMiniOverlay(title, content) {
