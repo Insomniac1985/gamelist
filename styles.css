@@ -6176,6 +6176,18 @@ body:not(.can-edit) .game-card:focus-within .edit-action {
   transition: opacity 120ms ease;
 }
 
+.finished-stats-segment-tip::before {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: -5px;
+  width: 10px;
+  height: 10px;
+  background: rgba(8, 9, 12, 0.96);
+  transform: translateX(-50%) rotate(45deg);
+  border-radius: 2px;
+}
+
 .finished-stats-segment-tip b,
 .finished-stats-segment-tip span {
   overflow: hidden;
@@ -6185,8 +6197,26 @@ body:not(.can-edit) .game-card:focus-within .edit-action {
   white-space: nowrap;
 }
 
-.finished-stats-segment-tip span {
+.finished-stats-segment-count {
   color: var(--muted);
+}
+
+.finished-stats-segment-percent {
+  position: absolute;
+  left: 50%;
+  top: -24px;
+  display: inline-grid;
+  place-items: center;
+  min-width: 34px;
+  min-height: 18px;
+  padding: 2px 6px;
+  color: var(--text);
+  font-size: 10px;
+  font-weight: 900;
+  background: rgba(8, 9, 12, 0.96);
+  border-radius: 999px;
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.36);
+  transform: translateX(-50%);
 }
 
 .finished-stats-segment-tip .platform-badge {
@@ -6268,7 +6298,7 @@ body:not(.can-edit) .game-card:focus-within .edit-action {
   display: grid;
   gap: 5px;
   width: min(360px, calc(100vw - 42px));
-  max-height: 270px;
+  max-height: min(270px, calc(100vh - 140px));
   padding: 10px;
   overflow: auto;
   color: var(--text);
@@ -6280,6 +6310,12 @@ body:not(.can-edit) .game-card:focus-within .edit-action {
   transform: translateY(6px);
   transition: opacity 140ms ease, transform 140ms ease;
   pointer-events: none;
+}
+
+.finished-stats-month .finished-stats-breakdown {
+  top: auto;
+  bottom: calc(100% - 8px);
+  transform: translateY(-6px);
 }
 
 .finished-stats-kpi:hover .finished-stats-breakdown,
@@ -6357,6 +6393,7 @@ body:not(.can-edit) .game-card:focus-within .edit-action {
 .finished-stats-game-row .platform-badge {
   min-width: max-content;
   max-width: 128px;
+  min-height: 20px;
 }
 
 .finished-stats-game-row .finished-stats-progress-pill {
@@ -6364,13 +6401,13 @@ body:not(.can-edit) .game-card:focus-within .edit-action {
   align-items: center;
   gap: 4px;
   min-width: max-content;
-  min-height: 18px;
+  min-height: 20px;
   padding: 3px 5px;
-  color: var(--text);
+  color: #ffe985;
   font-size: 8px;
-  border: 1px solid rgba(255, 255, 255, 0.14);
+  border: 1px solid rgba(255, 225, 101, 0.36);
   border-radius: 7px;
-  background: rgba(255, 255, 255, 0.07);
+  background: rgba(255, 225, 101, 0.12);
 }
 
 .finished-stats-game-row .finished-stats-progress-pill em {
@@ -6381,9 +6418,11 @@ body:not(.can-edit) .game-card:focus-within .edit-action {
   width: 13px;
   height: 13px;
   min-width: 13px;
+  color: #ffe985;
 }
 
 .finished-stats-game-row .finished-stats-progress-pill strong {
+  color: #ffe985;
   font-size: 9px;
   line-height: 1;
 }

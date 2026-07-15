@@ -4149,6 +4149,17 @@ function statsPieMarkup(counts, tone) {
     return statsPieSegmentData(item, start, cursor, color, total, index, tone);
   });
   const tipCss = segments.map((_, index) => `
+    .finished-stats-donut:has(.finished-stats-pie-segment-${index}:hover) .finished-stats-pie-shape,
+    .finished-stats-donut:has(.finished-stats-pie-segment-${index}:focus-visible) .finished-stats-pie-shape {
+      filter: saturate(0.42) brightness(0.72);
+      opacity: 0.5;
+    }
+    .finished-stats-donut:has(.finished-stats-pie-segment-${index}:hover) .finished-stats-pie-segment-${index} .finished-stats-pie-shape,
+    .finished-stats-donut:has(.finished-stats-pie-segment-${index}:focus-visible) .finished-stats-pie-segment-${index} .finished-stats-pie-shape {
+      filter: brightness(1.18) saturate(1.12);
+      opacity: 0.98;
+      transform: scale(1.025);
+    }
     .finished-stats-donut:has(.finished-stats-pie-segment-${index}:hover) .finished-stats-segment-tip-${index},
     .finished-stats-donut:has(.finished-stats-pie-segment-${index}:focus-visible) .finished-stats-segment-tip-${index} {
       opacity: 1;
@@ -4172,7 +4183,7 @@ function statsPieSegmentData(item, startDeg, endDeg, color, total, index, tone) 
   const label = tone === "platform" ? platformBadge(item.label) : `<b>${escapeHtml(item.label)}</b>`;
   return {
     shape: `<g class="finished-stats-pie-segment finished-stats-pie-segment-${index}" tabindex="0">${shape}</g>`,
-    tip: `<div class="finished-stats-segment-tip finished-stats-segment-tip-${index}" style="--tip-x:${left.toFixed(2)}%;--tip-y:${top.toFixed(2)}%">${label}<span>(${escapeHtml(String(item.count))}) ${percent}%</span></div>`,
+    tip: `<div class="finished-stats-segment-tip finished-stats-segment-tip-${index}" style="--tip-x:${left.toFixed(2)}%;--tip-y:${top.toFixed(2)}%"><span class="finished-stats-segment-percent">${percent}%</span>${label}<span class="finished-stats-segment-count">(${escapeHtml(String(item.count))})</span></div>`,
   };
 }
 
@@ -4305,7 +4316,7 @@ function countCompletionTimeBuckets(games) {
     .map(([label, count]) => ({ label, count, order: label === "<10" ? 0 : Number(label.split("-")[0]) }))
     .sort((a, b) => a.order - b.order)
     .map(({ label, count }) => ({ label, count }));
-  if (noStart) buckets.push({ label: "No start", count: noStart });
+  if (noStart) buckets.push({ label: "No starting date", count: noStart });
   return buckets;
 }
 
