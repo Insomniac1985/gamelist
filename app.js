@@ -4183,7 +4183,7 @@ function statsPieSegmentData(item, startDeg, endDeg, color, total, index, tone) 
   const label = tone === "platform" ? platformBadge(item.label) : `<b>${escapeHtml(item.label)}</b>`;
   return {
     shape: `<g class="finished-stats-pie-segment finished-stats-pie-segment-${index}" tabindex="0">${shape}</g>`,
-    tip: `<div class="finished-stats-segment-tip finished-stats-segment-tip-${index}" style="--tip-x:${left.toFixed(2)}%;--tip-y:${top.toFixed(2)}%"><span class="finished-stats-segment-percent">${percent}%</span>${label}<span class="finished-stats-segment-count">(${escapeHtml(String(item.count))})</span></div>`,
+    tip: `<div class="finished-stats-segment-tip finished-stats-segment-tip-${index}" style="--tip-x:${left.toFixed(2)}%;--tip-y:${top.toFixed(2)}%"><span class="finished-stats-segment-percent">${percent}%</span>${label}<span class="finished-stats-segment-count">${escapeHtml(String(item.count))}</span></div>`,
   };
 }
 

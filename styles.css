@@ -6161,10 +6161,10 @@ body:not(.can-edit) .game-card:focus-within .edit-action {
   top: var(--tip-y);
   z-index: 30;
   display: grid;
-  gap: 3px;
-  min-width: 76px;
-  max-width: 132px;
-  padding: 5px 7px;
+  gap: 2px;
+  min-width: 62px;
+  max-width: 118px;
+  padding: 4px 6px;
   color: var(--text);
   background: rgba(8, 9, 12, 0.96);
   border-radius: 6px;
@@ -6203,20 +6203,19 @@ body:not(.can-edit) .game-card:focus-within .edit-action {
 
 .finished-stats-segment-percent {
   position: absolute;
-  left: 50%;
-  top: -24px;
+  right: -1px;
+  top: -17px;
   display: inline-grid;
   place-items: center;
-  min-width: 34px;
-  min-height: 18px;
-  padding: 2px 6px;
+  min-width: 32px;
+  min-height: 17px;
+  padding: 2px 5px;
   color: var(--text);
-  font-size: 10px;
+  font-size: 9px;
   font-weight: 900;
   background: rgba(8, 9, 12, 0.96);
-  border-radius: 999px;
-  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.36);
-  transform: translateX(-50%);
+  border-radius: 6px 6px 0 0;
+  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.32);
 }
 
 .finished-stats-segment-tip .platform-badge {
