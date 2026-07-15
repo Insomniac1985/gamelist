@@ -4501,28 +4501,30 @@ function bindFinishedStatsDesktopOverlays() {
   const closeFloatingOverlay = () => {
     closeTimer = null;
     el.finishedStatsDialog.querySelector(".finished-stats-hover-float")?.remove();
-    el.finishedStatsBody.querySelector(".finished-stats-floating-source")?.classList.remove("finished-stats-floating-source");
+    el.finishedStatsBody.querySelectorAll(".finished-stats-floating-source").forEach((node) => {
+      node.classList.remove("finished-stats-floating-source");
+    });
   };
   const scheduleClose = () => {
     clearTimeout(closeTimer);
     closeTimer = setTimeout(closeFloatingOverlay, 90);
   };
-  const openFloatingOverlay = (node) => {
-    if (window.matchMedia("(max-width: 760px)").matches) return;
-    const breakdown = node.querySelector(".finished-stats-breakdown");
-    if (!breakdown?.innerHTML.trim()) return;
+  const openFloatingContent = (sourceNode, content, className = "") => {
+    if (window.matchMedia("(max-width: 760px)").matches || !content.trim()) return;
     clearTimeout(closeTimer);
     el.finishedStatsDialog.querySelector(".finished-stats-hover-float")?.remove();
-    el.finishedStatsBody.querySelector(".finished-stats-floating-source")?.classList.remove("finished-stats-floating-source");
-    node.classList.add("finished-stats-floating-source");
+    el.finishedStatsBody.querySelectorAll(".finished-stats-floating-source").forEach((node) => {
+      node.classList.remove("finished-stats-floating-source");
+    });
+    sourceNode.classList.add("finished-stats-floating-source");
 
     const floating = document.createElement("div");
-    floating.className = "finished-stats-breakdown finished-stats-hover-float";
-    floating.innerHTML = breakdown.innerHTML;
+    floating.className = `finished-stats-breakdown finished-stats-hover-float ${className}`.trim();
+    floating.innerHTML = content;
     el.finishedStatsDialog.appendChild(floating);
 
     const dialogRect = el.finishedStatsDialog.getBoundingClientRect();
-    const sourceRect = node.getBoundingClientRect();
+    const sourceRect = sourceNode.getBoundingClientRect();
     const width = Math.min(340, Math.max(220, dialogRect.width - 32));
     floating.style.width = `${width}px`;
     floating.style.maxWidth = `${Math.max(180, dialogRect.width - 32)}px`;
@@ -4544,12 +4546,33 @@ function bindFinishedStatsDesktopOverlays() {
     floating.addEventListener("mouseenter", () => clearTimeout(closeTimer));
     floating.addEventListener("mouseleave", scheduleClose);
   };
+  const openFloatingOverlay = (node) => {
+    const breakdown = node.querySelector(".finished-stats-breakdown");
+    if (!breakdown?.innerHTML.trim()) return;
+    openFloatingContent(node, breakdown.innerHTML);
+  };
 
   el.finishedStatsBody.querySelectorAll("[data-stats-overlay-title]").forEach((node) => {
     node.addEventListener("mouseenter", () => openFloatingOverlay(node));
     node.addEventListener("mouseleave", scheduleClose);
     node.addEventListener("focusin", () => openFloatingOverlay(node));
     node.addEventListener("focusout", scheduleClose);
+  });
+  el.finishedStatsBody.querySelectorAll(".finished-stats-donut").forEach((donut) => {
+    donut.querySelectorAll(".finished-stats-pie-segment").forEach((segment) => {
+      const indexClass = [...segment.classList].find((name) => name.startsWith("finished-stats-pie-segment-"));
+      const index = indexClass?.replace("finished-stats-pie-segment-", "");
+      const tip = index ? donut.querySelector(`.finished-stats-segment-tip-${index}`) : null;
+      const games = tip?.querySelector(".finished-stats-segment-games");
+      if (!tip || !games?.innerHTML.trim()) return;
+      const openSegmentOverlay = () => openFloatingContent(tip, games.innerHTML, "is-segment-float");
+      segment.addEventListener("mouseenter", openSegmentOverlay);
+      segment.addEventListener("mouseleave", scheduleClose);
+      segment.addEventListener("focusin", openSegmentOverlay);
+      segment.addEventListener("focusout", scheduleClose);
+      tip.addEventListener("mouseenter", openSegmentOverlay);
+      tip.addEventListener("mouseleave", scheduleClose);
+    });
   });
   el.finishedStatsBody.addEventListener("scroll", closeFloatingOverlay, { passive: true });
 }

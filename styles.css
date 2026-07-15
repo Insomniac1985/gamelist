@@ -6535,6 +6535,11 @@ body.theme-kash .finished-stats-kpi.is-completed:focus-visible strong {
   pointer-events: none !important;
 }
 
+.finished-stats-floating-source .finished-stats-segment-games {
+  opacity: 0 !important;
+  pointer-events: none !important;
+}
+
 .finished-stats-hover-float {
   position: absolute;
   right: auto;
