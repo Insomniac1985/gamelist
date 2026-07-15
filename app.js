@@ -2090,7 +2090,7 @@ function gameOfTheYearExportPlatformSegment(item, index, startDeg, endDeg, color
   const sweep = Math.max(0.01, endDeg - startDeg);
   const start = polarPoint(110, 110, 96, startDeg - 90);
   const end = polarPoint(110, 110, 96, endDeg - 90);
-  const mid = polarPoint(110, 110, 130, startDeg + sweep / 2 - 90);
+  const mid = polarPoint(110, 110, 158, startDeg + sweep / 2 - 90);
   const shape = sweep >= 359.99
     ? `<circle class="goty-export-platform-slice" cx="110" cy="110" r="96" fill="${escapeHtml(color)}"></circle>`
     : `<path class="goty-export-platform-slice" d="M 110 110 L ${start.x.toFixed(3)} ${start.y.toFixed(3)} A 96 96 0 ${sweep > 180 ? 1 : 0} 1 ${end.x.toFixed(3)} ${end.y.toFixed(3)} Z" fill="${escapeHtml(color)}"></path>`;
@@ -2098,8 +2098,8 @@ function gameOfTheYearExportPlatformSegment(item, index, startDeg, endDeg, color
     shape,
     item,
     index,
-    left: clampNumber((mid.x / 220) * 100, 8, 92),
-    top: clampNumber((mid.y / 220) * 100, 10, 90),
+    left: clampNumber((mid.x / 220) * 100, -4, 104),
+    top: clampNumber((mid.y / 220) * 100, 2, 98),
   };
 }
 
@@ -2110,9 +2110,9 @@ function gameOfTheYearExportPlatformLabels(segments) {
     if (!index) return;
     label.top = Math.max(label.top, labels[index - 1].top + minGap);
   });
-  const overflow = Math.max(0, (labels.at(-1)?.top || 0) - 92);
+  const overflow = Math.max(0, (labels.at(-1)?.top || 0) - 98);
   if (overflow) labels.forEach((label) => {
-    label.top = Math.max(8, label.top - overflow);
+    label.top = Math.max(2, label.top - overflow);
   });
   const byIndex = new Map(labels.map((label) => [label.index, label]));
   return segments.map((segment) => {
@@ -2446,6 +2446,7 @@ function gameOfTheYearExportCss({ theme, main, accent, gradient, bg, glowPrimary
     .goty-export-platform-item {
       grid-column: 1;
       grid-row: 2;
+      overflow: visible;
     }
     .goty-export-platform-card {
       position: relative;
@@ -2453,7 +2454,7 @@ function gameOfTheYearExportCss({ theme, main, accent, gradient, bg, glowPrimary
       box-sizing: border-box;
       width: 435px;
       height: 338px;
-      overflow: hidden;
+      overflow: visible;
       background: unset;
       border: unset;
       border-radius: 12px;
@@ -2471,6 +2472,7 @@ function gameOfTheYearExportCss({ theme, main, accent, gradient, bg, glowPrimary
       z-index: 1;
       width: 100%;
       height: 100%;
+      overflow: visible;
     }
     .goty-export-platform-pie {
       position: absolute;
