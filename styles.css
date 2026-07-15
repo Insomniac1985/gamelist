@@ -558,6 +558,13 @@ html.theme-font-pokemon {
   min-height: 36px;
 }
 
+.playing-head-actions > span {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
 .playing-count-number {
   color: var(--text);
 }
