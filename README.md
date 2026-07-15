@@ -183,6 +183,38 @@ If you changed `wrangler.toml`, changed KV bindings, or added a new integration,
 
 If a browser keeps an old version after deploy, the app checks `version.json` and clears its own caches when the version changes. The service worker cache name is also versioned in `service-worker.js`.
 
+### Cloudflare Preview Deploys
+
+To deploy the current repo to a separate Workers preview URL without replacing the main Worker, use a different Worker name:
+
+```bash
+npx wrangler deploy --env="" --name gamelist-dev --message "Preview build"
+```
+
+The current preview URL is:
+
+```text
+https://gamelist-dev.shabiimitjans.workers.dev
+```
+
+This preview Worker uses the same top-level `GAMELIST` KV binding as the main app unless `wrangler.toml` is changed to point it at a separate namespace.
+
+### GOTY Export HTML Preview
+
+The Game of the Year poster is rendered as normal HTML first, then converted to PNG in the browser. To inspect and tweak the exact pre-PNG export layout on Cloudflare, open:
+
+```text
+https://gamelist-dev.shabiimitjans.workers.dev/goty-export?year=2026
+```
+
+That route redirects to the app-shell preview mode:
+
+```text
+https://gamelist-dev.shabiimitjans.workers.dev/?gotyExport=2026
+```
+
+Change the `year`/`gotyExport` value to preview a different saved GOTY year.
+
 ## GitHub And GitLab Deploy Notes
 
 This repo currently includes both default/GitHub and GitLab Wrangler environments because the original project used two Cloudflare deploys with separate saved-data namespaces:
