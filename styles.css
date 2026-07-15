@@ -6133,13 +6133,16 @@ body:not(.can-edit) .game-card:focus-within .edit-action {
 .finished-stats-release-card {
   display: block;
   grid-template-columns: 1fr;
-  padding: 14px;
+  padding: 0;
+  background: transparent;
+  border: 0;
+  box-shadow: none;
 }
 
 .finished-stats-release-kpis {
   display: grid;
   grid-template-columns: 1fr;
-  gap: 10px;
+  gap: 8px;
   height: 100%;
 }
 
@@ -6148,8 +6151,8 @@ body:not(.can-edit) .game-card:focus-within .edit-action {
   display: grid;
   align-content: center;
   gap: 5px;
-  min-height: 75px;
-  padding: 14px;
+  min-height: 64px;
+  padding: 10px 12px;
   color: var(--text);
   text-align: left;
   cursor: default;
@@ -6164,13 +6167,13 @@ body:not(.can-edit) .game-card:focus-within .edit-action {
 
 .finished-stats-release-kpi strong {
   color: var(--text);
-  font-size: 32px;
+  font-size: 28px;
   line-height: 1;
 }
 
 .finished-stats-release-kpi > span:not(.finished-stats-breakdown) {
   color: var(--muted);
-  font-size: 11px;
+  font-size: 10px;
   font-weight: 900;
   line-height: 1.25;
   text-transform: uppercase;

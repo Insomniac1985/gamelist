@@ -4146,8 +4146,12 @@ function statsReleaseKpisCard(insights) {
     <article class="finished-stats-chart finished-stats-release-card">
       <div class="finished-stats-release-kpis">
         ${statsReleaseMiniKpi({
-          value: `${insights.interested.length}/${insights.playedFromYear.length}`,
-          label: insights.scopeYear ? `Interested upcoming / Played new releases from ${insights.scopeYear}` : "Interested upcoming / Played new releases",
+          value: insights.interested.length,
+          label: insights.scopeYear ? `Interested upcoming ${insights.scopeYear}` : "Interested upcoming",
+        })}
+        ${statsReleaseMiniKpi({
+          value: insights.playedFromYear.length,
+          label: insights.scopeYear ? `Played new releases from ${insights.scopeYear}` : "Played new releases",
           detail: insights.hoverable ? statsGameList(insights.playedFromYear) : "",
         })}
         ${statsReleaseMiniKpi({
