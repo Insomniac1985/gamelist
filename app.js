@@ -2083,17 +2083,18 @@ function gameOfTheYearExportCss({ theme, main, accent, gradient, bg, glowPrimary
     }
     .goty-export-logo {
       position: absolute;
-      right: 64px;
+      left: 40px;
       bottom: 42px;
       width: 82px;
       height: 82px;
       object-fit: cover;
-      border-radius: 18px;
     }
     .goty-export-head {
       min-height: 142px;
     }
     .goty-export-head h1 {
+      position: absolute;
+      top: 50px;
       width: 1420px;
       margin: 0;
       color: transparent;
@@ -2106,8 +2107,8 @@ function gameOfTheYearExportCss({ theme, main, accent, gradient, bg, glowPrimary
       display: grid;
       grid-template-columns: repeat(4, 425px);
       grid-template-rows: repeat(2, 376px);
-      gap: 30px 26px;
-      margin-top: 14px;
+      gap: 20px 26px;
+      margin-top: -5px;
     }
     .goty-export-item {
       display: grid;
@@ -2132,8 +2133,8 @@ function gameOfTheYearExportCss({ theme, main, accent, gradient, bg, glowPrimary
       display: grid;
       grid-template-columns: 154px minmax(0, 1fr);
       gap: 18px;
-      width: 425px;
-      height: 342px;
+      width: 435px;
+      height: 340px;
       padding: 34px 22px 30px;
       overflow: hidden;
       background: ${panel};
@@ -2153,7 +2154,7 @@ function gameOfTheYearExportCss({ theme, main, accent, gradient, bg, glowPrimary
       height: calc(100% + 64px);
       object-fit: cover;
       opacity: ${theme.mode === "light" ? ".22" : ".30"};
-      filter: blur(26px) saturate(1.18);
+      filter: blur(8px) saturate(1.18);
       transform: scale(1.04);
     }
     .goty-export-card::after {
@@ -2167,7 +2168,7 @@ function gameOfTheYearExportCss({ theme, main, accent, gradient, bg, glowPrimary
     .goty-export-cover-wrap {
       position: relative;
       z-index: 1;
-      align-self: end;
+      align-self: start;
       width: 154px;
       height: 216px;
       filter:
@@ -2291,8 +2292,8 @@ function gameOfTheYearExportCss({ theme, main, accent, gradient, bg, glowPrimary
     }
     footer {
       position: absolute;
-      right: 162px;
-      bottom: 56px;
+      right: 40px;
+      bottom: 43px;
       color: ${muted};
       font: 800 16px/1 ${bodyFont};
     }
