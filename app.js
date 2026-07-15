@@ -4086,7 +4086,7 @@ function completedStatsYearFor(item) {
 function finishedStatsMarkup(year, games, completed) {
   const platforms = countBy(games, (game) => canonicalPlatform(game.platform) || game.platform || "Unknown");
   const tags = countTags(games);
-  const timeBuckets = countCompletionTimeBuckets(games);
+  const timeBuckets = countApproximatePlaytimeBuckets(games);
   const months = countBy(games, (game) => monthShortName(game.completedAt));
   const streamed = games.filter((game) => game.stream);
   const otherOwnerGames = games.filter((game) => visibleOwnerTags(game).length);
@@ -4104,7 +4104,7 @@ function finishedStatsMarkup(year, games, completed) {
     <div class="finished-stats-charts">
       ${statsDonutCard("Platforms", platforms, "platform", 5)}
       ${statsDonutCard("Tags", tags, "category", 5)}
-      ${statsDonutCard("Time", timeBuckets, "time", 5)}
+      ${statsDonutCard("Aproximate playtime", timeBuckets, "time", 5)}
     </div>
     <section class="finished-stats-months">
       <h3>${allYears ? "By year" : "By month"}</h3>
@@ -4299,16 +4299,16 @@ function countTags(games) {
   return countBy(items, (item) => item.label);
 }
 
-function countCompletionTimeBuckets(games) {
+function countApproximatePlaytimeBuckets(games) {
   const bucketMap = new Map();
-  let noStart = 0;
+  let noPlaytime = 0;
   games.forEach((game) => {
-    const days = completedSpanDays(game);
-    if (days == null) {
-      noStart += 1;
+    const hours = Number(game.lengthHours);
+    if (!Number.isFinite(hours) || hours <= 0) {
+      noPlaytime += 1;
       return;
     }
-    const start = Math.floor(days / 10) * 10;
+    const start = Math.floor(hours / 10) * 10;
     const label = start === 0 ? "<10" : `${start}-${start + 10}`;
     bucketMap.set(label, (bucketMap.get(label) || 0) + 1);
   });
@@ -4316,15 +4316,8 @@ function countCompletionTimeBuckets(games) {
     .map(([label, count]) => ({ label, count, order: label === "<10" ? 0 : Number(label.split("-")[0]) }))
     .sort((a, b) => a.order - b.order)
     .map(({ label, count }) => ({ label, count }));
-  if (noStart) buckets.push({ label: "No starting date", count: noStart });
+  if (noPlaytime) buckets.push({ label: "No HLTB time", count: noPlaytime });
   return buckets;
-}
-
-function completedSpanDays(game) {
-  const start = Date.parse(dateOnly(game.startedAt));
-  const done = Date.parse(dateOnly(game.completedAt));
-  if (Number.isNaN(start) || Number.isNaN(done) || done < start) return null;
-  return Math.max(1, Math.ceil((done - start) / 86400000));
 }
 
 function gameStatsTags(game) {
@@ -4356,11 +4349,22 @@ function statsSegmentColor(label, tone, index = 0) {
 
 function platformStatsColor(platform, index = 0) {
   const value = normalizeSearchText(platform);
-  if (value.includes("playstation") || /\bps/.test(value)) return "#4d7cff";
-  if (value.includes("xbox")) return "#62d470";
-  if (value.includes("switch") || value.includes("nintendo")) return "#ff365f";
-  if (value.includes("steam") || value.includes("pc")) return "#66c0f4";
-  return ["#aa8bff", "#f2d06b", "#ff9ed2", "#7cc7ff"][index % 4];
+  if (value.includes("switch") || value.includes("nintendo")) return "rgba(255, 59, 69, 0.13)";
+  if (value === "ps5") return "#ffffff";
+  if (value === "ps1") return "rgba(142, 148, 160, 0.18)";
+  if (value === "ps3" || value === "psp") return "rgba(5, 7, 11, 0.82)";
+  if (value.includes("playstation") || /\bps/.test(value)) return "rgb(111 120 255 / 22%)";
+  if (value.includes("xbox 360") || value === "x360") return "rgba(98, 212, 112, 0.14)";
+  if (value === "xbox") return "rgba(5, 7, 11, 0.82)";
+  if (value.includes("xbox") || value.includes("microsoft") || value === "xone") return "rgba(98, 212, 112, 0.14)";
+  if (value.includes("wiiu")) return "rgba(155, 215, 255, 0.14)";
+  if (value.includes("3ds") || value.includes("gbc")) return "rgba(255, 90, 102, 0.14)";
+  if (value.includes("n64")) return "rgba(52, 154, 76, 0.28)";
+  if (value.includes("gamecube") || value.includes("snes") || value.includes("gba")) return "rgba(150, 112, 255, 0.16)";
+  if (value.includes("sega") || value.includes("game gear")) return "rgba(42, 112, 224, 0.18)";
+  if (value.includes("dreamcast")) return "rgba(255, 132, 45, 0.15)";
+  if (value.includes("wii") || value.includes("nes") || value.includes("gb")) return "rgba(217, 221, 230, 0.12)";
+  return ["rgba(255, 255, 255, 0.07)", "rgba(170, 139, 255, 0.16)", "rgba(242, 208, 107, 0.16)", "rgba(255, 158, 210, 0.16)"][index % 4];
 }
 
 function sortedCompletedGames(games) {

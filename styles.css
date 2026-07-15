@@ -6218,30 +6218,6 @@ body:not(.can-edit) .game-card:focus-within .edit-action {
   box-shadow: 0 8px 18px rgba(0, 0, 0, 0.32);
 }
 
-.finished-stats-segment-tip .platform-badge {
-  width: max-content;
-  max-width: 100%;
-  min-height: 18px;
-  gap: 4px;
-  padding: 3px 5px 3px 3px;
-  font-size: 8px;
-}
-
-.finished-stats-segment-tip .platform-icon {
-  width: 13px;
-  height: 13px;
-  border-radius: 4px;
-}
-
-.finished-stats-segment-tip .platform-icon img {
-  width: 12px;
-  height: 12px;
-}
-
-.finished-stats-segment-tip .platform-label {
-  font-size: 8px;
-}
-
 .finished-stats-chart-list {
   display: grid;
   gap: 5px;
@@ -6291,7 +6267,7 @@ body:not(.can-edit) .game-card:focus-within .edit-action {
 .finished-stats-breakdown {
   position: absolute;
   right: 10px;
-  top: calc(100% - 8px);
+  top: calc(100% - 10px);
   bottom: auto;
   z-index: 8;
   display: grid;
@@ -6311,10 +6287,24 @@ body:not(.can-edit) .game-card:focus-within .edit-action {
   pointer-events: none;
 }
 
+.finished-stats-breakdown::before {
+  content: "";
+  position: absolute;
+  right: 0;
+  bottom: 100%;
+  left: 0;
+  height: 12px;
+}
+
 .finished-stats-month .finished-stats-breakdown {
   top: auto;
-  bottom: calc(100% - 8px);
+  bottom: calc(100% - 10px);
   transform: translateY(-6px);
+}
+
+.finished-stats-month .finished-stats-breakdown::before {
+  top: 100%;
+  bottom: auto;
 }
 
 .finished-stats-kpi:hover .finished-stats-breakdown,
@@ -6367,15 +6357,39 @@ body:not(.can-edit) .game-card:focus-within .edit-action {
   box-shadow: 0 0 12px currentColor;
 }
 
-.finished-stats-platform-row .platform-badge,
-.finished-stats-game-row .platform-badge {
-  min-width: 0;
-  min-height: 18px;
+.finished-stats-breakdown .platform-badge,
+.finished-stats-chart-list .platform-badge,
+.finished-stats-segment-tip .platform-badge {
+  width: max-content;
+  max-width: 128px;
+  min-width: max-content;
+  min-height: 20px;
   gap: 4px;
   padding: 3px 5px 3px 3px;
   font-size: 8px;
   flex: 0 0 auto;
   border-radius: 7px;
+}
+
+.finished-stats-breakdown .platform-icon,
+.finished-stats-chart-list .platform-icon,
+.finished-stats-segment-tip .platform-icon {
+  width: 13px;
+  height: 13px;
+  border-radius: 4px;
+}
+
+.finished-stats-breakdown .platform-icon img,
+.finished-stats-chart-list .platform-icon img,
+.finished-stats-segment-tip .platform-icon img {
+  width: 12px;
+  height: 12px;
+}
+
+.finished-stats-breakdown .platform-label,
+.finished-stats-chart-list .platform-label,
+.finished-stats-segment-tip .platform-label {
+  font-size: 8px;
 }
 
 .finished-stats-platform-row b {
@@ -6390,8 +6404,6 @@ body:not(.can-edit) .game-card:focus-within .edit-action {
 }
 
 .finished-stats-game-row .platform-badge {
-  min-width: max-content;
-  max-width: 128px;
   min-height: 20px;
 }
 
@@ -6431,24 +6443,6 @@ body:not(.can-edit) .game-card:focus-within .edit-action {
   padding: 1px 6px;
   border-radius: 5px;
   font-size: 10px;
-}
-
-.finished-stats-platform-row .platform-icon,
-.finished-stats-game-row .platform-icon {
-  width: 13px;
-  height: 13px;
-  border-radius: 4px;
-}
-
-.finished-stats-platform-row .platform-icon img,
-.finished-stats-game-row .platform-icon img {
-  width: 12px;
-  height: 12px;
-}
-
-.finished-stats-platform-row .platform-label,
-.finished-stats-game-row .platform-label {
-  font-size: 8px;
 }
 
 .finished-stats-category-row b i {
