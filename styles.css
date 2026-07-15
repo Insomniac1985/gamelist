@@ -6141,9 +6141,13 @@ body:not(.can-edit) .game-card:focus-within .edit-action {
 
 .finished-stats-release-kpis {
   display: grid;
-  grid-template-columns: 1fr;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 8px;
   height: 100%;
+}
+
+.finished-stats-release-kpi:nth-child(3) {
+  grid-column: 1 / -1;
 }
 
 .finished-stats-release-kpi {
@@ -10933,6 +10937,10 @@ body.theme-kash .history-row.completed-trophy-card:hover {
   }
 
   .finished-stats-release-card {
+    grid-template-columns: 1fr;
+  }
+
+  .finished-stats-release-kpis {
     grid-template-columns: 1fr;
   }
 
