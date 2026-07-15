@@ -4313,7 +4313,18 @@ function statsCompletedGameList(items) {
 }
 
 function statsOwnerBreakdown(games) {
-  return statsBreakdownList(countBy(games.flatMap((game) => visibleOwnerTags(game).map((owner) => ({ owner }))), (item) => item.owner), "owner");
+  const owners = countBy(games.flatMap((game) => visibleOwnerTags(game).map((owner) => ({ owner }))), (item) => item.owner);
+  return owners.map(({ label, count }) => {
+    const ownerGames = games
+      .filter((game) => visibleOwnerTags(game).includes(label))
+      .sort((a, b) => String(a.completedAt || "").localeCompare(String(b.completedAt || "")) || stringCompare(a.title, b.title));
+    return `
+      <div class="finished-stats-owner-group">
+        <div class="finished-stats-owner-heading"><b>${ownerBadge(label)}</b><em>${count}</em></div>
+        <div class="finished-stats-owner-games">${statsGameList(ownerGames)}</div>
+      </div>
+    `;
+  }).join("");
 }
 
 function statsOtherOwnerSummary(games) {
@@ -4341,13 +4352,9 @@ function countTags(games) {
 
 function countApproximatePlaytimeBuckets(games) {
   const bucketMap = new Map();
-  let noPlaytime = 0;
   games.forEach((game) => {
     const hours = Number(game.lengthHours);
-    if (!Number.isFinite(hours) || hours <= 0) {
-      noPlaytime += 1;
-      return;
-    }
+    if (!Number.isFinite(hours) || hours <= 0) return;
     const start = Math.floor(hours / 10) * 10;
     const label = start === 0 ? "<10" : `${start}-${start + 10}`;
     bucketMap.set(label, (bucketMap.get(label) || 0) + 1);
@@ -4356,7 +4363,6 @@ function countApproximatePlaytimeBuckets(games) {
     .map(([label, count]) => ({ label, count, order: label === "<10" ? 0 : Number(label.split("-")[0]) }))
     .sort((a, b) => a.order - b.order)
     .map(({ label, count }) => ({ label, count }));
-  if (noPlaytime) buckets.push({ label: "No HLTB time", count: noPlaytime });
   return buckets;
 }
 

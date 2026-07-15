@@ -6109,7 +6109,7 @@ body:not(.can-edit) .game-card:focus-within .edit-action {
   top: 13px;
   left: 14px;
   margin: 0;
-  color: var(--accent);
+  color: var(--accent-1);
   font-size: 14px;
   font-weight: 900;
   text-transform: uppercase;
@@ -6117,7 +6117,7 @@ body:not(.can-edit) .game-card:focus-within .edit-action {
 
 .finished-stats-months h3 {
   margin: 0;
-  color: var(--accent);
+  color: var(--accent-1);
   font-size: 14px;
   font-weight: 900;
   text-transform: uppercase;
@@ -6224,7 +6224,7 @@ body:not(.can-edit) .game-card:focus-within .edit-action {
   color: var(--text);
   font-size: 9px;
   font-weight: 900;
-  background: rgba(8, 9, 12, 0.96);
+  background: var(--accent);
   border-radius: 0 6px 6px 0;
   box-shadow: 0 8px 18px rgba(0, 0, 0, 0.32);
   transform: translateY(-50%);
@@ -6472,6 +6472,55 @@ body:not(.can-edit) .game-card:focus-within .edit-action {
   padding: 1px 6px;
   border-radius: 5px;
   font-size: 10px;
+}
+
+.finished-stats-owner-group {
+  display: grid;
+  gap: 5px;
+  min-width: 0;
+  padding: 5px;
+  border-radius: 7px;
+  background: rgba(255, 255, 255, 0.035);
+}
+
+.finished-stats-owner-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  min-width: 0;
+}
+
+.finished-stats-owner-heading b {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: visible;
+}
+
+.finished-stats-owner-heading em {
+  flex: 0 0 auto;
+  color: var(--muted);
+  font-style: normal;
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.finished-stats-owner-heading .owner-pill {
+  min-height: 20px;
+  padding: 2px 7px;
+  border-radius: 5px;
+  font-size: 10px;
+}
+
+.finished-stats-owner-games {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+}
+
+.finished-stats-owner-games .finished-stats-game-row {
+  padding-left: 7px;
+  background: rgba(255, 255, 255, 0.026);
 }
 
 .finished-stats-category-row b i {
