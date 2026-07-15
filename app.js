@@ -4093,6 +4093,7 @@ function finishedStatsMarkup(year, games, completed) {
   const otherOwnerGames = games.filter((game) => visibleOwnerTags(game).length);
   const otherOwnerSummary = statsOtherOwnerSummary(otherOwnerGames);
   const allYears = year === "all";
+  const releaseInsights = statsReleaseYearInsights(year, games);
   const showYearlyDetail = !allYears;
   const cards = [
     statsKpiCard("Finished games", games.length, showYearlyDetail ? statsGameList(games) : "", { tone: "finished" }),
@@ -4102,10 +4103,11 @@ function finishedStatsMarkup(year, games, completed) {
   ].filter(Boolean).join("");
   return `
     <div class="finished-stats-kpis">${cards}</div>
-    <div class="finished-stats-charts">
+    <div class="finished-stats-charts ${allYears ? "is-all" : ""}">
       ${statsDonutCard("Platforms", platforms, "platform", 5)}
       ${statsDonutCard("Tags", tags, "category", 5)}
       ${statsDonutCard("Aproximate playtime", timeBuckets, "time", 5)}
+      ${allYears ? "" : statsReleaseKpisCard(releaseInsights)}
     </div>
     <section class="finished-stats-months">
       <h3>${allYears ? "By year" : "By month"}</h3>
@@ -4137,6 +4139,73 @@ function statsDonutCard(title, counts, tone, visibleLimit = counts.length) {
       </div>
     </article>
   `;
+}
+
+function statsReleaseKpisCard(insights) {
+  return `
+    <article class="finished-stats-chart finished-stats-release-card">
+      <h3>Release year</h3>
+      <div class="finished-stats-release-kpis">
+        ${statsReleaseMiniKpi({
+          value: `${insights.interested.length}/${insights.playedFromYear.length}`,
+          label: insights.scopeYear ? `Interested vs played released in ${insights.scopeYear}` : "Interested vs same-year played",
+          detail: insights.hoverable ? statsReleaseCompareDetail(insights) : "",
+        })}
+        ${statsReleaseMiniKpi({
+          value: insights.playedOutsideYear.length,
+          label: insights.scopeYear ? "Total games played not from that year" : "Played outside release year",
+          detail: insights.hoverable ? statsGameList(insights.playedOutsideYear) : "",
+        })}
+      </div>
+    </article>
+  `;
+}
+
+function statsReleaseMiniKpi({ value, label, detail = "" }) {
+  return `
+    <button class="finished-stats-release-kpi" type="button" ${detail ? `data-stats-overlay-title="${escapeHtml(label)}"` : ""}>
+      <strong>${escapeHtml(String(value))}</strong>
+      <span>${escapeHtml(label)}</span>
+      ${detail ? `<span class="finished-stats-breakdown">${detail}</span>` : ""}
+    </button>
+  `;
+}
+
+function statsReleaseCompareDetail(insights) {
+  return `
+    <div class="finished-stats-release-group">
+      <b>Interested in ${escapeHtml(insights.scopeYear || "release years")}</b>
+      <div>${insights.interested.length ? statsGameList(insights.interested) : `<span><b>None</b><em>0</em></span>`}</div>
+    </div>
+    <div class="finished-stats-release-group">
+      <b>Played from ${escapeHtml(insights.scopeYear || "release years")}</b>
+      <div>${insights.playedFromYear.length ? statsGameList(insights.playedFromYear) : `<span><b>None</b><em>0</em></span>`}</div>
+    </div>
+  `;
+}
+
+function statsReleaseYearInsights(year, games) {
+  const completionYears = unique(games.map(completionYear).filter(Boolean));
+  const scopeYear = year !== "all" ? String(year) : (completionYears.length === 1 ? completionYears[0] : "");
+  const libraryGames = state.games
+    .filter((game) => !game.deletedAt && game.releaseDate)
+    .sort((a, b) => String(a.releaseDate || "").localeCompare(String(b.releaseDate || "")) || stringCompare(a.title, b.title));
+  const interested = scopeYear
+    ? libraryGames.filter((game) => releaseYear(game) === scopeYear)
+    : libraryGames.filter((game) => completionYears.includes(releaseYear(game)));
+  const playedFromYear = scopeYear
+    ? games.filter((game) => releaseYear(game) === scopeYear)
+    : games.filter((game) => releaseYear(game) && releaseYear(game) === completionYear(game));
+  const playedOutsideYear = scopeYear
+    ? games.filter((game) => releaseYear(game) !== scopeYear)
+    : games.filter((game) => releaseYear(game) && releaseYear(game) !== completionYear(game));
+  return {
+    scopeYear,
+    interested,
+    playedFromYear,
+    playedOutsideYear,
+    hoverable: Boolean(scopeYear),
+  };
 }
 
 function statsPieMarkup(counts, tone) {
@@ -4532,6 +4601,11 @@ function completedPlaytimeValue(game) {
 
 function completionYear(game) {
   const date = dateOnly(game.completedAt);
+  return date ? date.slice(0, 4) : "";
+}
+
+function releaseYear(game) {
+  const date = dateOnly(game.releaseDate);
   return date ? date.slice(0, 4) : "";
 }
 
