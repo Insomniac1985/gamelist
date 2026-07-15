@@ -4141,7 +4141,9 @@ function statsDonutCard(title, counts, tone, visibleLimit = counts.length, games
   return `
     <article class="finished-stats-chart">
       <h3>${escapeHtml(title)}</h3>
-      <div class="finished-stats-donut ${tone === "category" ? "is-category" : "is-platform"}">${statsPieMarkup(counts, tone)}</div>
+      ${tone === "time"
+        ? `<div class="finished-stats-bell">${statsBellMarkup(counts, tone)}</div>`
+        : `<div class="finished-stats-donut ${tone === "category" ? "is-category" : "is-platform"}">${statsPieMarkup(counts, tone)}</div>`}
       <div class="finished-stats-chart-copy">
         <div class="finished-stats-chart-list" data-stats-overlay-title="${escapeHtml(title)}">${statsBreakdownList(visibleCounts, tone)}${hasMore ? `<span class="finished-stats-more-row" aria-hidden="true">...</span>` : ""}<div class="finished-stats-breakdown">${statsBreakdownList(counts, tone, games)}</div></div>
       </div>
@@ -4237,6 +4239,44 @@ function statsPieMarkup(counts, tone) {
     }
   `).join("");
   return `<svg viewBox="0 0 100 100" role="img" aria-label="Stats breakdown">${segments.map((segment) => segment.shape).join("")}</svg><div class="finished-stats-pie-tips">${segments.map((segment) => segment.tip).join("")}</div><style>${tipCss}</style>`;
+}
+
+function statsBellMarkup(counts, tone) {
+  const max = Math.max(1, ...counts.map((item) => item.count));
+  const slots = Math.max(5, counts.length || 5);
+  const points = counts.length
+    ? counts.map((item, index) => {
+      const x = slots === 1 ? 50 : 8 + (index * 84 / Math.max(1, slots - 1));
+      const height = 10 + (Number(item.count || 0) / max) * 70;
+      return { x, y: 88 - height, item, index };
+    })
+    : [];
+  if (!points.length) {
+    return `<svg viewBox="0 0 100 100" aria-hidden="true"><path class="finished-stats-bell-area" d="M 8 88 C 28 72 38 42 50 42 C 62 42 72 72 92 88 Z"></path><path class="finished-stats-bell-line" d="M 8 88 C 28 72 38 42 50 42 C 62 42 72 72 92 88"></path></svg>`;
+  }
+  const line = smoothStatsPath(points);
+  const area = `M ${points[0].x.toFixed(2)} 88 L ${points[0].x.toFixed(2)} ${points[0].y.toFixed(2)} ${line.replace(/^M\s+[0-9.]+\s+[0-9.]+/, "")} L ${points[points.length - 1].x.toFixed(2)} 88 Z`;
+  const dots = points.map((point) => {
+    const color = statsSegmentColor(point.item.label, tone, point.index);
+    return `<span class="finished-stats-bell-dot" style="--dot-x:${point.x.toFixed(2)}%;--dot-y:${point.y.toFixed(2)}%;--dot-color:${escapeHtml(color)}" title="${escapeHtml(`${point.item.label}: ${point.item.count}`)}"><b>${escapeHtml(String(point.item.count))}</b></span>`;
+  }).join("");
+  return `
+    <svg viewBox="0 0 100 100" aria-hidden="true">
+      <path class="finished-stats-bell-area" d="${escapeHtml(area)}"></path>
+      <path class="finished-stats-bell-line" d="${escapeHtml(line)}"></path>
+    </svg>
+    ${dots}
+  `;
+}
+
+function smoothStatsPath(points) {
+  if (points.length < 2) return points[0] ? `M ${points[0].x.toFixed(2)} ${points[0].y.toFixed(2)}` : "";
+  return points.reduce((path, point, index) => {
+    if (!index) return `M ${point.x.toFixed(2)} ${point.y.toFixed(2)}`;
+    const previous = points[index - 1];
+    const midX = (previous.x + point.x) / 2;
+    return `${path} Q ${previous.x.toFixed(2)} ${previous.y.toFixed(2)} ${midX.toFixed(2)} ${((previous.y + point.y) / 2).toFixed(2)}`;
+  }, "") + ` T ${points[points.length - 1].x.toFixed(2)} ${points[points.length - 1].y.toFixed(2)}`;
 }
 
 function statsPieSegmentData(item, startDeg, endDeg, color, total, index, tone) {
