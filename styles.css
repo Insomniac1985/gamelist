@@ -6046,7 +6046,7 @@ body:not(.can-edit) .game-card:focus-within .edit-action {
 }
 
 .finished-stats-kpi.is-owners strong {
-  color: var(--accent-2, var(--accent));
+  color: var(--text);
 }
 
 .finished-stats-kpi strong .trophy-icon {

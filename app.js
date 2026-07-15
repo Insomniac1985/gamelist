@@ -4090,13 +4090,14 @@ function finishedStatsMarkup(year, games, completed) {
   const months = countBy(games, (game) => monthShortName(game.completedAt));
   const streamed = games.filter((game) => game.stream);
   const otherOwnerGames = games.filter((game) => visibleOwnerTags(game).length);
+  const otherOwnerSummary = statsOtherOwnerSummary(otherOwnerGames);
   const allYears = year === "all";
   const showYearlyDetail = !allYears;
   const cards = [
     statsKpiCard("Finished games", games.length, showYearlyDetail ? statsGameList(games) : "", { tone: "finished" }),
     statsKpiCard("Completed games", completed.length, showYearlyDetail ? statsCompletedGameList(completed) : "", { action: "completed", tone: "completed", icon: trophyIcon() }),
     streamed.length ? statsKpiCard("Streamed games", streamed.length, showYearlyDetail ? statsGameList(streamed) : "", { tone: "streamed" }) : "",
-    otherOwnerGames.length ? statsKpiCard("Other owners", otherOwnerGames.length, statsOwnerBreakdown(otherOwnerGames), { tone: "owners" }) : "",
+    otherOwnerGames.length ? statsKpiCard(otherOwnerSummary.label, otherOwnerGames.length, statsOwnerBreakdown(otherOwnerGames), { tone: "owners", valueClass: otherOwnerSummary.valueClass }) : "",
   ].filter(Boolean).join("");
   return `
     <div class="finished-stats-kpis">${cards}</div>
@@ -4116,7 +4117,7 @@ function finishedStatsMarkup(year, games, completed) {
 function statsKpiCard(label, value, detail = "", options = {}) {
   return `
     <button class="finished-stats-kpi ${options.action ? "is-clickable" : ""} ${options.tone ? `is-${escapeHtml(options.tone)}` : ""}" type="button" ${options.action ? `data-stats-action="${escapeHtml(options.action)}"` : ""}>
-      <strong>${options.icon || ""}${escapeHtml(String(value))}</strong>
+      <strong class="${options.valueClass ? escapeHtml(options.valueClass) : ""}">${options.icon || ""}${escapeHtml(String(value))}</strong>
       <span>${escapeHtml(label)}</span>
       ${detail ? `<span class="finished-stats-breakdown">${detail}</span>` : ""}
     </button>
@@ -4247,6 +4248,13 @@ function statsCompletedGameList(items) {
 
 function statsOwnerBreakdown(games) {
   return statsBreakdownList(countBy(games.flatMap((game) => visibleOwnerTags(game).map((owner) => ({ owner }))), (item) => item.owner), "owner");
+}
+
+function statsOtherOwnerSummary(games) {
+  const owners = countBy(games.flatMap((game) => visibleOwnerTags(game).map((owner) => ({ owner }))), (item) => item.owner);
+  if (owners.length !== 1) return { label: "Other owners", valueClass: "" };
+  const owner = owners[0].label;
+  return { label: `games from ${owner}`, valueClass: ownerColorClass(owner) };
 }
 
 function countBy(items, getter) {
