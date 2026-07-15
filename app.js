@@ -4348,12 +4348,13 @@ function statsMonthBars(games, counts) {
   const order = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
   const byLabel = new Map(counts.map((item) => [item.label, item.count]));
   const max = Math.max(1, ...counts.map((item) => item.count));
-  return order.map((label) => {
+  return order.map((label, index) => {
     const count = byLabel.get(label) || 0;
     const monthGames = games
       .filter((game) => monthShortName(game.completedAt) === label)
       .sort((a, b) => String(a.completedAt || "").localeCompare(String(b.completedAt || "")) || stringCompare(a.title, b.title));
-    return `<div class="finished-stats-month" title="${escapeHtml(`${label}: ${count}`)}" ${count ? `data-stats-overlay-title="${escapeHtml(label)}"` : ""}><span>${escapeHtml(label)}</span><em style="--month:${count / max};--platform-bar:${statsPlatformBar(monthGames)}"></em><strong>${count}</strong>${count ? `<span class="finished-stats-breakdown">${statsGameList(monthGames)}</span>` : ""}</div>`;
+    const edgeClass = index === 0 ? " is-start-edge" : (index === order.length - 1 ? " is-end-edge" : "");
+    return `<div class="finished-stats-month${edgeClass}" title="${escapeHtml(`${label}: ${count}`)}" ${count ? `data-stats-overlay-title="${escapeHtml(label)}"` : ""}><span>${escapeHtml(label)}</span><em style="--month:${count / max};--platform-bar:${statsPlatformBar(monthGames)}"></em><strong>${count}</strong>${count ? `<span class="finished-stats-breakdown">${statsGameList(monthGames)}</span>` : ""}</div>`;
   }).join("");
 }
 
@@ -4362,11 +4363,12 @@ function statsYearBars(games) {
   const max = Math.max(1, ...counts.map((item) => item.count));
   return counts
     .sort((a, b) => b.label.localeCompare(a.label))
-    .map(({ label, count }) => {
+    .map(({ label, count }, index, items) => {
       const yearGames = games
         .filter((game) => completionYear(game) === label)
         .sort((a, b) => String(a.completedAt || "").localeCompare(String(b.completedAt || "")) || stringCompare(a.title, b.title));
-      return `<div class="finished-stats-month finished-stats-year" title="${escapeHtml(`${label}: ${count}`)}" ${count ? `data-stats-overlay-title="${escapeHtml(label)}"` : ""}><span>${escapeHtml(label)}</span><em style="--month:${count / max};--platform-bar:${statsPlatformBar(yearGames)}"></em><strong>${count}</strong>${count ? `<span class="finished-stats-breakdown">${statsGameList(yearGames)}</span>` : ""}</div>`;
+      const edgeClass = index % 6 === 0 ? " is-start-edge" : (index % 6 === 5 || index === items.length - 1 ? " is-end-edge" : "");
+      return `<div class="finished-stats-month finished-stats-year${edgeClass}" title="${escapeHtml(`${label}: ${count}`)}" ${count ? `data-stats-overlay-title="${escapeHtml(label)}"` : ""}><span>${escapeHtml(label)}</span><em style="--month:${count / max};--platform-bar:${statsPlatformBar(yearGames)}"></em><strong>${count}</strong>${count ? `<span class="finished-stats-breakdown">${statsGameList(yearGames)}</span>` : ""}</div>`;
     })
     .join("");
 }
