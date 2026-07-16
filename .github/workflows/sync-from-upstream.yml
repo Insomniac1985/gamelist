@@ -29,7 +29,7 @@ jobs:
           git fetch upstream main
           git checkout main
           set +e
-          git merge --no-edit -X theirs upstream/main
+          git merge --no-edit -X theirs --allow-unrelated-histories upstream/main
           merge_status=$?
           set -e
           cp "$RUNNER_TEMP/wrangler.toml" wrangler.toml
@@ -41,7 +41,12 @@ jobs:
               printf "%s\n" "$unresolved"
               exit 1
             fi
-            git commit --no-edit
+            if git rev-parse -q --verify MERGE_HEAD >/dev/null; then
+              git commit --no-edit
+            else
+              echo "Upstream sync failed before Git created a merge commit."
+              exit "$merge_status"
+            fi
           fi
           if ! git diff --cached --quiet; then
             git commit -m "Keep fork Wrangler config"
