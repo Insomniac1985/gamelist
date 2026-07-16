@@ -28,7 +28,7 @@ Both pages share edit mode, themes, account settings, price-store settings, achi
 
 This is the main setup path. You do not need to download a ZIP or run terminal commands. Cloudflare can import the public GitHub repository URL directly from the dashboard and automatically setup your own personal copy for you, for free.
 
-### Setup requirements
+#### Setup requirements
 
 - A Cloudflare account
 - A Github account
