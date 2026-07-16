@@ -140,17 +140,16 @@ IGDB_CLIENT_ID
 IGDB_CLIENT_SECRET
 PRICECHARTING_TOKEN
 PSN_NPSSO
-PSN_PROFILE_USER
 STEAM_API_KEY
-STEAM_PROFILE_USER
 OPENXBL_API_KEY
-XBOX_GAMERTAG
 GOOGLE_SERVICE_ACCOUNT_EMAIL
 GOOGLE_PRIVATE_KEY
 GOOGLE_CALENDAR_ID
 ```
 
 Use **Secret** for all integration keys/tokens. Do not put them in `wrangler.toml`, do not commit them to GitHub, and do not share them publicly.
+
+Add profile/account names inside the app after the first deploy: enter edit mode, open **Settings**, then fill the PlayStation, Steam, and Microsoft/Xbox account fields there.
 
 ### 6. Deploy
 
@@ -278,7 +277,7 @@ The trophy widgets use Sony's PSN API through a Cloudflare Worker secret called 
 3. Copy only the long `npsso` token value from the JSON response.
 4. Add it to Cloudflare **Variables and Secrets** as `PSN_NPSSO`.
 
-You can also set a default PSN profile name by adding `PSN_PROFILE_USER` as a secret.
+Set your PlayStation profile name inside the app: enter edit mode, open **Settings**, and fill the PlayStation account field.
 
 Treat the NPSSO token like a password. Do not commit it, paste it in chat, or put it in `wrangler.toml`. If trophies stop loading, refresh the token.
 
@@ -288,14 +287,13 @@ PC game overlays can show Steam achievements when these are configured:
 
 ```text
 STEAM_API_KEY
-STEAM_PROFILE_USER
 ```
 
-Add both in Cloudflare **Variables and Secrets** as secrets.
+Add `STEAM_API_KEY` in Cloudflare **Variables and Secrets** as a secret.
 
 Get a Steam Web API key from `https://steamcommunity.com/dev/apikey`.
 
-Set `STEAM_PROFILE_USER` to a SteamID64, Steam profile URL, or vanity name. The site's Settings overlay also has a **Steam account** field; if filled, it overrides the Cloudflare value for that browser/account. For each PC game, add a Steam store URL or Steam App ID in the game editor.
+Set your Steam account inside the app: enter edit mode, open **Settings**, and fill the **Steam account** field with a SteamID64, Steam profile URL, or vanity name. For each PC game, add a Steam store URL or Steam App ID in the game editor.
 
 Steam achievements are only fetched for Steam app IDs owned by the configured Steam account. Make sure the account's game details/library visibility allows Steam Web API access. Legacy games saved with the platform `PC` are treated as `Steam`; use `Xbox PC` for Microsoft Store or PC Game Pass games.
 
@@ -307,15 +305,9 @@ Xbox 360, Xbox One, Xbox Series, and Xbox PC games can show achievements through
 OPENXBL_API_KEY
 ```
 
-You can optionally set a default gamertag:
+Add `OPENXBL_API_KEY` in Cloudflare **Variables and Secrets** as a secret.
 
-```text
-XBOX_GAMERTAG
-```
-
-Add both in Cloudflare **Variables and Secrets** as secrets.
-
-The site's Settings overlay has a **Microsoft account** field that accepts an Xbox gamertag or XUID. When filled, it overrides `XBOX_GAMERTAG`.
+Set your Xbox account inside the app: enter edit mode, open **Settings**, and fill the **Microsoft account** field with an Xbox gamertag or XUID.
 
 ### Google Calendar Preorder Events
 
@@ -379,99 +371,6 @@ Both pages have **CSV data** controls at the bottom of Settings, after Stores.
 - Arrays and objects, such as owners, tags, store links, prices, and metadata, are preserved as JSON text inside CSV cells.
 
 Use CSV export before any large bulk operation if you want a quick backup.
-
-### Refresh Shelf Covers From IGDB
-
-After deploying the current Worker and logging into edit mode, open:
-
-```text
-https://YOUR_WORKER.workers.dev/api/shelf-covers?apply=1
-```
-
-Click **Start**. The page processes Shelf games in small batches so Cloudflare requests do not time out. It searches IGDB, accepts only `images.igdb.com` covers, and saves each batch to KV.
-
-Auto-start version:
-
-```text
-https://YOUR_WORKER.workers.dev/api/shelf-covers?apply=1&run=1
-```
-
-Dry run, without saving:
-
-```text
-https://YOUR_WORKER.workers.dev/api/shelf-covers
-```
-
-If the URL returns `404`, deploy the Worker again with:
-
-```bash
-npx wrangler deploy
-```
-
-If the URL says unauthorized, open the site, enter edit mode, and then open the URL again in the same browser. If it says IGDB credentials are missing, set `IGDB_CLIENT_ID` and `IGDB_CLIENT_SECRET` as Cloudflare secrets and redeploy.
-
-### Run Shelf Price Audit
-
-After logging into edit mode, open:
-
-```text
-https://YOUR_WORKER.workers.dev/api/shelf-price-audit
-```
-
-The audit page lists Shelf games that still look dollar-priced or have zero/missing values. JSON version:
-
-```text
-https://YOUR_WORKER.workers.dev/api/shelf-price-audit?format=json
-```
-
-### Bulk Shelf API
-
-Bulk Shelf write endpoints require edit authentication. Send the edit password in the same header used by the app:
-
-```text
-x-edit-password: YOUR_EDIT_PASSWORD
-```
-
-Mass add owned physical games to Shelf:
-
-```bash
-curl -X POST https://YOUR_WORKER.workers.dev/api/shelf-mass-add \
-  -H "Content-Type: application/json" \
-  -H "x-edit-password: YOUR_EDIT_PASSWORD" \
-  --data '{"games":[{"title":"Game Title","platform":"Sony PlayStation 5","country":"Spain","owners":["Owner"]}]}'
-```
-
-Accept all pending Shelf **New additions** into the physical collection:
-
-```bash
-curl -X POST https://YOUR_WORKER.workers.dev/api/shelf-mass-add \
-  -H "Content-Type: application/json" \
-  -H "x-edit-password: YOUR_EDIT_PASSWORD" \
-  --data '{"acceptPending":true}'
-```
-
-You can also accept selected pending additions with:
-
-```json
-{ "ids": ["shelf-id-1", "shelf-id-2"] }
-```
-
-Mass fill missing Shelf metadata from IGDB and PriceCharting:
-
-```bash
-curl -X POST https://YOUR_WORKER.workers.dev/api/shelf-metadata \
-  -H "Content-Type: application/json" \
-  -H "x-edit-password: YOUR_EDIT_PASSWORD" \
-  --data '{"all":true,"limit":25}'
-```
-
-By default, `/api/shelf-metadata` only fills missing fields and leaves existing metadata, PriceCharting IDs, prices, and collection values alone. Use `ids` to target specific Shelf games, and use `igdb:false` or `pricecharting:false` to run only one metadata source:
-
-```json
-{ "ids": ["shelf-id-1"], "igdb": true, "pricecharting": false }
-```
-
-`overwrite:true` is available for intentional replacement, but use CSV export first if you are doing a large overwrite.
 
 ## Data Notes
 
