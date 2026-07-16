@@ -42,15 +42,6 @@ https://github.com/ShabiiEXE/Gamelist
 
 8. Continue with the imported repository.
 
-If Cloudflare only shows repositories that belong to your GitHub account, make a GitHub fork first:
-
-1. Open `https://github.com/ShabiiEXE/Gamelist`.
-2. Click **Fork**.
-3. Return to Cloudflare.
-4. Choose your fork in **Import a repository**.
-
-Do not use **Download ZIP** for a Cloudflare deployment. ZIP downloads do not stay connected to updates, while the Git import can redeploy automatically when the connected repository changes.
-
 ### 2. Create Your Cloudflare KV Namespace
 
 1. Open the Cloudflare dashboard.
