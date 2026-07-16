@@ -25,28 +25,27 @@ Both pages share edit mode, themes, account settings, price-store settings, achi
 
 ```text
 .
-├── index.html                 # Main Gamelist app shell
-├── shelf.html                 # Shelf app shell
-├── app.js                     # Main Gamelist frontend
-├── shelf.js                   # Shelf frontend
-├── styles.css                 # Main styles
-├── shelf.css                  # Shelf styles
-├── worker.js                  # Cloudflare Worker entry
-├── functions/api/             # Worker API routes
-├── assets/                    # Icons, platform art, flags, fonts, backdrops
-├── scripts/                   # Local helper/test scripts
-├── server.mjs                 # Simple local static server
-└── wrangler.toml              # Cloudflare Worker configuration
+|-- index.html                 # Main Gamelist app shell
+|-- shelf.html                 # Shelf app shell
+|-- app.js                     # Main Gamelist frontend
+|-- shelf.js                   # Shelf frontend
+|-- styles.css                 # Main styles
+|-- shelf.css                  # Shelf styles
+|-- worker.js                  # Cloudflare Worker entry
+|-- functions/api/             # Worker API routes
+|-- assets/                    # Icons, platform art, flags, fonts, backdrops
+|-- scripts/                   # Local helper/test scripts
+|-- server.mjs                 # Simple local static server
+`-- wrangler.toml              # Cloudflare Worker configuration
 ```
 
 ## Requirements
 
-- Node.js 20 or newer
 - A Cloudflare account
-- Wrangler, Cloudflare's CLI
 - A Cloudflare KV namespace bound as `GAMELIST`
 - An `EDIT_PASSWORD` Worker secret
-- A GitHub account if you want fork syncing and Cloudflare Git deployments
+- A GitHub account for the dashboard-only Cloudflare deploy path
+- Node.js 20 or newer and Wrangler only if you want local development or command-line deploys
 
 ## Quick Start
 
@@ -118,7 +117,88 @@ This is the best option if you want your own GitHub copy that can deploy to Clou
 
 ZIP downloads are fine for testing, but they do not keep Git history. Use a fork or clone if you want automatic updates.
 
-## Cloudflare Worker Deploy
+## Cloudflare Dashboard Deploy
+
+This is the easiest no-terminal path for most people. It uses a GitHub fork and Cloudflare Workers Builds, so Cloudflare pulls the code from GitHub and deploys it from the Cloudflare dashboard.
+
+### 1. Fork This Repository
+
+1. Open `https://github.com/ShabiiEXE/Gamelist`.
+2. Click **Fork**.
+3. Keep the fork on the `main` branch.
+
+### 2. Create Your Cloudflare KV Namespace
+
+1. Open the Cloudflare dashboard.
+2. Go to **Storage & Databases > KV**.
+3. Create a namespace named `GAMELIST`.
+4. Copy the namespace ID.
+
+### 3. Edit `wrangler.toml` In GitHub
+
+In your fork, open `wrangler.toml` and click GitHub's edit button.
+
+Change the Worker name and top-level KV namespace ID:
+
+```toml
+name = "your-gamelist-name"
+
+[[kv_namespaces]]
+binding = "GAMELIST"
+id = "YOUR_CLOUDFLARE_KV_NAMESPACE_ID"
+```
+
+You can also delete the `[env.github]`, `[env.gitlab]`, and matching environment KV sections if you only want one deploy. Commit the edit directly to your fork's `main` branch.
+
+The Worker name in Cloudflare must match the `name` in `wrangler.toml`.
+
+### 4. Connect The Fork In Cloudflare
+
+1. In Cloudflare, open **Workers & Pages**.
+2. Create or import a Worker from a Git repository.
+3. Choose your GitHub fork.
+4. Use the repository root as the project directory.
+5. Leave the build command empty unless Cloudflare requires one.
+6. Set the deploy command to:
+
+```bash
+npx wrangler deploy
+```
+
+Cloudflare will use the `wrangler.toml` file from your fork.
+
+### 5. Add Secrets In Cloudflare
+
+In the Worker project settings, open **Variables and Secrets** and add:
+
+```text
+EDIT_PASSWORD
+```
+
+That is the only required secret. Add these later if you use the integrations:
+
+```text
+IGDB_CLIENT_ID
+IGDB_CLIENT_SECRET
+PRICECHARTING_TOKEN
+PSN_NPSSO
+PSN_PROFILE_USER
+STEAM_API_KEY
+STEAM_PROFILE_USER
+OPENXBL_API_KEY
+XBOX_GAMERTAG
+GOOGLE_SERVICE_ACCOUNT_EMAIL
+GOOGLE_PRIVATE_KEY
+GOOGLE_CALENDAR_ID
+```
+
+### 6. Deploy
+
+Trigger the first build from Cloudflare. After that, every push to your GitHub fork can deploy automatically.
+
+Open the generated `workers.dev` URL, log in with your edit password, then configure Settings inside the app.
+
+## Cloudflare Command-Line Deploy
 
 This project deploys as a Cloudflare Worker with static assets and Worker API routes.
 
@@ -170,44 +250,6 @@ npx wrangler deploy
 ```
 
 Wrangler will print your `workers.dev` URL. Open it, log in with your edit password, then open Settings to configure currency, region, stores, owners, account names, theme, Shelf Sync, and visible sections.
-
-## Deploy From GitHub To Cloudflare
-
-You can also connect your fork to Cloudflare so every push deploys automatically.
-
-1. Fork this repository on GitHub.
-2. In Cloudflare, open **Workers & Pages**.
-3. Create or import a Worker project from your GitHub repository.
-4. Use this build/deploy command:
-
-```bash
-npx wrangler deploy
-```
-
-5. Add Cloudflare secrets/variables for the project:
-
-```text
-EDIT_PASSWORD
-IGDB_CLIENT_ID
-IGDB_CLIENT_SECRET
-PRICECHARTING_TOKEN
-PSN_NPSSO
-PSN_PROFILE_USER
-STEAM_API_KEY
-STEAM_PROFILE_USER
-OPENXBL_API_KEY
-XBOX_GAMERTAG
-GOOGLE_SERVICE_ACCOUNT_EMAIL
-GOOGLE_PRIVATE_KEY
-GOOGLE_CALENDAR_ID
-```
-
-Only `EDIT_PASSWORD` is required. Add the others when you use those integrations.
-
-6. Make sure your fork's `wrangler.toml` points to your own Worker name and KV namespace.
-7. Push changes to GitHub. Cloudflare will deploy the latest commit.
-
-Secrets are not stored in git, so every new Cloudflare Worker/project needs its secrets set in Cloudflare or with `npx wrangler secret put ...`.
 
 ## Keep A Fork Or Clone Synced
 
