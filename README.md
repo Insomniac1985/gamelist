@@ -7,25 +7,25 @@ Gamelist is a personal game backlog, preorder, price, trophy, achievement, and p
 
 The app has two connected pages:
 
-- `/` for the main digital backlog, preorder, release, and completion tracker.
-- `/shelf` for the physical collection tracker.
+- <img src="assets/Icon.png" alt="Gamelist" width="18" align="center"> `/` for the main digital backlog, preorder, release, and completion tracker.
+- <img src="assets/Icon_shelf.png" alt="Shelf" width="18" align="center"> `/shelf` for the physical collection tracker.
 
 Both pages share edit mode, themes, account settings, price-store settings, achievement integrations, and the same `GAMELIST` KV namespace. Shelf Sync can also send physical collection additions back into the main Gamelist flow.
 
 ## Features
 
+- Cloud sync through Cloudflare Workers KV.
+- IGDB-powered lookup for covers, release dates, descriptions, genres, developers, publishers, trailers, and store links.
 - Backlog, upcoming, available, currently playing, and finished-game boards.
+- Release calendar with preorder markers.
 - Physical Shelf library with multiple owners, regions, conditions, categories, prices, collection value, and linked Gamelist entries.
 - Shelf Showcase block for featured games, plus shared Currently Playing, Last Finished, Highlights, and Search modules.
-- IGDB-powered lookup for covers, release dates, descriptions, genres, developers, publishers, trailers, and store links.
 - PSN, Steam, and Xbox trophy/achievement dashboards.
 - Game of the Year tracking and poster export.
-- Release calendar with preorder markers.
-- Mobile-ready responsive layout for phone, tablet, and desktop use.
-- CSV import/export for Gamelist and Shelf data.
-- Theme editor with dark/light mode, colors, logos, title styles, and module ordering.
-- Cloud sync through Cloudflare Workers KV.
 - Google Calendar preorder events when configured.
+- Theme editor with dark/light mode, colors, logos, title styles, and module ordering.
+- CSV import/export for Gamelist and Shelf data.
+- Mobile-ready responsive layout for phone, tablet, and desktop use.
 
 ---
 
