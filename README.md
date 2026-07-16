@@ -198,7 +198,7 @@ OPENXBL_API_KEY
 
 2.Set your **Xbox account** inside the app: enter edit mode, open **Settings**, and fill the **Microsoft account** field with an Xbox gamertag or XUID.
 
-### <img src="https://cdn.simpleicons.org/googlecalendar/4285F4" alt="Google Calendar" width="22" align="center"> Google Calendar Preorder Events (ADVANCED)
+### <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/a/a5/Google_Calendar_icon_%282020%29.svg/960px-Google_Calendar_icon_%282020%29.svg.png" alt="Google Calendar" width="22" align="center"> Google Calendar Preorder Events (ADVANCED)
 
 When you mark a game with a release date as preordered, the Worker can add an all-day Google Calendar event named `Preorder "Game Name"`.
 
