@@ -47,85 +47,28 @@ Both pages share edit mode, themes, account settings, price-store settings, achi
 - A GitHub account for the dashboard-only Cloudflare deploy path
 - Node.js 20 or newer and Wrangler only if you want local development or command-line deploys
 
-## Quick Start
+## Cloudflare Dashboard Setup
 
-Run the local static server:
+This is the main setup path. You do not need to download a ZIP or run terminal commands. Cloudflare Workers Builds can import the GitHub repository, build it, and deploy it from the Cloudflare dashboard.
 
-```bash
-node server.mjs
-```
+### 1. Start From Cloudflare
 
-Open:
+1. Open the Cloudflare dashboard.
+2. Go to **Workers & Pages**.
+3. Click **Create application**.
+4. Choose **Import a repository**.
+5. Connect your GitHub account if Cloudflare asks.
+6. Search for `ShabiiEXE/Gamelist`.
+7. Select the repository and continue.
 
-```text
-http://localhost:8790
-```
-
-For Worker-style local testing, use Wrangler:
-
-```bash
-npx wrangler dev
-```
-
-Before pushing changes, these checks are useful:
-
-```bash
-node --check app.js
-node --check shelf.js
-node --check worker.js
-node --check functions/api/prices.js
-node --check functions/api/collection-price.js
-node --check functions/api/sync.js
-node --check functions/api/shelf.js
-node --check functions/api/shelf-covers.js
-node --check functions/api/search.js
-node --check scripts/test-shelf-sync.mjs
-node scripts/test-shelf-sync.mjs
-git diff --check
-```
-
-## Download Or Clone
-
-### Option 1: Clone With Git
-
-```bash
-git clone https://github.com/ShabiiEXE/Gamelist.git
-cd Gamelist
-```
-
-This is the best option if you want to pull future updates.
-
-### Option 2: Fork On GitHub
+If Cloudflare only shows repositories that belong to your GitHub account, make a GitHub fork first:
 
 1. Open `https://github.com/ShabiiEXE/Gamelist`.
 2. Click **Fork**.
-3. Clone your fork:
+3. Return to Cloudflare.
+4. Choose your fork in **Import a repository**.
 
-```bash
-git clone https://github.com/YOUR_USERNAME/Gamelist.git
-cd Gamelist
-```
-
-This is the best option if you want your own GitHub copy that can deploy to Cloudflare and still receive updates from the main repository.
-
-### Option 3: Download ZIP
-
-1. Open `https://github.com/ShabiiEXE/Gamelist`.
-2. Click **Code > Download ZIP**.
-3. Extract the ZIP.
-4. Open a terminal in the extracted folder.
-
-ZIP downloads are fine for testing, but they do not keep Git history. Use a fork or clone if you want automatic updates.
-
-## Cloudflare Dashboard Deploy
-
-This is the easiest no-terminal path for most people. It uses a GitHub fork and Cloudflare Workers Builds, so Cloudflare pulls the code from GitHub and deploys it from the Cloudflare dashboard.
-
-### 1. Fork This Repository
-
-1. Open `https://github.com/ShabiiEXE/Gamelist`.
-2. Click **Fork**.
-3. Keep the fork on the `main` branch.
+Do not use **Download ZIP** for a Cloudflare deployment. ZIP downloads do not stay connected to updates, while the Git import can redeploy automatically when the connected repository changes.
 
 ### 2. Create Your Cloudflare KV Namespace
 
@@ -134,9 +77,9 @@ This is the easiest no-terminal path for most people. It uses a GitHub fork and 
 3. Create a namespace named `GAMELIST`.
 4. Copy the namespace ID.
 
-### 3. Edit `wrangler.toml` In GitHub
+### 3. Update `wrangler.toml` In The GitHub Web Editor
 
-In your fork, open `wrangler.toml` and click GitHub's edit button.
+Each Cloudflare account needs its own Worker name and KV namespace ID. In your imported repository or fork, open `wrangler.toml` on GitHub and click the edit button.
 
 Change the Worker name and top-level KV namespace ID:
 
@@ -150,22 +93,22 @@ id = "YOUR_CLOUDFLARE_KV_NAMESPACE_ID"
 
 You can also delete the `[env.github]` and matching environment KV sections if you only want one deploy. Commit the edit directly to your fork's `main` branch.
 
-The Worker name in Cloudflare must match the `name` in `wrangler.toml`.
+The Worker name in Cloudflare must match the `name` in `wrangler.toml`. If Cloudflare creates the Worker before you edit `wrangler.toml`, use the same name in both places.
 
-### 4. Connect The Fork In Cloudflare
+### 4. Configure The Cloudflare Build
 
-1. In Cloudflare, open **Workers & Pages**.
-2. Create or import a Worker from a Git repository.
-3. Choose your GitHub fork.
-4. Use the repository root as the project directory.
-5. Leave the build command empty unless Cloudflare requires one.
-6. Set the deploy command to:
+When Cloudflare asks for build settings:
+
+1. Set the branch to `main`.
+2. Use the repository root as the project directory.
+3. Leave the build command empty.
+4. Set the deploy command to:
 
 ```bash
 npx wrangler deploy
 ```
 
-Cloudflare will use the `wrangler.toml` file from your fork.
+Cloudflare will use the `wrangler.toml` file from the connected repository.
 
 ### 5. Add Secrets In Cloudflare
 
@@ -211,142 +154,73 @@ Use **Secret** for all integration keys/tokens. Do not put them in `wrangler.tom
 
 ### 6. Deploy
 
-Trigger the first build from Cloudflare. After that, every push to your GitHub fork can deploy automatically.
+Trigger the first build from Cloudflare. After that, every push to your connected GitHub repository can deploy automatically.
 
 Open the generated `workers.dev` URL, log in with your edit password, then configure Settings inside the app.
 
-## Cloudflare Command-Line Deploy
+## Local Development
 
-This project deploys as a Cloudflare Worker with static assets and Worker API routes.
+Local development is optional. Use it only if you want to edit and test the project on your computer.
 
-### 1. Install Wrangler And Log In
-
-```bash
-npm install -g wrangler
-wrangler login
-```
-
-You can also use `npx wrangler ...` without installing Wrangler globally.
-
-### 2. Create A KV Namespace
+Run the local static server:
 
 ```bash
-npx wrangler kv namespace create GAMELIST
+node server.mjs
 ```
 
-Copy the namespace ID that Wrangler prints.
-
-### 3. Edit `wrangler.toml`
-
-Replace the Worker name and KV namespace ID with your own values:
-
-```toml
-name = "my-gamelist"
-
-[[kv_namespaces]]
-binding = "GAMELIST"
-id = "PASTE_YOUR_KV_NAMESPACE_ID_HERE"
-```
-
-The checked-in `wrangler.toml` includes the original project's namespace IDs. Anyone cloning or forking should replace them with their own Cloudflare KV namespace IDs before deploying.
-
-If you do not need multiple deploy environments, you can delete the `[env.github]` and matching environment KV sections. Keep the top-level `name`, `main`, `compatibility_date`, `[vars]`, `[assets]`, and `[[kv_namespaces]]` sections.
-
-### 4. Set The Required Secret
-
-```bash
-npx wrangler secret put EDIT_PASSWORD
-```
-
-This password unlocks edit mode and allows the app to save data to KV.
-
-### 5. Deploy
-
-```bash
-npx wrangler deploy
-```
-
-Wrangler will print your `workers.dev` URL. Open it, log in with your edit password, then open Settings to configure currency, region, stores, owners, account names, theme, Shelf Sync, and visible sections.
-
-## Keep A Fork Or Clone Synced
-
-The main repository is:
+Open:
 
 ```text
-https://github.com/ShabiiEXE/Gamelist.git
+http://localhost:8790
 ```
 
-### Manual Sync For A Local Clone
-
-If you cloned your own fork, add the main repository as `upstream`:
+For Worker-style local testing, use Wrangler:
 
 ```bash
-git remote add upstream https://github.com/ShabiiEXE/Gamelist.git
-git fetch upstream
-git checkout main
-git merge upstream/main
-git push origin main
+npx wrangler dev
 ```
 
-Run the same commands whenever you want to pull updates from the main repository.
-
-If you only cloned the main repository directly, update with:
+Before pushing changes, these checks are useful:
 
 ```bash
-git pull origin main
+node --check app.js
+node --check shelf.js
+node --check worker.js
+node --check functions/api/prices.js
+node --check functions/api/collection-price.js
+node --check functions/api/sync.js
+node --check functions/api/shelf.js
+node --check functions/api/shelf-covers.js
+node --check functions/api/search.js
+node --check scripts/test-shelf-sync.mjs
+node scripts/test-shelf-sync.mjs
+git diff --check
 ```
 
-### Automatic Sync For GitHub Forks
+## Automatic Updates
 
-This repository includes `.github/workflows/sync-from-upstream.yml`. In a fork, that workflow:
+This repository includes `.github/workflows/sync-from-upstream.yml` for people who deploy from their own GitHub copy of Gamelist.
+
+The workflow:
 
 - Runs at `00:00`, `06:00`, `12:00`, and `18:00` UTC.
-- Can be started manually from the GitHub **Actions** tab.
-- Fetches `ShabiiEXE/Gamelist`.
-- Merges updates into your fork's `main` branch.
-- Keeps your fork's own `wrangler.toml` so your Cloudflare Worker name, KV namespace, and account-specific deploy config are not overwritten.
-- Pushes the updated `main` branch back to your fork.
+- Can also be started manually from the GitHub **Actions** tab.
+- Fetches updates from `https://github.com/ShabiiEXE/Gamelist`.
+- Merges those updates into the connected repository's `main` branch.
+- Restores that repository's own `wrangler.toml` before committing, so its Cloudflare Worker name, KV namespace, and account-specific config are not overwritten.
+- Pushes the synced result back to that repository.
 
-To enable it in your fork:
+This matters because every Cloudflare account needs its own `wrangler.toml` values. The app code can stay up to date with the main repository, while each deploy keeps its own Cloudflare binding.
 
-1. Open your fork on GitHub.
+To turn it on in a GitHub copy:
+
+1. Open the repository on GitHub.
 2. Go to **Actions**.
 3. Enable workflows if GitHub asks.
 4. Open **Sync from upstream**.
 5. Click **Run workflow** once to test it.
 
-The workflow automatically restores your fork's `wrangler.toml` after pulling upstream updates. If another file has a merge conflict, GitHub will stop the sync instead of overwriting your work. Resolve the conflict locally, then push your fixed `main` branch.
-
-### Fork Layout That Syncs Cleanly
-
-For the smoothest syncing:
-
-- Keep your deploy-specific changes small, usually just `wrangler.toml` and secrets in Cloudflare.
-- Put personal experiments on a feature branch instead of directly on `main`.
-- Pull upstream updates before making large local changes.
-- Export CSV data before bulk edits inside the app.
-
-## Updating An Existing Deploy
-
-For normal updates after editing or syncing the repo:
-
-```bash
-npx wrangler deploy
-```
-
-If you changed `wrangler.toml`, changed KV bindings, or added a new integration, confirm the relevant secret/namespace exists before deploying.
-
-If a browser keeps an old version after deploy, the app checks `version.json` and clears its own caches when the version changes. The service worker cache name is also versioned in `service-worker.js`.
-
-## Cloudflare Preview Deploys
-
-To deploy the current repo to a separate Workers preview URL without replacing the main Worker, use a different Worker name:
-
-```bash
-npx wrangler deploy --env="" --name gamelist-dev --message "Preview build"
-```
-
-Preview deploys use the same top-level `GAMELIST` KV binding unless you change `wrangler.toml` to point at a separate namespace.
+If a file other than `wrangler.toml` has a merge conflict, GitHub stops the sync instead of overwriting custom work. Fix the conflict in GitHub or locally, then run the workflow again.
 
 ## Required Cloudflare Pieces
 
