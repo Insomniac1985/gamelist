@@ -1,8 +1,7 @@
-<p align="center">
-  <img src="assets/Icon.png" alt="Gamelist logo" width="120">
-</p>
-
-# Gamelist
+<h1>
+  <img src="assets/Icon.png" alt="Gamelist logo" width="42" align="center">
+  Gamelist
+</h1>
 
 Gamelist is a personal game backlog, preorder, price, trophy, achievement, and physical shelf tracker. It runs as a static frontend served by a Cloudflare Worker, with saved data stored in Cloudflare KV.
 
