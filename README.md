@@ -202,23 +202,24 @@ OPENXBL_API_KEY
 
 When you mark a game with a release date as preordered, the Worker can add an all-day Google Calendar event named `Preorder "Game Name"`.
 
-1. Set up a [Google Cloud](https://console.cloud.google.com/) service account with Google Calendar API access, then share the target calendar with the service account email generated with permission to make changes.
+1. Create a new Calendar in your Google Calendar.
+2. Set up a [Google Cloud](https://console.cloud.google.com/) service account with Google Calendar API access, then share the target calendar with the service account email generated with permission to make changes.
 
-2. Add the created service account email address as a Cloudflare **Variables and Secrets** entry:
+3. Add the created service account email address as a Cloudflare **Variables and Secrets** entry:
 
 ```text
 GOOGLE_SERVICE_ACCOUNT_EMAIL
 ```
 
-3. Add the `private_key` value from the service account JSON as another **secrets** entry:
+4. Add the `private_key` value from the service account JSON as another **secrets** entry:
 
 ```text
 GOOGLE_PRIVATE_KEY
 ```
 
-4. Add this service account email to your calendar and give it all the permissions.
+5. Add this service account email to your calendar and give it all the permissions.
 
-5. Add the calendar ID from the calendar you are using as a **secrets** entry. You can get this from your calendar settings after:
+6. Add the calendar ID from the calendar you are using as a **secrets** entry. You can get this from your calendar settings after:
 
 ```text
 GOOGLE_CALENDAR_ID
