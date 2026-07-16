@@ -33,8 +33,8 @@ This is the main setup path. You do not need to download a ZIP or run terminal c
 1. Open the Cloudflare dashboard.
 2. Go to **Workers & Pages**.
 3. Click **Create application**.
-4. Choose **Import a repository**.
-5. Click **Continue with GitHub**.
+4. Click **Continue with GitHub**.
+5. Choose **Import a repository**.
 6. Choose **Clone a public repository via GitHub URL**.
 7. Add this repository URL:
 
@@ -43,45 +43,12 @@ https://github.com/ShabiiEXE/Gamelist
 ```
 
 8. Continue with the imported repository.
+9. If Cloudflare sends you to GitHub, set up or sign in to your GitHub account and allow the connection.
+10. Keep the default settings and click **Deploy**.
+11. Once deployed, open **Overview** in the nav bar and click **Visit** to open your site.
+12. If the **Visit** button is not available, open **Domains** in the nav bar and enable both URLs.
 
-### 2. Create Your Cloudflare KV Namespace
-
-1. Open the Cloudflare dashboard.
-2. Go to **Storage & Databases > KV**.
-3. Create a namespace named `GAMELIST`.
-4. Copy the namespace ID.
-
-### 3. Update `wrangler.toml` In The GitHub Web Editor
-
-Each Cloudflare account needs its own Worker name and KV namespace ID. In your imported repository or fork, open `wrangler.toml` on GitHub and click the edit button.
-
-Keep the Worker name as `Gamelist` and replace the top-level KV namespace ID:
-
-```toml
-name = "Gamelist"
-
-[[kv_namespaces]]
-binding = "GAMELIST"
-id = "YOUR_CLOUDFLARE_KV_NAMESPACE_ID"
-```
-
-You can also delete the `[env.github]` and matching environment KV sections if you only want one deploy. Commit the edit directly to your fork's `main` branch.
-
-The project name in Cloudflare must match the `name` in `wrangler.toml`, so use `Gamelist` in both places.
-
-### 4. Configure The Cloudflare Build
-
-When Cloudflare asks for build settings:
-
-1. Set the project name to `Gamelist`.
-2. Set the branch to `main`.
-3. Use the repository root as the project directory.
-4. Leave the build command empty.
-5. Leave the deploy command and the rest of the settings at their Cloudflare defaults.
-
-Cloudflare will use the `wrangler.toml` file from the connected repository.
-
-### 5. Add Secrets In Cloudflare
+### 2. Add Secrets In Cloudflare
 
 In the Worker project settings, add your secrets through the Cloudflare website:
 
