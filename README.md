@@ -116,7 +116,7 @@ IGDB_CLIENT_ID
 IGDB_CLIENT_SECRET
 ```
 
-### 4. Automatic updates
+### 4. Set up the automatic website updates/patches
 
 To receive upcoming Gamelist feature updates, add the GitHub Actions sync workflow to your repository.
 
