@@ -69,7 +69,7 @@ Add this required secret first:
 EDIT_PASSWORD
 ```
 
-`EDIT_PASSWORD` is the password you will type in the app to unlock edit mode.
+`EDIT_PASSWORD` is the password you will type in the app to unlock edit mode and change your site settings and theme.
 
 Required integration:
 
