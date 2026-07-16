@@ -62,10 +62,10 @@ Do not use **Download ZIP** for a Cloudflare deployment. ZIP downloads do not st
 
 Each Cloudflare account needs its own Worker name and KV namespace ID. In your imported repository or fork, open `wrangler.toml` on GitHub and click the edit button.
 
-Change the Worker name and top-level KV namespace ID:
+Keep the Worker name as `Gamelist` and replace the top-level KV namespace ID:
 
 ```toml
-name = "your-gamelist-name"
+name = "Gamelist"
 
 [[kv_namespaces]]
 binding = "GAMELIST"
@@ -74,20 +74,17 @@ id = "YOUR_CLOUDFLARE_KV_NAMESPACE_ID"
 
 You can also delete the `[env.github]` and matching environment KV sections if you only want one deploy. Commit the edit directly to your fork's `main` branch.
 
-The Worker name in Cloudflare must match the `name` in `wrangler.toml`. If Cloudflare creates the Worker before you edit `wrangler.toml`, use the same name in both places.
+The project name in Cloudflare must match the `name` in `wrangler.toml`, so use `Gamelist` in both places.
 
 ### 4. Configure The Cloudflare Build
 
 When Cloudflare asks for build settings:
 
-1. Set the branch to `main`.
-2. Use the repository root as the project directory.
-3. Leave the build command empty.
-4. Set the deploy command to:
-
-```bash
-npx wrangler deploy
-```
+1. Set the project name to `Gamelist`.
+2. Set the branch to `main`.
+3. Use the repository root as the project directory.
+4. Leave the build command empty.
+5. Leave the deploy command and the rest of the settings at their Cloudflare defaults.
 
 Cloudflare will use the `wrangler.toml` file from the connected repository.
 
