@@ -109,36 +109,7 @@ Use **Secret** for all integration keys/tokens. Do not put them in `wrangler.tom
 
 Add profile/account names inside the app after the first deploy: enter edit mode, open **Settings**, then fill the PlayStation, Steam, and Microsoft/Xbox account fields there.
 
-### 3. Deploy
-
-Trigger the first build from Cloudflare. After that, every push to your connected GitHub repository can deploy automatically.
-
-Open the generated `workers.dev` URL, log in with your edit password, then configure Settings inside the app.
-
-## Required Cloudflare Pieces
-
-`GAMELIST` KV namespace:
-Stores saved Gamelist data, Shelf data, layout settings, favorite/showcase IDs, overrides, and synced preferences.
-
-`EDIT_PASSWORD` secret:
-Unlocks edit mode and allows saving to KV. Without it, the app can display data but cannot save edits to the cloud.
-
 ## Recommended Integrations
-
-### PriceCharting Token
-
-Shelf collection values work best with a PriceCharting API token. In Cloudflare **Variables and Secrets**, add `PRICECHARTING_TOKEN` as a secret.
-
-To get the token:
-
-1. Log into PriceCharting.
-2. Make sure the account has a paid subscription with API access.
-3. Open the PriceCharting **Subscription** page.
-4. Click **API/Download**.
-5. Copy the 40-character access token.
-6. Paste it into the `PRICECHARTING_TOKEN` secret in Cloudflare.
-
-With this token, saved PriceCharting product IDs can be fetched directly through PriceCharting's product API. Without it, the app falls back to public PriceCharting search/product pages, which can be slower and less reliable during bulk Shelf price updates.
 
 ### PSN Trophy Activity
 
