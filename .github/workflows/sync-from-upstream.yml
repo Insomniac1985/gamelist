@@ -25,15 +25,27 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           cp wrangler.toml "$RUNNER_TEMP/wrangler.toml"
+          if [ -d .github/workflows ]; then
+            mkdir -p "$RUNNER_TEMP/github"
+            cp -a .github/workflows "$RUNNER_TEMP/github/workflows"
+            had_workflows=1
+          else
+            had_workflows=0
+          fi
           git remote add upstream https://github.com/ShabiiEXE/Gamelist.git || git remote set-url upstream https://github.com/ShabiiEXE/Gamelist.git
           git fetch upstream main
           git checkout main
           set +e
-          git merge --no-edit -X theirs --allow-unrelated-histories upstream/main
+          git merge --no-commit --no-ff -X theirs --allow-unrelated-histories upstream/main
           merge_status=$?
           set -e
           cp "$RUNNER_TEMP/wrangler.toml" wrangler.toml
-          git add wrangler.toml
+          rm -rf .github/workflows
+          if [ "$had_workflows" = "1" ]; then
+            mkdir -p .github
+            cp -a "$RUNNER_TEMP/github/workflows" .github/workflows
+          fi
+          git add -A
           if [ "$merge_status" -ne 0 ]; then
             unresolved="$(git diff --name-only --diff-filter=U)"
             if [ -n "$unresolved" ]; then
@@ -41,14 +53,18 @@ jobs:
               printf "%s\n" "$unresolved"
               exit 1
             fi
-            if git rev-parse -q --verify MERGE_HEAD >/dev/null; then
-              git commit --no-edit
-            else
+            if ! git rev-parse -q --verify MERGE_HEAD >/dev/null; then
               echo "Upstream sync failed before Git created a merge commit."
               exit "$merge_status"
             fi
           fi
-          if ! git diff --cached --quiet; then
-            git commit -m "Keep fork Wrangler config"
+          if git rev-parse -q --verify MERGE_HEAD >/dev/null; then
+            if ! git diff --cached --quiet; then
+              git commit -m "Sync from upstream while preserving local config"
+            else
+              git merge --abort
+            fi
+          elif ! git diff --cached --quiet; then
+            git commit -m "Sync from upstream while preserving local config"
           fi
           git push origin main
