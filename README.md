@@ -111,19 +111,6 @@ Use **Secret** for all integration keys/tokens. Do not put them in `wrangler.tom
 
 To receive upcoming Gamelist feature updates, manually add the GitHub Actions script to your repository.
 
-The workflow:
-
-- Runs every 30 minutes.
-- Can also be started manually from the GitHub **Actions** tab.
-- Fetches updates from `https://github.com/ShabiiEXE/Gamelist`.
-- Merges those updates into the connected repository's `main` branch.
-- Restores that repository's own `wrangler.toml` before committing, so its Cloudflare Worker name, KV namespace, and account-specific config are not overwritten.
-- Pushes the synced result back to that repository.
-
-This matters because every Cloudflare account needs its own `wrangler.toml` values. The app code can stay up to date with the main repository, while each deploy keeps its own Cloudflare binding.
-
-To add the workflow later:
-
 1. Once the setup is done, go to your newly added GitHub repository.
 2. Go to **Actions**.
 3. Click **set up a workflow yourself**.
@@ -141,8 +128,7 @@ https://github.com/ShabiiEXE/Gamelist/blob/main/.github/workflows/sync-from-upst
 10. Open **Sync from upstream**.
 11. Enable the workflow if GitHub asks.
 12. Click **Run workflow** once to test it.
-
-If a file other than `wrangler.toml` has a merge conflict, GitHub stops the sync instead of overwriting custom work. Fix the conflict in GitHub or locally, then run the workflow again.
+13. After that, the workflow checks for updates every 30 minutes and keeps your own `wrangler.toml` settings.
 
 ## Recommended Integrations
 
