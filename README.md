@@ -148,7 +148,7 @@ binding = "GAMELIST"
 id = "YOUR_CLOUDFLARE_KV_NAMESPACE_ID"
 ```
 
-You can also delete the `[env.github]`, `[env.gitlab]`, and matching environment KV sections if you only want one deploy. Commit the edit directly to your fork's `main` branch.
+You can also delete the `[env.github]` and matching environment KV sections if you only want one deploy. Commit the edit directly to your fork's `main` branch.
 
 The Worker name in Cloudflare must match the `name` in `wrangler.toml`.
 
@@ -233,7 +233,7 @@ id = "PASTE_YOUR_KV_NAMESPACE_ID_HERE"
 
 The checked-in `wrangler.toml` includes the original project's namespace IDs. Anyone cloning or forking should replace them with their own Cloudflare KV namespace IDs before deploying.
 
-If you do not need multiple deploy environments, you can delete the `[env.github]`, `[env.gitlab]`, and matching environment KV sections. Keep the top-level `name`, `main`, `compatibility_date`, `[vars]`, `[assets]`, and `[[kv_namespaces]]` sections.
+If you do not need multiple deploy environments, you can delete the `[env.github]` and matching environment KV sections. Keep the top-level `name`, `main`, `compatibility_date`, `[vars]`, `[assets]`, and `[[kv_namespaces]]` sections.
 
 ### 4. Set The Required Secret
 
@@ -283,10 +283,11 @@ git pull origin main
 
 This repository includes `.github/workflows/sync-from-upstream.yml`. In a fork, that workflow:
 
-- Runs once per day.
+- Runs at `00:00`, `06:00`, `12:00`, and `18:00` UTC.
 - Can be started manually from the GitHub **Actions** tab.
 - Fetches `ShabiiEXE/Gamelist`.
-- Fast-forwards your fork's `main` branch.
+- Merges updates into your fork's `main` branch.
+- Keeps your fork's own `wrangler.toml` so your Cloudflare Worker name, KV namespace, and account-specific deploy config are not overwritten.
 - Pushes the updated `main` branch back to your fork.
 
 To enable it in your fork:
@@ -297,7 +298,7 @@ To enable it in your fork:
 4. Open **Sync from upstream**.
 5. Click **Run workflow** once to test it.
 
-The workflow uses `--ff-only`, so it updates cleanly when your fork has no conflicting commits. If you edit the same files differently in your fork, GitHub will stop the sync instead of overwriting your work. Resolve the conflict locally, then push your fixed `main` branch.
+The workflow automatically restores your fork's `wrangler.toml` after pulling upstream updates. If another file has a merge conflict, GitHub will stop the sync instead of overwriting your work. Resolve the conflict locally, then push your fixed `main` branch.
 
 ### Fork Layout That Syncs Cleanly
 
