@@ -152,7 +152,7 @@ Add `OPENXBL_API_KEY` in Cloudflare **Variables and Secrets** as a secret.
 
 Set your Xbox account inside the app: enter edit mode, open **Settings**, and fill the **Microsoft account** field with an Xbox gamertag or XUID.
 
-### Google Calendar Preorder Events
+### Google Calendar Preorder Events (ADVANCED)
 
 When a game is newly marked as preordered and has a release date, the Worker can create an all-day Google Calendar event named `Preorder Game Name`.
 
