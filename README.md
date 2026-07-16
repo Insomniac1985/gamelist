@@ -72,9 +72,9 @@ EDIT_PASSWORD
 
 `EDIT_PASSWORD` is the password you will type in the app to unlock edit mode and change your site settings and theme.
 
-Now setup this required integration. It will let you fetch your games data and fill it up correctly.
-
 Use **Secret** for all integration keys/tokens. Do not put them in `wrangler.toml`, do not commit them to GitHub, and do not share them publicly.
+
+Now **continue** the setup until you reach **Recommended Integrations**. The next integrations are **required** to make it all work properly, but the recommended ones will help you improve your experience a bit more.
 
 ### 3. Add game search and auto-fill
 
