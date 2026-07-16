@@ -283,7 +283,7 @@ This repository includes `.github/workflows/sync-from-upstream.yml` for people w
 
 The workflow:
 
-- Runs at `00:00`, `06:00`, `12:00`, and `18:00` UTC.
+- Runs hourly.
 - Can also be started manually from the GitHub **Actions** tab.
 - Fetches updates from `https://github.com/ShabiiEXE/Gamelist`.
 - Merges those updates into the connected repository's `main` branch.
