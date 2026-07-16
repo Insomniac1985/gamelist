@@ -112,6 +112,7 @@ const STRINGS = {
     "Clear filters": "Borrar filtros",
     "Game, platform, store, status...": "Juego, plataforma, tienda, estado...",
     "Game, publisher, genre...": "Juego, editora, género...",
+    "PlayStation online ID": "ID online de PlayStation",
     "Xbox gamertag or XUID": "Gamertag de Xbox o XUID",
     "SteamID64, profile URL, or vanity name": "SteamID64, URL del perfil o nombre personalizado",
     Spain: "España",

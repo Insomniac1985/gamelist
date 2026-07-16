@@ -19,7 +19,7 @@ const DEFAULT_LAYOUT = ["playing", "latestFinished", "favorites", "trophies", "c
 const LAYOUT_KEYS = [...DEFAULT_LAYOUT];
 const DEFAULT_HIDDEN_MODULES = ["playing", "trophies"];
 const STORE_OPTIONS = ["Amazon", "eBay", "GAME.es", "Xtralife", "Retro Island NY", "GameStop", "Walmart"];
-const DEFAULT_PRICE_STORES = ["Amazon", "Xtralife", "GAME.es"];
+const DEFAULT_PRICE_STORES = ["Amazon"];
 const MAX_PRICE_STORES = 5;
 const THEMES = {
   shabii: { title: "Shabii's Shelf", icon: "assets/Icon_shelf.png", color: "#ff0039" },
@@ -2625,8 +2625,10 @@ async function loadTrophyActivity() {
   }
   el.trophyCard.innerHTML = `<span class="lookup-loading">Loading trophy activity…</span>`;
   try {
-    const params = achievementParams({ user, schema: "3" }, forceRefresh);
-    const [psnResult, steamResult, xboxResult] = await Promise.allSettled([fetch(`/api/achievements?${params}`).then((response) => response.ok ? response.json() : null), fetchShelfSteamActivity(forceRefresh), fetchShelfXboxActivity(forceRefresh)]);
+    const psnRequest = user
+      ? fetch(`/api/achievements?${achievementParams({ user, schema: "3" }, forceRefresh)}`).then((response) => response.ok ? response.json() : null)
+      : Promise.resolve({ user: "", achievements: [], games: [], platinums: [], sourceUrl: "https://www.playstation.com/", source: "psn" });
+    const [psnResult, steamResult, xboxResult] = await Promise.allSettled([psnRequest, fetchShelfSteamActivity(forceRefresh), fetchShelfXboxActivity(forceRefresh)]);
     state.trophyActivity = psnResult.status === "fulfilled" ? psnResult.value : null;
     state.steamActivity = steamResult.status === "fulfilled" ? steamResult.value : { achievements: [], games: [], completed: [], totalEarned: 0, sourceUrl: "" };
     state.xboxActivity = xboxResult.status === "fulfilled" ? xboxResult.value : { achievements: [], games: [], completed: [], totalEarned: 0, sourceUrl: "" };

@@ -55,12 +55,12 @@ const DEFAULT_SETTINGS = {
   theme: "shabii",
   customTheme: {},
   defaultOrder: "custom",
-  psnUser: "ShabiiEXE",
+  psnUser: "",
   microsoftUser: "",
   steamUser: "",
   currency: "EUR",
   region: "ES",
-  stores: ["Amazon", "Xtralife", "GAME.es", "Retro Island NY"],
+  stores: ["Amazon"],
   storeSettingsVersion: 2,
   defaultOwner: "User",
   shelfSync: true,
@@ -1022,7 +1022,7 @@ function normalizeSettings(settings = {}) {
     theme: THEMES[settings.theme] || settings.theme === "custom" ? settings.theme : DEFAULT_SETTINGS.theme,
     customTheme: normalizeThemeSettings(settings),
     defaultOrder: ["custom", "time", "name"].includes(settings.defaultOrder) ? settings.defaultOrder : DEFAULT_SETTINGS.defaultOrder,
-    psnUser: cleanPsnUser(settings.psnUser) || DEFAULT_SETTINGS.psnUser,
+    psnUser: cleanPsnUser(settings.psnUser),
     microsoftUser: cleanMicrosoftUser(settings.microsoftUser),
     steamUser: cleanSteamUser(settings.steamUser),
     currency: settings.currency === "USD" ? "USD" : "EUR",
@@ -3291,7 +3291,7 @@ function equalizeMobilePlayingCards() {
 }
 
 async function refreshAchievements() {
-  const psnUser = state.settings.psnUser || DEFAULT_SETTINGS.psnUser;
+  const psnUser = state.settings.psnUser || "";
   const cacheKey = achievementSettingsKey(state.settings);
   const forceRefresh = state.settings.forceCacheOnLoad === true;
   const cached = forceRefresh ? null : readAchievementCache(cacheKey);
@@ -3300,11 +3300,13 @@ async function refreshAchievements() {
     render();
     return;
   }
-  const psnRequest = (async () => {
-    const params = achievementParams({ user: psnUser, schema: "3" }, forceRefresh);
-    const response = await fetch(`/api/achievements?${params}`);
-    return response.json();
-  })();
+  const psnRequest = psnUser
+    ? (async () => {
+        const params = achievementParams({ user: psnUser, schema: "3" }, forceRefresh);
+        const response = await fetch(`/api/achievements?${params}`);
+        return response.json();
+      })()
+    : Promise.resolve({ user: "", achievements: [], games: [], platinums: [], sourceUrl: "https://www.playstation.com/", source: "psn" });
   const [psnResult, steamResult, xboxResult] = await Promise.allSettled([psnRequest, fetchSteamActivity(forceRefresh), fetchXboxActivity(forceRefresh)]);
   const psnData = psnResult.status === "fulfilled"
     ? psnResult.value
@@ -3424,7 +3426,7 @@ function achievementParams(values = {}, forceRefresh = state.settings.forceCache
 
 function achievementSettingsKey(settings = state.settings) {
   return [
-    cleanPsnUser(settings.psnUser) || DEFAULT_SETTINGS.psnUser,
+    cleanPsnUser(settings.psnUser),
     cleanSteamUser(settings.steamUser),
     cleanMicrosoftUser(settings.microsoftUser),
   ].join("|");
@@ -3494,7 +3496,6 @@ function steamAchievementParams(appId, steamUser = state.settings.steamUser || "
 }
 
 function renderAchievements(data = {}, steamData = state.steamActivity || emptySteamActivity(), xboxData = state.xboxActivity || emptyXboxActivity()) {
-  const user = data.user || state.settings.psnUser || DEFAULT_SETTINGS.psnUser;
   const sourceUrl = data.sourceUrl || "https://www.playstation.com/";
   const platinums = Array.isArray(data.platinums) ? data.platinums : [];
   cachePlatinumMetadata(platinums);
