@@ -129,36 +129,24 @@ main.yml
 10. Open **Sync from upstream**.
 11. Enable the workflow if GitHub asks.
 12. Click **Run workflow** once to test it.
-13. After that, the workflow checks for updates every 30 minutes and keeps your own `wrangler.toml` settings.
 
-To force an update manually later, open your repository, go to **Actions**, open **Sync from upstream**, and click **Run workflow**. This manual button is still available even when Cloudflare cron triggering is configured.
+To force an update manually later, open your repository, go to **Actions**, open **Sync from upstream**, and click **Run workflow**.
+For now, let's finish this setup.
 
-If GitHub scheduled actions stop running, Cloudflare can trigger this workflow instead.
-
-1. Open [GitHub fine-grained personal access tokens](https://github.com/settings/personal-access-tokens).
-2. Click **Generate new token**.
-3. Use a clear name, for example `Gamelist Cloudflare updater`.
-4. Set an expiration date.
-5. Under **Resource owner**, choose the GitHub account that owns your Gamelist repository.
-6. Under **Repository access**, choose **Only select repositories**.
-7. Select only your Gamelist repository. Do not select any other repositories.
-8. Under **Repository permissions**, set **Actions** to **Read and write**.
-9. Leave every other permission as **No access** unless GitHub requires **Metadata**, which is added automatically.
-10. Click **Generate token**.
-11. Copy the token immediately. GitHub will not show it again.
-12. Add it in Cloudflare **Variables and Secrets** as a **Secret**:
+13. Open [GitHub fine-grained personal access tokens](https://github.com/settings/personal-access-tokens).
+14. Click **Generate new token**.
+15. Use a clear name, for example `Gamelist Cloudflare updater`.
+16. Under **Resource owner**, choose the GitHub account that owns your Gamelist repository.
+17. Set **No expiration** as the expiration date.
+18. Under **Repository access**, choose **Only select repositories**.
+19. Select only your Gamelist repository. Do not select any other repositories.
+20. Under **Repository permissions**, **Add permissions** and check **Actions** and change it to **Read and write**.
+21. Click **Generate token**.
+22. Copy the token immediately. GitHub will not show it again.
+23. Add it in Cloudflare **Variables and Secrets** as a **Secret**:
 
 ```text
 GITHUB_WORKFLOW_TOKEN
-```
-
-The token must only have access to one repository. Gamelist will detect that repository automatically and dispatch `.github/workflows/main.yml` on the Cloudflare cron schedule. If the token can access more than one repository, the automatic updater will refuse to run so it cannot update the wrong repo.
-
-For existing deployments, add this to your own `wrangler.toml` if it is missing:
-
-```toml
-[triggers]
-crons = ["13,43 * * * *"]
 ```
 
 ## Recommended Integrations
