@@ -47,6 +47,7 @@ https://github.com/ShabiiEXE/Gamelist
 10. Keep the default settings and click **Deploy**.
 11. Once deployed, open **Overview** in the nav bar and click **Visit** to open your site.
 12. If the **Visit** button is not available, open **Domains** in the nav bar and enable both URLs.
+13. After your site opens, continue to **Automatic Updates** below if you want to add update sync.
 
 ### 2. Add Secrets In Cloudflare
 
@@ -105,6 +106,45 @@ GOOGLE_CALENDAR_ID
 ```
 
 Use **Secret** for all integration keys/tokens. Do not put them in `wrangler.toml`, do not commit them to GitHub, and do not share them publicly.
+
+## Automatic Updates
+
+The direct Cloudflare import is the simplest deploy path. It does not create a GitHub repository for you, so GitHub Actions are not enabled automatically.
+
+If you later create your own GitHub copy of Gamelist, you can add `.github/workflows/sync-from-upstream.yml` there to keep your copy updated from the main repository.
+
+The workflow:
+
+- Runs every 30 minutes.
+- Can also be started manually from the GitHub **Actions** tab.
+- Fetches updates from `https://github.com/ShabiiEXE/Gamelist`.
+- Merges those updates into the connected repository's `main` branch.
+- Restores that repository's own `wrangler.toml` before committing, so its Cloudflare Worker name, KV namespace, and account-specific config are not overwritten.
+- Pushes the synced result back to that repository.
+
+This matters because every Cloudflare account needs its own `wrangler.toml` values. The app code can stay up to date with the main repository, while each deploy keeps its own Cloudflare binding.
+
+To add the workflow later:
+
+1. Once the setup is done, go to your newly added GitHub repository.
+2. Go to **Actions**.
+3. Click **set up a workflow yourself**.
+4. You will see an empty text box.
+5. Open this workflow file from the main Gamelist repository:
+
+```text
+https://github.com/ShabiiEXE/Gamelist/blob/main/.github/workflows/sync-from-upstream.yml
+```
+
+6. Copy the code from that file.
+7. Paste it into the empty workflow text box.
+8. Commit the changes.
+9. Go back to **Actions**.
+10. Open **Sync from upstream**.
+11. Enable the workflow if GitHub asks.
+12. Click **Run workflow** once to test it.
+
+If a file other than `wrangler.toml` has a merge conflict, GitHub stops the sync instead of overwriting custom work. Fix the conflict in GitHub or locally, then run the workflow again.
 
 ## Recommended Integrations
 
@@ -211,45 +251,6 @@ Both pages have **CSV data** controls at the bottom of Settings, after Stores.
 - Arrays and objects, such as owners, tags, store links, prices, and metadata, are preserved as JSON text inside CSV cells.
 
 Use CSV export before any large bulk operation if you want a quick backup.
-
-## Automatic Updates
-
-The direct Cloudflare import is the simplest deploy path. It does not create a GitHub repository for you, so GitHub Actions are not enabled automatically.
-
-If you later create your own GitHub copy of Gamelist, you can add `.github/workflows/sync-from-upstream.yml` there to keep your copy updated from the main repository.
-
-The workflow:
-
-- Runs every 30 minutes.
-- Can also be started manually from the GitHub **Actions** tab.
-- Fetches updates from `https://github.com/ShabiiEXE/Gamelist`.
-- Merges those updates into the connected repository's `main` branch.
-- Restores that repository's own `wrangler.toml` before committing, so its Cloudflare Worker name, KV namespace, and account-specific config are not overwritten.
-- Pushes the synced result back to that repository.
-
-This matters because every Cloudflare account needs its own `wrangler.toml` values. The app code can stay up to date with the main repository, while each deploy keeps its own Cloudflare binding.
-
-To add the workflow later:
-
-1. Once the setup is done, go to your newly added GitHub repository.
-2. Go to **Actions**.
-3. Click **set up a workflow yourself**.
-4. You will see an empty text box.
-5. Open this workflow file from the main Gamelist repository:
-
-```text
-https://github.com/ShabiiEXE/Gamelist/blob/main/.github/workflows/sync-from-upstream.yml
-```
-
-6. Copy the code from that file.
-7. Paste it into the empty workflow text box.
-8. Commit the changes.
-9. Go back to **Actions**.
-10. Open **Sync from upstream**.
-11. Enable the workflow if GitHub asks.
-12. Click **Run workflow** once to test it.
-
-If a file other than `wrangler.toml` has a merge conflict, GitHub stops the sync instead of overwriting custom work. Fix the conflict in GitHub or locally, then run the workflow again.
 
 ## Data Notes
 
