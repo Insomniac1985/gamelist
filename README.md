@@ -135,16 +135,24 @@ To force an update manually later, open your repository, go to **Actions**, open
 
 If GitHub scheduled actions stop running, Cloudflare can trigger this workflow instead.
 
-1. Create a fine-grained GitHub personal access token.
-2. Give it access to only your Gamelist repository.
-3. Give it **Actions: Read and write** permission.
-4. Add it in Cloudflare **Variables and Secrets** as a **Secret**:
+1. Open [GitHub fine-grained personal access tokens](https://github.com/settings/personal-access-tokens).
+2. Click **Generate new token**.
+3. Use a clear name, for example `Gamelist Cloudflare updater`.
+4. Set an expiration date.
+5. Under **Resource owner**, choose the GitHub account that owns your Gamelist repository.
+6. Under **Repository access**, choose **Only select repositories**.
+7. Select only your Gamelist repository. Do not select any other repositories.
+8. Under **Repository permissions**, set **Actions** to **Read and write**.
+9. Leave every other permission as **No access** unless GitHub requires **Metadata**, which is added automatically.
+10. Click **Generate token**.
+11. Copy the token immediately. GitHub will not show it again.
+12. Add it in Cloudflare **Variables and Secrets** as a **Secret**:
 
 ```text
 GITHUB_WORKFLOW_TOKEN
 ```
 
-The token must only have access to one repository. Gamelist will detect that repository automatically and dispatch `.github/workflows/main.yml` on the Cloudflare cron schedule.
+The token must only have access to one repository. Gamelist will detect that repository automatically and dispatch `.github/workflows/main.yml` on the Cloudflare cron schedule. If the token can access more than one repository, the automatic updater will refuse to run so it cannot update the wrong repo.
 
 For existing deployments, add this to your own `wrangler.toml` if it is missing:
 
