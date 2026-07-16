@@ -225,6 +225,8 @@ GOOGLE_PRIVATE_KEY
 GOOGLE_CALENDAR_ID
 ```
 
+---
+
 ## <img src="assets/Icon.png" alt="Gamelist" width="22" align="center"> First run
 
 1. Deploy the Worker.
