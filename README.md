@@ -42,7 +42,7 @@ This is the main setup path. You do not need to download a ZIP or run terminal c
 - <img src="https://cdn.simpleicons.org/github/181717" alt="GitHub" width="18" align="center"> A GitHub account
 - <img src="https://cdn.simpleicons.org/twitch/9146FF" alt="Twitch" width="18" align="center"> A Twitch account
 
-### 1. Start From Cloudflare
+### 1. Start from Cloudflare
 
 1. Open the [Cloudflare dashboard](https://dash.cloudflare.com/).
 2. Go to **Workers & Pages**.
@@ -63,7 +63,7 @@ https://github.com/ShabiiEXE/Gamelist
 12. If the **Visit** button is not available, open **Domains** in the nav bar and enable both URLs.
 13. After your site opens, continue to **Automatic Updates** below if you want to add update sync.
 
-### 2. Add Secrets In Cloudflare
+### 2. Set your password to access settings (Adding Secrets in Cloudflare)
 
 In the Worker project settings, add your secrets through the Cloudflare website:
 
@@ -116,7 +116,7 @@ IGDB_CLIENT_ID
 IGDB_CLIENT_SECRET
 ```
 
-### 4. Automatic Updates
+### 4. Automatic updates
 
 To receive upcoming Gamelist feature updates, add the GitHub Actions sync workflow to your repository.
 
@@ -157,7 +157,7 @@ For now, let's finish this setup.
 GITHUB_WORKFLOW_TOKEN
 ```
 
-## Recommended Integrations
+## Recommended integrations
 
 ### <img src="assets/platforms/playstation.png" alt="PlayStation" width="22" align="center"> PlayStation Trophy Activity
 
@@ -224,7 +224,7 @@ GOOGLE_PRIVATE_KEY
 GOOGLE_CALENDAR_ID
 ```
 
-## First Run
+## First run
 
 1. Deploy the Worker.
 2. Open the site.
@@ -235,25 +235,25 @@ GOOGLE_CALENDAR_ID
 
 Those settings are stored in the Worker KV namespace.
 
-## Common Workflows
+## Common taks
 
-### Add A Gamelist Game
+### Add a game to your gamelist
 
 1. Enter edit mode.
 2. Click **Add Game**.
 3. Search by title or paste an IGDB game URL.
-4. Choose the section: Backlog, Upcoming, Available, or New addition.
+4. Choose the place it should be in: Backlog, Upcoming, Available.
 5. Add platform, owners, preorder store, release date, store links, Steam App ID, trophy name, cover, and notes as needed.
 6. Save.
 
 If Google Calendar is configured, adding a new preorder store to an upcoming/wanted game with a release date can create a preorder calendar event.
 
-### Add A Shelf Game
+### Add a a physical game to your Shelf collection
 
-1. Open `/shelf`.
+1. Click the **top handle** or drag it down to access the **Shelf**.
 2. Enter edit mode.
 3. Click **Add Game**.
-4. Search by title, UPC/SKU/ASIN/PriceCharting data, or enter details manually.
+4. Search by title, paste a PriceCharting url, paste a IGDB url or enter details manually.
 5. Set platform, region, owners, condition parts, collection value fields, publisher/developer, genre, cover, and notes.
 6. Save.
 
