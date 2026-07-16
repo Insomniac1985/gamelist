@@ -30,7 +30,7 @@ This is the main setup path. You do not need to download a ZIP or run terminal c
 
 ### 1. Start From Cloudflare
 
-1. Open the Cloudflare dashboard.
+1. Open the [Cloudflare dashboard](https://dash.cloudflare.com/).
 2. Go to **Workers & Pages**.
 3. Click **Create application**.
 4. Click **Continue with GitHub**.
@@ -53,7 +53,7 @@ https://github.com/ShabiiEXE/Gamelist
 
 In the Worker project settings, add your secrets through the Cloudflare website:
 
-1. Open the Cloudflare dashboard.
+1. Open the [Cloudflare dashboard](https://dash.cloudflare.com/).
 2. Go to **Workers & Pages**.
 3. Open your Gamelist Worker.
 4. Open **Settings**.
@@ -122,11 +122,7 @@ To receive upcoming Gamelist feature updates, manually add the GitHub Actions sc
 2. Go to **Actions**.
 3. Click **set up a workflow yourself**.
 4. You will see an empty text box.
-5. Open this workflow file from the main Gamelist repository:
-
-```text
-https://github.com/ShabiiEXE/Gamelist/blob/main/.github/workflows/sync-from-upstream.yml
-```
+5. Open the [sync-from-upstream.yml workflow file](https://github.com/ShabiiEXE/Gamelist/blob/main/.github/workflows/sync-from-upstream.yml) from the main Gamelist repository.
 
 6. Copy the code from that file.
 7. Paste it into the empty workflow text box.
@@ -141,24 +137,8 @@ https://github.com/ShabiiEXE/Gamelist/blob/main/.github/workflows/sync-from-upst
 
 ### PSN Trophy Activity
 
-The trophy widgets use Sony's PSN API through this Cloudflare Worker secret:
-
-```text
-PSN_NPSSO
-```
-
-1. Log into PlayStation in your browser:
-
-```text
-https://www.playstation.com/
-```
-
-2. In the same browser, open:
-
-```text
-https://ca.account.sony.com/api/v1/ssocookie
-```
-
+1. Log into [PlayStation](https://www.playstation.com/) in your browser.
+2. In the same browser, open the [Sony SSO cookie page](https://ca.account.sony.com/api/v1/ssocookie).
 3. Copy only the long `npsso` token value from the JSON response.
 4. Add it to Cloudflare **Variables and Secrets** as:
 
@@ -172,19 +152,19 @@ Treat the NPSSO token like a password. Do not commit it, paste it in chat, or pu
 
 ### Steam Achievements
 
-PC game overlays can show Steam achievements when these are configured:
+Add this Cloudflare **Variables and Secrets** entry:
 
 ```text
 STEAM_API_KEY
 ```
 
-Add `STEAM_API_KEY` in Cloudflare **Variables and Secrets** as a secret.
+Use **Secret** for this value.
 
-Get a Steam Web API key from `https://steamcommunity.com/dev/apikey`.
+Get the key from the [Steam Web API key page](https://steamcommunity.com/dev/apikey).
 
 Set your Steam account inside the app: enter edit mode, open **Settings**, and fill the **Steam account** field with a SteamID64, Steam profile URL, or vanity name. For each PC game, add a Steam store URL or Steam App ID in the game editor.
 
-Steam achievements are only fetched for Steam app IDs owned by the configured Steam account. Make sure the account's game details/library visibility allows Steam Web API access. Legacy games saved with the platform `PC` are treated as `Steam`; use `Xbox PC` for Microsoft Store or PC Game Pass games.
+Steam achievements are fetched only for app IDs owned by the configured Steam account. Make sure the account's game details and library visibility allow Steam Web API access.
 
 ### Xbox Achievements
 
@@ -198,9 +178,9 @@ Set your Xbox account inside the app: enter edit mode, open **Settings**, and fi
 
 ### Google Calendar Preorder Events (ADVANCED)
 
-When you mark a game with a release date as preordered, the Worker can add an all-day Google Calendar event named `Preorder Game Name`.
+When you mark a game with a release date as preordered, the Worker can add an all-day Google Calendar event named `Preorder "Game Name"`.
 
-Set up a Google Cloud service account with Google Calendar API access, then share the target calendar with the service account email with permission to make changes.
+Set up a [Google Cloud](https://console.cloud.google.com/) service account with Google Calendar API access, then share the target calendar with the service account email with permission to make changes.
 
 Add these as three separate Cloudflare **Variables and Secrets** entries:
 
