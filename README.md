@@ -15,6 +15,7 @@ Both pages share edit mode, themes, account settings, price-store settings, achi
 - Physical Shelf library with owners, regions, conditions, categories, prices, collection value, and linked Gamelist entries.
 - IGDB-powered lookup for covers, release dates, descriptions, genres, developers, publishers, trailers, and store links.
 - PSN, Steam, and Xbox trophy/achievement dashboards.
+- Game of the Year tracking and poster export.
 - Release calendar with preorder markers.
 - CSV import/export for Gamelist and Shelf data.
 - Theme editor with dark/light mode, colors, logos, title styles, and module ordering.
