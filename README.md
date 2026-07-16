@@ -71,7 +71,7 @@ EDIT_PASSWORD
 
 `EDIT_PASSWORD` is the password you will type in the app to unlock edit mode and change your site settings and theme.
 
-Required integration:
+Now setup this required integration. It will let you fetch your games data and fill it up correctly.
 
 #### IGDB Lookup
 
