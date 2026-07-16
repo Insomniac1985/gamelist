@@ -115,14 +115,14 @@ To receive upcoming Gamelist feature updates, add the GitHub Actions sync workfl
 1. Once the setup is done, go to your newly added GitHub repository.
 2. Go to **Actions**.
 3. Click **set up a workflow yourself**.
-4. Name the file:
+4. Make sure the default file name is:
 
 ```text
 main.yml
 ```
 
-5. Open the [main.yml](https://github.com/ShabiiEXE/Gamelist/blob/main/.github/workflows/main.yml) workflow action file from the main Gamelist repository.
-6. Copy the code from that file.
+5. Then open this link [main.yml](https://github.com/ShabiiEXE/Gamelist/blob/main/.github/workflows/main.yml) to the workflow action file from the main Gamelist repository.
+6. Copy the code from that file using to copy button on the top right or manually select all and copy.
 7. Paste it into the empty workflow text box.
 8. Commit the changes.
 9. Go back to **Actions**.
