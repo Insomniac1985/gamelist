@@ -225,7 +225,7 @@ GOOGLE_PRIVATE_KEY
 GOOGLE_CALENDAR_ID
 ```
 
-## First run
+## <img src="assets/Icon.png" alt="Gamelist" width="22" align="center"> First run
 
 1. Deploy the Worker.
 2. Open the site.
@@ -236,7 +236,7 @@ GOOGLE_CALENDAR_ID
 
 Those settings are stored in the Worker KV namespace.
 
-## Common taks
+## <img src="assets/Icon.png" alt="Gamelist" width="22" align="center"> Common tasks
 
 ### Add a game to your gamelist
 

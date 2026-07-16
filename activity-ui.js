@@ -69,7 +69,7 @@ export function achievementPanelMarkup({ psn = {}, steam = {}, xbox = {}, trophy
     .slice(0, 6);
   if (!achievements.length) {
     const fallbackText = psn.needsSetup
-      ? "Set PSN_NPSSO in Cloudflare to show recent PSN trophy activity here."
+      ? "Set up your platform APIs to access your recent trophy stats."
       : psn.authError
         ? "PSN token needs refreshing. Update PSN_NPSSO in Cloudflare."
         : psn.blocked
@@ -77,7 +77,7 @@ export function achievementPanelMarkup({ psn = {}, steam = {}, xbox = {}, trophy
           : "No recent achievement activity found yet.";
     return {
       sourceUrl,
-      html: `<a class="achievement-fallback" href="${escape(sourceUrl)}" target="_blank" rel="noreferrer"><img src="${escape(platformLogo("PS5"))}" alt=""><div><strong>Achievement activity</strong><span>${escape(fallbackText)}</span></div></a>`,
+      html: `<a class="achievement-fallback" href="${escape(sourceUrl)}" target="_blank" rel="noreferrer"><span class="achievement-fallback-logo" aria-hidden="true"></span><div><strong>Achievement activity</strong><span>${escape(fallbackText)}</span></div></a>`,
     };
   }
   const trophies = psn.summary?.trophies || {};

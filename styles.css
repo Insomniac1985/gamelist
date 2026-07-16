@@ -2007,6 +2007,16 @@ button.achievement-kpi {
   border: 1px solid rgba(255, 255, 255, 0.12);*/
 }
 
+.achievement-fallback-logo {
+  display: block;
+  width: 42px;
+  height: 42px;
+  background: linear-gradient(135deg, var(--accent), var(--accent-2));
+  -webkit-mask: url("assets/Icon.png") center / contain no-repeat;
+  mask: url("assets/Icon.png") center / contain no-repeat;
+  filter: drop-shadow(0 0 12px color-mix(in srgb, var(--accent) 38%, transparent));
+}
+
 .achievement-fallback {
   grid-column: 1 / -1;
 }
@@ -10281,6 +10291,25 @@ body.theme-kash
 
 .empty-with-action .primary-button {
   flex: 0 0 auto;
+}
+
+@media (max-width: 1180px) {
+  .toolbar {
+    grid-template-columns: repeat(4, minmax(120px, 1fr));
+  }
+
+  .toolbar .search {
+    grid-column: span 2;
+  }
+
+  .toolbar .order-label {
+    grid-column: span 2;
+  }
+
+  .toolbar .view-toggle {
+    justify-self: stretch;
+    width: 100%;
+  }
 }
 
 @media (max-width: 1120px) {
