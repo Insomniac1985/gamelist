@@ -76,7 +76,14 @@ Now setup this required integration. It will let you fetch your games data and f
 
 #### IGDB Lookup
 
-Game lookup works best with IGDB configured. In Cloudflare **Variables and Secrets**, add `IGDB_CLIENT_ID` and `IGDB_CLIENT_SECRET` as secrets.
+Game lookup works best with IGDB configured. Add these as separate Cloudflare **Variables and Secrets** entries:
+
+```text
+IGDB_CLIENT_ID
+IGDB_CLIENT_SECRET
+```
+
+Use **Secret** for each value.
 
 IGDB authentication uses Twitch developer credentials:
 
@@ -179,17 +186,27 @@ When a game is newly marked as preordered and has a release date, the Worker can
 
 Set up a Google Cloud service account with Google Calendar API access, then share the target calendar with the service account email with permission to make changes.
 
-Set these Cloudflare secrets:
+Add these as three separate Cloudflare **Variables and Secrets** entries:
 
 ```text
 GOOGLE_SERVICE_ACCOUNT_EMAIL
+```
+
+The service account email address.
+
+```text
 GOOGLE_PRIVATE_KEY
+```
+
+The `private_key` value from the service account JSON.
+
+```text
 GOOGLE_CALENDAR_ID
 ```
 
-Add them in Cloudflare **Variables and Secrets** as secrets.
+The calendar ID from Google Calendar settings.
 
-`GOOGLE_CALENDAR_ID` can be your calendar ID from Google Calendar settings. The private key should be the `private_key` value from the service account JSON. Do not commit it.
+Use **Secret** for each value. Do not commit the private key.
 
 ## First Run
 
