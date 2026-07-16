@@ -21,32 +21,6 @@ Both pages share edit mode, themes, account settings, price-store settings, achi
 - Cloud sync through Cloudflare Workers KV.
 - Google Calendar preorder events when configured.
 
-## Project Structure
-
-```text
-.
-|-- index.html                 # Main Gamelist app shell
-|-- shelf.html                 # Shelf app shell
-|-- app.js                     # Main Gamelist frontend
-|-- shelf.js                   # Shelf frontend
-|-- styles.css                 # Main styles
-|-- shelf.css                  # Shelf styles
-|-- worker.js                  # Cloudflare Worker entry
-|-- functions/api/             # Worker API routes
-|-- assets/                    # Icons, platform art, flags, fonts, backdrops
-|-- scripts/                   # Local helper/test scripts
-|-- server.mjs                 # Simple local static server
-`-- wrangler.toml              # Cloudflare Worker configuration
-```
-
-## Requirements
-
-- A Cloudflare account
-- A Cloudflare KV namespace bound as `GAMELIST`
-- An `EDIT_PASSWORD` Worker secret
-- A GitHub account for the dashboard-only Cloudflare deploy path
-- Node.js 20 or newer and Wrangler only if you want local development or command-line deploys
-
 ## Cloudflare Dashboard Setup
 
 This is the main setup path. You do not need to download a ZIP or run terminal commands. Cloudflare Workers Builds can import the GitHub repository, build it, and deploy it from the Cloudflare dashboard.
@@ -156,45 +130,6 @@ Add profile/account names inside the app after the first deploy: enter edit mode
 Trigger the first build from Cloudflare. After that, every push to your connected GitHub repository can deploy automatically.
 
 Open the generated `workers.dev` URL, log in with your edit password, then configure Settings inside the app.
-
-## Local Development
-
-Local development is optional. Use it only if you want to edit and test the project on your computer.
-
-Run the local static server:
-
-```bash
-node server.mjs
-```
-
-Open:
-
-```text
-http://localhost:8790
-```
-
-For Worker-style local testing, use Wrangler:
-
-```bash
-npx wrangler dev
-```
-
-Before pushing changes, these checks are useful:
-
-```bash
-node --check app.js
-node --check shelf.js
-node --check worker.js
-node --check functions/api/prices.js
-node --check functions/api/collection-price.js
-node --check functions/api/sync.js
-node --check functions/api/shelf.js
-node --check functions/api/shelf-covers.js
-node --check functions/api/search.js
-node --check scripts/test-shelf-sync.mjs
-node scripts/test-shelf-sync.mjs
-git diff --check
-```
 
 ## Automatic Updates
 
@@ -406,3 +341,68 @@ The summary endpoints above are served under `/api/...` and cache their generate
 In edit mode, Settings also exposes page-specific **Dev features** links. Gamelist shows data/settings/auth endpoints. Shelf shows Shelf data, mass add, metadata fill, Shelf price audit, and Shelf IGDB cover refresh tools.
 
 To start clean, use a brand-new KV namespace. To clone existing saved data, copy the relevant KV values into the new namespace.
+
+## Requirements
+
+- A Cloudflare account
+- A Cloudflare KV namespace bound as `GAMELIST`
+- An `EDIT_PASSWORD` Worker secret
+- A GitHub account for the dashboard-only Cloudflare deploy path
+- Node.js 20 or newer and Wrangler only if you want local development or command-line deploys
+
+## Quick Start
+
+Local development is optional. Use it only if you want to edit and test the project on your computer.
+
+Run the local static server:
+
+```bash
+node server.mjs
+```
+
+Open:
+
+```text
+http://localhost:8790
+```
+
+For Worker-style local testing, use Wrangler:
+
+```bash
+npx wrangler dev
+```
+
+Before pushing changes, these checks are useful:
+
+```bash
+node --check app.js
+node --check shelf.js
+node --check worker.js
+node --check functions/api/prices.js
+node --check functions/api/collection-price.js
+node --check functions/api/sync.js
+node --check functions/api/shelf.js
+node --check functions/api/shelf-covers.js
+node --check functions/api/search.js
+node --check scripts/test-shelf-sync.mjs
+node scripts/test-shelf-sync.mjs
+git diff --check
+```
+
+## Project Structure
+
+```text
+.
+|-- index.html                 # Main Gamelist app shell
+|-- shelf.html                 # Shelf app shell
+|-- app.js                     # Main Gamelist frontend
+|-- shelf.js                   # Shelf frontend
+|-- styles.css                 # Main styles
+|-- shelf.css                  # Shelf styles
+|-- worker.js                  # Cloudflare Worker entry
+|-- functions/api/             # Worker API routes
+|-- assets/                    # Icons, platform art, flags, fonts, backdrops
+|-- scripts/                   # Local helper/test scripts
+|-- server.mjs                 # Simple local static server
+`-- wrangler.toml              # Cloudflare Worker configuration
+```
