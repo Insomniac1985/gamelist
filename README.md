@@ -96,7 +96,6 @@ The app requests Twitch app access tokens automatically. Without IGDB credential
 Add these later if you use the recommended integrations:
 
 ```text
-PRICECHARTING_TOKEN
 PSN_NPSSO
 STEAM_API_KEY
 OPENXBL_API_KEY
