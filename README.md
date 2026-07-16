@@ -80,7 +80,7 @@ Game lookup works best with IGDB configured. In Cloudflare **Variables and Secre
 
 IGDB authentication uses Twitch developer credentials:
 
-1. Open the Twitch Developer Console: `https://dev.twitch.tv/console`.
+1. Open the [Twitch Developer Console](https://dev.twitch.tv/console).
 2. Log in with a Twitch account.
 3. Make sure the account has email verification and 2FA enabled.
 4. Go to **Applications**.
