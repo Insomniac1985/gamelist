@@ -14,7 +14,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout fork
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           fetch-depth: 0
           token: ${{ secrets.GITHUB_TOKEN }}
@@ -29,17 +29,16 @@ jobs:
           git fetch upstream main
           git checkout main
           set +e
-          git merge --no-edit upstream/main
+          git merge --no-edit -X theirs upstream/main
           merge_status=$?
           set -e
           cp "$RUNNER_TEMP/wrangler.toml" wrangler.toml
           git add wrangler.toml
           if [ "$merge_status" -ne 0 ]; then
             unresolved="$(git diff --name-only --diff-filter=U)"
-            unresolved_without_wrangler="$(printf "%s\n" "$unresolved" | grep -v '^wrangler.toml$' || true)"
-            if [ -n "$unresolved_without_wrangler" ]; then
-              echo "Upstream sync has conflicts outside wrangler.toml:"
-              printf "%s\n" "$unresolved_without_wrangler"
+            if [ -n "$unresolved" ]; then
+              echo "Upstream sync still has unresolved conflicts:"
+              printf "%s\n" "$unresolved"
               exit 1
             fi
             git commit --no-edit
