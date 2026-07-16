@@ -281,7 +281,7 @@ Use CSV export before any large bulk operation if you want a quick backup.
 
 ## Automatic Updates
 
-This repository includes `.github/workflows/sync-from-upstream.yml` for people who deploy from their own GitHub copy of Gamelist.
+This repository includes `.github/workflows/sync-from-upstream.yml` for people who deploy from their own GitHub copy of Gamelist, and `.gitlab-ci.yml` for GitLab copies.
 
 The workflow:
 
@@ -303,6 +303,19 @@ To turn it on in a GitHub copy:
 5. Click **Run workflow** once to test it.
 
 If a file other than `wrangler.toml` has a merge conflict, GitHub stops the sync instead of overwriting custom work. Fix the conflict in GitHub or locally, then run the workflow again.
+
+To turn it on in GitLab:
+
+1. Create a GitLab project access token with `read_repository` and `write_repository`.
+2. Add it in **Settings > CI/CD > Variables** as `GITLAB_SYNC_TOKEN`.
+3. Go to **Build > Pipeline schedules**.
+4. Add an hourly schedule with this cron:
+
+```text
+0 * * * *
+```
+
+The GitLab pipeline also restores that repo's own `wrangler.toml` before committing, so the GitLab Cloudflare config stays local to GitLab.
 
 ## Data Notes
 
