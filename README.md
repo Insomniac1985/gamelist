@@ -220,7 +220,7 @@ If you later create your own GitHub copy of Gamelist, you can add `.github/workf
 
 The workflow:
 
-- Runs hourly.
+- Runs every 30 minutes.
 - Can also be started manually from the GitHub **Actions** tab.
 - Fetches updates from `https://github.com/ShabiiEXE/Gamelist`.
 - Merges those updates into the connected repository's `main` branch.
