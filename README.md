@@ -141,12 +141,30 @@ https://github.com/ShabiiEXE/Gamelist/blob/main/.github/workflows/sync-from-upst
 
 ### PSN Trophy Activity
 
-The trophy widgets use Sony's PSN API through a Cloudflare Worker secret called `PSN_NPSSO`.
+The trophy widgets use Sony's PSN API through this Cloudflare Worker secret:
 
-1. Log into PlayStation in your browser: `https://www.playstation.com/`.
-2. In the same browser, open: `https://ca.account.sony.com/api/v1/ssocookie`.
+```text
+PSN_NPSSO
+```
+
+1. Log into PlayStation in your browser:
+
+```text
+https://www.playstation.com/
+```
+
+2. In the same browser, open:
+
+```text
+https://ca.account.sony.com/api/v1/ssocookie
+```
+
 3. Copy only the long `npsso` token value from the JSON response.
-4. Add it to Cloudflare **Variables and Secrets** as `PSN_NPSSO`.
+4. Add it to Cloudflare **Variables and Secrets** as:
+
+```text
+PSN_NPSSO
+```
 
 Set your PlayStation profile name inside the app: enter edit mode, open **Settings**, and fill the PlayStation account field.
 
@@ -170,19 +188,17 @@ Steam achievements are only fetched for Steam app IDs owned by the configured St
 
 ### Xbox Achievements
 
-Xbox 360, Xbox One, Xbox Series, and Xbox PC games can show achievements through OpenXBL. Create a personal API key in the OpenXBL dashboard, then add it as a Cloudflare secret:
+Xbox 360, Xbox One, Xbox Series, and Xbox PC games can show achievements through OpenXBL. Access [OpenXBL](https://xbl.io/), create a personal API key in the dashboard, then add it as a Cloudflare secret:
 
 ```text
 OPENXBL_API_KEY
 ```
 
-Add `OPENXBL_API_KEY` in Cloudflare **Variables and Secrets** as a secret.
-
 Set your Xbox account inside the app: enter edit mode, open **Settings**, and fill the **Microsoft account** field with an Xbox gamertag or XUID.
 
 ### Google Calendar Preorder Events (ADVANCED)
 
-When a game is newly marked as preordered and has a release date, the Worker can create an all-day Google Calendar event named `Preorder Game Name`.
+When you mark a game with a release date as preordered, the Worker can add an all-day Google Calendar event named `Preorder Game Name`.
 
 Set up a Google Cloud service account with Google Calendar API access, then share the target calendar with the service account email with permission to make changes.
 
