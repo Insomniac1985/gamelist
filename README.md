@@ -1,95 +1,54 @@
 # Gamelist
 
-A personal game backlog, preorder, price, trophy, and physical shelf tracker.
+Gamelist is a personal game backlog, preorder, price, trophy, achievement, and physical shelf tracker. It runs as a static frontend served by a Cloudflare Worker, with saved data stored in Cloudflare KV.
 
-The app is a static frontend served by a Cloudflare Worker. Saved data lives in Cloudflare KV, and API routes under `functions/api` handle sync, search, store prices, trophies, achievements, calendar events, and Shelf collection values.
+The app has two connected pages:
 
-## App Tour
+- `/` for the main digital backlog, preorder, release, and completion tracker.
+- `/shelf` for the physical collection tracker.
 
-The project has two connected pages:
+Both pages share edit mode, themes, account settings, price-store settings, achievement integrations, and the same `GAMELIST` KV namespace. Shelf Sync can also send physical collection additions back into the main Gamelist flow.
 
-- **Gamelist** at `/`: the digital/backlog/preorder tracker.
-- **Shelf** at `/shelf`: the physical collection tracker.
+## Features
 
-Both pages share edit mode, theme settings, account settings, price-store settings, achievement integrations, and the same `GAMELIST` KV namespace. Shelf Sync can link physical collection items back into the main Gamelist backlog/new-addition flow.
+- Backlog, upcoming, available, currently playing, and finished-game boards.
+- Physical Shelf library with owners, regions, conditions, categories, prices, collection value, and linked Gamelist entries.
+- IGDB-powered lookup for covers, release dates, descriptions, genres, developers, publishers, trailers, and store links.
+- PSN, Steam, and Xbox trophy/achievement dashboards.
+- Release calendar with preorder markers.
+- CSV import/export for Gamelist and Shelf data.
+- Theme editor with dark/light mode, colors, logos, title styles, and module ordering.
+- Cloud sync through Cloudflare Workers KV.
+- Google Calendar preorder events when configured.
 
-### Gamelist Modules
+## Project Structure
 
-**Currently Playing**
-Shows games marked as currently playing, with cover art, owners, platform, start dates, trophy/achievement progress, and quick finish/backlog actions. The carousel also includes last finished games.
+```text
+.
+├── index.html                 # Main Gamelist app shell
+├── shelf.html                 # Shelf app shell
+├── app.js                     # Main Gamelist frontend
+├── shelf.js                   # Shelf frontend
+├── styles.css                 # Main styles
+├── shelf.css                  # Shelf styles
+├── worker.js                  # Cloudflare Worker entry
+├── functions/api/             # Worker API routes
+├── assets/                    # Icons, platform art, flags, fonts, backdrops
+├── scripts/                   # Local helper/test scripts
+├── server.mjs                 # Simple local static server
+└── wrangler.toml              # Cloudflare Worker configuration
+```
 
-**Achievements**
-Shows the combined PSN, Steam, and Xbox activity dashboard. Depending on the connected platform activity, the feed labels itself as trophies, achievements, or both. Completed/platinum games open into a filterable modal.
-
-**Calendar**
-Shows release dates for games in the list. Calendar popup cards are read-only release cards and do not repeat the release tag because the selected date already provides that context. Preordered games are visually marked on calendar days and in game cards.
-
-**Highlights**
-Shows summary counts for backlog, upcoming, available, completed, preordered, owner/status breakdowns, and other quick collection stats.
-
-**Search / Filters**
-Filters by title, platform, tag, preorder status, and sort order. The section can be reordered or hidden from Settings.
-
-**Gamelist Board**
-The main kanban-style list:
-
-- **New additions**: newly synced physical shelf games that still need setup.
-- **Backlog**: owned games waiting to be played.
-- **Upcoming**: unreleased games.
-- **Available**: released games you may want to buy.
-
-Cards support drag ordering, detail view, prices, store links, trailers, guides, ownership/owner metadata, and trophy/achievement status.
-
-**Finished Games**
-Shows completed history with filters, completion dates, duration, owners, platform, and trophy/achievement completion styling.
-
-### Shelf Modules
-
-**Currently Playing**
-Projects currently playing Gamelist games into Shelf so physical/digital activity can be seen from the collection page too.
-
-**Last Finished**
-Shows the latest finished Gamelist games as a compact carousel.
-
-**Showcase**
-A five-game featured shelf row. Editors can pick and reorder showcased games. Hover cards show title, developer/publisher, platform, console pill, trophy/achievement percentage when available, and tags.
-
-**Achievements**
-Shows the shared trophy/achievement dashboard on Shelf. Shelf game cards can show compact trophy/achievement progress and platform-aware trophy/achievement labels.
-
-**Calendar**
-Shows Gamelist release dates from the Shelf page. Calendar popup cards are neutral/read-only and omit repeated release tags and large trophy/achievement strips. Preordered games show a preorder chip.
-
-**Highlights**
-Shows physical collection stats such as owned count, estimated value, platforms, regions, conditions, and collection breakdowns.
-
-**Search / Filters**
-Filters the physical shelf by title, platform, region, condition, category, and sort direction.
-
-**Shelf Library**
-The main physical collection view. It supports grid/list view, owners, region flags, condition badges, categories, descriptions, collection value, store prices, trophy/achievement pills, and linked Gamelist entries.
-
-### Settings
-
-Settings are available in edit mode on both pages. They include:
-
-- Page/module ordering and visibility.
-- Theme editor, including dark/light mode, colors, logos, background glows, title font, gradient titles, and uppercase title toggle.
-- Default order, currency, region, default owner, selected price stores, Shelf Sync, and Shelf price visibility.
-- PSN, Microsoft/Xbox, and Steam account names.
-- CSV import/export for Gamelist and Shelf game rows.
-
-## What You Need
+## Requirements
 
 - Node.js 20 or newer
 - A Cloudflare account
 - Wrangler, Cloudflare's CLI
-- One Cloudflare KV namespace bound as `GAMELIST`
+- A Cloudflare KV namespace bound as `GAMELIST`
 - An `EDIT_PASSWORD` Worker secret
+- A GitHub account if you want fork syncing and Cloudflare Git deployments
 
-After the required Cloudflare setup, IGDB is the main integration to configure. PriceCharting is recommended for Shelf prices, and PSN, Steam, Xbox, and Google Calendar are optional.
-
-## Local Development
+## Quick Start
 
 Run the local static server:
 
@@ -103,13 +62,13 @@ Open:
 http://localhost:8790
 ```
 
-For Worker-style local testing, install/use Wrangler and run:
+For Worker-style local testing, use Wrangler:
 
 ```bash
 npx wrangler dev
 ```
 
-Useful checks before pushing:
+Before pushing changes, these checks are useful:
 
 ```bash
 node --check app.js
@@ -126,64 +85,200 @@ node scripts/test-shelf-sync.mjs
 git diff --check
 ```
 
-## Cloudflare Wrangler Setup
+## Download Or Clone
 
-1. Install Wrangler and log in:
+### Option 1: Clone With Git
+
+```bash
+git clone https://github.com/ShabiiEXE/Gamelist.git
+cd Gamelist
+```
+
+This is the best option if you want to pull future updates.
+
+### Option 2: Fork On GitHub
+
+1. Open `https://github.com/ShabiiEXE/Gamelist`.
+2. Click **Fork**.
+3. Clone your fork:
+
+```bash
+git clone https://github.com/YOUR_USERNAME/Gamelist.git
+cd Gamelist
+```
+
+This is the best option if you want your own GitHub copy that can deploy to Cloudflare and still receive updates from the main repository.
+
+### Option 3: Download ZIP
+
+1. Open `https://github.com/ShabiiEXE/Gamelist`.
+2. Click **Code > Download ZIP**.
+3. Extract the ZIP.
+4. Open a terminal in the extracted folder.
+
+ZIP downloads are fine for testing, but they do not keep Git history. Use a fork or clone if you want automatic updates.
+
+## Cloudflare Worker Deploy
+
+This project deploys as a Cloudflare Worker with static assets and Worker API routes.
+
+### 1. Install Wrangler And Log In
 
 ```bash
 npm install -g wrangler
 wrangler login
 ```
 
-You can also use `npx wrangler ...` without a global install.
+You can also use `npx wrangler ...` without installing Wrangler globally.
 
-2. Create a KV namespace:
+### 2. Create A KV Namespace
 
 ```bash
 npx wrangler kv namespace create GAMELIST
 ```
 
-3. Copy the generated namespace id into `wrangler.toml`:
+Copy the namespace ID that Wrangler prints.
 
-```toml
-[[kv_namespaces]]
-binding = "GAMELIST"
-id = "PASTE_THE_NEW_ID_HERE"
-```
+### 3. Edit `wrangler.toml`
 
-4. Choose the Worker name in `wrangler.toml`:
+Replace the Worker name and KV namespace ID with your own values:
 
 ```toml
 name = "my-gamelist"
+
+[[kv_namespaces]]
+binding = "GAMELIST"
+id = "PASTE_YOUR_KV_NAMESPACE_ID_HERE"
 ```
 
-5. Set the required edit password:
+The checked-in `wrangler.toml` includes the original project's namespace IDs. Anyone cloning or forking should replace them with their own Cloudflare KV namespace IDs before deploying.
+
+If you do not need multiple deploy environments, you can delete the `[env.github]`, `[env.gitlab]`, and matching environment KV sections. Keep the top-level `name`, `main`, `compatibility_date`, `[vars]`, `[assets]`, and `[[kv_namespaces]]` sections.
+
+### 4. Set The Required Secret
 
 ```bash
 npx wrangler secret put EDIT_PASSWORD
 ```
 
-6. Deploy:
+This password unlocks edit mode and allows the app to save data to KV.
+
+### 5. Deploy
 
 ```bash
 npx wrangler deploy
 ```
 
-The site will be available on the generated `workers.dev` URL unless you attach a custom domain in Cloudflare.
+Wrangler will print your `workers.dev` URL. Open it, log in with your edit password, then open Settings to configure currency, region, stores, owners, account names, theme, Shelf Sync, and visible sections.
 
-### Updating An Existing Deploy
+## Deploy From GitHub To Cloudflare
 
-For normal updates after editing the repo:
+You can also connect your fork to Cloudflare so every push deploys automatically.
+
+1. Fork this repository on GitHub.
+2. In Cloudflare, open **Workers & Pages**.
+3. Create or import a Worker project from your GitHub repository.
+4. Use this build/deploy command:
 
 ```bash
 npx wrangler deploy
 ```
 
-If you changed `wrangler.toml`, changed KV bindings, or added a new integration, confirm the relevant secret/namespace exists before deploying. Secrets are not stored in git, so a fresh Cloudflare Worker needs them set again with `npx wrangler secret put ...`.
+5. Add Cloudflare secrets/variables for the project:
+
+```text
+EDIT_PASSWORD
+IGDB_CLIENT_ID
+IGDB_CLIENT_SECRET
+PRICECHARTING_TOKEN
+PSN_NPSSO
+PSN_PROFILE_USER
+STEAM_API_KEY
+STEAM_PROFILE_USER
+OPENXBL_API_KEY
+XBOX_GAMERTAG
+GOOGLE_SERVICE_ACCOUNT_EMAIL
+GOOGLE_PRIVATE_KEY
+GOOGLE_CALENDAR_ID
+```
+
+Only `EDIT_PASSWORD` is required. Add the others when you use those integrations.
+
+6. Make sure your fork's `wrangler.toml` points to your own Worker name and KV namespace.
+7. Push changes to GitHub. Cloudflare will deploy the latest commit.
+
+Secrets are not stored in git, so every new Cloudflare Worker/project needs its secrets set in Cloudflare or with `npx wrangler secret put ...`.
+
+## Keep A Fork Or Clone Synced
+
+The main repository is:
+
+```text
+https://github.com/ShabiiEXE/Gamelist.git
+```
+
+### Manual Sync For A Local Clone
+
+If you cloned your own fork, add the main repository as `upstream`:
+
+```bash
+git remote add upstream https://github.com/ShabiiEXE/Gamelist.git
+git fetch upstream
+git checkout main
+git merge upstream/main
+git push origin main
+```
+
+Run the same commands whenever you want to pull updates from the main repository.
+
+If you only cloned the main repository directly, update with:
+
+```bash
+git pull origin main
+```
+
+### Automatic Sync For GitHub Forks
+
+This repository includes `.github/workflows/sync-from-upstream.yml`. In a fork, that workflow:
+
+- Runs once per day.
+- Can be started manually from the GitHub **Actions** tab.
+- Fetches `ShabiiEXE/Gamelist`.
+- Fast-forwards your fork's `main` branch.
+- Pushes the updated `main` branch back to your fork.
+
+To enable it in your fork:
+
+1. Open your fork on GitHub.
+2. Go to **Actions**.
+3. Enable workflows if GitHub asks.
+4. Open **Sync from upstream**.
+5. Click **Run workflow** once to test it.
+
+The workflow uses `--ff-only`, so it updates cleanly when your fork has no conflicting commits. If you edit the same files differently in your fork, GitHub will stop the sync instead of overwriting your work. Resolve the conflict locally, then push your fixed `main` branch.
+
+### Fork Layout That Syncs Cleanly
+
+For the smoothest syncing:
+
+- Keep your deploy-specific changes small, usually just `wrangler.toml` and secrets in Cloudflare.
+- Put personal experiments on a feature branch instead of directly on `main`.
+- Pull upstream updates before making large local changes.
+- Export CSV data before bulk edits inside the app.
+
+## Updating An Existing Deploy
+
+For normal updates after editing or syncing the repo:
+
+```bash
+npx wrangler deploy
+```
+
+If you changed `wrangler.toml`, changed KV bindings, or added a new integration, confirm the relevant secret/namespace exists before deploying.
 
 If a browser keeps an old version after deploy, the app checks `version.json` and clears its own caches when the version changes. The service worker cache name is also versioned in `service-worker.js`.
 
-### Cloudflare Preview Deploys
+## Cloudflare Preview Deploys
 
 To deploy the current repo to a separate Workers preview URL without replacing the main Worker, use a different Worker name:
 
@@ -191,62 +286,7 @@ To deploy the current repo to a separate Workers preview URL without replacing t
 npx wrangler deploy --env="" --name gamelist-dev --message "Preview build"
 ```
 
-The current preview URL is:
-
-```text
-https://gamelist-dev.shabiimitjans.workers.dev
-```
-
-This preview Worker uses the same top-level `GAMELIST` KV binding as the main app unless `wrangler.toml` is changed to point it at a separate namespace.
-
-### GOTY Export HTML Preview
-
-The Game of the Year poster is rendered as normal HTML first, then converted to PNG in the browser. To inspect and tweak the exact pre-PNG export layout on Cloudflare, open:
-
-```text
-https://gamelist-dev.shabiimitjans.workers.dev/goty-export?year=2026
-```
-
-That route redirects to the app-shell preview mode:
-
-```text
-https://gamelist-dev.shabiimitjans.workers.dev/?gotyExport=2026
-```
-
-Change the `year`/`gotyExport` value to preview a different saved GOTY year.
-
-## GitHub And GitLab Deploy Notes
-
-This repo currently includes both default/GitHub and GitLab Wrangler environments because the original project used two Cloudflare deploys with separate saved-data namespaces:
-
-- Default/GitHub deploy: `npx wrangler deploy` or `npx wrangler deploy --env github`
-- GitLab deploy: `npx wrangler deploy --env gitlab`
-
-The default and `github` environment keep `SHELF_ENABLED=true`. The `gitlab` environment sets `SHELF_ENABLED=false`, so Shelf routes and Shelf-only assets return `404` there.
-
-For a normal downloaded/forked copy, you probably do not need the GitLab environment. To remove it cleanly:
-
-1. Open `wrangler.toml`.
-2. Delete the `[env.gitlab]`, `[env.gitlab.vars]`, and `[[env.gitlab.kv_namespaces]]` sections.
-3. If you also do not need the explicit GitHub environment, delete `[env.github]`, `[env.github.vars]`, and `[[env.github.kv_namespaces]]`.
-4. Keep the top-level `name`, `[vars]`, `[assets]`, and `[[kv_namespaces]]` sections.
-5. Replace the top-level KV namespace id with your own `GAMELIST` namespace id.
-6. Deploy with `npx wrangler deploy`.
-
-If you keep multiple environments, each environment needs its own KV namespace binding and its own secrets. Set secrets for a specific environment like this:
-
-```bash
-npx wrangler secret put EDIT_PASSWORD --env gitlab
-npx wrangler secret put PRICECHARTING_TOKEN --env gitlab
-```
-
-If a Cloudflare Pages/Workers project cannot change its deploy command, you can set this normal environment variable in that Cloudflare project's **Settings > Variables and Secrets**:
-
-```text
-CLOUDFLARE_ENV=gitlab
-```
-
-Then Cloudflare can keep running `npx wrangler deploy`, and Wrangler will deploy the `gitlab` environment.
+Preview deploys use the same top-level `GAMELIST` KV binding unless you change `wrangler.toml` to point at a separate namespace.
 
 ## Required Cloudflare Pieces
 
@@ -256,7 +296,7 @@ Stores saved Gamelist data, Shelf data, layout settings, favorite/showcase IDs, 
 `EDIT_PASSWORD` secret:
 Unlocks edit mode and allows saving to KV. Without it, the app can display data but cannot save edits to the cloud.
 
-## Must-Do Integration
+## Required Integration
 
 ### IGDB Lookup
 
@@ -269,27 +309,21 @@ npx wrangler secret put IGDB_CLIENT_SECRET
 
 IGDB authentication uses Twitch developer credentials:
 
-1. Open the Twitch Developer Console: `https://dev.twitch.tv/console`
+1. Open the Twitch Developer Console: `https://dev.twitch.tv/console`.
 2. Log in with a Twitch account.
-3. Make sure the Twitch account has email verification and 2FA enabled.
+3. Make sure the account has email verification and 2FA enabled.
 4. Go to **Applications**.
 5. Click **Register Your Application**.
-6. Use any name, for example `Gamelist`.
-7. Use `http://localhost` as the OAuth Redirect URL. The app only needs server-to-server credentials, but Twitch requires a redirect URL when registering.
-8. Set the category to **Website Integration** or the closest available app category.
+6. Use any app name, for example `Gamelist`.
+7. Use `http://localhost` as the OAuth Redirect URL.
+8. Set the category to **Website Integration** or the closest available category.
 9. Create the app.
 10. Copy the **Client ID** into the `IGDB_CLIENT_ID` Cloudflare secret.
 11. Create/copy the app secret into `IGDB_CLIENT_SECRET`.
 
-The app requests Twitch app access tokens automatically. Without IGDB credentials, lookup falls back where possible, but results may be weaker.
+The app requests Twitch app access tokens automatically. Without IGDB credentials, lookup falls back where possible, but search and metadata quality will be weaker.
 
-IGDB is used by:
-
-- Game lookup in Gamelist and Shelf.
-- Cover, description, publisher/developer, genre, release date, platform, trailer, and store-link enrichment.
-- The Shelf IGDB cover refresh tool.
-
-## Recommended Integration
+## Recommended Integrations
 
 ### PriceCharting Token
 
@@ -306,18 +340,16 @@ To get the token:
 3. Open the PriceCharting **Subscription** page.
 4. Click **API/Download**.
 5. Copy the 40-character access token.
-6. Paste it into Wrangler when `npx wrangler secret put PRICECHARTING_TOKEN` asks for the secret value.
+6. Paste it into Wrangler when prompted.
 
 With this token, saved PriceCharting product IDs can be fetched directly through PriceCharting's product API. Without it, the app falls back to public PriceCharting search/product pages, which can be slower and less reliable during bulk Shelf price updates.
-
-## Optional Integrations
 
 ### PSN Trophy Activity
 
 The trophy widgets use Sony's PSN API through a Cloudflare Worker secret called `PSN_NPSSO`.
 
-1. Log into PlayStation in your browser: `https://www.playstation.com/`
-2. In the same browser, open: `https://ca.account.sony.com/api/v1/ssocookie`
+1. Log into PlayStation in your browser: `https://www.playstation.com/`.
+2. In the same browser, open: `https://ca.account.sony.com/api/v1/ssocookie`.
 3. Copy only the long `npsso` token value from the JSON response.
 4. Set it as a Cloudflare secret:
 
@@ -547,8 +579,8 @@ By default, `/api/shelf-metadata` only fills missing fields and leaves existing 
 - Auth endpoint: `/api/auth`
 - Local browser draft backup: `localStorage`
 
-The summary endpoints above are served under `/api/...` and cache their generated JSON in KV for one hour, including the PSN/Steam/Xbox aggregate endpoints so they do not repeatedly fan out to external profile APIs. Add `?refresh=1` to rebuild a summary immediately.
+The summary endpoints above are served under `/api/...` and cache their generated JSON in KV for one hour, including the PSN/Steam/Xbox aggregate endpoints so they do not repeatedly call external profile APIs. Add `?refresh=1` to rebuild a summary immediately.
 
 In edit mode, Settings also exposes page-specific **Dev features** links. Gamelist shows data/settings/auth endpoints. Shelf shows Shelf data, mass add, metadata fill, Shelf price audit, and Shelf IGDB cover refresh tools.
 
-To start clean, use a brand-new KV namespace. To clone existing data, copy the relevant KV values into the new namespace.
+To start clean, use a brand-new KV namespace. To clone existing saved data, copy the relevant KV values into the new namespace.
