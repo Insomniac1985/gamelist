@@ -26,39 +26,29 @@ Both pages share edit mode, themes, account settings, price-store settings, achi
 
 ## How To Setup Your Own Gamelist
 
-This is the main setup path. You do not need to download a ZIP or run terminal commands. Make your own GitHub copy first so you also get the `.github` workflow that keeps your Gamelist updated from the main repository.
+This is the main setup path. You do not need to download a ZIP or run terminal commands. Cloudflare can import the public GitHub repository URL directly from the dashboard.
 
-### 1. Create Your GitHub Copy
-
-1. Open this repository:
-
-```text
-https://github.com/ShabiiEXE/Gamelist
-```
-
-2. Click **Fork**.
-3. Keep the default fork settings and create the fork.
-4. Open your new fork on GitHub.
-5. Confirm it includes `.github/workflows/sync-from-upstream.yml`.
-6. Go to **Actions**.
-7. If GitHub asks, click **I understand my workflows, go ahead and enable them**.
-8. Open **Sync from upstream**.
-9. Enable the workflow if GitHub asks.
-
-### 2. Start From Cloudflare
+### 1. Start From Cloudflare
 
 1. Open the Cloudflare dashboard.
 2. Go to **Workers & Pages**.
 3. Click **Create application**.
 4. Click **Continue with GitHub**.
-5. If Cloudflare sends you to GitHub, set up or sign in to your GitHub account and allow the connection.
-6. Choose **Import a repository**.
-7. Select your Gamelist fork.
-8. Keep the default settings and click **Deploy**.
-9. Once deployed, open **Overview** in the nav bar and click **Visit** to open your site.
-10. If the **Visit** button is not available, open **Domains** in the nav bar and enable both URLs.
+5. Choose **Import a repository**.
+6. Choose **Clone a public repository via GitHub URL**.
+7. Add this repository URL:
 
-### 3. Add Secrets In Cloudflare
+```text
+https://github.com/ShabiiEXE/Gamelist
+```
+
+8. Continue with the imported repository.
+9. If Cloudflare sends you to GitHub, set up or sign in to your GitHub account and allow the connection.
+10. Keep the default settings and click **Deploy**.
+11. Once deployed, open **Overview** in the nav bar and click **Visit** to open your site.
+12. If the **Visit** button is not available, open **Domains** in the nav bar and enable both URLs.
+
+### 2. Add Secrets In Cloudflare
 
 In the Worker project settings, add your secrets through the Cloudflare website:
 
@@ -224,9 +214,9 @@ Use CSV export before any large bulk operation if you want a quick backup.
 
 ## Automatic Updates
 
-Your GitHub fork includes `.github/workflows/sync-from-upstream.yml`. That workflow is what keeps your Gamelist copy updated from the main repository.
+The direct Cloudflare import is the simplest deploy path. It does not create a GitHub repository for you, so GitHub Actions are not enabled automatically.
 
-Cloudflare deploys the site, but GitHub owns the automatic update workflow. That is why the setup starts with a GitHub fork instead of only cloning the public repository URL from Cloudflare.
+If you later create your own GitHub copy of Gamelist, you can add `.github/workflows/sync-from-upstream.yml` there to keep your copy updated from the main repository.
 
 The workflow:
 
@@ -239,7 +229,7 @@ The workflow:
 
 This matters because every Cloudflare account needs its own `wrangler.toml` values. The app code can stay up to date with the main repository, while each deploy keeps its own Cloudflare binding.
 
-To turn it on in a GitHub copy:
+To turn it on later in a GitHub copy:
 
 1. Open the repository on GitHub.
 2. Go to **Actions**.
