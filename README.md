@@ -169,13 +169,28 @@ Cloudflare will use the `wrangler.toml` file from your fork.
 
 ### 5. Add Secrets In Cloudflare
 
-In the Worker project settings, open **Variables and Secrets** and add:
+In the Worker project settings, add your secrets through the Cloudflare website:
+
+1. Open the Cloudflare dashboard.
+2. Go to **Workers & Pages**.
+3. Open your Gamelist Worker.
+4. Open **Settings**.
+5. Open **Variables and Secrets**.
+6. Click **Add**.
+7. Choose **Secret** for passwords, API keys, and tokens.
+8. Enter the variable name exactly as shown below.
+9. Paste the value.
+10. Save.
+
+Add this required secret first:
 
 ```text
 EDIT_PASSWORD
 ```
 
-That is the only required secret. Add these later if you use the integrations:
+`EDIT_PASSWORD` is the password you will type in the app to unlock edit mode.
+
+Add these later if you use the integrations:
 
 ```text
 IGDB_CLIENT_ID
@@ -191,6 +206,8 @@ GOOGLE_SERVICE_ACCOUNT_EMAIL
 GOOGLE_PRIVATE_KEY
 GOOGLE_CALENDAR_ID
 ```
+
+Use **Secret** for all integration keys/tokens. Do not put them in `wrangler.toml`, do not commit them to GitHub, and do not share them publicly.
 
 ### 6. Deploy
 
@@ -343,12 +360,7 @@ Unlocks edit mode and allows saving to KV. Without it, the app can display data 
 
 ### IGDB Lookup
 
-Game lookup works best with IGDB configured:
-
-```bash
-npx wrangler secret put IGDB_CLIENT_ID
-npx wrangler secret put IGDB_CLIENT_SECRET
-```
+Game lookup works best with IGDB configured. In Cloudflare **Variables and Secrets**, add `IGDB_CLIENT_ID` and `IGDB_CLIENT_SECRET` as secrets.
 
 IGDB authentication uses Twitch developer credentials:
 
@@ -370,11 +382,7 @@ The app requests Twitch app access tokens automatically. Without IGDB credential
 
 ### PriceCharting Token
 
-Shelf collection values work best with a PriceCharting API token:
-
-```bash
-npx wrangler secret put PRICECHARTING_TOKEN
-```
+Shelf collection values work best with a PriceCharting API token. In Cloudflare **Variables and Secrets**, add `PRICECHARTING_TOKEN` as a secret.
 
 To get the token:
 
@@ -383,7 +391,7 @@ To get the token:
 3. Open the PriceCharting **Subscription** page.
 4. Click **API/Download**.
 5. Copy the 40-character access token.
-6. Paste it into Wrangler when prompted.
+6. Paste it into the `PRICECHARTING_TOKEN` secret in Cloudflare.
 
 With this token, saved PriceCharting product IDs can be fetched directly through PriceCharting's product API. Without it, the app falls back to public PriceCharting search/product pages, which can be slower and less reliable during bulk Shelf price updates.
 
@@ -394,17 +402,9 @@ The trophy widgets use Sony's PSN API through a Cloudflare Worker secret called 
 1. Log into PlayStation in your browser: `https://www.playstation.com/`.
 2. In the same browser, open: `https://ca.account.sony.com/api/v1/ssocookie`.
 3. Copy only the long `npsso` token value from the JSON response.
-4. Set it as a Cloudflare secret:
+4. Add it to Cloudflare **Variables and Secrets** as `PSN_NPSSO`.
 
-```bash
-npx wrangler secret put PSN_NPSSO
-```
-
-You can also set a default PSN profile name:
-
-```bash
-npx wrangler secret put PSN_PROFILE_USER
-```
+You can also set a default PSN profile name by adding `PSN_PROFILE_USER` as a secret.
 
 Treat the NPSSO token like a password. Do not commit it, paste it in chat, or put it in `wrangler.toml`. If trophies stop loading, refresh the token.
 
@@ -412,10 +412,12 @@ Treat the NPSSO token like a password. Do not commit it, paste it in chat, or pu
 
 PC game overlays can show Steam achievements when these are configured:
 
-```bash
-npx wrangler secret put STEAM_API_KEY
-npx wrangler secret put STEAM_PROFILE_USER
+```text
+STEAM_API_KEY
+STEAM_PROFILE_USER
 ```
+
+Add both in Cloudflare **Variables and Secrets** as secrets.
 
 Get a Steam Web API key from `https://steamcommunity.com/dev/apikey`.
 
@@ -427,15 +429,17 @@ Steam achievements are only fetched for Steam app IDs owned by the configured St
 
 Xbox 360, Xbox One, Xbox Series, and Xbox PC games can show achievements through OpenXBL. Create a personal API key in the OpenXBL dashboard, then add it as a Cloudflare secret:
 
-```bash
-npx wrangler secret put OPENXBL_API_KEY
+```text
+OPENXBL_API_KEY
 ```
 
 You can optionally set a default gamertag:
 
-```bash
-npx wrangler secret put XBOX_GAMERTAG
+```text
+XBOX_GAMERTAG
 ```
+
+Add both in Cloudflare **Variables and Secrets** as secrets.
 
 The site's Settings overlay has a **Microsoft account** field that accepts an Xbox gamertag or XUID. When filled, it overrides `XBOX_GAMERTAG`.
 
@@ -447,11 +451,13 @@ Set up a Google Cloud service account with Google Calendar API access, then shar
 
 Set these Cloudflare secrets:
 
-```bash
-npx wrangler secret put GOOGLE_SERVICE_ACCOUNT_EMAIL
-npx wrangler secret put GOOGLE_PRIVATE_KEY
-npx wrangler secret put GOOGLE_CALENDAR_ID
+```text
+GOOGLE_SERVICE_ACCOUNT_EMAIL
+GOOGLE_PRIVATE_KEY
+GOOGLE_CALENDAR_ID
 ```
+
+Add them in Cloudflare **Variables and Secrets** as secrets.
 
 `GOOGLE_CALENDAR_ID` can be your calendar ID from Google Calendar settings. The private key should be the `private_key` value from the service account JSON. Do not commit it.
 
