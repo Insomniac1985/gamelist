@@ -64,6 +64,7 @@ const DEFAULT_SETTINGS = {
   storeSettingsVersion: 2,
   defaultOwner: "Xavi",
   shelfSync: true,
+  hidePageSwitch: false,
   forceCacheOnLoad: false,
   gotyAlwaysShow: false,
   gameOfTheYear: {},
@@ -396,11 +397,11 @@ async function init() {
   if (!state.canEdit) state.canEdit = await hasSharedEditorSession();
   document.body.classList.toggle("can-edit", state.canEdit);
   bindEvents();
-  if (window.self === window.top) initPagePullTransition({ targetLabel: "Shelf", targetUrl: "shelf" });
   warmUiIcons();
   bindTextureParallax();
   await loadData();
   const cloudChanged = await pullCloudData();
+  syncPagePullTransition();
   if (await maybeRenderGameOfTheYearExportPreview()) return;
   render();
   if (cloudChanged) render();
@@ -750,6 +751,10 @@ function bindEvents() {
 }
 
 function initPagePullTransition({ targetLabel, targetUrl }) {
+  if (pageSwitchHidden()) {
+    removePagePullTransition();
+    return;
+  }
   if (document.querySelector(".page-pull-switch")) return;
   const button = document.createElement("button");
   button.className = "page-pull-switch";
@@ -837,6 +842,27 @@ function initPagePullTransition({ targetLabel, targetUrl }) {
   };
   button.addEventListener("pointerup", endDrag);
   button.addEventListener("pointercancel", endDrag);
+}
+
+function syncPagePullTransition() {
+  if (window.self !== window.top) return;
+  if (pageSwitchHidden()) removePagePullTransition();
+  else initPagePullTransition({ targetLabel: "Shelf", targetUrl: "shelf" });
+}
+
+function pageSwitchHidden() {
+  return state.settings.hidePageSwitch === true;
+}
+
+function removePagePullTransition() {
+  document.querySelector(".page-pull-switch")?.remove();
+  document.querySelector(".page-pull-curtain")?.remove();
+  document.body.classList.remove("page-pull-hover", "page-pulling", "page-switching", "page-switching-pending");
+  document.body.style.removeProperty("--pull-distance");
+  document.body.style.removeProperty("--pull-handle-y");
+  document.body.style.removeProperty("--pull-blur");
+  document.body.style.removeProperty("--pull-preview-opacity");
+  document.body.style.removeProperty("--pull-preview-scale");
 }
 
 function pagePullPreviewMarkup(targetUrl) {
@@ -1006,6 +1032,7 @@ function normalizeSettings(settings = {}) {
     storeSettingsVersion: 2,
     defaultOwner: cleanOwnerLabel(settings.defaultOwner) || DEFAULT_SETTINGS.defaultOwner,
     shelfSync: settings.shelfSync !== false,
+    hidePageSwitch: settings.hidePageSwitch === true,
     forceCacheOnLoad: settings.forceCacheOnLoad === true,
     gotyAlwaysShow: settings.gotyAlwaysShow === true,
     gameOfTheYear,
@@ -1175,7 +1202,7 @@ function renderSettingsDialog() {
     settingsLayoutItem("playing", -1, { fixed: true }),
     settingsLayoutItem("latestFinished", -1, { fixed: true }),
     ...state.settings.pageOrder.map((key) => settingsLayoutItem(key, pageIndex.get(key) ?? 0)),
-    `<div class="settings-preference-separator" role="presentation"></div><div class="settings-preference-row">${settingsThemeItem()}${settingsDefaultOrderItem()}${settingsWeekStartItem()}${settingsShelfSyncItem()}</div>`,
+    `<div class="settings-preference-separator" role="presentation"></div><div class="settings-preference-row">${settingsThemeItem()}${settingsDefaultOrderItem()}${settingsWeekStartItem()}${settingsShelfSyncItem()}${settingsPageSwitchItem()}</div>`,
   ].join("");
   document.querySelector("#settingsCsvData").innerHTML = settingsCsvDataItem("gamelist");
   if (el.settingsDevFeatures) el.settingsDevFeatures.innerHTML = settingsDevFeaturesItem("gamelist");
@@ -1327,6 +1354,23 @@ function settingsShelfSyncItem() {
           <label class="check-filter toggle-check settings-visible-check" title="${escapeHtml(tt("Shelf Sync"))}">
             <input type="checkbox" data-shelf-sync ${state.settings.shelfSync ? "checked" : ""}>
             <span>${escapeHtml(tt("Enabled"))}</span>
+          </label>
+        </div>
+      </div>
+    </article>
+  `;
+}
+
+function settingsPageSwitchItem() {
+  return `
+    <article class="settings-layout-card settings-sync-card" data-layout-key="page-switch">
+      <div class="settings-wire wire-list" aria-hidden="true"><span></span><span></span><span></span></div>
+      <div class="settings-theme-select">
+        <span>${escapeHtml(tt("Shelf/Gamelist switch"))}</span>
+        <div class="settings-check-field">
+          <label class="check-filter toggle-check settings-visible-check" title="${escapeHtml(tt("Hide switch"))}">
+            <input type="checkbox" data-hide-page-switch ${state.settings.hidePageSwitch ? "checked" : ""}>
+            <span>${escapeHtml(tt("Hide switch"))}</span>
           </label>
         </div>
       </div>
@@ -1527,6 +1571,7 @@ async function saveSettingsFromForm(event) {
     stores,
     defaultOwner: el.settingsDefaultOwner.value,
     shelfSync: Boolean(el.settingsLayoutList.querySelector("[data-shelf-sync]")?.checked),
+    hidePageSwitch: el.settingsLayoutList.querySelector("[data-hide-page-switch]")?.checked === true,
     weekStart: normalizeWeekStart(el.settingsLayoutList.querySelector("[data-week-start]")?.value || state.settings.weekStart),
     forceCacheOnLoad: document.querySelector("#settingsForceCacheOnLoad")?.checked === true,
     gotyAlwaysShow: document.querySelector("#settingsGotyAlwaysShow")?.checked === true,
@@ -1541,6 +1586,7 @@ async function saveSettingsFromForm(event) {
   }
   refreshAchievements();
   render();
+  syncPagePullTransition();
   if (previousCurrency !== state.settings.currency) await refreshAllPrices();
 }
 

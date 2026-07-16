@@ -193,7 +193,6 @@ async function init() {
   bindTextureParallax();
   populateEditorOptions();
   bindEvents();
-  if (window.self === window.top) initPagePullTransition({ targetLabel: "Gamelist", targetUrl: "./" });
   hydrateModuleCache();
   const [shelfData, auth, gamelistData] = await Promise.all([
     fetch("/api/shelf", { cache: "no-store" }).then((response) => response.ok ? response.json() : null).catch(() => null),
@@ -211,6 +210,7 @@ async function init() {
   state.updatedAt = shelfData?.updatedAt || "";
   state.gamelistGames = gamelistData?.games || [];
   state.gamelistSettings = gamelistData?.settings || state.gamelistSettings;
+  syncPagePullTransition();
   applyShelfDefaultOrder(state.gamelistSettings.shelfDefaultOrder ?? state.gamelistSettings.defaultOrder);
   applyTheme();
   loadTrophyActivity();
@@ -510,6 +510,10 @@ function applyLanguage() {
 }
 
 function initPagePullTransition({ targetLabel, targetUrl }) {
+  if (pageSwitchHidden()) {
+    removePagePullTransition();
+    return;
+  }
   if (document.querySelector(".page-pull-switch")) return;
   const button = document.createElement("button");
   button.className = "page-pull-switch";
@@ -597,6 +601,27 @@ function initPagePullTransition({ targetLabel, targetUrl }) {
   };
   button.addEventListener("pointerup", endDrag);
   button.addEventListener("pointercancel", endDrag);
+}
+
+function syncPagePullTransition() {
+  if (window.self !== window.top) return;
+  if (pageSwitchHidden()) removePagePullTransition();
+  else initPagePullTransition({ targetLabel: "Gamelist", targetUrl: "./" });
+}
+
+function pageSwitchHidden() {
+  return state.gamelistSettings?.hidePageSwitch === true;
+}
+
+function removePagePullTransition() {
+  document.querySelector(".page-pull-switch")?.remove();
+  document.querySelector(".page-pull-curtain")?.remove();
+  document.body.classList.remove("page-pull-hover", "page-pulling", "page-switching", "page-switching-pending");
+  document.body.style.removeProperty("--pull-distance");
+  document.body.style.removeProperty("--pull-handle-y");
+  document.body.style.removeProperty("--pull-blur");
+  document.body.style.removeProperty("--pull-preview-opacity");
+  document.body.style.removeProperty("--pull-preview-scale");
 }
 
 function pagePullPreviewMarkup(targetUrl) {
@@ -1648,7 +1673,7 @@ function renderLayoutEditor() {
   el.layoutList.className = "settings-layout";
   el.layoutList.innerHTML = [
     ...state.layout.order.map((key, index) => settingsLayoutCard(key, index)),
-    `<div class="settings-preference-separator" role="presentation"></div><div class="settings-preference-row">${themeSettingsButton(state.gamelistSettings, escapeHtml)}${settingsSelectCard("order", tt("Default order"), "shelfSettingsDefaultOrder", [{ value: "added", label: tt("Last added") }, { value: "title", label: tt("Name") }, { value: "platform", label: tt("Platform") }, { value: "region", label: tt("Region") }, { value: "value", label: tt("Value") }])}${settingsSelectCard("calendar", tt("Week starts"), "shelfSettingsWeekStart", WEEK_START_OPTIONS.map(([value, label]) => ({ value, label: tt(label) })))}${settingsShelfSyncCard()}${settingsShelfPricesCard()}</div>`,
+    `<div class="settings-preference-separator" role="presentation"></div><div class="settings-preference-row">${themeSettingsButton(state.gamelistSettings, escapeHtml)}${settingsSelectCard("order", tt("Default order"), "shelfSettingsDefaultOrder", [{ value: "added", label: tt("Last added") }, { value: "title", label: tt("Name") }, { value: "platform", label: tt("Platform") }, { value: "region", label: tt("Region") }, { value: "value", label: tt("Value") }])}${settingsSelectCard("calendar", tt("Week starts"), "shelfSettingsWeekStart", WEEK_START_OPTIONS.map(([value, label]) => ({ value, label: tt(label) })))}${settingsShelfSyncCard()}${settingsShelfPricesCard()}${settingsPageSwitchCard()}</div>`,
   ].join("");
   document.querySelector("#shelfSettingsCsvData").innerHTML = settingsCsvDataCard("shelf");
   if (el.settingsDevFeatures) el.settingsDevFeatures.innerHTML = settingsDevFeaturesCard("shelf");
@@ -1712,6 +1737,10 @@ function settingsShelfSyncCard() {
 
 function settingsShelfPricesCard() {
   return `<article class="settings-layout-card settings-sync-card"><div class="settings-wire wire-list" aria-hidden="true"><span></span><span></span><span></span></div><div class="settings-theme-select"><span>${escapeHtml(tt("Prices"))}</span><div class="settings-check-field"><label class="check-filter toggle-check settings-visible-check" title="${escapeHtml(tt("Show Prices"))}"><input type="checkbox" id="shelfSettingsShowPrices" ${state.gamelistSettings.shelfHidePrices ? "" : "checked"}><span>${escapeHtml(tt("Show Prices"))}</span></label></div></div></article>`;
+}
+
+function settingsPageSwitchCard() {
+  return `<article class="settings-layout-card settings-sync-card"><div class="settings-wire wire-list" aria-hidden="true"><span></span><span></span><span></span></div><div class="settings-theme-select"><span>${escapeHtml(tt("Shelf/Gamelist switch"))}</span><div class="settings-check-field"><label class="check-filter toggle-check settings-visible-check" title="${escapeHtml(tt("Hide switch"))}"><input type="checkbox" id="shelfSettingsHidePageSwitch" ${state.gamelistSettings.hidePageSwitch ? "checked" : ""}><span>${escapeHtml(tt("Hide switch"))}</span></label></div></div></article>`;
 }
 
 function settingsCsvDataCard(kind) {
@@ -2116,12 +2145,13 @@ async function saveLayout(event) {
   state.layout.hidden = LAYOUT_KEYS.filter((key) => !el.layoutList.querySelector(`[data-layout-visible][value="${key}"]`)?.checked);
   localStorage.setItem(LAYOUT_KEY, JSON.stringify(state.layout));
   const stores = [...el.settingsStores.querySelectorAll("input:checked")].map((input) => input.value).filter((store) => STORE_OPTIONS.includes(store)).slice(0, MAX_PRICE_STORES);
-  state.gamelistSettings = { ...state.gamelistSettings, shelfDefaultOrder: el.settingsDefaultOrder.value, weekStart: normalizeWeekStart(el.settingsWeekStart?.value || state.gamelistSettings.weekStart), currency: el.settingsCurrency.value, region: el.settingsRegion.value, language: normalizeLanguage(el.settingsLanguage.value), psnUser: el.settingsPsnUser.value.trim(), microsoftUser: el.settingsMicrosoftUser.value.trim(), steamUser: el.settingsSteamUser.value.trim(), defaultOwner: el.settingsDefaultOwner.value.trim(), stores, storeSettingsVersion: 2, shelfSync: document.querySelector("#shelfSettingsSync")?.checked !== false, shelfHidePrices: document.querySelector("#shelfSettingsShowPrices")?.checked === false, forceCacheOnLoad: document.querySelector("#shelfSettingsForceCacheOnLoad")?.checked === true };
+  state.gamelistSettings = { ...state.gamelistSettings, shelfDefaultOrder: el.settingsDefaultOrder.value, weekStart: normalizeWeekStart(el.settingsWeekStart?.value || state.gamelistSettings.weekStart), currency: el.settingsCurrency.value, region: el.settingsRegion.value, language: normalizeLanguage(el.settingsLanguage.value), psnUser: el.settingsPsnUser.value.trim(), microsoftUser: el.settingsMicrosoftUser.value.trim(), steamUser: el.settingsSteamUser.value.trim(), defaultOwner: el.settingsDefaultOwner.value.trim(), stores, storeSettingsVersion: 2, shelfSync: document.querySelector("#shelfSettingsSync")?.checked !== false, shelfHidePrices: document.querySelector("#shelfSettingsShowPrices")?.checked === false, hidePageSwitch: document.querySelector("#shelfSettingsHidePageSwitch")?.checked === true, forceCacheOnLoad: document.querySelector("#shelfSettingsForceCacheOnLoad")?.checked === true };
   localStorage.setItem("gamelist:settings:v1", JSON.stringify(state.gamelistSettings));
   applyShelfDefaultOrder(state.gamelistSettings.shelfDefaultOrder);
   await Promise.all([persistShelf(), persistGamelistSettings()]);
   applyLayout();
   applyTheme();
+  syncPagePullTransition();
   renderAll();
   if (!state.layout.hidden.includes("trophies") && !state.trophyActivity) loadTrophyActivity();
   closeDialog(el.layoutDialog);
