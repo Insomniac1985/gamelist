@@ -109,7 +109,7 @@ Use **Secret** for all integration keys/tokens. Do not put them in `wrangler.tom
 
 ## Automatic Updates
 
-The direct Cloudflare import is the simplest deploy path, but GitHub Actions are not enabled automatically. To receive upcoming Gamelist feature updates from the main repository, you need to manually add the action script to your GitHub repository.
+To receive upcoming Gamelist feature updates, manually add the GitHub Actions script to your repository.
 
 The workflow:
 
