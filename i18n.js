@@ -27,6 +27,8 @@ const STRINGS = {
     Order: "Orden",
     Preordered: "Reservado",
     "All platforms": "Todas las plataformas",
+    "Twitch account": "Cuenta de Twitch",
+    "Twitch username": "Usuario de Twitch",
     "All categories": "Todas las categorías",
     "All regions": "Todas las regiones",
     "All conditions": "Todos los estados",

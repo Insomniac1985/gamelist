@@ -13,7 +13,6 @@ const PLATINUM_META_CACHE_KEY = "gamelist:platinum-meta:v1";
 const PLATINUM_COVER_CACHE_KEY = "gamelist:platinum-covers:v1";
 const SETTINGS_KEY = "gamelist:settings:v1";
 const ACHIEVEMENT_CACHE_KEY = "gamelist:achievement-cache:v1";
-const KASH_TWITCH_URL = "https://www.twitch.tv/kashhoward";
 const DEFAULT_PAGE_ORDER = ["trophies", "calendar", "highlights", "search", "gamelist", "finished"];
 const LAYOUT_SECTION_KEYS = ["playing", ...DEFAULT_PAGE_ORDER, "latestFinished"];
 const VERSION_STORAGE_KEY = "gamelist:site-version";
@@ -58,6 +57,7 @@ const DEFAULT_SETTINGS = {
   psnUser: "",
   microsoftUser: "",
   steamUser: "",
+  twitchUser: "",
   currency: "EUR",
   region: "ES",
   stores: ["Amazon"],
@@ -314,6 +314,7 @@ const el = {
   settingsPsnUser: document.querySelector("#settingsPsnUser"),
   settingsMicrosoftUser: document.querySelector("#settingsMicrosoftUser"),
   settingsSteamUser: document.querySelector("#settingsSteamUser"),
+  settingsTwitchUser: document.querySelector("#settingsTwitchUser"),
   settingsCurrency: document.querySelector("#settingsCurrency"),
   settingsRegion: document.querySelector("#settingsRegion"),
   settingsLanguage: document.querySelector("#settingsLanguage"),
@@ -550,8 +551,9 @@ async function clearSiteCachesAndReload() {
 function bindEvents() {
   el.brandLink.addEventListener("click", (event) => {
     event.preventDefault();
-    if (normalizeSettings(state.settings).theme === "kash") {
-      window.open(KASH_TWITCH_URL, "_blank", "noopener,noreferrer");
+    const twitchUrl = twitchChannelUrl(normalizeSettings(state.settings).twitchUser);
+    if (twitchUrl) {
+      window.open(twitchUrl, "_blank", "noopener,noreferrer");
       return;
     }
     scrollToSearchArea();
@@ -1025,6 +1027,7 @@ function normalizeSettings(settings = {}) {
     psnUser: cleanPsnUser(settings.psnUser),
     microsoftUser: cleanMicrosoftUser(settings.microsoftUser),
     steamUser: cleanSteamUser(settings.steamUser),
+    twitchUser: cleanTwitchUser(settings.twitchUser),
     currency: settings.currency === "USD" ? "USD" : "EUR",
     region: ["ES", "IT", "US", "UK"].includes(settings.region) ? settings.region : DEFAULT_SETTINGS.region,
     language: normalizeLanguage(settings.language),
@@ -1138,10 +1141,11 @@ function applyLanguage() {
 function applyTheme() {
   const settings = normalizeSettings(state.settings);
   const theme = applySiteTheme(settings, { page: "gamelist" });
+  const twitchUrl = twitchChannelUrl(settings.twitchUser);
   el.brandLink?.setAttribute("aria-label", theme.title);
-  el.brandLink?.setAttribute("href", settings.theme === "kash" ? KASH_TWITCH_URL : "#backlog");
-  el.brandLink?.toggleAttribute("target", settings.theme === "kash");
-  if (settings.theme === "kash") {
+  el.brandLink?.setAttribute("href", twitchUrl || "#backlog");
+  el.brandLink?.toggleAttribute("target", Boolean(twitchUrl));
+  if (twitchUrl) {
     el.brandLink?.setAttribute("rel", "noreferrer");
   } else {
     el.brandLink?.removeAttribute("rel");
@@ -1192,6 +1196,7 @@ function renderSettingsDialog() {
   el.settingsPsnUser.value = state.settings.psnUser;
   el.settingsMicrosoftUser.value = state.settings.microsoftUser;
   el.settingsSteamUser.value = state.settings.steamUser;
+  el.settingsTwitchUser.value = state.settings.twitchUser;
   el.settingsCurrency.value = state.settings.currency;
   el.settingsRegion.value = state.settings.region;
   el.settingsLanguage.innerHTML = languageOptions(state.settings.language, escapeHtml);
@@ -1565,6 +1570,7 @@ async function saveSettingsFromForm(event) {
     psnUser: el.settingsPsnUser.value,
     microsoftUser: el.settingsMicrosoftUser.value,
     steamUser: el.settingsSteamUser.value,
+    twitchUser: el.settingsTwitchUser.value,
     currency: el.settingsCurrency.value,
     region: el.settingsRegion.value,
     language: el.settingsLanguage.value,
@@ -2049,10 +2055,11 @@ async function gameOfTheYearExportHtml(year = state.gotyYear) {
   })));
   const logo = await exportImageDataUrl(document.querySelector(".brand-mark")?.src || THEMES.shabii.icon, THEMES.shabii.icon);
   const background = await exportImageDataUrl(theme.backgroundImage || "", theme.mode === "light" ? "assets/backdrop_light.png" : "assets/backdrop.png");
-  return gameOfTheYearExportMarkup({ owner, year, rows: assetRows, statsGames, theme, logo, background });
+  const twitchUrl = twitchChannelUrl(state.settings.twitchUser);
+  return gameOfTheYearExportMarkup({ owner, year, rows: assetRows, statsGames, theme, logo, background, twitchUrl });
 }
 
-function gameOfTheYearExportMarkup({ owner, year, rows, statsGames, theme, logo, background }) {
+function gameOfTheYearExportMarkup({ owner, year, rows, statsGames, theme, logo, background, twitchUrl = "" }) {
   const main = theme.mainColorReset ? DEFAULT_SETTINGS.theme === "kash" ? THEMES.kash.themeColor : THEMES.shabii.themeColor : theme.mainColor;
   const accent = theme.accentColor || "#79f2ce";
   const gradient = theme.gradient ? theme.gradientColor : main;
@@ -2061,7 +2068,7 @@ function gameOfTheYearExportMarkup({ owner, year, rows, statsGames, theme, logo,
   const glowSecondary = canvasThemeColorBySource(theme, theme.glowSecondary || "accent", main, accent);
   const siteUrl = cleanCanvasSiteUrl(window.location.origin && window.location.origin !== "null" ? window.location.origin : window.location.hostname || "Gamelist");
   const logoSrc = logo || document.querySelector(".brand-mark")?.src || THEMES.shabii.icon;
-  const footerLines = gameOfTheYearExportFooterLines(owner, siteUrl);
+  const footerLines = gameOfTheYearExportFooterLines(twitchUrl, siteUrl);
   return `
   <div xmlns="http://www.w3.org/1999/xhtml" class="goty-export-poster">
     <style>${gameOfTheYearExportCss({ theme, main, accent, gradient, bg, glowPrimary, glowSecondary })}</style>
@@ -2080,11 +2087,8 @@ function gameOfTheYearExportMarkup({ owner, year, rows, statsGames, theme, logo,
   </div>`;
 }
 
-function gameOfTheYearExportFooterLines(owner, siteUrl) {
-  const lines = [];
-  if (normalizeSearchText(owner) === "kash") lines.push(cleanCanvasSiteUrl(KASH_TWITCH_URL));
-  lines.push(siteUrl);
-  return lines.filter(Boolean);
+function gameOfTheYearExportFooterLines(twitchUrl, siteUrl) {
+  return [cleanCanvasSiteUrl(twitchUrl), siteUrl].filter(Boolean);
 }
 
 function gameOfTheYearExportTopStatsMarkup(year, games = []) {
@@ -2955,7 +2959,7 @@ async function drawGameOfTheYearImage(ctx, { owner, year, rows, logo, theme, bac
   ctx.font = `800 24px ${bodyFont}`;
   ctx.textAlign = "right";
   ctx.fillStyle = theme.mode === "light" ? "rgba(22,28,42,.72)" : "rgba(246,247,251,.74)";
-  gameOfTheYearExportFooterLines(owner, siteUrl).forEach((line, index, lines) => {
+  gameOfTheYearExportFooterLines(twitchChannelUrl(state.settings.twitchUser), siteUrl).forEach((line, index, lines) => {
     ctx.fillText(line, width - 82, height - 52 - (lines.length - index - 1) * 30);
   });
   ctx.textAlign = "left";
@@ -8671,6 +8675,28 @@ function cleanMicrosoftUser(value) {
 
 function cleanSteamUser(value) {
   return String(value || "").trim().replace(/[<>]/g, "").slice(0, 96);
+}
+
+function cleanTwitchUser(value) {
+  const text = String(value || "").trim();
+  if (!text) return "";
+  const candidate = /^https?:\/\//i.test(text)
+    ? (() => {
+        try {
+          const url = new URL(text);
+          if (!/(^|\.)twitch\.tv$/i.test(url.hostname)) return "";
+          return url.pathname.split("/").filter(Boolean)[0] || "";
+        } catch {
+          return "";
+        }
+      })()
+    : text.replace(/^@/, "");
+  return candidate.replace(/[^A-Za-z0-9_]/g, "").slice(0, 25);
+}
+
+function twitchChannelUrl(value) {
+  const user = cleanTwitchUser(value);
+  return user ? `https://www.twitch.tv/${encodeURIComponent(user)}` : "";
 }
 
 function cleanOwnerLabel(value) {
