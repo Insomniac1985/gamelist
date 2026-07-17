@@ -6284,7 +6284,7 @@ body.theme-kash .finished-stats-kpi.is-completed:focus-visible strong {
   position: relative;
   display: grid;
   grid-template-rows: auto auto;
-  flex: 0 0 min(1220px, calc(100vw - clamp(54px, 9vw, 112px)));
+  flex: 0 0 min(860px, calc(100vw - clamp(54px, 9vw, 112px)));
   min-height: 548px;
   align-content: center;
   padding: 14px;
@@ -6293,8 +6293,8 @@ body.theme-kash .finished-stats-kpi.is-completed:focus-visible strong {
   border: 1px solid color-mix(in srgb, #9146ff 58%, transparent);
   border-radius: 8px;
   background:
-    radial-gradient(circle at 12% 0%, rgba(145, 70, 255, 0.34), transparent 38%),
-    linear-gradient(145deg, rgba(40, 22, 67, 0.9), rgba(12, 14, 19, 0.92));
+    radial-gradient(circle at 12% 0%, rgba(145, 70, 255, 0.22), transparent 40%),
+    linear-gradient(145deg, rgba(40, 22, 67, 0.68), rgba(12, 14, 19, 0.88));
   scroll-snap-align: start;
   scroll-snap-stop: always;
 }
@@ -6319,8 +6319,8 @@ body.theme-kash .finished-stats-kpi.is-completed:focus-visible strong {
   border: 1px solid color-mix(in srgb, #ffffff 24%, transparent);
   color: #fff;
   background:
-    linear-gradient(135deg, rgba(145, 70, 255, 0.98), rgba(106, 49, 198, 0.94)),
-    #9146ff;
+    linear-gradient(135deg, rgba(145, 70, 255, 0.7), rgba(106, 49, 198, 0.58)),
+    rgba(145, 70, 255, 0.62);
   box-shadow:
     0 12px 28px rgba(68, 24, 125, 0.42),
     inset 0 1px 0 rgba(255, 255, 255, 0.28);
@@ -6335,8 +6335,8 @@ body.theme-kash .finished-stats-kpi.is-completed:focus-visible strong {
 .twitch-preview-status.is-live {
   color: #fff;
   background:
-    linear-gradient(135deg, #e91916, #9146ff 78%),
-    #9146ff;
+    linear-gradient(135deg, rgba(233, 25, 22, 0.78), rgba(145, 70, 255, 0.68) 78%),
+    rgba(145, 70, 255, 0.62);
 }
 
 .twitch-preview-player {
@@ -10792,16 +10792,16 @@ body.theme-kash
   }
 
   .twitch-preview-card {
-    flex-basis: calc(100vw - 54px);
-    min-height: 0;
-    align-content: start;
+    flex-basis: min(320px, calc(100vw - 54px));
+    min-height: 214px;
+    align-content: center;
     padding: 10px;
     gap: 9px;
   }
 
   .twitch-preview-player {
     min-width: 0;
-    min-height: 225px;
+    min-height: 0;
   }
 
   .twitch-preview-player iframe {
