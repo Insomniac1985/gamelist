@@ -10824,13 +10824,21 @@ body.theme-kash
   }
 
   .twitch-preview-player {
+    --mobile-twitch-scale: 0.75;
     min-width: 0;
     min-height: 0;
+    height: 180px;
   }
 
   .twitch-preview-player iframe {
-    width: max(100%, 400px);
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 400px;
+    height: 300px;
     min-width: 400px;
+    min-height: 300px;
+    transform: translate(-50%, -50%) scale(var(--mobile-twitch-scale));
   }
 
   .twitch-preview-status {
@@ -11470,6 +11478,20 @@ body.theme-kash
 }
 
 @media (max-width: 460px) {
+  .twitch-preview-card {
+    flex-basis: min(300px, calc(100vw - 54px));
+  }
+
+  .twitch-preview-player {
+    --mobile-twitch-scale: 0.7;
+  }
+
+  @media (max-width: 360px) {
+    .twitch-preview-player {
+      --mobile-twitch-scale: 0.64;
+    }
+  }
+
   .finished-stats-dialog {
     width: calc(100vw - 14px);
     max-height: calc(100dvh - 14px);
