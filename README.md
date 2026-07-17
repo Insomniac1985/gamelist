@@ -17,6 +17,7 @@ Both pages share edit mode, themes, account settings, price-store settings, achi
 - Cloud sync through Cloudflare Workers KV.
 - IGDB-powered lookup for covers, release dates, descriptions, genres, developers, publishers, trailers, and store links.
 - Backlog, upcoming, available, currently playing, and finished-game boards.
+- Twitch stream preview in Currently Playing when a streamed game and Twitch username are configured.
 - Release calendar with preorder markers.
 - Physical Shelf library with multiple owners, regions, conditions, categories, prices, collection value, and linked Gamelist entries.
 - Shelf Showcase block for featured games, plus shared Currently Playing, Last Finished, Highlights, and Search modules.
@@ -237,6 +238,20 @@ GOOGLE_CALENDAR_ID
 6. Save settings.
 
 Those settings are stored in the Worker KV namespace.
+
+### Twitch stream preview
+
+The Currently Playing carousel can show a Twitch preview card before the games.
+
+To enable it:
+
+1. Enter edit mode.
+2. Open **Settings**.
+3. Add your Twitch username in the platform/account settings.
+4. Mark at least one currently-playing game as **Stream**.
+5. Save settings.
+
+When those are both set, Gamelist and Shelf add a Twitch preview as the first carousel item. If the channel is live, it embeds the current stream. If the channel is offline, it tries to show the latest saved stream instead. The card links directly to the configured Twitch channel.
 
 ## <img src="assets/Icon.png" alt="Gamelist" width="22" align="center"> Common tasks
 
