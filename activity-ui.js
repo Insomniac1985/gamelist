@@ -38,6 +38,72 @@ export function mountActivitySlider(section, ids) {
   section.innerHTML = `<div class="playing-current"><div class="column-head"><div><h2>Currently Playing</h2></div><div class="playing-head-actions"><span id="${ids.count}"></span><button class="icon-button playing-slider-button" id="${ids.previous}" type="button" title="Previous playing game" aria-label="Previous playing game">←</button><button class="icon-button playing-slider-button" id="${ids.next}" type="button" title="Next playing game" aria-label="Next playing game">→</button></div></div><div class="playing-panel"><div class="card-list playing-list" id="${ids.list}"${ids.dataSection ? ` data-section="${ids.dataSection}"` : ""}></div></div></div><div class="playing-finished" id="${ids.finished}" hidden><span class="achievement-subtitle">Last finished games</span><div class="playing-finished-list" id="${ids.finishedList}"></div></div>`;
 }
 
+export function mountTwitchPreview(list, username, enabled = true) {
+  const channel = cleanTwitchUsername(username);
+  if (!list || !enabled || !channel) return null;
+  const card = document.createElement("article");
+  card.className = "twitch-preview-card glass";
+  card.setAttribute("aria-label", `${channel} Twitch stream`);
+  card.innerHTML = `
+    <div class="twitch-preview-head">
+      <span class="twitch-preview-brand"><b aria-hidden="true">◧</b> Twitch</span>
+      <span class="twitch-preview-status">Checking stream…</span>
+    </div>
+    <div class="twitch-preview-player"><span>Loading Twitch preview…</span></div>
+    <a class="twitch-preview-link" target="_blank" rel="noreferrer">Watch ${escapeActivityText(channel)} on Twitch</a>
+  `;
+  const channelUrl = `https://www.twitch.tv/${encodeURIComponent(channel)}`;
+  card.querySelector(".twitch-preview-link").href = channelUrl;
+  list.prepend(card);
+  hydrateTwitchPreview(card, channel);
+  return card;
+}
+
+async function hydrateTwitchPreview(card, channel) {
+  let preview = { type: "live", channel };
+  try {
+    const response = await fetch(`/api/twitch-preview?user=${encodeURIComponent(channel)}`, { cache: "no-store" });
+    if (response.ok) preview = { ...preview, ...await response.json() };
+  } catch {
+    // The channel player remains a useful fallback when Twitch status is unavailable.
+  }
+  if (!card.isConnected) return;
+  const parent = window.location.hostname;
+  if (!parent) return;
+  const params = new URLSearchParams({
+    parent,
+    autoplay: "false",
+    muted: "true",
+  });
+  if (preview.type === "video" && preview.videoId) params.set("video", `v${String(preview.videoId).replace(/^v/, "")}`);
+  else params.set("channel", channel);
+  const iframe = document.createElement("iframe");
+  iframe.src = `https://player.twitch.tv/?${params}`;
+  iframe.title = preview.type === "video" ? `${channel}'s latest Twitch stream` : `${channel}'s live Twitch stream`;
+  iframe.allow = "autoplay; fullscreen";
+  iframe.setAttribute("allowfullscreen", "");
+  iframe.loading = "eager";
+  const player = card.querySelector(".twitch-preview-player");
+  player.replaceChildren(iframe);
+  const status = card.querySelector(".twitch-preview-status");
+  status.textContent = preview.type === "video" ? "Latest stream" : preview.isLive === false ? "Channel preview" : "Live";
+  status.classList.toggle("is-live", preview.isLive === true);
+}
+
+function cleanTwitchUsername(value) {
+  return String(value || "").trim().replace(/^@/, "").replace(/[^A-Za-z0-9_]/g, "").slice(0, 25);
+}
+
+function escapeActivityText(value) {
+  return String(value || "").replace(/[&<>"']/g, (character) => ({
+    "&": "&amp;",
+    "<": "&lt;",
+    ">": "&gt;",
+    '"': "&quot;",
+    "'": "&#39;",
+  })[character]);
+}
+
 export function finishedGameMarkup({ id, title, cover, completedClass = "", itemClass = "", badges = "", dateText = "", progress = null, dataName = "id", escape }) {
   return `<button class="achievement-game playing-finished-game ${completedClass} ${itemClass}" type="button" data-${dataName}="${escape(id)}" aria-label="${escape(`Open ${title}`)}"><img src="${escape(cover)}" alt="" loading="lazy" decoding="async"><div><strong class="${completedClass ? "completed-achievements-title" : ""}">${escape(title)}</strong>${badges ? `<span class="playing-finished-tags">${badges}</span>` : ""}<span>${escape(dateText)}</span>${progress != null ? `<em style="--progress:${progress}%"></em>` : ""}</div></button>`;
 }

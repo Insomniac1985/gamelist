@@ -20,6 +20,7 @@ import * as sync from "./functions/api/sync.js";
 import * as steamAchievements from "./functions/api/steam-achievements.js";
 import * as steamTrophiesByYear from "./functions/api/steam-trophies-by-year.js";
 import * as trophies from "./functions/api/trophies.js";
+import * as twitchPreview from "./functions/api/twitch-preview.js";
 import * as xboxAchievements from "./functions/api/xbox-achievements.js";
 import * as xboxTrophiesByYear from "./functions/api/xbox-trophies-by-year.js";
 
@@ -46,6 +47,7 @@ const routes = {
   "/api/steam-trophies-by-year": steamTrophiesByYear,
   "/api/sync": sync,
   "/api/trophies": trophies,
+  "/api/twitch-preview": twitchPreview,
   "/api/xbox-achievements": xboxAchievements,
   "/api/xbox-trophies-by-year": xboxTrophiesByYear,
 };

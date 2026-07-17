@@ -1,4 +1,4 @@
-import { normalizeSearchText, createGameCardShell, bindActivityCardParallax, mountActivitySlider, mountReleaseCalendar, finishedGameMarkup, achievementCardMarkup, achievementDashboardMarkup, achievementPanelMarkup, completedCardMarkup, horizontalCarouselState, syncViewModeButton, slideHorizontalCarousel, comparePlayingGames, finishedDurationText, timeBadgeMarkup, guideLinksMarkup, storeButtonsMarkup, activityTrailerUrl, preloadPausedActivityTrailers, syncFocusedActivityTrailer, activityReleaseStatus, activityCoverOverride, activityLocalGameForTitle, activityTitleMatchScore, activityAllowsPsnCardTrophies, formatFooterDate, formatFooterDateTime, confirmGameDelete } from "./activity-ui.js";
+import { normalizeSearchText, createGameCardShell, bindActivityCardParallax, mountActivitySlider, mountTwitchPreview, mountReleaseCalendar, finishedGameMarkup, achievementCardMarkup, achievementDashboardMarkup, achievementPanelMarkup, completedCardMarkup, horizontalCarouselState, syncViewModeButton, slideHorizontalCarousel, comparePlayingGames, finishedDurationText, timeBadgeMarkup, guideLinksMarkup, storeButtonsMarkup, activityTrailerUrl, preloadPausedActivityTrailers, syncFocusedActivityTrailer, activityReleaseStatus, activityCoverOverride, activityLocalGameForTitle, activityTitleMatchScore, activityAllowsPsnCardTrophies, formatFooterDate, formatFooterDateTime, confirmGameDelete } from "./activity-ui.js";
 import { applySiteTheme, normalizeThemeSettings, openThemeEditor, ownerCardColorClass, ownerColorClass, themeSettingsButton } from "./theme-system.js";
 import { applyDocumentTranslations, languageOptions, normalizeLanguage, t } from "./i18n.js";
 
@@ -6,7 +6,6 @@ mountActivitySlider(document.querySelector("[data-module='playing']"), { count: 
 splitShelfPlayingModules();
 
 const SESSION_KEY = "gamelist-editor";
-const KASH_TWITCH_URL = "https://www.twitch.tv/kashhoward";
 const VERSION_STORAGE_KEY = "gamelist:site-version";
 const CACHE_HOUR_STORAGE_KEY = "gamelist:cache-hour";
 const PULL_NAVIGATION_KEY = "gamelist:pull-navigation";
@@ -222,8 +221,9 @@ function loadSharedSettings() { try { return JSON.parse(localStorage.getItem("ga
 function bindEvents() {
   el.brandLink?.addEventListener("click", (event) => {
     event.preventDefault();
-    if ((THEMES[state.gamelistSettings.theme] ? state.gamelistSettings.theme : "shabii") === "kash") {
-      window.open(KASH_TWITCH_URL, "_blank", "noopener,noreferrer");
+    const twitchUrl = twitchChannelUrl(state.gamelistSettings.twitchUser);
+    if (twitchUrl) {
+      window.open(twitchUrl, "_blank", "noopener,noreferrer");
       return;
     }
     scrollToShelfLibrary();
@@ -771,10 +771,11 @@ async function fetchCollectionPriceData(game, settings) {
 function applyTheme() {
   state.gamelistSettings.customTheme = normalizeThemeSettings(state.gamelistSettings);
   const theme = applySiteTheme(state.gamelistSettings, { page: "shelf" });
+  const twitchUrl = twitchChannelUrl(state.gamelistSettings.twitchUser);
   el.brandLink?.setAttribute("aria-label", theme.title);
-  el.brandLink?.setAttribute("href", state.gamelistSettings.theme === "kash" ? KASH_TWITCH_URL : "#gameShelf");
-  el.brandLink?.toggleAttribute("target", state.gamelistSettings.theme === "kash");
-  if (state.gamelistSettings.theme === "kash") el.brandLink?.setAttribute("rel", "noreferrer");
+  el.brandLink?.setAttribute("href", twitchUrl || "#gameShelf");
+  el.brandLink?.toggleAttribute("target", Boolean(twitchUrl));
+  if (twitchUrl) el.brandLink?.setAttribute("rel", "noreferrer");
   else el.brandLink?.removeAttribute("rel");
 }
 
@@ -2258,8 +2259,9 @@ function bindTextureParallax() { if (window.matchMedia("(prefers-reduced-motion:
 function renderGamelistModules() {
   const playing = state.gamelistGames.filter((game) => game.playing && !game.deletedAt).sort(comparePlayingGames);
   const finished = state.gamelistGames.filter((game) => game.completedAt && !game.deletedAt).sort((a, b) => String(b.completedAt).localeCompare(String(a.completedAt)) || String(a.title || "").localeCompare(String(b.title || ""), undefined, { sensitivity: "base" })).slice(0, 10);
-  el.playingCarousel.closest(".playing-section")?.classList.toggle("playing-single", playing.length === 1);
   el.playingCarousel.innerHTML = playing.map(gamelistProjectionCard).join("");
+  const twitchCard = mountTwitchPreview(el.playingCarousel, state.gamelistSettings.twitchUser, playing.some((game) => game.stream));
+  el.playingCarousel.closest(".playing-section")?.classList.toggle("playing-single", playing.length + Number(Boolean(twitchCard)) === 1);
   el.finishedCarousel.innerHTML = finished.map(finishedProjectionCard).join("");
   el.playingCarousel.querySelectorAll(".game-card.has-art").forEach(bindActivityCardParallax);
   el.playingCarousel.querySelectorAll(".cover-button img").forEach((image) => { bindCoverFrame(image); image.addEventListener("load", schedulePlayingCardHeightSync, { once: true }); });
@@ -3002,6 +3004,11 @@ function xboxSearchUrl(query, region = "ES") {
 function cleanUrl(value) {
   const url = String(value || "").trim();
   return /^https?:\/\//i.test(url) ? url : "";
+}
+
+function twitchChannelUrl(value) {
+  const user = String(value || "").trim().replace(/^@/, "").replace(/[^A-Za-z0-9_]/g, "").slice(0, 25);
+  return user ? `https://www.twitch.tv/${encodeURIComponent(user)}` : "";
 }
 function metadataHltbUrl(result = {}) {
   const direct = cleanUrl(result.hltbUrl || result.howLongToBeatUrl);

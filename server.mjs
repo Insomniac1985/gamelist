@@ -23,6 +23,7 @@ import * as xboxTrophiesByYear from "./functions/api/xbox-trophies-by-year.js";
 import { onRequestGet as collectionPrice } from "./functions/api/collection-price.js";
 import { onRequestGet as trophies } from "./functions/api/trophies.js";
 import { onRequestGet as achievements } from "./functions/api/achievements.js";
+import { onRequestGet as twitchPreview } from "./functions/api/twitch-preview.js";
 
 const root = path.dirname(fileURLToPath(import.meta.url));
 const port = Number(process.env.PORT || 8790);
@@ -56,6 +57,7 @@ const server = http.createServer(async (req, res) => {
   if (url.pathname === "/api/collection-price") return sendFunction(res, collectionPrice, req, url);
   if (url.pathname === "/api/trophies") return sendFunction(res, trophies, req, url);
   if (url.pathname === "/api/achievements") return sendFunction(res, achievements, req, url);
+  if (url.pathname === "/api/twitch-preview") return sendFunction(res, twitchPreview, req, url);
   if (url.pathname === "/api/sync") return sendJson(res, { games: [] });
   if (url.pathname === "/api/auth") return sendModule(res, auth, req, url);
   return sendFile(res, url.pathname);
