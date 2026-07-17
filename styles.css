@@ -10818,7 +10818,7 @@ body.theme-kash
   .twitch-preview-card {
     flex-basis: min(320px, calc(100vw - 54px));
     min-height: 214px;
-    align-content: center;
+    align-content: start;
     padding: 10px;
     gap: 9px;
   }
