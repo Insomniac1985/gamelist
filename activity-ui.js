@@ -49,7 +49,12 @@ export function mountTwitchPreview(list, username, enabled = true) {
       <span class="twitch-preview-status">Checking stream…</span>
       <span class="twitch-preview-loading">Loading Twitch preview…</span>
     </div>
-    <a class="twitch-preview-link" target="_blank" rel="noreferrer">Watch ${escapeActivityText(channel)} on Twitch</a>
+    <a class="twitch-preview-link" target="_blank" rel="noreferrer">
+      <svg class="twitch-preview-link-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+        <path d="M5.2 3 3.7 6.8v12.8h4.6V22h3.1l2.4-2.4h3.7l4.8-4.8V3H5.2Zm15 10.7-2.7 2.7h-4.3l-2.4 2.4v-2.4H7.1V5.1h13.1v8.6Zm-3.7-5.5v4.3h-2.1V8.2h2.1Zm-5.7 0v4.3H8.7V8.2h2.1Z"/>
+      </svg>
+      <span>Watch ${escapeActivityText(channel)} on Twitch</span>
+    </a>
   `;
   const channelUrl = `https://www.twitch.tv/${encodeURIComponent(channel)}`;
   card.querySelector(".twitch-preview-link").href = channelUrl;

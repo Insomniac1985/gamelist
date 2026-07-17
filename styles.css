@@ -6373,12 +6373,23 @@ body.theme-kash .finished-stats-kpi.is-completed:focus-visible strong {
 }
 
 .twitch-preview-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
   justify-self: start;
   color: #d9c1ff;
   font-size: 13px;
   font-weight: 850;
   text-decoration: none;
   margin-left: 10px;
+}
+
+.twitch-preview-link-icon {
+  width: 17px;
+  height: 17px;
+  flex: 0 0 17px;
+  fill: currentColor;
+  filter: drop-shadow(0 0 10px rgba(183, 116, 255, 0.32));
 }
 
 .twitch-preview-link:hover {
