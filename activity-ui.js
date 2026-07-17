@@ -51,7 +51,7 @@ export function mountTwitchPreview(list, username, enabled = true) {
     </div>
     <a class="twitch-preview-link" target="_blank" rel="noreferrer">
       <svg class="twitch-preview-link-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
-        <path d="M5.2 3 3.7 6.8v12.8h4.6V22h3.1l2.4-2.4h3.7l4.8-4.8V3H5.2Zm15 10.7-2.7 2.7h-4.3l-2.4 2.4v-2.4H7.1V5.1h13.1v8.6Zm-3.7-5.5v4.3h-2.1V8.2h2.1Zm-5.7 0v4.3H8.7V8.2h2.1Z"/>
+        <path d="M6 0 1.7 4.3v15.4h5.1V24l4.3-4.3h3.4l7.8-7.7V0H6Zm14.6 11.1-3.4 3.4h-3.5l-3 3v-3H6.9V1.7h13.7v9.4ZM18 4.7v5.1h-1.7V4.7H18Zm-4.7 0v5.1h-1.7V4.7h1.7Z"/>
       </svg>
       <span>Watch ${escapeActivityText(channel)} on Twitch</span>
     </a>
