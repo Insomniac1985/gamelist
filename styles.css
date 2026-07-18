@@ -6534,7 +6534,7 @@ body.theme-kash .finished-stats-kpi.is-completed:focus-visible strong {
   display: block;
   max-width: 104px;
   color: #d7b8ff;
-  font-size: 10px;
+  font-size: 12px;
   font-weight: 900;
   letter-spacing: 0.04em;
   line-height: 1;
@@ -11032,6 +11032,16 @@ body.theme-kash
     max-width: calc(100% - 18px);
     padding: 7px 10px;
     font-size: 10px;
+  }
+
+  .twitch-preview-card.is-collapsed .twitch-preview-status {
+    top: auto;
+    right: auto;
+    left: 12px;
+    bottom: 62px;
+    max-width: none;
+    transform: rotate(-90deg);
+    transform-origin: left center;
   }
 
   .twitch-preview-link {
