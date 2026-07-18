@@ -11046,14 +11046,10 @@ body.theme-kash
     right: 10px;
     bottom: 11px;
     justify-content: center;
-    width: 34px;
+    width: auto;
     min-width: 34px;
     height: 34px;
-    padding: 0;
-  }
-
-  .twitch-preview-toggle-label {
-    display: none;
+    padding: 0 9px;
   }
 
   .twitch-preview-eye {
