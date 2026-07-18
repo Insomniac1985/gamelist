@@ -6533,6 +6533,7 @@ body.theme-kash .finished-stats-kpi.is-completed:focus-visible strong {
 
 .twitch-preview-card.is-collapsed .twitch-preview-collapsed-logo span {
   display: block;
+  width: 300px;
   max-width: 300px;
   color: #d7b8ff;
   font-size: 20px;
