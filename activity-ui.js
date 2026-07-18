@@ -52,6 +52,7 @@ export function mountTwitchPreview(list, username, enabled = true) {
   card.innerHTML = `
     <div class="twitch-preview-collapsed-logo" aria-hidden="true">
       ${twitchGlyphMarkup()}
+      <span>${escapeActivityText(channel)}</span>
     </div>
     <div class="twitch-preview-player">
       <span class="twitch-preview-status">Checking stream…</span>
@@ -64,10 +65,12 @@ export function mountTwitchPreview(list, username, enabled = true) {
       <span>Watch ${escapeActivityText(channel)} on Twitch</span>
     </a>
     <button class="twitch-preview-toggle" type="button" aria-label="${hidden ? "Show stream preview" : "Hide stream preview"}" aria-pressed="${hidden ? "true" : "false"}">
-      <svg class="twitch-preview-eye" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
-        <path d="M12 5c5.2 0 8.8 4.2 10 7-1.2 2.8-4.8 7-10 7S3.2 14.8 2 12c1.2-2.8 4.8-7 10-7Zm0 2C8.1 7 5.3 9.8 4.2 12c1.1 2.2 3.9 5 7.8 5s6.7-2.8 7.8-5C18.7 9.8 15.9 7 12 7Zm0 2.2a2.8 2.8 0 1 1 0 5.6 2.8 2.8 0 0 1 0-5.6Z"/>
-      </svg>
-      <span>${hidden ? "Show stream" : "Hide stream"}</span>
+      <span class="twitch-preview-eye-wrap">
+        <svg class="twitch-preview-eye" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+          <path d="M12 5c5.2 0 8.8 4.2 10 7-1.2 2.8-4.8 7-10 7S3.2 14.8 2 12c1.2-2.8 4.8-7 10-7Zm0 2C8.1 7 5.3 9.8 4.2 12c1.1 2.2 3.9 5 7.8 5s6.7-2.8 7.8-5C18.7 9.8 15.9 7 12 7Zm0 2.2a2.8 2.8 0 1 1 0 5.6 2.8 2.8 0 0 1 0-5.6Z"/>
+        </svg>
+      </span>
+      <span class="twitch-preview-toggle-label">${hidden ? "Show stream" : "Hide stream"}</span>
     </button>
   `;
   const channelUrl = `https://www.twitch.tv/${encodeURIComponent(channel)}`;
@@ -122,7 +125,7 @@ function bindTwitchPreviewToggle(card, channel) {
     card.classList.toggle("is-collapsed", hidden);
     button.setAttribute("aria-label", hidden ? "Show stream preview" : "Hide stream preview");
     button.setAttribute("aria-pressed", hidden ? "true" : "false");
-    button.querySelector("span").textContent = hidden ? "Show stream" : "Hide stream";
+    button.querySelector(".twitch-preview-toggle-label").textContent = hidden ? "Show stream" : "Hide stream";
     hydrateTwitchPreview(card, channel, { loadPlayer: !hidden });
   });
 }
