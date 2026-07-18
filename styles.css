@@ -6324,12 +6324,11 @@ body.theme-kash .finished-stats-kpi.is-completed:focus-visible strong {
 }
 
 .twitch-preview-card.is-collapsed {
-  grid-template-rows: auto auto 1fr;
   flex-basis: 70px;
   width: 70px;
   max-width: 70px;
-  align-content: stretch;
-  justify-items: start;
+  align-content: start;
+  justify-items: center;
   padding: 12px 5px;
   gap: 8px;
 }
@@ -6369,13 +6368,12 @@ body.theme-kash .finished-stats-kpi.is-completed:focus-visible strong {
 }
 
 .twitch-preview-card.is-collapsed .twitch-preview-status {
-  position: static;
-  grid-row: 3;
-  align-self: end;
-  justify-self: start;
+  position: absolute;
+  left: 12px;
+  bottom: 62px;
   width: max-content;
   max-width: none;
-  margin: 0 0 4px 8px;
+  margin: 0;
   transform: rotate(-90deg);
   transform-origin: left center;
 }
@@ -6517,13 +6515,15 @@ body.theme-kash .finished-stats-kpi.is-completed:focus-visible strong {
 }
 
 .twitch-preview-card.is-collapsed .twitch-preview-collapsed-logo {
-  grid-row: 1;
+  position: absolute;
+  top: 12px;
+  left: 50%;
   display: flex;
   flex-direction: column;
-  align-items: flex-start;
-  gap: 32px;
-  min-height: 118px;
-  padding-left: 12px;
+  align-items: center;
+  gap: 36px;
+  padding: 0;
+  transform: translateX(-50%);
 }
 
 .twitch-preview-collapsed-logo span {
@@ -6556,15 +6556,16 @@ body.theme-kash .finished-stats-kpi.is-completed:focus-visible strong {
 }
 
 .twitch-preview-card.is-collapsed .twitch-preview-toggle {
-  position: static;
-  grid-row: 2;
-  justify-self: start;
+  position: absolute;
+  left: 50%;
+  bottom: 12px;
   width: 34px;
   min-width: 34px;
   min-height: 34px;
-  margin-left: 8px;
+  margin: 0;
   padding: 0;
   justify-content: center;
+  transform: translateX(-50%);
 }
 
 .twitch-preview-card.is-collapsed .twitch-preview-toggle-label {
