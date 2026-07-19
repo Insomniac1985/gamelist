@@ -633,6 +633,14 @@ export function formatFooterDateTime(value) {
   return new Intl.DateTimeFormat(undefined, { day: "numeric", month: "long", hour: "2-digit", minute: "2-digit" }).format(date);
 }
 
+export function formatFooterShortDate(value) {
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "";
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${month}/${day}`;
+}
+
 export function confirmGameDelete(title = "this game") {
   const label = title || "this game";
   let dialog = document.querySelector("#sharedDeleteConfirmDialog");

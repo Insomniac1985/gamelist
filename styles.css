@@ -507,6 +507,10 @@ html.theme-font-pokemon {
   color: var(--text);
 }
 
+.footer-separator {
+  color: color-mix(in srgb, var(--dim) 72%, transparent);
+}
+
 .footer-credit-logo {
   display: inline-block;
   width: 18px;
