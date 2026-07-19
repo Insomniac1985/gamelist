@@ -688,6 +688,7 @@ function bindEvents() {
   });
   el.gotyDialog?.addEventListener("close", syncScrollLock);
   el.gotyForm?.addEventListener("submit", saveGameOfTheYearFromForm);
+  el.footerDataUpdate?.addEventListener("click", clearSiteCachesAndReload);
   el.footerVersion?.addEventListener("click", clearSiteCachesAndReload);
   el.scrollTopButton.addEventListener("click", () => {
     if (document.body.classList.contains("dialog-open")) return;
@@ -4677,7 +4678,7 @@ function renderFooter() {
   }
   if (el.footerVersion) {
     el.footerVersion.textContent = siteVersion.version
-      ? `${siteVersion.version} · Updated ${formatFooterDateTime(siteVersion.updatedAt)}`
+      ? siteVersion.version
       : "Version -";
   }
 }

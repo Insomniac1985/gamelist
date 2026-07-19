@@ -474,8 +474,9 @@ html.theme-font-pokemon {
 
 .site-footer {
   display: flex;
-  justify-content: space-between;
-  gap: 16px;
+  align-items: center;
+  justify-content: center;
+  gap: 10px 22px;
   width: min(1620px, 100%);
   margin: 0 auto;
   padding: 0 clamp(18px, 4vw, 48px) 26px;
@@ -485,13 +486,12 @@ html.theme-font-pokemon {
   text-transform: uppercase;
 }
 
-.site-footer span:last-child,
-.site-footer button:last-child {
-  text-align: right;
-}
-
-.site-footer button {
+.site-footer button,
+.footer-credit {
   appearance: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
   padding: 0;
   border: 0;
   background: transparent;
@@ -499,10 +499,21 @@ html.theme-font-pokemon {
   font: inherit;
   text-transform: inherit;
   cursor: pointer;
+  text-decoration: none;
 }
 
-.site-footer button:hover {
+.site-footer button:hover,
+.footer-credit:hover {
   color: var(--text);
+}
+
+.footer-credit-logo {
+  display: inline-block;
+  width: 18px;
+  height: 12px;
+  background: var(--accent);
+  -webkit-mask: url("assets/shabii_logo.png") center / contain no-repeat;
+  mask: url("assets/shabii_logo.png") center / contain no-repeat;
 }
 
 .hero {
@@ -10628,14 +10639,10 @@ body.theme-kash
   }
 
   .site-footer {
-    flex-direction: column;
-    gap: 5px;
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 8px 16px;
     padding-bottom: 22px;
-    text-align: center;
-  }
-
-  .site-footer span:last-child,
-  .site-footer button:last-child {
     text-align: center;
   }
 

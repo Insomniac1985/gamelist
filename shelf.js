@@ -252,6 +252,7 @@ function bindEvents() {
   el.syncButton?.addEventListener("click", syncShelfNow);
   el.fetchPricesButton.addEventListener("click", refreshAllShelfPrices);
   el.scrollTop.addEventListener("click", () => window.scrollTo({ top: 0, behavior: "smooth" }));
+  el.footerUpdate.addEventListener("click", clearSiteCachesAndReload);
   el.footerVersion.addEventListener("click", clearSiteCachesAndReload);
   window.addEventListener("scroll", updateFloatingActions, { passive: true });
   window.addEventListener("storage", (event) => { if (event.key === "gamelist-editor-signal") refreshSharedAuth(); });
@@ -459,7 +460,7 @@ function renderChrome() {
   el.sortDirection.title = state.filters.direction === "desc" ? tt("Sort descending") : tt("Sort ascending");
   el.footerUpdate.textContent = state.updatedAt ? `${tt("Last edit")} ${formatFooterDate(state.updatedAt)}` : tt("Last edit -");
   el.footerVersion.textContent = siteVersion.version
-    ? `${siteVersion.version} · Updated ${formatFooterDateTime(siteVersion.updatedAt)}`
+    ? siteVersion.version
     : "Version -";
   updateFloatingActions();
 }

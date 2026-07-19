@@ -257,10 +257,10 @@ Physical store price options:
 
 Digital games use the platform store automatically when the platform matches:
 
-- <img src="assets/sites/nintendo.png" alt="Nintendo" width="18" align="center"> the different Nintendo regional for Nintendo Switch / Switch 2 digital games.
-- <img src="assets/sites/playstation.png" alt="PlayStation" width="18" align="center"> the different PlayStation Store regional prices for PS4 / PS5 digital games .
-- <img src="assets/sites/steam.png" alt="Steam" width="18" align="center"> the different Steam regional prices.
-- <img src="assets/platforms/xbox.png" alt="Xbox" width="18" align="center"> the different regional Xbox Store or Xbox PC games.
+- <img src="assets/sites/nintendo.png" alt="Nintendo" width="18" align="center"> Different Nintendo regional for Nintendo Switch / Switch 2 digital games.
+- <img src="assets/sites/playstation.png" alt="PlayStation" width="18" align="center"> Different PlayStation Store regional prices for PS4 / PS5 digital games .
+- <img src="assets/sites/steam.png" alt="Steam" width="18" align="center"> Different Steam regional prices.
+- <img src="assets/platforms/xbox.png" alt="Xbox" width="18" align="center"> Different regional Xbox Store or Xbox PC games.
 
 <img src="https://www.pricecharting.com/images/favicon.ico" alt="PriceCharting" width="18" align="center"> Shelf collection values also use PriceCharting data when a matching physical game from the collection, to track the average market value depending on the condition.
 
