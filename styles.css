@@ -485,6 +485,7 @@ html.theme-font-michroma {
 }
 
 html.theme-font-mata {
+  --display-title-mata-playing-size: clamp(18px, 2.2vw, 32px);
   --display-title-line-height: 0.82;
   --display-title-letter-spacing: -0.35em;
 }
@@ -2260,6 +2261,10 @@ html.theme-uppercase-titles .column-head h2 {
 
 html.theme-font-pokemon .playing-section .column-head h2 {
   font-size: var(--display-title-playing-size);
+}
+
+html.theme-font-mata .playing-section .column-head h2 {
+  font-size: var(--display-title-mata-playing-size);
 }
 
 .modal-head h2,
