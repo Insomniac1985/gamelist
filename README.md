@@ -5,8 +5,6 @@
 
 Gamelist is a personal game backlog, preorder, price, trophy, achievement, and physical collection tracker. It runs as a self-hosted static frontend served by a Cloudflare Worker, with saved data stored in Cloudflare KV.
 
-The setup is simple, it will take you under an hour to fully set up with the required steps. If you want to also have all the extras, it will be just under 2 hours total to fully set up the rest. But, then adding your games is a whole other story... Enjoy keeping track of your games, plan your next playthroughs, and more than anything, enjoy the hobby!
-
 The app has two connected pages:
 
 - <img src="assets/Icon.png" alt="Gamelist" width="18" align="center"> `/` for the main game backlog, preorder, release, and completion status tracker.
@@ -45,9 +43,11 @@ This is the main setup path. You do not need to download a ZIP or run terminal c
 
 #### Setup requirements
 
-- <img src="https://cdn.simpleicons.org/cloudflare/F38020" alt="Cloudflare" width="18" align="center"> A Cloudflare account
-- <img src="https://cdn.simpleicons.org/github/D0D7DE" alt="GitHub" width="18" align="center"> A GitHub account
-- <img src="https://cdn.simpleicons.org/twitch/9146FF" alt="Twitch" width="18" align="center"> A Twitch account
+- <img src="https://cdn.simpleicons.org/cloudflare/F38020" alt="Cloudflare" width="18" align="center"> A Cloudflare account, to host your site.
+- <img src="https://cdn.simpleicons.org/github/D0D7DE" alt="GitHub" width="18" align="center"> A GitHub account to host your site files.
+- <img src="https://cdn.simpleicons.org/twitch/9146FF" alt="Twitch" width="18" align="center"> A Twitch account to access the IGDB api and get all the game data.
+
+The setup is simple, it will take you under an hour to fully set up with the required steps. If you want to also have all the extras, it will be just under 2 hours total to fully set up the rest. But, then adding your games is a whole other story... Enjoy keeping track of your games, plan your next playthroughs, and more than anything, enjoy the hobby!
 
 ### 1. Start from Cloudflare
 
