@@ -4678,7 +4678,7 @@ function renderFooter() {
   }
   if (el.footerVersion) {
     el.footerVersion.textContent = siteVersion.version
-      ? `${siteVersion.version} (${formatFooterShortDate(siteVersion.updatedAt) || "--/--"})`
+      ? `${siteVersion.version}.${formatFooterShortDate(siteVersion.updatedAt) || "--.--"}`
       : "Version -";
   }
 }

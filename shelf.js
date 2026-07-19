@@ -460,7 +460,7 @@ function renderChrome() {
   el.sortDirection.title = state.filters.direction === "desc" ? tt("Sort descending") : tt("Sort ascending");
   el.footerUpdate.textContent = state.updatedAt ? `${tt("Last edit")} ${formatFooterDate(state.updatedAt)}` : tt("Last edit -");
   el.footerVersion.textContent = siteVersion.version
-    ? `${siteVersion.version} (${formatFooterShortDate(siteVersion.updatedAt) || "--/--"})`
+    ? `${siteVersion.version}.${formatFooterShortDate(siteVersion.updatedAt) || "--.--"}`
     : "Version -";
   updateFloatingActions();
 }
