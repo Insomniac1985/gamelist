@@ -72,6 +72,7 @@ const state = {
   trophyActivity: null,
   steamActivity: { achievements: [], games: [], completed: [], totalEarned: 0, sourceUrl: "" },
   xboxActivity: { achievements: [], games: [], completed: [], totalEarned: 0, sourceUrl: "" },
+  achievementNoticeKey: "",
   cardTrophies: {},
   canEdit: sessionStorage.getItem(SESSION_KEY) === "true",
   editingId: "",
@@ -2944,6 +2945,7 @@ async function loadTrophyActivity() {
     state.trophyActivity = psnResult.status === "fulfilled" ? psnResult.value : null;
     state.steamActivity = steamResult.status === "fulfilled" ? steamResult.value : { achievements: [], games: [], completed: [], totalEarned: 0, sourceUrl: "" };
     state.xboxActivity = xboxResult.status === "fulfilled" ? xboxResult.value : { achievements: [], games: [], completed: [], totalEarned: 0, sourceUrl: "" };
+    notifyAchievementProviderIssues(state.trophyActivity || {}, state.steamActivity, state.xboxActivity);
     writeAchievementCache(cacheKey, { psn: state.trophyActivity, steam: state.steamActivity, xbox: state.xboxActivity });
     const panel = achievementPanelMarkup({ psn: state.trophyActivity || {}, steam: state.steamActivity, xbox: state.xboxActivity, trophyIconHtml: trophyIcon(), platformBadge, platformLogo, trophyTone, escape: escapeHtml });
     el.trophyCard.innerHTML = panel.html;
@@ -2954,6 +2956,7 @@ async function loadTrophyActivity() {
   } catch { el.trophyCard.innerHTML = `<span>Trophy activity is unavailable.</span>`; }
   module.hidden = state.layout.hidden.includes("trophies");
 }
+function notifyAchievementProviderIssues(psnData = {}, steamData = {}, xboxData = {}) { if (!state.canEdit) return; const issues = [psnData.authError ? "PSN token needs refreshing." : psnData.needsSetup ? "PSN needs setup." : "", steamData.authError ? "Steam achievements need attention." : steamData.needsSetup ? "Steam achievements need setup." : "", xboxData.authError ? "Xbox achievements need attention." : xboxData.needsSetup ? "Xbox achievements need setup." : ""].filter(Boolean); const key = issues.join("|"); if (!key || state.achievementNoticeKey === key) return; state.achievementNoticeKey = key; showToast(issues.join(" "), "error"); }
 async function fetchShelfSteamActivity(forceRefresh = state.gamelistSettings.forceCacheOnLoad === true) {
   const user = state.gamelistSettings.steamUser || "";
   if (!user) return { achievements: [], games: [], completed: [], totalEarned: 0, sourceUrl: "" };
@@ -2961,7 +2964,10 @@ async function fetchShelfSteamActivity(forceRefresh = state.gamelistSettings.for
   for (let page = 0; page < 20 && cursor !== null; page += 1) {
     const params = achievementParams({ activity: "1", cursor: String(cursor), limit: "20", user }, forceRefresh);
     const response = await fetch(`/api/steam-achievements?${params}`); const data = await response.json();
-    if (!response.ok || data.error || data.needsSetup) break;
+    if (!response.ok || data.error || data.needsSetup || data.authError) {
+      if (!games.length) return { achievements: [], games: [], completed: [], totalEarned: 0, sourceUrl: /^https?:/i.test(user) ? user : `https://steamcommunity.com/id/${encodeURIComponent(user)}/games/?tab=all`, needsSetup: Boolean(data.needsSetup), authError: Boolean(data.authError || data.error || !response.ok), error: data.error || "" };
+      break;
+    }
     games.push(...(data.games || [])); cursor = data.nextCursor !== null && Number.isFinite(Number(data.nextCursor)) ? Number(data.nextCursor) : null;
   }
   const achievements = games.flatMap((game) => (game.achievements || []).filter((item) => item.earned && item.earnedAt).map((item) => ({ ...item, title: item.title || "Achievement unlocked", game: game.name, platform: "Steam", source: "steam", rawEarnedAt: item.rawEarnedAt || item.earnedAt, icon: item.icon || platformLogo("Steam") })));
@@ -2971,13 +2977,15 @@ async function fetchShelfSteamActivity(forceRefresh = state.gamelistSettings.for
 async function fetchShelfXboxActivity(forceRefresh = state.gamelistSettings.forceCacheOnLoad === true) {
   const params = achievementParams({ schema: "2" }, forceRefresh); if (state.gamelistSettings.microsoftUser) params.set("user", state.gamelistSettings.microsoftUser);
   const response = await fetch(`/api/xbox-achievements?${params}`); const data = await response.json();
-  if (!response.ok || data.error || data.authError) return { achievements: [], games: [], completed: [], totalEarned: 0, sourceUrl: "" };
+  if (data.needsSetup) return { achievements: [], games: [], completed: [], totalEarned: 0, sourceUrl: data.sourceUrl || "https://www.xbox.com/", needsSetup: true, error: data.error || "" };
+  if (!response.ok || data.error || data.authError) return { achievements: [], games: [], completed: [], totalEarned: 0, sourceUrl: data.sourceUrl || "https://www.xbox.com/", authError: Boolean(data.authError || data.error || !response.ok), error: data.error || "" };
   return { achievements: data.achievements || [], games: data.games || [], completed: data.completed || [], totalEarned: Number(data.totalEarned || 0), sourceUrl: data.sourceUrl || "" };
 }
 function achievementParams(values = {}, forceRefresh = state.gamelistSettings.forceCacheOnLoad === true) { const params = new URLSearchParams(values); if (forceRefresh) params.set("fresh", String(Date.now())); return params; }
 function achievementSettingsKey(settings = state.gamelistSettings) { return [String(settings.psnUser || "").trim(), String(settings.steamUser || "").trim(), String(settings.microsoftUser || "").trim()].join("|"); }
-function readAchievementCache(key) { try { const cached = JSON.parse(localStorage.getItem(ACHIEVEMENT_CACHE_KEY) || "{}"); if (!cached?.updatedAt || (Date.now() - Number(cached.updatedAt)) > ACHIEVEMENT_CACHE_TTL_MS) return null; if (cached?.key === key && cached?.data?.psn?.authError) { localStorage.removeItem(ACHIEVEMENT_CACHE_KEY); return null; } return cached?.key === key && cached.data ? cached.data : null; } catch { return null; } }
-function writeAchievementCache(key, data) { try { if (data?.psn?.authError) { const cached = JSON.parse(localStorage.getItem(ACHIEVEMENT_CACHE_KEY) || "{}"); if (cached?.key === key) localStorage.removeItem(ACHIEVEMENT_CACHE_KEY); return; } localStorage.setItem(ACHIEVEMENT_CACHE_KEY, JSON.stringify({ key, data, updatedAt: Date.now() })); } catch {} }
+function readAchievementCache(key) { try { const cached = JSON.parse(localStorage.getItem(ACHIEVEMENT_CACHE_KEY) || "{}"); if (!cached?.updatedAt || (Date.now() - Number(cached.updatedAt)) > ACHIEVEMENT_CACHE_TTL_MS) return null; if (cached?.key === key && hasAchievementProviderIssue(cached.data)) { localStorage.removeItem(ACHIEVEMENT_CACHE_KEY); return null; } return cached?.key === key && cached.data ? cached.data : null; } catch { return null; } }
+function writeAchievementCache(key, data) { try { if (hasAchievementProviderIssue(data)) { const cached = JSON.parse(localStorage.getItem(ACHIEVEMENT_CACHE_KEY) || "{}"); if (cached?.key === key) localStorage.removeItem(ACHIEVEMENT_CACHE_KEY); return; } localStorage.setItem(ACHIEVEMENT_CACHE_KEY, JSON.stringify({ key, data, updatedAt: Date.now() })); } catch {} }
+function hasAchievementProviderIssue(data = {}) { return Boolean(data?.psn?.authError || data?.psn?.needsSetup || data?.steam?.authError || data?.steam?.needsSetup || data?.xbox?.authError || data?.xbox?.needsSetup); }
 function openGamelistGameByTitle(title) { const game = activityLocalGameForTitle(title, state.gamelistGames); if (game) openGamelistDetails(game); }
 function openCompletedGames() {
   const remote = [...(state.trophyActivity?.platinums || []), ...state.steamActivity.completed, ...state.xboxActivity.completed];

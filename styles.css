@@ -2100,8 +2100,14 @@ button.achievement-kpi {
   grid-column: 1 / -1;
 }
 
-.achievement-auth-notice {
+.achievement-auth-notices {
   grid-column: 1 / -1;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.achievement-auth-notice {
   justify-self: start;
   color: var(--accent);
   font-size: 11px;

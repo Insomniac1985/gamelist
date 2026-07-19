@@ -180,6 +180,7 @@ const state = {
   psnActivity: { achievements: [], games: [], platinums: [], sourceUrl: "" },
   steamActivity: { achievements: [], games: [], completed: [], totalEarned: 0, sourceUrl: "" },
   xboxActivity: { achievements: [], games: [], completed: [], totalEarned: 0, sourceUrl: "" },
+  achievementNoticeKey: "",
   steamOwnedAppIds: null,
   cardTrophies: {},
   platinumCoverCache: loadPlatinumCoverCache(),
@@ -3671,6 +3672,7 @@ async function refreshAchievements() {
     : { user: psnUser, achievements: [], sourceUrl: "https://www.playstation.com/", source: "psn", authError: true };
   const steamData = steamResult.status === "fulfilled" ? steamResult.value : emptySteamActivity();
   const xboxData = xboxResult.status === "fulfilled" ? xboxResult.value : emptyXboxActivity();
+  notifyAchievementProviderIssues(psnData, steamData, xboxData);
   writeAchievementCache(cacheKey, { psn: psnData, steam: steamData, xbox: xboxData });
   renderAchievements(
     psnData,
@@ -3680,14 +3682,28 @@ async function refreshAchievements() {
   render();
 }
 
+function notifyAchievementProviderIssues(psnData = {}, steamData = {}, xboxData = {}) {
+  if (!state.canEdit) return;
+  const issues = [
+    psnData.authError ? "PSN token needs refreshing." : psnData.needsSetup ? "PSN needs setup." : "",
+    steamData.authError ? "Steam achievements need attention." : steamData.needsSetup ? "Steam achievements need setup." : "",
+    xboxData.authError ? "Xbox achievements need attention." : xboxData.needsSetup ? "Xbox achievements need setup." : "",
+  ].filter(Boolean);
+  const key = issues.join("|");
+  if (!key || state.achievementNoticeKey === key) return;
+  state.achievementNoticeKey = key;
+  showToast(issues.join(" "), "error");
+}
+
 async function fetchXboxActivity(forceRefresh = state.settings.forceCacheOnLoad === true) {
   const params = achievementParams({ schema: "2" }, forceRefresh);
   if (state.settings.microsoftUser) params.set("user", state.settings.microsoftUser);
   const response = await fetch(`/api/xbox-achievements?${params}`, { cache: "no-store" });
   const data = await response.json().catch(() => emptyXboxActivity());
+  if (data.needsSetup) return { ...emptyXboxActivity(), source: "xbox", sourceUrl: data.sourceUrl || "https://www.xbox.com/", needsSetup: true, error: data.error || "" };
   if (!response.ok || data.authError || data.error) {
     if (!data.needsSetup) console.warn("[trophies] Xbox activity unavailable", data.error || response.status);
-    return emptyXboxActivity();
+    return { ...emptyXboxActivity(), source: "xbox", sourceUrl: data.sourceUrl || "https://www.xbox.com/", authError: Boolean(data.authError || data.error || !response.ok), error: data.error || "" };
   }
   return data;
 }
@@ -3698,7 +3714,18 @@ function emptyXboxActivity() {
 
 async function fetchSteamActivity(forceRefresh = state.settings.forceCacheOnLoad === true) {
   const steamUser = state.settings.steamUser || "";
+  if (!steamUser) return emptySteamActivity();
   const steamGames = await fetchSteamAccountActivity(steamUser, forceRefresh);
+  if (steamGames?.needsSetup || steamGames?.authError) {
+    return {
+      ...emptySteamActivity(),
+      source: "steam",
+      sourceUrl: steamProfileUrl(steamUser) || "https://steamcommunity.com/",
+      needsSetup: Boolean(steamGames.needsSetup),
+      authError: Boolean(steamGames.authError),
+      error: steamGames.error || "",
+    };
+  }
   state.steamOwnedAppIds = new Set(steamGames.map((game) => game.appId));
   const results = steamGames.map((steamGame) => {
     const game = steamActivityGame(steamGame);
@@ -3768,6 +3795,7 @@ async function fetchSteamAccountActivity(steamUser = state.settings.steamUser ||
         needsSetup: Boolean(data.needsSetup),
         authError: Boolean(data.authError),
       });
+      if (!games.length) return { needsSetup: Boolean(data.needsSetup), authError: Boolean(data.authError || data.error || !response.ok), error: data.error || "" };
       break;
     }
     games.push(...(Array.isArray(data.games) ? data.games : []));
@@ -3794,7 +3822,7 @@ function readAchievementCache(key) {
   try {
     const cached = JSON.parse(localStorage.getItem(ACHIEVEMENT_CACHE_KEY) || "{}");
     if (!cached?.updatedAt || (Date.now() - Number(cached.updatedAt)) > ACHIEVEMENT_CACHE_TTL_MS) return null;
-    if (cached?.key === key && cached?.data?.psn?.authError) {
+    if (cached?.key === key && hasAchievementProviderIssue(cached.data)) {
       localStorage.removeItem(ACHIEVEMENT_CACHE_KEY);
       return null;
     }
@@ -3806,7 +3834,7 @@ function readAchievementCache(key) {
 
 function writeAchievementCache(key, data) {
   try {
-    if (data?.psn?.authError) {
+    if (hasAchievementProviderIssue(data)) {
       const cached = JSON.parse(localStorage.getItem(ACHIEVEMENT_CACHE_KEY) || "{}");
       if (cached?.key === key) localStorage.removeItem(ACHIEVEMENT_CACHE_KEY);
       return;
@@ -3815,6 +3843,10 @@ function writeAchievementCache(key, data) {
   } catch {
     // Achievement cache is only a load-time shortcut.
   }
+}
+
+function hasAchievementProviderIssue(data = {}) {
+  return Boolean(data?.psn?.authError || data?.psn?.needsSetup || data?.steam?.authError || data?.steam?.needsSetup || data?.xbox?.authError || data?.xbox?.needsSetup);
 }
 
 function steamActivityGame(steamGame) {
