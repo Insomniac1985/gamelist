@@ -5,6 +5,8 @@
 
 Gamelist is a personal game backlog, preorder, price, trophy, achievement, and physical collection tracker. It runs as a self-hosted static frontend served by a Cloudflare Worker, with saved data stored in Cloudflare KV.
 
+Set-up is simple, it will take you less under an hour to fully set-up with the required steps. And just a under 2 to fully set up the rest. Adding your games is a whole other story!
+
 The app has two connected pages:
 
 - <img src="assets/Icon.png" alt="Gamelist" width="18" align="center"> `/` for the main game backlog, preorder, release, and completion status tracker.
