@@ -24,7 +24,7 @@ Made and designed by <img src="assets/shabii_logo.png" alt="Shabii" width="18" a
 - Physical Shelf library with multiple owners, regions, conditions, categories, selected-store prices, PriceCharting collection values, and linked Gamelist entries.
 - Shelf Showcase block for featured games, plus shared Currently Playing, Last Finished, Highlights, and Search modules.
 - PSN, Steam, and Xbox trophy/achievement dashboards.
-- Game of the Year tracking and poster export.
+- Game of the year tracking and poster export.
 - Google Calendar preorder events when configured.
 - Theme editor with dark/light mode, colors, logos, title styles, and module ordering.
 - CSV import/export for Gamelist and Shelf data.

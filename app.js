@@ -1412,9 +1412,9 @@ function settingsDevFeaturesItem(kind) {
       <input type="checkbox" id="settingsForceCacheOnLoad" ${state.settings.forceCacheOnLoad ? "checked" : ""}>
       <span>${escapeHtml(tt("Force cache on page load"))}</span>
     </label>
-    <label class="check-filter toggle-check settings-visible-check settings-dev-toggle" title="${escapeHtml(tt("Always show Game of the Year"))}">
+    <label class="check-filter toggle-check settings-visible-check settings-dev-toggle" title="${escapeHtml(tt("Always show Game of the year"))}">
       <input type="checkbox" id="settingsGotyAlwaysShow" ${state.settings.gotyAlwaysShow ? "checked" : ""}>
-      <span>${escapeHtml(tt("Always show Game of the Year"))}</span>
+      <span>${escapeHtml(tt("Always show Game of the year"))}</span>
     </label>
   `;
 }
@@ -1684,7 +1684,7 @@ function renderGameOfTheYear() {
   const entry = state.settings.gameOfTheYear?.[year] || {};
   const picks = entry.picks || {};
   el.gotySection.hidden = false;
-  const sectionTitle = window.matchMedia("(max-width: 520px)").matches ? `My GOTYs ${year}` : `My Games of the Year ${year}`;
+  const sectionTitle = window.matchMedia("(max-width: 520px)").matches ? `My GOTYs ${year}` : `My Games of the year ${year}`;
   el.gotyTitle.innerHTML = `${trophyIcon()} <span>${escapeHtml(sectionTitle)}</span>`;
   el.gotyYearSelect.innerHTML = years.map((item) => `<option value="${escapeHtml(item)}">${escapeHtml(item)}</option>`).join("");
   el.gotyYearSelect.value = year;
@@ -1746,7 +1746,7 @@ function openGameOfTheYearDialog(year = currentGameOfTheYear(), options = {}) {
   el.gotyForm.dataset.gotyYear = String(year);
   const entry = state.settings.gameOfTheYear?.[year] || {};
   const picks = { ...(entry.picks || {}) };
-  const dialogTitle = window.matchMedia("(max-width: 520px)").matches ? `GOTYs ${year}` : `Games of the Year ${year}`;
+  const dialogTitle = window.matchMedia("(max-width: 520px)").matches ? `GOTYs ${year}` : `Games of the year ${year}`;
   el.gotyDialogTitle.innerHTML = `${trophyIcon()} <span>${escapeHtml(dialogTitle)}</span>`;
   if (el.gotyPickerOrder) {
     state.gotyPickerOrder = state.gotyPickerOrder || gotyOrderForDefault(state.settings.defaultOrder);
@@ -1761,8 +1761,8 @@ function openGameOfTheYearDialog(year = currentGameOfTheYear(), options = {}) {
     try {
       if (!el.gotyDialog.open) el.gotyDialog.show();
     } catch (fallbackError) {
-      console.error("Unable to open Games of the Year dialog", fallbackError || error);
-      showToast("Could not open Game of the Year picks.", "error");
+      console.error("Unable to open Games of the year dialog", fallbackError || error);
+      showToast("Could not open Game of the year picks.", "error");
       return false;
     }
   }
@@ -1886,7 +1886,7 @@ async function saveGameOfTheYearFromForm(event) {
   document.querySelector(".goty-callout")?.classList.remove("visible");
   el.gotyDialog.close();
   render();
-  showToast(`Saved Games of the Year ${year}.`);
+  showToast(`Saved Games of the year ${year}.`);
 }
 
 function resetGameOfTheYearFromForm(event) {
@@ -1904,7 +1904,7 @@ function resetGameOfTheYearFromForm(event) {
   render();
   state.gotyPromptShown = false;
   window.setTimeout(() => showGameOfTheYearCallout(year), 120);
-  showToast(`Reset Games of the Year ${year}.`);
+  showToast(`Reset Games of the year ${year}.`);
   persistCloud().catch(() => showToast("Could not sync the reset yet.", "error"));
 }
 
@@ -2046,7 +2046,7 @@ async function maybeRenderGameOfTheYearExportPreview() {
   document.documentElement.classList.remove("theme-booting");
   document.title = html ? `GOTY Export ${year}` : "GOTY Export";
   document.body.className = "goty-export-preview-page";
-  document.body.innerHTML = html || `<main class="goty-export-preview-empty"><h1>No Game of the Year picks for ${escapeHtml(year)}</h1></main>`;
+  document.body.innerHTML = html || `<main class="goty-export-preview-empty"><h1>No Game of the year picks for ${escapeHtml(year)}</h1></main>`;
   return true;
 }
 
