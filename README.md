@@ -247,22 +247,22 @@ Store prices use your selected **region**, **currency**, and **selected shops** 
 
 Physical store price options:
 
-- <img src="assets/stores/amazon.ico" alt="Amazon" width="18" align="center"> The different Amazon regional prices like Amazon.es, Amazon.co.uk, or Amazon.com, depending on the users selected prefered region.
-- <img src="https://cdn.simpleicons.org/ebay/E53238" alt="eBay" width="18" align="center"> eBay, shown with the matching regional eBay site when available.
-- <img src="assets/stores/game.ico" alt="GAME.es" width="18" align="center"> GAME.es
-- <img src="assets/stores/xtralife.ico" alt="Xtralife" width="18" align="center"> Xtralife
-- <img src="assets/stores/retroisland.png" alt="Retro Island NY" width="18" align="center"> Retro Island NY
-- <img src="https://www.google.com/s2/favicons?domain=gamestop.com&sz=32" alt="GameStop" width="18" align="center"> US GameStop
-- <img src="https://www.walmart.com/favicon.ico" alt="Walmart" width="18" align="center"> US Walmart
+- <img src="assets/stores/amazon.ico" alt="Amazon" width="18" align="center"> Different Amazon regional prices from Amazon.es, Amazon.co.uk, or Amazon.com, etc .depending on the users selected prefered region.
+- <img src="https://cdn.simpleicons.org/ebay/E53238" alt="eBay" width="18" align="center"> eBay prices from different users listings.
+- <img src="assets/stores/game.ico" alt="GAME.es" width="18" align="center"> GAME.es prices, including second hand.
+- <img src="assets/stores/xtralife.ico" alt="Xtralife" width="18" align="center"> Xtralife prices.
+- <img src="assets/stores/retroisland.png" alt="Retro Island NY" width="18" align="center"> Retro Island NY prices.
+- <img src="https://www.google.com/s2/favicons?domain=gamestop.com&sz=32" alt="GameStop" width="18" align="center"> US GameStop prices, including second hand.
+- <img src="https://www.walmart.com/favicon.ico" alt="Walmart" width="18" align="center"> US Walmart prices.
 
 Digital games use the platform store automatically when the platform matches:
 
-- <img src="assets/sites/nintendo.png" alt="Nintendo" width="18" align="center"> Nintendo España, Nintendo Italia, Nintendo UK, or Nintendo US for Nintendo Switch / Switch 2.
-- <img src="assets/sites/playstation.png" alt="PlayStation" width="18" align="center"> PlayStation Store for PS4 / PS5.
-- <img src="assets/sites/steam.png" alt="Steam" width="18" align="center"> Steam for PC / Steam games.
-- <img src="assets/platforms/xbox.png" alt="Xbox" width="18" align="center"> Xbox Store for Xbox and Microsoft PC games.
+- <img src="assets/sites/nintendo.png" alt="Nintendo" width="18" align="center"> the different Nintendo regional for Nintendo Switch / Switch 2 digital games.
+- <img src="assets/sites/playstation.png" alt="PlayStation" width="18" align="center"> the different PlayStation Store regional prices for PS4 / PS5 digital games .
+- <img src="assets/sites/steam.png" alt="Steam" width="18" align="center"> the different Steam regional prices.
+- <img src="assets/platforms/xbox.png" alt="Xbox" width="18" align="center"> the different regional Xbox Store or Xbox PC games.
 
-<img src="https://www.pricecharting.com/images/favicon.ico" alt="PriceCharting" width="18" align="center"> Shelf collection values can also use PriceCharting when a matching physical edition or PriceCharting URL/product ID is available.
+<img src="https://www.pricecharting.com/images/favicon.ico" alt="PriceCharting" width="18" align="center"> Shelf collection values also use PriceCharting data when a matching physical game from the collection, to track the average market value depending on the condition.
 
 ### Twitch stream preview
 
