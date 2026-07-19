@@ -1,0 +1,29 @@
+name = "gamelist"
+main = "worker.js"
+compatibility_date = "2026-06-10"
+workers_dev = true
+
+[vars]
+SHELF_ENABLED = "true"
+
+[assets]
+directory = "."
+binding = "ASSETS"
+
+[triggers]
+crons = ["13,43 * * * *"]
+
+[[kv_namespaces]]
+binding = "GAMELIST"
+id = "0ed2a80742e74deb80fc71ec34831a80"
+
+[env.github]
+name = "gamelist"
+workers_dev = true
+
+[env.github.vars]
+SHELF_ENABLED = "true"
+
+[[env.github.kv_namespaces]]
+binding = "GAMELIST"
+id = "97e3869a3cfc407bb25e7470d3942f5e"

@@ -1,0 +1,475 @@
+<!doctype html>
+<html lang="en" class="theme-booting">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="color-scheme" content="dark">
+    <meta name="theme-color" content="#ff0039">
+    <title>Shabii's Shelf</title>
+    <link rel="icon" type="image/png" href="assets/Icon_shelf.png">
+    <style>html.theme-booting:not(.from-pull-navigation) body{visibility:hidden}</style>
+    <script>
+      (() => {
+        const root = document.documentElement;
+        if (new URLSearchParams(location.search).get("pull") === "1") root.classList.add("from-pull-navigation");
+        const settingsKey = "gamelist:settings:v1";
+        const themes = {
+          shabii: { title: "Shabii's Shelf", icon: "assets/Icon_shelf.png", color: "#ff0039" },
+          kash: { title: "Kash's Shelf", icon: "assets/kh_icon.png", color: "#005cff" },
+        };
+        const custom = (settings, fallbackKey) => {
+          const theme = settings.customTheme || {};
+          const owner = String(settings.defaultOwner || "Owner").trim() || "Owner";
+          const hex = (value, fallback) => /^#?[0-9a-fA-F]{6}$/.test(value || "") ? `#${String(value).replace("#", "")}` : fallback;
+          const main = theme.mainColorReset === false ? hex(theme.mainColor, themes[fallbackKey].color) : themes[fallbackKey].color;
+          const accent = theme.accentColorReset === false ? hex(theme.accentColor, "#79f2ce") : "#79f2ce";
+          const gradient = hex(theme.gradientColor, main);
+          const extra = hex(theme.extraColor, "#7c5cff");
+          const fonts = { antique: "Antique Olive Nord", georgia: "Georgia Bold", pokemon: "Pokemon GBA", pixel: "04B 30", michroma: "Michroma", minecraft: "Minecraft", mata: "Mata Regular" };
+          const source = (value) => ({ main, accent, gradient, extra })[value] || main;
+          const mix = (color, alpha) => {
+            const int = Number.parseInt(color.slice(1), 16);
+            return `rgba(${(int >> 16) & 255}, ${(int >> 8) & 255}, ${int & 255}, ${alpha})`;
+          };
+          const defaultIcon = () => {
+            if (theme.mainColorReset !== false) return themes[fallbackKey].icon;
+            try { return localStorage.getItem(`gamelist:tinted-icon:shelf:${main}`) || themes[fallbackKey].icon; } catch { return themes[fallbackKey].icon; }
+          };
+          return { title: `${owner}'s Shelf`, icon: theme.shelfIcon || defaultIcon(), color: main, accent, gradient, extra, glow1: mix(source(theme.glowPrimary), .22), glow2: mix(source(theme.glowSecondary || "accent"), .14), background: theme.backgroundImage || "", font: fonts[theme.accentFont] || "Cascadia Code", fontKey: theme.accentFont || "", mode: theme.mode === "light" ? "light" : "dark", disableGlow: Boolean(theme.disableGlow), gradientOn: Boolean(theme.gradient), uppercaseTitles: Boolean(theme.uppercaseTitles), bigLogo: fallbackKey === "kash" || Boolean(theme.bigLogo) };
+        };
+        const apply = (key, settings = {}) => {
+          const themeKey = themes[key] ? key : "shabii";
+          const theme = custom(settings, themeKey);
+          window.__initialTheme = theme;
+          root.dataset.initialTheme = themeKey;
+          root.classList.toggle("theme-kash", themeKey === "kash");
+          root.classList.toggle("theme-light", theme.mode === "light");
+          root.classList.toggle("theme-no-glow", theme.disableGlow);
+          root.classList.toggle("theme-gradient", theme.gradientOn);
+          root.classList.toggle("theme-uppercase-titles", theme.uppercaseTitles);
+          root.classList.toggle("theme-big-logo", theme.bigLogo);
+          root.classList.toggle("theme-font-pokemon", theme.fontKey === "pokemon");
+          root.classList.toggle("theme-font-michroma", theme.fontKey === "michroma");
+          root.classList.toggle("theme-font-mata", theme.fontKey === "mata");
+          root.style.setProperty("--accent", theme.color);
+          root.style.setProperty("--accent-1", theme.accent);
+          root.style.setProperty("--accent-2", theme.accent);
+          root.style.setProperty("--title-gradient-start", theme.gradientOn ? theme.gradient : theme.color);
+          root.style.setProperty("--title-gradient-end", theme.color);
+          root.style.setProperty("--extra-color", theme.extra);
+          root.style.setProperty("--glow-primary", theme.glow1);
+          root.style.setProperty("--glow-secondary", theme.glow2);
+          root.style.setProperty("--custom-backdrop-image", theme.background ? `url("${theme.background.replace(/"/g, "%22")}")` : "var(--default-backdrop-image)");
+          root.style.setProperty("--display-title-font", `"${theme.font}", "Cascadia Code", ui-monospace, monospace`);
+          document.body?.classList.toggle("theme-kash", themeKey === "kash");
+          document.body?.classList.toggle("theme-light", theme.mode === "light");
+          document.body?.classList.toggle("theme-no-glow", theme.disableGlow);
+          document.body?.classList.toggle("theme-gradient", theme.gradientOn);
+          document.body?.classList.toggle("theme-uppercase-titles", theme.uppercaseTitles);
+          document.body?.classList.toggle("theme-big-logo", theme.bigLogo);
+          document.body?.classList.toggle("theme-font-pokemon", theme.fontKey === "pokemon");
+          document.body?.classList.toggle("theme-font-michroma", theme.fontKey === "michroma");
+          document.body?.classList.toggle("theme-font-mata", theme.fontKey === "mata");
+          document.title = theme.title;
+          document.querySelector("meta[name='theme-color']")?.setAttribute("content", theme.color);
+          document.querySelector("link[rel='icon']")?.setAttribute("href", theme.icon);
+          warmThemeImages(theme);
+          return themeKey;
+        };
+        const warmThemeImages = (theme) => {
+          [theme.icon, theme.background].filter(Boolean).forEach((src) => {
+            try {
+              const image = new Image();
+              image.decoding = "async";
+              image.src = src;
+              if (!src.startsWith("data:") && !document.querySelector(`link[data-theme-preload][href="${CSS.escape(src)}"]`)) {
+                const link = document.createElement("link");
+                link.rel = "preload";
+                link.as = "image";
+                link.href = src;
+                link.dataset.themePreload = "true";
+                document.head.appendChild(link);
+              }
+            } catch {}
+          });
+        };
+        const saveTheme = (key, nextSettings = null) => {
+          try {
+            const settings = JSON.parse(localStorage.getItem(settingsKey) || "{}");
+            localStorage.setItem(settingsKey, JSON.stringify({ ...settings, ...(nextSettings || {}), theme: key }));
+          } catch {}
+        };
+        let savedSettings = {};
+        let savedTheme = "";
+        try {
+          savedSettings = JSON.parse(localStorage.getItem(settingsKey) || "{}");
+          savedTheme = savedSettings.theme || "";
+        } catch {}
+        window.__applyInitialTheme = apply;
+        window.__initialThemeReady = savedTheme
+          ? Promise.resolve(apply(savedTheme, savedSettings))
+          : fetch("/api/sync?settings=1", { cache: "no-store" })
+            .then((response) => response.ok ? response.json() : {})
+            .then((data) => {
+              const key = themes[data?.settings?.theme] ? data.settings.theme : "shabii";
+              saveTheme(key, data?.settings || {});
+              return apply(key, data?.settings || {});
+            })
+            .catch(() => apply("shabii", {}));
+        window.setTimeout(() => root.classList.remove("theme-booting"), 3500);
+      })();
+    </script>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="shelf.css">
+  </head>
+  <body class="shelf-page">
+    <script>
+      (() => {
+        const theme = window.__initialTheme || {};
+        const themeKey = document.documentElement.dataset.initialTheme;
+        document.body.classList.toggle("theme-kash", themeKey === "kash");
+        document.body.classList.toggle("theme-light", theme.mode === "light");
+        document.body.classList.toggle("theme-no-glow", Boolean(theme.disableGlow));
+        document.body.classList.toggle("theme-gradient", Boolean(theme.gradientOn));
+        document.body.classList.toggle("theme-uppercase-titles", Boolean(theme.uppercaseTitles));
+        document.body.classList.toggle("theme-big-logo", Boolean(theme.bigLogo));
+        document.body.classList.toggle("theme-font-pokemon", theme.fontKey === "pokemon");
+        document.body.classList.toggle("theme-font-michroma", theme.fontKey === "michroma");
+        document.body.classList.toggle("theme-font-mata", theme.fontKey === "mata");
+        document.body.classList.toggle("can-edit", sessionStorage.getItem("gamelist-editor") === "true");
+      })();
+    </script>
+    <div class="backdrop" aria-hidden="true"></div>
+
+    <header class="topbar shelf-topbar">
+      <a class="brand" href="shelf" aria-label="Shabii's Shelf">
+        <img class="brand-mark" src="assets/Icon_shelf.png" alt="">
+        <span>Shabii's Shelf</span>
+      </a>
+      <button class="brand-version-chip" id="brandVersion" type="button" hidden>Version -</button>
+      <script>
+        (() => {
+          const theme = window.__initialTheme;
+          if (!theme) return;
+          const brand = document.currentScript.previousElementSibling?.previousElementSibling;
+          const mark = brand?.querySelector(".brand-mark");
+          const label = brand?.querySelector("span:last-child");
+          if (mark && theme.icon) mark.src = theme.icon;
+          if (label && theme.title) label.textContent = theme.title;
+          if (brand && theme.title) brand.setAttribute("aria-label", theme.title);
+        })();
+      </script>
+      <div class="top-actions">
+        <button class="icon-button" id="settingsButton" type="button" title="Settings" aria-label="Settings" hidden>
+          <svg class="settings-icon" viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M9.8 3.7h4.4l.42 2.1c.45.16.87.4 1.25.7l2.02-.68 2.2 3.82-1.6 1.42c.04.31.04.57 0 .88l1.6 1.42-2.2 3.82-2.02-.68c-.38.3-.8.54-1.25.7l-.42 2.1H9.8l-.42-2.1a5.3 5.3 0 0 1-1.25-.7l-2.02.68-2.2-3.82 1.6-1.42a4.1 4.1 0 0 1 0-.88l-1.6-1.42 2.2-3.82 2.02.68c.38-.3.8-.54 1.25-.7l.42-2.1Z"></path>
+            <circle cx="12" cy="12" r="2.9"></circle>
+          </svg>
+        </button>
+        <button class="ghost-button" id="fetchPricesButton" type="button" hidden>
+          <svg class="euro-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M19 5.5A7 7 0 0 0 8.2 7.1 7.4 7.4 0 0 0 7 12a7.4 7.4 0 0 0 1.2 4.9A7 7 0 0 0 19 18.5"></path><path d="M4 10h10"></path><path d="M4 14h10"></path></svg>
+          <span class="button-label">Fetch New Prices</span>
+        </button>
+        <button class="ghost-button" id="loginButton" type="button" title="Edit" aria-label="Edit">
+          <svg class="pencil-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h4l11-11a2.8 2.8 0 0 0-4-4L4 16v4Z"></path><path d="M13.5 6.5l4 4"></path></svg>
+        </button>
+        <button class="primary-button" id="addButton" type="button" hidden>
+          <span class="button-label">Add Game</span>
+          <span class="button-icon" aria-hidden="true">
+            <svg class="plus-icon" viewBox="0 0 24 24"><path d="M12 5v14"></path><path d="M5 12h14"></path></svg>
+          </span>
+        </button>
+        <script>
+          if (sessionStorage.getItem("gamelist-editor") === "true") document.querySelector("#addButton")?.removeAttribute("hidden");
+        </script>
+      </div>
+    </header>
+
+    <main class="shell shelf-shell">
+      <div class="shelf-modules" id="shelfModules">
+        <section class="playing-section shelf-carousel-module" data-module="playing" hidden></section>
+        <section class="shelf-favorites-section" data-module="favorites" hidden>
+          <div class="column-head"><div><h2>Showcase</h2></div><button class="icon-button showcase-edit-button editor-only" id="showcaseEditButton" type="button" title="Edit Showcase" aria-label="Edit Showcase"><svg class="pencil-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h4l11-11a2.8 2.8 0 0 0-4-4L4 16v4Z"></path><path d="M13.5 6.5l4 4"></path></svg></button></div>
+          <div class="favorite-cover-row" id="favoriteGames"></div>
+        </section>
+        <section class="achievement-section shelf-trophy-module" data-module="trophies" hidden>
+          <div class="column-head"><div><h2>Achievements</h2></div></div>
+          <div id="shelfTrophyCard" class="achievement-panel glass"></div>
+        </section>
+        <section class="calendar-section hero" data-module="calendar">
+          <div class="release-calendar" id="shelfReleaseCalendar" aria-label="Upcoming release calendar"></div>
+        </section>
+        <section class="highlights-section" data-module="kpis">
+          <div class="stats" id="shelfStats" aria-live="polite"></div>
+        </section>
+
+        <section class="toolbar glass shelf-toolbar" data-module="filters">
+          <label class="search shelf-search-wide">
+            <span data-i18n="Search">Search</span>
+            <input id="searchInput" type="search" placeholder="Game, publisher, genre..." data-i18n-placeholder="Game, publisher, genre...">
+          </label>
+          <label>
+            <span data-i18n="Platform">Platform</span>
+            <select id="platformFilter"></select>
+          </label>
+          <label>
+            <span data-i18n="Region">Region</span>
+            <select id="regionFilter"></select>
+          </label>
+          <label>
+            <span data-i18n="Condition">Condition</span>
+            <select id="conditionFilter">
+              <option value="all" data-i18n="All conditions">All conditions</option>
+              <option value="complete" data-i18n="Complete">Complete</option>
+              <option value="complete-plus" data-i18n="Complete +">Complete +</option>
+              <option value="loose" data-i18n="Loose">Loose</option>
+              <option value="sealed" data-i18n="Sealed">Sealed</option>
+            </select>
+          </label>
+          <label><span data-i18n="Category">Category</span><select id="categoryFilter"></select></label>
+          <label class="order-label shelf-order-short">
+            <span data-i18n="Order">Order</span>
+            <div class="order-control"><select id="sortFilter">
+              <option value="added" data-i18n="Last added">Last added</option><option value="title" data-i18n="Name">Name</option><option value="platform" data-i18n="Platform">Platform</option><option value="region" data-i18n="Region">Region</option><option value="value" data-i18n="Value">Value</option>
+            </select><button class="direction-toggle" id="sortDirectionButton" type="button" title="Sort ascending" aria-label="Sort ascending"></button></div>
+          </label>
+          <button class="icon-button view-toggle" id="viewToggleButton" type="button" title="Show as list" aria-label="Show as list">
+            <svg class="view-icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="6" height="6" rx="1"></rect><rect x="14" y="4" width="6" height="6" rx="1"></rect><rect x="4" y="14" width="6" height="6" rx="1"></rect><rect x="14" y="14" width="6" height="6" rx="1"></rect></svg>
+          </button>
+        </section>
+
+        <section class="shelf-library" data-module="library">
+          <div class="shelf-tabs" id="shelfTabs" hidden></div>
+          <div class="column-head">
+            <span id="resultCount"></span>
+          </div>
+          <div class="shelf-grid" id="gameShelf" aria-live="polite"></div>
+          <div class="empty-state glass" id="emptyState" hidden>
+            <strong>Nothing on this shelf</strong>
+            <span>Try another filter or search.</span>
+            <button class="ghost-button" id="clearFilters" type="button">Clear filters</button>
+          </div>
+        </section>
+      </div>
+    </main>
+
+    <footer class="site-footer" aria-label="Site updates">
+      <button id="footerDataUpdate" type="button">Last edit -</button>
+      <span class="footer-separator" aria-hidden="true">·</span>
+      <button id="footerVersion" type="button">Version -</button>
+      <span class="footer-separator footer-credit-separator" aria-hidden="true">·</span>
+      <a class="footer-credit" href="https://x.com/Shabii_exe" target="_blank" rel="noreferrer"><span>Shelf by Shabii</span><span class="footer-credit-logo" aria-hidden="true"></span></a>
+    </footer>
+
+    <button class="icon-button scroll-top-button" id="scrollTopButton" type="button" title="Back to top" aria-label="Back to top">
+      <svg class="scroll-top-icon" viewBox="0 0 24 24" aria-hidden="true"><polyline points="6 14 12 8 18 14"></polyline></svg>
+    </button>
+    <div class="floating-edit-actions" id="floatingEditActions" aria-label="Quick actions">
+      <button class="icon-button floating-action-button" id="floatingAddButton" type="button" title="Add Game" aria-label="Add Game"><svg class="plus-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14"></path><path d="M5 12h14"></path></svg></button>
+    </div>
+
+    <dialog id="detailDialog">
+      <article class="detail-modal glass">
+          <button class="icon-button detail-close" id="detailClose" type="button" title="Close" aria-label="Close">×</button>
+          <div class="detail-cover" id="detailCoverWrap"><img id="detailCover" alt=""></div>
+          <div class="detail-body">
+            <h2 id="detailTitle"></h2>
+            <div class="studio-line" id="detailStudio"></div>
+            <div class="meta" id="detailMeta"></div>
+            <div class="play-dates detail-dates" id="detailDates"></div>
+            <div class="chips" id="detailChips"></div>
+            <div class="store-links" id="detailLinks"></div>
+            <div class="detail-note" id="detailNote" hidden></div>
+            <p id="detailDescription"></p>
+            <section class="detail-guides" id="detailGuides" hidden><h3>Guides</h3><div class="guide-links" id="detailGuideLinks"></div></section>
+            <section class="detail-condition" id="detailConditionPanel"><h3>Collection condition</h3><div class="condition-grid" id="detailCondition"></div></section>
+            <section class="detail-price-panel" id="detailPricePanel"><div class="detail-section-head"><button class="detail-section-toggle" id="detailPriceToggle" type="button" aria-expanded="true" aria-controls="detailPriceContent"><span>Collection value</span><strong id="detailPriceHeadline"></strong></button><button class="icon-button detail-fetch-value-button editor-only" id="fetchValueButton" type="button" title="Fetch value" aria-label="Fetch value"><svg class="euro-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M19 5.5A7 7 0 0 0 8.2 7.1 7.4 7.4 0 0 0 7 12a7.4 7.4 0 0 0 1.2 4.9A7 7 0 0 0 19 18.5"></path><path d="M4 10h10"></path><path d="M4 14h10"></path></svg></button></div><div class="detail-price-content" id="detailPriceContent"><div id="detailPriceSummary"></div><svg id="detailPriceGraph" class="price-history-graph" viewBox="0 0 600 150" role="img" aria-label="Collection value history"></svg></div></section>
+            <section class="detail-store-price-panel" id="detailStorePricePanel"><div class="prices detail-prices detail-store-prices" id="detailStorePrices"></div></section>
+            <section class="detail-trophies" id="shelfDetailTrophies" hidden><div class="detail-trophies-head"><h3><svg class="trophy-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 4h8v4a4 4 0 0 1-8 0V4Z"></path><path d="M8 6H5a3 3 0 0 0 3 3"></path><path d="M16 6h3a3 3 0 0 1-3 3"></path><path d="M12 12v4"></path><path d="M9 20h6"></path><path d="M10 16h4v4h-4z"></path></svg><span id="shelfTrophyTitle">TROPHIES</span></h3><div class="detail-trophy-tools"><span id="shelfTrophyCount"></span><span class="detail-trophy-percent" id="shelfTrophyPercent"></span><select id="shelfTrophySort" aria-label="Sort trophies"><option value="order">Order</option><option value="name">Name</option><option value="completed">Completed</option></select><button class="direction-toggle" id="shelfTrophyDirection" type="button" title="Sort ascending" aria-label="Sort ascending">↑</button></div></div><div class="detail-trophy-scroller"><div class="detail-trophy-list" id="shelfTrophyList"></div></div></section>
+          </div>
+      </article>
+    </dialog>
+
+    <dialog id="addDialog">
+      <form method="dialog" class="modal add-modal" id="addGameForm">
+        <div class="modal-head">
+          <div><p class="eyebrow">Game data</p><h2>Add Game</h2></div>
+          <div class="modal-head-actions">
+            <button class="primary-button modal-head-save" type="submit">Save</button>
+            <button class="icon-button" id="addClose" type="button" title="Close" aria-label="Close">×</button>
+          </div>
+        </div>
+
+        <div class="lookup-row">
+          <label>
+            <span>Search DB or PriceCharting</span>
+            <input id="lookupInput" type="search" placeholder="Game name or PriceCharting page">
+          </label>
+          <button class="ghost-button icon-only-button" id="lookupButton" type="button" title="Fetch info" aria-label="Fetch info">
+            <svg class="search-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle><path d="M16.5 16.5 21 21"></path></svg>
+          </button>
+        </div>
+        <div class="lookup-results" id="lookupResults"></div>
+
+        <section class="form-group">
+          <h3>Collecting Information</h3>
+          <div class="form-grid">
+            <label><span>Title</span><input id="titleInput" required></label>
+            <label><span>Console</span><input id="platformInput" list="shelfPlatformOptions"><datalist id="shelfPlatformOptions"></datalist></label>
+            <label><span>Region</span><select id="countryInput" required></select></label>
+            <label><span>Release Date</span><input id="releaseDateInput" type="date"></label>
+            <label><span>Owners</span><input id="ownersInput" placeholder="Judy, Jordi, Cage"></label>
+            <label><span>Estimated Value</span><input id="priceInput" inputmode="decimal" placeholder="0.00"></label>
+            <label><span>Trophy Search Name</span><input id="trophyNameInput" placeholder="Optional alternate title"></label>
+          </div>
+        </section>
+
+        <section class="form-group">
+          <h3>Physical Edition</h3>
+          <fieldset class="condition-editor"><div class="condition-grid">
+              <label class="check-filter toggle-check"><input id="conditionGameInput" type="checkbox"><span>Game</span></label>
+              <label class="check-filter toggle-check"><input id="conditionManualInput" type="checkbox"><span>Manual</span></label>
+              <label class="check-filter toggle-check"><input id="conditionBoxInput" type="checkbox"><span>Box</span></label>
+              <label class="check-filter toggle-check"><input id="conditionOtherInput" type="checkbox"><span>Other</span></label>
+              <label class="check-filter toggle-check condition-sealed"><input id="conditionSealedInput" type="checkbox"><span>Sealed</span></label>
+          </div></fieldset>
+          <div class="form-grid physical-id-grid">
+            <label><span>UPC / EAN</span><input id="upcInput" inputmode="numeric"></label>
+            <label><span>SKU / Catalog Number</span><input id="skuInput"></label>
+            <label><span>ASIN</span><input id="asinInput"></label>
+            <label><span>eBay Product ID</span><input id="epidInput"></label>
+            <label class="wide"><span>PriceCharting Page or Product ID</span><input id="pricechartingIdInput" placeholder="https://www.pricecharting.com/game/... or product ID"></label>
+            <label class="wide"><span>Condition Notes</span><textarea id="notesInput" rows="3" placeholder="Missing booklet, sealed, damaged case..."></textarea></label>
+          </div>
+        </section>
+
+        <section class="form-group">
+          <h3>Game Data</h3>
+          <div class="form-grid">
+            <label><span>Developer</span><input id="developerInput" placeholder="Studio"></label>
+            <label><span>Publisher</span><input id="publisherInput" placeholder="Publisher"></label>
+            <label class="wide"><span>Genre</span><input id="genreInput"></label>
+            <label class="wide"><span>Description</span><textarea id="shelfDescriptionInput" rows="4"></textarea></label>
+            <label><span>PlayStation URL</span><input id="playstationUrlInput" type="url" placeholder="https://store.playstation.com/..."></label>
+            <label><span>Nintendo URL</span><input id="nintendoUrlInput" type="url" placeholder="https://www.nintendo.com/..."></label>
+            <label><span>Steam URL</span><input id="steamUrlInput" type="url" placeholder="https://store.steampowered.com/..."></label>
+            <label><span>Xbox URL</span><input id="xboxUrlInput" type="url" placeholder="https://www.xbox.com/..."></label>
+            <label class="wide"><span>HowLongToBeat URL</span><input id="hltbUrlInput" type="url" placeholder="https://howlongtobeat.com/game/..."></label>
+            <label class="wide"><span>Cover URL</span><input id="coverInput" type="url"></label>
+          </div>
+        </section>
+        <div class="modal-actions">
+          <button class="danger-button icon-only-button edit-delete-button" id="editDeleteButton" type="button" title="Delete" aria-label="Delete" hidden>
+            <svg class="trash-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6h18"></path><path d="M8 6V4h8v2"></path><path d="M19 6l-1 14H6L5 6"></path><path d="M10 11v5"></path><path d="M14 11v5"></path></svg>
+          </button>
+          <button class="primary-button" type="submit">Add to Shelf</button>
+        </div>
+      </form>
+    </dialog>
+
+    <dialog id="layoutDialog" class="settings-dialog">
+      <form class="settings-modal glass" id="layoutForm">
+        <div class="modal-head">
+          <div><p class="eyebrow" data-i18n="Shelf settings">Shelf settings</p><h2 data-i18n="Settings">Settings</h2></div>
+          <div class="modal-head-actions">
+            <button class="primary-button modal-head-save" type="submit" data-i18n="Save">Save</button>
+            <button class="icon-button" id="layoutClose" type="button" title="Close" aria-label="Close">×</button>
+          </div>
+        </div>
+        <section class="settings-section">
+          <h3 data-i18n="Page">Page</h3>
+          <div class="settings-layout" id="layoutList" aria-label="Page order"></div>
+        </section>
+        <p class="eyebrow settings-detail-title" data-i18n="Details">Details</p>
+        <section class="settings-grid">
+          <label class="settings-account-field"><span data-i18n="PlayStation account">PlayStation account</span><input id="shelfSettingsPsnUser" autocomplete="off" placeholder="PlayStation online ID" data-i18n-placeholder="PlayStation online ID"></label>
+          <label class="settings-account-field"><span data-i18n="Microsoft account">Microsoft account</span><input id="shelfSettingsMicrosoftUser" autocomplete="off" placeholder="Xbox gamertag or XUID" data-i18n-placeholder="Xbox gamertag or XUID"></label>
+          <label class="settings-account-field"><span data-i18n="Steam account">Steam account</span><input id="shelfSettingsSteamUser" autocomplete="off" placeholder="SteamID64, profile URL, or vanity name" data-i18n-placeholder="SteamID64, profile URL, or vanity name"></label>
+          <label class="settings-account-field"><span data-i18n="Twitch account">Twitch account</span><input id="shelfSettingsTwitchUser" autocomplete="off" placeholder="Twitch username" data-i18n-placeholder="Twitch username"></label>
+          <label class="settings-detail-compact"><span data-i18n="Default owner">Default owner</span><input id="shelfSettingsDefaultOwner" autocomplete="off"></label>
+          <label class="settings-detail-compact"><span data-i18n="Currency">Currency</span><select id="shelfSettingsCurrency"><option value="EUR">EUR</option><option value="USD">USD</option></select></label>
+          <label class="settings-detail-compact"><span data-i18n="Region">Region</span><select id="shelfSettingsRegion"><option value="ES" data-i18n="Spain">Spain</option><option value="IT" data-i18n="Italy">Italy</option><option value="US">US</option><option value="UK">UK</option></select></label>
+          <label class="settings-detail-compact"><span data-i18n="Language">Language</span><select id="shelfSettingsLanguage"><option value="en">English</option><option value="es-ES">Español (WIP)</option></select></label>
+        </section>
+        <section class="settings-section">
+          <h3 data-i18n="Stores">Stores</h3>
+          <div class="settings-store-list" id="shelfSettingsStores"></div>
+        </section>
+        <section class="settings-section settings-csv-section">
+          <h3 data-i18n="Your data">Your data</h3>
+          <div class="settings-csv-data" id="shelfSettingsCsvData"></div>
+        </section>
+        <section class="settings-section settings-dev-section">
+          <h3 data-i18n="Dev features">Dev features</h3>
+          <div class="settings-dev-links" id="shelfSettingsDevFeatures"></div>
+        </section>
+        <div class="modal-actions"><button class="primary-button" type="submit" data-i18n="Save">Save</button></div>
+      </form>
+    </dialog>
+
+    <dialog id="showcaseDialog" class="settings-dialog">
+      <form class="settings-modal glass showcase-modal" id="showcaseForm">
+        <div class="modal-head">
+          <div><p class="eyebrow">Shelf</p><h2>Showcase</h2></div>
+          <div class="modal-head-actions">
+            <button class="primary-button modal-head-save" type="submit">Save</button>
+            <button class="icon-button" id="showcaseClose" type="button" title="Close" aria-label="Close">×</button>
+          </div>
+        </div>
+        <div class="showcase-selected" id="showcaseSelected"></div>
+        <div class="toolbar showcase-toolbar">
+          <label class="search showcase-search">
+            <span>Search</span>
+            <input id="showcaseSearch" type="search" placeholder="Game, platform, genre...">
+          </label>
+          <label><span>Platform</span><select id="showcasePlatform"></select></label>
+          <label><span>Region</span><select id="showcaseRegion"></select></label>
+          <label><span>Category</span><select id="showcaseCategory"></select></label>
+          <div class="showcase-direction-field"><button class="direction-toggle" id="showcaseSortDirection" type="button" title="Sort ascending" aria-label="Sort ascending"></button></div>
+        </div>
+        <div class="showcase-count" id="showcaseCount"></div>
+        <div class="showcase-picker-grid" id="showcaseList"></div>
+      </form>
+    </dialog>
+
+    <dialog id="shelfCompletedDialog" class="platinum-dialog">
+      <article class="platinum-modal glass"><div class="modal-head"><div><p class="eyebrow">Achievements</p><h2 class="platinum-title" id="shelfCompletedTitle"></h2></div><div class="platinum-head-actions"><button class="icon-button" id="shelfCompletedClose" type="button" title="Close" aria-label="Close">×</button><span class="platinum-count-pill" id="shelfCompletedCount"></span></div></div><div class="platinum-filter-bar"><label class="platinum-year-select"><span>Year</span><select id="shelfCompletedYear"><option value="all">All</option></select></label><label class="platinum-platform-select"><span>Platform</span><select id="shelfCompletedPlatform"><option value="all">All</option></select></label><label class="platinum-order-label"><span>Order</span><div class="platinum-order-control"><select id="shelfCompletedSort" aria-label="Sort completed games"><option value="time">Time</option><option value="name">Name</option></select><button class="direction-toggle" id="shelfCompletedDirection" type="button" title="Sort descending" aria-label="Sort descending"></button><button class="icon-button view-toggle section-view-toggle" id="shelfCompletedView" type="button" title="Grid view" aria-label="Grid view"></button></div></label></div><div class="platinum-list" id="shelfCompletedList"></div></article>
+    </dialog>
+
+    <dialog id="shelfReleaseDialog">
+      <article class="release-modal glass">
+        <div class="modal-head">
+          <div>
+            <p class="eyebrow">Release day</p>
+            <h2 id="shelfReleaseDialogTitle"></h2>
+          </div>
+          <button class="icon-button" id="shelfReleaseCloseButton" type="button" title="Close">×</button>
+        </div>
+        <div class="card-list release-dialog-list" id="shelfReleaseDialogList"></div>
+      </article>
+    </dialog>
+
+    <dialog id="authDialog">
+      <form method="dialog" class="auth-modal glass" id="authForm">
+        <div class="modal-head">
+          <div>
+            <p class="eyebrow">Editor</p>
+            <h2>Password</h2>
+          </div>
+          <button class="icon-button" id="authCloseButton" type="button" title="Close">×</button>
+        </div>
+        <label>
+          <span>Editor password</span>
+          <input id="authPasswordInput" type="password" autocomplete="current-password" autofocus>
+        </label>
+        <p class="auth-error" id="authError" hidden>Wrong password.</p>
+        <div class="modal-actions">
+          <button class="ghost-button" id="authCancelButton" type="button">Cancel</button>
+          <button class="primary-button" type="submit">Unlock</button>
+        </div>
+      </form>
+    </dialog>
+
+    <script type="module" src="shelf.js"></script>
+  </body>
+</html>

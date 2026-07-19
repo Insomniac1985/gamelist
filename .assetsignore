@@ -1,0 +1,13 @@
+.git/
+.gitignore
+.DS_Store
+.env
+.env.*
+.dev.vars
+.wrangler/
+README.md
+server.mjs
+worker.js
+wrangler.toml
+functions/
+scripts/
