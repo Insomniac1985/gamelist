@@ -2178,7 +2178,7 @@ h2 {
   position: relative;
   display: inline-flex;
   align-items: center;
-  padding: 4px 0;
+  /*padding: 4px 0;*/
   color: transparent;
   background: var(--accent);
   -webkit-background-clip: text;
