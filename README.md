@@ -3,7 +3,7 @@
   <span style="color: #e92841;">Gamelist</span>
 </h1>
 
-Gamelist is a personal game backlog, preorder, price, trophy, achievement, and physical shelf tracker. It runs as a static frontend served by a Cloudflare Worker, with saved data stored in Cloudflare KV.
+Gamelist is a personal game backlog, preorder, price, trophy, achievement, and physical shelf tracker. It runs as a self-hosted static frontend served by a Cloudflare Worker, with saved data stored in Cloudflare KV.
 
 The app has two connected pages:
 
@@ -11,6 +11,8 @@ The app has two connected pages:
 - <img src="assets/Icon_shelf.png" alt="Shelf" width="18" align="center"> `/shelf` for the physical collection tracker.
 
 Both pages share edit mode, themes, account settings, price-store settings, achievement integrations, and the same `GAMELIST` KV namespace. Shelf Sync can also send physical collection additions back into the main Gamelist flow.
+
+Made and designed by [Shabii](https://x.com/Shabii_exe) with the help of ChatGPT Codex.
 
 ## Features
 
