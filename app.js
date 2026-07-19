@@ -2424,6 +2424,7 @@ function gameOfTheYearExportCss({ theme, main, accent, gradient, bg, glowPrimary
   const sweep = theme.mode === "light" ? "rgba(255,255,255,.58)" : "rgba(255,255,255,.055)";
   const titleFont = canvasTitleFont(theme);
   const titleSize = gameOfTheYearExportTitleSize(theme);
+  const titleTop = gameOfTheYearExportTitleTop(theme);
   const titleLineHeight = gameOfTheYearExportTitleLineHeight(theme);
   const titleLetterSpacing = gameOfTheYearExportTitleLetterSpacing(theme);
   const categoryTitleSize = gameOfTheYearExportCategoryTitleSize(theme);
@@ -2463,7 +2464,7 @@ function gameOfTheYearExportCss({ theme, main, accent, gradient, bg, glowPrimary
     }
     .goty-export-head h1 {
       position: absolute;
-      top: 42px;
+      top: ${titleTop}px;
       left: 178px;
       width: 951px;
       margin: 0;
@@ -3012,8 +3013,13 @@ function gameOfTheYearExportTitleLineHeight(theme) {
 
 function gameOfTheYearExportTitleSize(theme) {
   if (theme.accentFont === "pokemon") return 66;
-  if (theme.accentFont === "mata") return 46;
+  if (theme.accentFont === "mata") return 40;
   return 53;
+}
+
+function gameOfTheYearExportTitleTop(theme) {
+  if (theme.accentFont === "mata") return 50;
+  return 42;
 }
 
 function gameOfTheYearExportCategoryTitleSize(theme) {
@@ -3166,13 +3172,14 @@ async function drawGameOfTheYearImage(ctx, { owner, year, rows, logo, theme, bac
   titleFill.addColorStop(0, titleGradient);
   titleFill.addColorStop(1, main);
   ctx.fillStyle = titleFill;
-  const titleSize = theme.accentFont === "pokemon" ? 80 : theme.accentFont === "mata" ? 56 : 64;
+  const titleSize = theme.accentFont === "pokemon" ? 80 : theme.accentFont === "mata" ? 50 : 64;
   const titleLineGap = gameOfTheYearCanvasTitleLineGap(theme, titleSize);
   ctx.font = `900 ${titleSize}px ${titleFont}`;
   ctx.letterSpacing = gameOfTheYearExportTitleLetterSpacing(theme);
   ctx.textAlign = "left";
-  ctx.fillText(`${owner}'s Games of`, 220, 116);
-  ctx.fillText(`the Year ${year}`, 220, 116 + titleLineGap);
+  const titleY = theme.accentFont === "mata" ? 124 : 116;
+  ctx.fillText(`${owner}'s Games of`, 220, titleY);
+  ctx.fillText(`the Year ${year}`, 220, titleY + titleLineGap);
   ctx.letterSpacing = "0";
   const siteUrl = cleanCanvasSiteUrl(window.location.origin && window.location.origin !== "null" ? window.location.origin : window.location.hostname || "Gamelist");
   ctx.font = `800 24px ${bodyFont}`;
