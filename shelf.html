@@ -49,6 +49,8 @@
           root.classList.toggle("theme-uppercase-titles", theme.uppercaseTitles);
           root.classList.toggle("theme-big-logo", theme.bigLogo);
           root.classList.toggle("theme-font-pokemon", theme.fontKey === "pokemon");
+          root.classList.toggle("theme-font-michroma", theme.fontKey === "michroma");
+          root.classList.toggle("theme-font-mata", theme.fontKey === "mata");
           root.style.setProperty("--accent", theme.color);
           root.style.setProperty("--accent-1", theme.accent);
           root.style.setProperty("--accent-2", theme.accent);
@@ -66,6 +68,8 @@
           document.body?.classList.toggle("theme-uppercase-titles", theme.uppercaseTitles);
           document.body?.classList.toggle("theme-big-logo", theme.bigLogo);
           document.body?.classList.toggle("theme-font-pokemon", theme.fontKey === "pokemon");
+          document.body?.classList.toggle("theme-font-michroma", theme.fontKey === "michroma");
+          document.body?.classList.toggle("theme-font-mata", theme.fontKey === "mata");
           document.title = theme.title;
           document.querySelector("meta[name='theme-color']")?.setAttribute("content", theme.color);
           document.querySelector("link[rel='icon']")?.setAttribute("href", theme.icon);
@@ -130,6 +134,8 @@
         document.body.classList.toggle("theme-uppercase-titles", Boolean(theme.uppercaseTitles));
         document.body.classList.toggle("theme-big-logo", Boolean(theme.bigLogo));
         document.body.classList.toggle("theme-font-pokemon", theme.fontKey === "pokemon");
+        document.body.classList.toggle("theme-font-michroma", theme.fontKey === "michroma");
+        document.body.classList.toggle("theme-font-mata", theme.fontKey === "mata");
         document.body.classList.toggle("can-edit", sessionStorage.getItem("gamelist-editor") === "true");
       })();
     </script>

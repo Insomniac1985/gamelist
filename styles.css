@@ -480,6 +480,15 @@ html.theme-font-pokemon {
   --display-title-line-height: 0.9;
 }
 
+html.theme-font-michroma {
+  --display-title-line-height: 1.16;
+}
+
+html.theme-font-mata {
+  --display-title-line-height: 0.92;
+  --display-title-letter-spacing: -0.035em;
+}
+
 .top-actions,
 .modal-actions,
 .card-actions,
@@ -2246,6 +2255,7 @@ html.theme-uppercase-titles .column-head h2 {
   font-size: var(--display-title-size, clamp(28px, 2.5vw, 38px));
   font-weight: 900;
   line-height: var(--display-title-line-height, 1.05);
+  letter-spacing: var(--display-title-letter-spacing, 0);
 }
 
 html.theme-font-pokemon .playing-section .column-head h2 {
@@ -9346,79 +9356,6 @@ html.theme-light .shelf-card-delete-action:hover {
 
 .theme-controls-row select {
   min-height: 42px;
-}
-
-.theme-font-picker {
-  position: relative;
-}
-
-.theme-font-trigger {
-  appearance: none;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 10px;
-  width: 100%;
-  min-height: 42px;
-  padding: 8px 12px;
-  border: 1px solid var(--line);
-  border-radius: 12px;
-  color: var(--text);
-  background: rgba(255, 255, 255, 0.045);
-  font-size: 15px;
-  cursor: pointer;
-}
-
-.theme-font-trigger .chevron-icon {
-  width: 16px;
-  height: 16px;
-  flex: 0 0 auto;
-  fill: none;
-  stroke: currentColor;
-  stroke-width: 2.2;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-  opacity: 0.72;
-}
-
-.theme-font-menu {
-  position: absolute;
-  z-index: 20;
-  top: calc(100% + 6px);
-  left: 0;
-  right: 0;
-  display: grid;
-  gap: 4px;
-  max-height: min(320px, 52vh);
-  overflow: auto;
-  padding: 6px;
-  border: 1px solid var(--line);
-  border-radius: 14px;
-  background: color-mix(in srgb, var(--panel-strong) 94%, #0a0b0f);
-  box-shadow: 0 18px 44px rgba(0, 0, 0, 0.34);
-}
-
-.theme-font-menu[hidden] {
-  display: none;
-}
-
-.theme-font-option {
-  appearance: none;
-  width: 100%;
-  padding: 9px 10px;
-  border: 1px solid transparent;
-  border-radius: 10px;
-  color: var(--text);
-  background: transparent;
-  font-size: 15px;
-  text-align: left;
-  cursor: pointer;
-}
-
-.theme-font-option:hover,
-.theme-font-option[aria-current="true"] {
-  border-color: color-mix(in srgb, var(--accent) 42%, var(--line));
-  background: color-mix(in srgb, var(--accent) 16%, transparent);
 }
 
 .theme-editor-dialog .platform-logo-select {

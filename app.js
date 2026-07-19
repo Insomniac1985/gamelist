@@ -4245,18 +4245,19 @@ function syncStyledSelect(select, options = {}) {
     label: option.textContent.trim(),
     selected: option.selected,
     disabled: option.disabled || option.hidden,
+    fontFamily: option.style.fontFamily || "",
   }));
   const visibleOptions = selectOptions.filter((option) => !option.disabled);
   const selected = selectOptions.find((option) => option.selected) || visibleOptions[0] || { value: "all", label: "All platforms" };
   control.classList.toggle("is-active", options.activeValue != null && selected.value !== options.activeValue);
   control.innerHTML = `
     <button class="platform-logo-button" type="button" aria-haspopup="listbox" aria-expanded="false" data-full-label="${escapeHtml(selected.label)}" aria-label="${escapeHtml(selected.label)}">
-      ${platformLogoChoiceMarkup(selected.value, selected.label, { logos: useLogos })}
+      ${platformLogoChoiceMarkup(selected.value, selected.label, { logos: useLogos, fontFamily: selected.fontFamily })}
     </button>
     <div class="platform-logo-menu" role="listbox">
       ${visibleOptions.map((option) => `
         <button class="platform-logo-option ${option.selected ? "is-selected" : ""}" type="button" role="option" aria-selected="${option.selected ? "true" : "false"}" data-value="${escapeHtml(option.value)}" data-full-label="${escapeHtml(option.label)}">
-          ${platformLogoChoiceMarkup(option.value, option.label, { logos: useLogos })}
+          ${platformLogoChoiceMarkup(option.value, option.label, { logos: useLogos, fontFamily: option.fontFamily })}
         </button>
       `).join("")}
     </div>
@@ -4346,10 +4347,11 @@ function hidePlatformLogoOverlay() {
 function platformLogoChoiceMarkup(value, label, options = {}) {
   const showLogo = options.logos && value && value !== "all";
   const cls = showLogo ? platformClass(value) : "platform-generic";
+  const fontStyle = options.fontFamily ? ` style="font-family:${escapeHtml(options.fontFamily)}"` : "";
   return `
     <span class="platform-logo-choice ${escapeHtml(cls)}">
       ${showLogo ? `<span class="platform-logo-choice-icon"><img src="${escapeHtml(platformLogo(value))}" alt="" width="18" height="18" decoding="async"></span>` : ""}
-      <span class="platform-logo-choice-label">${escapeHtml(label)}</span>
+      <span class="platform-logo-choice-label"${fontStyle}>${escapeHtml(label)}</span>
     </span>
   `;
 }
