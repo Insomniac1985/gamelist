@@ -14,6 +14,7 @@ const LAYOUT_KEY = "shelf:layout:v2";
 const LOCAL_DRAFT_KEY = "shelf:draft-data:v2";
 const MODULE_CACHE_KEY = "shelf:module-cache:v1";
 const ACHIEVEMENT_CACHE_KEY = "gamelist:achievement-cache:v1";
+const ACHIEVEMENT_CACHE_TTL_MS = 30 * 60 * 1000;
 const DEFAULT_LAYOUT = ["playing", "latestFinished", "favorites", "trophies", "calendar", "kpis", "filters", "library"];
 const LAYOUT_KEYS = [...DEFAULT_LAYOUT];
 const DEFAULT_HIDDEN_MODULES = ["playing", "trophies"];
@@ -2776,6 +2777,7 @@ async function loadGamelistDetailTrophies(game) {
     : Array.isArray(cached?.trophies) ? cached.trophies : [];
   if (cached && !cached.loading && cachedTrophies.length) {
     renderGamelistDetailTrophies(game, cachedTrophies, Number(cached.earned ?? cachedTrophies.filter((item) => item.earned).length), Number(cached.total ?? cachedTrophies.length), "TROPHIES");
+    refreshShelfPsnTrophiesInBackground(game, remote, id, "gamelist");
     return;
   }
   const activityTrophies = (state.trophyActivity?.achievements || [])
@@ -2783,6 +2785,7 @@ async function loadGamelistDetailTrophies(game) {
     .sort((a, b) => Date.parse(b.rawEarnedAt || b.earnedAt || 0) - Date.parse(a.rawEarnedAt || a.earnedAt || 0));
   if (activityTrophies.length) {
     renderGamelistDetailTrophies(game, activityTrophies, activityTrophies.filter((item) => item.earned).length, activityTrophies.length, "TROPHIES");
+    refreshShelfPsnTrophiesInBackground(game, remote, id, "gamelist");
     return;
   }
   el.detailTrophies.hidden = false;
@@ -2851,6 +2854,35 @@ async function loadShelfCardTrophies(game, remote) {
   } catch { state.cardTrophies[cacheKey] = { loading: false, trophies: [], earned: 0, total: 0 }; }
   refreshShelfProjectedActivity(game);
 }
+
+async function refreshShelfPsnTrophiesInBackground(game, remote, cacheKey, mode) {
+  try {
+    const params = achievementParams({ id: cacheKey, service: remote.npServiceName || "trophy", user: state.gamelistSettings.psnUser || "" }, true);
+    const response = await fetch(`/api/trophies?${params}`, { cache: "no-store" });
+    const data = await response.json().catch(() => ({ trophies: [] }));
+    if (!response.ok) return;
+    const trophies = Array.isArray(data.trophies) ? data.trophies : [];
+    if (!trophies.length) return;
+    const earned = trophies.filter((item) => item.earned).length;
+    const total = trophies.length;
+    state.cardTrophies[cacheKey] = { loading: false, allTrophies: trophies, trophies: trophies.filter((item) => item.earned).sort((a, b) => Date.parse(b.rawEarnedAt || b.earnedAt || 0) - Date.parse(a.rawEarnedAt || a.earnedAt || 0)).slice(0, 3), earned, total };
+    refreshShelfProjectedActivity(game);
+    if (!el.detailDialog.open || el.detailDialog.dataset.id !== game.id) return;
+    if (mode === "gamelist") {
+      renderGamelistDetailTrophies(game, trophies, earned, total, "TROPHIES");
+      return;
+    }
+    const progress = total ? Math.round((earned / total) * 100) : 0;
+    el.detailTrophies.hidden = false;
+    el.detailTrophyTitle.textContent = "TROPHIES";
+    el.detailTrophyCount.textContent = "";
+    el.detailTrophyPercent.innerHTML = total ? shelfProgressBadge({ progress, earned, total }, { includeIcon: false, separator: true }) : "";
+    el.detailTrophyList.innerHTML = trophies.map((item) => `<article class="detail-trophy-card trophy-${trophyTone(item.type || item.rarity)} ${item.earned ? "earned" : "missing"}"><img src="${escapeHtml(item.icon || "assets/platforms/playstation.png")}" alt=""><div><strong>${escapeHtml(item.title || "Trophy")}</strong><span>${escapeHtml([item.earned ? item.earnedAt || "Earned" : "Missing", item.rarity].filter(Boolean).join(" · "))}</span>${item.description ? `<p>${escapeHtml(item.description)}</p>` : ""}</div></article>`).join("");
+  } catch {
+    // Cached trophy data is already visible; background refresh is best-effort.
+  }
+}
+
 function refreshShelfProjectedActivity(game) {
   updateShelfCardTrophyStrips(game.id);
   renderGamelistModules();
@@ -2944,7 +2976,7 @@ async function fetchShelfXboxActivity(forceRefresh = state.gamelistSettings.forc
 }
 function achievementParams(values = {}, forceRefresh = state.gamelistSettings.forceCacheOnLoad === true) { const params = new URLSearchParams(values); if (forceRefresh) params.set("fresh", String(Date.now())); return params; }
 function achievementSettingsKey(settings = state.gamelistSettings) { return [String(settings.psnUser || "").trim(), String(settings.steamUser || "").trim(), String(settings.microsoftUser || "").trim()].join("|"); }
-function readAchievementCache(key) { try { const cached = JSON.parse(localStorage.getItem(ACHIEVEMENT_CACHE_KEY) || "{}"); return cached?.key === key && cached.data ? cached.data : null; } catch { return null; } }
+function readAchievementCache(key) { try { const cached = JSON.parse(localStorage.getItem(ACHIEVEMENT_CACHE_KEY) || "{}"); if (!cached?.updatedAt || (Date.now() - Number(cached.updatedAt)) > ACHIEVEMENT_CACHE_TTL_MS) return null; return cached?.key === key && cached.data ? cached.data : null; } catch { return null; } }
 function writeAchievementCache(key, data) { try { localStorage.setItem(ACHIEVEMENT_CACHE_KEY, JSON.stringify({ key, data, updatedAt: Date.now() })); } catch {} }
 function openGamelistGameByTitle(title) { const game = activityLocalGameForTitle(title, state.gamelistGames); if (game) openGamelistDetails(game); }
 function openCompletedGames() {
@@ -3468,6 +3500,7 @@ async function loadShelfTrophies(game) {
     el.detailTrophyCount.textContent = "";
     el.detailTrophyPercent.innerHTML = total ? shelfProgressBadge({ progress, earned, total }, { includeIcon: false, separator: true }) : "";
     el.detailTrophyList.innerHTML = cachedTrophies.map((item) => `<article class="detail-trophy-card trophy-${trophyTone(item.type || item.rarity)} ${item.earned ? "earned" : "missing"}"><img src="${escapeHtml(item.icon || "assets/platforms/playstation.png")}" alt=""><div><strong>${escapeHtml(item.title || "Trophy")}</strong><span>${escapeHtml([item.earned ? item.earnedAt || "Earned" : "Missing", item.rarity].filter(Boolean).join(" · "))}</span>${item.description ? `<p>${escapeHtml(item.description)}</p>` : ""}</div></article>`).join("");
+    refreshShelfPsnTrophiesInBackground(game, match, id, "shelf");
     return;
   }
   const activityTrophies = (state.trophyActivity?.achievements || [])
@@ -3479,6 +3512,7 @@ async function loadShelfTrophies(game) {
     el.detailTrophyCount.textContent = "";
     el.detailTrophyPercent.innerHTML = "";
     el.detailTrophyList.innerHTML = activityTrophies.map((item) => `<article class="detail-trophy-card trophy-${trophyTone(item.type || item.rarity)} ${item.earned ? "earned" : "missing"}"><img src="${escapeHtml(item.icon || "assets/platforms/playstation.png")}" alt=""><div><strong>${escapeHtml(item.title || "Trophy")}</strong><span>${escapeHtml([item.earned ? item.earnedAt || "Earned" : "Missing", item.rarity].filter(Boolean).join(" · "))}</span>${item.description ? `<p>${escapeHtml(item.description)}</p>` : ""}</div></article>`).join("");
+    refreshShelfPsnTrophiesInBackground(game, match, id, "shelf");
     return;
   }
   el.detailTrophyTitle.textContent = "TROPHIES";
