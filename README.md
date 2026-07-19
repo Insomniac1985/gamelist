@@ -241,7 +241,7 @@ GOOGLE_CALENDAR_ID
 
 Those settings are stored in the Worker KV namespace.
 
-### <img src="assets/Icon.png" alt="Gamelist" width="22" align="center"> Available store prices
+### Available store prices
 
 Store prices use your selected **region**, **currency**, and **selected shops** from Settings. You can choose up to five physical stores at once.
 
@@ -252,8 +252,8 @@ Physical store price options:
 - <img src="assets/stores/game.ico" alt="GAME.es" width="18" align="center"> GAME.es
 - <img src="assets/stores/xtralife.ico" alt="Xtralife" width="18" align="center"> Xtralife
 - <img src="assets/stores/retroisland.png" alt="Retro Island NY" width="18" align="center"> Retro Island NY
-- <img src="https://cdn.simpleicons.org/gamestop/ED1C24" alt="GameStop" width="18" align="center"> US GameStop
-- <img src="https://cdn.simpleicons.org/walmart/0071CE" alt="Walmart" width="18" align="center"> US Walmart
+- <img src="https://www.google.com/s2/favicons?domain=gamestop.com&sz=32" alt="GameStop" width="18" align="center"> US GameStop
+- <img src="https://www.walmart.com/favicon.ico" alt="Walmart" width="18" align="center"> US Walmart
 
 Digital games use the platform store automatically when the platform matches:
 
