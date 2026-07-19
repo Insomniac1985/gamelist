@@ -304,18 +304,6 @@ If Google Calendar is configured, adding a new preorder store to an upcoming/wan
 
 New physical games can sync into the Gamelist as setup-needed backlog/new-addition entries when Shelf Sync is enabled.
 
-### Import And Export your data as CSV
-
-Both pages have **Your data** controls at the bottom of Settings, after Store selection.
-
-- **Gamelist games** exports/imports the digital backlog and finished game list.
-- **Shelf physical games** exports/imports the physical collection.
-- **GOTY** exports/imports saved Games of the year picks by year and category.
-- **Finished games** exports/imports the completed-game fields that power the yearly stats views.
-- Arrays and objects, such as owners, tags, store links, prices, and metadata, are preserved as JSON text inside CSV cells.
-
-This can allow you to safely create a backup of your collection and data.
-
 ### Create your end of year GOTY image
 
 During December and January, Gamelist let's you pickyour yearly **Games of the year** and besides checking your statistics, it will let you turn it into a shareable image using your current theme and logo.
@@ -328,3 +316,15 @@ During December and January, Gamelist let's you pickyour yearly **Games of the y
 The export follows your active theme styling.
 
 If you have a Twitch username set in Settings, the poster footer can include your Twitch channel link alongside the site link.
+
+### Import and Export your data as CSV
+
+Both pages have **Your data** controls at the bottom of Settings, after Store selection.
+
+- **Gamelist games** exports/imports the digital backlog and finished game list.
+- **Shelf physical games** exports/imports the physical collection.
+- **GOTY** exports/imports saved Games of the year picks by year and category.
+- **Finished games** exports/imports the completed-game fields that power the yearly stats views.
+- Arrays and objects, such as owners, tags, store links, prices, and metadata, are preserved as JSON text inside CSV cells.
+
+This can allow you to safely create a backup of your collection and data.
