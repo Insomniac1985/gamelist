@@ -199,6 +199,7 @@ init();
 async function init() {
   if (await checkSiteVersion()) return;
   logPageVersion();
+  logSecretStatus("Shelf");
   await window.__initialThemeReady?.catch(() => "shabii");
   applyTheme();
   document.documentElement.classList.remove("theme-booting");
@@ -230,6 +231,17 @@ async function init() {
   rebuildGames();
   renderAll();
 }
+
+async function logSecretStatus(page) {
+  try {
+    const response = await fetch("/api/secret-status", { cache: "no-store" });
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    console.log(`[${page}] Secret status`, await response.json());
+  } catch (error) {
+    console.warn(`[${page}] Could not check secret status`, error);
+  }
+}
+
 function loadSharedSettings() { try { return JSON.parse(localStorage.getItem("gamelist:settings:v1") || "{}"); } catch { return {}; } }
 
 function bindEvents() {

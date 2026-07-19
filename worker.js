@@ -10,6 +10,7 @@ import * as gamelistGamesByList from "./functions/api/gamelist-games-by-list.js"
 import * as prices from "./functions/api/prices.js";
 import * as psnTrophiesByYear from "./functions/api/psn-trophies-by-year.js";
 import * as search from "./functions/api/search.js";
+import * as secretStatus from "./functions/api/secret-status.js";
 import * as shelf from "./functions/api/shelf.js";
 import * as shelfCovers from "./functions/api/shelf-covers.js";
 import * as shelfGamesPlatforms from "./functions/api/shelf-games-platforms.js";
@@ -37,6 +38,7 @@ const routes = {
   "/api/prices": prices,
   "/api/psn-trophies-by-year": psnTrophiesByYear,
   "/api/search": search,
+  "/api/secret-status": secretStatus,
   "/api/shelf": shelf,
   "/api/shelf-covers": shelfCovers,
   "/api/shelf-games-platforms": shelfGamesPlatforms,

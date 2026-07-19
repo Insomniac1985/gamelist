@@ -49,6 +49,8 @@ This is the main setup path. You do not need to download a ZIP or run terminal c
 
 The setup is simple, it will take you under an hour to fully set up with the required steps. If you want to also have all the extras, it will be just under 2 hours total to fully set up the rest. But, then adding your games is a whole other story... Enjoy keeping track of your games, plan your next playthroughs, and more than anything, enjoy the hobby!
 
+Your default Gamelist site url will be **gamelist.\***email_username**\*.workers.dev** You can change it later with a custom domain if wanted.
+
 ### 1. Start from Cloudflare
 
 1. Open the [Cloudflare dashboard](https://dash.cloudflare.com/).
