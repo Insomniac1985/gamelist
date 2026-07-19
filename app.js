@@ -2261,7 +2261,8 @@ function gameOfTheYearExportCss({ theme, main, accent, gradient, bg, glowPrimary
   const sweep = theme.mode === "light" ? "rgba(255,255,255,.58)" : "rgba(255,255,255,.055)";
   const titleFont = canvasTitleFont(theme);
   const titleSize = theme.accentFont === "pokemon" ? 66 : 53;
-  const titleLineHeight = theme.accentFont === "pokemon" ? 0.82 : "95%";
+  const titleLineHeight = gameOfTheYearExportTitleLineHeight(theme);
+  const titleLetterSpacing = gameOfTheYearExportTitleLetterSpacing(theme);
   const categoryTitleSize = theme.accentFont === "pokemon" ? 26 : 22;
   const logoSize = theme.bigLogo ? 104 : 82;
   const logoTop = theme.bigLogo ? 42 : 52;
@@ -2309,6 +2310,7 @@ function gameOfTheYearExportCss({ theme, main, accent, gradient, bg, glowPrimary
       font-size: ${titleSize}px;
       font-weight: 900;
       line-height: ${titleLineHeight};
+      letter-spacing: ${titleLetterSpacing};
       text-overflow: ellipsis;
       white-space: nowrap;
       background: linear-gradient(135deg, ${gradient}, ${main});
@@ -2838,6 +2840,17 @@ function gameOfTheYearExportCss({ theme, main, accent, gradient, bg, glowPrimary
   `;
 }
 
+function gameOfTheYearExportTitleLineHeight(theme) {
+  if (theme.accentFont === "pokemon") return 0.82;
+  if (theme.accentFont === "michroma") return 1.3;
+  if (theme.accentFont === "mata") return 0.82;
+  return "95%";
+}
+
+function gameOfTheYearExportTitleLetterSpacing(theme) {
+  return theme.accentFont === "mata" ? "-0.35em" : "0";
+}
+
 async function downloadHtmlPosterPng(html, filename) {
   const htmlToImage = await loadHtmlToImage();
   const host = document.createElement("div");
@@ -2972,11 +2985,13 @@ async function drawGameOfTheYearImage(ctx, { owner, year, rows, logo, theme, bac
   titleFill.addColorStop(1, main);
   ctx.fillStyle = titleFill;
   const titleSize = theme.accentFont === "pokemon" ? 80 : 64;
-  const titleLineGap = theme.accentFont === "pokemon" ? 56 : 66;
+  const titleLineGap = theme.accentFont === "pokemon" ? 56 : Math.round(titleSize * Number(gameOfTheYearExportTitleLineHeight(theme)));
   ctx.font = `900 ${titleSize}px ${titleFont}`;
+  ctx.letterSpacing = gameOfTheYearExportTitleLetterSpacing(theme);
   ctx.textAlign = "left";
   ctx.fillText(`${owner}'s Games of`, 220, 116);
   ctx.fillText(`the Year ${year}`, 220, 116 + titleLineGap);
+  ctx.letterSpacing = "0";
   const siteUrl = cleanCanvasSiteUrl(window.location.origin && window.location.origin !== "null" ? window.location.origin : window.location.hostname || "Gamelist");
   ctx.font = `800 24px ${bodyFont}`;
   ctx.textAlign = "right";

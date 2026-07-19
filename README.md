@@ -241,7 +241,7 @@ GOOGLE_CALENDAR_ID
 
 Those settings are stored in the Worker KV namespace.
 
-### Available store prices
+### Available store prices data
 
 Store prices use your selected **region**, **currency**, and **selected shops** from Settings. You can choose up to five physical stores at once.
 
@@ -302,7 +302,7 @@ If Google Calendar is configured, adding a new preorder store to an upcoming/wan
 
 New physical games can sync into the Gamelist as setup-needed backlog/new-addition entries when Shelf Sync is enabled.
 
-### Import And Export CSV
+### Import And Export your data as CSV
 
 Both pages have **CSV data** controls at the bottom of Settings, after Stores.
 
@@ -311,3 +311,17 @@ Both pages have **CSV data** controls at the bottom of Settings, after Stores.
 - Arrays and objects, such as owners, tags, store links, prices, and metadata, are preserved as JSON text inside CSV cells.
 
 Use CSV export before any large bulk operation if you want a quick backup.
+
+### Create your end of year GOTY image
+
+Gamelist can turn your yearly **Games of the year** picks into a shareable poster image using your current theme, logo, colors, title font, platform badges, tags, progress pills, and stream/coop labels.
+
+1. Enter edit mode.
+2. Open the **Games of the year** section.
+3. Pick the year you want to export.
+4. Add or reorder your GOTY picks.
+5. Click the image/export button to download the poster.
+
+The export follows your active theme styling, including custom icons, background, light/dark mode, gradient titles, Pokémon GBA title spacing, Michroma title spacing, and Spider-man/PS3 title spacing.
+
+If you have a Twitch username set in Settings, the poster footer can include your Twitch channel link alongside the site link.
