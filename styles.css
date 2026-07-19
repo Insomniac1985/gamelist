@@ -8255,9 +8255,18 @@ body.dialog-open .mobile-section-tabs {
 }
 
 .settings-csv-row > span {
-  color: var(--muted);
-  font-size: 12px;
-  font-weight: 800;
+  display: grid;
+  place-items: center;
+  min-height: var(--settings-control-height, 42px);
+  padding: 0 12px;
+  color: var(--text);
+  background: rgba(255, 255, 255, 0.055);
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  font-size: 14px;
+  font-weight: 900;
+  line-height: 1;
+  text-align: center;
   text-transform: uppercase;
 }
 
