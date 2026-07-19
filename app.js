@@ -528,7 +528,7 @@ function logPageVersion() {
 {{{{{{{{{{{        {{{{{{{{{{{{         
 %c
   ${siteVersion.version || "unknown"}
-  repo: https://github.com/ShabiiEXE/Gamelist
+  original repo: https://github.com/ShabiiEXE/Gamelist
 `, "color:#ff0039;font-weight:900;font-size:8px;line-height:1;", "color:#ff0039;font-weight:900;font-size:12px;line-height:1.35;");
 }
 
