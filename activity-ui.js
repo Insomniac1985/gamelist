@@ -227,8 +227,7 @@ export function achievementPanelMarkup({ psn = {}, steam = {}, xbox = {}, trophy
     const platform = item.source === "steam" ? "Steam" : String(item.platform || (item.source === "xbox" ? "Xbox" : "PlayStation")).trim() || "PlayStation";
     return achievementCardMarkup({ index, tone: item.source === "steam" ? "steam" : trophyTone(item.rarity), href: item.url || sourceUrl, game: item.game || "", title: item.title || (item.source === "steam" ? "Achievement unlocked" : "Trophy unlocked"), icon: item.icon || platformLogo(item.source === "steam" ? "Steam" : item.source === "xbox" ? "Xbox" : "PS5"), meta: `${platformBadge(platform)}${item.earnedAt ? `<span class="achievement-earned-date">${escape(item.earnedAt)}</span>` : ""}`, escape });
   }).join("");
-  const sources = new Set(achievements.map((item) => item.source === "psn" ? "trophies" : "achievements"));
-  const subtitle = sources.size > 1 ? "Trophies & Achievements" : sources.has("trophies") ? "Trophies" : "Achievements";
+  const subtitle = "Lastest achievements";
   return { sourceUrl, html: `${dashboard}<span class="achievement-subtitle trophy-subtitle">${escape(subtitle)}</span>${cards}` };
 }
 
