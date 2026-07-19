@@ -2247,7 +2247,7 @@ function gameOfTheYearExportCss({ theme, main, accent, gradient, bg, glowPrimary
   const sweep = theme.mode === "light" ? "rgba(255,255,255,.58)" : "rgba(255,255,255,.055)";
   const titleFont = canvasTitleFont(theme);
   const titleSize = theme.accentFont === "pokemon" ? 66 : 53;
-  const titleLineHeight = theme.accentFont === "pokemon" ? 0.82 : 1.02;
+  const titleLineHeight = "105%";
   const categoryTitleSize = theme.accentFont === "pokemon" ? 26 : 22;
   const logoSize = theme.bigLogo ? 104 : 82;
   const logoTop = theme.bigLogo ? 42 : 52;
