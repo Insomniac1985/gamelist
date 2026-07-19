@@ -396,6 +396,7 @@ init();
 async function init() {
   if (await checkSiteVersion()) return;
   logPageVersion();
+  logSecretStatus("Gamelist");
   await window.__initialThemeReady?.catch(() => "shabii");
   registerServiceWorker();
   syncDisplayMode();
@@ -414,6 +415,16 @@ async function init() {
   if (requestedGame && state.games.some((game) => game.id === requestedGame && !game.deletedAt)) openDetail(requestedGame);
   refreshAchievements();
   scheduleBackgroundRefreshes();
+}
+
+async function logSecretStatus(page) {
+  try {
+    const response = await fetch("/api/secret-status", { cache: "no-store" });
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    console.log(`[${page}] Secret status`, await response.json());
+  } catch (error) {
+    console.warn(`[${page}] Could not check secret status`, error);
+  }
 }
 
 function bindTextureParallax() {
