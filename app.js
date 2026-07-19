@@ -2,7 +2,7 @@ import { normalizeSearchText, createGameCardShell, bindActivityCardParallax, mou
 import { applySiteTheme, normalizeThemeSettings, openThemeEditor, ownerCardColorClass, ownerColorClass, themeSettingsButton } from "./theme-system.js";
 import { applyDocumentTranslations, languageOptions, normalizeLanguage, t } from "./i18n.js";
 
-mountActivitySlider(document.querySelector("#playingSection"), { count: "playingCount", previous: "playingPrevButton", next: "playingNextButton", list: "playingList", dataSection: "playing", finished: "playingFinished", finishedList: "playingFinishedList" });
+mountActivitySlider(document.querySelector("#playingSection"), { title: "playingTitle", count: "playingCount", previous: "playingPrevButton", next: "playingNextButton", list: "playingList", dataSection: "playing", finished: "playingFinished", finishedList: "playingFinishedList" });
 
 const STORAGE_KEY = "gamelist:v1";
 const LEGACY_STORAGE_KEY = "buylist-tracker:v6";
@@ -223,6 +223,7 @@ const el = {
   brandLink: document.querySelector(".brand"),
   playingSection: document.querySelector("#playingSection"),
   playingCurrent: document.querySelector("#playingSection .playing-current"),
+  playingTitle: document.querySelector("#playingTitle"),
   playingCount: document.querySelector("#playingCount"),
   playingList: document.querySelector(".playing-list"),
   playingFinished: document.querySelector("#playingFinished"),
@@ -1266,14 +1267,14 @@ function renderSettingsDialog() {
 
 function settingsLayoutItem(key, index, options = {}) {
   const title = {
-    playing: "Currently Playing",
+    playing: "Currently playing",
     trophies: "Achievements",
     calendar: "Calendar",
     highlights: "Highlights",
     search: "Search",
     gamelist: "Gamelist",
-    finished: "Finished Games",
-    latestFinished: "Last Finished",
+    finished: "Finished games",
+    latestFinished: "Last finished",
   }[key] || key;
   const wireClass = {
     playing: "wire-playing",
@@ -1622,6 +1623,7 @@ function handleDetailClose() {
 function renderPlayingSection() {
   const games = activeGames().filter((game) => game.playing);
   games.sort(comparePlayingGames);
+  el.playingTitle.textContent = currentlyPlayingTitle(games);
   el.playingCount.textContent = playingCountText(games.length);
   el.playingList.innerHTML = "";
   games.forEach((game) => el.playingList.appendChild(cardFor(game, { staticCard: true, imagePriority: "eager" })));
@@ -1636,6 +1638,10 @@ function renderPlayingSection() {
   schedulePlayingCardHeightSync();
   requestAnimationFrame(updatePlayingSliderControls);
   scheduleFocusedPlayingTrailerUpdate();
+}
+
+function currentlyPlayingTitle(games) {
+  return games.length && games.every((game) => game.stream) ? "Currently streaming" : "Currently playing";
 }
 
 function playingCountText(count) {

@@ -2,7 +2,7 @@ import { normalizeSearchText, createGameCardShell, bindActivityCardParallax, mou
 import { applySiteTheme, normalizeThemeSettings, openThemeEditor, ownerCardColorClass, ownerColorClass, themeSettingsButton } from "./theme-system.js";
 import { applyDocumentTranslations, languageOptions, normalizeLanguage, t } from "./i18n.js";
 
-mountActivitySlider(document.querySelector("[data-module='playing']"), { count: "shelfPlayingCount", previous: "shelfPlayingPrev", next: "shelfPlayingNext", list: "playingCarousel", finished: "shelfPlayingFinished", finishedList: "finishedCarousel" });
+mountActivitySlider(document.querySelector("[data-module='playing']"), { title: "shelfPlayingTitle", count: "shelfPlayingCount", previous: "shelfPlayingPrev", next: "shelfPlayingNext", list: "playingCarousel", finished: "shelfPlayingFinished", finishedList: "finishedCarousel" });
 splitShelfPlayingModules();
 
 const SESSION_KEY = "gamelist-editor";
@@ -25,7 +25,7 @@ const THEMES = {
   kash: { title: "Kash's Shelf", icon: "assets/kh_icon.png", color: "#005cff" },
 };
 const siteVersion = { version: "", updatedAt: "" };
-const MODULE_NAMES = { playing: "Currently Playing", latestFinished: "Last Finished", favorites: "Showcase", trophies: "Achievements", calendar: "Calendar", kpis: "Highlights", filters: "Search", library: "Shelf" };
+const MODULE_NAMES = { playing: "Currently playing", latestFinished: "Last finished", favorites: "Showcase", trophies: "Achievements", calendar: "Calendar", kpis: "Highlights", filters: "Search", library: "Shelf" };
 const PLATFORM_OPTIONS = [
   "Steam",
   "Sega Game Gear", "Sega Genesis", "Sega Dreamcast",
@@ -107,6 +107,7 @@ const el = {
   showcaseEdit: document.querySelector("#showcaseEditButton"),
   tabs: document.querySelector("#shelfTabs"),
   playingCarousel: document.querySelector("#playingCarousel"),
+  playingTitle: document.querySelector("#shelfPlayingTitle"),
   playingCurrent: document.querySelector("[data-module='playing'] .playing-current"),
   finishedCarousel: document.querySelector("#finishedCarousel"),
   playingFinished: document.querySelector("#shelfPlayingFinished"), playingCount: document.querySelector("#shelfPlayingCount"),
@@ -2260,6 +2261,7 @@ function bindTextureParallax() { if (window.matchMedia("(prefers-reduced-motion:
 function renderGamelistModules() {
   const playing = state.gamelistGames.filter((game) => game.playing && !game.deletedAt).sort(comparePlayingGames);
   const finished = state.gamelistGames.filter((game) => game.completedAt && !game.deletedAt).sort((a, b) => String(b.completedAt).localeCompare(String(a.completedAt)) || String(a.title || "").localeCompare(String(b.title || ""), undefined, { sensitivity: "base" })).slice(0, 10);
+  el.playingTitle.textContent = currentlyPlayingTitle(playing);
   el.playingCarousel.innerHTML = playing.map(gamelistProjectionCard).join("");
   const twitchCard = mountTwitchPreview(el.playingCarousel, state.gamelistSettings.twitchUser, playing.some((game) => game.stream));
   el.playingCarousel.closest(".playing-section")?.classList.toggle("playing-single", playing.length + Number(Boolean(twitchCard)) === 1);
@@ -2371,6 +2373,10 @@ function gamelistProjectionCard(game, options = {}) {
   if (isReleaseDialog) card.querySelector(".edit-action")?.remove();
   const note = card.querySelector(".notes"); note.textContent = shortDescription(game.description || ""); note.hidden = !note.textContent;
   return card.outerHTML;
+}
+
+function currentlyPlayingTitle(games) {
+  return games.length && games.every((game) => game.stream) ? "Currently streaming" : "Currently playing";
 }
 
 function playingCountText(count) {
