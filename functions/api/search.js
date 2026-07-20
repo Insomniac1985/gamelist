@@ -61,7 +61,7 @@ function igdbCredentials(env) {
   return clientId && clientSecret ? { clientId, clientSecret } : null;
 }
 
-export { igdbCredentials };
+export { firstPlatform, igdbCredentials };
 
 export async function igdbLookup(rawQuery, credentials) {
   const lookup = parseLookup(rawQuery || "");
@@ -624,13 +624,18 @@ function firstValue(value) {
 }
 
 function firstPlatform(value) {
-  const platform = splitList(value)[0] || "";
-  if (/switch 2/i.test(platform)) return "Switch 2";
-  if (/nintendo switch/i.test(platform)) return "Switch";
-  if (/playstation 5|ps5/i.test(platform)) return "PS5";
-  if (/playstation 4|ps4/i.test(platform)) return "PS4";
-  if (/windows|pc/i.test(platform)) return "PC";
-  return platform;
+  const platforms = splitList(value);
+  const preferred = [
+    [/playstation 5|ps5/i, "PS5"],
+    [/switch 2/i, "Switch 2"],
+    [/nintendo switch/i, "Switch"],
+    [/playstation 4|ps4/i, "PS4"],
+    [/windows|\bpc\b/i, "PC"],
+  ];
+  for (const [pattern, label] of preferred) {
+    if (platforms.some((platform) => pattern.test(platform))) return label;
+  }
+  return platforms[0] || "";
 }
 
 function cleanTitle(title) {
