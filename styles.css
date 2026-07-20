@@ -492,6 +492,10 @@ html.theme-font-pokemon {
   --display-title-line-height: 0.9;
 }
 
+html.theme-font-default {
+  --display-title-line-height: 1.12;
+}
+
 html.theme-font-michroma {
   --display-title-line-height: 1.3;
 }
