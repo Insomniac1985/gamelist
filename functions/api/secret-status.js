@@ -1,9 +1,9 @@
 const HEALTH_CACHE_MS = 5 * 60 * 1000;
 let healthCache;
 
-export async function onRequestGet({ env = {} }) {
+export async function onRequestGet({ request, env = {} }) {
   const isSet = (value) => Boolean(String(value || "").trim());
-  const working = await integrationHealth(env);
+  const working = await integrationHealth(env, request);
   return json({
     PSN_NPSSO: isSet(env.PSN_NPSSO),
     OPENXBL_API_KEY: isSet(env.OPENXBL_API_KEY),
@@ -16,7 +16,7 @@ export async function onRequestGet({ env = {} }) {
   });
 }
 
-async function integrationHealth(env) {
+async function integrationHealth(env, request) {
   if (healthCache && Date.now() < healthCache.expiresAt) return healthCache.value;
   const checks = await Promise.all([
     checkIgdb(env),
@@ -25,7 +25,7 @@ async function integrationHealth(env) {
     checkXbox(env),
     checkSteam(env),
     checkGooglePrivateKey(env),
-    checkUpdateWorkflow(env),
+    checkUpdateWorkflow(env, request),
   ]);
   const value = {
     IGDB: checks[0],
@@ -119,7 +119,16 @@ async function checkGooglePrivateKey(env) {
   }
 }
 
-async function checkUpdateWorkflow(env) {
+async function checkUpdateWorkflow(env, request) {
+  if (env.UPDATE_FILE_PRESENT === "true") return true;
+  if (env.ASSETS && request?.url) {
+    const origin = new URL(request.url).origin;
+    const assetChecks = await Promise.all([
+      env.ASSETS.fetch(new Request(`${origin}/.github/workflows/main.yml`)),
+      env.ASSETS.fetch(new Request(`${origin}/.gitlab-ci.yml`)),
+    ]).catch(() => []);
+    if (assetChecks.some((response) => response?.ok)) return true;
+  }
   const token = String(env.GITHUB_WORKFLOW_TOKEN || "").trim();
   if (!token) return false;
   const headers = {
