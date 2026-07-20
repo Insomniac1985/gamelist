@@ -652,7 +652,8 @@ function repoConsoleEntry(repo = {}, index = 0) {
   const url = String(repo.url || "").trim();
   const siteUrl = String(repo.siteUrl || "").trim();
   const color = index % 2 ? "#9aa3b2" : "#ffffff";
-  const style = `color:${color};font-weight:900;line-height:1.35;`;
+  const weight = index % 2 ? "400" : "900";
+  const style = `color:${color};font-weight:${weight};line-height:1.35;`;
   const emptyStyle = "color:#ffffff;font-weight:900;line-height:1.35;";
   if (!siteUrl) {
     return {
