@@ -208,7 +208,7 @@ async function init() {
   hydrateModuleCache();
   const [shelfData, auth, gamelistData] = await Promise.all([
     fetch("/api/shelf", { cache: "no-store" }).then((response) => response.ok ? response.json() : null).catch(() => null),
-    fetch("/api/auth", { cache: "no-store" }).then((response) => response.ok).catch(() => false),
+    fetchEditorAuth(),
     fetch("/api/sync", { cache: "no-store" }).then((response) => response.ok ? response.json() : null).catch(() => null),
   ]);
   const draft = loadDraft();
@@ -218,7 +218,11 @@ async function init() {
   state.overrides = shelfData?.overrides || draft.overrides || {};
   state.layout = normalizeLayout(shelfData?.layout || state.layout);
   state.favoriteGameIds = shelfFavoriteIdsFromSources(shelfData, gamelistData, draft);
-  state.canEdit = state.canEdit || auth;
+  state.canEdit = auth;
+  if (!state.canEdit) {
+    sessionStorage.removeItem(SESSION_KEY);
+    sessionStorage.removeItem(`${SESSION_KEY}:password`);
+  }
   state.updatedAt = shelfData?.updatedAt || "";
   state.gamelistGames = gamelistData?.games || [];
   state.gamelistSettings = gamelistData?.settings || state.gamelistSettings;
@@ -465,7 +469,7 @@ function renderChrome() {
   el.fetchPricesButton.innerHTML = `${currencyIcon()}<span class="button-label">${escapeHtml(tt("Fetch New Prices"))}</span>`;
   updateFetchPricesButtonStatus();
   el.login.innerHTML = state.canEdit
-    ? `<svg class="pause-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5v14M16 5v14"></path></svg><span class="button-label">${escapeHtml(tt("Stop Editing"))}</span>`
+    ? `<span class="button-label">${escapeHtml(tt("Stop Editing"))}</span><span class="button-icon" aria-hidden="true"><svg class="exit-icon" viewBox="0 0 24 24"><path d="M10 5H6.8A2.8 2.8 0 0 0 4 7.8v8.4A2.8 2.8 0 0 0 6.8 19H10"></path><path d="M14 8l4 4-4 4"></path><path d="M8 12h10"></path></svg></span>`
     : `<svg class="pencil-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h4l11-11a2.8 2.8 0 0 0-4-4L4 16v4Z"></path><path d="M13.5 6.5l4 4"></path></svg>`;
   el.login.title = state.canEdit ? tt("Stop Editing") : tt("Edit");
   el.login.setAttribute("aria-label", el.login.title);
@@ -1678,7 +1682,8 @@ function openAuth() {
 async function submitAuth(event) {
   event.preventDefault();
   const response = await fetch("/api/auth", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ password: el.authPassword.value }) }).catch(() => null);
-  if (!response?.ok) { el.authError.hidden = false; return; }
+  const data = await response?.json().catch(() => ({}));
+  if (!data?.ok) { el.authError.hidden = false; return; }
   state.canEdit = true;
   sessionStorage.setItem(SESSION_KEY, "true");
   sessionStorage.setItem(`${SESSION_KEY}:password`, el.authPassword.value);
@@ -1688,7 +1693,7 @@ async function submitAuth(event) {
 }
 
 async function refreshSharedAuth() {
-  const active = await fetch("/api/auth", { cache: "no-store" }).then((response) => response.ok).catch(() => state.canEdit);
+  const active = await fetchEditorAuth(state.canEdit);
   if (active === state.canEdit) return;
   state.canEdit = active;
   if (active) sessionStorage.setItem(SESSION_KEY, "true");
@@ -1697,6 +1702,16 @@ async function refreshSharedAuth() {
 }
 
 function signalAuthChange() { localStorage.setItem("gamelist-editor-signal", String(Date.now())); }
+
+async function fetchEditorAuth(fallback = false) {
+  try {
+    const response = await fetch("/api/auth", { cache: "no-store" });
+    const data = await response.json().catch(() => ({}));
+    return Boolean(data.ok);
+  } catch {
+    return fallback;
+  }
+}
 
 function openLayout() {
   renderLayoutEditor();

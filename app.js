@@ -399,7 +399,11 @@ async function init() {
   logConsoleInfo(initialTheme);
   registerServiceWorker();
   syncDisplayMode();
-  if (!state.canEdit) state.canEdit = await hasSharedEditorSession();
+  state.canEdit = await hasSharedEditorSession();
+  if (!state.canEdit) {
+    sessionStorage.removeItem(SESSION_KEY);
+    sessionStorage.removeItem(`${SESSION_KEY}:password`);
+  }
   document.body.classList.toggle("can-edit", state.canEdit);
   bindEvents();
   warmUiIcons();
@@ -425,7 +429,7 @@ async function logConsoleInfo(theme = "shabii") {
     if (!response.ok) throw new Error(`HTTP ${response.status}`);
     const status = await response.json();
     const authStatus = await authResponse?.json().catch(() => ({}));
-    logPageVersion(status.CURRENT_REPO);
+    logPageVersion(status.CURRENT_REPO, Boolean(authStatus?.ok));
     logStatusLines(status, theme, authStatus?.status || (authStatus?.ok ? "LOGGED IN" : "NOT LOGGED IN"));
   } catch (error) {
     logPageVersion();
@@ -435,49 +439,50 @@ async function logConsoleInfo(theme = "shabii") {
 
 function logStatusLines(status, theme = "shabii", editorStatus = "NOT LOGGED IN") {
   const headerStyle = "color:#ff0039;font-weight:900;font-size:12px;line-height:1.35;";
-  const bodyStyle = "";
-  const apiLine = (name, value) => `${name}: ${Boolean(value) ? "ONLINE" : "OFFLINE"}`;
-  const accountApiLine = (name, value, username, apiSet) => {
+  const labelStyle = "font-weight:700;";
+  const valueStyle = "";
+  const apiStatus = (value) => Boolean(value) ? "online" : "offline";
+  const accountApiStatus = (value, username, apiSet) => {
     const label = !apiSet
-      ? "NO API SET"
+      ? "no api set"
       : !username
-        ? "NO USERNAME"
+        ? "no username"
         : Boolean(value)
-          ? "ONLINE"
-          : "OFFLINE";
-    return `${name}: ${label}`;
+          ? "online"
+          : "offline";
+    return label;
   };
-  const secretLine = (name, value) => `${name}: ${Boolean(value) ? "TRUE" : "FALSE"}`;
+  const secretStatus = (value) => Boolean(value) ? "true" : "false";
   const statusLines = [
-    ...(theme !== "shabii" ? [apiLine("UPDATE", status.UPDATE), "--------------------"] : []),
-    `EDITOR: ${editorStatus}`,
-    apiLine("IGDB API", status.working?.IGDB),
-    apiLine("PRICECHARTING API", status.working?.PRICECHARTING),
-    accountApiLine("PSN API", status.working?.PSN, state.settings.psnUser, status.PSN_NPSSO),
-    accountApiLine("OPENXBL API", status.working?.XBOX, state.settings.microsoftUser, status.OPENXBL_API_KEY),
-    accountApiLine("STEAM API", status.working?.STEAM, state.settings.steamUser, status.STEAM_API_KEY),
-    "--------------------",
+    ...(theme !== "shabii" ? [["UPDATE", apiStatus(status.UPDATE)]] : []),
+    ["EDITOR", String(editorStatus || "not logged in").toLowerCase()],
+    ["IGDB API", apiStatus(status.working?.IGDB)],
+    ["PRICECHARTING API", apiStatus(status.working?.PRICECHARTING)],
+    ["PSN API", accountApiStatus(status.working?.PSN, state.settings.psnUser, status.PSN_NPSSO)],
+    ["OPENXBL API", accountApiStatus(status.working?.XBOX, state.settings.microsoftUser, status.OPENXBL_API_KEY)],
+    ["STEAM API", accountApiStatus(status.working?.STEAM, state.settings.steamUser, status.STEAM_API_KEY)],
   ];
   const secretLines = [
-    secretLine("IGDB_CLIENT_ID", status.IGDB_CLIENT_ID),
-    secretLine("IGDB_CLIENT_SECRET", status.IGDB_CLIENT_SECRET),
-    secretLine("PSN_NPSSO", status.PSN_NPSSO),
-    secretLine("OPENXBL_API_KEY", status.OPENXBL_API_KEY),
-    secretLine("STEAM_API_KEY", status.STEAM_API_KEY),
-    secretLine("GOOGLE_PRIVATE_KEY", status.GOOGLE_PRIVATE_KEY),
-    secretLine("PRICECHARTING_TOKEN", status.PRICECHARTING_TOKEN),
+    ["IGDB_CLIENT_ID", secretStatus(status.IGDB_CLIENT_ID)],
+    ["IGDB_CLIENT_SECRET", secretStatus(status.IGDB_CLIENT_SECRET)],
+    ["PSN_NPSSO", secretStatus(status.PSN_NPSSO)],
+    ["OPENXBL_API_KEY", secretStatus(status.OPENXBL_API_KEY)],
+    ["STEAM_API_KEY", secretStatus(status.STEAM_API_KEY)],
+    ["GOOGLE_PRIVATE_KEY", secretStatus(status.GOOGLE_PRIVATE_KEY)],
+    ["PRICECHARTING_TOKEN", secretStatus(status.PRICECHARTING_TOKEN)],
   ];
-  console.log(
-    `%cSTATUS:\n%c${statusLines.filter((line) => line !== "--------------------").join("\n")}`,
-    headerStyle,
-    bodyStyle
-  );
-  console.log("--------------------");
-  console.log(
-    `%cSECRETS:\n%c${secretLines.join("\n")}`,
-    headerStyle,
-    bodyStyle
-  );
+  logConsoleBlock("STATUS:", statusLines, { headerStyle, labelStyle, valueStyle });
+  logConsoleBlock("SECRETS:", secretLines, { headerStyle, labelStyle, valueStyle });
+}
+
+function logConsoleBlock(title, rows, styles) {
+  const message = [`%c${title}`];
+  const args = [styles.headerStyle];
+  rows.forEach(([label, value]) => {
+    message.push(`\n%c${label}:%c ${value}`);
+    args.push(styles.labelStyle, styles.valueStyle);
+  });
+  console.log(message.join(""), ...args);
 }
 
 function bindTextureParallax() {
@@ -576,19 +581,25 @@ function applySiteVersion(value = {}) {
   siteVersion.updatedAt = String(value.updatedAt || "").trim();
 }
 
-function logPageVersion(currentRepo = "") {
+function logPageVersion(currentRepo = "", loggedIn = false) {
   const originalRepo = "https://github.com/ShabiiEXE/Gamelist";
+  const shabiiRepos = [
+    "https://github.com/Insomniac1985/gamelist",
+    "https://github.com/totomitjans/gamelist",
+    "https://gitlab.com/shabiimitjans/gamelist",
+  ];
   const currentRepoLine = repoUrlsMatch(currentRepo, originalRepo) ? "" : `\n  repo: ${currentRepo}`;
+  const reposLine = loggedIn ? `\n  repos (${shabiiRepos.length}):\n  ${shabiiRepos.join("\n  ")}` : "";
   console.log(String.raw`%c
     {{{{{{{{{{{     {{{{{{{{{{{{{{{{{{{{
    {{{{{{{{{{{       {{{{{{{{{{{{{{{{{{ 
   {{{{{{{{{{{          {{{{{{{{{{{{{{   
- {{{{{{{{{{{            {{{{{{{{{{{{{   
-{{{{{{{{{{               {{{{{{{{{{     
+ {{{{{{{{{{{            {{{{{{{{{{{{   
+{{{{{{{{{{{              {{{{{{{{{{     
            {{{{{{{{{{                   
-            {{{{{{{{{{}                 
+            {{{{{{{{{{                 
              {{{{{{{{{{                 
-              {{{{{{{{{{{               
+              {{{{{{{{{{               
      {{{{{{{{{{{{{{{{{{{{{{{{{{{{{{     
    {{{{{{{{{{{  {{{{{{{{{{{{{{{{{{      
    {{{{{{{{{{    {{{{{{{{{{{{{{{{       
@@ -596,7 +607,7 @@ function logPageVersion(currentRepo = "") {
 {{{{{{{{{{{        {{{{{{{{{{{{         
 %c
   ${consoleVersionLabel()}
-  original repo: ${originalRepo}${currentRepoLine}
+  original repo: ${originalRepo}${reposLine}${currentRepoLine}
 `, "color:#ff0039;font-weight:900;font-size:8px;line-height:1;", "color:#ff0039;font-weight:900;font-size:12px;line-height:1.35;");
 }
 
@@ -1190,7 +1201,7 @@ function render() {
   document.documentElement.classList.remove("theme-booting");
   document.body.classList.toggle("can-edit", state.canEdit);
   document.body.classList.toggle("list-view-mode", state.viewMode === "list");
-  el.loginButton.innerHTML = state.canEdit ? `${exitIcon()}<span class="button-label">${escapeHtml(tt("Stop Editing"))}</span>` : pencilIcon();
+  el.loginButton.innerHTML = state.canEdit ? `<span class="button-label">${escapeHtml(tt("Stop Editing"))}</span><span class="button-icon" aria-hidden="true">${exitIcon()}</span>` : pencilIcon();
   el.loginButton.title = state.canEdit ? tt("Stop Editing") : tt("Edit");
   el.loginButton.setAttribute("aria-label", el.loginButton.title);
   el.addButton.hidden = false;

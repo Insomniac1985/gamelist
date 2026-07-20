@@ -3,7 +3,7 @@ import { clearEditorCookie, createEditorSession, editorCookie, isEditorRequest }
 export async function onRequestGet({ request, env }) {
   const ok = await isEditorRequest(request, env);
   const response = json({ ok, status: ok ? "LOGGED IN" : "NOT LOGGED IN" });
-  if (ok) response.headers.set("Set-Cookie", editorCookie(await createEditorSession(env)));
+  if (ok) response.headers.set("Set-Cookie", editorCookie(await createEditorSession(request, env)));
   return response;
 }
 
@@ -13,7 +13,7 @@ export async function onRequestPost({ request, env }) {
   if (!password) return json({ ok: false, error: "EDIT_PASSWORD is not configured" }, 503);
   if (body.password === password) {
     const response = json({ ok: true });
-    response.headers.set("Set-Cookie", editorCookie(await createEditorSession(env)));
+    response.headers.set("Set-Cookie", editorCookie(await createEditorSession(request, env)));
     return response;
   }
   return json({ ok: false }, 401);
