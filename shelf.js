@@ -1126,7 +1126,7 @@ function gameCard(game, options = {}) {
   const card = createGameCardShell(document);
   card.dataset.id = game.id;
   card.setAttribute("role", "button"); card.tabIndex = 0;
-  card.className += `${cover ? " has-art" : ""}${ownerClasses}`;
+  card.className += `${cover ? " has-art" : ""}${ownerClasses}${game.digital ? " digital-card" : ""}`;
   if (cover) {
     card.style.setProperty("--card-art", `url("${escapeCss(cover)}")`);
     bindActivityCardParallax(card);
@@ -1143,7 +1143,10 @@ function gameCard(game, options = {}) {
   card.querySelector(".meta").innerHTML = `<span class="region-flag" title="${escapeHtml(game.country)}">${flagIcon(game.country)}</span>${platformBadge(game.platform, { title: game.title })}${conditionBadge(condition)}${shelfProgressPill(game)}`;
   card.querySelector(".play-dates").remove();
   card.querySelector(".chips").innerHTML = tags.map((tag) => `<span class="chip genre">${escapeHtml(tag)}</span>`).join("");
-  card.querySelector(".card-trophies").remove();
+  const trophies = card.querySelector(".card-trophies");
+  trophies.innerHTML = game.digital ? shelfCardTrophies(game, { compactProgress: true }) : "";
+  trophies.hidden = !trophies.innerHTML;
+  if (!game.digital) trophies.remove();
   card.querySelector(".card-actions").innerHTML = isPendingCollectionGame(game) ? `<button class="primary-button add-collection-action editor-only" data-action="add-collection" type="button">Add to Collection</button><button class="danger-button icon-only-button shelf-card-delete-action editor-only" data-action="delete" type="button" title="Delete" aria-label="Delete">${trashIcon()}</button>` : `<button class="ghost-button shelf-add-backlog-action editor-only" data-action="add-backlog" type="button">Add to Backlog</button><button class="danger-button icon-only-button shelf-card-delete-action editor-only" data-action="delete" type="button" title="Delete" aria-label="Delete">${trashIcon()}</button>`;
   card.querySelector(".prices").remove();
   const note = card.querySelector(".notes"); note.textContent = game.notes || ""; note.classList.add("shelf-card-notes"); note.hidden = !game.notes;
@@ -2908,10 +2911,11 @@ function refreshShelfProjectedActivity(game) {
   renderGamelistModules();
 }
 function updateShelfCardTrophyStrips(gameId) {
-  const game = state.gamelistGames.find((item) => item.id === gameId && !item.deletedAt);
+  const game = state.gamelistGames.find((item) => item.id === gameId && !item.deletedAt)
+    || state.games.find((item) => item.id === gameId && !item.deletedAt);
   if (!game) return;
-  document.querySelectorAll(`.game-card[data-gamelist-id="${CSS.escape(gameId)}"] .card-trophies`).forEach((node) => {
-    node.innerHTML = game.playing ? shelfCardTrophies(game, { compactProgress: true }) : "";
+  document.querySelectorAll(`.game-card[data-gamelist-id="${CSS.escape(gameId)}"] .card-trophies, .game-card[data-id="${CSS.escape(gameId)}"] .card-trophies`).forEach((node) => {
+    node.innerHTML = game.playing || game.digital ? shelfCardTrophies(game, { compactProgress: true }) : "";
     node.hidden = !node.innerHTML;
   });
   if (game.playing) schedulePlayingCardHeightSync();
