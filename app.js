@@ -6976,6 +6976,8 @@ function xboxPlatformMatchScore(localPlatform, remotePlatform) {
   const local = canonicalPlatform(localPlatform);
   const remote = canonicalPlatform(remotePlatform);
   if (local === remote) return 18;
+  const xboxConsoles = ["X360", "XOne", "Xbox Series"];
+  if (xboxConsoles.includes(local) && xboxConsoles.includes(remote)) return 8;
   const modernXbox = ["Xbox PC", "XOne", "Xbox Series"];
   if (modernXbox.includes(local) && modernXbox.includes(remote)) return 8;
   return null;
