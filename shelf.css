@@ -36,6 +36,15 @@ html.theme-font-pokemon .shelf-intro h1 {
   letter-spacing: 0;
 }
 
+html.theme-font-michroma .shelf-intro h1 {
+  line-height: var(--display-title-line-height);
+}
+
+html.theme-font-mata .shelf-intro h1 {
+  line-height: var(--display-title-line-height);
+  letter-spacing: var(--display-title-letter-spacing);
+}
+
 .shelf-intro p:last-child {
   max-width: 680px;
   margin: 14px 0 0;
@@ -145,6 +154,7 @@ body:not(.can-edit) .showcase-edit-button {
   font-family: var(--display-title-font);
   font-size: var(--display-title-size, clamp(28px, 4vw, 48px));
   line-height: var(--display-title-line-height, 0.95);
+  letter-spacing: var(--display-title-letter-spacing, 0);
   background: var(--accent);
   -webkit-background-clip: text;
   background-clip: text;
@@ -165,8 +175,12 @@ html.theme-gradient .shelf-page .column-head h2 {
   background-clip: text;
 }
 
-html.theme-font-pokemon .shelf-page .column-head h2 {
+html.theme-font-pokemon .shelf-page .playing-section .column-head h2 {
   font-size: var(--display-title-playing-size);
+}
+
+html.theme-font-mata .shelf-page .playing-section .column-head h2 {
+  font-size: var(--display-title-mata-playing-size);
 }
 
 .favorite-cover-row {
