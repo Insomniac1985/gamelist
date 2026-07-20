@@ -7153,6 +7153,7 @@ function titleMatchParts(value) {
 
 function normalizeTitleRawPhrase(value) {
   return String(value || "")
+    .replace(/[™®©℠]/g, " ")
     .normalize("NFKD")
     .replace(/[\u0300-\u036f]/g, "")
     .toLowerCase()
