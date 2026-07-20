@@ -20,6 +20,7 @@ const LAYOUT_KEYS = [...DEFAULT_LAYOUT];
 const DEFAULT_HIDDEN_MODULES = ["playing", "trophies"];
 const STORE_OPTIONS = ["Amazon", "eBay", "GAME.es", "Xtralife", "Retro Island NY", "GameStop", "Walmart"];
 const DEFAULT_PRICE_STORES = ["Amazon"];
+const CURRENCY_OPTIONS = ["EUR", "USD", "GBP", "JPY"];
 const REGION_OPTIONS = ["ES", "IT", "IE", "FR", "PT", "JP", "MX", "US", "UK"];
 const MAX_PRICE_STORES = 5;
 const THEMES = {
@@ -828,7 +829,9 @@ function renderStats() {
   const visibleGames = filteredShelfStatsGames();
   const collectionGames = visibleGames.filter((game) => !isPendingCollectionGame(game));
   const value = collectionGames.reduce((sum, game) => sum + (collectionValueFor(game) || 0), 0);
-  const valueText = normalizePriceSettings(state.gamelistSettings).currency === "USD" ? `$${Math.round(value).toLocaleString("en")}` : `${Math.round(value).toLocaleString("en")}€`;
+  const currency = normalizePriceSettings(state.gamelistSettings).currency;
+  const symbol = ({ USD: "$", GBP: "\u00a3", JPY: "\u00a5", EUR: "\u20ac" })[currency] || "\u20ac";
+  const valueText = currency === "EUR" ? `${Math.round(value).toLocaleString("en")}${symbol}` : `${symbol}${Math.round(value).toLocaleString("en")}`;
   const rows = [
     [collectionGames.length, "Physical games", "stat-backlog", "shelf-start"],
     [new Set(collectionGames.map((game) => game.platform)).size, "Platforms", "stat-available"],
@@ -1502,7 +1505,7 @@ function applyPhysicalMetadata(data) {
 }
 
 function applyPriceChartingSearchResult(result) {
-  if (result.productId) el.fields.pricechartingId.value = result.productId;
+  if (result.url || result.productId) el.fields.pricechartingId.value = result.url || result.productId;
   const estimate = estimatedPhysicalValue(result);
   if (estimate != null) el.fields.price.value = Number(estimate).toFixed(2);
   mergeWebsiteIntoSlots(result.url);
@@ -2436,7 +2439,7 @@ function normalizePriceSettings(settings = {}) {
   const selectedStores = Array.isArray(settings.stores) ? settings.stores.filter((store) => STORE_OPTIONS.includes(store)) : DEFAULT_PRICE_STORES;
   const stores = selectedStores;
   return {
-    currency: settings.currency === "USD" ? "USD" : "EUR",
+    currency: CURRENCY_OPTIONS.includes(settings.currency) ? settings.currency : "EUR",
     region: REGION_OPTIONS.includes(settings.region) ? settings.region : "ES",
     stores: stores.slice(0, MAX_PRICE_STORES),
   };
@@ -3084,6 +3087,8 @@ function cleanTransferTags(tags) { return Array.isArray(tags) ? tags.filter((tag
 function formatMoney(value, currency = "USD") {
   const number = Number(value);
   const amount = Number.isFinite(number) ? number.toFixed(2) : "0.00";
+  if (currency === "GBP") return `£${amount}`;
+  if (currency === "JPY") return `¥${Math.round(Number.isFinite(number) ? number : 0).toLocaleString("en")}`;
   return currency === "USD" ? `$${amount}` : `${amount}€`;
 }
 
@@ -3138,11 +3143,16 @@ function applyManualCollectionValue(game, rawValue, existing = null) {
 function currencyForManualPrice(value) {
   const text = String(value || "");
   if (text.includes("$")) return "USD";
+  if (text.includes("£")) return "GBP";
+  if (text.includes("¥") || text.includes("円")) return "JPY";
   if (text.includes("€")) return "EUR";
   return normalizePriceSettings(state.gamelistSettings).currency || "USD";
 }
 
 function normalizePriceLabel(value, currency = "USD") {
+  const symbol = ({ USD: "$", GBP: "£", JPY: "¥", EUR: "€" })[currency] || "€";
+  if (!value) return `- ${symbol}`;
+  if (currency === "GBP" || currency === "JPY") return String(value).trim();
   if (!value) return currency === "USD" ? "- $" : "- €";
   const text = String(value).trim();
   return currency === "USD" ? text : text.replace(/€\s*([0-9][0-9.,]*)/g, "$1€").replace(/\bEUR\s*([0-9][0-9.,]*)/gi, "$1€");
@@ -3487,6 +3497,7 @@ function applyCollectionPrice(game, data) {
   game.collectionPrices = { ...(game.collectionPrices || {}), ...(data.prices || {}) };
   game.price = nextPrice;
   game.priceCurrency = data.currency || "USD";
+  if (data.productUrl || (!game.pricechartingId && data.productId)) game.pricechartingId = data.productUrl || data.productId;
   game.collectionProductUrl = data.productUrl || game.collectionProductUrl || priceChartingPageUrl(game.pricechartingId);
   game.priceFetchedAt = data.checkedAt || new Date().toISOString();
   game.priceHistory = (data.history?.[historyKey]?.length ? data.history[historyKey] : [...(game.priceHistory || []), { date: String(data.checkedAt || "").slice(0, 10), value: game.price }]).filter((item) => item.value != null).slice(-60);
@@ -3573,7 +3584,7 @@ function trashIcon() { return `<svg class="trash-icon" viewBox="0 0 24 24" aria-
 function pauseTrailerIcon() { return `<svg class="pause-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5v14M16 5v14"></path></svg>`; }
 function playTrailerIcon() { return `<svg class="play-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m8 5 11 7-11 7Z"></path></svg>`; }
 function checkIcon() { return `<svg class="check-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5 9.5 17 19 7"></path></svg>`; }
-function currencyIcon() { const currency = normalizePriceSettings(state.gamelistSettings).currency === "USD" ? "dollar" : "euro"; return currency === "dollar" ? `<svg class="dollar-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M16.8 7.2c-1.1-1-2.7-1.7-4.8-1.7-2.8 0-4.8 1.4-4.8 3.5 0 5.3 9.8 2.1 9.8 7 0 2.1-2 3.5-5 3.5-2.3 0-4.2-.8-5.4-2"></path><path d="M12 3v18"></path></svg>` : `<svg class="euro-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M19 5.5A7 7 0 0 0 8.2 7.1 7.4 7.4 0 0 0 7 12a7.4 7.4 0 0 0 1.2 4.9A7 7 0 0 0 19 18.5"></path><path d="M4 10h10"></path><path d="M4 14h10"></path></svg>`; }
+function currencyIcon() { const currency = normalizePriceSettings(state.gamelistSettings).currency; if (currency === "USD") return `<svg class="dollar-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M16.8 7.2c-1.1-1-2.7-1.7-4.8-1.7-2.8 0-4.8 1.4-4.8 3.5 0 5.3 9.8 2.1 9.8 7 0 2.1-2 3.5-5 3.5-2.3 0-4.2-.8-5.4-2"></path><path d="M12 3v18"></path></svg>`; if (currency === "GBP") return `<svg class="pound-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 20h9"></path><path d="M7 13h8"></path><path d="M16.5 6.6A4.4 4.4 0 0 0 12.8 5C10.5 5 9 6.5 9 8.8V20"></path></svg>`; if (currency === "JPY") return `<svg class="yen-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 4l6 8 6-8"></path><path d="M12 12v8"></path><path d="M8 12h8"></path><path d="M8 16h8"></path></svg>`; return `<svg class="euro-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M19 5.5A7 7 0 0 0 8.2 7.1 7.4 7.4 0 0 0 7 12a7.4 7.4 0 0 0 1.2 4.9A7 7 0 0 0 19 18.5"></path><path d="M4 10h10"></path><path d="M4 14h10"></path></svg>`; }
 function trophyIcon() { return `<svg class="trophy-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 4h8v4a4 4 0 0 1-8 0V4Z"></path><path d="M8 6H5a3 3 0 0 0 3 3"></path><path d="M16 6h3a3 3 0 0 1-3 3"></path><path d="M12 12v4"></path><path d="M9 20h6"></path><path d="M10 16h4v4h-4z"></path></svg>`; }
 function carouselArrowIcon(direction = "right") { return `<svg class="sort-arrow-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="${direction === "left" ? "M15.5 5.5 9 12l6.5 6.5" : "M8.5 5.5 15 12l-6.5 6.5"}"></path></svg>`; }
 function sortArrowIcon(desc = false) { return `<svg class="sort-arrow-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="${desc ? "M12 3.5v17" : "M12 20.5v-17"}"></path><path d="${desc ? "M6.5 15l5.5 5.5 5.5-5.5" : "M6.5 9l5.5-5.5L17.5 9"}"></path></svg>`; }

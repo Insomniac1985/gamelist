@@ -5825,6 +5825,8 @@ body:not(.can-edit) #loginButton,
 .play-icon,
 .euro-icon,
 .dollar-icon,
+.pound-icon,
+.yen-icon,
 .reload-icon,
 .settings-icon,
 .download-icon,
@@ -5841,6 +5843,8 @@ body:not(.can-edit) #loginButton,
 
 .euro-icon,
 .dollar-icon,
+.pound-icon,
+.yen-icon,
 .pause-icon,
 .exit-icon,
 .play-icon {
@@ -9520,6 +9524,10 @@ html.theme-light .shelf-card-delete-action:hover {
   gap: 10px;
 }
 
+.settings-detail-grid {
+  grid-template-columns: repeat(8, minmax(0, 1fr));
+}
+
 .settings-account-field {
   grid-column: span 2;
 }
@@ -10844,6 +10852,15 @@ body.theme-kash
     grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
   }
 
+  .settings-detail-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .settings-detail-grid .settings-account-field,
+  .settings-detail-grid .settings-detail-compact {
+    grid-column: 1;
+  }
+
   .theme-editor-grid {
     grid-template-columns: 1fr;
   }
@@ -10995,6 +11012,8 @@ body.theme-kash
   .top-actions .exit-icon,
   .top-actions .euro-icon,
   .top-actions .dollar-icon,
+  .top-actions .pound-icon,
+  .top-actions .yen-icon,
   .top-actions .pencil-icon,
   .top-actions .settings-icon,
   .top-actions .reload-icon {
@@ -11007,6 +11026,8 @@ body.theme-kash
   #settingsButton .settings-icon,
   #fetchPricesButton .euro-icon,
   #fetchPricesButton .dollar-icon,
+  #fetchPricesButton .pound-icon,
+  #fetchPricesButton .yen-icon,
   body.can-edit #loginButton .pause-icon,
   body.can-edit #loginButton .exit-icon {
     display: block;

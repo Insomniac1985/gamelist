@@ -84,7 +84,8 @@ function cleanRegion(value) {
 }
 
 function cleanCurrency(value) {
-  return String(value || "").toUpperCase() === "USD" ? "USD" : "EUR";
+  const currency = String(value || "").toUpperCase();
+  return ["EUR", "USD", "GBP", "JPY"].includes(currency) ? currency : "EUR";
 }
 
 function cleanStores(value) {
@@ -484,10 +485,12 @@ function parseAmazon(html, title, platform, currency = "EUR") {
     if (!normalizedMatch.includes(normalizedTitle.split(" ")[0])) continue;
     if (normalizedPlatform && !normalizedMatch.includes(normalizedPlatform.replace("ps", "playstation"))) continue;
 
+    const regionalPriceMatch = card.match(/<span class="a-offscreen">([^<]*(?:\$|£|¥|EUR|USD|GBP|JPY)[^<]*)<\/span>/i);
     const priceMatch = card.match(/<span class="a-offscreen">((?:US\s*)?\$?\s*[\d.,]+\s*(?:€|EUR|USD)?)<\/span>/i)
       || card.match(/data-csa-c-price-to-pay="([\d.]+)"/i);
-    if (!priceMatch) continue;
-    const price = formatPriceLabel(priceMatch[1], currency);
+    const actualPriceMatch = regionalPriceMatch || priceMatch;
+    if (!actualPriceMatch) continue;
+    const price = formatPriceLabel(actualPriceMatch[1], currency);
     const numericPrice = parsePrice(price);
     if (!best || numericPrice < best.numericPrice) {
       best = { price, numericPrice, matchedTitle };
@@ -826,9 +829,13 @@ function xtralifeTerm(query) {
 
 function parsePrice(price) {
   if (!price) return null;
-  const cleaned = price.includes(",") && !price.includes(".")
-    ? price.replace(/[^\d,]/g, "").replace(",", ".")
-    : price.replace(/[^\d.]/g, "");
+  const numeric = String(price).replace(/\s+/g, "");
+  const commaOnly = numeric.includes(",") && !numeric.includes(".");
+  const cleaned = commaOnly
+    ? numeric.replace(/[^\d,]/g, "").split(",").at(-1)?.length === 3
+      ? numeric.replace(/[^\d]/g, "")
+      : numeric.replace(/[^\d,]/g, "").replace(",", ".")
+    : numeric.replace(/[^\d.]/g, "");
   const value = Number(cleaned);
   return Number.isFinite(value) ? value : null;
 }
@@ -841,8 +848,19 @@ function usd(value) {
   return `$${Number(value).toFixed(2)}`;
 }
 
+function gbp(value) {
+  return `£${Number(value).toFixed(2)}`;
+}
+
+function jpy(value) {
+  return `¥${Math.round(Number(value)).toLocaleString("en")}`;
+}
+
 function money(value, currency = "EUR") {
-  return currency === "USD" ? usd(value) : euro(value);
+  if (currency === "USD") return usd(value);
+  if (currency === "GBP") return gbp(value);
+  if (currency === "JPY") return jpy(value);
+  return euro(value);
 }
 
 function formatPriceLabel(value, currency = "EUR") {
@@ -850,6 +868,8 @@ function formatPriceLabel(value, currency = "EUR") {
   const amount = parsePrice(text);
   if (!Number.isFinite(amount)) return "";
   if (text.includes("$") || /USD/i.test(text) || currency === "USD") return usd(amount);
+  if (text.includes("£") || /GBP/i.test(text) || currency === "GBP") return gbp(amount);
+  if (text.includes("¥") || /JPY/i.test(text) || currency === "JPY") return jpy(amount);
   return euro(amount);
 }
 

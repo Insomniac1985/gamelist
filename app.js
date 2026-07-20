@@ -20,6 +20,7 @@ const VERSION_STORAGE_KEY = "gamelist:site-version";
 const CACHE_HOUR_STORAGE_KEY = "gamelist:cache-hour";
 const PULL_NAVIGATION_KEY = "gamelist:pull-navigation";
 const STORE_OPTIONS = ["Amazon", "eBay", "GAME.es", "Xtralife", "Retro Island NY", "GameStop", "Walmart"];
+const CURRENCY_OPTIONS = ["EUR", "USD", "GBP", "JPY"];
 const REGION_OPTIONS = ["ES", "IT", "IE", "FR", "PT", "JP", "MX", "US", "UK"];
 const MAX_PRICE_STORES = 5;
 const GAME_OF_YEAR_CATEGORIES = [
@@ -1155,7 +1156,7 @@ function normalizeSettings(settings = {}) {
     microsoftUser: cleanMicrosoftUser(settings.microsoftUser),
     steamUser: cleanSteamUser(settings.steamUser),
     twitchUser: cleanTwitchUser(settings.twitchUser),
-    currency: settings.currency === "USD" ? "USD" : "EUR",
+    currency: CURRENCY_OPTIONS.includes(settings.currency) ? settings.currency : "EUR",
     region: REGION_OPTIONS.includes(settings.region) ? settings.region : DEFAULT_SETTINGS.region,
     language: normalizeLanguage(settings.language),
     stores: stores.slice(0, MAX_PRICE_STORES),
@@ -7593,8 +7594,32 @@ function dollarIcon() {
   `;
 }
 
+function poundIcon() {
+  return `
+    <svg class="pound-icon" viewBox="0 0 24 24" aria-hidden="true">
+      <path d="M8 20h9"></path>
+      <path d="M7 13h8"></path>
+      <path d="M16.5 6.6A4.4 4.4 0 0 0 12.8 5C10.5 5 9 6.5 9 8.8V20"></path>
+    </svg>
+  `;
+}
+
+function yenIcon() {
+  return `
+    <svg class="yen-icon" viewBox="0 0 24 24" aria-hidden="true">
+      <path d="M6 4l6 8 6-8"></path>
+      <path d="M12 12v8"></path>
+      <path d="M8 12h8"></path>
+      <path d="M8 16h8"></path>
+    </svg>
+  `;
+}
+
 function currencyIcon() {
-  return state.settings.currency === "USD" ? dollarIcon() : euroIcon();
+  if (state.settings.currency === "USD") return dollarIcon();
+  if (state.settings.currency === "GBP") return poundIcon();
+  if (state.settings.currency === "JPY") return yenIcon();
+  return euroIcon();
 }
 
 function checkIcon() {
@@ -8213,7 +8238,7 @@ function platformStoreProvidersForGame(game) {
 }
 
 function currencySymbol() {
-  return state.settings.currency === "USD" ? "$" : "€";
+  return ({ USD: "$", GBP: "£", JPY: "¥", EUR: "€" })[state.settings.currency] || "€";
 }
 
 function amazonStoreName(region = state.settings.region) {
