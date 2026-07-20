@@ -433,7 +433,8 @@ function logStatusLines(status) {
   const log = (name, value) => console.log(`${name}: ${Boolean(value)}`);
   log("UPDATE", status.UPDATE);
   console.log("--------------------");
-  log("IGDB_TWITCH", status.IGDB_TWITCH);
+  log("IGDB_CLIENT_ID", status.IGDB_CLIENT_ID);
+  log("IGDB_CLIENT_SECRET", status.IGDB_CLIENT_SECRET);
   log("PSN_NPSSO", status.PSN_NPSSO);
   log("OPENXBL_API_KEY", status.OPENXBL_API_KEY);
   log("STEAM_API_KEY", status.STEAM_API_KEY);
@@ -545,7 +546,7 @@ function applySiteVersion(value = {}) {
 
 function logPageVersion(currentRepo = "") {
   const originalRepo = "https://github.com/ShabiiEXE/Gamelist";
-  const currentRepoLine = repoUrlsMatch(currentRepo, originalRepo) ? "" : `\n  current repo: ${currentRepo}`;
+  const currentRepoLine = repoUrlsMatch(currentRepo, originalRepo) ? "" : `\n  repo: ${currentRepo}`;
   console.log(String.raw`%c
     {{{{{{{{{{{     {{{{{{{{{{{{{{{{{{{{
    {{{{{{{{{{{       {{{{{{{{{{{{{{{{{{ 
