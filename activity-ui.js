@@ -234,7 +234,7 @@ export function achievementPanelMarkup({ psn = {}, steam = {}, xbox = {}, trophy
     trophyTotal: total,
     trophyBreakdown: breakdown([[steam.totalEarned || 0, total, "PC"], [xbox.totalEarned || 0, total, "Xbox"], [psnTotal, total, "PlayStation"]]),
     level: psnLevel,
-    levelLabel: psnLevel ? `LEVEL <small>${escape(String(psn.summary.progress || 0))}% next</small>` : "",
+    levelLabel: psnLevel ? "PSN LEVEL" : "",
     counts, sourceUrl, trophyIconHtml, barHeight: sharedTrophyBarHeight, escape,
   });
   const cards = achievements.map((item, index) => {

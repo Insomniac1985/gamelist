@@ -4763,6 +4763,15 @@ body.theme-kash
 .game-card.stream-card.completed-trophy-card,
 body.theme-kash .game-card.completed-trophy-card,
 body.theme-kash .game-card.stream-card.completed-trophy-card {
+  background:
+    linear-gradient(
+      135deg,
+      rgba(247, 223, 105, 0.14),
+      rgba(255, 255, 255, 0.045) 50%,
+      rgba(247, 223, 105, 0.07)
+    ),
+    var(--grid-texture),
+    rgba(12, 13, 18, 0.92) !important;
   border-color: rgba(247, 223, 105, 0.72) !important;
   box-shadow:
     0 0 0 1px rgba(247, 223, 105, 0.18),
@@ -6002,24 +6011,32 @@ body:not(.can-edit) .game-card:focus-within .edit-action {
 }
 
 .completed-list {
+  --completed-mask-bottom: 0px;
   position: relative;
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 8px;
   align-items: stretch;
+  -webkit-mask-image: linear-gradient(
+    180deg,
+    #000 0,
+    #000 calc(100% - var(--completed-mask-bottom)),
+    transparent 100%
+  );
+  mask-image: linear-gradient(
+    180deg,
+    #000 0,
+    #000 calc(100% - var(--completed-mask-bottom)),
+    transparent 100%
+  );
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  -webkit-mask-size: 100% 100%;
+  mask-size: 100% 100%;
 }
 
-.completed-list.is-collapsed::after {
-  content: "";
-  position: absolute;
-  right: 0;
-  bottom: 0;
-  left: 0;
-  height: 96px;
-  z-index: 2;
-  pointer-events: none;
-  background: linear-gradient(180deg, rgba(7, 8, 12, 0), rgba(7, 8, 12, 0.82));
-  border-radius: 0 0 8px 8px;
+.completed-list.is-collapsed {
+  --completed-mask-bottom: 96px;
 }
 
 .completed-more-button {
@@ -7585,10 +7602,27 @@ body.theme-kash .history-row.completed-trophy-card,
 body.theme-kash .history-row.completed-trophy-card:hover,
 body.theme-kash .playing-finished-game.completed-trophy-card,
 body.theme-kash .playing-finished-game.completed-trophy-card:hover {
+  background:
+    linear-gradient(
+      135deg,
+      rgba(247, 223, 105, 0.16),
+      rgba(255, 255, 255, 0.055) 48%,
+      rgba(247, 223, 105, 0.08)
+    ),
+    var(--grid-texture),
+    rgba(255, 255, 255, 0.05) !important;
   border-color: rgba(247, 223, 105, 0.72) !important;
   box-shadow:
     0 0 0 1px rgba(247, 223, 105, 0.16),
     0 12px 28px rgba(247, 223, 105, 0.1) !important;
+}
+
+.completed-trophy-card .psn-progress-pill {
+  color: #fff6bc;
+  background:
+    linear-gradient(135deg, rgba(247, 223, 105, 0.24), rgba(185, 132, 25, 0.16)),
+    rgba(255, 255, 255, 0.06);
+  border-color: rgba(247, 223, 105, 0.52);
 }
 
 .completed-cover {
@@ -9113,14 +9147,6 @@ html.theme-light .release-day.has-release::after {
   color: #111827;
   background: rgba(230, 236, 245, 0.98);
   border-color: rgba(31, 42, 61, 0.38);
-}
-
-html.theme-light .completed-list.is-collapsed::after {
-  background: linear-gradient(
-    180deg,
-    rgba(185, 195, 209, 0),
-    rgba(185, 195, 209, 0.94)
-  );
 }
 
 html.theme-light .completed-more-button {
