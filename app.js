@@ -396,7 +396,7 @@ init();
 async function init() {
   if (await checkSiteVersion()) return;
   logPageVersion();
-  logSecretStatus("Gamelist");
+  logSecretStatus();
   await window.__initialThemeReady?.catch(() => "shabii");
   registerServiceWorker();
   syncDisplayMode();
@@ -417,18 +417,18 @@ async function init() {
   scheduleBackgroundRefreshes();
 }
 
-async function logSecretStatus(page) {
+async function logSecretStatus() {
   try {
     const response = await fetch("/api/secret-status", { cache: "no-store" });
     if (!response.ok) throw new Error(`HTTP ${response.status}`);
-    logStatusLines(page, await response.json());
+    logStatusLines(await response.json());
   } catch (error) {
-    console.warn(`[${page}] Could not check secret status`, error);
+    console.warn("Could not check secret status", error);
   }
 }
 
-function logStatusLines(page, status) {
-  const log = (name, value) => console.log(`[${page}] ${name}: ${Boolean(value)}`);
+function logStatusLines(status) {
+  const log = (name, value) => console.log(`${name}: ${Boolean(value)}`);
   log("UPDATE", status.UPDATE);
   console.log("--------------------");
   log("IGDB_TWITCH", status.IGDB_TWITCH);
