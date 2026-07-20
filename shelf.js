@@ -198,8 +198,6 @@ init();
 
 async function init() {
   if (await checkSiteVersion()) return;
-  logPageVersion();
-  logSecretStatus("Shelf");
   await window.__initialThemeReady?.catch(() => "shabii");
   applyTheme();
   document.documentElement.classList.remove("theme-booting");
@@ -230,35 +228,6 @@ async function init() {
   loadTrophyActivity();
   rebuildGames();
   renderAll();
-}
-
-async function logSecretStatus(page) {
-  try {
-    const response = await fetch("/api/secret-status", { cache: "no-store" });
-    if (!response.ok) throw new Error(`HTTP ${response.status}`);
-    logStatusLines(page, await response.json());
-  } catch (error) {
-    console.warn(`[${page}] Could not check secret status`, error);
-  }
-}
-
-function logStatusLines(page, status) {
-  const lines = {
-    PSN_NPSSO: status.PSN_NPSSO,
-    OPENXBL_API_KEY: status.OPENXBL_API_KEY,
-    STEAM_API_KEY: status.STEAM_API_KEY,
-    IGDB_TWITCH: status.IGDB_TWITCH,
-    PRICECHARTING_TOKEN: status.PRICECHARTING_TOKEN,
-    GOOGLE_PRIVATE_KEY: status.GOOGLE_PRIVATE_KEY,
-    IGDB_WORKING: status.working?.IGDB,
-    PRICECHARTING_WORKING: status.working?.PRICECHARTING,
-    PSN_WORKING: status.working?.PSN,
-    XBOX_WORKING: status.working?.XBOX,
-    STEAM_WORKING: status.working?.STEAM,
-    GOOGLE_PRIVATE_KEY_VALID: status.working?.GOOGLE_PRIVATE_KEY_VALID,
-    UPDATE: status.UPDATE,
-  };
-  Object.entries(lines).forEach(([name, value]) => console.log(`[${page}] ${name}: ${Boolean(value)}`));
 }
 
 function loadSharedSettings() { try { return JSON.parse(localStorage.getItem("gamelist:settings:v1") || "{}"); } catch { return {}; } }
@@ -3594,26 +3563,6 @@ async function clearSiteCachesForNewHour() { const currentHour = currentCacheHou
 function currentCacheHour() { return new Date().toISOString().slice(0, 13); }
 function forceCacheOnLoadEnabled() { try { return JSON.parse(localStorage.getItem("gamelist:settings:v1") || "{}")?.forceCacheOnLoad === true; } catch { return false; } }
 function applySiteVersion(value = {}) { siteVersion.version = String(value.version || "").trim(); siteVersion.updatedAt = String(value.updatedAt || "").trim(); }
-function logPageVersion() { console.log(String.raw`%c
-    {{{{{{{{{{{     {{{{{{{{{{{{{{{{{{{{
-   {{{{{{{{{{{       {{{{{{{{{{{{{{{{{{ 
-  {{{{{{{{{{{          {{{{{{{{{{{{{{   
- {{{{{{{{{{{            {{{{{{{{{{{{{   
-{{{{{{{{{{               {{{{{{{{{{     
-           {{{{{{{{{{                   
-            {{{{{{{{{{}                 
-             {{{{{{{{{{                 
-              {{{{{{{{{{{               
-     {{{{{{{{{{{{{{{{{{{{{{{{{{{{{{     
-   {{{{{{{{{{{  {{{{{{{{{{{{{{{{{{      
-   {{{{{{{{{{    {{{{{{{{{{{{{{{{       
- {{{{{{{{{{{      {{{{{{{{{{{{{{        
-{{{{{{{{{{{        {{{{{{{{{{{{         
-%c
-  ${consoleVersionLabel()}
-  original repo: https://github.com/ShabiiEXE/Gamelist
-`, "color:#ff0039;font-weight:900;font-size:8px;line-height:1;", "color:#ff0039;font-weight:900;font-size:12px;line-height:1.35;"); }
-function consoleVersionLabel() { return siteVersion.version ? `${siteVersion.version}.${formatFooterShortDate(siteVersion.updatedAt) || "--.--"}` : "unknown"; }
 function consumeRecentPullNavigation() { try { const url = new URL(window.location.href); const fromPullUrl = url.searchParams.get("pull") === "1"; if (fromPullUrl) { url.searchParams.delete("pull"); url.searchParams.delete("v"); window.history.replaceState({}, "", `${url.pathname}${url.search}${url.hash}`); } const value = JSON.parse(sessionStorage.getItem(PULL_NAVIGATION_KEY) || "{}"); sessionStorage.removeItem(PULL_NAVIGATION_KEY); return fromPullUrl || Date.now() - Number(value.at || 0) < 8000; } catch { return false; } }
 async function clearSiteCaches() { if ("caches" in window) { const keys = await caches.keys(); await Promise.all(keys.filter((key) => key.startsWith("gamelist-cache-")).map((key) => caches.delete(key))); } if ("serviceWorker" in navigator) { const registrations = await navigator.serviceWorker.getRegistrations(); await Promise.all(registrations.map((registration) => registration.update().catch(() => {}))); } }
 async function clearSiteCachesAndReload() { await clearSiteCaches(); localStorage.removeItem(ACHIEVEMENT_CACHE_KEY); if (siteVersion.version) localStorage.setItem(VERSION_STORAGE_KEY, siteVersion.version); window.location.reload(); }

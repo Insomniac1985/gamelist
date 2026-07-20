@@ -1,9 +1,12 @@
+import { getPsnAccessToken } from "./psn-auth.js";
+
 const HEALTH_CACHE_MS = 5 * 60 * 1000;
 let healthCache;
 
 export async function onRequestGet({ request, env = {} }) {
   const isSet = (value) => Boolean(String(value || "").trim());
-  const working = await integrationHealth(env, request);
+  const health = await integrationHealth(env, request);
+  const { CURRENT_REPO, ...working } = health;
   return json({
     PSN_NPSSO: isSet(env.PSN_NPSSO),
     OPENXBL_API_KEY: isSet(env.OPENXBL_API_KEY),
@@ -12,6 +15,7 @@ export async function onRequestGet({ request, env = {} }) {
     PRICECHARTING_TOKEN: isSet(env.PRICECHARTING_TOKEN),
     GOOGLE_PRIVATE_KEY: isSet(env.GOOGLE_PRIVATE_KEY),
     UPDATE: working.UPDATE,
+    CURRENT_REPO,
     working,
   });
 }
@@ -24,7 +28,6 @@ async function integrationHealth(env, request) {
     checkPsn(env),
     checkXbox(env),
     checkSteam(env),
-    checkGooglePrivateKey(env),
     checkUpdateWorkflow(env, request),
   ]);
   const value = {
@@ -33,8 +36,8 @@ async function integrationHealth(env, request) {
     PSN: checks[2],
     XBOX: checks[3],
     STEAM: checks[4],
-    GOOGLE_PRIVATE_KEY_VALID: checks[5],
-    UPDATE: checks[6],
+    UPDATE: checks[5].ok,
+    CURRENT_REPO: checks[5].repoUrl,
   };
   healthCache = { value, expiresAt: Date.now() + HEALTH_CACHE_MS };
   return value;
@@ -73,19 +76,11 @@ async function checkPriceCharting() {
 async function checkPsn(env) {
   const npsso = String(env.PSN_NPSSO || "").trim();
   if (!npsso) return false;
-  const url = new URL("https://ca.account.sony.com/api/authz/v3/oauth/authorize");
-  url.search = new URLSearchParams({
-    access_type: "offline",
-    client_id: "09515159-7237-4370-9b40-3806e67c0891",
-    redirect_uri: "com.scee.psxandroid.scecompcall://redirect",
-    response_type: "code",
-    scope: "psn:mobile.v2.core psn:clientapp",
-  });
-  const response = await safeFetch(url, {
-    headers: { Cookie: `npsso=${npsso}` },
-    redirect: "manual",
-  });
-  return Boolean(response && response.status >= 300 && response.status < 400 && (response.headers.get("location") || "").includes("?code="));
+  try {
+    return Boolean(await getPsnAccessToken(npsso));
+  } catch {
+    return false;
+  }
 }
 
 async function checkXbox(env) {
@@ -107,30 +102,21 @@ async function checkSteam(env) {
   return Boolean(response?.ok);
 }
 
-async function checkGooglePrivateKey(env) {
-  const privateKey = String(env.GOOGLE_PRIVATE_KEY || "").replace(/\\n/g, "\n").trim();
-  if (!privateKey) return false;
-  try {
-    const binary = Uint8Array.from(atob(privateKey.replace(/-----[^-]+-----/g, "").replace(/\s+/g, "")), (char) => char.charCodeAt(0));
-    await crypto.subtle.importKey("pkcs8", binary, { name: "RSASSA-PKCS1-v1_5", hash: "SHA-256" }, false, ["sign"]);
-    return true;
-  } catch {
-    return false;
-  }
-}
-
 async function checkUpdateWorkflow(env, request) {
-  if (env.UPDATE_FILE_PRESENT === "true") return true;
+  const configuredRepoUrl = cleanRepoUrl(env.GITLAB_PROJECT_URL || env.CI_PROJECT_URL || env.REPOSITORY_URL);
+  if (env.UPDATE_FILE_PRESENT === "true") return { ok: true, repoUrl: configuredRepoUrl };
+  let updateFilePresent = false;
   if (env.ASSETS && request?.url) {
     const origin = new URL(request.url).origin;
     const assetChecks = await Promise.all([
       env.ASSETS.fetch(new Request(`${origin}/.github/workflows/main.yml`)),
       env.ASSETS.fetch(new Request(`${origin}/.gitlab-ci.yml`)),
     ]).catch(() => []);
-    if (assetChecks.some((response) => response?.ok)) return true;
+    updateFilePresent = assetChecks.some((response) => response?.ok);
+    if (updateFilePresent && configuredRepoUrl) return { ok: true, repoUrl: configuredRepoUrl };
   }
   const token = String(env.GITHUB_WORKFLOW_TOKEN || "").trim();
-  if (!token) return false;
+  if (!token) return { ok: updateFilePresent, repoUrl: configuredRepoUrl };
   const headers = {
     Authorization: `Bearer ${token}`,
     Accept: "application/vnd.github+json",
@@ -140,14 +126,24 @@ async function checkUpdateWorkflow(env, request) {
   let repo = String(env.GITHUB_REPO_FULL_NAME || "").trim();
   if (!repo) {
     const reposResponse = await safeFetch("https://api.github.com/user/repos?per_page=2", { headers });
-    if (!reposResponse?.ok) return false;
+    if (!reposResponse?.ok) return { ok: updateFilePresent, repoUrl: configuredRepoUrl };
     const repos = await reposResponse.json().catch(() => []);
-    if (!Array.isArray(repos) || repos.length !== 1) return false;
+    if (!Array.isArray(repos) || repos.length !== 1) return { ok: updateFilePresent, repoUrl: configuredRepoUrl };
     repo = String(repos[0]?.full_name || "");
   }
-  if (!/^[^/]+\/[^/]+$/.test(repo)) return false;
+  if (!/^[^/]+\/[^/]+$/.test(repo)) return { ok: updateFilePresent, repoUrl: configuredRepoUrl };
+  const repoUrl = `https://github.com/${repo}`;
   const response = await safeFetch(`https://api.github.com/repos/${repo}/actions/workflows/main.yml`, { headers });
-  return Boolean(response?.ok);
+  return { ok: Boolean(response?.ok), repoUrl };
+}
+
+function cleanRepoUrl(value) {
+  try {
+    const url = new URL(String(value || "").trim());
+    return /^https?:$/.test(url.protocol) ? url.toString().replace(/\/$/, "") : "";
+  } catch {
+    return "";
+  }
 }
 
 async function safeFetch(url, options = {}) {

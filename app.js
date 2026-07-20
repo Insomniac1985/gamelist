@@ -395,8 +395,7 @@ init();
 
 async function init() {
   if (await checkSiteVersion()) return;
-  logPageVersion();
-  logSecretStatus("Gamelist");
+  logConsoleInfo();
   await window.__initialThemeReady?.catch(() => "shabii");
   registerServiceWorker();
   syncDisplayMode();
@@ -417,33 +416,35 @@ async function init() {
   scheduleBackgroundRefreshes();
 }
 
-async function logSecretStatus(page) {
+async function logConsoleInfo() {
   try {
     const response = await fetch("/api/secret-status", { cache: "no-store" });
     if (!response.ok) throw new Error(`HTTP ${response.status}`);
-    logStatusLines(page, await response.json());
+    const status = await response.json();
+    logPageVersion(status.CURRENT_REPO);
+    logStatusLines(status);
   } catch (error) {
-    console.warn(`[${page}] Could not check secret status`, error);
+    logPageVersion();
+    console.warn("Could not check secret status", error);
   }
 }
 
-function logStatusLines(page, status) {
-  const lines = {
-    PSN_NPSSO: status.PSN_NPSSO,
-    OPENXBL_API_KEY: status.OPENXBL_API_KEY,
-    STEAM_API_KEY: status.STEAM_API_KEY,
-    IGDB_TWITCH: status.IGDB_TWITCH,
-    PRICECHARTING_TOKEN: status.PRICECHARTING_TOKEN,
-    GOOGLE_PRIVATE_KEY: status.GOOGLE_PRIVATE_KEY,
-    IGDB_WORKING: status.working?.IGDB,
-    PRICECHARTING_WORKING: status.working?.PRICECHARTING,
-    PSN_WORKING: status.working?.PSN,
-    XBOX_WORKING: status.working?.XBOX,
-    STEAM_WORKING: status.working?.STEAM,
-    GOOGLE_PRIVATE_KEY_VALID: status.working?.GOOGLE_PRIVATE_KEY_VALID,
-    UPDATE: status.UPDATE,
-  };
-  Object.entries(lines).forEach(([name, value]) => console.log(`[${page}] ${name}: ${Boolean(value)}`));
+function logStatusLines(status) {
+  const log = (name, value) => console.log(`${name}: ${Boolean(value)}`);
+  log("UPDATE", status.UPDATE);
+  console.log("--------------------");
+  log("IGDB_TWITCH", status.IGDB_TWITCH);
+  log("PSN_NPSSO", status.PSN_NPSSO);
+  log("OPENXBL_API_KEY", status.OPENXBL_API_KEY);
+  log("STEAM_API_KEY", status.STEAM_API_KEY);
+  log("GOOGLE_PRIVATE_KEY", status.GOOGLE_PRIVATE_KEY);
+  log("PRICECHARTING_TOKEN", status.PRICECHARTING_TOKEN);
+  console.log("--------------------");
+  log("IGDB_WORKING", status.working?.IGDB);
+  log("PRICECHARTING_WORKING", status.working?.PRICECHARTING);
+  log("PSN_WORKING", status.working?.PSN);
+  log("XBOX_WORKING", status.working?.XBOX);
+  log("STEAM_WORKING", status.working?.STEAM);
 }
 
 function bindTextureParallax() {
@@ -542,7 +543,9 @@ function applySiteVersion(value = {}) {
   siteVersion.updatedAt = String(value.updatedAt || "").trim();
 }
 
-function logPageVersion() {
+function logPageVersion(currentRepo = "") {
+  const originalRepo = "https://github.com/ShabiiEXE/Gamelist";
+  const currentRepoLine = repoUrlsMatch(currentRepo, originalRepo) ? "" : `\n  current repo: ${currentRepo}`;
   console.log(String.raw`%c
     {{{{{{{{{{{     {{{{{{{{{{{{{{{{{{{{
    {{{{{{{{{{{       {{{{{{{{{{{{{{{{{{ 
@@ -560,8 +563,13 @@ function logPageVersion() {
 {{{{{{{{{{{        {{{{{{{{{{{{         
 %c
   ${consoleVersionLabel()}
-  original repo: https://github.com/ShabiiEXE/Gamelist
+  original repo: ${originalRepo}${currentRepoLine}
 `, "color:#ff0039;font-weight:900;font-size:8px;line-height:1;", "color:#ff0039;font-weight:900;font-size:12px;line-height:1.35;");
+}
+
+function repoUrlsMatch(left, right) {
+  const normalize = (value) => String(value || "").trim().toLowerCase().replace(/\.git$/, "").replace(/\/$/, "");
+  return !normalize(left) || normalize(left) === normalize(right);
 }
 
 function consoleVersionLabel() {
@@ -3953,17 +3961,17 @@ function renderAchievements(data = {}, steamData = state.steamActivity || emptyS
   renderPlayingSection();
   const panel = achievementPanelMarkup({ psn: { ...data, ...state.psnActivity }, steam: state.steamActivity, xbox: state.xboxActivity, trophyIconHtml: trophyIcon(), platformBadge, platformLogo, trophyTone, escape: escapeHtml });
   el.achievementPanel.innerHTML = panel.html;
-  el.achievementPanel.querySelector("[data-action='platinums']")?.addEventListener("click", openPlatinumDialog);
+  el.achievementPanel.querySelector("[data-action='platinums']")?.addEventListener("click", () => openPlatinumDialog());
   scheduleMobilePaintRefresh();
 }
 
 function openPlatinumDialog(year = null) {
   const platinums = platinumItems();
-  const requestedYear = year == null ? "" : String(year);
+  const requestedYear = typeof year === "string" || typeof year === "number" ? String(year) : "";
   const years = requestedYear && requestedYear !== "all"
     ? unique([requestedYear, ...platinumYears(platinums)]).sort((a, b) => b.localeCompare(a))
     : platinumYears(platinums);
-  if (year != null) state.platinumYear = String(year);
+  if (requestedYear) state.platinumYear = requestedYear;
   if (state.platinumYear !== "all" && !years.includes(state.platinumYear)) state.platinumYear = "all";
   renderPlatinumDialog(platinums, years);
   if (!el.platinumDialog.open) el.platinumDialog.showModal();

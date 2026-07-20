@@ -1,8 +1,6 @@
-const PSN_AUTH_BASE = "https://ca.account.sony.com/api/authz/v3/oauth";
+import { getPsnAccessToken } from "./psn-auth.js";
+
 const PSN_TROPHY_BASE = "https://m.np.playstation.com/api/trophy";
-const PSN_CLIENT_ID = "09515159-7237-4370-9b40-3806e67c0891";
-const PSN_REDIRECT_URI = "com.scee.psxandroid.scecompcall://redirect";
-const PSN_BASIC_AUTH = "Basic MDk1MTUxNTktNzIzNy00MzcwLTliNDAtMzgwNmU2N2MwODkxOnVjUGprYTV0bnRCMktxc1A=";
 const PSN_CACHE_SECONDS = 60 * 60;
 const PSN_SEARCH_BASE = "https://m.np.playstation.com/api/search";
 const PSN_LEGACY_USER_BASE = "https://us-prof.np.community.playstation.net/userProfile/v1/users";
@@ -40,42 +38,6 @@ export async function onRequestGet({ request, env = {} }) {
       ...(debug ? { debug: error?.message || "PSN trophies request failed" } : {}),
     }, 200, { cache: false });
   }
-}
-
-async function getPsnAccessToken(npsso) {
-  const codeUrl = `${PSN_AUTH_BASE}/authorize?${new URLSearchParams({
-    access_type: "offline",
-    client_id: PSN_CLIENT_ID,
-    redirect_uri: PSN_REDIRECT_URI,
-    response_type: "code",
-    scope: "psn:mobile.v2.core psn:clientapp",
-  })}`;
-  const codeResponse = await fetch(codeUrl, {
-    headers: { Cookie: `npsso=${npsso}` },
-    redirect: "manual",
-  });
-  const location = codeResponse.headers.get("location") || "";
-  if (!location.includes("?code=")) throw new Error(`Missing PSN access code (${codeResponse.status})`);
-  const code = new URLSearchParams(location.split("redirect/")[1]).get("code");
-  if (!code) throw new Error("Missing PSN code");
-
-  const tokenResponse = await fetch(`${PSN_AUTH_BASE}/token`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/x-www-form-urlencoded",
-      Authorization: PSN_BASIC_AUTH,
-    },
-    body: new URLSearchParams({
-      code,
-      redirect_uri: PSN_REDIRECT_URI,
-      grant_type: "authorization_code",
-      token_format: "jwt",
-    }).toString(),
-  });
-  if (!tokenResponse.ok) throw new Error(`PSN token exchange failed (${tokenResponse.status})`);
-  const token = await tokenResponse.json();
-  if (!token.access_token) throw new Error("Missing PSN access token");
-  return token.access_token;
 }
 
 async function resolvePsnAccountId(accessToken, user) {
