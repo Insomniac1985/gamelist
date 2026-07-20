@@ -98,15 +98,18 @@ async function xboxTitleAchievements(identity, titleId, apiKey) {
 }
 
 async function fetchXboxTitleAchievementData(identity, titleId, apiKey) {
-  let data;
+  let achievements = [];
   try {
-    data = await openXblGet(`/v2/achievements/player/${encodeURIComponent(identity.xuid)}/${encodeURIComponent(titleId)}`, apiKey);
+    const data = await openXblGet(`/v2/achievements/player/${encodeURIComponent(identity.xuid)}/${encodeURIComponent(titleId)}`, apiKey);
+    achievements = firstAchievementArray(contentOf(data));
   } catch {
-    data = await openXblGet(`/v2/achievements/player/${encodeURIComponent(identity.xuid)}/title/${encodeURIComponent(titleId)}`, apiKey);
+    // The alternate title route below also supports legacy Xbox titles.
   }
-  const content = contentOf(data);
-  const rawAchievements = firstAchievementArray(content);
-  return rawAchievements.map(normalizeXboxAchievement);
+  if (!achievements.length) {
+    const fallbackData = await openXblGet(`/v2/achievements/player/${encodeURIComponent(identity.xuid)}/title/${encodeURIComponent(titleId)}`, apiKey);
+    achievements = firstAchievementArray(contentOf(fallbackData));
+  }
+  return achievements.map(normalizeXboxAchievement);
 }
 
 function firstAchievementArray(content) {
