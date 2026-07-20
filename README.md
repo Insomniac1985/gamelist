@@ -112,7 +112,7 @@ IGDB authentication uses Twitch developer credentials:
 6. Use any app name, for example `Gamelist`.
 7. Use `https://localhost` as the OAuth Redirect URL.
 8. Set the category to **Website Integration**.
-9. Set client type as **Confidential**
+9. Set client type as **Confidential**.
 10. Create the app.
 11. Click the manage button on the Application you just created.
 12. Copy the **Client ID** and create a new **Cloudflare secret**:

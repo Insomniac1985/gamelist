@@ -395,8 +395,8 @@ init();
 
 async function init() {
   if (await checkSiteVersion()) return;
-  logConsoleInfo();
-  await window.__initialThemeReady?.catch(() => "shabii");
+  const initialTheme = await window.__initialThemeReady?.catch(() => "shabii");
+  logConsoleInfo(initialTheme);
   registerServiceWorker();
   syncDisplayMode();
   if (!state.canEdit) state.canEdit = await hasSharedEditorSession();
@@ -416,23 +416,25 @@ async function init() {
   scheduleBackgroundRefreshes();
 }
 
-async function logConsoleInfo() {
+async function logConsoleInfo(theme = "shabii") {
   try {
     const response = await fetch("/api/secret-status", { cache: "no-store" });
     if (!response.ok) throw new Error(`HTTP ${response.status}`);
     const status = await response.json();
     logPageVersion(status.CURRENT_REPO);
-    logStatusLines(status);
+    logStatusLines(status, theme);
   } catch (error) {
     logPageVersion();
     console.warn("Could not check secret status", error);
   }
 }
 
-function logStatusLines(status) {
+function logStatusLines(status, theme = "shabii") {
   const log = (name, value) => console.log(`${name}: ${Boolean(value)}`);
-  log("UPDATE", status.UPDATE);
-  console.log("--------------------");
+  if (theme !== "shabii") {
+    log("UPDATE", status.UPDATE);
+    console.log("--------------------");
+  }
   log("IGDB_CLIENT_ID", status.IGDB_CLIENT_ID);
   log("IGDB_CLIENT_SECRET", status.IGDB_CLIENT_SECRET);
   log("PSN_NPSSO", status.PSN_NPSSO);
