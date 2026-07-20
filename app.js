@@ -620,7 +620,7 @@ function logPageVersion(currentRepo = "", repoCopies = []) {
   const versionStyle = "color:#ff0039;font-weight:900;font-size:12px;line-height:1.35;";
   const originalRepoStyle = "color:#67c5ab;font-weight:900;font-size:12px;line-height:1.35;";
   const reposHeaderStyle = "color:#ff0039;font-weight:900;font-size:12px;line-height:1.35;";
-  const currentRepoStyle = "color:#ffffff;font-weight:900;line-height:1.35;";
+  const currentRepoStyle = "color:#67c5ab;font-weight:900;line-height:1.35;";
   const optionalStyles = [
     ...(repoEntries.length ? [reposHeaderStyle] : []),
     ...repoStyles,
