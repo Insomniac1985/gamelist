@@ -241,7 +241,7 @@ function uniquePhysicalResults(results) {
 function normalizePriceSettings(settings) {
   return {
     region: settings.region || "ES",
-    currency: ["EUR", "USD"].includes(String(settings.currency || "").toUpperCase()) ? String(settings.currency).toUpperCase() : "EUR",
+    currency: ["EUR", "USD", "GBP", "JPY"].includes(String(settings.currency || "").toUpperCase()) ? String(settings.currency).toUpperCase() : "EUR",
   };
 }
 

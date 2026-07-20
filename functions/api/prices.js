@@ -80,11 +80,12 @@ function normalizePlatform(platform) {
 
 function cleanRegion(value) {
   const region = String(value || "").toUpperCase();
-  return ["ES", "IT", "US", "UK"].includes(region) ? region : "ES";
+  return ["ES", "IT", "IE", "FR", "PT", "JP", "MX", "US", "UK"].includes(region) ? region : "ES";
 }
 
 function cleanCurrency(value) {
-  return String(value || "").toUpperCase() === "USD" ? "USD" : "EUR";
+  const currency = String(value || "").toUpperCase();
+  return ["EUR", "USD", "GBP", "JPY"].includes(currency) ? currency : "EUR";
 }
 
 function cleanStores(value) {
@@ -101,6 +102,10 @@ function unique(values) {
 }
 
 function amazonStoreName(region) {
+  const regional = {
+    US: "Amazon.com", UK: "Amazon.co.uk", IT: "Amazon.it", IE: "Amazon.ie", FR: "Amazon.fr", JP: "Amazon.co.jp", MX: "Amazon.com.mx",
+  }[region];
+  if (regional) return regional;
   if (region === "US") return "Amazon.com";
   if (region === "UK") return "Amazon.co.uk";
   if (region === "IT") return "Amazon.it";
@@ -108,6 +113,10 @@ function amazonStoreName(region) {
 }
 
 function amazonSearchUrl(query, region) {
+  const regionalHost = {
+    US: "www.amazon.com", UK: "www.amazon.co.uk", IT: "www.amazon.it", IE: "www.amazon.ie", FR: "www.amazon.fr", JP: "www.amazon.co.jp", MX: "www.amazon.com.mx",
+  }[region];
+  if (regionalHost) return `https://${regionalHost}/s?k=${encodeURIComponent(query)}`;
   if (region === "US") return `https://www.amazon.com/s?k=${encodeURIComponent(query)}`;
   if (region === "UK") return `https://www.amazon.co.uk/s?k=${encodeURIComponent(query)}`;
   if (region === "IT") return `https://www.amazon.it/s?k=${encodeURIComponent(query)}`;
@@ -115,11 +124,15 @@ function amazonSearchUrl(query, region) {
 }
 
 function ebaySearchUrl(query, region) {
-  const host = region === "US" ? "www.ebay.com" : region === "UK" ? "www.ebay.co.uk" : region === "IT" ? "www.ebay.it" : "www.ebay.es";
+  const host = ({ US: "www.ebay.com", UK: "www.ebay.co.uk", IT: "www.ebay.it", IE: "www.ebay.ie", FR: "www.ebay.fr", JP: "www.ebay.com", MX: "www.ebay.com" })[region] || "www.ebay.es";
   return `https://${host}/sch/i.html?_nkw=${encodeURIComponent(query)}&LH_BIN=1`;
 }
 
 function nintendoStoreName(region) {
+  const regional = {
+    US: "Nintendo US", UK: "Nintendo UK", IT: "Nintendo Italia", IE: "Nintendo Ireland", FR: "Nintendo France", PT: "Nintendo Portugal", JP: "Nintendo Japan", MX: "Nintendo Mexico",
+  }[region];
+  if (regional) return regional;
   if (region === "US") return "Nintendo US";
   if (region === "UK") return "Nintendo UK";
   if (region === "IT") return "Nintendo Italia";
@@ -127,6 +140,13 @@ function nintendoStoreName(region) {
 }
 
 function nintendoSearchUrl(query, region) {
+  const encoded = encodeURIComponent(query);
+  const locale = ({ US: "us", UK: "en-gb", IE: "en-gb", IT: "it-it", FR: "fr-fr", PT: "pt-pt", JP: "jp", MX: "es-mx" })[region];
+  if (locale === "fr-fr") return `https://www.nintendo.com/fr-fr/Rechercher/Rechercher-299117.html?q=${encoded}`;
+  if (locale === "pt-pt") return `https://www.nintendo.com/pt-pt/Pesquisar/Pesquisar-299117.html?q=${encoded}`;
+  if (locale === "jp") return `https://www.nintendo.com/jp/search/?q=${encoded}`;
+  if (locale === "es-mx") return `https://www.nintendo.com/es-mx/search/?q=${encoded}`;
+  if (locale === "en-gb") return `https://www.nintendo.com/en-gb/Search/Search-299117.html?q=${encoded}`;
   if (region === "US") return `https://www.nintendo.com/us/search/?q=${encodeURIComponent(query)}`;
   if (region === "UK") return `https://www.nintendo.com/en-gb/Search/Search-299117.html?q=${encodeURIComponent(query)}`;
   if (region === "IT") return `https://www.nintendo.com/it-it/Cerca/Cerca-299117.html?q=${encodeURIComponent(query)}`;
@@ -134,6 +154,10 @@ function nintendoSearchUrl(query, region) {
 }
 
 function playStationStoreName(region) {
+  const regional = {
+    US: "PlayStation US", UK: "PlayStation UK", IT: "PlayStation Italia", IE: "PlayStation Ireland", FR: "PlayStation France", PT: "PlayStation Portugal", JP: "PlayStation Japan", MX: "PlayStation Mexico",
+  }[region];
+  if (regional) return regional;
   if (region === "US") return "PlayStation US";
   if (region === "UK") return "PlayStation UK";
   if (region === "IT") return "PlayStation Italia";
@@ -141,6 +165,8 @@ function playStationStoreName(region) {
 }
 
 function playStationSearchUrl(query, region) {
+  const locale = ({ US: "en-us", UK: "en-gb", IE: "en-ie", IT: "it-it", FR: "fr-fr", PT: "pt-pt", JP: "ja-jp", MX: "es-mx" })[region];
+  if (locale) return `https://www.playstation.com/${locale}/search/?q=${encodeURIComponent(query)}`;
   if (region === "US") return `https://www.playstation.com/en-us/search/?q=${encodeURIComponent(query)}`;
   if (region === "UK") return `https://www.playstation.com/en-gb/search/?q=${encodeURIComponent(query)}`;
   if (region === "IT") return `https://www.playstation.com/it-it/search/?q=${encodeURIComponent(query)}`;
@@ -152,10 +178,7 @@ function xboxSearchUrl(query, region) {
 }
 
 function xboxLocale(region) {
-  if (region === "US") return "en-US";
-  if (region === "UK") return "en-GB";
-  if (region === "IT") return "it-IT";
-  return "es-ES";
+  return ({ US: "en-US", UK: "en-GB", IE: "en-IE", IT: "it-IT", FR: "fr-FR", PT: "pt-PT", JP: "ja-JP", MX: "es-MX" })[region] || "es-ES";
 }
 
 function xboxMarket(region) {
@@ -462,10 +485,12 @@ function parseAmazon(html, title, platform, currency = "EUR") {
     if (!normalizedMatch.includes(normalizedTitle.split(" ")[0])) continue;
     if (normalizedPlatform && !normalizedMatch.includes(normalizedPlatform.replace("ps", "playstation"))) continue;
 
+    const regionalPriceMatch = card.match(/<span class="a-offscreen">([^<]*(?:\$|£|¥|EUR|USD|GBP|JPY)[^<]*)<\/span>/i);
     const priceMatch = card.match(/<span class="a-offscreen">((?:US\s*)?\$?\s*[\d.,]+\s*(?:€|EUR|USD)?)<\/span>/i)
       || card.match(/data-csa-c-price-to-pay="([\d.]+)"/i);
-    if (!priceMatch) continue;
-    const price = formatPriceLabel(priceMatch[1], currency);
+    const actualPriceMatch = regionalPriceMatch || priceMatch;
+    if (!actualPriceMatch) continue;
+    const price = formatPriceLabel(actualPriceMatch[1], currency);
     const numericPrice = parsePrice(price);
     if (!best || numericPrice < best.numericPrice) {
       best = { price, numericPrice, matchedTitle };
@@ -804,9 +829,13 @@ function xtralifeTerm(query) {
 
 function parsePrice(price) {
   if (!price) return null;
-  const cleaned = price.includes(",") && !price.includes(".")
-    ? price.replace(/[^\d,]/g, "").replace(",", ".")
-    : price.replace(/[^\d.]/g, "");
+  const numeric = String(price).replace(/\s+/g, "");
+  const commaOnly = numeric.includes(",") && !numeric.includes(".");
+  const cleaned = commaOnly
+    ? numeric.replace(/[^\d,]/g, "").split(",").at(-1)?.length === 3
+      ? numeric.replace(/[^\d]/g, "")
+      : numeric.replace(/[^\d,]/g, "").replace(",", ".")
+    : numeric.replace(/[^\d.]/g, "");
   const value = Number(cleaned);
   return Number.isFinite(value) ? value : null;
 }
@@ -819,8 +848,19 @@ function usd(value) {
   return `$${Number(value).toFixed(2)}`;
 }
 
+function gbp(value) {
+  return `£${Number(value).toFixed(2)}`;
+}
+
+function jpy(value) {
+  return `¥${Math.round(Number(value)).toLocaleString("en")}`;
+}
+
 function money(value, currency = "EUR") {
-  return currency === "USD" ? usd(value) : euro(value);
+  if (currency === "USD") return usd(value);
+  if (currency === "GBP") return gbp(value);
+  if (currency === "JPY") return jpy(value);
+  return euro(value);
 }
 
 function formatPriceLabel(value, currency = "EUR") {
@@ -828,6 +868,8 @@ function formatPriceLabel(value, currency = "EUR") {
   const amount = parsePrice(text);
   if (!Number.isFinite(amount)) return "";
   if (text.includes("$") || /USD/i.test(text) || currency === "USD") return usd(amount);
+  if (text.includes("£") || /GBP/i.test(text) || currency === "GBP") return gbp(amount);
+  if (text.includes("¥") || /JPY/i.test(text) || currency === "JPY") return jpy(amount);
   return euro(amount);
 }
 

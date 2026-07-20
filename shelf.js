@@ -20,6 +20,8 @@ const LAYOUT_KEYS = [...DEFAULT_LAYOUT];
 const DEFAULT_HIDDEN_MODULES = ["playing", "trophies"];
 const STORE_OPTIONS = ["Amazon", "eBay", "GAME.es", "Xtralife", "Retro Island NY", "GameStop", "Walmart"];
 const DEFAULT_PRICE_STORES = ["Amazon"];
+const CURRENCY_OPTIONS = ["EUR", "USD", "GBP", "JPY"];
+const REGION_OPTIONS = ["ES", "IT", "IE", "FR", "PT", "JP", "MX", "US", "UK"];
 const MAX_PRICE_STORES = 5;
 const THEMES = {
   shabii: { title: "Shabii's Shelf", icon: "assets/Icon_shelf.png", color: "#ff0039" },
@@ -38,8 +40,8 @@ const PLATFORM_OPTIONS = [
 ];
 const COUNTRY_OPTIONS = [
   ["Australia", "Australia"], ["China", "China"], ["Europe", "EU"], ["France", "France"], ["Germany", "Germany"],
-  ["Italy", "Italy"], ["Japan", "Japan"], ["Spain", "Spain"], ["Taiwan", "Taiwan"], ["United Kingdom", "United Kingdom"],
-  ["United States of America", "United States"], ["World", "World"],
+  ["Ireland", "Ireland"], ["Italy", "Italy"], ["Japan", "Japan"], ["Mexico", "Mexico"], ["Portugal", "Portugal"],
+  ["Spain", "Spain"], ["Taiwan", "Taiwan"], ["United Kingdom", "United Kingdom"], ["United States of America", "United States"], ["World", "World"],
 ];
 const WEEK_START_OPTIONS = [
   ["monday", "Monday"],
@@ -827,7 +829,9 @@ function renderStats() {
   const visibleGames = filteredShelfStatsGames();
   const collectionGames = visibleGames.filter((game) => !isPendingCollectionGame(game));
   const value = collectionGames.reduce((sum, game) => sum + (collectionValueFor(game) || 0), 0);
-  const valueText = normalizePriceSettings(state.gamelistSettings).currency === "USD" ? `$${Math.round(value).toLocaleString("en")}` : `${Math.round(value).toLocaleString("en")}€`;
+  const currency = normalizePriceSettings(state.gamelistSettings).currency;
+  const symbol = ({ USD: "$", GBP: "\u00a3", JPY: "\u00a5", EUR: "\u20ac" })[currency] || "\u20ac";
+  const valueText = currency === "EUR" ? `${Math.round(value).toLocaleString("en")}${symbol}` : `${symbol}${Math.round(value).toLocaleString("en")}`;
   const rows = [
     [collectionGames.length, "Physical games", "stat-backlog", "shelf-start"],
     [new Set(collectionGames.map((game) => game.platform)).size, "Platforms", "stat-available"],
@@ -1501,7 +1505,7 @@ function applyPhysicalMetadata(data) {
 }
 
 function applyPriceChartingSearchResult(result) {
-  if (result.productId) el.fields.pricechartingId.value = result.productId;
+  if (result.url || result.productId) el.fields.pricechartingId.value = result.url || result.productId;
   const estimate = estimatedPhysicalValue(result);
   if (estimate != null) el.fields.price.value = Number(estimate).toFixed(2);
   mergeWebsiteIntoSlots(result.url);
@@ -2435,14 +2439,14 @@ function normalizePriceSettings(settings = {}) {
   const selectedStores = Array.isArray(settings.stores) ? settings.stores.filter((store) => STORE_OPTIONS.includes(store)) : DEFAULT_PRICE_STORES;
   const stores = selectedStores;
   return {
-    currency: settings.currency === "USD" ? "USD" : "EUR",
-    region: ["ES", "IT", "US", "UK"].includes(settings.region) ? settings.region : "ES",
+    currency: CURRENCY_OPTIONS.includes(settings.currency) ? settings.currency : "EUR",
+    region: REGION_OPTIONS.includes(settings.region) ? settings.region : "ES",
     stores: stores.slice(0, MAX_PRICE_STORES),
   };
 }
 
 function defaultShelfCountry() {
-  return ({ ES: "Spain", IT: "Italy", US: "United States of America", UK: "United Kingdom" })[normalizePriceSettings(state.gamelistSettings).region] || "Spain";
+  return ({ ES: "Spain", IT: "Italy", IE: "Ireland", FR: "France", PT: "Portugal", JP: "Japan", MX: "Mexico", US: "United States of America", UK: "United Kingdom" })[normalizePriceSettings(state.gamelistSettings).region] || "Spain";
 }
 
 function defaultShelfOwners() {
@@ -3083,6 +3087,8 @@ function cleanTransferTags(tags) { return Array.isArray(tags) ? tags.filter((tag
 function formatMoney(value, currency = "USD") {
   const number = Number(value);
   const amount = Number.isFinite(number) ? number.toFixed(2) : "0.00";
+  if (currency === "GBP") return `£${amount}`;
+  if (currency === "JPY") return `¥${Math.round(Number.isFinite(number) ? number : 0).toLocaleString("en")}`;
   return currency === "USD" ? `$${amount}` : `${amount}€`;
 }
 
@@ -3137,11 +3143,16 @@ function applyManualCollectionValue(game, rawValue, existing = null) {
 function currencyForManualPrice(value) {
   const text = String(value || "");
   if (text.includes("$")) return "USD";
+  if (text.includes("£")) return "GBP";
+  if (text.includes("¥") || text.includes("円")) return "JPY";
   if (text.includes("€")) return "EUR";
   return normalizePriceSettings(state.gamelistSettings).currency || "USD";
 }
 
 function normalizePriceLabel(value, currency = "USD") {
+  const symbol = ({ USD: "$", GBP: "£", JPY: "¥", EUR: "€" })[currency] || "€";
+  if (!value) return `- ${symbol}`;
+  if (currency === "GBP" || currency === "JPY") return String(value).trim();
   if (!value) return currency === "USD" ? "- $" : "- €";
   const text = String(value).trim();
   return currency === "USD" ? text : text.replace(/€\s*([0-9][0-9.,]*)/g, "$1€").replace(/\bEUR\s*([0-9][0-9.,]*)/gi, "$1€");
@@ -3280,18 +3291,30 @@ function fallbackPriceLinks(game) {
   ];
 }
 function amazonStoreName(region = normalizePriceSettings(state.gamelistSettings).region) {
+  const regional = {
+    US: "Amazon.com", UK: "Amazon.co.uk", IT: "Amazon.it", IE: "Amazon.ie", FR: "Amazon.fr", JP: "Amazon.co.jp", MX: "Amazon.com.mx",
+  }[region];
+  if (regional) return regional;
   if (region === "US") return "Amazon.com";
   if (region === "UK") return "Amazon.co.uk";
   if (region === "IT") return "Amazon.it";
   return "Amazon.es";
 }
 function nintendoStoreName(region = normalizePriceSettings(state.gamelistSettings).region) {
+  const regional = {
+    US: "Nintendo US", UK: "Nintendo UK", IT: "Nintendo Italia", IE: "Nintendo Ireland", FR: "Nintendo France", PT: "Nintendo Portugal", JP: "Nintendo Japan", MX: "Nintendo Mexico",
+  }[region];
+  if (regional) return regional;
   if (region === "US") return "Nintendo US";
   if (region === "UK") return "Nintendo UK";
   if (region === "IT") return "Nintendo Italia";
   return "Nintendo Espana";
 }
 function playStationStoreName(region = normalizePriceSettings(state.gamelistSettings).region) {
+  const regional = {
+    US: "PlayStation US", UK: "PlayStation UK", IT: "PlayStation Italia", IE: "PlayStation Ireland", FR: "PlayStation France", PT: "PlayStation Portugal", JP: "PlayStation Japan", MX: "PlayStation Mexico",
+  }[region];
+  if (regional) return regional;
   if (region === "US") return "PlayStation US";
   if (region === "UK") return "PlayStation UK";
   if (region === "IT") return "PlayStation Italia";
@@ -3309,29 +3332,41 @@ function hltbUrlFor(game) {
   return query ? `https://howlongtobeat.com/?q=${encodeURIComponent(query)}` : "";
 }
 function amazonSearchUrl(query, region = "ES") {
+  const regionalHost = {
+    US: "www.amazon.com", UK: "www.amazon.co.uk", IT: "www.amazon.it", IE: "www.amazon.ie", FR: "www.amazon.fr", JP: "www.amazon.co.jp", MX: "www.amazon.com.mx",
+  }[region];
+  if (regionalHost) return `https://${regionalHost}/s?k=${query}`;
   if (region === "US") return `https://www.amazon.com/s?k=${query}`;
   if (region === "UK") return `https://www.amazon.co.uk/s?k=${query}`;
   if (region === "IT") return `https://www.amazon.it/s?k=${query}`;
   return `https://www.amazon.es/s?k=${query}`;
 }
 function ebaySearchUrl(query, region = "ES") {
-  const host = region === "US" ? "www.ebay.com" : region === "UK" ? "www.ebay.co.uk" : region === "IT" ? "www.ebay.it" : "www.ebay.es";
+  const host = ({ US: "www.ebay.com", UK: "www.ebay.co.uk", IT: "www.ebay.it", IE: "www.ebay.ie", FR: "www.ebay.fr", JP: "www.ebay.com", MX: "www.ebay.com" })[region] || "www.ebay.es";
   return `https://${host}/sch/i.html?_nkw=${query}&LH_BIN=1`;
 }
 function nintendoSearchUrl(query, region = "ES") {
+  const locale = ({ US: "us", UK: "en-gb", IE: "en-gb", IT: "it-it", FR: "fr-fr", PT: "pt-pt", JP: "jp", MX: "es-mx" })[region];
+  if (locale === "fr-fr") return `https://www.nintendo.com/fr-fr/Rechercher/Rechercher-299117.html?q=${query}`;
+  if (locale === "pt-pt") return `https://www.nintendo.com/pt-pt/Pesquisar/Pesquisar-299117.html?q=${query}`;
+  if (locale === "jp") return `https://www.nintendo.com/jp/search/?q=${query}`;
+  if (locale === "es-mx") return `https://www.nintendo.com/es-mx/search/?q=${query}`;
+  if (locale === "en-gb") return `https://www.nintendo.com/en-gb/Search/Search-299117.html?q=${query}`;
   if (region === "US") return `https://www.nintendo.com/us/search/?q=${query}`;
   if (region === "UK") return `https://www.nintendo.com/en-gb/Search/Search-299117.html?q=${query}`;
   if (region === "IT") return `https://www.nintendo.com/it-it/Cerca/Cerca-299117.html?q=${query}`;
   return `https://www.nintendo.com/es-es/Buscar/Buscar-299117.html?q=${query}&f=147394-86`;
 }
 function playStationSearchUrl(query, region = "ES") {
+  const locale = ({ US: "en-us", UK: "en-gb", IE: "en-ie", IT: "it-it", FR: "fr-fr", PT: "pt-pt", JP: "ja-jp", MX: "es-mx" })[region];
+  if (locale) return `https://www.playstation.com/${locale}/search/?q=${query}`;
   if (region === "US") return `https://www.playstation.com/en-us/search/?q=${query}`;
   if (region === "UK") return `https://www.playstation.com/en-gb/search/?q=${query}`;
   if (region === "IT") return `https://www.playstation.com/it-it/search/?q=${query}`;
   return `https://www.playstation.com/es-es/search/?q=${query}`;
 }
 function xboxSearchUrl(query, region = "ES") {
-  const locale = region === "US" ? "en-US" : region === "UK" ? "en-GB" : region === "IT" ? "it-IT" : "es-ES";
+  const locale = ({ US: "en-US", UK: "en-GB", IE: "en-IE", IT: "it-IT", FR: "fr-FR", PT: "pt-PT", JP: "ja-JP", MX: "es-MX" })[region] || "es-ES";
   return `https://www.xbox.com/${locale}/search?q=${query}`;
 }
 function cleanUrl(value) {
@@ -3462,6 +3497,7 @@ function applyCollectionPrice(game, data) {
   game.collectionPrices = { ...(game.collectionPrices || {}), ...(data.prices || {}) };
   game.price = nextPrice;
   game.priceCurrency = data.currency || "USD";
+  if (data.productUrl || (!game.pricechartingId && data.productId)) game.pricechartingId = data.productUrl || data.productId;
   game.collectionProductUrl = data.productUrl || game.collectionProductUrl || priceChartingPageUrl(game.pricechartingId);
   game.priceFetchedAt = data.checkedAt || new Date().toISOString();
   game.priceHistory = (data.history?.[historyKey]?.length ? data.history[historyKey] : [...(game.priceHistory || []), { date: String(data.checkedAt || "").slice(0, 10), value: game.price }]).filter((item) => item.value != null).slice(-60);
@@ -3548,7 +3584,7 @@ function trashIcon() { return `<svg class="trash-icon" viewBox="0 0 24 24" aria-
 function pauseTrailerIcon() { return `<svg class="pause-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5v14M16 5v14"></path></svg>`; }
 function playTrailerIcon() { return `<svg class="play-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m8 5 11 7-11 7Z"></path></svg>`; }
 function checkIcon() { return `<svg class="check-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5 9.5 17 19 7"></path></svg>`; }
-function currencyIcon() { const currency = normalizePriceSettings(state.gamelistSettings).currency === "USD" ? "dollar" : "euro"; return currency === "dollar" ? `<svg class="dollar-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M16.8 7.2c-1.1-1-2.7-1.7-4.8-1.7-2.8 0-4.8 1.4-4.8 3.5 0 5.3 9.8 2.1 9.8 7 0 2.1-2 3.5-5 3.5-2.3 0-4.2-.8-5.4-2"></path><path d="M12 3v18"></path></svg>` : `<svg class="euro-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M19 5.5A7 7 0 0 0 8.2 7.1 7.4 7.4 0 0 0 7 12a7.4 7.4 0 0 0 1.2 4.9A7 7 0 0 0 19 18.5"></path><path d="M4 10h10"></path><path d="M4 14h10"></path></svg>`; }
+function currencyIcon() { const currency = normalizePriceSettings(state.gamelistSettings).currency; if (currency === "USD") return `<svg class="dollar-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M16.8 7.2c-1.1-1-2.7-1.7-4.8-1.7-2.8 0-4.8 1.4-4.8 3.5 0 5.3 9.8 2.1 9.8 7 0 2.1-2 3.5-5 3.5-2.3 0-4.2-.8-5.4-2"></path><path d="M12 3v18"></path></svg>`; if (currency === "GBP") return `<svg class="pound-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 20h9"></path><path d="M7 13h8"></path><path d="M16.5 6.6A4.4 4.4 0 0 0 12.8 5C10.5 5 9 6.5 9 8.8V20"></path></svg>`; if (currency === "JPY") return `<svg class="yen-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 4l6 8 6-8"></path><path d="M12 12v8"></path><path d="M8 12h8"></path><path d="M8 16h8"></path></svg>`; return `<svg class="euro-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M19 5.5A7 7 0 0 0 8.2 7.1 7.4 7.4 0 0 0 7 12a7.4 7.4 0 0 0 1.2 4.9A7 7 0 0 0 19 18.5"></path><path d="M4 10h10"></path><path d="M4 14h10"></path></svg>`; }
 function trophyIcon() { return `<svg class="trophy-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 4h8v4a4 4 0 0 1-8 0V4Z"></path><path d="M8 6H5a3 3 0 0 0 3 3"></path><path d="M16 6h3a3 3 0 0 1-3 3"></path><path d="M12 12v4"></path><path d="M9 20h6"></path><path d="M10 16h4v4h-4z"></path></svg>`; }
 function carouselArrowIcon(direction = "right") { return `<svg class="sort-arrow-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="${direction === "left" ? "M15.5 5.5 9 12l6.5 6.5" : "M8.5 5.5 15 12l-6.5 6.5"}"></path></svg>`; }
 function sortArrowIcon(desc = false) { return `<svg class="sort-arrow-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="${desc ? "M12 3.5v17" : "M12 20.5v-17"}"></path><path d="${desc ? "M6.5 15l5.5 5.5 5.5-5.5" : "M6.5 9l5.5-5.5L17.5 9"}"></path></svg>`; }
@@ -3695,7 +3731,7 @@ function platformDisplayName(value) {
   };
   return labels[platform] || value || platform;
 }
-function flagAsset(country) { return `assets/flags/${({ "United Kingdom": "gb", Spain: "es", Italy: "it", "United States of America": "us", Japan: "jp", Taiwan: "tw", France: "fr", Germany: "de", Australia: "au", China: "cn", Europe: "eu", World: "world" })[country] || "world"}.svg`; }
+function flagAsset(country) { return `assets/flags/${({ "United Kingdom": "gb", Spain: "es", Italy: "it", Ireland: "ie", Portugal: "pt", Mexico: "mx", "United States of America": "us", Japan: "jp", Taiwan: "tw", France: "fr", Germany: "de", Australia: "au", China: "cn", Europe: "eu", World: "world" })[country] || "world"}.svg`; }
 function flagIcon(country, withClass = false) { return `<img${withClass ? ` class="detail-flag"` : ""} src="${flagAsset(country)}" alt="" width="47" height="31" decoding="async">`; }
 function platformBadge(platform, options = {}) { const label = shortPlatform(platform); return `<span class="platform-badge ${platformClass(platform, options)}" title="${escapeHtml(label)}"><span class="platform-icon"><img src="${platformLogo(platform)}" alt="" width="18" height="18" decoding="async"></span><span class="platform-label">${escapeHtml(label)}</span></span>`; }
 function platformLogo(platform) { const value = normalize(shortPlatform(platform)); if (value === "wii") return "assets/platforms/wii.png"; if (value === "wii u" || value === "wiiu") return "assets/platforms/wiiu.png"; if (value === "n64") return "assets/platforms/n64.png"; if (value === "gc" || value.includes("gamecube")) return "assets/platforms/gc.png"; if (value === "nes") return "assets/platforms/nes.png"; if (value === "snes") return "assets/platforms/snes.png"; if (value === "ds") return "assets/platforms/nds.png"; if (value === "3ds") return "assets/platforms/3ds.png"; if (value === "gba") return "assets/platforms/gba.png"; if (value === "gbc") return "assets/platforms/gbc.png"; if (value === "gb") return "assets/platforms/gb.png"; if (value === "game gear") return "assets/platforms/gamegear.png"; if (value === "dc" || value.includes("dreamcast")) return "assets/platforms/dreamcast.png"; if (isSegaPlatform(value)) return "assets/platforms/sega.png"; if (value.includes("switch")) return "assets/platforms/switch.png"; if (value === "ps1" || value === "ps2") return "assets/platforms/playstation_retro.png"; if (value === "ps5") return "assets/platforms/playstation_modern.png"; if (value === "x360" || value === "xbox 360") return "assets/platforms/xbox360.png"; if (value === "xbox") return "assets/platforms/xbox_retro.png"; if (value.includes("xbox") || value === "xone") return "assets/platforms/xbox.png"; if (value.includes("steam") || value === "pc") return "assets/platforms/steam.png"; if (value.includes("ps") || value.includes("playstation") || value.includes("psp") || value.includes("vita")) return "assets/platforms/playstation.png"; return "assets/Icon_shelf.png"; }

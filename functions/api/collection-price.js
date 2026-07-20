@@ -6,7 +6,7 @@ export async function onRequestGet({ request, env = {} }) {
   const title = clean(url.searchParams.get("title"), 160);
   const platform = clean(url.searchParams.get("platform"), 80);
   const region = clean(url.searchParams.get("region"), 80);
-  const currency = ["EUR", "USD"].includes(String(url.searchParams.get("currency") || "").toUpperCase()) ? String(url.searchParams.get("currency")).toUpperCase() : "EUR";
+  const currency = ["EUR", "USD", "GBP", "JPY"].includes(String(url.searchParams.get("currency") || "").toUpperCase()) ? String(url.searchParams.get("currency")).toUpperCase() : "EUR";
   const rawRequestedId = url.searchParams.get("id");
   const requestedIdUrl = cleanPriceChartingUrl(rawRequestedId);
   const requestedId = requestedIdUrl ? "" : cleanIdentifier(rawRequestedId);
@@ -309,7 +309,7 @@ function convertCurrency(product, currency, rates = {}) {
   if (currency === "USD") return { ...product, currency: "USD" };
   const rate = Number(rates?.[currency]);
   if (!Number.isFinite(rate) || rate <= 0) return { ...product, currency: "USD" };
-  const convert = (value) => value == null ? null : Math.round(Number(value) * rate * 100) / 100;
+  const convert = (value) => value == null ? null : currency === "JPY" ? Math.round(Number(value) * rate) : Math.round(Number(value) * rate * 100) / 100;
   const prices = Object.fromEntries(Object.entries(product.prices || {}).map(([key, value]) => [key, convert(value)]));
   const history = Object.fromEntries(Object.entries(product.history || {}).map(([key, points]) => [key, (points || []).map((point) => ({ ...point, value: convert(point.value) }))]));
   return { ...product, prices, history, mainValue: convert(product.mainValue), currency };
