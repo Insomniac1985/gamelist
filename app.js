@@ -612,10 +612,20 @@ function applySiteVersion(value = {}) {
 
 function logPageVersion(currentRepo = "", repoCopies = []) {
   const originalRepo = "https://github.com/ShabiiEXE/Gamelist";
-  const currentRepoLine = repoUrlsMatch(currentRepo, originalRepo) ? "" : `\n  repo: ${currentRepo}`;
+  const currentRepoLine = repoUrlsMatch(currentRepo, originalRepo) ? "" : `\n%c  repo: ${currentRepo}`;
   const repoEntries = repoCopies.map(repoConsoleEntry);
   const repoStyles = repoEntries.flatMap((entry) => entry.styles);
-  const reposLine = repoEntries.length ? `\n  repos (${repoEntries.length}):\n${repoEntries.map((entry) => entry.text).join("\n")}` : "";
+  const reposLine = repoEntries.length ? `\n%c  repos (${repoEntries.length}):\n${repoEntries.map((entry) => entry.text).join("\n")}` : "";
+  const logoStyle = "color:#ff0039;font-weight:900;font-size:8px;line-height:1;";
+  const versionStyle = "color:#ff0039;font-weight:900;font-size:12px;line-height:1.35;";
+  const originalRepoStyle = "color:#67c5ab;font-weight:900;font-size:12px;line-height:1.35;";
+  const reposHeaderStyle = "color:#ff0039;font-weight:900;font-size:12px;line-height:1.35;";
+  const currentRepoStyle = "color:#ffffff;font-weight:900;line-height:1.35;";
+  const optionalStyles = [
+    ...(repoEntries.length ? [reposHeaderStyle] : []),
+    ...repoStyles,
+    ...(currentRepoLine ? [currentRepoStyle] : []),
+  ];
   console.log(String.raw`%c
     {{{{{{{{{{{     {{{{{{{{{{{{{{{{{{{{
    {{{{{{{{{{{       {{{{{{{{{{{{{{{{{{ 
@@ -633,19 +643,19 @@ function logPageVersion(currentRepo = "", repoCopies = []) {
 {{{{{{{{{{{        {{{{{{{{{{{{         
 %c
   ${consoleVersionLabel()}
-  original repo: ${originalRepo}${reposLine}${currentRepoLine}
-`, "color:#ff0039;font-weight:900;font-size:8px;line-height:1;", "color:#ff0039;font-weight:900;font-size:12px;line-height:1.35;", ...repoStyles);
+%c  original repo: ${originalRepo}${reposLine}${currentRepoLine}
+`, logoStyle, versionStyle, originalRepoStyle, ...optionalStyles);
 }
 
 function repoConsoleEntry(repo = {}, index = 0) {
   const url = String(repo.url || "").trim();
   const siteUrl = String(repo.siteUrl || "").trim();
-  const color = index % 2 ? "#ff0039" : "#67c5ab";
+  const color = index % 2 ? "#cfd3dc" : "#ffffff";
   const style = `color:${color};font-weight:900;line-height:1.35;`;
   const emptyStyle = "color:#ffffff;font-weight:900;line-height:1.35;";
   if (!siteUrl) {
     return {
-      text: `%c  -site: %c-%c\n   repo: ${url || "-"}`,
+      text: `%c  -site: %c---%c\n   repo: ${url || "-"}`,
       styles: [style, emptyStyle, style],
     };
   }
