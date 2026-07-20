@@ -6264,7 +6264,7 @@ function cardFor(game, options = {}) {
   playDates.hidden = !playDates.innerHTML;
   card.querySelector(".chips").innerHTML = cardChipsFor(game).join("");
   const trophyStrip = card.querySelector(".card-trophies");
-  trophyStrip.innerHTML = (game.playing || game.digital) && !releaseDialog ? cardTrophiesFor(game) : "";
+  trophyStrip.innerHTML = game.playing && !releaseDialog ? cardTrophiesFor(game) : "";
   trophyStrip.hidden = !trophyStrip.innerHTML;
   trophyStrip.addEventListener("click", (event) => {
     if (event.target.closest("a")) {
@@ -7417,7 +7417,7 @@ function updateCardTrophyStrips(gameId) {
   const game = getGame(gameId);
   if (!game) return;
   document.querySelectorAll(`.game-card[data-id="${CSS.escape(gameId)}"] .card-trophies`).forEach((node) => {
-    node.innerHTML = game.playing || game.digital ? cardTrophiesFor(game) : "";
+    node.innerHTML = game.playing ? cardTrophiesFor(game) : "";
     node.hidden = !node.innerHTML;
   });
   if (game.playing) schedulePlayingCardHeightSync();
@@ -7431,7 +7431,7 @@ function updateCardAchievementUi(gameId) {
     if (meta) meta.innerHTML = metaFor(game, { includePsn: !game.playing }).join("");
     const trophyStrip = card.querySelector(".card-trophies");
     if (trophyStrip) {
-      trophyStrip.innerHTML = game.playing || game.digital ? cardTrophiesFor(game) : "";
+      trophyStrip.innerHTML = game.playing ? cardTrophiesFor(game) : "";
       trophyStrip.hidden = !trophyStrip.innerHTML;
     }
   });
