@@ -25,6 +25,7 @@ import { onRequestGet as trophies } from "./functions/api/trophies.js";
 import { onRequestGet as achievements } from "./functions/api/achievements.js";
 import { onRequestGet as twitchPreview } from "./functions/api/twitch-preview.js";
 import { onRequestGet as secretStatus } from "./functions/api/secret-status.js";
+import * as repoCopies from "./functions/api/repo-copies.js";
 
 const root = path.dirname(fileURLToPath(import.meta.url));
 const port = Number(process.env.PORT || 8790);
@@ -67,6 +68,7 @@ const server = http.createServer(async (req, res) => {
   if (url.pathname === "/api/achievements") return sendFunction(res, achievements, req, url);
   if (url.pathname === "/api/twitch-preview") return sendFunction(res, twitchPreview, req, url);
   if (url.pathname === "/api/secret-status") return sendFunction(res, secretStatus, req, url);
+  if (url.pathname === "/api/repo-copies") return sendModule(res, repoCopies, req, url);
   if (url.pathname === "/api/sync") return sendJson(res, { games: [] });
   if (url.pathname === "/api/auth") return sendModule(res, auth, req, url);
   return sendFile(res, url.pathname);

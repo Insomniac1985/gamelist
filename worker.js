@@ -9,6 +9,7 @@ import * as completedGamesByYear from "./functions/api/completed-games-by-year.j
 import * as gamelistGamesByList from "./functions/api/gamelist-games-by-list.js";
 import * as prices from "./functions/api/prices.js";
 import * as psnTrophiesByYear from "./functions/api/psn-trophies-by-year.js";
+import * as repoCopies from "./functions/api/repo-copies.js";
 import * as search from "./functions/api/search.js";
 import * as secretStatus from "./functions/api/secret-status.js";
 import * as shelf from "./functions/api/shelf.js";
@@ -37,6 +38,7 @@ const routes = {
   "/api/gamelist-metadata": gamelistMetadata,
   "/api/prices": prices,
   "/api/psn-trophies-by-year": psnTrophiesByYear,
+  "/api/repo-copies": repoCopies,
   "/api/search": search,
   "/api/secret-status": secretStatus,
   "/api/shelf": shelf,
