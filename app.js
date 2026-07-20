@@ -380,6 +380,7 @@ const el = {
     stream: document.querySelector("#streamInput"),
     playing: document.querySelector("#playingInput"),
     genres: document.querySelector("#genresInput"),
+    trophyName: document.querySelector("#trophyNameInput"),
     developer: document.querySelector("#developerInput"),
     publisher: document.querySelector("#publisherInput"),
     description: document.querySelector("#descriptionInput"),
@@ -611,10 +612,20 @@ function applySiteVersion(value = {}) {
 
 function logPageVersion(currentRepo = "", repoCopies = []) {
   const originalRepo = "https://github.com/ShabiiEXE/Gamelist";
-  const currentRepoLine = repoUrlsMatch(currentRepo, originalRepo) ? "" : `\n  repo: ${currentRepo}`;
+  const currentRepoLine = repoUrlsMatch(currentRepo, originalRepo) ? "" : `\n%c  repo: ${currentRepo}`;
   const repoEntries = repoCopies.map(repoConsoleEntry);
   const repoStyles = repoEntries.flatMap((entry) => entry.styles);
-  const reposLine = repoEntries.length ? `\n  repos (${repoEntries.length}):\n${repoEntries.map((entry) => entry.text).join("\n")}` : "";
+  const reposLine = repoEntries.length ? `\n%c  repos (${repoEntries.length}):\n${repoEntries.map((entry) => entry.text).join("\n")}` : "";
+  const logoStyle = "color:#ff0039;font-weight:900;font-size:8px;line-height:1;";
+  const versionStyle = "color:#ff0039;font-weight:900;font-size:12px;line-height:1.35;";
+  const originalRepoStyle = "color:#67c5ab;font-weight:900;font-size:12px;line-height:1.35;";
+  const reposHeaderStyle = "color:#ff0039;font-weight:900;font-size:12px;line-height:1.35;";
+  const currentRepoStyle = "color:#ffffff;font-weight:900;line-height:1.35;";
+  const optionalStyles = [
+    ...(repoEntries.length ? [reposHeaderStyle] : []),
+    ...repoStyles,
+    ...(currentRepoLine ? [currentRepoStyle] : []),
+  ];
   console.log(String.raw`%c
     {{{{{{{{{{{     {{{{{{{{{{{{{{{{{{{{
    {{{{{{{{{{{       {{{{{{{{{{{{{{{{{{ 
@@ -632,19 +643,19 @@ function logPageVersion(currentRepo = "", repoCopies = []) {
 {{{{{{{{{{{        {{{{{{{{{{{{         
 %c
   ${consoleVersionLabel()}
-  original repo: ${originalRepo}${reposLine}${currentRepoLine}
-`, "color:#ff0039;font-weight:900;font-size:8px;line-height:1;", "color:#ff0039;font-weight:900;font-size:12px;line-height:1.35;", ...repoStyles);
+%c  original repo: ${originalRepo}${reposLine}${currentRepoLine}
+`, logoStyle, versionStyle, originalRepoStyle, ...optionalStyles);
 }
 
 function repoConsoleEntry(repo = {}, index = 0) {
   const url = String(repo.url || "").trim();
   const siteUrl = String(repo.siteUrl || "").trim();
-  const color = index % 2 ? "#ff0039" : "#67c5ab";
+  const color = index % 2 ? "#cfd3dc" : "#ffffff";
   const style = `color:${color};font-weight:900;line-height:1.35;`;
   const emptyStyle = "color:#ffffff;font-weight:900;line-height:1.35;";
   if (!siteUrl) {
     return {
-      text: `%c  -site: %c-%c\n   repo: ${url || "-"}`,
+      text: `%c  -site: %c---%c\n   repo: ${url || "-"}`,
       styles: [style, emptyStyle, style],
     };
   }
@@ -4239,7 +4250,8 @@ function localGameForTitle(title) {
   const normalized = normalizeTitleForMatch(title);
   if (!normalized) return null;
   const candidates = state.games
-    .map((game) => ({ game, gameTitle: normalizeTitleForMatch(game.title) }))
+    .flatMap((game) => unique([game.trophyName, game.title])
+      .map((value) => ({ game, gameTitle: normalizeTitleForMatch(value) })))
     .filter((entry) => entry.gameTitle && compatibleTitleNumbers(normalized, entry.gameTitle) && (
       entry.gameTitle === normalized
       || entry.gameTitle.includes(normalized)
@@ -4256,7 +4268,7 @@ function localGameForTitle(title) {
 function localXboxGameForTitle(title) {
   return state.games
     .filter((game) => !game.deletedAt && isMicrosoftAchievementGame(game))
-    .map((game) => ({ game, score: psnTitleMatchScore(game.title, title) }))
+    .map((game) => ({ game, score: Math.max(psnTitleMatchScore(game.trophyName, title), psnTitleMatchScore(game.title, title)) }))
     .filter((entry) => entry.score > 0)
     .sort((a, b) => b.score - a.score || stringCompare(a.game.title, b.game.title))[0]?.game || null;
 }
@@ -6875,14 +6887,19 @@ function releaseStatusPill(value) {
   return `<span class="release-pill history-date-pill"><small>${label}</small><strong>${escapeHtml(date)}</strong></span>`;
 }
 
+function trophySearchTitle(game) {
+  return String(game?.trophyName || game?.title || "").trim();
+}
+
 function matchedPsnGame(game) {
   if (!isPlayStationGame(game)) return null;
   const manual = manualPsnTitleForGame(game);
   if (manual) return manual;
+  const matchTitle = trophySearchTitle(game);
   let bestMatch = null;
   let bestScore = 0;
   (state.psnActivity.games || []).forEach((psnGame) => {
-    const titleScore = psnTitleMatchScore(game.title, psnGame.title);
+    const titleScore = psnTitleMatchScore(matchTitle, psnGame.title);
     if (!titleScore) return;
     const platformScore = psnPlatformMatchScore(game.platform, psnGame.rarity || psnGame.platform || "");
     if (platformScore === null) return;
@@ -6896,7 +6913,7 @@ function matchedPsnGame(game) {
 }
 
 function manualPsnTitleForGame(game) {
-  const local = titleMatchParts(game?.title || "");
+  const local = titleMatchParts(trophySearchTitle(game));
   const platform = canonicalPlatform(game?.platform);
   const override = MANUAL_PSN_TITLE_OVERRIDES.find((entry) => {
     if (entry.platforms?.length && !entry.platforms.includes(platform)) return false;
@@ -6925,10 +6942,11 @@ function achievementProgressForGame(game) {
 
 function matchedXboxGame(game) {
   if (!isMicrosoftAchievementGame(game)) return null;
+  const matchTitle = trophySearchTitle(game);
   let bestMatch = null;
   let bestScore = 0;
   (state.xboxActivity.games || []).forEach((xboxGame) => {
-    const titleScore = psnTitleMatchScore(game.title, xboxGame.title);
+    const titleScore = psnTitleMatchScore(matchTitle, xboxGame.title);
     const platformScore = xboxPlatformMatchScore(game.platform, xboxGame.platform);
     if (!titleScore || platformScore === null) return;
     const score = titleScore + platformScore;
@@ -7018,7 +7036,7 @@ function steamProgressForGame(game) {
   const total = cached.total ?? cached.achievements.length;
   const earned = cached.earned ?? cached.achievements.filter((achievement) => achievement.earned).length;
   return {
-    title: game.title,
+    title: trophySearchTitle(game),
     game: `${Math.round((earned / Math.max(total, 1)) * 100)}%`,
     progress: Math.round((earned / Math.max(total, 1)) * 100),
     label: `${earned}/${total} earned`,
@@ -7029,6 +7047,7 @@ function steamProgressForGame(game) {
 function latestTrophiesForGame(game, limit = 3) {
   if (!isPlayStationGame(game)) return [];
   const psn = matchedPsnGame(game);
+  const matchTitle = trophySearchTitle(game);
   const trophyId = psn?.npCommunicationId || "";
   if (trophyId) {
     const exact = (state.psnActivity.achievements || [])
@@ -7039,7 +7058,7 @@ function latestTrophiesForGame(game, limit = 3) {
   }
   return (state.psnActivity.achievements || [])
     .filter((achievement) => {
-      const titleScore = psnTitleMatchScore(game.title, achievement.game || achievement.title || "");
+      const titleScore = psnTitleMatchScore(matchTitle, achievement.game || achievement.title || "");
       if (!titleScore) return false;
       const platformScore = psnPlatformMatchScore(game.platform, achievement.platform || achievement.rarity || "");
       return platformScore !== null;
@@ -8056,6 +8075,7 @@ function normalizeGameRecord(game) {
   normalized.startedAt = dateOnly(normalized.startedAt);
   normalized.completedAt = dateOnly(normalized.completedAt);
   normalized.platform = canonicalPlatform(normalized.platform);
+  normalized.trophyName = String(normalized.trophyName || "").trim();
   normalized.description = String(normalized.description || "");
   normalized.igdbUrl = String(normalized.igdbUrl || "");
   normalized.trailerUrl = String(normalized.trailerUrl || "");
@@ -8486,6 +8506,7 @@ async function openEditor(id = "") {
   if (el.fields.stream) el.fields.stream.checked = Boolean(game.stream);
   el.fields.playing.checked = Boolean(game.playing);
   el.fields.genres.value = (game.genres || []).join(", ");
+  el.fields.trophyName.value = game.trophyName || "";
   el.fields.developer.value = game.developer || "";
   el.fields.publisher.value = game.publisher || "";
   el.fields.description.value = game.description || "";
@@ -8537,6 +8558,7 @@ function blankGame() {
     replayCount: 0,
     startedAt: "",
     genres: [],
+    trophyName: "",
     developer: "",
     publisher: "",
     igdbUrl: "",
@@ -8606,6 +8628,7 @@ async function saveCurrentFormGame() {
     playing,
     replayCount,
     genres: listFrom(el.fields.genres.value),
+    trophyName: el.fields.trophyName.value.trim(),
     developer: el.fields.developer.value.trim(),
     publisher: el.fields.publisher.value.trim(),
     description: el.fields.description.value.trim() || state.pendingDescription || existing?.description || "",

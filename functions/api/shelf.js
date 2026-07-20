@@ -72,15 +72,17 @@ export async function syncShelfGamesToBacklog(env, allShelfGames, games) {
     const linked = shelfById.get(game.shelfId);
     if (!linked) return game;
     const owners = Array.isArray(linked.owners) ? linked.owners : [];
-    if (JSON.stringify(game.owners || []) === JSON.stringify(owners)) return game;
+    const trophyName = linked.trophyName || "";
+    if (JSON.stringify(game.owners || []) === JSON.stringify(owners) && String(game.trophyName || "") === trophyName) return game;
     changed = true;
-    return { ...game, owners, updatedAt: new Date().toISOString() };
+    return { ...game, owners, trophyName, updatedAt: new Date().toISOString() };
   });
   const known = new Set(listGames.flatMap((game) => [game.shelfId, game.id]).filter(Boolean));
   const additions = games.filter((game) => !game.gamelistId && !known.has(game.id)).map((game) => ({
     id: `shelf-${game.id}`,
     shelfId: game.id,
     title: game.title,
+    trophyName: game.trophyName || "",
     platform: shortPlatform(game.platform),
     section: "new",
     digital: false,

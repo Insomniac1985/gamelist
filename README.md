@@ -77,7 +77,11 @@ https://github.com/ShabiiEXE/Gamelist
 12. If the **Visit** button is not available, open **Domains** in the nav bar and enable both URLs.
 13. After your site opens, continue to **Automatic Updates** below if you want to add update sync.
 
-### 2. Set your password to access settings (Adding Secrets in Cloudflare)
+### 2. Set your own private password to access settings (Adding Secrets in Cloudflare)
+
+In order to be able to keep your site protected, and be able to edit and add your games, you need to set your own password.
+
+This exact procedure will help you learn how to also add the other private codes you need for the other integrations.
 
 In the Worker project settings, add your secrets through the Cloudflare website:
 
@@ -194,27 +198,29 @@ The Playstation API access can expire after a while and will require adding the 
 
 ### <img src="assets/platforms/steam.png" alt="Steam" width="22" align="center"> Steam Achievements
 
-1. Enter [Steam Web API key page](https://steamcommunity.com/dev/apikey) and log into your account.
-2. Copy the key and create a new Cloudflare **Variables and Secrets** entry:
+1. Enter [Steam Web API key page](https://steamcommunity.com/dev/apikey) and log into your account. You will need 2FA enabled.
+2. Add the domain name of your app, agree the terms and Register.
+3. Approve using the Steam App.
+4. Copy the **Key** and create a new Cloudflare **Variables and Secrets** entry:
 
 ```text
 STEAM_API_KEY
 ```
 
-3. Set your **Steam account** inside the app: enter edit mode, open **Settings**, and fill the **Steam account** field with a SteamID64, Steam profile URL, or vanity name.
+3. Set your **Steam account** inside the app: enter edit mode, open **Settings**, and fill the **Steam account** field with your Steam profile URL.
 
 Steam achievements are fetched only for app IDs owned by the configured Steam account. Make sure the account's game details and library visibility are set to **Public**.
 
 ### <img src="assets/platforms/xbox.png" alt="Xbox" width="22" align="center"> Xbox Achievements
 
-Xbox 360, Xbox One, Xbox Series, and Xbox PC games can show achievements through OpenXBL.
+Xbox 360, Xbox One, Xbox Series and Xbox PC games can show achievements through OpenXBL.
 1.Register on [OpenXBL](https://xbl.io/), create a personal API key in the dashboard, then add it as a Cloudflare secret:
 
 ```text
 OPENXBL_API_KEY
 ```
 
-2.Set your **Xbox account** inside the app: enter edit mode, open **Settings**, and fill the **Microsoft account** field with an Xbox gamertag or XUID.
+2.Set your **Xbox account** inside the app: enter edit mode, open **Settings**, and fill the **Microsoft account** field with an Xbox gamertag.
 
 ### <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/a/a5/Google_Calendar_icon_%282020%29.svg/960px-Google_Calendar_icon_%282020%29.svg.png" alt="Google Calendar" width="22" align="center"> Google Calendar Preorder Events (ADVANCED)
 
