@@ -3865,16 +3865,18 @@ function achievementProviderNeedsPairing(data = {}, username = "", apiSet) {
 function achievementSetupNotices(psnData = {}, steamData = {}, xboxData = {}) {
   const status = state.integrationStatus || {};
   return [
-    achievementPanelNeedsSetup(psnData, state.settings.psnUser, status.PSN_NPSSO)
-      ? ["Set up PSN", "https://ca.account.sony.com/api/v1/ssocookie"]
-      : null,
-    achievementPanelNeedsSetup(xboxData, state.settings.microsoftUser, status.OPENXBL_API_KEY)
-      ? ["Set up Xbox", xboxData.sourceUrl || "https://www.xbox.com/"]
-      : null,
-    achievementPanelNeedsSetup(steamData, state.settings.steamUser, status.STEAM_API_KEY)
-      ? ["Set up Steam", steamData.sourceUrl || "https://steamcommunity.com/"]
-      : null,
+    achievementPanelNotice(psnData, state.settings.psnUser, status.PSN_NPSSO, "Set up PSN", "Refresh PSN token", "https://ca.account.sony.com/api/v1/ssocookie"),
+    achievementPanelNotice(xboxData, state.settings.microsoftUser, status.OPENXBL_API_KEY, "Set up Xbox", "Check Xbox setup", xboxData.sourceUrl || "https://www.xbox.com/"),
+    achievementPanelNotice(steamData, state.settings.steamUser, status.STEAM_API_KEY, "Set up Steam", "Check Steam setup", steamData.sourceUrl || "https://steamcommunity.com/"),
   ].filter(Boolean);
+}
+
+function achievementPanelNotice(data = {}, username = "", apiSet, setupLabel, authLabel, url) {
+  const hasUser = Boolean(String(username || "").trim());
+  if (!hasUser && apiSet === false) return null;
+  if (achievementProviderNeedsPairing(data, username, apiSet)) return [setupLabel, url];
+  if (data.authError && hasUser && apiSet !== false) return [authLabel, url];
+  return null;
 }
 
 function achievementPanelNeedsSetup(data = {}, username = "", apiSet) {
@@ -6262,7 +6264,7 @@ function cardFor(game, options = {}) {
   playDates.hidden = !playDates.innerHTML;
   card.querySelector(".chips").innerHTML = cardChipsFor(game).join("");
   const trophyStrip = card.querySelector(".card-trophies");
-  trophyStrip.innerHTML = game.playing && !releaseDialog ? cardTrophiesFor(game) : "";
+  trophyStrip.innerHTML = (game.playing || game.digital) && !releaseDialog ? cardTrophiesFor(game) : "";
   trophyStrip.hidden = !trophyStrip.innerHTML;
   trophyStrip.addEventListener("click", (event) => {
     if (event.target.closest("a")) {
@@ -6786,7 +6788,7 @@ async function renderDetailXboxAchievements(game) {
     const data = await fetchXboxTitleAchievements(xboxGame);
     if (state.detailTrophyRequest !== requestKey) return;
     const achievements = Array.isArray(data.achievements) ? data.achievements : [];
-    state.cardTrophies[cacheKey] = xboxAchievementCache(data, achievements);
+    state.cardTrophies[cacheKey] = xboxAchievementCache(data, achievements, xboxGame);
     state.detailTrophiesData = achievements;
     renderDetailTrophyList();
   } catch (error) {
@@ -7018,11 +7020,15 @@ async function fetchXboxTitleAchievements(xboxGame) {
   return data;
 }
 
-function xboxAchievementCache(data, achievements) {
-  const earned = Number.isFinite(Number(data.earnedCount))
+function xboxAchievementCache(data, achievements, summary = null) {
+  const detailEarned = Number.isFinite(Number(data.earnedCount))
     ? Number(data.earnedCount)
     : achievements.filter((achievement) => achievement.earned).length;
-  const total = Number.isFinite(Number(data.count)) ? Number(data.count) : achievements.length;
+  const detailTotal = Number.isFinite(Number(data.count)) ? Number(data.count) : achievements.length;
+  const summaryEarned = Number(summary?.earned || 0);
+  const summaryTotal = Number(summary?.total || 0);
+  const earned = Math.max(detailEarned, summaryEarned);
+  const total = Math.max(detailTotal, summaryTotal);
   return { loading: false, achievements, trophies: achievements, earned, total };
 }
 
@@ -7147,6 +7153,8 @@ function titleMatchParts(value) {
 
 function normalizeTitleRawPhrase(value) {
   return String(value || "")
+    .normalize("NFKD")
+    .replace(/[\u0300-\u036f]/g, "")
     .toLowerCase()
     .replace(/&/g, " and ")
     .replace(/[^a-z0-9]+/g, " ")
@@ -7221,14 +7229,15 @@ function cardTrophiesFor(game) {
   const cached = cacheKey ? state.cardTrophies[cacheKey] : null;
   if (psn && !cached) loadCardTrophies(game, psn);
   const guideLinks = guideLinksFor(game);
+  const guideRow = guideLinks.length ? `<div class="guide-links card-guide-row">${guideLinks.join("")}</div>` : "";
   const trophies = cached?.trophies?.length ? cached.trophies : latestTrophiesForGame(game, 3);
   if (!trophies.length && cached?.loading) {
-    return `<div class="card-trophy-head">${trophyIcon()}<span>Loading trophies...</span></div>${guideLinks.length ? `<div class="guide-links card-guide-row">${guideLinks.join("")}</div>` : ""}`;
+    return `${guideRow}<div class="card-trophy-head">${trophyIcon()}<span>Loading trophies...</span></div>`;
   }
-  if (!trophies.length) return guideLinks.length ? `<div class="guide-links card-guide-row">${guideLinks.join("")}</div>` : "";
+  if (!trophies.length) return guideRow;
   return `
+    ${guideRow}
     <div class="card-trophy-head">${trophyIcon()}<span>Trophies</span>${psn ? psnProgressBadge(psn, { includeIcon: false, className: "card-trophy-progress" }) : ""}</div>
-    ${guideLinks.length ? `<div class="guide-links card-guide-row">${guideLinks.join("")}</div>` : ""}
     <div class="card-trophy-list">
       ${trophies.map((trophy) => `
         <a class="card-trophy trophy-${escapeHtml(trophyTone(trophy.type || trophy.rarity))}" href="${escapeHtml(trophy.url || state.psnActivity.sourceUrl || "#")}" target="_blank" rel="noreferrer" title="${escapeHtml([trophy.title, trophy.earnedAt].filter(Boolean).join(" · "))}">
@@ -7246,8 +7255,9 @@ function cardSteamAchievementsFor(game) {
   const cached = cacheKey ? state.cardTrophies[cacheKey] : null;
   if (cacheKey && !cached && steamGameIsOwned(game)) loadCardSteamAchievements(game);
   const guideLinks = guideLinksFor(game);
+  const guideRow = guideLinks.length ? `<div class="guide-links card-guide-row">${guideLinks.join("")}</div>` : "";
   if (cached?.loading) {
-    return `<div class="card-trophy-head">${trophyIcon()}<span>Loading achievements...</span></div>${guideLinks.length ? `<div class="guide-links card-guide-row">${guideLinks.join("")}</div>` : ""}`;
+    return `${guideRow}<div class="card-trophy-head">${trophyIcon()}<span>Loading achievements...</span></div>`;
   }
   const achievements = (cached?.achievements || [])
     .filter((achievement) => achievement.earned && achievement.earnedAt)
@@ -7256,11 +7266,11 @@ function cardSteamAchievementsFor(game) {
   const progress = steamProgressForGame(game);
   if (!achievements.length) {
     const heading = progress ? `<div class="card-trophy-head">${trophyIcon()}<span>Achievements</span>${psnProgressBadge(progress, { includeIcon: false, className: "card-trophy-progress" })}</div>` : "";
-    return `${heading}${guideLinks.length ? `<div class="guide-links card-guide-row">${guideLinks.join("")}</div>` : ""}`;
+    return `${guideRow}${heading}`;
   }
   return `
+    ${guideRow}
     <div class="card-trophy-head">${trophyIcon()}<span>Achievements</span>${progress ? psnProgressBadge(progress, { includeIcon: false, className: "card-trophy-progress" }) : ""}</div>
-    ${guideLinks.length ? `<div class="guide-links card-guide-row">${guideLinks.join("")}</div>` : ""}
     <div class="card-trophy-list">
       ${achievements.map((achievement) => `
         <a class="card-trophy trophy-steam" href="${escapeHtml(game.storeLinks?.steam || hltbUrlFor(game) || "#")}" target="_blank" rel="noreferrer" title="${escapeHtml([achievement.title, achievement.earnedAt].filter(Boolean).join(" · "))}">
@@ -7276,7 +7286,8 @@ function cardSteamAchievementsFor(game) {
 function cardXboxAchievementsFor(game) {
   const xboxGame = matchedXboxGame(game);
   const guideLinks = guideLinksFor(game);
-  if (!xboxGame) return guideLinks.length ? `<div class="guide-links card-guide-row">${guideLinks.join("")}</div>` : "";
+  const guideRow = guideLinks.length ? `<div class="guide-links card-guide-row">${guideLinks.join("")}</div>` : "";
+  if (!xboxGame) return guideRow;
   const cacheKey = xboxAchievementCacheKey(xboxGame);
   const cached = cacheKey ? state.cardTrophies[cacheKey] : null;
   if (cacheKey && !cached) loadCardXboxAchievements(game, xboxGame);
@@ -7288,10 +7299,10 @@ function cardXboxAchievementsFor(game) {
   const heading = progress
     ? `<div class="card-trophy-head">${trophyIcon()}<span>Achievements</span>${psnProgressBadge(progress, { includeIcon: false, className: "card-trophy-progress" })}</div>`
     : "";
-  if (!achievements.length) return `${heading}${guideLinks.length ? `<div class="guide-links card-guide-row">${guideLinks.join("")}</div>` : ""}`;
+  if (!achievements.length) return `${guideRow}${heading}`;
   return `
+    ${guideRow}
     ${heading}
-    ${guideLinks.length ? `<div class="guide-links card-guide-row">${guideLinks.join("")}</div>` : ""}
     <div class="card-trophy-list">
       ${achievements.map((achievement) => `
         <a class="card-trophy trophy-${escapeHtml(trophyTone(achievement.type || achievement.rarity))}" href="${escapeHtml(state.xboxActivity.sourceUrl || "https://www.xbox.com/")}" target="_blank" rel="noreferrer" title="${escapeHtml([achievement.title, achievement.earnedAt].filter(Boolean).join(" · "))}">
@@ -7311,10 +7322,10 @@ async function loadCardXboxAchievements(game, xboxGame) {
   try {
     const data = await fetchXboxTitleAchievements(xboxGame);
     const achievements = Array.isArray(data.achievements) ? data.achievements : [];
-    state.cardTrophies[cacheKey] = xboxAchievementCache(data, achievements);
+    state.cardTrophies[cacheKey] = xboxAchievementCache(data, achievements, xboxGame);
   } catch (error) {
     console.warn("[trophies] Xbox card achievements unavailable", { game: game.title, titleId: xboxGame.titleId, error: error.message });
-    state.cardTrophies[cacheKey] = { loading: false, achievements: [], trophies: [], earned: 0, total: 0 };
+    state.cardTrophies[cacheKey] = xboxAchievementCache({}, [], xboxGame);
   }
   updateCardAchievementUi(game.id);
 }
@@ -7406,7 +7417,7 @@ function updateCardTrophyStrips(gameId) {
   const game = getGame(gameId);
   if (!game) return;
   document.querySelectorAll(`.game-card[data-id="${CSS.escape(gameId)}"] .card-trophies`).forEach((node) => {
-    node.innerHTML = game.playing ? cardTrophiesFor(game) : "";
+    node.innerHTML = game.playing || game.digital ? cardTrophiesFor(game) : "";
     node.hidden = !node.innerHTML;
   });
   if (game.playing) schedulePlayingCardHeightSync();
@@ -7420,7 +7431,7 @@ function updateCardAchievementUi(gameId) {
     if (meta) meta.innerHTML = metaFor(game, { includePsn: !game.playing }).join("");
     const trophyStrip = card.querySelector(".card-trophies");
     if (trophyStrip) {
-      trophyStrip.innerHTML = game.playing ? cardTrophiesFor(game) : "";
+      trophyStrip.innerHTML = game.playing || game.digital ? cardTrophiesFor(game) : "";
       trophyStrip.hidden = !trophyStrip.innerHTML;
     }
   });

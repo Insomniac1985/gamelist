@@ -179,17 +179,11 @@ export function achievementDashboardMarkup({ completedCount, completedBreakdown 
   return `<div class="achievement-summary ${levelLabel ? "" : "achievement-summary-no-level"}"><button class="achievement-kpi platinum-highlight ${completedCount ? "has-platinum" : ""}" type="button" data-action="platinums"><strong class="kpi-with-icon">${trophyIconHtml}${escape(String(completedCount))}</strong><span>COMPLETED</span>${completedBreakdown}</button><a class="achievement-kpi trophy-kpi" href="${escape(sourceUrl)}" target="_blank" rel="noreferrer"><strong>${escape(String(trophyTotal))}</strong><span>TROPHIES</span>${trophyBreakdown}</a>${levelCard}${rarityGraph}</div>`;
 }
 
-export function achievementPanelMarkup({ psn = {}, steam = {}, xbox = {}, setupNotices = [], trophyIconHtml, platformBadge, platformLogo, trophyTone, escape }) {
+export function achievementPanelMarkup({ psn = {}, steam = {}, xbox = {}, setupNotices, trophyIconHtml, platformBadge, platformLogo, trophyTone, escape }) {
   const sourceUrl = psn.sourceUrl || "https://www.playstation.com/";
   const authErrorUrl = "https://ca.account.sony.com/api/v1/ssocookie";
   const fallbackUrl = psn.authError ? authErrorUrl : sourceUrl;
-  const explicitSetupNotices = Array.isArray(setupNotices) ? setupNotices : [];
-  const providerNotices = explicitSetupNotices.length ? [
-    ...explicitSetupNotices,
-    psn.authError && !psn.needsSetup ? ["Refresh PSN token", authErrorUrl] : null,
-    xbox.authError && !xbox.needsSetup ? ["Check Xbox setup", xbox.sourceUrl || "https://www.xbox.com/"] : null,
-    steam.authError && !steam.needsSetup ? ["Check Steam setup", steam.sourceUrl || "https://steamcommunity.com/"] : null,
-  ].filter(Boolean) : [
+  const providerNotices = Array.isArray(setupNotices) ? setupNotices : [
     psn.authError ? ["Refresh PSN token", authErrorUrl] : psn.needsSetup ? ["Set up PSN", authErrorUrl] : null,
     xbox.authError ? ["Check Xbox setup", xbox.sourceUrl || "https://www.xbox.com/"] : xbox.needsSetup ? ["Set up Xbox", xbox.sourceUrl || "https://www.xbox.com/"] : null,
     steam.authError ? ["Check Steam setup", steam.sourceUrl || "https://steamcommunity.com/"] : steam.needsSetup ? ["Set up Steam", steam.sourceUrl || "https://steamcommunity.com/"] : null,

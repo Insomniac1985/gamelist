@@ -1896,7 +1896,6 @@ button.achievement-kpi {
 .platinum-highlight:hover,
 .platinum-highlight:focus-visible,
 .platinum-highlight:active {
-  border-color: rgba(255, 255, 255, 0.16);
   background:
     radial-gradient(
       circle at 50% 28%,
@@ -6270,7 +6269,6 @@ body:not(.can-edit) .game-card:focus-within .edit-action {
 
 .finished-stats-kpi.is-completed.is-clickable:hover,
 .finished-stats-kpi.is-completed.is-clickable:focus-visible {
-  border-color: rgba(255, 225, 101, 0.48);
   background: rgba(255, 225, 101, 0.12);
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.08),
@@ -6281,7 +6279,6 @@ body:not(.can-edit) .game-card:focus-within .edit-action {
 .finished-stats-kpi.is-completed:focus-visible,
 body.theme-kash .finished-stats-kpi.is-completed:hover,
 body.theme-kash .finished-stats-kpi.is-completed:focus-visible {
-  border-color: rgba(255, 225, 101, 0.48) !important;
   background: rgba(255, 225, 101, 0.12) !important;
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.08),
@@ -9836,7 +9833,6 @@ button.finished-stats-kpi.is-completed:hover,
 button.finished-stats-kpi.is-completed:focus-visible,
 body.theme-kash button.finished-stats-kpi.is-completed:hover,
 body.theme-kash button.finished-stats-kpi.is-completed:focus-visible {
-  border-color: rgba(255, 225, 101, 0.58) !important;
   color: #ffe985 !important;
   background: rgba(255, 225, 101, 0.14) !important;
   box-shadow:
