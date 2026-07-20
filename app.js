@@ -650,7 +650,7 @@ function logPageVersion(currentRepo = "", repoCopies = []) {
 function repoConsoleEntry(repo = {}, index = 0) {
   const url = String(repo.url || "").trim();
   const siteUrl = String(repo.siteUrl || "").trim();
-  const color = index % 2 ? "#cfd3dc" : "#ffffff";
+  const color = index % 2 ? "#9aa3b2" : "#ffffff";
   const style = `color:${color};font-weight:900;line-height:1.35;`;
   const emptyStyle = "color:#ffffff;font-weight:900;line-height:1.35;";
   if (!siteUrl) {
