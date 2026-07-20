@@ -418,36 +418,66 @@ async function init() {
 
 async function logConsoleInfo(theme = "shabii") {
   try {
-    const response = await fetch("/api/secret-status", { cache: "no-store" });
+    const [response, authResponse] = await Promise.all([
+      fetch("/api/secret-status", { cache: "no-store" }),
+      fetch("/api/auth", { cache: "no-store" }).catch(() => null),
+    ]);
     if (!response.ok) throw new Error(`HTTP ${response.status}`);
     const status = await response.json();
+    const authStatus = await authResponse?.json().catch(() => ({}));
     logPageVersion(status.CURRENT_REPO);
-    logStatusLines(status, theme);
+    logStatusLines(status, theme, authStatus?.status || (authStatus?.ok ? "LOGGED IN" : "NOT LOGGED IN"));
   } catch (error) {
     logPageVersion();
     console.warn("Could not check secret status", error);
   }
 }
 
-function logStatusLines(status, theme = "shabii") {
-  const log = (name, value) => console.log(`${name}: ${Boolean(value)}`);
-  if (theme !== "shabii") {
-    log("UPDATE", status.UPDATE);
-    console.log("--------------------");
-  }
-  log("IGDB_CLIENT_ID", status.IGDB_CLIENT_ID);
-  log("IGDB_CLIENT_SECRET", status.IGDB_CLIENT_SECRET);
-  log("PSN_NPSSO", status.PSN_NPSSO);
-  log("OPENXBL_API_KEY", status.OPENXBL_API_KEY);
-  log("STEAM_API_KEY", status.STEAM_API_KEY);
-  log("GOOGLE_PRIVATE_KEY", status.GOOGLE_PRIVATE_KEY);
-  log("PRICECHARTING_TOKEN", status.PRICECHARTING_TOKEN);
+function logStatusLines(status, theme = "shabii", editorStatus = "NOT LOGGED IN") {
+  const headerStyle = "color:#ff0039;font-weight:900;font-size:12px;line-height:1.35;";
+  const bodyStyle = "";
+  const apiLine = (name, value) => `${name}: ${Boolean(value) ? "ONLINE" : "OFFLINE"}`;
+  const accountApiLine = (name, value, username, apiSet) => {
+    const label = !apiSet
+      ? "NO API SET"
+      : !username
+        ? "NO USERNAME"
+        : Boolean(value)
+          ? "ONLINE"
+          : "OFFLINE";
+    return `${name}: ${label}`;
+  };
+  const secretLine = (name, value) => `${name}: ${Boolean(value) ? "TRUE" : "FALSE"}`;
+  const statusLines = [
+    ...(theme !== "shabii" ? [apiLine("UPDATE", status.UPDATE), "--------------------"] : []),
+    `EDITOR: ${editorStatus}`,
+    apiLine("IGDB API", status.working?.IGDB),
+    apiLine("PRICECHARTING API", status.working?.PRICECHARTING),
+    accountApiLine("PSN API", status.working?.PSN, state.settings.psnUser, status.PSN_NPSSO),
+    accountApiLine("OPENXBL API", status.working?.XBOX, state.settings.microsoftUser, status.OPENXBL_API_KEY),
+    accountApiLine("STEAM API", status.working?.STEAM, state.settings.steamUser, status.STEAM_API_KEY),
+    "--------------------",
+  ];
+  const secretLines = [
+    secretLine("IGDB_CLIENT_ID", status.IGDB_CLIENT_ID),
+    secretLine("IGDB_CLIENT_SECRET", status.IGDB_CLIENT_SECRET),
+    secretLine("PSN_NPSSO", status.PSN_NPSSO),
+    secretLine("OPENXBL_API_KEY", status.OPENXBL_API_KEY),
+    secretLine("STEAM_API_KEY", status.STEAM_API_KEY),
+    secretLine("GOOGLE_PRIVATE_KEY", status.GOOGLE_PRIVATE_KEY),
+    secretLine("PRICECHARTING_TOKEN", status.PRICECHARTING_TOKEN),
+  ];
+  console.log(
+    `%cSTATUS:\n%c${statusLines.filter((line) => line !== "--------------------").join("\n")}`,
+    headerStyle,
+    bodyStyle
+  );
   console.log("--------------------");
-  log("IGDB_WORKING", status.working?.IGDB);
-  log("PRICECHARTING_WORKING", status.working?.PRICECHARTING);
-  log("PSN_WORKING", status.working?.PSN);
-  log("XBOX_WORKING", status.working?.XBOX);
-  log("STEAM_WORKING", status.working?.STEAM);
+  console.log(
+    `%cSECRETS:\n%c${secretLines.join("\n")}`,
+    headerStyle,
+    bodyStyle
+  );
 }
 
 function bindTextureParallax() {
@@ -1160,7 +1190,7 @@ function render() {
   document.documentElement.classList.remove("theme-booting");
   document.body.classList.toggle("can-edit", state.canEdit);
   document.body.classList.toggle("list-view-mode", state.viewMode === "list");
-  el.loginButton.innerHTML = state.canEdit ? `${pauseIcon()}<span class="button-label">${escapeHtml(tt("Stop Editing"))}</span>` : pencilIcon();
+  el.loginButton.innerHTML = state.canEdit ? `${exitIcon()}<span class="button-label">${escapeHtml(tt("Stop Editing"))}</span>` : pencilIcon();
   el.loginButton.title = state.canEdit ? tt("Stop Editing") : tt("Edit");
   el.loginButton.setAttribute("aria-label", el.loginButton.title);
   el.addButton.hidden = false;
@@ -7501,6 +7531,16 @@ function pauseIcon() {
   `;
 }
 
+function exitIcon() {
+  return `
+    <svg class="exit-icon" viewBox="0 0 24 24" aria-hidden="true">
+      <path d="M10 5H6.8A2.8 2.8 0 0 0 4 7.8v8.4A2.8 2.8 0 0 0 6.8 19H10"></path>
+      <path d="M14 8l4 4-4 4"></path>
+      <path d="M8 12h10"></path>
+    </svg>
+  `;
+}
+
 function playIcon() {
   return `
     <svg class="play-icon" viewBox="0 0 24 24" aria-hidden="true">
@@ -8644,7 +8684,9 @@ async function toggleEditMode() {
 
 async function hasSharedEditorSession() {
   try {
-    return (await fetch("/api/auth", { cache: "no-store" })).ok;
+    const response = await fetch("/api/auth", { cache: "no-store" });
+    const data = await response.json().catch(() => ({}));
+    return Boolean(data.ok);
   } catch {
     return false;
   }
