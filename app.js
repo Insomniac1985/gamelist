@@ -598,7 +598,7 @@ function applySiteVersion(value = {}) {
 function logPageVersion(currentRepo = "", repoCopies = []) {
   const originalRepo = "https://github.com/ShabiiEXE/Gamelist";
   const currentRepoLine = repoUrlsMatch(currentRepo, originalRepo) ? "" : `\n  repo: ${currentRepo}`;
-  const reposLine = repoCopies.length ? `\n  repos (${repoCopies.length}):\n  ${repoCopies.map(repoConsoleLine).join("\n  ")}` : "";
+  const reposLine = repoCopies.length ? `\n  repos (${repoCopies.length}):\n${repoCopies.map(repoConsoleLine).join("\n")}` : "";
   console.log(String.raw`%c
     {{{{{{{{{{{     {{{{{{{{{{{{{{{{{{{{
    {{{{{{{{{{{       {{{{{{{{{{{{{{{{{{ 
@@ -623,7 +623,7 @@ function logPageVersion(currentRepo = "", repoCopies = []) {
 function repoConsoleLine(repo = {}) {
   const url = String(repo.url || "").trim();
   const siteUrl = String(repo.siteUrl || "").trim();
-  return siteUrl ? `${url} | site: ${siteUrl}` : url;
+  return `  -site: ${siteUrl || "unknown"}\n   repo: ${url || "unknown"}`;
 }
 
 function repoUrlsMatch(left, right) {

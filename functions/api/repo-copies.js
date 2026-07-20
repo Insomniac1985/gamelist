@@ -48,7 +48,7 @@ async function findGithubCandidates(env = {}) {
   ];
   const repos = new Map();
   for (const fullName of seeds) {
-    const repo = await githubRepo(fullName, headers) || await githubSeedRepo(fullName);
+    const repo = await githubSeedRepo(fullName) || await githubRepo(fullName, headers);
     if (repo) repos.set(repo.full_name, repo);
   }
   const search = await githubJson(`${GITHUB_API}/search/repositories?${new URLSearchParams({
@@ -68,7 +68,7 @@ async function verifyGithubRepo(repo, headers) {
   const fullName = String(repo.full_name || "");
   const [contents, readme, deployedUrl] = await Promise.all([
     repo.rawFallback ? [...REQUIRED_FILES].map((name) => ({ name })) : githubJson(`${GITHUB_API}/repos/${fullName}/contents`, headers).catch(() => []),
-    fetchText(`https://raw.githubusercontent.com/${fullName}/${repo.default_branch || "main"}/README.md`).catch(() => ""),
+    repo.seedReadme || fetchText(`https://raw.githubusercontent.com/${fullName}/${repo.default_branch || "main"}/README.md`).catch(() => ""),
     repo.rawFallback ? "" : githubDeploymentUrl(fullName, headers),
   ]);
   if (!hasRequiredFiles(contents?.map((item) => item?.name))) return null;
@@ -129,11 +129,8 @@ async function githubRepo(fullName, headers) {
 
 async function githubSeedRepo(fullName) {
   for (const branch of ["main", "master"]) {
-    const files = await Promise.all([...REQUIRED_FILES].map(async (file) => {
-      const response = await safeFetch(`https://raw.githubusercontent.com/${fullName}/${branch}/${file}`, { method: "HEAD" });
-      return response?.ok ? file : "";
-    }));
-    if (!hasRequiredFiles(files)) continue;
+    const readme = await fetchText(`https://raw.githubusercontent.com/${fullName}/${branch}/README.md`).catch(() => "");
+    if (!mentionsOriginal(readme)) continue;
     return {
       full_name: fullName,
       html_url: `https://github.com/${fullName}`,
@@ -141,6 +138,7 @@ async function githubSeedRepo(fullName) {
       homepage: await githubPageSiteUrl(fullName),
       pushed_at: "",
       updated_at: "",
+      seedReadme: readme,
       rawFallback: true,
     };
   }
