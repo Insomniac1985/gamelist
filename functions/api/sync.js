@@ -60,9 +60,10 @@ async function syncBacklogGamesToShelf(env, allGames, games) {
     const linked = byId.get(game.gamelistId);
     if (!linked) return game;
     const owners = Array.isArray(linked.owners) ? linked.owners : [];
-    if (JSON.stringify(game.owners || []) === JSON.stringify(owners)) return game;
+    const trophyName = linked.trophyName || "";
+    if (JSON.stringify(game.owners || []) === JSON.stringify(owners) && String(game.trophyName || "") === trophyName) return game;
     changed = true;
-    return { ...game, owners, updatedAt: new Date().toISOString() };
+    return { ...game, owners, trophyName, updatedAt: new Date().toISOString() };
   };
   const sourceGames = (shelf.sourceGames || []).map(syncOwners);
   const shelfGames = (shelf.games || []).map(syncOwners);
@@ -74,6 +75,7 @@ async function syncBacklogGamesToShelf(env, allGames, games) {
     source: "gamelist",
     pendingCollection: true,
     title: game.title,
+    trophyName: game.trophyName || "",
     platform: game.platform || "Unknown platform",
     country: "World",
     region: "Unconfirmed",
