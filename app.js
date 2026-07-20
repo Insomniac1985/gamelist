@@ -433,7 +433,6 @@ function logStatusLines(status) {
   const log = (name, value) => console.log(`${name}: ${Boolean(value)}`);
   log("UPDATE", status.UPDATE);
   console.log("--------------------");
-  log("IGDB_TWITCH", status.IGDB_TWITCH);
   log("IGDB_CLIENT_ID", status.IGDB_CLIENT_ID);
   log("IGDB_CLIENT_SECRET", status.IGDB_CLIENT_SECRET);
   log("PSN_NPSSO", status.PSN_NPSSO);

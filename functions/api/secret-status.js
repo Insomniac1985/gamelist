@@ -13,7 +13,6 @@ export async function onRequestGet({ request, env = {} }) {
     STEAM_API_KEY: isSet(env.STEAM_API_KEY),
     IGDB_CLIENT_ID: isSet(env.IGDB_CLIENT_ID),
     IGDB_CLIENT_SECRET: isSet(env.IGDB_CLIENT_SECRET),
-    IGDB_TWITCH: isSet(env.IGDB_CLIENT_ID) && isSet(env.IGDB_CLIENT_SECRET),
     PRICECHARTING_TOKEN: isSet(env.PRICECHARTING_TOKEN),
     GOOGLE_PRIVATE_KEY: isSet(env.GOOGLE_PRIVATE_KEY),
     UPDATE: working.UPDATE,
