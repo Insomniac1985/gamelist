@@ -7645,10 +7645,19 @@ body.theme-kash .playing-finished-game.completed-trophy-card:hover {
   border-color: rgba(247, 223, 105, 0.52);
 }
 
+.game-card:hover,
+.completed-row:hover,
+.playing-finished-game:hover {
+  border-color: var(--accent) !important;
+}
+
 .game-card[class*="owner-color-card-"]:hover,
-.game-row[class*="owner-color-card-"]:hover,
 .completed-row[class*="owner-color-card-"]:hover,
 .playing-finished-game[class*="owner-color-card-"]:hover {
+  border-color: var(--accent) !important;
+}
+
+.game-row[class*="owner-color-card-"]:hover {
   border-color: color-mix(in srgb, var(--accent) 50%, transparent) !important;
 }
 
