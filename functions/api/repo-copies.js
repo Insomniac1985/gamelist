@@ -138,13 +138,18 @@ async function githubSeedRepo(fullName) {
       full_name: fullName,
       html_url: `https://github.com/${fullName}`,
       default_branch: branch,
-      homepage: "",
+      homepage: await githubPageSiteUrl(fullName),
       pushed_at: "",
       updated_at: "",
       rawFallback: true,
     };
   }
   return null;
+}
+
+async function githubPageSiteUrl(fullName) {
+  const html = await fetchText(`https://github.com/${fullName}`).catch(() => "");
+  return siteUrlFromText(html);
 }
 
 async function gitlabProject(path) {
@@ -226,8 +231,14 @@ function siteUrlFor(homepage = "", readme = "", deployedUrl = "") {
   if (isLikelySiteUrl(deployed)) return deployed;
   const home = cleanUrl(homepage);
   if (isLikelySiteUrl(home)) return home;
-  const urls = String(readme || "").match(/https?:\/\/[^\s)\]`"']+/g) || [];
-  return urls.map(cleanUrl).find((url) => isLikelySiteUrl(url) && /\.workers\.dev\/?$/i.test(url)) || "";
+  return siteUrlFromText(readme);
+}
+
+function siteUrlFromText(text = "") {
+  const urls = String(text || "").match(/https?:\/\/[^\s)\]`"'<>]+/g) || [];
+  return urls
+    .map((url) => cleanUrl(url.replace(/&amp;/g, "&")))
+    .find((url) => isLikelySiteUrl(url) && /\.workers\.dev\/?$/i.test(url)) || "";
 }
 
 function isLikelySiteUrl(value) {
