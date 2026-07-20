@@ -478,6 +478,7 @@ function logStatusLines(status, theme = "shabii", editorStatus = "NOT LOGGED IN"
   const statusLines = [
     ...(theme !== "shabii" ? [["UPDATE", apiStatus(status.UPDATE)]] : []),
     ["EDITOR", String(editorStatus || "not logged in").toLowerCase()],
+    ["GOTY availability", gotyAvailabilityStatus()],
     ["IGDB API", igdbApiStatus(status.working?.IGDB)],
     ["PRICECHARTING API", apiStatus(status.working?.PRICECHARTING)],
     ["PSN API", accountApiStatus(status.working?.PSN, state.settings.psnUser, status.PSN_NPSSO)],
@@ -509,8 +510,8 @@ function logConsoleBlock(title, rows, styles) {
 
 function consoleValueStyle(value) {
   const normalized = String(value || "").trim().toLowerCase();
-  if (["online", "true", "logged in"].includes(normalized)) return "color:#38d878;font-weight:900;";
-  if (["offline", "false"].includes(normalized)) return "color:#8b0000;font-weight:900;";
+  if (["online", "true", "logged in", "available"].includes(normalized)) return "color:#38d878;font-weight:900;";
+  if (["offline", "false"].includes(normalized) || normalized.startsWith("available in ")) return "color:#8b0000;font-weight:900;";
   return "color:#ff9f1a;font-weight:900;";
 }
 
@@ -2442,6 +2443,16 @@ function gameOfTheYearHoverInfo(game, className) {
 
 function gameOfTheYearVisible() {
   return state.settings.gotyAlwaysShow || isGameOfTheYearSeason();
+}
+
+function gotyAvailabilityStatus(date = new Date()) {
+  if (state.settings.gotyAlwaysShow) return "forced";
+  if (isGameOfTheYearSeason(date)) return "available";
+  const start = new Date(date.getFullYear(), 11, 1);
+  if (date > start) start.setFullYear(start.getFullYear() + 1);
+  const today = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+  const days = Math.max(1, Math.ceil((start - today) / 86400000));
+  return `available in ${days} ${days === 1 ? "day" : "days"}`;
 }
 
 function isGameOfTheYearSeason(date = new Date()) {
