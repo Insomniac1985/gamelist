@@ -16,10 +16,8 @@ Both pages share edit mode, themes, account settings, price-store settings, achi
 
 Made and designed by <img src="assets/shabii_logo.png" alt="Shabii" width="18" align="center"> [Shabii](https://x.com/Shabii_exe) with the help of ChatGPT Codex.
 
-<blockquote>
-  <strong>Suggestions, questions, updates, new features, or patches:</strong><br>
-  Email <a href="mailto:shabiimitjans@gmail.com"><code>shabiimitjans@gmail.com</code></a>
-</blockquote>
+For suggestions, questions, updates, new features, or patches:
+Email: <a href="mailto:shabiimitjans@gmail.com">shabiimitjans@gmail.com</a>
 
 ## Features
 
@@ -104,7 +102,7 @@ EDIT_PASSWORD
 
 `EDIT_PASSWORD` is the password you will type in the app to unlock **Edit mode** and change your site settings and theme.
 
-Use **Secret** for all integration keys/tokens. Do not put them in `wrangler.toml`, do not commit them to GitHub, and do not share them publicly.
+Use **Secret** for all integration keys/tokens. Do not share them publicly or add them as plain text.
 
 Now **continue** the setup until you reach **Recommended Integrations**. The next integrations are **required** to make it all work properly, but the recommended ones will help you improve your experience a bit more.
 
@@ -307,7 +305,7 @@ When those are both set, Gamelist and Shelf add a Twitch preview as the first ca
 2. Click **Add Game**.
 3. Search by title or paste an IGDB game URL.
 4. Choose the place it should be in: Backlog, Upcoming, Available.
-5. Add platform, owners, preorder store, release date, store links, Steam App ID, trophy name, cover, and notes as needed.
+5. Add platform, owners, preorder store, release date, store links, cover, notes...
 6. Save.
 
 If Google Calendar is configured, adding a new preorder store to an upcoming/wanted game with a release date can create a preorder calendar event.
@@ -317,8 +315,8 @@ If Google Calendar is configured, adding a new preorder store to an upcoming/wan
 1. Click the **top handle** or drag it down to access the **Shelf**.
 2. Enter **Edit mode**.
 3. Click **Add Game**.
-4. Search by title, paste a PriceCharting url, paste a IGDB url or enter details manually.
-5. Set platform, region, owners, condition parts, collection value fields, publisher/developer, genre, cover, and notes.
+4. Search by title, paste a PriceCharting url, paste a IGDB url.
+5. Set platform, region, owners, condition, publisher/developer, genre, cover, notes...
 6. Save.
 
 New physical games can sync into the Gamelist as setup-needed backlog/new-addition entries when Shelf Sync is enabled.
