@@ -1,3 +1,5 @@
+import { getPsnAccessToken } from "./psn-auth.js";
+
 const HEALTH_CACHE_MS = 5 * 60 * 1000;
 let healthCache;
 
@@ -71,19 +73,11 @@ async function checkPriceCharting() {
 async function checkPsn(env) {
   const npsso = String(env.PSN_NPSSO || "").trim();
   if (!npsso) return false;
-  const url = new URL("https://ca.account.sony.com/api/authz/v3/oauth/authorize");
-  url.search = new URLSearchParams({
-    access_type: "offline",
-    client_id: "09515159-7237-4370-9b40-3806e67c0891",
-    redirect_uri: "com.scee.psxandroid.scecompcall://redirect",
-    response_type: "code",
-    scope: "psn:mobile.v2.core psn:clientapp",
-  });
-  const response = await safeFetch(url, {
-    headers: { Cookie: `npsso=${npsso}` },
-    redirect: "manual",
-  });
-  return Boolean(response && response.status >= 300 && response.status < 400 && (response.headers.get("location") || "").includes("?code="));
+  try {
+    return Boolean(await getPsnAccessToken(npsso));
+  } catch {
+    return false;
+  }
 }
 
 async function checkXbox(env) {
