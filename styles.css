@@ -5821,6 +5821,7 @@ body:not(.can-edit) #loginButton,
 .search-icon,
 .back-icon,
 .pause-icon,
+.exit-icon,
 .play-icon,
 .euro-icon,
 .dollar-icon,
@@ -5841,8 +5842,17 @@ body:not(.can-edit) #loginButton,
 .euro-icon,
 .dollar-icon,
 .pause-icon,
+.exit-icon,
 .play-icon {
   stroke-width: 3;
+}
+
+.settings-icon {
+  stroke-width: 2.25;
+}
+
+.settings-icon circle {
+  stroke-width: 1.65;
 }
 
 .complete-action .check-icon {
@@ -10982,6 +10992,7 @@ body.theme-kash
   }
 
   .top-actions .pause-icon,
+  .top-actions .exit-icon,
   .top-actions .euro-icon,
   .top-actions .dollar-icon,
   .top-actions .pencil-icon,
@@ -10996,7 +11007,8 @@ body.theme-kash
   #settingsButton .settings-icon,
   #fetchPricesButton .euro-icon,
   #fetchPricesButton .dollar-icon,
-  body.can-edit #loginButton .pause-icon {
+  body.can-edit #loginButton .pause-icon,
+  body.can-edit #loginButton .exit-icon {
     display: block;
   }
 

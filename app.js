@@ -1166,7 +1166,7 @@ function render() {
   document.documentElement.classList.remove("theme-booting");
   document.body.classList.toggle("can-edit", state.canEdit);
   document.body.classList.toggle("list-view-mode", state.viewMode === "list");
-  el.loginButton.innerHTML = state.canEdit ? `${pauseIcon()}<span class="button-label">${escapeHtml(tt("Stop Editing"))}</span>` : pencilIcon();
+  el.loginButton.innerHTML = state.canEdit ? `${exitIcon()}<span class="button-label">${escapeHtml(tt("Stop Editing"))}</span>` : pencilIcon();
   el.loginButton.title = state.canEdit ? tt("Stop Editing") : tt("Edit");
   el.loginButton.setAttribute("aria-label", el.loginButton.title);
   el.addButton.hidden = false;
@@ -7503,6 +7503,16 @@ function pauseIcon() {
     <svg class="pause-icon" viewBox="0 0 24 24" aria-hidden="true">
       <path d="M8 4.5v15"></path>
       <path d="M16 4.5v15"></path>
+    </svg>
+  `;
+}
+
+function exitIcon() {
+  return `
+    <svg class="exit-icon" viewBox="0 0 24 24" aria-hidden="true">
+      <path d="M10 5H6.8A2.8 2.8 0 0 0 4 7.8v8.4A2.8 2.8 0 0 0 6.8 19H10"></path>
+      <path d="M14 8l4 4-4 4"></path>
+      <path d="M8 12h10"></path>
     </svg>
   `;
 }
