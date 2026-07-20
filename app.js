@@ -431,13 +431,17 @@ async function logConsoleInfo(theme = "shabii") {
     if (!response.ok) throw new Error(`HTTP ${response.status}`);
     const status = await response.json();
     const authStatus = await authResponse?.json().catch(() => ({}));
-    const repoCopies = authStatus?.ok ? await fetchRepoCopies() : [];
+    const repoCopies = authStatus?.ok && isShabiiMainOwner() ? await fetchRepoCopies() : [];
     logPageVersion(status.CURRENT_REPO, repoCopies);
     logStatusLines(status, theme, authStatus?.status || (authStatus?.ok ? "LOGGED IN" : "NOT LOGGED IN"));
   } catch (error) {
     logPageVersion();
     console.warn("Could not check secret status", error);
   }
+}
+
+function isShabiiMainOwner() {
+  return normalizeTag(state.settings.defaultOwner) === "shabii";
 }
 
 async function fetchRepoCopies() {
