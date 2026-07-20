@@ -128,7 +128,7 @@ IGDB authentication uses Twitch developer credentials:
 IGDB_CLIENT_ID
 ```
 
-11. Click generate new secret and copy the **Client Secret** and create another **Cloudflare secret**:
+13. Click generate new secret and copy the **Client Secret** and create another **Cloudflare secret**:
 
 ```text
 IGDB_CLIENT_SECRET
