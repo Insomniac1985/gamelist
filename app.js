@@ -418,42 +418,66 @@ async function init() {
 
 async function logConsoleInfo(theme = "shabii") {
   try {
-    const response = await fetch("/api/secret-status", { cache: "no-store" });
+    const [response, authResponse] = await Promise.all([
+      fetch("/api/secret-status", { cache: "no-store" }),
+      fetch("/api/auth", { cache: "no-store" }).catch(() => null),
+    ]);
     if (!response.ok) throw new Error(`HTTP ${response.status}`);
     const status = await response.json();
+    const authStatus = await authResponse?.json().catch(() => ({}));
     logPageVersion(status.CURRENT_REPO);
-    logStatusLines(status, theme);
+    logStatusLines(status, theme, authStatus?.status || (authStatus?.ok ? "LOGGED IN" : "NOT LOGGED IN"));
   } catch (error) {
     logPageVersion();
     console.warn("Could not check secret status", error);
   }
 }
 
-function logStatusLines(status, theme = "shabii") {
-  const logApi = (name, value) => console.log(`${name}: ${Boolean(value) ? "ONLINE" : "OFFLINE"}`);
-  const logAccountApi = (name, value, username) => {
-    console.log(`${name}: ${username ? (Boolean(value) ? "ONLINE" : "OFFLINE") : "NO USERNAME"}`);
+function logStatusLines(status, theme = "shabii", editorStatus = "NOT LOGGED IN") {
+  const headerStyle = "color:#ff0039;font-weight:900;font-size:12px;line-height:1.35;";
+  const bodyStyle = "";
+  const apiLine = (name, value) => `${name}: ${Boolean(value) ? "ONLINE" : "OFFLINE"}`;
+  const accountApiLine = (name, value, username, apiSet) => {
+    const label = !apiSet
+      ? "NO API SET"
+      : !username
+        ? "NO USERNAME"
+        : Boolean(value)
+          ? "ONLINE"
+          : "OFFLINE";
+    return `${name}: ${label}`;
   };
-  const logSecret = (name, value) => console.log(`${name}: ${Boolean(value) ? "TRUE" : "FALSE"}`);
-  if (theme !== "shabii") {
-    logApi("UPDATE", status.UPDATE);
-    console.log("--------------------");
-  }
-  console.log("STATUS:");
-  logApi("IGDB API", status.working?.IGDB);
-  logApi("PRICECHARTING API", status.working?.PRICECHARTING);
-  logAccountApi("PSN API", status.working?.PSN, state.settings.psnUser);
-  logAccountApi("OPENXBL API", status.working?.XBOX, state.settings.microsoftUser);
-  logAccountApi("STEAM API", status.working?.STEAM, state.settings.steamUser);
+  const secretLine = (name, value) => `${name}: ${Boolean(value) ? "TRUE" : "FALSE"}`;
+  const statusLines = [
+    ...(theme !== "shabii" ? [apiLine("UPDATE", status.UPDATE), "--------------------"] : []),
+    `EDITOR: ${editorStatus}`,
+    apiLine("IGDB API", status.working?.IGDB),
+    apiLine("PRICECHARTING API", status.working?.PRICECHARTING),
+    accountApiLine("PSN API", status.working?.PSN, state.settings.psnUser, status.PSN_NPSSO),
+    accountApiLine("OPENXBL API", status.working?.XBOX, state.settings.microsoftUser, status.OPENXBL_API_KEY),
+    accountApiLine("STEAM API", status.working?.STEAM, state.settings.steamUser, status.STEAM_API_KEY),
+    "--------------------",
+  ];
+  const secretLines = [
+    secretLine("IGDB_CLIENT_ID", status.IGDB_CLIENT_ID),
+    secretLine("IGDB_CLIENT_SECRET", status.IGDB_CLIENT_SECRET),
+    secretLine("PSN_NPSSO", status.PSN_NPSSO),
+    secretLine("OPENXBL_API_KEY", status.OPENXBL_API_KEY),
+    secretLine("STEAM_API_KEY", status.STEAM_API_KEY),
+    secretLine("GOOGLE_PRIVATE_KEY", status.GOOGLE_PRIVATE_KEY),
+    secretLine("PRICECHARTING_TOKEN", status.PRICECHARTING_TOKEN),
+  ];
+  console.log(
+    `%cSTATUS:\n%c${statusLines.filter((line) => line !== "--------------------").join("\n")}`,
+    headerStyle,
+    bodyStyle
+  );
   console.log("--------------------");
-  console.log("SECRETS:");
-  logSecret("IGDB_CLIENT_ID", status.IGDB_CLIENT_ID);
-  logSecret("IGDB_CLIENT_SECRET", status.IGDB_CLIENT_SECRET);
-  logSecret("PSN_NPSSO", status.PSN_NPSSO);
-  logSecret("OPENXBL_API_KEY", status.OPENXBL_API_KEY);
-  logSecret("STEAM_API_KEY", status.STEAM_API_KEY);
-  logSecret("GOOGLE_PRIVATE_KEY", status.GOOGLE_PRIVATE_KEY);
-  logSecret("PRICECHARTING_TOKEN", status.PRICECHARTING_TOKEN);
+  console.log(
+    `%cSECRETS:\n%c${secretLines.join("\n")}`,
+    headerStyle,
+    bodyStyle
+  );
 }
 
 function bindTextureParallax() {
