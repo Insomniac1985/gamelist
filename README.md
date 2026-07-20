@@ -159,7 +159,6 @@ For now, let's finish this setup.
 
 13. Go back to your repository **Code page** (Main page) and next to about press the cog button.
 14. Inside the website text box add your website url
-
 15. Open [GitHub fine-grained personal access tokens](https://github.com/settings/personal-access-tokens).
 16. Click **Generate new token**.
 17. Use a clear name, for example `Gamelist Cloudflare updater`.
