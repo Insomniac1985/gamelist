@@ -17,7 +17,7 @@ Both pages share edit mode, themes, account settings, price-store settings, achi
 Made and designed by <img src="assets/shabii_logo.png" alt="Shabii" width="18" align="center"> [Shabii](https://x.com/Shabii_exe) with the help of ChatGPT Codex.
 
 For suggestions, questions, updates, new features, or patches:
-Email <a href="mailto:shabiimitjans@gmail.com"><code>shabiimitjans@gmail.com</code></a>
+Email: <a href="mailto:shabiimitjans@gmail.com">shabiimitjans@gmail.com</a>
 
 ## Features
 
