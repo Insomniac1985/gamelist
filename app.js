@@ -430,24 +430,30 @@ async function logConsoleInfo(theme = "shabii") {
 }
 
 function logStatusLines(status, theme = "shabii") {
-  const log = (name, value) => console.log(`${name}: ${Boolean(value)}`);
+  const logApi = (name, value) => console.log(`${name}: ${Boolean(value) ? "ONLINE" : "OFFLINE"}`);
+  const logAccountApi = (name, value, username) => {
+    console.log(`${name}: ${username ? (Boolean(value) ? "ONLINE" : "OFFLINE") : "NO USERNAME"}`);
+  };
+  const logSecret = (name, value) => console.log(`${name}: ${Boolean(value) ? "TRUE" : "FALSE"}`);
   if (theme !== "shabii") {
-    log("UPDATE", status.UPDATE);
+    logApi("UPDATE", status.UPDATE);
     console.log("--------------------");
   }
-  log("IGDB_CLIENT_ID", status.IGDB_CLIENT_ID);
-  log("IGDB_CLIENT_SECRET", status.IGDB_CLIENT_SECRET);
-  log("PSN_NPSSO", status.PSN_NPSSO);
-  log("OPENXBL_API_KEY", status.OPENXBL_API_KEY);
-  log("STEAM_API_KEY", status.STEAM_API_KEY);
-  log("GOOGLE_PRIVATE_KEY", status.GOOGLE_PRIVATE_KEY);
-  log("PRICECHARTING_TOKEN", status.PRICECHARTING_TOKEN);
+  console.log("STATUS:");
+  logApi("IGDB API", status.working?.IGDB);
+  logApi("PRICECHARTING API", status.working?.PRICECHARTING);
+  logAccountApi("PSN API", status.working?.PSN, state.settings.psnUser);
+  logAccountApi("OPENXBL API", status.working?.XBOX, state.settings.microsoftUser);
+  logAccountApi("STEAM API", status.working?.STEAM, state.settings.steamUser);
   console.log("--------------------");
-  log("IGDB_WORKING", status.working?.IGDB);
-  log("PRICECHARTING_WORKING", status.working?.PRICECHARTING);
-  log("PSN_WORKING", status.working?.PSN);
-  log("XBOX_WORKING", status.working?.XBOX);
-  log("STEAM_WORKING", status.working?.STEAM);
+  console.log("SECRETS:");
+  logSecret("IGDB_CLIENT_ID", status.IGDB_CLIENT_ID);
+  logSecret("IGDB_CLIENT_SECRET", status.IGDB_CLIENT_SECRET);
+  logSecret("PSN_NPSSO", status.PSN_NPSSO);
+  logSecret("OPENXBL_API_KEY", status.OPENXBL_API_KEY);
+  logSecret("STEAM_API_KEY", status.STEAM_API_KEY);
+  logSecret("GOOGLE_PRIVATE_KEY", status.GOOGLE_PRIVATE_KEY);
+  logSecret("PRICECHARTING_TOKEN", status.PRICECHARTING_TOKEN);
 }
 
 function bindTextureParallax() {
@@ -8644,7 +8650,9 @@ async function toggleEditMode() {
 
 async function hasSharedEditorSession() {
   try {
-    return (await fetch("/api/auth", { cache: "no-store" })).ok;
+    const response = await fetch("/api/auth", { cache: "no-store" });
+    const data = await response.json().catch(() => ({}));
+    return Boolean(data.ok);
   } catch {
     return false;
   }
