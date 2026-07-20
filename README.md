@@ -157,17 +157,19 @@ main.yml
 To force an update manually later, open your repository, go to **Actions**, open **Sync from upstream**, and click **Run workflow**.
 For now, let's finish this setup.
 
-13. Open [GitHub fine-grained personal access tokens](https://github.com/settings/personal-access-tokens).
-14. Click **Generate new token**.
-15. Use a clear name, for example `Gamelist Cloudflare updater`.
-16. Under **Resource owner**, choose the GitHub account that owns your Gamelist repository.
-17. Set **No expiration** as the expiration date.
-18. Under **Repository access**, choose **Only select repositories**.
-19. Select only your Gamelist repository. Do not select any other repositories.
-20. Under **Repository permissions**, **Add permissions** and check **Actions** and change it to **Read and write**.
-21. Click **Generate token**.
-22. Copy the token immediately. GitHub will not show it again.
-23. Add it in Cloudflare **Variables and Secrets** as a **Secret**:
+13. Go back to your repository **Code page** (Main page) and next to about press the cog button.
+14. Inside the website text box add your website url
+15. Open [GitHub fine-grained personal access tokens](https://github.com/settings/personal-access-tokens).
+16. Click **Generate new token**.
+17. Use a clear name, for example `Gamelist Cloudflare updater`.
+18. Under **Resource owner**, choose the GitHub account that owns your Gamelist repository.
+19. Set **No expiration** as the expiration date.
+20. Under **Repository access**, choose **Only select repositories**.
+21. Select only your Gamelist repository. Do not select any other repositories.
+22. Under **Repository permissions**, **Add permissions** and check **Actions** and change it to **Read and write**.
+23. Click **Generate token**.
+24. Copy the token immediately. GitHub will not show it again.
+25. Add it in Cloudflare **Variables and Secrets** as a **Secret**:
 
 ```text
 GITHUB_WORKFLOW_TOKEN

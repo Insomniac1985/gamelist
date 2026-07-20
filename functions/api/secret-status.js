@@ -17,8 +17,17 @@ export async function onRequestGet({ request, env = {} }) {
     GOOGLE_PRIVATE_KEY: isSet(env.GOOGLE_PRIVATE_KEY),
     UPDATE: working.UPDATE,
     CURRENT_REPO,
+    SITE_URL: siteUrl(request),
     working,
   });
+}
+
+function siteUrl(request) {
+  try {
+    return new URL(request.url).origin;
+  } catch {
+    return "";
+  }
 }
 
 async function integrationHealth(env, request) {
