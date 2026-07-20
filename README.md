@@ -198,8 +198,10 @@ The Playstation API access can expire after a while and will require adding the 
 
 ### <img src="assets/platforms/steam.png" alt="Steam" width="22" align="center"> Steam Achievements
 
-1. Enter [Steam Web API key page](https://steamcommunity.com/dev/apikey) and log into your account.
-2. Copy the key and create a new Cloudflare **Variables and Secrets** entry:
+1. Enter [Steam Web API key page](https://steamcommunity.com/dev/apikey) and log into your account. You will need 2FA enabled.
+2. Add the domain name of your app, agree the terms and Register.
+3. Approve using the Steam App.
+4. Copy the **Key** and create a new Cloudflare **Variables and Secrets** entry:
 
 ```text
 STEAM_API_KEY
