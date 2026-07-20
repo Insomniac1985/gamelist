@@ -16,6 +16,11 @@ Both pages share edit mode, themes, account settings, price-store settings, achi
 
 Made and designed by <img src="assets/shabii_logo.png" alt="Shabii" width="18" align="center"> [Shabii](https://x.com/Shabii_exe) with the help of ChatGPT Codex.
 
+<blockquote>
+  <strong>Suggestions, questions, updates, new features, or patches:</strong><br>
+  Email <a href="mailto:shabiimitjans@gmail.com"><code>shabiimitjans@gmail.com</code></a>
+</blockquote>
+
 ## Features
 
 - Cloud sync through Cloudflare Workers.
