@@ -395,8 +395,7 @@ init();
 
 async function init() {
   if (await checkSiteVersion()) return;
-  logPageVersion();
-  logSecretStatus();
+  logConsoleInfo();
   await window.__initialThemeReady?.catch(() => "shabii");
   registerServiceWorker();
   syncDisplayMode();
@@ -417,12 +416,15 @@ async function init() {
   scheduleBackgroundRefreshes();
 }
 
-async function logSecretStatus() {
+async function logConsoleInfo() {
   try {
     const response = await fetch("/api/secret-status", { cache: "no-store" });
     if (!response.ok) throw new Error(`HTTP ${response.status}`);
-    logStatusLines(await response.json());
+    const status = await response.json();
+    logPageVersion(status.CURRENT_REPO);
+    logStatusLines(status);
   } catch (error) {
+    logPageVersion();
     console.warn("Could not check secret status", error);
   }
 }
@@ -541,7 +543,9 @@ function applySiteVersion(value = {}) {
   siteVersion.updatedAt = String(value.updatedAt || "").trim();
 }
 
-function logPageVersion() {
+function logPageVersion(currentRepo = "") {
+  const originalRepo = "https://github.com/ShabiiEXE/Gamelist";
+  const currentRepoLine = repoUrlsMatch(currentRepo, originalRepo) ? "" : `\n  current repo: ${currentRepo}`;
   console.log(String.raw`%c
     {{{{{{{{{{{     {{{{{{{{{{{{{{{{{{{{
    {{{{{{{{{{{       {{{{{{{{{{{{{{{{{{ 
@@ -559,8 +563,13 @@ function logPageVersion() {
 {{{{{{{{{{{        {{{{{{{{{{{{         
 %c
   ${consoleVersionLabel()}
-  original repo: https://github.com/ShabiiEXE/Gamelist
+  original repo: ${originalRepo}${currentRepoLine}
 `, "color:#ff0039;font-weight:900;font-size:8px;line-height:1;", "color:#ff0039;font-weight:900;font-size:12px;line-height:1.35;");
+}
+
+function repoUrlsMatch(left, right) {
+  const normalize = (value) => String(value || "").trim().toLowerCase().replace(/\.git$/, "").replace(/\/$/, "");
+  return !normalize(left) || normalize(left) === normalize(right);
 }
 
 function consoleVersionLabel() {

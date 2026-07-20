@@ -5,7 +5,8 @@ let healthCache;
 
 export async function onRequestGet({ request, env = {} }) {
   const isSet = (value) => Boolean(String(value || "").trim());
-  const working = await integrationHealth(env, request);
+  const health = await integrationHealth(env, request);
+  const { CURRENT_REPO, ...working } = health;
   return json({
     PSN_NPSSO: isSet(env.PSN_NPSSO),
     OPENXBL_API_KEY: isSet(env.OPENXBL_API_KEY),
@@ -14,6 +15,7 @@ export async function onRequestGet({ request, env = {} }) {
     PRICECHARTING_TOKEN: isSet(env.PRICECHARTING_TOKEN),
     GOOGLE_PRIVATE_KEY: isSet(env.GOOGLE_PRIVATE_KEY),
     UPDATE: working.UPDATE,
+    CURRENT_REPO,
     working,
   });
 }
@@ -34,7 +36,8 @@ async function integrationHealth(env, request) {
     PSN: checks[2],
     XBOX: checks[3],
     STEAM: checks[4],
-    UPDATE: checks[5],
+    UPDATE: checks[5].ok,
+    CURRENT_REPO: checks[5].repoUrl,
   };
   healthCache = { value, expiresAt: Date.now() + HEALTH_CACHE_MS };
   return value;
@@ -100,17 +103,20 @@ async function checkSteam(env) {
 }
 
 async function checkUpdateWorkflow(env, request) {
-  if (env.UPDATE_FILE_PRESENT === "true") return true;
+  const configuredRepoUrl = cleanRepoUrl(env.GITLAB_PROJECT_URL || env.CI_PROJECT_URL || env.REPOSITORY_URL);
+  if (env.UPDATE_FILE_PRESENT === "true") return { ok: true, repoUrl: configuredRepoUrl };
+  let updateFilePresent = false;
   if (env.ASSETS && request?.url) {
     const origin = new URL(request.url).origin;
     const assetChecks = await Promise.all([
       env.ASSETS.fetch(new Request(`${origin}/.github/workflows/main.yml`)),
       env.ASSETS.fetch(new Request(`${origin}/.gitlab-ci.yml`)),
     ]).catch(() => []);
-    if (assetChecks.some((response) => response?.ok)) return true;
+    updateFilePresent = assetChecks.some((response) => response?.ok);
+    if (updateFilePresent && configuredRepoUrl) return { ok: true, repoUrl: configuredRepoUrl };
   }
   const token = String(env.GITHUB_WORKFLOW_TOKEN || "").trim();
-  if (!token) return false;
+  if (!token) return { ok: updateFilePresent, repoUrl: configuredRepoUrl };
   const headers = {
     Authorization: `Bearer ${token}`,
     Accept: "application/vnd.github+json",
@@ -120,14 +126,24 @@ async function checkUpdateWorkflow(env, request) {
   let repo = String(env.GITHUB_REPO_FULL_NAME || "").trim();
   if (!repo) {
     const reposResponse = await safeFetch("https://api.github.com/user/repos?per_page=2", { headers });
-    if (!reposResponse?.ok) return false;
+    if (!reposResponse?.ok) return { ok: updateFilePresent, repoUrl: configuredRepoUrl };
     const repos = await reposResponse.json().catch(() => []);
-    if (!Array.isArray(repos) || repos.length !== 1) return false;
+    if (!Array.isArray(repos) || repos.length !== 1) return { ok: updateFilePresent, repoUrl: configuredRepoUrl };
     repo = String(repos[0]?.full_name || "");
   }
-  if (!/^[^/]+\/[^/]+$/.test(repo)) return false;
+  if (!/^[^/]+\/[^/]+$/.test(repo)) return { ok: updateFilePresent, repoUrl: configuredRepoUrl };
+  const repoUrl = `https://github.com/${repo}`;
   const response = await safeFetch(`https://api.github.com/repos/${repo}/actions/workflows/main.yml`, { headers });
-  return Boolean(response?.ok);
+  return { ok: Boolean(response?.ok), repoUrl };
+}
+
+function cleanRepoUrl(value) {
+  try {
+    const url = new URL(String(value || "").trim());
+    return /^https?:$/.test(url.protocol) ? url.toString().replace(/\/$/, "") : "";
+  } catch {
+    return "";
+  }
 }
 
 async function safeFetch(url, options = {}) {
