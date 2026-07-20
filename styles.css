@@ -3857,8 +3857,7 @@ body[data-mobile-section="upcoming"] .column:not(#upcoming) {
   background: rgba(255, 255, 255, 0.07);
 }
 
-.game-row.owner-card-judy,
-.game-row.owner-card-judy:hover {
+.game-row.owner-card-judy {
   background:
     linear-gradient(
       135deg,
@@ -3872,9 +3871,7 @@ body[data-mobile-section="upcoming"] .column:not(#upcoming) {
 }
 
 .game-row.owner-card-jordi,
-.game-row.owner-card-jordi:hover,
-.game-row.owner-card-cage,
-.game-row.owner-card-cage:hover {
+.game-row.owner-card-cage {
   background:
     linear-gradient(
       135deg,
@@ -3888,9 +3885,7 @@ body[data-mobile-section="upcoming"] .column:not(#upcoming) {
 }
 
 .game-row.owner-card-judy.owner-card-jordi,
-.game-row.owner-card-judy.owner-card-jordi:hover,
-.game-row.owner-card-judy.owner-card-cage,
-.game-row.owner-card-judy.owner-card-cage:hover {
+.game-row.owner-card-judy.owner-card-cage {
   background:
     linear-gradient(
       135deg,
@@ -4246,6 +4241,14 @@ body.theme-kash .game-row.stream-card:hover {
     ),
     var(--panel);
   border-color: rgba(255, 203, 150, 0.38);
+}
+
+.game-card.owner-card-judy:hover,
+.game-card.owner-card-jordi:hover,
+.game-card.owner-card-cage:hover,
+.game-card.owner-card-judy.owner-card-jordi:hover,
+.game-card.owner-card-judy.owner-card-cage:hover {
+  border-color: color-mix(in srgb, var(--accent) 50%, transparent);
 }
 
 .game-card.digital-card,
@@ -4784,6 +4787,14 @@ body.theme-kash .game-card.stream-card.completed-trophy-card {
     0 14px 34px rgba(247, 223, 105, 0.1) !important;
 }
 
+.game-row.owner-card-judy:hover,
+.game-row.owner-card-jordi:hover,
+.game-row.owner-card-cage:hover,
+.game-row.owner-card-judy.owner-card-jordi:hover,
+.game-row.owner-card-judy.owner-card-cage:hover {
+  border-color: color-mix(in srgb, var(--accent) 50%, transparent);
+}
+
 .cover-button {
   position: relative;
   width: 104px;
@@ -4873,9 +4884,7 @@ body.theme-kash .game-card.stream-card.completed-trophy-card {
 }
 
 .playing-finished-game.owner-card-judy,
-.playing-finished-game.owner-card-judy:hover,
-.completed-row.owner-card-judy,
-.completed-row.owner-card-judy:hover {
+.completed-row.owner-card-judy {
   border-color: rgba(255, 158, 210, 0.36);
   box-shadow: 0 0 20px rgba(255, 158, 210, 0.12);
 }
@@ -4888,15 +4897,20 @@ body.theme-kash .game-card.stream-card.completed-trophy-card {
 }
 
 .playing-finished-game.owner-card-jordi,
-.playing-finished-game.owner-card-jordi:hover,
 .playing-finished-game.owner-card-cage,
-.playing-finished-game.owner-card-cage:hover,
 .completed-row.owner-card-jordi,
-.completed-row.owner-card-jordi:hover,
-.completed-row.owner-card-cage,
-.completed-row.owner-card-cage:hover {
+.completed-row.owner-card-cage {
   border-color: rgba(255, 173, 95, 0.36);
   box-shadow: 0 0 20px rgba(255, 173, 95, 0.12);
+}
+
+.playing-finished-game.owner-card-judy:hover,
+.playing-finished-game.owner-card-jordi:hover,
+.playing-finished-game.owner-card-cage:hover,
+.completed-row.owner-card-judy:hover,
+.completed-row.owner-card-jordi:hover,
+.completed-row.owner-card-cage:hover {
+  border-color: color-mix(in srgb, var(--accent) 50%, transparent);
 }
 .game-card .edit-action {
   position: absolute;
@@ -7629,6 +7643,13 @@ body.theme-kash .playing-finished-game.completed-trophy-card:hover {
     linear-gradient(135deg, rgba(247, 223, 105, 0.24), rgba(185, 132, 25, 0.16)),
     rgba(255, 255, 255, 0.06);
   border-color: rgba(247, 223, 105, 0.52);
+}
+
+.game-card[class*="owner-color-card-"]:hover,
+.game-row[class*="owner-color-card-"]:hover,
+.completed-row[class*="owner-color-card-"]:hover,
+.playing-finished-game[class*="owner-color-card-"]:hover {
+  border-color: color-mix(in srgb, var(--accent) 50%, transparent) !important;
 }
 
 .completed-cover {

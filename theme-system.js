@@ -399,10 +399,13 @@ function applyOwnerStyle(ownerColors) {
         background: ${colorMix(color, 0.16)} !important;
         border-color: ${colorMix(color, 0.48)} !important;
       }
-      .owner-color-card-${slug}, .owner-color-card-${slug}:hover {
+      .owner-color-card-${slug} {
         background: linear-gradient(135deg, ${fill}, ${faint} 42%, var(--owner-card-base)), var(--panel) !important;
         border-color: ${border} !important;
         box-shadow: 0 0 20px ${glow} !important;
+      }
+      .owner-color-card-${slug}:hover {
+        border-color: color-mix(in srgb, var(--accent) 50%, transparent) !important;
       }
       .playing-finished-game.owner-color-card-${slug} strong,
       .completed-row.owner-color-card-${slug} strong { color: ${color} !important; }
