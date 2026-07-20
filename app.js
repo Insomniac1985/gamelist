@@ -545,7 +545,7 @@ function applySiteVersion(value = {}) {
 
 function logPageVersion(currentRepo = "") {
   const originalRepo = "https://github.com/ShabiiEXE/Gamelist";
-  const currentRepoLine = repoUrlsMatch(currentRepo, originalRepo) ? "" : `\n  current repo: ${currentRepo}`;
+  const currentRepoLine = repoUrlsMatch(currentRepo, originalRepo) ? "" : `\n  repo: ${currentRepo}`;
   console.log(String.raw`%c
     {{{{{{{{{{{     {{{{{{{{{{{{{{{{{{{{
    {{{{{{{{{{{       {{{{{{{{{{{{{{{{{{ 
