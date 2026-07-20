@@ -102,7 +102,7 @@ Add this required secret first:
 EDIT_PASSWORD
 ```
 
-`EDIT_PASSWORD` is the password you will type in the app to unlock edit mode and change your site settings and theme.
+`EDIT_PASSWORD` is the password you will type in the app to unlock **Edit mode** and change your site settings and theme.
 
 Use **Secret** for all integration keys/tokens. Do not put them in `wrangler.toml`, do not commit them to GitHub, and do not share them publicly.
 
@@ -192,7 +192,7 @@ GITHUB_WORKFLOW_TOKEN
 PSN_NPSSO
 ```
 
-5. Set your **PlayStation profile name** inside the app: enter edit mode, open **Settings**, and fill the PlayStation account field.
+5. Set your **PlayStation profile name** inside the app: enter **Edit mode**, open **Settings**, and fill the PlayStation account field.
 
 The Playstation API access can expire after a while and will require adding the `npsso` token value again, if that is the case.
 
@@ -207,7 +207,7 @@ The Playstation API access can expire after a while and will require adding the 
 STEAM_API_KEY
 ```
 
-3. Set your **Steam account** inside the app: enter edit mode, open **Settings**, and fill the **Steam account** field with your Steam profile URL.
+3. Set your **Steam account** inside the app: enter **Edit mode**, open **Settings**, and fill the **Steam account** field with your Steam profile URL.
 
 Steam achievements are fetched only for app IDs owned by the configured Steam account. Make sure the account's game details and library visibility are set to **Public**.
 
@@ -220,7 +220,7 @@ Xbox 360, Xbox One, Xbox Series and Xbox PC games can show achievements through 
 OPENXBL_API_KEY
 ```
 
-2.Set your **Xbox account** inside the app: enter edit mode, open **Settings**, and fill the **Microsoft account** field with an Xbox gamertag.
+2.Set your **Xbox account** inside the app: enter **Edit mode**, open **Settings**, and fill the **Microsoft account** field with an Xbox gamertag.
 
 ### <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/a/a5/Google_Calendar_icon_%282020%29.svg/960px-Google_Calendar_icon_%282020%29.svg.png" alt="Google Calendar" width="22" align="center"> Google Calendar Preorder Events (ADVANCED)
 
@@ -253,9 +253,9 @@ GOOGLE_CALENDAR_ID
 
 ## <img src="assets/Icon.png" alt="Gamelist" width="22" align="center"> First run
 
-1. Deploy the Worker.
-2. Open the site.
-3. Click edit/login and enter `EDIT_PASSWORD`.
+1. Deploy the website.
+2. Open it.
+3. Click **Edit mode** and enter the `EDIT_PASSWORD` you set.
 4. Open Settings.
 5. Set currency, region, selected shops, default owner, account names, theme, Shelf Sync, and visible sections.
 6. Save settings.
@@ -291,7 +291,7 @@ The Currently Playing carousel can show a Twitch preview card before the games.
 
 To enable it:
 
-1. Enter edit mode.
+1. Enter **Edit mode**.
 2. Open **Settings**.
 3. Add your Twitch username in the platform/account settings.
 4. Mark at least one currently-playing game as **Stream**.
@@ -303,7 +303,7 @@ When those are both set, Gamelist and Shelf add a Twitch preview as the first ca
 
 ### Add a game to your gamelist
 
-1. Enter edit mode.
+1. Enter **Edit mode**.
 2. Click **Add Game**.
 3. Search by title or paste an IGDB game URL.
 4. Choose the place it should be in: Backlog, Upcoming, Available.
@@ -315,7 +315,7 @@ If Google Calendar is configured, adding a new preorder store to an upcoming/wan
 ### Add a a physical game to your Shelf collection
 
 1. Click the **top handle** or drag it down to access the **Shelf**.
-2. Enter edit mode.
+2. Enter **Edit mode**.
 3. Click **Add Game**.
 4. Search by title, paste a PriceCharting url, paste a IGDB url or enter details manually.
 5. Set platform, region, owners, condition parts, collection value fields, publisher/developer, genre, cover, and notes.
@@ -327,7 +327,7 @@ New physical games can sync into the Gamelist as setup-needed backlog/new-additi
 
 During December and January, Gamelist let's you pickyour yearly **Games of the year** and besides checking your statistics, it will let you turn it into a shareable image using your current theme and logo.
 
-1. Enter edit mode.
+1. Enter **Edit mode**.
 2. Go to the **Games of the year** section.
 3. Make sure the current year picks are chosen or go to the dropdown and select a previous year.
 4. Export the image using the **download button**.
