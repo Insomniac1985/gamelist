@@ -454,7 +454,6 @@ async function fetchRepoCopies() {
 function logStatusLines(status, theme = "shabii", editorStatus = "NOT LOGGED IN") {
   const headerStyle = "color:#67c5ab;font-weight:900;font-size:12px;line-height:1.35;";
   const labelStyle = "font-weight:700;";
-  const valueStyle = "";
   const apiStatus = (value) => Boolean(value) ? "online" : "offline";
   const accountApiStatus = (value, username, apiSet) => {
     const label = !apiSet
@@ -485,8 +484,8 @@ function logStatusLines(status, theme = "shabii", editorStatus = "NOT LOGGED IN"
     ["GOOGLE_PRIVATE_KEY", secretStatus(status.GOOGLE_PRIVATE_KEY)],
     ["PRICECHARTING_TOKEN", secretStatus(status.PRICECHARTING_TOKEN)],
   ];
-  logConsoleBlock("STATUS:", statusLines, { headerStyle, labelStyle, valueStyle });
-  logConsoleBlock("SECRETS:", secretLines, { headerStyle, labelStyle, valueStyle });
+  logConsoleBlock("STATUS:", statusLines, { headerStyle, labelStyle });
+  logConsoleBlock("SECRETS:", secretLines, { headerStyle, labelStyle });
 }
 
 function logConsoleBlock(title, rows, styles) {
@@ -494,9 +493,16 @@ function logConsoleBlock(title, rows, styles) {
   const args = [styles.headerStyle];
   rows.forEach(([label, value]) => {
     message.push(`\n%c${label}:%c ${value}`);
-    args.push(styles.labelStyle, styles.valueStyle);
+    args.push(styles.labelStyle, consoleValueStyle(value));
   });
   console.log(message.join(""), ...args);
+}
+
+function consoleValueStyle(value) {
+  const normalized = String(value || "").trim().toLowerCase();
+  if (["online", "true", "logged in"].includes(normalized)) return "color:#38d878;font-weight:900;";
+  if (["offline", "false"].includes(normalized)) return "color:#8b0000;font-weight:900;";
+  return "color:#ff9f1a;font-weight:900;";
 }
 
 function bindTextureParallax() {
