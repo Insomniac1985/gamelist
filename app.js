@@ -6788,7 +6788,7 @@ async function renderDetailXboxAchievements(game) {
     const data = await fetchXboxTitleAchievements(xboxGame);
     if (state.detailTrophyRequest !== requestKey) return;
     const achievements = Array.isArray(data.achievements) ? data.achievements : [];
-    state.cardTrophies[cacheKey] = xboxAchievementCache(data, achievements);
+    state.cardTrophies[cacheKey] = xboxAchievementCache(data, achievements, xboxGame);
     state.detailTrophiesData = achievements;
     renderDetailTrophyList();
   } catch (error) {
@@ -7020,11 +7020,15 @@ async function fetchXboxTitleAchievements(xboxGame) {
   return data;
 }
 
-function xboxAchievementCache(data, achievements) {
-  const earned = Number.isFinite(Number(data.earnedCount))
+function xboxAchievementCache(data, achievements, summary = null) {
+  const detailEarned = Number.isFinite(Number(data.earnedCount))
     ? Number(data.earnedCount)
     : achievements.filter((achievement) => achievement.earned).length;
-  const total = Number.isFinite(Number(data.count)) ? Number(data.count) : achievements.length;
+  const detailTotal = Number.isFinite(Number(data.count)) ? Number(data.count) : achievements.length;
+  const summaryEarned = Number(summary?.earned || 0);
+  const summaryTotal = Number(summary?.total || 0);
+  const earned = Math.max(detailEarned, summaryEarned);
+  const total = Math.max(detailTotal, summaryTotal);
   return { loading: false, achievements, trophies: achievements, earned, total };
 }
 
@@ -7318,10 +7322,10 @@ async function loadCardXboxAchievements(game, xboxGame) {
   try {
     const data = await fetchXboxTitleAchievements(xboxGame);
     const achievements = Array.isArray(data.achievements) ? data.achievements : [];
-    state.cardTrophies[cacheKey] = xboxAchievementCache(data, achievements);
+    state.cardTrophies[cacheKey] = xboxAchievementCache(data, achievements, xboxGame);
   } catch (error) {
     console.warn("[trophies] Xbox card achievements unavailable", { game: game.title, titleId: xboxGame.titleId, error: error.message });
-    state.cardTrophies[cacheKey] = { loading: false, achievements: [], trophies: [], earned: 0, total: 0 };
+    state.cardTrophies[cacheKey] = xboxAchievementCache({}, [], xboxGame);
   }
   updateCardAchievementUi(game.id);
 }
