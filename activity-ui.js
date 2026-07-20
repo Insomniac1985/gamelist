@@ -179,17 +179,23 @@ export function achievementDashboardMarkup({ completedCount, completedBreakdown 
   return `<div class="achievement-summary ${levelLabel ? "" : "achievement-summary-no-level"}"><button class="achievement-kpi platinum-highlight ${completedCount ? "has-platinum" : ""}" type="button" data-action="platinums"><strong class="kpi-with-icon">${trophyIconHtml}${escape(String(completedCount))}</strong><span>COMPLETED</span>${completedBreakdown}</button><a class="achievement-kpi trophy-kpi" href="${escape(sourceUrl)}" target="_blank" rel="noreferrer"><strong>${escape(String(trophyTotal))}</strong><span>TROPHIES</span>${trophyBreakdown}</a>${levelCard}${rarityGraph}</div>`;
 }
 
-export function achievementPanelMarkup({ psn = {}, steam = {}, xbox = {}, trophyIconHtml, platformBadge, platformLogo, trophyTone, escape }) {
+export function achievementPanelMarkup({ psn = {}, steam = {}, xbox = {}, setupNotices = [], trophyIconHtml, platformBadge, platformLogo, trophyTone, escape }) {
   const sourceUrl = psn.sourceUrl || "https://www.playstation.com/";
   const authErrorUrl = "https://ca.account.sony.com/api/v1/ssocookie";
   const fallbackUrl = psn.authError ? authErrorUrl : sourceUrl;
-  const providerNotices = [
+  const explicitSetupNotices = Array.isArray(setupNotices) ? setupNotices : [];
+  const providerNotices = explicitSetupNotices.length ? [
+    ...explicitSetupNotices,
+    psn.authError && !psn.needsSetup ? ["Refresh PSN token", authErrorUrl] : null,
+    xbox.authError && !xbox.needsSetup ? ["Check Xbox setup", xbox.sourceUrl || "https://www.xbox.com/"] : null,
+    steam.authError && !steam.needsSetup ? ["Check Steam setup", steam.sourceUrl || "https://steamcommunity.com/"] : null,
+  ].filter(Boolean) : [
     psn.authError ? ["Refresh PSN token", authErrorUrl] : psn.needsSetup ? ["Set up PSN", authErrorUrl] : null,
-    steam.authError || steam.needsSetup ? ["Check Steam setup", steam.sourceUrl || "https://steamcommunity.com/"] : null,
-    xbox.authError || xbox.needsSetup ? ["Check Xbox setup", xbox.sourceUrl || "https://www.xbox.com/"] : null,
+    xbox.authError ? ["Check Xbox setup", xbox.sourceUrl || "https://www.xbox.com/"] : xbox.needsSetup ? ["Set up Xbox", xbox.sourceUrl || "https://www.xbox.com/"] : null,
+    steam.authError ? ["Check Steam setup", steam.sourceUrl || "https://steamcommunity.com/"] : steam.needsSetup ? ["Set up Steam", steam.sourceUrl || "https://steamcommunity.com/"] : null,
   ].filter(Boolean);
   const authNotice = providerNotices.length
-    ? `<div class="achievement-auth-notices">${providerNotices.map(([label, href]) => `<a class="achievement-auth-notice" href="${escape(href)}" target="_blank" rel="noreferrer">${escape(label)}</a>`).join("")}</div>`
+    ? `<div class="achievement-auth-notices">${providerNotices.map(([label, href], index) => `${index ? `<span class="achievement-auth-separator">/</span>` : ""}<a class="achievement-auth-notice" href="${escape(href)}" target="_blank" rel="noreferrer">${escape(label)}</a>`).join("")}</div>`
     : "";
   const psnAchievements = Array.isArray(psn.achievements) ? psn.achievements : [];
   const steamAchievements = Array.isArray(steam.achievements) ? steam.achievements : [];
@@ -234,7 +240,7 @@ export function achievementPanelMarkup({ psn = {}, steam = {}, xbox = {}, trophy
     trophyTotal: total,
     trophyBreakdown: breakdown([[steam.totalEarned || 0, total, "PC"], [xbox.totalEarned || 0, total, "Xbox"], [psnTotal, total, "PlayStation"]]),
     level: psnLevel,
-    levelLabel: psnLevel ? `LEVEL <small>${escape(String(psn.summary.progress || 0))}% next</small>` : "",
+    levelLabel: psnLevel ? "PSN LEVEL" : "",
     counts, sourceUrl, trophyIconHtml, barHeight: sharedTrophyBarHeight, escape,
   });
   const cards = achievements.map((item, index) => {

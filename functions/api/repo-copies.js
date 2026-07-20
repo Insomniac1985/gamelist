@@ -11,6 +11,11 @@ const README_MARKERS = [
   "https://github.com/ShabiiEXE/Gamelist",
   "ShabiiEXE",
 ];
+const GITHUB_SEEDS = [
+  { fullName: ORIGINAL_FULL_NAME },
+  { fullName: "Insomniac1985/gamelist" },
+  { fullName: "totomitjans/gamelist", siteUrl: "https://gamelist.totomitjans.workers.dev/" },
+];
 let repoCache;
 
 export async function onRequestGet({ request, env = {} }) {
@@ -41,14 +46,9 @@ async function findRepoCopies(env = {}) {
 async function findGithubCandidates(env = {}) {
   const token = String(env.GITHUB_WORKFLOW_TOKEN || env.GITHUB_TOKEN || "").trim();
   const headers = githubHeaders(token);
-  const seeds = [
-    ORIGINAL_FULL_NAME,
-    "Insomniac1985/gamelist",
-    "totomitjans/gamelist",
-  ];
   const repos = new Map();
-  for (const fullName of seeds) {
-    const repo = await githubSeedRepo(fullName) || await githubRepo(fullName, headers);
+  for (const seed of GITHUB_SEEDS) {
+    const repo = await githubSeedRepo(seed) || githubStaticSeed(seed) || await githubRepo(seed.fullName, headers);
     if (repo) repos.set(repo.full_name, repo);
   }
   const search = await githubJson(`${GITHUB_API}/search/repositories?${new URLSearchParams({
@@ -127,7 +127,8 @@ async function githubRepo(fullName, headers) {
   return await githubJson(`${GITHUB_API}/repos/${fullName}`, headers).catch(() => null);
 }
 
-async function githubSeedRepo(fullName) {
+async function githubSeedRepo(seed) {
+  const fullName = seed.fullName;
   for (const branch of ["main", "master"]) {
     const readme = await fetchText(`https://raw.githubusercontent.com/${fullName}/${branch}/README.md`).catch(() => "");
     if (!mentionsOriginal(readme)) continue;
@@ -135,7 +136,7 @@ async function githubSeedRepo(fullName) {
       full_name: fullName,
       html_url: `https://github.com/${fullName}`,
       default_branch: branch,
-      homepage: await githubPageSiteUrl(fullName),
+      homepage: seed.siteUrl || await githubPageSiteUrl(fullName),
       pushed_at: "",
       updated_at: "",
       seedReadme: readme,
@@ -143,6 +144,20 @@ async function githubSeedRepo(fullName) {
     };
   }
   return null;
+}
+
+function githubStaticSeed(seed) {
+  if (!seed?.fullName) return null;
+  return {
+    full_name: seed.fullName,
+    html_url: `https://github.com/${seed.fullName}`,
+    default_branch: "main",
+    homepage: seed.siteUrl || "",
+    pushed_at: "",
+    updated_at: "",
+    seedReadme: README_MARKERS[0],
+    rawFallback: true,
+  };
 }
 
 async function githubPageSiteUrl(fullName) {

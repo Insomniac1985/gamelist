@@ -183,6 +183,7 @@ const state = {
   steamActivity: { achievements: [], games: [], completed: [], totalEarned: 0, sourceUrl: "" },
   xboxActivity: { achievements: [], games: [], completed: [], totalEarned: 0, sourceUrl: "" },
   achievementNoticeKey: "",
+  integrationStatus: null,
   steamOwnedAppIds: null,
   cardTrophies: {},
   platinumCoverCache: loadPlatinumCoverCache(),
@@ -398,7 +399,7 @@ init();
 async function init() {
   if (await checkSiteVersion()) return;
   const initialTheme = await window.__initialThemeReady?.catch(() => "shabii");
-  logConsoleInfo(initialTheme);
+  const consoleInfoPromise = logConsoleInfo(initialTheme);
   registerServiceWorker();
   syncDisplayMode();
   state.canEdit = await hasSharedEditorSession();
@@ -418,6 +419,7 @@ async function init() {
   if (cloudChanged) render();
   const requestedGame = new URLSearchParams(location.search).get("game");
   if (requestedGame && state.games.some((game) => game.id === requestedGame && !game.deletedAt)) openDetail(requestedGame);
+  await consoleInfoPromise;
   refreshAchievements();
   scheduleBackgroundRefreshes();
 }
@@ -430,14 +432,19 @@ async function logConsoleInfo(theme = "shabii") {
     ]);
     if (!response.ok) throw new Error(`HTTP ${response.status}`);
     const status = await response.json();
+    state.integrationStatus = status;
     const authStatus = await authResponse?.json().catch(() => ({}));
-    const repoCopies = authStatus?.ok ? await fetchRepoCopies() : [];
+    const repoCopies = authStatus?.ok && isShabiiMainOwner() ? await fetchRepoCopies() : [];
     logPageVersion(status.CURRENT_REPO, repoCopies);
     logStatusLines(status, theme, authStatus?.status || (authStatus?.ok ? "LOGGED IN" : "NOT LOGGED IN"));
   } catch (error) {
     logPageVersion();
     console.warn("Could not check secret status", error);
   }
+}
+
+function isShabiiMainOwner() {
+  return normalizeTag(state.settings.defaultOwner) === "shabii";
 }
 
 async function fetchRepoCopies() {
@@ -452,9 +459,8 @@ async function fetchRepoCopies() {
 }
 
 function logStatusLines(status, theme = "shabii", editorStatus = "NOT LOGGED IN") {
-  const headerStyle = "color:#ff0039;font-weight:900;font-size:12px;line-height:1.35;";
+  const headerStyle = "color:#67c5ab;font-weight:900;font-size:12px;line-height:1.35;";
   const labelStyle = "font-weight:700;";
-  const valueStyle = "";
   const apiStatus = (value) => Boolean(value) ? "online" : "offline";
   const accountApiStatus = (value, username, apiSet) => {
     const label = !apiSet
@@ -485,8 +491,8 @@ function logStatusLines(status, theme = "shabii", editorStatus = "NOT LOGGED IN"
     ["GOOGLE_PRIVATE_KEY", secretStatus(status.GOOGLE_PRIVATE_KEY)],
     ["PRICECHARTING_TOKEN", secretStatus(status.PRICECHARTING_TOKEN)],
   ];
-  logConsoleBlock("STATUS:", statusLines, { headerStyle, labelStyle, valueStyle });
-  logConsoleBlock("SECRETS:", secretLines, { headerStyle, labelStyle, valueStyle });
+  logConsoleBlock("STATUS:", statusLines, { headerStyle, labelStyle });
+  logConsoleBlock("SECRETS:", secretLines, { headerStyle, labelStyle });
 }
 
 function logConsoleBlock(title, rows, styles) {
@@ -494,9 +500,16 @@ function logConsoleBlock(title, rows, styles) {
   const args = [styles.headerStyle];
   rows.forEach(([label, value]) => {
     message.push(`\n%c${label}:%c ${value}`);
-    args.push(styles.labelStyle, styles.valueStyle);
+    args.push(styles.labelStyle, consoleValueStyle(value));
   });
   console.log(message.join(""), ...args);
+}
+
+function consoleValueStyle(value) {
+  const normalized = String(value || "").trim().toLowerCase();
+  if (["online", "true", "logged in"].includes(normalized)) return "color:#38d878;font-weight:900;";
+  if (["offline", "false"].includes(normalized)) return "color:#8b0000;font-weight:900;";
+  return "color:#ff9f1a;font-weight:900;";
 }
 
 function bindTextureParallax() {
@@ -598,7 +611,9 @@ function applySiteVersion(value = {}) {
 function logPageVersion(currentRepo = "", repoCopies = []) {
   const originalRepo = "https://github.com/ShabiiEXE/Gamelist";
   const currentRepoLine = repoUrlsMatch(currentRepo, originalRepo) ? "" : `\n  repo: ${currentRepo}`;
-  const reposLine = repoCopies.length ? `\n  repos (${repoCopies.length}):\n${repoCopies.map(repoConsoleLine).join("\n")}` : "";
+  const repoEntries = repoCopies.map(repoConsoleEntry);
+  const repoStyles = repoEntries.flatMap((entry) => entry.styles);
+  const reposLine = repoEntries.length ? `\n  repos (${repoEntries.length}):\n${repoEntries.map((entry) => entry.text).join("\n")}` : "";
   console.log(String.raw`%c
     {{{{{{{{{{{     {{{{{{{{{{{{{{{{{{{{
    {{{{{{{{{{{       {{{{{{{{{{{{{{{{{{ 
@@ -617,13 +632,25 @@ function logPageVersion(currentRepo = "", repoCopies = []) {
 %c
   ${consoleVersionLabel()}
   original repo: ${originalRepo}${reposLine}${currentRepoLine}
-`, "color:#ff0039;font-weight:900;font-size:8px;line-height:1;", "color:#ff0039;font-weight:900;font-size:12px;line-height:1.35;");
+`, "color:#ff0039;font-weight:900;font-size:8px;line-height:1;", "color:#ff0039;font-weight:900;font-size:12px;line-height:1.35;", ...repoStyles);
 }
 
-function repoConsoleLine(repo = {}) {
+function repoConsoleEntry(repo = {}, index = 0) {
   const url = String(repo.url || "").trim();
   const siteUrl = String(repo.siteUrl || "").trim();
-  return `  -site: ${siteUrl || "unknown"}\n   repo: ${url || "unknown"}`;
+  const color = index % 2 ? "#ff0039" : "#67c5ab";
+  const style = `color:${color};font-weight:900;line-height:1.35;`;
+  const emptyStyle = "color:#ffffff;font-weight:900;line-height:1.35;";
+  if (!siteUrl) {
+    return {
+      text: `%c  -site: %c-%c\n   repo: ${url || "-"}`,
+      styles: [style, emptyStyle, style],
+    };
+  }
+  return {
+    text: `%c  -site: ${siteUrl}\n   repo: ${url || "-"}`,
+    styles: [style],
+  };
 }
 
 function repoUrlsMatch(left, right) {
@@ -3781,15 +3808,47 @@ async function refreshAchievements() {
 
 function notifyAchievementProviderIssues(psnData = {}, steamData = {}, xboxData = {}) {
   if (!state.canEdit) return;
+  const status = state.integrationStatus || {};
   const issues = [
-    psnData.authError ? "PSN token needs refreshing." : psnData.needsSetup ? "PSN needs setup." : "",
-    steamData.authError ? "Steam achievements need attention." : steamData.needsSetup ? "Steam achievements need setup." : "",
-    xboxData.authError ? "Xbox achievements need attention." : xboxData.needsSetup ? "Xbox achievements need setup." : "",
+    achievementProviderIssue(psnData, state.settings.psnUser, status.PSN_NPSSO, "PSN token needs refreshing.", "PSN needs setup."),
+    achievementProviderIssue(steamData, state.settings.steamUser, status.STEAM_API_KEY, "Steam achievements need attention.", "Steam achievements need setup."),
+    achievementProviderIssue(xboxData, state.settings.microsoftUser, status.OPENXBL_API_KEY, "Xbox achievements need attention.", "Xbox achievements need setup."),
   ].filter(Boolean);
   const key = issues.join("|");
   if (!key || state.achievementNoticeKey === key) return;
   state.achievementNoticeKey = key;
   showToast(issues.join(" "), "error");
+}
+
+function achievementProviderIssue(data = {}, username = "", apiSet, authMessage, setupMessage) {
+  if (achievementProviderNeedsPairing(data, username, apiSet)) return setupMessage;
+  const hasUser = Boolean(String(username || "").trim());
+  const apiKnown = apiSet === true || apiSet === false;
+  const hasApi = apiSet === true;
+  if (data.authError && hasUser && (!apiKnown || hasApi)) return authMessage;
+  return "";
+}
+
+function achievementProviderNeedsPairing(data = {}, username = "", apiSet) {
+  const hasUser = Boolean(String(username || "").trim());
+  const apiKnown = apiSet === true || apiSet === false;
+  const hasApi = apiSet === true;
+  return apiKnown ? hasUser !== hasApi : hasUser && data.needsSetup;
+}
+
+function achievementSetupNotices(psnData = {}, steamData = {}, xboxData = {}) {
+  const status = state.integrationStatus || {};
+  return [
+    achievementProviderNeedsPairing(psnData, state.settings.psnUser, status.PSN_NPSSO)
+      ? ["Set up PSN", "https://ca.account.sony.com/api/v1/ssocookie"]
+      : null,
+    achievementProviderNeedsPairing(xboxData, state.settings.microsoftUser, status.OPENXBL_API_KEY)
+      ? ["Set up Xbox", xboxData.sourceUrl || "https://www.xbox.com/"]
+      : null,
+    achievementProviderNeedsPairing(steamData, state.settings.steamUser, status.STEAM_API_KEY)
+      ? ["Set up Steam", steamData.sourceUrl || "https://steamcommunity.com/"]
+      : null,
+  ].filter(Boolean);
 }
 
 async function fetchXboxActivity(forceRefresh = state.settings.forceCacheOnLoad === true) {
@@ -4018,7 +4077,17 @@ function renderAchievements(data = {}, steamData = state.steamActivity || emptyS
     sourceUrl: xboxData.sourceUrl || "",
   };
   renderPlayingSection();
-  const panel = achievementPanelMarkup({ psn: { ...data, ...state.psnActivity }, steam: state.steamActivity, xbox: state.xboxActivity, trophyIconHtml: trophyIcon(), platformBadge, platformLogo, trophyTone, escape: escapeHtml });
+  const panel = achievementPanelMarkup({
+    psn: { ...data, ...state.psnActivity },
+    steam: { ...steamData, ...state.steamActivity },
+    xbox: { ...xboxData, ...state.xboxActivity },
+    setupNotices: achievementSetupNotices(data, steamData, xboxData),
+    trophyIconHtml: trophyIcon(),
+    platformBadge,
+    platformLogo,
+    trophyTone,
+    escape: escapeHtml,
+  });
   el.achievementPanel.innerHTML = panel.html;
   el.achievementPanel.querySelector("[data-action='platinums']")?.addEventListener("click", () => openPlatinumDialog());
   scheduleMobilePaintRefresh();
@@ -6780,6 +6849,7 @@ function sectionRank(section) {
 function metaFor(game, options = {}) {
   const values = [];
   if (game.platform) values.push(platformBadge(game.platform, null, { title: game.title }));
+  if (game.platinum) values.push(completionPill(game));
   if (game.digital) values.push(`<span class="digital-pill">Digital</span>`);
   if (game.emulator) values.push(`<span class="emulator-pill">Emulator</span>`);
   if (game.lengthHours) values.push(timeBadge(game.lengthHours, hltbUrlFor(game)));
@@ -7352,6 +7422,7 @@ function completedBadges(game, options = {}) {
   const progress = achievementProgressForGame(game);
   return [
     game.platform ? platformBadge(game.platform, null, { title: game.title }) : "",
+    game.platinum ? completionPill(game) : "",
     game.digital ? `<span class="digital-pill">Digital</span>` : "",
     game.emulator ? `<span class="emulator-pill">Emulator</span>` : "",
     game.coop ? `<span class="coop-pill">Coop</span>` : "",
