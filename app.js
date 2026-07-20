@@ -429,7 +429,7 @@ async function logConsoleInfo(theme = "shabii") {
     if (!response.ok) throw new Error(`HTTP ${response.status}`);
     const status = await response.json();
     const authStatus = await authResponse?.json().catch(() => ({}));
-    logPageVersion(status.CURRENT_REPO);
+    logPageVersion(status.CURRENT_REPO, Boolean(authStatus?.ok));
     logStatusLines(status, theme, authStatus?.status || (authStatus?.ok ? "LOGGED IN" : "NOT LOGGED IN"));
   } catch (error) {
     logPageVersion();
@@ -581,7 +581,7 @@ function applySiteVersion(value = {}) {
   siteVersion.updatedAt = String(value.updatedAt || "").trim();
 }
 
-function logPageVersion(currentRepo = "") {
+function logPageVersion(currentRepo = "", loggedIn = false) {
   const originalRepo = "https://github.com/ShabiiEXE/Gamelist";
   const shabiiRepos = [
     "https://github.com/Insomniac1985/gamelist",
@@ -589,6 +589,7 @@ function logPageVersion(currentRepo = "") {
     "https://gitlab.com/shabiimitjans/gamelist",
   ];
   const currentRepoLine = repoUrlsMatch(currentRepo, originalRepo) ? "" : `\n  repo: ${currentRepo}`;
+  const reposLine = loggedIn ? `\n  repos (${shabiiRepos.length}):\n  ${shabiiRepos.join("\n  ")}` : "";
   console.log(String.raw`%c
     {{{{{{{{{{{     {{{{{{{{{{{{{{{{{{{{
    {{{{{{{{{{{       {{{{{{{{{{{{{{{{{{ 
@@ -606,8 +607,7 @@ function logPageVersion(currentRepo = "") {
 {{{{{{{{{{{        {{{{{{{{{{{{         
 %c
   ${consoleVersionLabel()}
-  original repo: ${originalRepo}
-  shabii repos: ${JSON.stringify(shabiiRepos, null, 2).replace(/\n/g, "\n  ")}${currentRepoLine}
+  original repo: ${originalRepo}${reposLine}${currentRepoLine}
 `, "color:#ff0039;font-weight:900;font-size:8px;line-height:1;", "color:#ff0039;font-weight:900;font-size:12px;line-height:1.35;");
 }
 
