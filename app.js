@@ -20,6 +20,7 @@ const VERSION_STORAGE_KEY = "gamelist:site-version";
 const CACHE_HOUR_STORAGE_KEY = "gamelist:cache-hour";
 const PULL_NAVIGATION_KEY = "gamelist:pull-navigation";
 const STORE_OPTIONS = ["Amazon", "eBay", "GAME.es", "Xtralife", "Retro Island NY", "GameStop", "Walmart"];
+const REGION_OPTIONS = ["ES", "IT", "IE", "FR", "PT", "JP", "MX", "US", "UK"];
 const MAX_PRICE_STORES = 5;
 const GAME_OF_YEAR_CATEGORIES = [
   ["fun", "MOST FUN"],
@@ -1155,7 +1156,7 @@ function normalizeSettings(settings = {}) {
     steamUser: cleanSteamUser(settings.steamUser),
     twitchUser: cleanTwitchUser(settings.twitchUser),
     currency: settings.currency === "USD" ? "USD" : "EUR",
-    region: ["ES", "IT", "US", "UK"].includes(settings.region) ? settings.region : DEFAULT_SETTINGS.region,
+    region: REGION_OPTIONS.includes(settings.region) ? settings.region : DEFAULT_SETTINGS.region,
     language: normalizeLanguage(settings.language),
     stores: stores.slice(0, MAX_PRICE_STORES),
     storeSettingsVersion: 2,
@@ -8086,7 +8087,7 @@ function storeLinksWithFallbacks(game) {
     playstation: regionalStoreLink(links.playstation, "playstation", q, region),
     nintendo: regionalStoreLink(links.nintendo, "nintendo", q, region),
     steam: links.steam || `https://store.steampowered.com/search/?term=${q}`,
-    xbox: `https://www.xbox.com/search?q=${q}`,
+    xbox: xboxSearchUrl(q, region),
   };
 }
 
@@ -8099,8 +8100,8 @@ function regionalStoreLink(url, store, query, region = state.settings.region) {
     ? playStationSearchUrl(query, region)
     : nintendoSearchUrl(query, region);
   if (!url) return fallback;
-  if (store === "playstation" && /playstation\.com\/(?:en-us|en-gb|es-es)\/search\?/i.test(url)) return fallback;
-  if (store === "nintendo" && /nintendo\.com\/(?:us\/search|en-gb\/Search|es-es\/Buscar)\//i.test(url)) return fallback;
+  if (store === "playstation" && /playstation\.com\/[^/]+\/search\?/i.test(url)) return fallback;
+  if (store === "nintendo" && /nintendo\.com\/(?:us\/search|[^/]+\/(?:Search|Buscar|Cerca|Rechercher|Pesquisar)|jp\/search|es-mx\/search)\//i.test(url)) return fallback;
   return url;
 }
 
@@ -8216,48 +8217,69 @@ function currencySymbol() {
 }
 
 function amazonStoreName(region = state.settings.region) {
-  if (region === "US") return "Amazon.com";
-  if (region === "UK") return "Amazon.co.uk";
-  return "Amazon.es";
+  return ({
+    US: "Amazon.com", UK: "Amazon.co.uk", IT: "Amazon.it", IE: "Amazon.ie", FR: "Amazon.fr", JP: "Amazon.co.jp", MX: "Amazon.com.mx",
+  })[region] || "Amazon.es";
 }
 
 function nintendoStoreName(region = state.settings.region) {
+  const regional = {
+    US: "Nintendo US", UK: "Nintendo UK", IT: "Nintendo Italia", IE: "Nintendo Ireland", FR: "Nintendo France", PT: "Nintendo Portugal", JP: "Nintendo Japan", MX: "Nintendo Mexico",
+  }[region];
+  if (regional) return regional;
   if (region === "US") return "Nintendo US";
   if (region === "UK") return "Nintendo UK";
   return "Nintendo España";
 }
 
 function playStationStoreName(region = state.settings.region) {
+  const regional = {
+    US: "PlayStation US", UK: "PlayStation UK", IT: "PlayStation Italia", IE: "PlayStation Ireland", FR: "PlayStation France", PT: "PlayStation Portugal", JP: "PlayStation Japan", MX: "PlayStation Mexico",
+  }[region];
+  if (regional) return regional;
   if (region === "US") return "PlayStation US";
   if (region === "UK") return "PlayStation UK";
   return "PlayStation España";
 }
 
 function amazonSearchUrl(query, region = state.settings.region) {
+  const regionalHost = {
+    US: "www.amazon.com", UK: "www.amazon.co.uk", IT: "www.amazon.it", IE: "www.amazon.ie", FR: "www.amazon.fr", JP: "www.amazon.co.jp", MX: "www.amazon.com.mx",
+  }[region];
+  if (regionalHost) return `https://${regionalHost}/s?k=${query}`;
   if (region === "US") return `https://www.amazon.com/s?k=${query}`;
   if (region === "UK") return `https://www.amazon.co.uk/s?k=${query}`;
   return `https://www.amazon.es/s?k=${query}`;
 }
 
 function ebaySearchUrl(query, region = state.settings.region) {
-  const host = region === "US" ? "www.ebay.com" : region === "UK" ? "www.ebay.co.uk" : "www.ebay.es";
+  const host = ({ US: "www.ebay.com", UK: "www.ebay.co.uk", IT: "www.ebay.it", IE: "www.ebay.ie", FR: "www.ebay.fr", JP: "www.ebay.com", MX: "www.ebay.com" })[region] || "www.ebay.es";
   return `https://${host}/sch/i.html?_nkw=${query}&LH_BIN=1`;
 }
 
 function nintendoSearchUrl(query, region = state.settings.region) {
+  const locale = ({ US: "us", UK: "en-gb", IE: "en-gb", IT: "it-it", FR: "fr-fr", PT: "pt-pt", JP: "jp", MX: "es-mx" })[region];
+  if (locale === "fr-fr") return `https://www.nintendo.com/fr-fr/Rechercher/Rechercher-299117.html?q=${query}`;
+  if (locale === "pt-pt") return `https://www.nintendo.com/pt-pt/Pesquisar/Pesquisar-299117.html?q=${query}`;
+  if (locale === "jp") return `https://www.nintendo.com/jp/search/?q=${query}`;
+  if (locale === "es-mx") return `https://www.nintendo.com/es-mx/search/?q=${query}`;
+  if (locale === "it-it") return `https://www.nintendo.com/it-it/Cerca/Cerca-299117.html?q=${query}`;
+  if (locale === "en-gb") return `https://www.nintendo.com/en-gb/Search/Search-299117.html?q=${query}`;
   if (region === "US") return `https://www.nintendo.com/us/search/?q=${query}`;
   if (region === "UK") return `https://www.nintendo.com/en-gb/Search/Search-299117.html?q=${query}`;
   return `https://www.nintendo.com/es-es/Buscar/Buscar-299117.html?q=${query}&f=147394-86`;
 }
 
 function playStationSearchUrl(query, region = state.settings.region) {
+  const locale = ({ US: "en-us", UK: "en-gb", IE: "en-ie", IT: "it-it", FR: "fr-fr", PT: "pt-pt", JP: "ja-jp", MX: "es-mx" })[region];
+  if (locale) return `https://www.playstation.com/${locale}/search/?q=${query}`;
   if (region === "US") return `https://www.playstation.com/en-us/search/?q=${query}`;
   if (region === "UK") return `https://www.playstation.com/en-gb/search/?q=${query}`;
   return `https://www.playstation.com/es-es/search/?q=${query}`;
 }
 
 function xboxSearchUrl(query, region = state.settings.region) {
-  const locale = region === "US" ? "en-US" : region === "UK" ? "en-GB" : "es-ES";
+  const locale = ({ US: "en-US", UK: "en-GB", IE: "en-IE", IT: "it-IT", FR: "fr-FR", PT: "pt-PT", JP: "ja-JP", MX: "es-MX" })[region] || "es-ES";
   return `https://www.xbox.com/${locale}/search?q=${query}`;
 }
 

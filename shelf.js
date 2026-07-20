@@ -20,6 +20,7 @@ const LAYOUT_KEYS = [...DEFAULT_LAYOUT];
 const DEFAULT_HIDDEN_MODULES = ["playing", "trophies"];
 const STORE_OPTIONS = ["Amazon", "eBay", "GAME.es", "Xtralife", "Retro Island NY", "GameStop", "Walmart"];
 const DEFAULT_PRICE_STORES = ["Amazon"];
+const REGION_OPTIONS = ["ES", "IT", "IE", "FR", "PT", "JP", "MX", "US", "UK"];
 const MAX_PRICE_STORES = 5;
 const THEMES = {
   shabii: { title: "Shabii's Shelf", icon: "assets/Icon_shelf.png", color: "#ff0039" },
@@ -38,8 +39,8 @@ const PLATFORM_OPTIONS = [
 ];
 const COUNTRY_OPTIONS = [
   ["Australia", "Australia"], ["China", "China"], ["Europe", "EU"], ["France", "France"], ["Germany", "Germany"],
-  ["Italy", "Italy"], ["Japan", "Japan"], ["Spain", "Spain"], ["Taiwan", "Taiwan"], ["United Kingdom", "United Kingdom"],
-  ["United States of America", "United States"], ["World", "World"],
+  ["Ireland", "Ireland"], ["Italy", "Italy"], ["Japan", "Japan"], ["Mexico", "Mexico"], ["Portugal", "Portugal"],
+  ["Spain", "Spain"], ["Taiwan", "Taiwan"], ["United Kingdom", "United Kingdom"], ["United States of America", "United States"], ["World", "World"],
 ];
 const WEEK_START_OPTIONS = [
   ["monday", "Monday"],
@@ -2436,13 +2437,13 @@ function normalizePriceSettings(settings = {}) {
   const stores = selectedStores;
   return {
     currency: settings.currency === "USD" ? "USD" : "EUR",
-    region: ["ES", "IT", "US", "UK"].includes(settings.region) ? settings.region : "ES",
+    region: REGION_OPTIONS.includes(settings.region) ? settings.region : "ES",
     stores: stores.slice(0, MAX_PRICE_STORES),
   };
 }
 
 function defaultShelfCountry() {
-  return ({ ES: "Spain", IT: "Italy", US: "United States of America", UK: "United Kingdom" })[normalizePriceSettings(state.gamelistSettings).region] || "Spain";
+  return ({ ES: "Spain", IT: "Italy", IE: "Ireland", FR: "France", PT: "Portugal", JP: "Japan", MX: "Mexico", US: "United States of America", UK: "United Kingdom" })[normalizePriceSettings(state.gamelistSettings).region] || "Spain";
 }
 
 function defaultShelfOwners() {
@@ -3280,18 +3281,30 @@ function fallbackPriceLinks(game) {
   ];
 }
 function amazonStoreName(region = normalizePriceSettings(state.gamelistSettings).region) {
+  const regional = {
+    US: "Amazon.com", UK: "Amazon.co.uk", IT: "Amazon.it", IE: "Amazon.ie", FR: "Amazon.fr", JP: "Amazon.co.jp", MX: "Amazon.com.mx",
+  }[region];
+  if (regional) return regional;
   if (region === "US") return "Amazon.com";
   if (region === "UK") return "Amazon.co.uk";
   if (region === "IT") return "Amazon.it";
   return "Amazon.es";
 }
 function nintendoStoreName(region = normalizePriceSettings(state.gamelistSettings).region) {
+  const regional = {
+    US: "Nintendo US", UK: "Nintendo UK", IT: "Nintendo Italia", IE: "Nintendo Ireland", FR: "Nintendo France", PT: "Nintendo Portugal", JP: "Nintendo Japan", MX: "Nintendo Mexico",
+  }[region];
+  if (regional) return regional;
   if (region === "US") return "Nintendo US";
   if (region === "UK") return "Nintendo UK";
   if (region === "IT") return "Nintendo Italia";
   return "Nintendo Espana";
 }
 function playStationStoreName(region = normalizePriceSettings(state.gamelistSettings).region) {
+  const regional = {
+    US: "PlayStation US", UK: "PlayStation UK", IT: "PlayStation Italia", IE: "PlayStation Ireland", FR: "PlayStation France", PT: "PlayStation Portugal", JP: "PlayStation Japan", MX: "PlayStation Mexico",
+  }[region];
+  if (regional) return regional;
   if (region === "US") return "PlayStation US";
   if (region === "UK") return "PlayStation UK";
   if (region === "IT") return "PlayStation Italia";
@@ -3309,29 +3322,41 @@ function hltbUrlFor(game) {
   return query ? `https://howlongtobeat.com/?q=${encodeURIComponent(query)}` : "";
 }
 function amazonSearchUrl(query, region = "ES") {
+  const regionalHost = {
+    US: "www.amazon.com", UK: "www.amazon.co.uk", IT: "www.amazon.it", IE: "www.amazon.ie", FR: "www.amazon.fr", JP: "www.amazon.co.jp", MX: "www.amazon.com.mx",
+  }[region];
+  if (regionalHost) return `https://${regionalHost}/s?k=${query}`;
   if (region === "US") return `https://www.amazon.com/s?k=${query}`;
   if (region === "UK") return `https://www.amazon.co.uk/s?k=${query}`;
   if (region === "IT") return `https://www.amazon.it/s?k=${query}`;
   return `https://www.amazon.es/s?k=${query}`;
 }
 function ebaySearchUrl(query, region = "ES") {
-  const host = region === "US" ? "www.ebay.com" : region === "UK" ? "www.ebay.co.uk" : region === "IT" ? "www.ebay.it" : "www.ebay.es";
+  const host = ({ US: "www.ebay.com", UK: "www.ebay.co.uk", IT: "www.ebay.it", IE: "www.ebay.ie", FR: "www.ebay.fr", JP: "www.ebay.com", MX: "www.ebay.com" })[region] || "www.ebay.es";
   return `https://${host}/sch/i.html?_nkw=${query}&LH_BIN=1`;
 }
 function nintendoSearchUrl(query, region = "ES") {
+  const locale = ({ US: "us", UK: "en-gb", IE: "en-gb", IT: "it-it", FR: "fr-fr", PT: "pt-pt", JP: "jp", MX: "es-mx" })[region];
+  if (locale === "fr-fr") return `https://www.nintendo.com/fr-fr/Rechercher/Rechercher-299117.html?q=${query}`;
+  if (locale === "pt-pt") return `https://www.nintendo.com/pt-pt/Pesquisar/Pesquisar-299117.html?q=${query}`;
+  if (locale === "jp") return `https://www.nintendo.com/jp/search/?q=${query}`;
+  if (locale === "es-mx") return `https://www.nintendo.com/es-mx/search/?q=${query}`;
+  if (locale === "en-gb") return `https://www.nintendo.com/en-gb/Search/Search-299117.html?q=${query}`;
   if (region === "US") return `https://www.nintendo.com/us/search/?q=${query}`;
   if (region === "UK") return `https://www.nintendo.com/en-gb/Search/Search-299117.html?q=${query}`;
   if (region === "IT") return `https://www.nintendo.com/it-it/Cerca/Cerca-299117.html?q=${query}`;
   return `https://www.nintendo.com/es-es/Buscar/Buscar-299117.html?q=${query}&f=147394-86`;
 }
 function playStationSearchUrl(query, region = "ES") {
+  const locale = ({ US: "en-us", UK: "en-gb", IE: "en-ie", IT: "it-it", FR: "fr-fr", PT: "pt-pt", JP: "ja-jp", MX: "es-mx" })[region];
+  if (locale) return `https://www.playstation.com/${locale}/search/?q=${query}`;
   if (region === "US") return `https://www.playstation.com/en-us/search/?q=${query}`;
   if (region === "UK") return `https://www.playstation.com/en-gb/search/?q=${query}`;
   if (region === "IT") return `https://www.playstation.com/it-it/search/?q=${query}`;
   return `https://www.playstation.com/es-es/search/?q=${query}`;
 }
 function xboxSearchUrl(query, region = "ES") {
-  const locale = region === "US" ? "en-US" : region === "UK" ? "en-GB" : region === "IT" ? "it-IT" : "es-ES";
+  const locale = ({ US: "en-US", UK: "en-GB", IE: "en-IE", IT: "it-IT", FR: "fr-FR", PT: "pt-PT", JP: "ja-JP", MX: "es-MX" })[region] || "es-ES";
   return `https://www.xbox.com/${locale}/search?q=${query}`;
 }
 function cleanUrl(value) {
@@ -3695,7 +3720,7 @@ function platformDisplayName(value) {
   };
   return labels[platform] || value || platform;
 }
-function flagAsset(country) { return `assets/flags/${({ "United Kingdom": "gb", Spain: "es", Italy: "it", "United States of America": "us", Japan: "jp", Taiwan: "tw", France: "fr", Germany: "de", Australia: "au", China: "cn", Europe: "eu", World: "world" })[country] || "world"}.svg`; }
+function flagAsset(country) { return `assets/flags/${({ "United Kingdom": "gb", Spain: "es", Italy: "it", Ireland: "ie", Portugal: "pt", Mexico: "mx", "United States of America": "us", Japan: "jp", Taiwan: "tw", France: "fr", Germany: "de", Australia: "au", China: "cn", Europe: "eu", World: "world" })[country] || "world"}.svg`; }
 function flagIcon(country, withClass = false) { return `<img${withClass ? ` class="detail-flag"` : ""} src="${flagAsset(country)}" alt="" width="47" height="31" decoding="async">`; }
 function platformBadge(platform, options = {}) { const label = shortPlatform(platform); return `<span class="platform-badge ${platformClass(platform, options)}" title="${escapeHtml(label)}"><span class="platform-icon"><img src="${platformLogo(platform)}" alt="" width="18" height="18" decoding="async"></span><span class="platform-label">${escapeHtml(label)}</span></span>`; }
 function platformLogo(platform) { const value = normalize(shortPlatform(platform)); if (value === "wii") return "assets/platforms/wii.png"; if (value === "wii u" || value === "wiiu") return "assets/platforms/wiiu.png"; if (value === "n64") return "assets/platforms/n64.png"; if (value === "gc" || value.includes("gamecube")) return "assets/platforms/gc.png"; if (value === "nes") return "assets/platforms/nes.png"; if (value === "snes") return "assets/platforms/snes.png"; if (value === "ds") return "assets/platforms/nds.png"; if (value === "3ds") return "assets/platforms/3ds.png"; if (value === "gba") return "assets/platforms/gba.png"; if (value === "gbc") return "assets/platforms/gbc.png"; if (value === "gb") return "assets/platforms/gb.png"; if (value === "game gear") return "assets/platforms/gamegear.png"; if (value === "dc" || value.includes("dreamcast")) return "assets/platforms/dreamcast.png"; if (isSegaPlatform(value)) return "assets/platforms/sega.png"; if (value.includes("switch")) return "assets/platforms/switch.png"; if (value === "ps1" || value === "ps2") return "assets/platforms/playstation_retro.png"; if (value === "ps5") return "assets/platforms/playstation_modern.png"; if (value === "x360" || value === "xbox 360") return "assets/platforms/xbox360.png"; if (value === "xbox") return "assets/platforms/xbox_retro.png"; if (value.includes("xbox") || value === "xone") return "assets/platforms/xbox.png"; if (value.includes("steam") || value === "pc") return "assets/platforms/steam.png"; if (value.includes("ps") || value.includes("playstation") || value.includes("psp") || value.includes("vita")) return "assets/platforms/playstation.png"; return "assets/Icon_shelf.png"; }
