@@ -236,10 +236,29 @@ async function logSecretStatus(page) {
   try {
     const response = await fetch("/api/secret-status", { cache: "no-store" });
     if (!response.ok) throw new Error(`HTTP ${response.status}`);
-    console.log(`[${page}] Secret status`, await response.json());
+    logStatusLines(page, await response.json());
   } catch (error) {
     console.warn(`[${page}] Could not check secret status`, error);
   }
+}
+
+function logStatusLines(page, status) {
+  const lines = {
+    PSN_NPSSO: status.PSN_NPSSO,
+    OPENXBL_API_KEY: status.OPENXBL_API_KEY,
+    STEAM_API_KEY: status.STEAM_API_KEY,
+    IGDB_TWITCH: status.IGDB_TWITCH,
+    PRICECHARTING_TOKEN: status.PRICECHARTING_TOKEN,
+    GOOGLE_PRIVATE_KEY: status.GOOGLE_PRIVATE_KEY,
+    IGDB_WORKING: status.working?.IGDB,
+    PRICECHARTING_WORKING: status.working?.PRICECHARTING,
+    PSN_WORKING: status.working?.PSN,
+    XBOX_WORKING: status.working?.XBOX,
+    STEAM_WORKING: status.working?.STEAM,
+    GOOGLE_PRIVATE_KEY_VALID: status.working?.GOOGLE_PRIVATE_KEY_VALID,
+    UPDATE: status.UPDATE,
+  };
+  Object.entries(lines).forEach(([name, value]) => console.log(`[${page}] ${name}: ${Boolean(value)}`));
 }
 
 function loadSharedSettings() { try { return JSON.parse(localStorage.getItem("gamelist:settings:v1") || "{}"); } catch { return {}; } }

@@ -28,6 +28,13 @@ import { onRequestGet as secretStatus } from "./functions/api/secret-status.js";
 
 const root = path.dirname(fileURLToPath(import.meta.url));
 const port = Number(process.env.PORT || 8790);
+const localEnv = {
+  ...process.env,
+  UPDATE_FILE_PRESENT: String(
+    existsSync(path.join(root, ".github", "workflows", "main.yml"))
+      || existsSync(path.join(root, ".gitlab-ci.yml"))
+  ),
+};
 const types = {
   ".css": "text/css",
   ".html": "text/html",
@@ -71,7 +78,7 @@ server.listen(port, "127.0.0.1", () => {
 
 async function sendFunction(res, handler, req, url) {
   const body = ["GET", "HEAD"].includes(req.method) ? undefined : await readRequestBody(req);
-  const response = await handler({ request: new Request(url.toString(), { method: req.method, body }), env: process.env });
+  const response = await handler({ request: new Request(url.toString(), { method: req.method, body }), env: localEnv });
   res.writeHead(response.status, Object.fromEntries(response.headers.entries()));
   res.end(Buffer.from(await response.arrayBuffer()));
 }
