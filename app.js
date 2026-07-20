@@ -462,6 +462,7 @@ function logStatusLines(status, theme = "shabii", editorStatus = "NOT LOGGED IN"
   const headerStyle = "color:#67c5ab;font-weight:900;font-size:12px;line-height:1.35;";
   const labelStyle = "font-weight:700;";
   const apiStatus = (value) => Boolean(value) ? "online" : "offline";
+  const igdbApiStatus = (value) => status.IGDB_CLIENT_ID && status.IGDB_CLIENT_SECRET ? apiStatus(value) : "no api set";
   const accountApiStatus = (value, username, apiSet) => {
     const label = !apiSet
       ? "no api set"
@@ -476,7 +477,7 @@ function logStatusLines(status, theme = "shabii", editorStatus = "NOT LOGGED IN"
   const statusLines = [
     ...(theme !== "shabii" ? [["UPDATE", apiStatus(status.UPDATE)]] : []),
     ["EDITOR", String(editorStatus || "not logged in").toLowerCase()],
-    ["IGDB API", apiStatus(status.working?.IGDB)],
+    ["IGDB API", igdbApiStatus(status.working?.IGDB)],
     ["PRICECHARTING API", apiStatus(status.working?.PRICECHARTING)],
     ["PSN API", accountApiStatus(status.working?.PSN, state.settings.psnUser, status.PSN_NPSSO)],
     ["OPENXBL API", accountApiStatus(status.working?.XBOX, state.settings.microsoftUser, status.OPENXBL_API_KEY)],
@@ -3839,16 +3840,20 @@ function achievementProviderNeedsPairing(data = {}, username = "", apiSet) {
 function achievementSetupNotices(psnData = {}, steamData = {}, xboxData = {}) {
   const status = state.integrationStatus || {};
   return [
-    achievementProviderNeedsPairing(psnData, state.settings.psnUser, status.PSN_NPSSO)
+    achievementPanelNeedsSetup(psnData, state.settings.psnUser, status.PSN_NPSSO)
       ? ["Set up PSN", "https://ca.account.sony.com/api/v1/ssocookie"]
       : null,
-    achievementProviderNeedsPairing(xboxData, state.settings.microsoftUser, status.OPENXBL_API_KEY)
+    achievementPanelNeedsSetup(xboxData, state.settings.microsoftUser, status.OPENXBL_API_KEY)
       ? ["Set up Xbox", xboxData.sourceUrl || "https://www.xbox.com/"]
       : null,
-    achievementProviderNeedsPairing(steamData, state.settings.steamUser, status.STEAM_API_KEY)
+    achievementPanelNeedsSetup(steamData, state.settings.steamUser, status.STEAM_API_KEY)
       ? ["Set up Steam", steamData.sourceUrl || "https://steamcommunity.com/"]
       : null,
   ].filter(Boolean);
+}
+
+function achievementPanelNeedsSetup(data = {}, username = "", apiSet) {
+  return Boolean(String(username || "").trim()) && achievementProviderNeedsPairing(data, username, apiSet);
 }
 
 async function fetchXboxActivity(forceRefresh = state.settings.forceCacheOnLoad === true) {
@@ -6849,7 +6854,6 @@ function sectionRank(section) {
 function metaFor(game, options = {}) {
   const values = [];
   if (game.platform) values.push(platformBadge(game.platform, null, { title: game.title }));
-  if (game.platinum) values.push(completionPill(game));
   if (game.digital) values.push(`<span class="digital-pill">Digital</span>`);
   if (game.emulator) values.push(`<span class="emulator-pill">Emulator</span>`);
   if (game.lengthHours) values.push(timeBadge(game.lengthHours, hltbUrlFor(game)));
@@ -7422,7 +7426,6 @@ function completedBadges(game, options = {}) {
   const progress = achievementProgressForGame(game);
   return [
     game.platform ? platformBadge(game.platform, null, { title: game.title }) : "",
-    game.platinum ? completionPill(game) : "",
     game.digital ? `<span class="digital-pill">Digital</span>` : "",
     game.emulator ? `<span class="emulator-pill">Emulator</span>` : "",
     game.coop ? `<span class="coop-pill">Coop</span>` : "",
