@@ -5987,7 +5987,7 @@ function timeStatsColor(index) {
 function statsSegmentColor(label, tone, index = 0) {
   if (tone === "platform") return platformStatsColor(label, index);
   if (tone === "time") return timeStatsColor(index);
-  if (tone === "media") return normalizeTag(label) === "digital" ? "#67c5ab" : "#ffffff";
+  if (tone === "media") return normalizeTag(label) === "digital" ? "#d8dde6" : "#2f343d";
   return categoryStatsColor(index);
 }
 

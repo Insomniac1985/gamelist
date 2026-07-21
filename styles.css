@@ -6339,11 +6339,11 @@ body.theme-kash .finished-stats-kpi.is-completed:focus-visible strong {
 
 .finished-stats-release-kpi {
   position: relative;
-  display: flex;
-  align-items: center;
-  gap: 9px;
-  min-height: 44px;
-  padding: 9px 11px;
+  display: grid;
+  align-content: center;
+  gap: 5px;
+  min-height: 88px;
+  padding: 14px;
   color: var(--text);
   text-align: left;
   cursor: default;
@@ -6361,18 +6361,16 @@ body.theme-kash .finished-stats-kpi.is-completed:focus-visible strong {
 }
 
 .finished-stats-release-kpi strong {
-  flex: 0 0 auto;
   color: var(--stat-color, var(--text));
-  font-size: 22px;
+  font-size: 32px;
   line-height: 1;
 }
 
 .finished-stats-release-kpi > span:not(.finished-stats-breakdown) {
-  min-width: 0;
   color: var(--muted);
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 900;
-  line-height: 1.15;
+  line-height: 1.2;
   text-transform: uppercase;
 }
 
