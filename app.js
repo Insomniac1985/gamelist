@@ -5355,6 +5355,7 @@ function finishedStatsMarkup(year, games, completed) {
   const platforms = countBy(games, statsPlatformLabel);
   const tags = countTags(games);
   const timeBuckets = countApproximatePlaytimeBuckets(games);
+  const mediaBuckets = countPhysicalDigitalGames(games);
   const months = countBy(games, (game) => monthShortName(game.completedAt));
   const streamed = games.filter((game) => game.stream);
   const coopGames = games.filter((game) => game.coop);
@@ -5376,8 +5377,9 @@ function finishedStatsMarkup(year, games, completed) {
       ${statsDonutCard("Platforms", platforms, "platform", 5, games)}
       ${statsDonutCard("Categories", tags, "category", 5, games)}
       ${statsDonutCard("Aproximate playtime", timeBuckets, "time", 5, games)}
-      ${allYears ? "" : statsReleaseKpisCard(releaseInsights)}
+      ${statsDonutCard("Physical / digital", mediaBuckets, "media", 2, games)}
     </div>
+    ${allYears ? "" : statsReleaseKpisCard(releaseInsights)}
     <section class="finished-stats-months">
       <h3>${allYears ? "By year" : "By month"}</h3>
       <div class="finished-stats-period-grid ${allYears ? "is-yearly" : ""}">${allYears ? statsYearBars(games) : statsMonthBars(games, months, games.length)}</div>
@@ -5414,7 +5416,7 @@ function statsDonutCard(title, counts, tone, visibleLimit = counts.length, games
 
 function statsReleaseKpisCard(insights) {
   return `
-    <article class="finished-stats-chart finished-stats-release-card">
+    <section class="finished-stats-release-strip">
       <div class="finished-stats-release-kpis">
         ${statsReleaseMiniKpi({
           value: insights.interested.length,
@@ -5433,7 +5435,7 @@ function statsReleaseKpisCard(insights) {
           tone: "played",
         })}
       </div>
-    </article>
+    </section>
   `;
 }
 
@@ -5601,6 +5603,9 @@ function statsSegmentGames(label, tone, games = []) {
   if (tone === "category") {
     return games.filter((game) => gameStatsTags(game).includes(label)).sort(statsGameListSort);
   }
+  if (tone === "media") {
+    return games.filter((game) => physicalDigitalLabel(game) === label).sort(statsGameListSort);
+  }
   return [];
 }
 
@@ -5665,10 +5670,17 @@ function statsBreakdownRow(item, tone, index, games = []) {
     const color = statsSegmentColor(item.label, tone, index);
     return statsGroupedBreakdown(`<span class="finished-stats-category-row" style="--category-stat-color:${escapeHtml(color)}"><b><i></i>${escapeHtml(item.label)}</b></span>`, item.count, bucketGames);
   }
+  if (games.length && tone === "media") {
+    const mediaGames = games
+      .filter((game) => physicalDigitalLabel(game) === item.label)
+      .sort(statsGameListSort);
+    const color = statsSegmentColor(item.label, tone, index);
+    return statsGroupedBreakdown(`<span class="finished-stats-category-row" style="--category-stat-color:${escapeHtml(color)}"><b><i></i>${escapeHtml(item.label)}</b></span>`, item.count, mediaGames);
+  }
   if (tone === "platform") {
     return `<span class="finished-stats-platform-row"><b>${platformBadge(item.label)}</b><em>${item.count}</em></span>`;
   }
-  if (tone === "category" || tone === "time") {
+  if (tone === "category" || tone === "time" || tone === "media") {
     const color = statsSegmentColor(item.label, tone, index);
     return `<span class="finished-stats-category-row" style="--category-stat-color:${escapeHtml(color)}"><b><i></i>${escapeHtml(item.label)}</b><em>${item.count}</em></span>`;
   }
@@ -5936,6 +5948,14 @@ function countApproximatePlaytimeBuckets(games) {
   return buckets;
 }
 
+function countPhysicalDigitalGames(games) {
+  return countBy(games, physicalDigitalLabel);
+}
+
+function physicalDigitalLabel(game) {
+  return game?.digital ? "Digital" : "Physical";
+}
+
 function playtimeBucketLabel(game) {
   const hours = Number(game.lengthHours);
   if (!Number.isFinite(hours) || hours <= 0) return "";
@@ -5967,6 +5987,7 @@ function timeStatsColor(index) {
 function statsSegmentColor(label, tone, index = 0) {
   if (tone === "platform") return platformStatsColor(label, index);
   if (tone === "time") return timeStatsColor(index);
+  if (tone === "media") return normalizeTag(label) === "digital" ? "#67c5ab" : "#ffffff";
   return categoryStatsColor(index);
 }
 
