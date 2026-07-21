@@ -6298,11 +6298,6 @@ body.theme-kash .finished-stats-kpi.is-completed:focus-visible strong {
   gap: 12px;
 }
 
-.finished-stats-charts.is-all .finished-stats-chart:last-child {
-  grid-column: 1 / -1;
-  width: 100%;
-}
-
 .finished-stats-chart {
   display: grid;
   grid-template-columns: 150px minmax(0, 1fr);
@@ -6329,24 +6324,17 @@ body.theme-kash .finished-stats-kpi.is-completed:focus-visible strong {
   text-transform: uppercase;
 }
 
-.finished-stats-release-card {
-  display: block;
-  grid-template-columns: 1fr;
-  padding: 0;
-  background: transparent;
-  border: 0;
-  box-shadow: none;
+.finished-stats-release-strip {
+  position: relative;
+  min-width: 0;
+  color: var(--text);
 }
 
 .finished-stats-release-kpis {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 8px;
   height: 100%;
-}
-
-.finished-stats-release-kpi:nth-child(3) {
-  grid-column: 1 / -1;
 }
 
 .finished-stats-release-kpi {
@@ -6354,8 +6342,8 @@ body.theme-kash .finished-stats-kpi.is-completed:focus-visible strong {
   display: grid;
   align-content: center;
   gap: 5px;
-  min-height: 64px;
-  padding: 10px 12px;
+  min-height: 88px;
+  padding: 14px;
   color: var(--text);
   text-align: left;
   cursor: default;
@@ -6374,7 +6362,7 @@ body.theme-kash .finished-stats-kpi.is-completed:focus-visible strong {
 
 .finished-stats-release-kpi strong {
   color: var(--stat-color, var(--text));
-  font-size: 28px;
+  font-size: 32px;
   line-height: 1;
 }
 
@@ -6382,7 +6370,7 @@ body.theme-kash .finished-stats-kpi.is-completed:focus-visible strong {
   color: var(--muted);
   font-size: 12px;
   font-weight: 900;
-  line-height: 1.25;
+  line-height: 1.2;
   text-transform: uppercase;
 }
 
@@ -7522,11 +7510,10 @@ body.theme-kash .finished-stats-kpi.is-completed:focus-visible strong {
 .finished-stats-mini-head strong {
   min-width: 0;
   overflow: hidden;
-  color: var(--accent);
+  color: var(--accent-2);
   font-size: 13px;
   font-weight: 900;
   text-overflow: ellipsis;
-  text-transform: uppercase;
   white-space: nowrap;
 }
 
@@ -12000,16 +11987,8 @@ body.theme-kash
     grid-template-columns: 1fr;
   }
 
-  .finished-stats-charts.is-all .finished-stats-chart:last-child {
-    width: 100%;
-  }
-
   .finished-stats-chart {
     grid-template-columns: 92px minmax(0, 1fr);
-  }
-
-  .finished-stats-release-card {
-    grid-template-columns: 1fr;
   }
 
   .finished-stats-release-kpis {

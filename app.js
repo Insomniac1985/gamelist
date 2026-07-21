@@ -5355,6 +5355,7 @@ function finishedStatsMarkup(year, games, completed) {
   const platforms = countBy(games, statsPlatformLabel);
   const tags = countTags(games);
   const timeBuckets = countApproximatePlaytimeBuckets(games);
+  const mediaBuckets = countPhysicalDigitalGames(games);
   const months = countBy(games, (game) => monthShortName(game.completedAt));
   const streamed = games.filter((game) => game.stream);
   const coopGames = games.filter((game) => game.coop);
@@ -5376,8 +5377,9 @@ function finishedStatsMarkup(year, games, completed) {
       ${statsDonutCard("Platforms", platforms, "platform", 5, games)}
       ${statsDonutCard("Categories", tags, "category", 5, games)}
       ${statsDonutCard("Aproximate playtime", timeBuckets, "time", 5, games)}
-      ${allYears ? "" : statsReleaseKpisCard(releaseInsights)}
+      ${statsDonutCard("Physical / digital", mediaBuckets, "media", 2, games)}
     </div>
+    ${allYears ? "" : statsReleaseKpisCard(releaseInsights)}
     <section class="finished-stats-months">
       <h3>${allYears ? "By year" : "By month"}</h3>
       <div class="finished-stats-period-grid ${allYears ? "is-yearly" : ""}">${allYears ? statsYearBars(games) : statsMonthBars(games, months, games.length)}</div>
@@ -5414,7 +5416,7 @@ function statsDonutCard(title, counts, tone, visibleLimit = counts.length, games
 
 function statsReleaseKpisCard(insights) {
   return `
-    <article class="finished-stats-chart finished-stats-release-card">
+    <section class="finished-stats-release-strip">
       <div class="finished-stats-release-kpis">
         ${statsReleaseMiniKpi({
           value: insights.interested.length,
@@ -5433,7 +5435,7 @@ function statsReleaseKpisCard(insights) {
           tone: "played",
         })}
       </div>
-    </article>
+    </section>
   `;
 }
 
@@ -5601,6 +5603,9 @@ function statsSegmentGames(label, tone, games = []) {
   if (tone === "category") {
     return games.filter((game) => gameStatsTags(game).includes(label)).sort(statsGameListSort);
   }
+  if (tone === "media") {
+    return games.filter((game) => physicalDigitalLabel(game) === label).sort(statsGameListSort);
+  }
   return [];
 }
 
@@ -5622,11 +5627,12 @@ function statsMonthBars(games, counts) {
   const max = Math.max(1, ...counts.map((item) => item.count));
   return order.map((label, index) => {
     const count = byLabel.get(label) || 0;
+    const overlayTitle = fullMonthName(label);
     const monthGames = games
       .filter((game) => monthShortName(game.completedAt) === label)
       .sort((a, b) => String(a.completedAt || "").localeCompare(String(b.completedAt || "")) || stringCompare(a.title, b.title));
     const edgeClass = index === 0 ? " is-start-edge" : (index === order.length - 1 ? " is-end-edge" : "");
-    return `<div class="finished-stats-month${edgeClass}" title="${escapeHtml(`${label}: ${count}`)}" ${count ? `data-stats-overlay-title="${escapeHtml(label)}"` : ""}><span>${escapeHtml(label)}</span><em style="--month:${count / max};--platform-bar:${statsPlatformBar(monthGames)}"></em><strong>${count}</strong>${count ? `<span class="finished-stats-breakdown">${statsGameList(monthGames)}</span>` : ""}</div>`;
+    return `<div class="finished-stats-month${edgeClass}" title="${escapeHtml(`${overlayTitle}: ${count}`)}" ${count ? `data-stats-overlay-title="${escapeHtml(overlayTitle)}"` : ""}><span>${escapeHtml(label)}</span><em style="--month:${count / max};--platform-bar:${statsPlatformBar(monthGames)}"></em><strong>${count}</strong>${count ? `<span class="finished-stats-breakdown">${statsGameList(monthGames)}</span>` : ""}</div>`;
   }).join("");
 }
 
@@ -5665,10 +5671,17 @@ function statsBreakdownRow(item, tone, index, games = []) {
     const color = statsSegmentColor(item.label, tone, index);
     return statsGroupedBreakdown(`<span class="finished-stats-category-row" style="--category-stat-color:${escapeHtml(color)}"><b><i></i>${escapeHtml(item.label)}</b></span>`, item.count, bucketGames);
   }
+  if (games.length && tone === "media") {
+    const mediaGames = games
+      .filter((game) => physicalDigitalLabel(game) === item.label)
+      .sort(statsGameListSort);
+    const color = statsSegmentColor(item.label, tone, index);
+    return statsGroupedBreakdown(`<span class="finished-stats-category-row" style="--category-stat-color:${escapeHtml(color)}"><b><i></i>${escapeHtml(item.label)}</b></span>`, item.count, mediaGames);
+  }
   if (tone === "platform") {
     return `<span class="finished-stats-platform-row"><b>${platformBadge(item.label)}</b><em>${item.count}</em></span>`;
   }
-  if (tone === "category" || tone === "time") {
+  if (tone === "category" || tone === "time" || tone === "media") {
     const color = statsSegmentColor(item.label, tone, index);
     return `<span class="finished-stats-category-row" style="--category-stat-color:${escapeHtml(color)}"><b><i></i>${escapeHtml(item.label)}</b><em>${item.count}</em></span>`;
   }
@@ -5760,7 +5773,7 @@ function bindFinishedStatsMobileOverlays() {
       if (!breakdown?.innerHTML.trim()) return;
       event.preventDefault();
       event.stopPropagation();
-      openFinishedStatsMiniOverlay(node.dataset.statsOverlayTitle || "Stats", breakdown.innerHTML);
+      openFinishedStatsMiniOverlay(finishedStatsMiniTitle(node.dataset.statsOverlayTitle || "Stats"), breakdown.innerHTML);
     });
   });
 }
@@ -5874,6 +5887,11 @@ function openFinishedStatsMiniOverlay(title, content) {
   };
 }
 
+function finishedStatsMiniTitle(value) {
+  const title = String(value || "Stats").trim();
+  return fullMonthName(title);
+}
+
 function statsCompletedGameList(items) {
   return statsGameList(items.map((item) => ({
     id: item.gameId || item.id || item.title,
@@ -5936,6 +5954,14 @@ function countApproximatePlaytimeBuckets(games) {
   return buckets;
 }
 
+function countPhysicalDigitalGames(games) {
+  return countBy(games, physicalDigitalLabel);
+}
+
+function physicalDigitalLabel(game) {
+  return game?.digital ? "Digital" : "Physical";
+}
+
 function playtimeBucketLabel(game) {
   const hours = Number(game.lengthHours);
   if (!Number.isFinite(hours) || hours <= 0) return "";
@@ -5955,6 +5981,24 @@ function monthShortName(value) {
   return Number.isNaN(date.getTime()) ? "Unknown" : new Intl.DateTimeFormat("en-US", { month: "short" }).format(date);
 }
 
+function fullMonthName(value) {
+  const months = {
+    Jan: "January",
+    Feb: "February",
+    Mar: "March",
+    Apr: "April",
+    May: "May",
+    Jun: "June",
+    Jul: "July",
+    Aug: "August",
+    Sep: "September",
+    Oct: "October",
+    Nov: "November",
+    Dec: "December",
+  };
+  return months[value] || value || "Unknown";
+}
+
 function categoryStatsColor(index) {
   const shade = Math.max(76, 202 - index * 22);
   return `rgb(${shade} ${shade} ${shade})`;
@@ -5967,6 +6011,7 @@ function timeStatsColor(index) {
 function statsSegmentColor(label, tone, index = 0) {
   if (tone === "platform") return platformStatsColor(label, index);
   if (tone === "time") return timeStatsColor(index);
+  if (tone === "media") return normalizeTag(label) === "digital" ? "#d8dde6" : "#2f343d";
   return categoryStatsColor(index);
 }
 
@@ -6994,17 +7039,29 @@ function xboxProgressForGame(game) {
   const earned = Number(cached?.earned ?? match.earned ?? 0);
   const total = Number(cached?.total ?? match.total ?? 0);
   if (!total) return null;
-  const progress = cached
-    ? Math.round((earned / Math.max(total, 1)) * 100)
-    : Number.isFinite(Number(match.progress)) ? Number(match.progress)
-    : Math.round((earned / Math.max(total, 1)) * 100);
+  const cachedProgress = clampedProgress(cached?.progress);
+  const summaryProgress = clampedProgress(match.progress);
+  const earnedProgress = Math.round((earned / Math.max(total, 1)) * 100);
+  const progress = cachedProgress ?? summaryProgress ?? earnedProgress;
   return {
     title: match.title || game.title,
     game: `${progress}%`,
     progress,
-    label: `${earned}/${total} earned`,
+    label: xboxProgressLabel(earned, total, progress),
     provider: "xbox",
   };
+}
+
+function clampedProgress(value) {
+  const progress = Number(value);
+  return Number.isFinite(progress) ? Math.max(0, Math.min(100, Math.round(progress))) : null;
+}
+
+function xboxProgressLabel(earned, total, progress) {
+  const inferredEarned = !earned && progress > 0 && progress < 100 && total
+    ? Math.round((progress / 100) * total)
+    : earned;
+  return `${inferredEarned}/${total} earned`;
 }
 
 function xboxAchievementCacheKey(xboxGame) {
@@ -7029,7 +7086,13 @@ function xboxAchievementCache(data, achievements, summary = null) {
   const summaryTotal = Number(summary?.total || 0);
   const earned = Math.max(detailEarned, summaryEarned);
   const total = Math.max(detailTotal, summaryTotal);
-  return { loading: false, achievements, trophies: achievements, earned, total };
+  const progressValues = [
+    clampedProgress(data.progress),
+    clampedProgress(summary?.progress),
+    total ? clampedProgress((earned / total) * 100) : null,
+  ].filter((value) => value !== null);
+  const progress = progressValues.length ? Math.max(...progressValues) : 0;
+  return { loading: false, achievements, trophies: achievements, earned, total, progress };
 }
 
 function steamAchievementCacheKey(game) {
@@ -7153,11 +7216,14 @@ function titleMatchParts(value) {
 
 function normalizeTitleRawPhrase(value) {
   return String(value || "")
+    .replace(/([a-zA-Z0-9])[''’‘ʼ`´]\s*s\b/g, "$1s")
+    .replace(/([a-zA-Z0-9])[''’‘ʼ`´](?=[a-zA-Z0-9])/g, "$1")
     .replace(/[™®©℠]/g, " ")
     .normalize("NFKD")
     .replace(/[\u0300-\u036f]/g, "")
     .toLowerCase()
     .replace(/&/g, " and ")
+    .replace(/\b(?:tm|sm|registered|copyright)\b/g, " ")
     .replace(/[^a-z0-9]+/g, " ")
     .trim()
     .replace(/\s+/g, " ");
@@ -7205,7 +7271,7 @@ function containsAllTitleTokens(haystack, needles) {
 }
 
 function psnExtraTitleTokens(localTokens, psnTokens) {
-  const allowedExtras = new Set(["ps3", "ps4", "ps5", "version", "edition", "trophies", "remastered", "remaster", "complete", "ultimate", "definitive", "premium", "xl"]);
+  const allowedExtras = new Set(["ps3", "ps4", "ps5", "xbox", "x360", "360", "series", "pc", "version", "edition", "trophies", "achievements", "remastered", "remaster", "complete", "ultimate", "definitive", "premium", "xl"]);
   return psnTokens.filter((token) => !localTokens.includes(token) && !allowedExtras.has(token));
 }
 
@@ -8428,7 +8494,7 @@ function playStationSearchUrl(query, region = state.settings.region) {
 }
 
 function xboxSearchUrl(query, region = state.settings.region) {
-  const locale = ({ US: "en-US", UK: "en-GB", IE: "en-IE", IT: "it-IT", FR: "fr-FR", PT: "pt-PT", JP: "ja-JP", MX: "es-MX" })[region] || "es-ES";
+  const locale = ({ US: "en-US", UK: "en-GB", IE: "en-ie", IT: "it-IT", FR: "fr-FR", PT: "pt-PT", JP: "ja-JP", MX: "es-MX" })[region] || "es-ES";
   return `https://www.xbox.com/${locale}/search?q=${query}`;
 }
 
