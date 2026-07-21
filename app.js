@@ -5377,7 +5377,7 @@ function finishedStatsMarkup(year, games, completed) {
       ${statsDonutCard("Platforms", platforms, "platform", 5, games)}
       ${statsDonutCard("Categories", tags, "category", 5, games)}
       ${statsDonutCard("Aproximate playtime", timeBuckets, "time", 5, games)}
-      ${statsDonutCard("Physical / digital", mediaBuckets, "media", 2, games)}
+      ${statsDonutCard("Physical / digital / emulator", mediaBuckets, "media", 3, games)}
     </div>
     ${allYears ? "" : statsReleaseKpisCard(releaseInsights)}
     <section class="finished-stats-months">
@@ -5959,6 +5959,7 @@ function countPhysicalDigitalGames(games) {
 }
 
 function physicalDigitalLabel(game) {
+  if (game?.emulator) return "Emulator";
   return game?.digital ? "Digital" : "Physical";
 }
 
@@ -6011,7 +6012,12 @@ function timeStatsColor(index) {
 function statsSegmentColor(label, tone, index = 0) {
   if (tone === "platform") return platformStatsColor(label, index);
   if (tone === "time") return timeStatsColor(index);
-  if (tone === "media") return normalizeTag(label) === "digital" ? "#d8dde6" : "#2f343d";
+  if (tone === "media") {
+    const value = normalizeTag(label);
+    if (value === "digital") return "#d8dde6";
+    if (value === "emulator") return "#8e94a0";
+    return "#2f343d";
+  }
   return categoryStatsColor(index);
 }
 
