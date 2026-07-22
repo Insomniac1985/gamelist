@@ -127,6 +127,7 @@ function bindTwitchPreviewToggle(card, channel) {
     button.setAttribute("aria-pressed", hidden ? "true" : "false");
     button.querySelector(".twitch-preview-toggle-label").textContent = hidden ? "Show stream" : "Hide stream";
     hydrateTwitchPreview(card, channel, { loadPlayer: !hidden });
+    card.dispatchEvent(new CustomEvent("twitch-preview-toggle", { bubbles: true, detail: { hidden } }));
   });
 }
 
