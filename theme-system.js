@@ -113,6 +113,7 @@ export function applySiteTheme(settings = {}, options = {}) {
   root.classList.toggle("theme-uppercase-titles", theme.uppercaseTitles);
   root.classList.toggle("theme-big-logo", theme.bigLogo);
   root.classList.toggle("theme-font-default", !theme.accentFont);
+  root.classList.toggle("theme-font-antique", theme.accentFont === "antique");
   root.classList.toggle("theme-font-pokemon", theme.accentFont === "pokemon");
   root.classList.toggle("theme-font-michroma", theme.accentFont === "michroma");
   root.classList.toggle("theme-font-mata", theme.accentFont === "mata");
@@ -123,6 +124,7 @@ export function applySiteTheme(settings = {}, options = {}) {
   body?.classList.toggle("theme-uppercase-titles", theme.uppercaseTitles);
   body?.classList.toggle("theme-big-logo", theme.bigLogo);
   body?.classList.toggle("theme-font-default", !theme.accentFont);
+  body?.classList.toggle("theme-font-antique", theme.accentFont === "antique");
   body?.classList.toggle("theme-font-pokemon", theme.accentFont === "pokemon");
   body?.classList.toggle("theme-font-michroma", theme.accentFont === "michroma");
   body?.classList.toggle("theme-font-mata", theme.accentFont === "mata");

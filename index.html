@@ -54,6 +54,7 @@
           root.classList.toggle("theme-gradient", theme.gradientOn);
           root.classList.toggle("theme-uppercase-titles", theme.uppercaseTitles);
           root.classList.toggle("theme-big-logo", theme.bigLogo);
+          root.classList.toggle("theme-font-antique", theme.fontKey === "antique");
           root.classList.toggle("theme-font-pokemon", theme.fontKey === "pokemon");
           root.classList.toggle("theme-font-michroma", theme.fontKey === "michroma");
           root.classList.toggle("theme-font-mata", theme.fontKey === "mata");
@@ -73,6 +74,7 @@
           document.body?.classList.toggle("theme-gradient", theme.gradientOn);
           document.body?.classList.toggle("theme-uppercase-titles", theme.uppercaseTitles);
           document.body?.classList.toggle("theme-big-logo", theme.bigLogo);
+          document.body?.classList.toggle("theme-font-antique", theme.fontKey === "antique");
           document.body?.classList.toggle("theme-font-pokemon", theme.fontKey === "pokemon");
           document.body?.classList.toggle("theme-font-michroma", theme.fontKey === "michroma");
           document.body?.classList.toggle("theme-font-mata", theme.fontKey === "mata");
@@ -157,6 +159,7 @@
         document.body.classList.toggle("theme-gradient", Boolean(theme.gradientOn));
         document.body.classList.toggle("theme-uppercase-titles", Boolean(theme.uppercaseTitles));
         document.body.classList.toggle("theme-big-logo", Boolean(theme.bigLogo));
+        document.body.classList.toggle("theme-font-antique", theme.fontKey === "antique");
         document.body.classList.toggle("theme-font-pokemon", theme.fontKey === "pokemon");
         document.body.classList.toggle("theme-font-michroma", theme.fontKey === "michroma");
         document.body.classList.toggle("theme-font-mata", theme.fontKey === "mata");

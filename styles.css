@@ -11221,8 +11221,8 @@ body.theme-kash
     grid-template-columns: 112px minmax(0, 1fr);
     flex-basis: calc(100vw - 54px);
     grid-template-rows: max-content;
-    height: auto;
-    min-height: 0;
+    height: var(--mobile-playing-card-height, auto);
+    min-height: var(--mobile-playing-card-height, 0);
     align-items: start;
     padding: 11px;
     gap: 11px;
@@ -11417,6 +11417,10 @@ body.theme-kash
 
   .playing-section .column-head h2 {
     font-size: clamp(26px, 9vw, 34px);
+  }
+
+  html.theme-font-antique .playing-section .column-head h2 {
+    font-size: clamp(24px, 8vw, 31px);
   }
 
   .notes {

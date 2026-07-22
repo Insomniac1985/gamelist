@@ -740,6 +740,7 @@ function bindEvents() {
     updatePlayingSliderControls();
     scheduleFocusedPlayingTrailerUpdate();
   }, { passive: true });
+  el.playingList.addEventListener("twitch-preview-toggle", schedulePlayingCardHeightSync);
   el.playingFinishedList.addEventListener("scroll", updatePlayingFinishedEdges, { passive: true });
   bindLatestFinishedHeading();
   el.detailTrophyList.addEventListener("scroll", updateDetailTrophyEdges, { passive: true });
@@ -3795,8 +3796,29 @@ function equalizeMobilePlayingCards() {
   if (!window.matchMedia("(max-width: 760px)").matches) return;
   const cards = [...el.playingList.querySelectorAll(".game-card.playing-card")];
   if (!cards.length) return;
-  const height = Math.ceil(Math.max(...cards.map((card) => card.scrollHeight), 252));
+  const trophyReserve = el.playingList.querySelector(".twitch-preview-card") ? mobilePlayingTrophyReserve(cards) : 0;
+  const height = Math.ceil(Math.max(...cards.map((card) => mobilePlayingCardHeight(card, trophyReserve)), 252));
   el.playingList.style.setProperty("--mobile-playing-card-height", `${height}px`);
+}
+
+function mobilePlayingCardHeight(card, trophyReserve) {
+  const trophies = card.querySelector(".card-trophies");
+  const hasTrophies = trophies && !trophies.hidden && trophies.textContent.trim();
+  return card.scrollHeight + (hasTrophies ? 0 : trophyReserve);
+}
+
+function mobilePlayingTrophyReserve(cards) {
+  const measured = cards
+    .map((card) => card.querySelector(".card-trophies:not([hidden])"))
+    .filter(Boolean)
+    .map((trophies) => Math.ceil(trophies.getBoundingClientRect().height) + mobilePlayingTrophyActionGap(trophies));
+  return Math.max(...measured, 92);
+}
+
+function mobilePlayingTrophyActionGap(trophies) {
+  const card = trophies.closest(".game-card");
+  const actions = card?.querySelector(".card-actions");
+  return actions ? Math.max(0, parseFloat(getComputedStyle(actions).marginTop) || 0) : 10;
 }
 
 async function refreshAchievements() {
