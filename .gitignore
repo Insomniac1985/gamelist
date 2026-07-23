@@ -7,3 +7,5 @@ node_modules/
 .dev.vars
 dist/
 coverage/
+discord-widget-setup/.discord-widget-cover-state.json
+discord-widget-setup/widget-data.json
