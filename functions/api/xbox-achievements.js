@@ -84,10 +84,16 @@ export async function onRequestGet({ request, env = {} }) {
 
 async function xboxTitleAchievements(identity, titleId, apiKey) {
   if (!identity.xuid) throw new Error("A Microsoft account is required for Xbox achievement details");
-  const achievements = await fetchXboxTitleAchievementData(identity, titleId, apiKey);
+  const [achievements, title] = await Promise.all([
+    fetchXboxTitleAchievementData(identity, titleId, apiKey),
+    fetchXboxTitleInfo(identity, titleId, apiKey),
+  ]);
   return json({
     source: "xbox",
     titleId,
+    title: title.title,
+    platform: title.platform,
+    cover: title.cover,
     user: identity.gamertag,
     xuid: identity.xuid,
     achievements,
@@ -95,6 +101,18 @@ async function xboxTitleAchievements(identity, titleId, apiKey) {
     count: achievements.length,
     sourceUrl: xboxProfileUrl(identity.gamertag),
   });
+}
+
+async function fetchXboxTitleInfo(identity, titleId, apiKey) {
+  try {
+    const titlePath = identity.xuid ? `/v2/titles/${encodeURIComponent(identity.xuid)}` : "/v2/titles";
+    const titleData = await openXblGet(titlePath, apiKey);
+    const titleHistory = contentOf(titleData)?.titles || [];
+    const match = titleHistory.find((title) => String(title.titleId || "") === String(titleId));
+    return match ? normalizeXboxTitle(match, match) : { title: "", platform: "", cover: "" };
+  } catch {
+    return { title: "", platform: "", cover: "" };
+  }
 }
 
 async function fetchXboxTitleAchievementData(identity, titleId, apiKey) {

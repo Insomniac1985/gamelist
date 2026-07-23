@@ -24,8 +24,11 @@ export async function onRequestGet({ request, env = {} }) {
   try {
     const accessToken = await getPsnAccessToken(npsso);
     const accountId = await resolvePsnAccountId(accessToken, user);
-    const trophies = await getEarnedTrophiesForTitle(accessToken, accountId, npCommunicationId, npServiceName);
-    return json({ trophies, count: trophies.length, source: "psn", accountId });
+    const [trophies, title] = await Promise.all([
+      getEarnedTrophiesForTitle(accessToken, accountId, npCommunicationId, npServiceName),
+      getTrophyTitle(accessToken, accountId, npCommunicationId),
+    ]);
+    return json({ trophies, count: trophies.length, source: "psn", accountId, ...title });
   } catch (error) {
     console.error("[trophies] PSN trophies request failed", {
       npCommunicationId,
@@ -111,6 +114,29 @@ async function getPagedTrophies(accessToken, baseUrl, npServiceName) {
     if (page.length < limit || trophies.length >= Number(data.totalItemCount || 0)) break;
   }
   return trophies;
+}
+
+async function getTrophyTitle(accessToken, accountId, npCommunicationId) {
+  try {
+    for (let offset = 0; offset < 1000; offset += 200) {
+      const params = new URLSearchParams({ limit: "200", offset: String(offset) });
+      const data = await psnGet(`${PSN_TROPHY_BASE}/v1/users/${encodeURIComponent(accountId || "me")}/trophyTitles?${params}`, accessToken);
+      const titles = data.trophyTitles || [];
+      const match = titles.find((title) => String(title.npCommunicationId || "") === npCommunicationId);
+      if (match) {
+        return {
+          title: match.trophyTitleName || "",
+          trophyTitleName: match.trophyTitleName || "",
+          trophyTitleIconUrl: match.trophyTitleIconUrl || "",
+          trophyTitlePlatform: match.trophyTitlePlatform || "",
+        };
+      }
+      if (titles.length < 200 || offset + titles.length >= Number(data.totalItemCount || 0)) break;
+    }
+  } catch {
+    // Title metadata is optional; trophy counts can still render without it.
+  }
+  return {};
 }
 
 async function psnGet(url, accessToken) {

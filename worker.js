@@ -5,6 +5,7 @@ import * as collectionPrice from "./functions/api/collection-price.js";
 import * as cover from "./functions/api/cover.js";
 import * as gamelistMassAdd from "./functions/api/gamelist-mass-add.js";
 import * as gamelistMetadata from "./functions/api/gamelist-metadata.js";
+import * as achievementCompletionsByYear from "./functions/api/achievement-completions-by-year.js";
 import * as completedGamesByYear from "./functions/api/completed-games-by-year.js";
 import * as gamelistGamesByList from "./functions/api/gamelist-games-by-list.js";
 import * as prices from "./functions/api/prices.js";
@@ -28,6 +29,7 @@ import * as xboxTrophiesByYear from "./functions/api/xbox-trophies-by-year.js";
 
 const routes = {
   "/api/achievements": achievements,
+  "/api/achievement-completions-by-year": achievementCompletionsByYear,
   "/api/auth": auth,
   "/api/calendar": calendar,
   "/api/collection-price": collectionPrice,
