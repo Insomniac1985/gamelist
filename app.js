@@ -167,6 +167,7 @@ const MANUAL_PSN_TITLE_OVERRIDES = [
   { match: ["klonoa", "door", "phantomile"], platforms: ["PS4", "PS5"], ids: ["NPWR25832_00"] },
 ];
 const SEARCH_CACHE_TTL = 1000 * 60 * 60;
+const PLAYING_AUTOSCROLL_DELAY = 20000;
 let titleLookupTimer = 0;
 let selectMeasureContext = null;
 let selectOverflowPopover = null;
@@ -221,6 +222,8 @@ const state = {
   playingTrailerVisibility: new Map(),
   activeTrailerCard: null,
   playingHeightFrame: 0,
+  playingAutoscrollTimer: 0,
+  playingAutoscrollStopped: false,
   paintRefreshFrame: 0,
 };
 
@@ -734,8 +737,15 @@ function bindEvents() {
   el.authCancelButton?.addEventListener("click", () => el.authDialog.close("cancel"));
   el.fetchDataButton?.addEventListener("click", refreshAllGameData);
   el.fetchPricesButton.addEventListener("click", refreshAllPrices);
-  el.playingPrevButton.addEventListener("click", () => slidePlaying(-1));
-  el.playingNextButton.addEventListener("click", () => slidePlaying(1));
+  el.playingPrevButton.addEventListener("click", () => {
+    stopPlayingAutoscroll();
+    slidePlaying(-1);
+  });
+  el.playingNextButton.addEventListener("click", () => {
+    stopPlayingAutoscroll();
+    slidePlaying(1);
+  });
+  el.playingList.addEventListener("pointerenter", stopPlayingAutoscrollOnCardHover, true);
   el.playingList.addEventListener("scroll", () => {
     updatePlayingSliderControls();
     scheduleFocusedPlayingTrailerUpdate();
@@ -2082,6 +2092,7 @@ function renderPlayingSection() {
   el.playingSection.hidden = el.playingCurrent.hidden && el.playingFinished.hidden;
   schedulePlayingCardHeightSync();
   requestAnimationFrame(updatePlayingSliderControls);
+  syncPlayingAutoscroll(games.length);
   scheduleFocusedPlayingTrailerUpdate();
 }
 
@@ -3771,6 +3782,43 @@ function updatePlayingFinishedEdges() {
 
 function slidePlaying(direction) {
   slideHorizontalCarousel(el.playingList, direction);
+}
+
+function syncPlayingAutoscroll(playingGameCount) {
+  window.clearTimeout(state.playingAutoscrollTimer);
+  state.playingAutoscrollTimer = 0;
+  if (state.playingAutoscrollStopped || playingGameCount <= 1 || el.playingCurrent.hidden || el.playingSection.hidden) return;
+  state.playingAutoscrollTimer = window.setTimeout(advancePlayingAutoscroll, PLAYING_AUTOSCROLL_DELAY);
+}
+
+function advancePlayingAutoscroll() {
+  state.playingAutoscrollTimer = 0;
+  if (state.playingAutoscrollStopped || el.playingCurrent.hidden || el.playingSection.hidden) return;
+  const carousel = horizontalCarouselState(el.playingList);
+  const items = [...el.playingList.children].filter((item) => item.matches(".game-card, .twitch-preview-card"));
+  if (!carousel.overflow || items.length <= 1 || el.playingList.querySelectorAll(".game-card.playing-card").length <= 1) return;
+  const currentIndex = closestPlayingCarouselItemIndex(items);
+  const nextItem = carousel.atEnd ? items[0] : items[Math.min(currentIndex + 1, items.length - 1)];
+  nextItem?.scrollIntoView({ behavior: "smooth", block: "nearest", inline: "start" });
+  state.playingAutoscrollTimer = window.setTimeout(advancePlayingAutoscroll, PLAYING_AUTOSCROLL_DELAY);
+}
+
+function closestPlayingCarouselItemIndex(items) {
+  const left = el.playingList.getBoundingClientRect().left;
+  return items
+    .map((item, index) => ({ index, distance: Math.abs(item.getBoundingClientRect().left - left) }))
+    .sort((a, b) => a.distance - b.distance)[0]?.index || 0;
+}
+
+function stopPlayingAutoscrollOnCardHover(event) {
+  if (!event.target.closest?.(".game-card, .twitch-preview-card")) return;
+  stopPlayingAutoscroll();
+}
+
+function stopPlayingAutoscroll() {
+  state.playingAutoscrollStopped = true;
+  window.clearTimeout(state.playingAutoscrollTimer);
+  state.playingAutoscrollTimer = 0;
 }
 
 function updatePlayingSliderControls() {

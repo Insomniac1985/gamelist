@@ -11423,6 +11423,10 @@ body.theme-kash
     font-size: clamp(24px, 8vw, 31px);
   }
 
+  html.theme-font-antique .completed > .column-head h2 {
+    font-size: clamp(21px, 7vw, 28px);
+  }
+
   .notes {
     display: none;
   }
