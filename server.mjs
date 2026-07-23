@@ -15,6 +15,7 @@ import * as shelfMetadata from "./functions/api/shelf-metadata.js";
 import * as shelfCovers from "./functions/api/shelf-covers.js";
 import * as shelfPriceAudit from "./functions/api/shelf-price-audit.js";
 import * as gamelistGamesByList from "./functions/api/gamelist-games-by-list.js";
+import * as achievementCompletionsByYear from "./functions/api/achievement-completions-by-year.js";
 import * as completedGamesByYear from "./functions/api/completed-games-by-year.js";
 import * as shelfGamesPlatforms from "./functions/api/shelf-games-platforms.js";
 import * as psnTrophiesByYear from "./functions/api/psn-trophies-by-year.js";
@@ -58,6 +59,7 @@ const server = http.createServer(async (req, res) => {
   if (url.pathname === "/api/shelf-covers") return sendModule(res, shelfCovers, req, url);
   if (url.pathname === "/api/shelf-price-audit") return sendModule(res, shelfPriceAudit, req, url);
   if (url.pathname === "/api/gamelist-games-by-list") return sendModule(res, gamelistGamesByList, req, url);
+  if (url.pathname === "/api/achievement-completions-by-year") return sendModule(res, achievementCompletionsByYear, req, url);
   if (url.pathname === "/api/completed-games-by-year") return sendModule(res, completedGamesByYear, req, url);
   if (url.pathname === "/api/shelf-games-platforms") return sendModule(res, shelfGamesPlatforms, req, url);
   if (url.pathname === "/api/psn-trophies-by-year") return sendModule(res, psnTrophiesByYear, req, url);
