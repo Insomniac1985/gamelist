@@ -10762,34 +10762,51 @@ body.theme-kash
 }
 
 .collection-form-grid {
-  grid-template-columns: repeat(6, minmax(0, 1fr));
+  grid-template-columns: repeat(8, minmax(0, 1fr));
 }
 
 .collection-form-grid > label {
-  grid-column: span 3;
+  grid-column: span 4;
 }
 
 .collection-form-grid > .platform-field {
-  grid-column: span 2;
+  grid-column: span 3;
 }
 
 .collection-form-grid > .dlc-check {
   grid-column: span 1;
 }
 
+.collection-form-grid > .list-field {
+  grid-column: span 2;
+}
+
 .collection-form-grid > .collection-check {
   grid-column: span 2;
-  min-height: 38px;
-  padding-inline: 9px;
+  padding-inline: 8px;
+}
+
+.collection-form-grid > .release-date-field,
+.collection-form-grid > .release-text-field {
+  grid-column: span 3;
+}
+
+.collection-form-grid > .length-field {
+  grid-column: span 2;
+}
+
+.collection-form-grid > .game-tags-field,
+.collection-form-grid > .trophy-search-field {
+  grid-column: span 4;
+}
+
+.collection-form-grid > .notes-field {
+  grid-column: 1 / -1;
 }
 
 .playing-form-grid {
   grid-template-columns: repeat(8, minmax(0, 1fr));
-}
-
-.playing-form-grid > label:nth-child(3),
-.playing-form-grid > label:nth-child(4) {
-  grid-column: span 3;
+  gap: 8px;
 }
 
 .playing-form-grid > .modal-playing-check,
@@ -10802,6 +10819,11 @@ body.theme-kash
   grid-column: span 2;
 }
 
+.playing-form-grid > label.playing-started-field,
+.playing-form-grid > label.playing-completed-field {
+  grid-column: span 3;
+}
+
 .playing-form-grid > label.playing-finish-time-field {
   grid-column: span 2;
 }
@@ -10811,7 +10833,17 @@ body.theme-kash
 }
 
 .playing-form-grid > label.playing-achievements-check {
-  grid-column: span 4;
+  grid-column: span 3;
+  padding-inline: 8px;
+}
+
+.form-group:has(.playing-form-grid) {
+  margin-top: 12px;
+  padding-top: 10px;
+}
+
+.form-group:has(.playing-form-grid) h3 {
+  margin-bottom: 7px;
 }
 
 .playing-form-grid input:not([type="checkbox"]),
@@ -11271,7 +11303,15 @@ body.theme-kash
 
   .collection-form-grid > label,
   .collection-form-grid > .platform-field,
-  .collection-form-grid > .dlc-check {
+  .collection-form-grid > .dlc-check,
+  .collection-form-grid > .list-field,
+  .collection-form-grid > .collection-check,
+  .collection-form-grid > .release-date-field,
+  .collection-form-grid > .release-text-field,
+  .collection-form-grid > .length-field,
+  .collection-form-grid > .game-tags-field,
+  .collection-form-grid > .trophy-search-field,
+  .collection-form-grid > .notes-field {
     grid-column: 1 / -1;
   }
 

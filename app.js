@@ -5261,8 +5261,8 @@ function renderCompleted() {
       <div class="completed-main">
         <strong class="${game.platinum ? "completed-achievements-title" : ""}">${escapeHtml(game.title)}</strong>
         <span class="completed-platform">${completedOwnerBadges(game)}${completedBadges(game)}</span>
-        <span class="completed-dates">${escapeHtml(historyRangeText(game))}</span>
         ${completedDurationLine(game)}
+        <span class="completed-dates">${escapeHtml(historyRangeText(game))}</span>
       </div>
       <div class="completed-actions">
         <button class="icon-button completed-edit-action" type="button" title="Edit" aria-label="Edit">${pencilIcon()}</button>
@@ -6026,7 +6026,7 @@ function countApproximatePlaytimeBuckets(games) {
     bucketMap.set(label, (bucketMap.get(label) || 0) + 1);
   });
   const buckets = [...bucketMap.entries()]
-    .map(([label, count]) => ({ label, count, order: label === "<10" ? 0 : Number(label.split("-")[0]) }))
+    .map(([label, count]) => ({ label, count, order: playtimeBucketOrder(label) }))
     .sort((a, b) => a.order - b.order)
     .map(({ label, count }) => ({ label, count }));
   return buckets;
@@ -6044,8 +6044,15 @@ function physicalDigitalLabel(game) {
 function playtimeBucketLabel(game) {
   const hours = statsPlaytimeHours(game);
   if (!Number.isFinite(hours) || hours <= 0) return "";
+  if (hours >= 100) return `${Math.floor(hours / 100) * 100}+`;
   const start = Math.floor(hours / 10) * 10;
   return start === 0 ? "<10" : `${start}-${start + 10}`;
+}
+
+function playtimeBucketOrder(label) {
+  if (label === "<10") return 0;
+  if (label.endsWith("+")) return Number(label.slice(0, -1)) || 100;
+  return Number(label.split("-")[0]) || 0;
 }
 
 function statsPlaytimeHours(game) {
@@ -6176,8 +6183,8 @@ function renderHistoryDialog() {
       <div>
         <strong class="${game.platinum ? "completed-achievements-title" : ""}">${escapeHtml(game.title)}</strong>
         <span class="completed-platform">${completedBadges(game)}</span>
-        <span>${escapeHtml(historyRangeText(game))}</span>
         ${completedDurationLine(game)}
+        <span>${escapeHtml(historyRangeText(game))}</span>
       </div>
       <button class="icon-button history-edit-action" type="button" title="Edit" aria-label="Edit">${pencilIcon()}</button>
     </div>
@@ -6266,25 +6273,26 @@ function releaseYear(game) {
 function historyRangeText(game) {
   const start = formatLongDate(game.startedAt);
   const done = formatLongDate(game.completedAt);
-  const finishTime = finishHoursText(game);
-  if (start && done) return [ `${start} -> ${done}`, finishTime ].filter(Boolean).join(" · ");
-  if (done) return [ `Finished ${done}`, finishTime ].filter(Boolean).join(" · ");
+  if (start && done) return `${start} -> ${done}`;
+  if (done) return `Finished ${done}`;
   if (start) return `Started ${start}`;
   return "No dates";
 }
 
 function finishedDateText(game) {
-  return [formatLongDate(game.completedAt), finishHoursText(game) || finishedDurationText(game.startedAt, game.completedAt)].filter(Boolean).join(" · ");
+  return [finishHoursText(game) || finishedDurationText(game.startedAt, game.completedAt), formatLongDate(game.completedAt)].filter(Boolean).join(" · ");
 }
 
 function completedDurationLine(game) {
-  if (finishHoursValue(game?.finishHours)) return "";
-  const duration = finishedDurationText(game.startedAt, game.completedAt);
+  const duration = finishHoursText(game) || finishedDurationText(game.startedAt, game.completedAt);
   return duration ? `<span class="completed-duration">${escapeHtml(duration)}</span>` : "";
 }
 
 function finishHoursValue(value) {
-  const count = Number(value);
+  const raw = String(value ?? "").trim();
+  if (!raw) return 0;
+  const match = raw.match(/^\d+/);
+  const count = Number(match ? match[0] : raw);
   return Number.isInteger(count) ? Math.max(0, count) : 0;
 }
 
@@ -8961,6 +8969,7 @@ async function completeGame(id) {
   const game = getGame(id);
   if (!game?.playing) return;
   const finishHours = await requestFinishHours(game);
+  if (finishHours === undefined) return;
   game.startedAt = game.startedAt || todayDate();
   game.completedAt = todayDate();
   if (finishHours !== null) game.finishHours = finishHours;
@@ -8973,6 +8982,7 @@ async function completeGameWithTrophy(id) {
   const game = getGame(id);
   if (!game?.playing) return;
   const finishHours = await requestFinishHours(game);
+  if (finishHours === undefined) return;
   game.startedAt = game.startedAt || todayDate();
   game.completedAt = game.completedAt || todayDate();
   if (finishHours !== null) game.finishHours = finishHours;
@@ -8995,17 +9005,19 @@ function requestFinishHours(game) {
     const handleSubmit = (event) => {
       event.preventDefault();
       const value = el.finishTimeInput.value.trim();
-      if (value && !/^\d+$/.test(value)) {
+      const hours = finishHoursValue(value);
+      if (value && !hours) {
         if (el.finishTimeError) el.finishTimeError.hidden = false;
         return;
       }
       cleanup();
       el.finishTimeDialog.close("submit");
-      resolve(value ? Number(value) : null);
+      resolve(value ? hours : null);
     };
     const handleClose = () => {
+      const action = el.finishTimeDialog.returnValue;
       cleanup();
-      resolve(null);
+      resolve(action === "skip" ? null : undefined);
     };
     el.finishTimeForm.addEventListener("submit", handleSubmit);
     el.finishTimeDialog.addEventListener("close", handleClose, { once: true });

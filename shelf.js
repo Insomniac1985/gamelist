@@ -2062,6 +2062,21 @@ function dateOnly(value) {
   return String(value || "").slice(0, 10);
 }
 
+function finishHoursValue(value) {
+  const count = Number(value);
+  return Number.isInteger(count) ? Math.max(0, count) : 0;
+}
+
+function finishHoursText(game) {
+  const hours = finishHoursValue(game?.finishHours);
+  if (!hours) return "";
+  return `${hours} ${hours === 1 ? "hr" : "hrs"}`;
+}
+
+function finishedProjectionDateText(game) {
+  return [finishHoursText(game) || finishedDurationText(game.startedAt, game.completedAt), formatLongDate(game.completedAt)].filter(Boolean).join(" · ");
+}
+
 function normalizeTag(value) {
   return String(value || "").trim().toLowerCase();
 }
@@ -2934,7 +2949,7 @@ function finishedProjectionCard(game) {
   const cover = coverUrl(game.cover || "") || platformFallback(game.platform);
   const progress = activityProgressFor(game);
   const badges = `${visibleProjectionOwners(game).map(ownerBadge).join("")}${platformBadge(game.platform, { title: game.title })}${game.digital ? `<span class="digital-pill">Digital</span>` : ""}${game.emulator ? `<span class="emulator-pill">Emulator</span>` : ""}${game.coop ? `<span class="coop-pill">Coop</span>` : ""}${game.stream ? `<span class="stream-pill">Stream</span>` : ""}${game.replayCount ? `<span class="replay-pill">Replay ${escapeHtml(game.replayCount)}</span>` : ""}`;
-  return finishedGameMarkup({ id: game.id, title: game.title, cover, completedClass: shelfShowsCompletedTrophyStyle(game) ? "completed-trophy-card" : "", itemClass: projectionOwnerCardClass(game), badges, dateText: [formatLongDate(game.completedAt), finishedDurationText(game.startedAt, game.completedAt)].filter(Boolean).join(" · "), progress, dataName: "gamelist-id", escape: escapeHtml });
+  return finishedGameMarkup({ id: game.id, title: game.title, cover, completedClass: shelfShowsCompletedTrophyStyle(game) ? "completed-trophy-card" : "", itemClass: projectionOwnerCardClass(game), badges, dateText: finishedProjectionDateText(game), progress, dataName: "gamelist-id", escape: escapeHtml });
 }
 async function loadTrophyActivity() {
   const module = el.trophyCard.closest("[data-module]");
