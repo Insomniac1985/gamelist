@@ -881,7 +881,7 @@ function renderFilters() {
   }
   el.sort.value = state.filters.sort;
   syncStyledSelect(el.platform, { logos: true, activeValue: "all" });
-  syncStyledSelect(el.region, { activeValue: "all" });
+  syncStyledSelect(el.region, { flags: true, activeValue: "all" });
   syncStyledSelect(el.condition, { activeValue: "all" });
   syncStyledSelect(el.category, { activeValue: "all" });
   syncStyledSelect(el.sort, { activeValue: null });
@@ -2266,7 +2266,9 @@ function renderShowcaseFilters() {
   el.showcasePlatform.value = state.showcaseFilters.platform;
   el.showcaseRegion.value = state.showcaseFilters.region;
   el.showcaseCategory.value = state.showcaseFilters.category;
-  syncStyledSelects(el.showcaseDialog, { activeValue: null });
+  syncStyledSelect(el.showcasePlatform, { logos: true, activeValue: "all" });
+  syncStyledSelect(el.showcaseRegion, { flags: true, activeValue: "all" });
+  syncStyledSelect(el.showcaseCategory, { activeValue: "all" });
   [el.showcasePlatform, el.showcaseRegion, el.showcaseCategory].forEach(updateSelectOverflowTitle);
 }
 
@@ -3806,7 +3808,7 @@ function canonicalShelfPlatform(value) {
   };
   return aliases[key] || text;
 }
-function regionName(country) { return country === "United States of America" ? "United States" : country; }
+function regionName(country) { if (country === "United States of America") return "US"; if (country === "United Kingdom") return "UK"; return country; }
 function regionFor(country) { if (country === "Japan") return "Japan"; if (country === "Taiwan") return "Taiwan"; if (country === "United States of America") return "USA"; if (["United Kingdom", "Spain", "Italy", "France", "Germany", "Europe"].includes(country)) return country === "Spain" ? "Spain" : "Europe"; return country || "Other"; }
 function countValues(values) { const map = new Map(); values.filter(Boolean).forEach((value) => map.set(value, (map.get(value) || 0) + 1)); return [...map.entries()].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0])); }
 function conditionMatches(game, condition) { const label = conditionLabel(game).toLowerCase(); if (condition === "all") return true; if (condition === "complete") return label === "complete"; if (condition === "complete-plus") return label === "complete +"; if (condition === "loose") return label === "loose"; if (condition === "sealed") return label === "sealed"; return true; }
