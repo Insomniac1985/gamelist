@@ -3687,6 +3687,7 @@ textarea {
 .icon-input {
   position: relative;
   display: block;
+  margin-bottom: 0;
   color: inherit;
   font-size: 15px;
   font-weight: 400;
