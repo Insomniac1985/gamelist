@@ -169,7 +169,7 @@ const el = {
     playstationUrl: document.querySelector("#playstationUrlInput"), nintendoUrl: document.querySelector("#nintendoUrlInput"),
     steamUrl: document.querySelector("#steamUrlInput"), xboxUrl: document.querySelector("#xboxUrlInput"), hltbUrl: document.querySelector("#hltbUrlInput"),
     publisher: document.querySelector("#publisherInput"), developer: document.querySelector("#developerInput"),
-    genre: document.querySelector("#genreInput"), cover: document.querySelector("#coverInput"), notes: document.querySelector("#notesInput"), description: document.querySelector("#shelfDescriptionInput"),
+    genre: document.querySelector("#genreInput"), cover: document.querySelector("#coverInput"), notes: document.querySelector("#notesInput"), description: document.querySelector("#shelfDescriptionInput"), igdbUrl: document.querySelector("#igdbUrlInput"),
   },
   conditionFields: { game: document.querySelector("#conditionGameInput"), manual: document.querySelector("#conditionManualInput"), box: document.querySelector("#conditionBoxInput"), other: document.querySelector("#conditionOtherInput"), sealed: document.querySelector("#conditionSealedInput") },
   layoutDialog: document.querySelector("#layoutDialog"),
@@ -1265,6 +1265,7 @@ function openEditor(game = null) {
   el.fields.steamUrl.value = links.steam;
   el.fields.xboxUrl.value = links.xbox;
   el.fields.hltbUrl.value = values.hltbUrl || values.howLongToBeatUrl || links.hltb;
+  el.fields.igdbUrl.value = values.igdbUrl || links.igdb;
   Object.entries(el.conditionFields).forEach(([key, input]) => { input.checked = conditionValue(values, key); });
   syncConditionInputs();
   el.addForm.querySelector(".modal-head h2").textContent = game?.pendingCollection ? "Add to Collection" : game ? "Edit Game" : "Add Game";
@@ -1440,6 +1441,7 @@ async function chooseLookupResult(event) {
   el.fields.genre.value = (result.genres || []).join(", ");
   el.fields.cover.value = result.cover || "";
   el.fields.releaseDate.value = result.releaseDate || "";
+  el.fields.igdbUrl.value = result.igdbUrl || el.fields.igdbUrl.value;
   fillStoreLinkFields(result.storeLinks);
   el.fields.hltbUrl.value = metadataHltbUrl(result) || el.fields.hltbUrl.value;
   state.pendingLengthHours = result.lengthHours || state.pendingLengthHours;
@@ -1466,6 +1468,7 @@ function applyGameMetadata(result) {
   if (result.cover && !el.fields.cover.value) el.fields.cover.value = result.cover;
   if (result.releaseDate && !el.fields.releaseDate.value) el.fields.releaseDate.value = result.releaseDate;
   if (result.description && !el.fields.description.value) el.fields.description.value = result.description;
+  if (result.igdbUrl && !el.fields.igdbUrl.value) el.fields.igdbUrl.value = result.igdbUrl;
   fillStoreLinkFields(result.storeLinks);
   if (metadataHltbUrl(result) && !el.fields.hltbUrl.value) el.fields.hltbUrl.value = metadataHltbUrl(result);
   state.pendingLengthHours = result.lengthHours || state.pendingLengthHours;
@@ -1553,6 +1556,7 @@ async function saveEditor(event) {
     releaseDate: el.fields.releaseDate.value, trophyName: el.fields.trophyName.value.trim(), websites: legacyWebsiteLinks(existing),
     storeLinks: editorStoreLinks(),
     hltbUrl: el.fields.hltbUrl.value.trim(),
+    igdbUrl: cleanUrl(el.fields.igdbUrl.value),
     lengthHours: existing?.lengthHours || state.pendingLengthHours || null,
     upc: el.fields.upc.value.trim(), sku: el.fields.sku.value.trim(), asin: el.fields.asin.value.trim(), epid: el.fields.epid.value.trim(),
     pricechartingId: el.fields.pricechartingId.value.trim(), description: el.fields.description.value.trim(),
@@ -3182,11 +3186,12 @@ function normalizePriceLabel(value, currency = "USD") {
   return currency === "USD" ? text : text.replace(/€\s*([0-9][0-9.,]*)/g, "$1€").replace(/\bEUR\s*([0-9][0-9.,]*)/gi, "$1€");
 }
 function normalizedStoreLinks(game = {}) {
-  const slots = { playstation: "", nintendo: "", steam: "", xbox: "", hltb: "" };
+  const slots = { playstation: "", nintendo: "", steam: "", xbox: "", hltb: "", igdb: "" };
   const source = game.storeLinks && typeof game.storeLinks === "object" ? game.storeLinks : {};
   Object.keys(slots).forEach((key) => { slots[key] = cleanUrl(source[key]); });
   for (const link of (Array.isArray(game.websites) ? game.websites : [])) mergeLinkSlot(slots, link);
   if (game.hltbUrl || game.howLongToBeatUrl) slots.hltb = cleanUrl(game.hltbUrl || game.howLongToBeatUrl);
+  if (game.igdbUrl) slots.igdb = cleanUrl(game.igdbUrl);
   return slots;
 }
 function editorStoreLinks() {
@@ -3196,6 +3201,7 @@ function editorStoreLinks() {
     steam: cleanUrl(el.fields.steamUrl.value),
     xbox: cleanUrl(el.fields.xboxUrl.value),
     hltb: cleanUrl(el.fields.hltbUrl.value),
+    igdb: cleanUrl(el.fields.igdbUrl.value),
   };
 }
 function fillStoreLinkFields(links = {}) {
@@ -3214,6 +3220,7 @@ function mergeWebsiteIntoSlots(link) {
   el.fields.steamUrl.value = slots.steam;
   el.fields.xboxUrl.value = slots.xbox;
   el.fields.hltbUrl.value = slots.hltb;
+  el.fields.igdbUrl.value = slots.igdb;
 }
 function mergeLinkSlot(slots, link) {
   const url = cleanUrl(link);
@@ -3228,6 +3235,7 @@ function linkSlot(value) {
   if (host.includes("steampowered")) return "steam";
   if (host.includes("xbox")) return "xbox";
   if (host.includes("howlongtobeat")) return "hltb";
+  if (host.includes("igdb")) return "igdb";
   return "";
 }
 function legacyWebsiteLinks(game) {
