@@ -2131,6 +2131,8 @@ function renderGameOfTheYear() {
   const year = state.gotyYear;
   const entry = state.settings.gameOfTheYear?.[year] || {};
   const picks = entry.picks || {};
+  const candidates = gameOfTheYearCandidateGames(year);
+  const candidateIds = new Set(candidates.map((game) => game.id));
   el.gotySection.hidden = false;
   const sectionTitle = window.matchMedia("(max-width: 520px)").matches ? `My GOTYs ${year}` : `My Games of the year ${year}`;
   el.gotyTitle.innerHTML = `${trophyIcon()} <span>${escapeHtml(sectionTitle)}</span>`;
@@ -2138,7 +2140,7 @@ function renderGameOfTheYear() {
   el.gotyYearSelect.value = year;
   syncStyledSelect(el.gotyYearSelect, { activeValue: null });
   if (el.gotyYearCount) {
-    const count = gameOfTheYearCandidateGames(year).length;
+    const count = candidates.length;
     el.gotyYearCount.textContent = `${count} ${count === 1 ? "game" : "games"} played`;
   }
   const canEditCurrent = state.canEdit && year === currentGameOfTheYear();
@@ -2158,7 +2160,7 @@ function renderGameOfTheYear() {
   }
   el.gotyGrid.innerHTML = GAME_OF_YEAR_CATEGORIES.map(([key, label], index) => {
     const game = gameById(picks[key]);
-    if (!game) return "";
+    if (!game || !candidateIds.has(game.id)) return "";
     const cover = coverDisplayUrl(game.cover || "") || platformLogo(game.platform || "PS5");
     const edgeClass = index >= GAME_OF_YEAR_CATEGORIES.length - 2 ? "goty-card-edge-right" : index === 0 ? "goty-card-edge-left" : "";
     return `
@@ -6198,10 +6200,13 @@ function completedGamesForYear(year) {
 }
 
 function gameOfTheYearCandidateGames(year) {
+  const scopeYear = String(year);
   const games = new Map();
-  completedGamesForYear(year).filter((game) => !game.dlc).forEach((game) => games.set(game.id, game));
+  completedGamesForYear(year)
+    .filter((game) => !game.dlc && releaseYear(game) === scopeYear)
+    .forEach((game) => games.set(game.id, game));
   activeGames()
-    .filter((game) => game.playing && !game.dlc)
+    .filter((game) => game.playing && !game.dlc && releaseYear(game) === scopeYear)
     .forEach((game) => games.set(game.id, game));
   return [...games.values()];
 }
