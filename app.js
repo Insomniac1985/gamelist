@@ -5337,10 +5337,11 @@ function updateCompletedCount(count) {
   if (!el.completedCount) return;
   const games = typeof count === "object" ? Number(count.games || 0) : Number(count || 0);
   const expansions = typeof count === "object" ? Number(count.expansions || 0) : 0;
-  el.completedCount.innerHTML = [
-    `${games} ${games === 1 ? "game" : "games"}`,
-    expansions ? `${expansions} ${expansions === 1 ? "expansion" : "expansions"}` : "",
-  ].filter(Boolean).join(" &middot; ");
+  const gameText = `${games} ${games === 1 ? "game" : "games"}`;
+  const expansionText = expansions ? `${expansions} ${expansions === 1 ? "expansion" : "expansions"}` : "";
+  el.completedCount.innerHTML = expansionText
+    ? `<span>${escapeHtml(gameText)}</span><span class="completed-count-separator" aria-hidden="true">&middot;</span><span>${escapeHtml(expansionText)}</span>`
+    : `<span>${escapeHtml(gameText)}</span>`;
 }
 
 function completedCountForSelectedYear() {
@@ -5497,7 +5498,7 @@ function statsReleaseMiniKpi({ value, label, subline = "", detail = "", tone = "
 function releaseExpansionLine(games, singular, plural) {
   const count = Array.isArray(games) ? games.length : 0;
   if (!count) return "";
-  return dlcBadge(games[0], `${count} ${count === 1 ? singular : plural}`, { className: "finished-stats-release-subline" });
+  return dlcBadge(games[0], `${count} ${count === 1 ? singular : plural}`, { className: "finished-stats-release-subline", tone: "accent" });
 }
 
 function statsReleaseYearInsights(year, games) {
@@ -7694,7 +7695,7 @@ function platformBadge(platform, count = null, options = {}) {
 function dlcBadge(game, label = "DLC", options = {}) {
   const platform = typeof game === "string" ? game : game?.platform;
   const title = typeof game === "object" ? game?.title : "";
-  const cls = platformClass(platform, { title });
+  const cls = options.tone === "accent" ? "dlc-accent" : platformClass(platform, { title });
   const className = ["dlc-pill", cls, options.className || ""].filter(Boolean).join(" ");
   const platformLabel = platformDisplayName(platform);
   return `<span class="${escapeHtml(className)}" title="${escapeHtml([label, platformLabel].filter(Boolean).join(" - "))}">${escapeHtml(label)}</span>`;

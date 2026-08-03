@@ -1656,6 +1656,7 @@ html.theme-gradient .goty-section .column-head h2 .trophy-icon {
 
 .playing-finished-tags .platform-badge,
 .playing-finished-tags .owner-pill,
+.playing-finished-tags .dlc-pill,
 .playing-finished-tags .digital-pill,
 .playing-finished-tags .emulator-pill,
 .playing-finished-tags .coop-pill,
@@ -5409,6 +5410,12 @@ body.theme-kash .game-card.stream-card.completed-trophy-card {
   color: #ffad5f;
 }
 
+.dlc-pill.dlc-accent {
+  color: var(--accent-1);
+  border-color: color-mix(in srgb, var(--accent-1) 44%, transparent);
+  background: color-mix(in srgb, var(--accent-1) 14%, rgba(255, 255, 255, 0.07));
+}
+
 .emulator-pill {
   color: #d7c7ff !important;
   border-color: rgba(170, 139, 255, 0.34);
@@ -6145,7 +6152,9 @@ body:not(.can-edit) .game-card:focus-within .edit-action {
 }
 
 #completedCount {
-  display: block;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
   width: max-content;
   white-space: nowrap;
 }
@@ -6450,6 +6459,7 @@ body.theme-kash .finished-stats-kpi.is-completed:focus-visible strong {
 
 .finished-stats-release-kpi > .finished-stats-release-subline {
   justify-self: start;
+  color: var(--accent-1);
   font-size: 11px;
   font-weight: 820;
   text-transform: none;
@@ -7781,6 +7791,7 @@ body.theme-kash .playing-finished-game.completed-trophy-card:hover {
 }
 
 .completed-platform .coop-pill,
+.completed-platform .dlc-pill,
 .completed-platform .digital-pill,
 .completed-platform .emulator-pill,
 .completed-platform .stream-pill,
@@ -8946,6 +8957,12 @@ html.theme-light .row-price-link {
   background: rgba(185, 198, 216, 0.78);
   border-color: rgba(31, 42, 61, 0.4);
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.42);
+}
+
+html.theme-light .dlc-pill.dlc-accent {
+  color: #142033;
+  border-color: color-mix(in srgb, var(--accent-1) 58%, rgba(31, 42, 61, 0.36));
+  background: color-mix(in srgb, var(--accent-1) 34%, rgba(255, 255, 255, 0.78));
 }
 
 html.theme-light .chip {
@@ -12026,6 +12043,18 @@ body.theme-kash
 }
 
 @media (width <= 760px) {
+  #completedCount {
+    display: grid;
+    justify-items: end;
+    gap: 1px;
+    line-height: 1.12;
+    white-space: normal;
+  }
+
+  #completedCount .completed-count-separator {
+    display: none;
+  }
+
   .game-row-actions {
     display: grid;
     grid-template-columns: 1fr;
