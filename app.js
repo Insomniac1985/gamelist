@@ -5261,8 +5261,8 @@ function renderCompleted() {
       <div class="completed-main">
         <strong class="${game.platinum ? "completed-achievements-title" : ""}">${escapeHtml(game.title)}</strong>
         <span class="completed-platform">${completedOwnerBadges(game)}${completedBadges(game)}</span>
-        <span class="completed-dates">${escapeHtml(historyRangeText(game))}</span>
         ${completedDurationLine(game)}
+        <span class="completed-dates">${escapeHtml(historyRangeText(game))}</span>
       </div>
       <div class="completed-actions">
         <button class="icon-button completed-edit-action" type="button" title="Edit" aria-label="Edit">${pencilIcon()}</button>
@@ -5435,7 +5435,7 @@ function finishedStatsMarkup(year, games, completed) {
     <div class="finished-stats-charts ${allYears ? "is-all" : ""}">
       ${statsDonutCard("Platforms", platforms, "platform", 5, finishedGames)}
       ${statsDonutCard("Categories", tags, "category", 5, finishedGames)}
-      ${statsDonutCard("Aproximate playtime", timeBuckets, "time", timeBuckets.length, finishedGames)}
+      ${statsDonutCard("Aproximate playtime", timeBuckets, "time", 5, finishedGames)}
       ${statsDonutCard("Physical / digital / emulator", mediaBuckets, "media", 3, finishedGames)}
     </div>
     ${allYears ? "" : statsReleaseKpisCard(releaseInsights)}
@@ -6183,8 +6183,8 @@ function renderHistoryDialog() {
       <div>
         <strong class="${game.platinum ? "completed-achievements-title" : ""}">${escapeHtml(game.title)}</strong>
         <span class="completed-platform">${completedBadges(game)}</span>
-        <span>${escapeHtml(historyRangeText(game))}</span>
         ${completedDurationLine(game)}
+        <span>${escapeHtml(historyRangeText(game))}</span>
       </div>
       <button class="icon-button history-edit-action" type="button" title="Edit" aria-label="Edit">${pencilIcon()}</button>
     </div>
