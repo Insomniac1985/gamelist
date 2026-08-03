@@ -10891,6 +10891,19 @@ body.theme-kash
   grid-column: span 1;
 }
 
+.game-data-grid,
+.game-data-grid > label {
+  min-width: 0;
+  max-width: 100%;
+}
+
+.game-data-grid input:not([type="checkbox"]),
+.game-data-grid textarea {
+  min-width: 0;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
 .playing-form-grid {
   grid-template-columns: repeat(10, minmax(0, 1fr));
   gap: 8px;
