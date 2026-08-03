@@ -429,6 +429,10 @@
               <input id="playingInput" type="checkbox">
               <span>Playing</span>
             </label>
+            <label class="check-filter toggle-check form-check stream-check">
+              <input id="streamInput" type="checkbox">
+              <span>Stream</span>
+            </label>
             <label>
               <span>Started</span>
               <input id="startedAtInput" type="date">
@@ -437,13 +441,13 @@
               <span>Finished</span>
               <input id="completedAtInput" type="date">
             </label>
+            <label class="playing-finish-time-field">
+              <span>Time to finish</span>
+              <input id="finishHoursInput" type="number" min="0" step="1" inputmode="numeric" placeholder="Hours">
+            </label>
             <label class="playing-replay-field">
               <span>Replay Count</span>
               <input id="replayCountInput" type="number" min="0" step="1" placeholder="0">
-            </label>
-            <label class="check-filter toggle-check form-check stream-check">
-              <input id="streamInput" type="checkbox">
-              <span>Stream</span>
             </label>
             <label class="check-filter toggle-check form-check playing-achievements-check">
               <input id="platinumInput" type="checkbox">
@@ -479,6 +483,18 @@
               <span>Release Date</span>
               <input id="releaseDateInput" type="date">
             </label>
+            <label class="check-filter toggle-check form-check collection-check">
+              <input id="digitalInput" type="checkbox">
+              <span>Digital</span>
+            </label>
+            <label class="check-filter toggle-check form-check collection-check">
+              <input id="emulatorInput" type="checkbox">
+              <span>Emulator</span>
+            </label>
+            <label class="check-filter toggle-check form-check collection-check">
+              <input id="coopInput" type="checkbox">
+              <span>Coop</span>
+            </label>
             <label>
               <span>Release Text</span>
               <input id="releaseTextInput" placeholder="2026?, 18 June, TBA...">
@@ -502,18 +518,6 @@
             <label>
               <span>Status</span>
               <input id="statusesInput" list="statusOptions" placeholder="To Collect, Scarce, Waiting for Physical">
-            </label>
-            <label class="check-filter toggle-check form-check">
-              <input id="digitalInput" type="checkbox">
-              <span>Digital</span>
-            </label>
-            <label class="check-filter toggle-check form-check">
-              <input id="emulatorInput" type="checkbox">
-              <span>Emulator</span>
-            </label>
-            <label class="check-filter toggle-check form-check">
-              <input id="coopInput" type="checkbox">
-              <span>Coop</span>
             </label>
             <div class="form-grid-spacer" aria-hidden="true"></div>
             <label>
@@ -910,6 +914,27 @@
         <div class="modal-actions">
           <button class="ghost-button" id="authCancelButton" type="button">Cancel</button>
           <button class="primary-button" type="submit">Unlock</button>
+        </div>
+      </form>
+    </dialog>
+
+    <dialog id="finishTimeDialog">
+      <form method="dialog" class="auth-modal finish-time-modal glass" id="finishTimeForm">
+        <div class="modal-head">
+          <div>
+            <p class="eyebrow">Finished</p>
+            <h2>Time to finish</h2>
+          </div>
+          <button class="icon-button" id="finishTimeCloseButton" type="button" title="Close">×</button>
+        </div>
+        <label>
+          <span>Aproximate time in whole hours</span>
+          <input id="finishTimeInput" type="number" min="0" step="1" inputmode="numeric" placeholder="Hours" autofocus>
+        </label>
+        <p class="auth-error" id="finishTimeError" hidden>Use whole numbers only.</p>
+        <div class="modal-actions">
+          <button class="ghost-button" id="finishTimeSkipButton" type="button">Skip</button>
+          <button class="primary-button" type="submit">Save</button>
         </div>
       </form>
     </dialog>
