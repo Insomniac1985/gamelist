@@ -41,7 +41,7 @@ const PLATFORM_OPTIONS = [
 const COUNTRY_OPTIONS = [
   ["Australia", "Australia"], ["China", "China"], ["Europe", "EU"], ["France", "France"], ["Germany", "Germany"],
   ["Ireland", "Ireland"], ["Italy", "Italy"], ["Japan", "Japan"], ["Mexico", "Mexico"], ["Portugal", "Portugal"],
-  ["Spain", "Spain"], ["Taiwan", "Taiwan"], ["United Kingdom", "United Kingdom"], ["United States of America", "United States"], ["World", "World"],
+  ["Spain", "Spain"], ["Taiwan", "Taiwan"], ["United Kingdom", "UK"], ["United States of America", "US"], ["World", "World"],
 ];
 const WEEK_START_OPTIONS = [
   ["monday", "Monday"],
@@ -892,6 +892,7 @@ function renderFilters() {
 function syncStyledSelect(select, options = {}) {
   if (!select) return;
   const useLogos = Boolean(options.logos);
+  const useFlags = Boolean(options.flags) || select.id === "countryInput";
   select.classList.add(useLogos ? "native-platform-filter" : "native-styled-select");
   let control = select.nextElementSibling;
   if (!control?.classList?.contains("platform-logo-select")) {
@@ -911,12 +912,12 @@ function syncStyledSelect(select, options = {}) {
   control.classList.toggle("is-active", options.activeValue != null && selected.value !== options.activeValue);
   control.innerHTML = `
     <button class="platform-logo-button" type="button" aria-haspopup="listbox" aria-expanded="false" data-full-label="${escapeHtml(selected.label)}" aria-label="${escapeHtml(selected.label)}">
-      ${platformLogoChoiceMarkup(selected.value, selected.label, { logos: useLogos, fontFamily: selected.fontFamily })}
+      ${platformLogoChoiceMarkup(selected.value, selected.label, { logos: useLogos, flags: useFlags, fontFamily: selected.fontFamily })}
     </button>
     <div class="platform-logo-menu" role="listbox">
       ${visibleOptions.map((option) => `
         <button class="platform-logo-option ${option.selected ? "is-selected" : ""}" type="button" role="option" aria-selected="${option.selected ? "true" : "false"}" data-value="${escapeHtml(option.value)}" data-full-label="${escapeHtml(option.label)}">
-          ${platformLogoChoiceMarkup(option.value, option.label, { logos: useLogos, fontFamily: option.fontFamily })}
+          ${platformLogoChoiceMarkup(option.value, option.label, { logos: useLogos, flags: useFlags, fontFamily: option.fontFamily })}
         </button>
       `).join("")}
     </div>
@@ -1005,11 +1006,13 @@ function hidePlatformLogoOverlay() {
 
 function platformLogoChoiceMarkup(value, label, options = {}) {
   const showLogo = options.logos && value && value !== "all";
+  const showFlag = options.flags && value && value !== "all";
   const cls = showLogo ? platformClass(value) : "platform-generic";
   const fontStyle = options.fontFamily ? ` style="font-family:${escapeHtml(options.fontFamily)}"` : "";
   return `
     <span class="platform-logo-choice ${escapeHtml(cls)}">
       ${showLogo ? `<span class="platform-logo-choice-icon"><img src="${escapeHtml(platformLogo(value))}" alt="" width="18" height="18" decoding="async"></span>` : ""}
+      ${showFlag ? `<span class="platform-logo-choice-icon"><img src="${escapeHtml(flagAsset(value))}" alt="" width="18" height="18" decoding="async"></span>` : ""}
       <span class="platform-logo-choice-label"${fontStyle}>${escapeHtml(label)}</span>
     </span>
   `;
