@@ -10918,18 +10918,7 @@ body.theme-kash
 
 .playing-form-grid > label.playing-achievements-check {
   grid-column: span 1;
-  justify-content: center;
   padding-inline: 8px;
-}
-
-.playing-achievements-check input[type="checkbox"] {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  overflow: hidden;
-  clip: rect(0 0 0 0);
-  clip-path: inset(50%);
-  white-space: nowrap;
 }
 
 .playing-achievements-check .achievement-check-icon {
