@@ -323,6 +323,9 @@ const el = {
   finishTimeError: document.querySelector("#finishTimeError"),
   finishTimeCloseButton: document.querySelector("#finishTimeCloseButton"),
   finishTimeSkipButton: document.querySelector("#finishTimeSkipButton"),
+  platformFieldIcon: document.querySelector(".platform-field-icon"),
+  preorderStoreFieldIcon: document.querySelector(".preorder-store-field-icon"),
+  preferredStoreFieldIcon: document.querySelector(".preferred-store-field-icon"),
   settingsLayoutList: document.querySelector("#settingsLayoutList"),
   settingsPsnUser: document.querySelector("#settingsPsnUser"),
   settingsMicrosoftUser: document.querySelector("#settingsMicrosoftUser"),
@@ -396,8 +399,8 @@ const el = {
     trailerUrl: document.querySelector("#trailerUrlInput"),
     playstationUrl: document.querySelector("#playstationUrlInput"),
     nintendoUrl: document.querySelector("#nintendoUrlInput"),
+    xboxUrl: document.querySelector("#xboxUrlInput"),
     steamUrl: document.querySelector("#steamUrlInput"),
-    steamAppId: document.querySelector("#steamAppIdInput"),
     cover: document.querySelector("#coverInput"),
     notes: document.querySelector("#notesInput"),
   },
@@ -922,7 +925,13 @@ function bindEvents() {
   el.board.addEventListener("touchend", handleBoardSwipeEnd, { passive: true });
   window.addEventListener("touchend", handleBoardSwipeEnd, { passive: true });
   el.fields.section.addEventListener("change", syncDialogPriceVisibility);
-  el.fields.platform.addEventListener("input", syncDialogPriceVisibility);
+  el.fields.platform.addEventListener("input", () => {
+    syncDialogPriceVisibility();
+    syncPlatformInputIcon();
+  });
+  el.fields.platform.addEventListener("change", syncPlatformInputIcon);
+  el.fields.preorderStore.addEventListener("input", () => syncStoreInputIcon(el.fields.preorderStore, el.preorderStoreFieldIcon));
+  el.fields.preferredStore.addEventListener("input", () => syncStoreInputIcon(el.fields.preferredStore, el.preferredStoreFieldIcon));
   el.fields.digital.addEventListener("change", syncDialogPriceVisibility);
   el.fields.dlc.addEventListener("change", syncDlcDigital);
   el.fields.replayCount.addEventListener("input", syncReplaySection);
@@ -932,7 +941,7 @@ function bindEvents() {
   el.lookupButton.addEventListener("click", lookupGame);
   el.lookupInput.addEventListener("input", queueTitleLookup);
   el.pricesButton?.addEventListener("click", refreshCurrentPrices);
-  el.coverUpload.addEventListener("change", handleCoverUpload);
+  el.coverUpload?.addEventListener("change", handleCoverUpload);
   window.addEventListener("resize", syncDisplayMode, { passive: true });
   window.matchMedia("(display-mode: standalone)").addEventListener?.("change", syncDisplayMode);
 }
@@ -8384,6 +8393,7 @@ function normalizeStoreLinks(links) {
   return {
     playstation: String(value.playstation || ""),
     nintendo: String(value.nintendo || ""),
+    xbox: String(value.xbox || ""),
     steam: String(value.steam || ""),
   };
 }
@@ -8435,7 +8445,7 @@ function storeLinksWithFallbacks(game) {
     playstation: regionalStoreLink(links.playstation, "playstation", q, region),
     nintendo: regionalStoreLink(links.nintendo, "nintendo", q, region),
     steam: links.steam || `https://store.steampowered.com/search/?term=${q}`,
-    xbox: xboxSearchUrl(q, region),
+    xbox: links.xbox || xboxSearchUrl(q, region),
   };
 }
 
@@ -8646,6 +8656,55 @@ function storeIcon(store) {
   return "";
 }
 
+function syncEditFieldIcons() {
+  syncPlatformInputIcon();
+  syncStoreInputIcon(el.fields.preorderStore, el.preorderStoreFieldIcon);
+  syncStoreInputIcon(el.fields.preferredStore, el.preferredStoreFieldIcon);
+}
+
+function syncPlatformInputIcon() {
+  const raw = String(el.fields.platform?.value || "").trim();
+  const platform = canonicalPlatform(raw) || raw;
+  const icon = platform && platformLogo(platform);
+  setLeadingFieldIcon(el.platformFieldIcon, icon && icon !== "assets/Icon.png" ? icon : "", platformDisplayName(platform));
+}
+
+function syncStoreInputIcon(input, slot) {
+  const store = knownStoreIconName(input?.value);
+  setLeadingFieldIcon(slot, store ? storeIcon(store) : "", store);
+}
+
+function knownStoreIconName(value) {
+  const raw = String(value || "").trim();
+  if (!raw) return "";
+  const normalized = normalizeTag(raw);
+  const exact = STORE_OPTIONS.find((store) => normalizeTag(store) === normalized);
+  if (exact) return exact;
+  if (normalized.startsWith("amazon")) return "Amazon";
+  if (normalized === "ebay" || normalized === "e bay") return "eBay";
+  if (normalized === "game" || normalized === "game es") return "GAME.es";
+  if (normalized === "xtralife" || normalized === "xtra life") return "Xtralife";
+  if (normalized === "retro island" || normalized === "retro island ny") return "Retro Island NY";
+  if (normalized === "gamestop" || normalized === "game stop") return "GameStop";
+  if (normalized === "walmart" || normalized === "wallmart") return "Walmart";
+  if (normalized.startsWith("nintendo")) return "Nintendo";
+  if (normalized.startsWith("playstation") || normalized.startsWith("play station")) return "PlayStation";
+  if (normalized === "steam") return "Steam";
+  if (normalized === "xbox") return "Xbox";
+  return "";
+}
+
+function setLeadingFieldIcon(slot, icon, title = "", extraClass = "") {
+  const wrapper = slot?.closest?.(".icon-input");
+  if (!slot || !wrapper) return;
+  const baseClasses = String(slot.dataset.baseClass || slot.className || "field-leading-icon").split(/\s+/).filter(Boolean);
+  slot.dataset.baseClass = baseClasses.join(" ");
+  slot.className = unique([...baseClasses, ...String(extraClass || "").split(/\s+/).filter(Boolean)]).join(" ");
+  wrapper.classList.toggle("has-icon", Boolean(icon));
+  slot.title = icon ? title : "";
+  slot.innerHTML = icon ? `<img src="${escapeHtml(icon)}" alt="" width="18" height="18" decoding="async">` : "";
+}
+
 function releaseStatus(game, options = {}) {
   return activityReleaseStatus(game, options);
 }
@@ -8745,10 +8804,11 @@ async function openEditor(id = "") {
   el.fields.trailerUrl.value = game.trailerUrl || "";
   el.fields.playstationUrl.value = game.storeLinks?.playstation || "";
   el.fields.nintendoUrl.value = game.storeLinks?.nintendo || "";
+  el.fields.xboxUrl.value = game.storeLinks?.xbox || "";
   el.fields.steamUrl.value = game.storeLinks?.steam || "";
-  el.fields.steamAppId.value = game.steamAppId || steamAppIdFromUrl(game.storeLinks?.steam || "");
   el.fields.cover.value = game.cover || "";
   el.fields.notes.value = game.notes || "";
+  syncEditFieldIcons();
   syncDialogPriceVisibility();
   syncStyledSelect(el.fields.section, { activeValue: null });
   pauseAllPlayingTrailers();
@@ -8797,7 +8857,7 @@ function blankGame() {
     igdbUrl: "",
     trailerUrl: "",
     steamAppId: "",
-    storeLinks: { playstation: "", nintendo: "", steam: "" },
+    storeLinks: { playstation: "", nintendo: "", xbox: "", steam: "" },
     owners: [state.settings.defaultOwner || DEFAULT_SETTINGS.defaultOwner],
     preorderStore: "",
     preferredStore: "",
@@ -8870,10 +8930,11 @@ async function saveCurrentFormGame() {
     igdbUrl: el.fields.igdbUrl.value.trim(),
     trailerUrl,
     trailerUrlRemoved,
-    steamAppId: cleanSteamAppId(el.fields.steamAppId.value) || steamAppIdFromUrl(el.fields.steamUrl.value),
+    steamAppId: steamAppIdFromUrl(el.fields.steamUrl.value),
     storeLinks: {
       playstation: el.fields.playstationUrl.value.trim(),
       nintendo: el.fields.nintendoUrl.value.trim(),
+      xbox: el.fields.xboxUrl.value.trim(),
       steam: el.fields.steamUrl.value.trim(),
     },
     cover: el.fields.cover.value.trim(),
@@ -9272,8 +9333,8 @@ function applyLookup(result) {
   const links = normalizeStoreLinks(result.storeLinks);
   el.fields.playstationUrl.value = links.playstation || el.fields.playstationUrl.value;
   el.fields.nintendoUrl.value = links.nintendo || el.fields.nintendoUrl.value;
+  el.fields.xboxUrl.value = links.xbox || el.fields.xboxUrl.value;
   el.fields.steamUrl.value = links.steam || el.fields.steamUrl.value;
-  el.fields.steamAppId.value = steamAppIdFromUrl(el.fields.steamUrl.value) || el.fields.steamAppId.value;
   const current = state.games.find((game) => game.id === el.fields.id.value);
   if (current && !current.description && result.description) current.description = result.description;
   if (!current) state.pendingDescription = result.description || "";
@@ -9281,6 +9342,7 @@ function applyLookup(result) {
   if (result.developer) el.fields.developer.value = result.developer;
   if (result.publisher) el.fields.publisher.value = result.publisher;
   if (result.platform && !el.fields.platform.value) el.fields.platform.value = result.platform;
+  syncEditFieldIcons();
   if (!el.fields.id.value && !el.fields.replayCount.value) {
     const replayCount = nextReplayCountForTitle(el.fields.title.value);
     if (replayCount) {

@@ -441,17 +441,26 @@
               <span>Started</span>
               <input id="startedAtInput" type="date">
             </label>
+            <label class="playing-completed-field">
+              <span>Finished</span>
+              <input id="completedAtInput" type="date">
+            </label>
             <label class="playing-finish-time-field">
               <span>Time to finish</span>
               <input id="finishHoursInput" type="text" inputmode="numeric" placeholder="Hours">
             </label>
             <label class="check-filter toggle-check form-check playing-achievements-check">
               <input id="platinumInput" type="checkbox">
-              <span>Completed Achievements</span>
-            </label>
-            <label class="playing-completed-field">
-              <span>Finished</span>
-              <input id="completedAtInput" type="date">
+              <span class="achievement-check-icon" title="Completed achievements" aria-label="Completed achievements">
+                <svg class="trophy-icon" viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M8 4h8v4a4 4 0 0 1-8 0V4Z"></path>
+                  <path d="M8 6H5a3 3 0 0 0 3 3"></path>
+                  <path d="M16 6h3a3 3 0 0 1-3 3"></path>
+                  <path d="M12 12v4"></path>
+                  <path d="M9 20h6"></path>
+                  <path d="M10 16h4v4h-4z"></path>
+                </svg>
+              </span>
             </label>
           </div>
         </section>
@@ -459,13 +468,16 @@
         <section class="form-group">
           <h3>Collecting Information</h3>
           <div class="form-grid collection-form-grid">
-            <label>
+            <label class="title-field">
               <span>Title</span>
               <input id="titleInput" required>
             </label>
             <label class="platform-field">
               <span>Platform</span>
-              <input id="platformInput" list="platformOptions">
+              <span class="icon-input platform-icon-input">
+                <span class="field-leading-icon platform-field-icon" aria-hidden="true"></span>
+                <input id="platformInput" list="platformOptions">
+              </span>
             </label>
             <label class="check-filter toggle-check form-check dlc-check">
               <input id="dlcInput" type="checkbox">
@@ -483,40 +495,46 @@
               <span>Release Date</span>
               <input id="releaseDateInput" type="date">
             </label>
-            <label class="check-filter toggle-check form-check collection-check">
+            <label class="release-text-field">
+              <span>Release Text (Optional)</span>
+              <input id="releaseTextInput" placeholder="2026?, 18 June, TBA...">
+            </label>
+            <label class="check-filter toggle-check form-check collection-check digital-check">
               <input id="digitalInput" type="checkbox">
               <span>Digital</span>
             </label>
-            <label class="check-filter toggle-check form-check collection-check">
+            <label class="check-filter toggle-check form-check collection-check emulator-check">
               <input id="emulatorInput" type="checkbox">
               <span>Emulator</span>
             </label>
-            <label class="check-filter toggle-check form-check collection-check">
+            <label class="check-filter toggle-check form-check collection-check coop-check">
               <input id="coopInput" type="checkbox">
               <span>Coop</span>
-            </label>
-            <label class="release-text-field">
-              <span>Release Text</span>
-              <input id="releaseTextInput" placeholder="2026?, 18 June, TBA...">
             </label>
             <label class="length-field">
               <span>Aproximate playtime</span>
               <input id="lengthInput" type="number" min="0" step="0.5" placeholder="Hours">
             </label>
-            <label>
+            <label class="preorder-store-field">
               <span>Preordered Where</span>
-              <input id="preorderStoreInput" placeholder="Xtralife, Game, Amazon...">
+              <span class="icon-input store-icon-input">
+                <span class="field-leading-icon preorder-store-field-icon" aria-hidden="true"></span>
+                <input id="preorderStoreInput" placeholder="Xtralife, Game, Amazon...">
+              </span>
             </label>
-            <label>
-              <span>Preferred Store</span>
-              <input id="preferredStoreInput" placeholder="Limited Run, Amazon...">
+            <label class="preferred-store-field">
+              <span>Preferred preorder store</span>
+              <span class="icon-input store-icon-input">
+                <span class="field-leading-icon preferred-store-field-icon" aria-hidden="true"></span>
+                <input id="preferredStoreInput" placeholder="Limited Run, Amazon...">
+              </span>
             </label>
-            <label>
-              <span>Owners</span>
+            <label class="owners-field">
+              <span>Owner</span>
               <input id="ownersInput" list="ownerOptions" placeholder="User, Judy...">
             </label>
-            <label>
-              <span>Status</span>
+            <label class="status-field">
+              <span>Other tags</span>
               <input id="statusesInput" list="statusOptions" placeholder="To Collect, Scarce, Waiting for Physical">
             </label>
             <label class="game-tags-field">
@@ -524,7 +542,7 @@
               <input id="genresInput" placeholder="Adventure, RPG, FPS">
             </label>
             <label class="trophy-search-field">
-              <span>Trophy Search Name</span>
+              <span>Alternate Achievement search name</span>
               <input id="trophyNameInput" placeholder="Optional alternate title">
             </label>
             <label class="wide notes-field">
@@ -536,7 +554,7 @@
 
         <section class="form-group">
           <h3>Game Data</h3>
-          <div class="form-grid">
+          <div class="form-grid game-data-grid">
             <label>
               <span>Developer</span>
               <input id="developerInput" placeholder="Studio">
@@ -557,29 +575,25 @@
               <span>Trailer URL</span>
               <input id="trailerUrlInput" placeholder="https://www.youtube.com/watch?v=...">
             </label>
-            <label>
+            <label class="store-link-field">
               <span>PlayStation Store URL</span>
               <input id="playstationUrlInput" placeholder="https://store.playstation.com/...">
             </label>
-            <label>
+            <label class="store-link-field">
               <span>Nintendo Store URL</span>
               <input id="nintendoUrlInput" placeholder="https://www.nintendo.com/...">
             </label>
-            <label class="wide">
+            <label class="store-link-field">
               <span>Steam URL</span>
               <input id="steamUrlInput" placeholder="https://store.steampowered.com/app/...">
             </label>
-            <label>
-              <span>Steam App ID</span>
-              <input id="steamAppIdInput" inputmode="numeric" placeholder="123456">
+            <label class="store-link-field">
+              <span>Xbox Store URL</span>
+              <input id="xboxUrlInput" placeholder="https://www.xbox.com/...">
             </label>
             <label class="wide">
               <span>Cover URL</span>
               <input id="coverInput" placeholder="https://...">
-            </label>
-            <label class="wide">
-              <span>Upload Cover</span>
-              <input id="coverUpload" type="file" accept="image/*">
             </label>
           </div>
         </section>
@@ -967,13 +981,6 @@
             <button class="ghost-button price-refresh-action" type="button">Prices</button>
             <button class="ghost-button bought-action" type="button">Got it</button>
             <button class="primary-button complete-action" type="button">Finished</button>
-            <button class="ghost-button backlog-action" type="button" title="Backlog" aria-label="Move back to backlog">
-              <svg class="back-icon" viewBox="0 0 24 24" aria-hidden="true">
-                <path d="M10 6 4 12l6 6"></path>
-                <path d="M4 12h10a6 6 0 0 1 6 6"></path>
-              </svg>
-              <span class="action-label">Backlog</span>
-            </button>
             <button class="ghost-button trophy-action" type="button" title="Completed" aria-label="Completed">
               <svg class="trophy-icon" viewBox="0 0 24 24" aria-hidden="true">
                 <path d="M8 4h8v4a4 4 0 0 1-8 0V4Z"></path>
@@ -983,6 +990,13 @@
                 <path d="M9 20h6"></path>
                 <path d="M10 16h4v4h-4z"></path>
               </svg>
+            </button>
+            <button class="ghost-button backlog-action" type="button" title="Backlog" aria-label="Move back to backlog">
+              <svg class="back-icon" viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M10 6 4 12l6 6"></path>
+                <path d="M4 12h10a6 6 0 0 1 6 6"></path>
+              </svg>
+              <span class="action-label">Backlog</span>
             </button>
             <button class="danger-button icon-only-button delete-action" type="button" title="Delete" aria-label="Delete">
               <svg class="trash-icon" viewBox="0 0 24 24" aria-hidden="true">
