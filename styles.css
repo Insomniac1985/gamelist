@@ -10863,6 +10863,10 @@ body.theme-kash
   min-height: 44px;
 }
 
+.game-data-grid > .store-link-field {
+  grid-column: span 1;
+}
+
 .playing-form-grid {
   grid-template-columns: repeat(10, minmax(0, 1fr));
   gap: 8px;

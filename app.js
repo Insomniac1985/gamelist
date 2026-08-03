@@ -401,7 +401,6 @@ const el = {
     nintendoUrl: document.querySelector("#nintendoUrlInput"),
     xboxUrl: document.querySelector("#xboxUrlInput"),
     steamUrl: document.querySelector("#steamUrlInput"),
-    steamAppId: document.querySelector("#steamAppIdInput"),
     cover: document.querySelector("#coverInput"),
     notes: document.querySelector("#notesInput"),
   },
@@ -942,7 +941,7 @@ function bindEvents() {
   el.lookupButton.addEventListener("click", lookupGame);
   el.lookupInput.addEventListener("input", queueTitleLookup);
   el.pricesButton?.addEventListener("click", refreshCurrentPrices);
-  el.coverUpload.addEventListener("change", handleCoverUpload);
+  el.coverUpload?.addEventListener("change", handleCoverUpload);
   window.addEventListener("resize", syncDisplayMode, { passive: true });
   window.matchMedia("(display-mode: standalone)").addEventListener?.("change", syncDisplayMode);
 }
@@ -8807,7 +8806,6 @@ async function openEditor(id = "") {
   el.fields.nintendoUrl.value = game.storeLinks?.nintendo || "";
   el.fields.xboxUrl.value = game.storeLinks?.xbox || "";
   el.fields.steamUrl.value = game.storeLinks?.steam || "";
-  el.fields.steamAppId.value = game.steamAppId || steamAppIdFromUrl(game.storeLinks?.steam || "");
   el.fields.cover.value = game.cover || "";
   el.fields.notes.value = game.notes || "";
   syncEditFieldIcons();
@@ -8932,7 +8930,7 @@ async function saveCurrentFormGame() {
     igdbUrl: el.fields.igdbUrl.value.trim(),
     trailerUrl,
     trailerUrlRemoved,
-    steamAppId: cleanSteamAppId(el.fields.steamAppId.value) || steamAppIdFromUrl(el.fields.steamUrl.value),
+    steamAppId: steamAppIdFromUrl(el.fields.steamUrl.value),
     storeLinks: {
       playstation: el.fields.playstationUrl.value.trim(),
       nintendo: el.fields.nintendoUrl.value.trim(),
@@ -9337,7 +9335,6 @@ function applyLookup(result) {
   el.fields.nintendoUrl.value = links.nintendo || el.fields.nintendoUrl.value;
   el.fields.xboxUrl.value = links.xbox || el.fields.xboxUrl.value;
   el.fields.steamUrl.value = links.steam || el.fields.steamUrl.value;
-  el.fields.steamAppId.value = steamAppIdFromUrl(el.fields.steamUrl.value) || el.fields.steamAppId.value;
   const current = state.games.find((game) => game.id === el.fields.id.value);
   if (current && !current.description && result.description) current.description = result.description;
   if (!current) state.pendingDescription = result.description || "";
