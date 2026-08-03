@@ -8815,7 +8815,7 @@ async function openEditor(id = "") {
   el.fields.xboxUrl.value = game.storeLinks?.xbox || "";
   el.fields.steamUrl.value = game.storeLinks?.steam || "";
   el.fields.cover.value = game.cover || "";
-  el.fields.notes.value = game.notes || "";
+  if (el.fields.notes) el.fields.notes.value = game.notes || "";
   syncEditFieldIcons();
   syncDialogPriceVisibility();
   syncStyledSelect(el.fields.section, { activeValue: null });
@@ -8948,7 +8948,7 @@ async function saveCurrentFormGame() {
       steam: el.fields.steamUrl.value.trim(),
     },
     cover: el.fields.cover.value.trim(),
-    notes: el.fields.notes.value.trim(),
+    notes: el.fields.notes ? el.fields.notes.value.trim() : existing?.notes || "",
     order: existing?.section === section ? existing.order : nextOrder(section),
     editedAt,
     updatedAt: editedAt,
