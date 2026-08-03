@@ -369,6 +369,7 @@ const el = {
     length: document.querySelector("#lengthInput"),
     startedAt: document.querySelector("#startedAtInput"),
     completedAt: document.querySelector("#completedAtInput"),
+    finishHours: document.querySelector("#finishHoursInput"),
     replayCount: document.querySelector("#replayCountInput"),
     platinum: document.querySelector("#platinumInput"),
     preorderStore: document.querySelector("#preorderStoreInput"),
@@ -1609,7 +1610,7 @@ function settingsDevFeaturesItem(kind) {
   `;
 }
 
-const CSV_NUMERIC_FIELDS = new Set(["order", "lengthHours", "replayCount", "numericPrice", "price", "estimatedValue", "purchasePrice"]);
+const CSV_NUMERIC_FIELDS = new Set(["order", "lengthHours", "finishHours", "replayCount", "numericPrice", "price", "estimatedValue", "purchasePrice"]);
 
 function downloadCsv(records, filename) {
   const csv = recordsToCsv(records);
@@ -1866,6 +1867,7 @@ function yearlyStatsCsvRecords() {
       startedAt: dateOnly(game.startedAt),
       completedAt: dateOnly(game.completedAt),
       lengthHours: game.lengthHours || "",
+      finishHours: game.finishHours || "",
       dlc: Boolean(game.dlc),
       replayCount: game.replayCount || "",
       stream: Boolean(game.stream),
@@ -1897,7 +1899,7 @@ async function importYearlyStatsCsv() {
     rows.forEach((row) => {
       const game = gameByCsvRow(row);
       if (!game) return;
-      ["startedAt", "completedAt", "lengthHours", "dlc", "replayCount", "owners", "tags", "stream", "coop", "platinum", "digital", "emulator"].forEach((key) => {
+      ["startedAt", "completedAt", "lengthHours", "finishHours", "dlc", "replayCount", "owners", "tags", "stream", "coop", "platinum", "digital", "emulator"].forEach((key) => {
         if (row[key] !== undefined && row[key] !== "") game[key] = row[key];
       });
       markGameEdited(game, now);
@@ -2106,7 +2108,7 @@ function renderPlayingFinished() {
     const achievementProgress = achievementProgressForGame(game);
     const progress = achievementProgress ? progressValue(achievementProgress.game) : 0;
     const badges = `${completedOwnerBadges(game)}${completedBadges(game, { includePsn: false })}`;
-    return finishedGameMarkup({ id: game.id, title: game.title, cover: game.cover || platformLogo(game.platform || "PS5"), completedClass: game.platinum ? "completed-trophy-card" : "", itemClass: ownerCardClass(game), badges, dateText: [formatLongDate(game.completedAt), finishedDurationText(game.startedAt, game.completedAt)].filter(Boolean).join(" · "), progress: achievementProgress ? progress : null, escape: escapeHtml });
+    return finishedGameMarkup({ id: game.id, title: game.title, cover: game.cover || platformLogo(game.platform || "PS5"), completedClass: game.platinum ? "completed-trophy-card" : "", itemClass: ownerCardClass(game), badges, dateText: finishedDateText(game), progress: achievementProgress ? progress : null, escape: escapeHtml });
   }).join("");
   el.playingFinishedList.querySelectorAll(".playing-finished-game").forEach((button) => {
     button.addEventListener("click", (event) => {
@@ -6028,10 +6030,15 @@ function physicalDigitalLabel(game) {
 }
 
 function playtimeBucketLabel(game) {
-  const hours = Number(game.lengthHours);
+  const hours = statsPlaytimeHours(game);
   if (!Number.isFinite(hours) || hours <= 0) return "";
   const start = Math.floor(hours / 10) * 10;
   return start === 0 ? "<10" : `${start}-${start + 10}`;
+}
+
+function statsPlaytimeHours(game) {
+  const finishHours = finishHoursValue(game?.finishHours);
+  return finishHours || Number(game?.lengthHours);
 }
 
 function gameStatsTags(game) {
@@ -6226,6 +6233,8 @@ function addedTimeValue(game) {
 }
 
 function completedPlaytimeValue(game) {
+  const finishHours = finishHoursValue(game?.finishHours);
+  if (finishHours) return finishHours * 60 * 60 * 1000;
   const start = Date.parse(dateOnly(game.startedAt));
   const done = Date.parse(dateOnly(game.completedAt));
   if (Number.isNaN(start) || Number.isNaN(done)) return 0;
@@ -6245,15 +6254,32 @@ function releaseYear(game) {
 function historyRangeText(game) {
   const start = formatLongDate(game.startedAt);
   const done = formatLongDate(game.completedAt);
-  if (start && done) return `${start} -> ${done}`;
-  if (done) return `Finished ${done}`;
+  const finishTime = finishHoursText(game);
+  if (start && done) return [ `${start} -> ${done}`, finishTime ].filter(Boolean).join(" · ");
+  if (done) return [ `Finished ${done}`, finishTime ].filter(Boolean).join(" · ");
   if (start) return `Started ${start}`;
   return "No dates";
 }
 
+function finishedDateText(game) {
+  return [formatLongDate(game.completedAt), finishHoursText(game) || finishedDurationText(game.startedAt, game.completedAt)].filter(Boolean).join(" · ");
+}
+
 function completedDurationLine(game) {
+  if (finishHoursValue(game?.finishHours)) return "";
   const duration = finishedDurationText(game.startedAt, game.completedAt);
   return duration ? `<span class="completed-duration">${escapeHtml(duration)}</span>` : "";
+}
+
+function finishHoursValue(value) {
+  const count = Number(value);
+  return Number.isInteger(count) ? Math.max(0, count) : 0;
+}
+
+function finishHoursText(game) {
+  const hours = finishHoursValue(game?.finishHours);
+  if (!hours) return "";
+  return `${hours} ${hours === 1 ? "hr" : "hrs"}`;
 }
 
 function nextReplayCountForTitle(title, currentId = "") {
@@ -7630,7 +7656,8 @@ function playDatesFor(game, options = {}) {
   if (release) values.push(releaseStatusPill(release));
   if (game.startedAt) values.push(`<span class="history-pill history-date-pill"><small>Started</small><strong>${escapeHtml(formatDate(game.startedAt))}</strong></span>`);
   if (game.completedAt) values.push(`<span class="history-pill history-date-pill"><small>Finished</small><strong>${escapeHtml(formatDate(game.completedAt))}</strong></span>`);
-  const duration = finishedDurationText(game.startedAt, game.completedAt);
+  const finishTime = finishHoursText(game);
+  const duration = finishTime || finishedDurationText(game.startedAt, game.completedAt);
   if (duration) values.push(`<span class="history-pill history-date-pill"><small>Time</small><strong>${escapeHtml(duration)}</strong></span>`);
   return values;
 }
@@ -8253,6 +8280,7 @@ function normalizeGameRecord(game) {
   normalized.platinum = Boolean(normalized.platinum);
   normalized.playing = Boolean(normalized.playing);
   normalized.replayCount = replayCountValue(normalized.replayCount);
+  normalized.finishHours = finishHoursValue(normalized.finishHours);
   normalized.startedAt = dateOnly(normalized.startedAt);
   normalized.completedAt = dateOnly(normalized.completedAt);
   normalized.platform = canonicalPlatform(normalized.platform);
@@ -8676,6 +8704,7 @@ async function openEditor(id = "") {
   el.fields.length.value = game.lengthHours || "";
   el.fields.startedAt.value = dateOnly(game.startedAt);
   el.fields.completedAt.value = dateOnly(game.completedAt);
+  el.fields.finishHours.value = game.finishHours || "";
   el.fields.replayCount.value = game.replayCount || "";
   el.fields.platinum.checked = Boolean(game.platinum);
   el.fields.preorderStore.value = game.preorderStore || "";
@@ -8729,6 +8758,7 @@ function blankGame() {
     releaseDate: "",
     releaseText: "",
     lengthHours: null,
+    finishHours: 0,
     notes: "",
     description: "",
     statuses: [],
@@ -8798,6 +8828,7 @@ async function saveCurrentFormGame() {
     releaseDate: el.fields.releaseDate.value,
     releaseText: el.fields.releaseText.value.trim(),
     lengthHours: el.fields.length.value ? Number(el.fields.length.value) : null,
+    finishHours: finishHoursValue(el.fields.finishHours.value),
     startedAt,
     completedAt: effectiveCompletedAt,
     preorderStore: el.fields.preorderStore.value.trim(),
@@ -8917,8 +8948,10 @@ function isShelfNewAddition(game) {
 function completeGame(id) {
   const game = getGame(id);
   if (!game?.playing) return;
+  const finishHours = promptFinishHours(game);
   game.startedAt = game.startedAt || todayDate();
   game.completedAt = todayDate();
+  if (finishHours !== null) game.finishHours = finishHours;
   game.playing = false;
   markGameEdited(game);
   upsertGame(game);
@@ -8927,12 +8960,24 @@ function completeGame(id) {
 function completeGameWithTrophy(id) {
   const game = getGame(id);
   if (!game?.playing) return;
+  const finishHours = promptFinishHours(game);
   game.startedAt = game.startedAt || todayDate();
   game.completedAt = game.completedAt || todayDate();
+  if (finishHours !== null) game.finishHours = finishHours;
   game.playing = false;
   game.platinum = true;
   markGameEdited(game);
   upsertGame(game);
+}
+
+function promptFinishHours(game) {
+  const current = finishHoursValue(game?.finishHours);
+  while (true) {
+    const value = window.prompt("Aproximate time to finish, in whole hours:", current ? String(current) : "");
+    if (value === null || value.trim() === "") return null;
+    if (/^\d+$/.test(value.trim())) return Number(value.trim());
+    window.alert("Use whole numbers only.");
+  }
 }
 
 function restoreCompletedToBacklog(id) {

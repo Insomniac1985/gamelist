@@ -10792,6 +10792,10 @@ body.theme-kash
   grid-column: span 2;
 }
 
+.playing-form-grid > label.playing-finish-time-field {
+  grid-column: span 2;
+}
+
 .playing-form-grid > label.stream-check {
   grid-column: span 1;
 }
