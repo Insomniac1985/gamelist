@@ -1278,10 +1278,16 @@ html.theme-font-mata .shelf-page .playing-section .column-head h2 {
   grid-column: span 4;
 }
 
-.shelf-editor-grid > .shelf-title-field,
-.shelf-editor-grid > .shelf-console-field,
-.shelf-editor-grid > .shelf-region-field {
+.shelf-editor-grid > .shelf-title-field {
+  grid-column: span 5;
+}
+
+.shelf-editor-grid > .shelf-console-field {
   grid-column: span 4;
+}
+
+.shelf-editor-grid > .shelf-region-field {
+  grid-column: span 3;
 }
 
 .shelf-editor-grid > .shelf-release-field,
