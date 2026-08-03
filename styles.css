@@ -3684,6 +3684,10 @@ textarea {
   padding: 11px 12px;
 }
 
+textarea {
+  resize: vertical;
+}
+
 .icon-input {
   position: relative;
   display: block;
