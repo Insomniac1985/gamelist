@@ -157,6 +157,8 @@ const el = {
   lookupInput: document.querySelector("#lookupInput"),
   lookupButton: document.querySelector("#lookupButton"),
   lookupResults: document.querySelector("#lookupResults"),
+  platformFieldIcon: document.querySelector(".shelf-platform-field-icon"),
+  regionFieldIcon: document.querySelector(".shelf-region-field-icon"),
   fields: {
     title: document.querySelector("#titleInput"), platform: document.querySelector("#platformInput"),
     country: document.querySelector("#countryInput"), price: document.querySelector("#priceInput"),
@@ -304,6 +306,9 @@ function bindEvents() {
   el.editDelete.addEventListener("click", deleteCurrentEditedGame);
   el.addDialog.addEventListener("click", (event) => { if (event.target === el.addDialog) closeDialog(el.addDialog); });
   el.addForm.addEventListener("submit", saveEditor);
+  el.fields.platform.addEventListener("input", syncShelfEditorIcons);
+  el.fields.platform.addEventListener("change", syncShelfEditorIcons);
+  el.fields.country.addEventListener("change", syncShelfEditorIcons);
   el.lookupButton.addEventListener("click", lookupGame);
   el.lookupInput.addEventListener("keydown", (event) => { if (event.key === "Enter") { event.preventDefault(); lookupGame(); } });
   el.lookupResults.addEventListener("click", chooseLookupResult);
@@ -1266,6 +1271,7 @@ function openEditor(game = null) {
   el.addForm.querySelectorAll("button[type='submit']").forEach((button) => { button.textContent = game?.pendingCollection ? "Add to Collection" : game ? "Save" : "Add to Shelf"; });
   el.editDelete.hidden = !game;
   syncStyledSelects(el.addDialog, { activeValue: null });
+  syncShelfEditorIcons();
   openDialog(el.addDialog);
 }
 
@@ -1424,6 +1430,7 @@ async function chooseLookupResult(event) {
     const physical = await prefillPhysicalResult(result);
     applyGameMetadata(bestGameMetadata(result.productName));
     renderPhysicalSelection(physical || result);
+    syncShelfEditorIcons();
     return;
   }
   el.fields.title.value = result.title || el.fields.title.value;
@@ -1440,6 +1447,7 @@ async function chooseLookupResult(event) {
   const physical = await fetchPhysicalMetadata(result.title);
   if (physical) applyPhysicalMetadata(physical);
   renderPhysicalSelection(physical, result.title);
+  syncShelfEditorIcons();
 }
 
 function bestGameMetadata(title) {
@@ -1470,6 +1478,7 @@ async function prefillPhysicalResult(result) {
   applyPriceChartingSearchResult(result);
   const physical = await fetchPhysicalMetadata(result.productName, { id: result.productId, url: result.url });
   if (physical) applyPhysicalMetadata(physical);
+  syncShelfEditorIcons();
   return physical;
 }
 
@@ -1526,7 +1535,7 @@ function renderPhysicalSelection(physical, fallbackTitle = "") {
 function priceChartingPageUrl(value) { const match = String(value || "").trim().match(/^https:\/\/www\.pricecharting\.com\/(?:[a-z]{2}\/)?game\/[^?#]+/i); return match?.[0] || ""; }
 function priceChartingProductId(value) { return priceChartingPageUrl(value) ? "" : String(value || "").trim().replace(/[^a-zA-Z0-9_-]/g, ""); }
 function blankImage() { return "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw=="; }
-function applyPriceChartingRegion(consoleName) { const value = normalize(consoleName); if (value.startsWith("jp ")) el.fields.country.value = "Japan"; else if (value.startsWith("pal ") && !["United Kingdom", "Spain", "Italy", "France", "Germany", "Europe", "Australia"].includes(el.fields.country.value)) el.fields.country.value = "Europe"; else if (!value.startsWith("pal ") && !value.startsWith("jp ") && ["Japan", "Europe"].includes(el.fields.country.value)) el.fields.country.value = "United States of America"; }
+function applyPriceChartingRegion(consoleName) { const value = normalize(consoleName); if (value.startsWith("jp ")) el.fields.country.value = "Japan"; else if (value.startsWith("pal ") && !["United Kingdom", "Spain", "Italy", "France", "Germany", "Europe", "Australia"].includes(el.fields.country.value)) el.fields.country.value = "Europe"; else if (!value.startsWith("pal ") && !value.startsWith("jp ") && ["Japan", "Europe"].includes(el.fields.country.value)) el.fields.country.value = "United States of America"; syncShelfEditorIcons(); }
 
 async function saveEditor(event) {
   event.preventDefault();
@@ -3749,6 +3758,20 @@ function platformDisplayName(value) {
 function flagAsset(country) { return `assets/flags/${({ "United Kingdom": "gb", Spain: "es", Italy: "it", Ireland: "ie", Portugal: "pt", Mexico: "mx", "United States of America": "us", Japan: "jp", Taiwan: "tw", France: "fr", Germany: "de", Australia: "au", China: "cn", Europe: "eu", World: "world" })[country] || "world"}.svg`; }
 function flagIcon(country, withClass = false) { return `<img${withClass ? ` class="detail-flag"` : ""} src="${flagAsset(country)}" alt="" width="47" height="31" decoding="async">`; }
 function platformBadge(platform, options = {}) { const label = shortPlatform(platform); return `<span class="platform-badge ${platformClass(platform, options)}" title="${escapeHtml(label)}"><span class="platform-icon"><img src="${platformLogo(platform)}" alt="" width="18" height="18" decoding="async"></span><span class="platform-label">${escapeHtml(label)}</span></span>`; }
+function syncShelfEditorIcons() {
+  const platform = canonicalShelfPlatform(el.fields.platform?.value || "");
+  const logo = platform ? platformLogo(platform) : "";
+  setShelfEditorIcon(el.platformFieldIcon, logo && logo !== "assets/Icon_shelf.png" ? logo : "", platform);
+  const country = el.fields.country?.value || "";
+  setShelfEditorIcon(el.regionFieldIcon, country ? flagAsset(country) : "", country);
+}
+function setShelfEditorIcon(slot, icon, title = "") {
+  const wrapper = slot?.closest?.(".icon-input");
+  if (!slot || !wrapper) return;
+  wrapper.classList.toggle("has-icon", Boolean(icon));
+  slot.title = icon ? title : "";
+  slot.innerHTML = icon ? `<img src="${escapeHtml(icon)}" alt="" width="18" height="18" decoding="async">` : "";
+}
 function platformLogo(platform) { const value = normalize(shortPlatform(platform)); if (value === "wii") return "assets/platforms/wii.png"; if (value === "wii u" || value === "wiiu") return "assets/platforms/wiiu.png"; if (value === "n64") return "assets/platforms/n64.png"; if (value === "gc" || value.includes("gamecube")) return "assets/platforms/gc.png"; if (value === "nes") return "assets/platforms/nes.png"; if (value === "snes") return "assets/platforms/snes.png"; if (value === "ds") return "assets/platforms/nds.png"; if (value === "3ds") return "assets/platforms/3ds.png"; if (value === "gba") return "assets/platforms/gba.png"; if (value === "gbc") return "assets/platforms/gbc.png"; if (value === "gb") return "assets/platforms/gb.png"; if (value === "game gear") return "assets/platforms/gamegear.png"; if (value === "dc" || value.includes("dreamcast")) return "assets/platforms/dreamcast.png"; if (isSegaPlatform(value)) return "assets/platforms/sega.png"; if (value.includes("switch")) return "assets/platforms/switch.png"; if (value === "ps1" || value === "ps2") return "assets/platforms/playstation_retro.png"; if (value === "ps5") return "assets/platforms/playstation_modern.png"; if (value === "x360" || value === "xbox 360") return "assets/platforms/xbox360.png"; if (value === "xbox") return "assets/platforms/xbox_retro.png"; if (value.includes("xbox") || value === "xone") return "assets/platforms/xbox.png"; if (value.includes("steam") || value === "pc") return "assets/platforms/steam.png"; if (value.includes("ps") || value.includes("playstation") || value.includes("psp") || value.includes("vita")) return "assets/platforms/playstation.png"; return "assets/Icon_shelf.png"; }
 function platformClass(platform, options = {}) { const value = normalize(shortPlatform(platform)); const title = normalize(options.title); if (value === "wii") return "platform-wii"; if (value === "wii u" || value === "wiiu") return "platform-wiiu"; if (value === "n64") return "platform-n64"; if (value === "gc" || value.includes("gamecube")) return "platform-gamecube"; if (value === "nes") return "platform-nes"; if (value === "snes") return "platform-snes"; if (value === "ds") return "platform-ds"; if (value === "3ds") return "platform-3ds"; if (value === "gba") return "platform-gba"; if (value === "gbc") return "platform-gbc"; if (value === "gb") return "platform-gb"; if (value === "game gear") return "platform-gamegear"; if (value === "dc" || value.includes("dreamcast")) return "platform-dreamcast"; if (isSegaPlatform(value)) return "platform-sega"; if (value.includes("switch")) return "platform-nintendo"; if (value === "ps1") return "platform-playstation platform-ps1"; if (value === "ps3" && PS3_BLUE_PILL_TITLES.has(title)) return "platform-playstation platform-ps3-as-ps4"; if (value === "ps3") return "platform-playstation platform-ps3"; if (value === "ps5") return "platform-playstation platform-ps5"; if (value === "psp") return "platform-playstation platform-psp"; if (value === "x360" || value === "xbox 360") return "platform-xbox platform-xbox360"; if (value === "xbox") return "platform-xbox platform-xbox-retro"; if (value.includes("xbox") || value === "xone") return "platform-xbox"; if (value.includes("steam") || value === "pc") return "platform-pc"; if (value.includes("ps") || value.includes("playstation") || value.includes("psp") || value.includes("vita")) return "platform-playstation"; return "platform-generic"; }
 const PS3_BLUE_PILL_TITLES = new Set(["deception iv blood ties", "drakengard 3", "dynasty warriors 8 xtreme legends", "everybody dance 3", "lego hobbit", "mugen souls z", "murdered soul suspect", "rambo the video game", "sports pack vol 1", "the amazing spider man 2", "ultra street fighter iv", "watch dogs", "wolfenstein the new order"]);

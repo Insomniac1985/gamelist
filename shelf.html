@@ -313,19 +313,20 @@
 
         <section class="form-group">
           <h3>Collecting Information</h3>
-          <div class="form-grid">
-            <label><span>Title</span><input id="titleInput" required></label>
-            <label><span>Console</span><input id="platformInput" list="shelfPlatformOptions"><datalist id="shelfPlatformOptions"></datalist></label>
-            <label><span>Region</span><select id="countryInput" required></select></label>
-            <label><span>Release Date</span><input id="releaseDateInput" type="date"></label>
-            <label><span>Owners</span><input id="ownersInput" placeholder="Judy, Jordi, Cage"></label>
-            <label><span>Estimated Value</span><input id="priceInput" inputmode="decimal" placeholder="0.00"></label>
-            <label><span>Trophy Search Name</span><input id="trophyNameInput" placeholder="Optional alternate title"></label>
+          <div class="form-grid shelf-editor-grid">
+            <label class="shelf-title-field"><span>Title</span><input id="titleInput" required></label>
+            <label class="shelf-console-field"><span>Console</span><span class="icon-input shelf-edit-icon-input"><span class="field-leading-icon shelf-platform-field-icon" aria-hidden="true"></span><input id="platformInput" list="shelfPlatformOptions"></span><datalist id="shelfPlatformOptions"></datalist></label>
+            <label class="shelf-region-field"><span>Region</span><span class="icon-input shelf-edit-icon-input"><span class="field-leading-icon shelf-region-field-icon" aria-hidden="true"></span><select id="countryInput" required></select></span></label>
+            <label class="shelf-release-field"><span>Release Date</span><input id="releaseDateInput" type="date"></label>
+            <label class="shelf-value-field"><span>Estimated Value</span><input id="priceInput" inputmode="decimal" placeholder="0.00"></label>
+            <label class="shelf-owner-field"><span>Owner</span><input id="ownersInput" placeholder="Judy, Jordi, Cage"></label>
+            <label class="shelf-achievement-search-field"><span>Alternate Achievement search name</span><input id="trophyNameInput" placeholder="Optional alternate title"></label>
+            <label class="wide shelf-condition-notes-field"><span>Condition Notes</span><textarea id="notesInput" rows="3" placeholder="Missing booklet, sealed, damaged case..."></textarea></label>
           </div>
         </section>
 
         <section class="form-group">
-          <h3>Physical Edition</h3>
+          <h3>Physical Data</h3>
           <fieldset class="condition-editor"><div class="condition-grid">
               <label class="check-filter toggle-check"><input id="conditionGameInput" type="checkbox"><span>Game</span></label>
               <label class="check-filter toggle-check"><input id="conditionManualInput" type="checkbox"><span>Manual</span></label>
@@ -339,7 +340,6 @@
             <label><span>ASIN</span><input id="asinInput"></label>
             <label><span>eBay Product ID</span><input id="epidInput"></label>
             <label class="wide"><span>PriceCharting Page or Product ID</span><input id="pricechartingIdInput" placeholder="https://www.pricecharting.com/game/... or product ID"></label>
-            <label class="wide"><span>Condition Notes</span><textarea id="notesInput" rows="3" placeholder="Missing booklet, sealed, damaged case..."></textarea></label>
           </div>
         </section>
 
