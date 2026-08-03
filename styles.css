@@ -12066,6 +12066,10 @@ body.theme-kash
     display: none;
   }
 
+  #completedCount .completed-count-expansions {
+    display: none;
+  }
+
   .game-row-actions {
     display: grid;
     grid-template-columns: 1fr;

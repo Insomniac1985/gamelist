@@ -5340,7 +5340,7 @@ function updateCompletedCount(count) {
   const gameText = `${games} ${games === 1 ? "game" : "games"}`;
   const expansionText = expansions ? `${expansions} ${expansions === 1 ? "expansion" : "expansions"}` : "";
   el.completedCount.innerHTML = expansionText
-    ? `<span>${escapeHtml(gameText)}</span><span class="completed-count-separator" aria-hidden="true">&middot;</span><span>${escapeHtml(expansionText)}</span>`
+    ? `<span>${escapeHtml(gameText)}</span><span class="completed-count-separator" aria-hidden="true">&middot;</span><span class="completed-count-expansions">${escapeHtml(expansionText)}</span>`
     : `<span>${escapeHtml(gameText)}</span>`;
 }
 
