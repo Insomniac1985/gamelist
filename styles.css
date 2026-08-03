@@ -5338,10 +5338,75 @@ body.theme-kash .game-card.stream-card.completed-trophy-card {
 }
 
 .dlc-pill {
-  color: #ffd479 !important;
-  border-color: rgba(255, 212, 121, 0.34);
-  background: rgba(255, 184, 77, 0.14);
+  gap: 4px;
+  padding: 4px 8px;
+  color: var(--text);
+  line-height: 1;
   font-weight: 840;
+}
+
+.dlc-pill.platform-nintendo {
+  color: var(--switch);
+}
+
+.dlc-pill.platform-playstation {
+  color: var(--playstation);
+}
+
+.dlc-pill.platform-playstation.platform-ps5,
+.dlc-pill.platform-playstation.platform-ps5:hover {
+  color: #05070b;
+}
+
+.dlc-pill.platform-playstation.platform-ps1 {
+  color: #aeb4c0;
+}
+
+.dlc-pill.platform-playstation.platform-ps3,
+.dlc-pill.platform-playstation.platform-psp,
+.dlc-pill.platform-pc {
+  color: #ffffff;
+}
+
+.dlc-pill.platform-wii,
+.dlc-pill.platform-nes,
+.dlc-pill.platform-ds,
+.dlc-pill.platform-gb {
+  color: #d9dde6;
+}
+
+.dlc-pill.platform-wiiu {
+  color: #9bd7ff;
+}
+
+.dlc-pill.platform-3ds,
+.dlc-pill.platform-gbc,
+.dlc-pill.platform-n64 {
+  color: #ff5a66;
+}
+
+.dlc-pill.platform-gamecube,
+.dlc-pill.platform-snes,
+.dlc-pill.platform-gba {
+  color: #c9a7ff;
+}
+
+.dlc-pill.platform-sega,
+.dlc-pill.platform-gamegear {
+  color: #5aa7ff;
+}
+
+.dlc-pill.platform-xbox {
+  color: #7ed732;
+}
+
+.dlc-pill.platform-xbox.platform-xbox360 {
+  color: #29a750;
+}
+
+.dlc-pill.platform-dreamcast,
+.dlc-pill.platform-generic {
+  color: #ffad5f;
 }
 
 .emulator-pill {
@@ -6384,7 +6449,7 @@ body.theme-kash .finished-stats-kpi.is-completed:focus-visible strong {
 }
 
 .finished-stats-release-kpi > .finished-stats-release-subline {
-  color: #ffd479;
+  justify-self: start;
   font-size: 11px;
   font-weight: 820;
   text-transform: none;
@@ -7229,9 +7294,13 @@ body.theme-kash .finished-stats-kpi.is-completed:focus-visible strong {
 }
 
 .finished-stats-breakdown .platform-badge,
+.finished-stats-breakdown .dlc-pill,
 .finished-stats-chart-list .platform-badge,
+.finished-stats-chart-list .dlc-pill,
 .finished-stats-segment-tip .platform-badge,
-.finished-stats-mini-list .platform-badge {
+.finished-stats-segment-tip .dlc-pill,
+.finished-stats-mini-list .platform-badge,
+.finished-stats-mini-list .dlc-pill {
   display: inline-flex;
   align-items: center;
   width: max-content;
@@ -7321,6 +7390,14 @@ body.theme-kash .finished-stats-kpi.is-completed:focus-visible strong {
 
 .finished-stats-game-row .platform-badge {
   min-height: 20px;
+}
+
+.finished-stats-game-row .dlc-pill,
+.finished-stats-release-kpi > .finished-stats-release-subline {
+  min-height: 20px;
+  padding: 3px 5px;
+  font-size: 8px;
+  border-radius: 7px;
 }
 
 .finished-stats-game-row .finished-stats-progress-pill {

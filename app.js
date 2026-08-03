@@ -5189,7 +5189,7 @@ function rowCoreStats(game) {
   const release = releaseStatus(game);
   return [
     game.platform ? platformBadge(game.platform, null, { title: game.title }) : "",
-    game.dlc ? `<span class="dlc-pill">DLC</span>` : "",
+    game.dlc ? dlcBadge(game) : "",
     game.digital && !game.dlc ? `<span class="digital-pill">Digital</span>` : "",
     game.emulator ? `<span class="emulator-pill">Emulator</span>` : "",
     game.lengthHours ? timeBadge(game.lengthHours, hltbUrlFor(game)) : "",
@@ -5467,14 +5467,14 @@ function statsReleaseKpisCard(insights) {
         ${statsReleaseMiniKpi({
           value: insights.playedFromYear.length,
           label: "Played new games",
-          subline: releaseExpansionLine(insights.newExpansions.length, "new expansion", "new expansions"),
+          subline: releaseExpansionLine(insights.newExpansions, "new expansion", "new expansions"),
           detail: insights.hoverable ? statsGameList(insights.playedFromYear) : "",
           tone: "played",
         })}
         ${statsReleaseMiniKpi({
           value: insights.playedOutsideYear.length,
           label: "Played games not from that year",
-          subline: releaseExpansionLine(insights.playedOutsideYearExpansions.length, "played expansion not from that year", "played expansions not from that year"),
+          subline: releaseExpansionLine(insights.playedOutsideYearExpansions, "played expansion not from that year", "played expansions not from that year"),
           detail: insights.hoverable ? statsGameList(insights.playedOutsideYear) : "",
           tone: "played",
         })}
@@ -5488,14 +5488,16 @@ function statsReleaseMiniKpi({ value, label, subline = "", detail = "", tone = "
     <button class="finished-stats-release-kpi ${tone ? `is-${escapeHtml(tone)}` : ""}" type="button" ${detail ? `data-stats-overlay-title="${escapeHtml(label)}"` : ""}>
       <strong>${escapeHtml(String(value))}</strong>
       <span>${escapeHtml(label)}</span>
-      ${subline ? `<span class="finished-stats-release-subline">${escapeHtml(subline)}</span>` : ""}
+      ${subline}
       ${detail ? `<span class="finished-stats-breakdown">${detail}</span>` : ""}
     </button>
   `;
 }
 
-function releaseExpansionLine(count, singular, plural) {
-  return count ? `${count} ${count === 1 ? singular : plural}` : "";
+function releaseExpansionLine(games, singular, plural) {
+  const count = Array.isArray(games) ? games.length : 0;
+  if (!count) return "";
+  return dlcBadge(games[0], `${count} ${count === 1 ? singular : plural}`, { className: "finished-stats-release-subline" });
 }
 
 function statsReleaseYearInsights(year, games) {
@@ -5775,7 +5777,7 @@ function statsGameList(games) {
       : progress
       ? psnProgressBadge(progress, { className: "finished-stats-progress-pill" })
       : (completed ? psnProgressBadge({ title: game.title, progress: 100 }, { className: "finished-stats-progress-pill" }) : "");
-    return `<span class="finished-stats-game-row ${completed ? "is-complete" : ""}"><b class="${escapeHtml(ownerTitleClass)}">${escapeHtml(game.title)}</b>${game.platform ? platformBadge(game.platform) : ""}${progressPill}</span>`;
+    return `<span class="finished-stats-game-row ${completed ? "is-complete" : ""}"><b class="${escapeHtml(ownerTitleClass)}">${escapeHtml(game.title)}</b>${game.platform ? platformBadge(game.platform) : ""}${game.dlc ? dlcBadge(game) : ""}${progressPill}</span>`;
   }).join("");
 }
 
@@ -6302,6 +6304,7 @@ function filteredGames(options = {}) {
       game.preferredStore,
       game.developer,
       game.publisher,
+      game.dlc ? "dlc expansion expansions downloadable content" : "",
       game.digital ? "digital" : "",
       game.coop ? "coop" : "",
       game.platinum ? "completed trophy platinum" : "",
@@ -6992,7 +6995,7 @@ function sectionRank(section) {
 function metaFor(game, options = {}) {
   const values = [];
   if (game.platform) values.push(platformBadge(game.platform, null, { title: game.title }));
-  if (game.dlc) values.push(`<span class="dlc-pill">DLC</span>`);
+  if (game.dlc) values.push(dlcBadge(game));
   if (game.digital && !game.dlc) values.push(`<span class="digital-pill">Digital</span>`);
   if (game.emulator) values.push(`<span class="emulator-pill">Emulator</span>`);
   if (game.lengthHours) values.push(timeBadge(game.lengthHours, hltbUrlFor(game)));
@@ -7605,7 +7608,7 @@ function completedBadges(game, options = {}) {
   const progress = achievementProgressForGame(game);
   return [
     game.platform ? platformBadge(game.platform, null, { title: game.title }) : "",
-    game.dlc ? `<span class="dlc-pill">DLC</span>` : "",
+    game.dlc ? dlcBadge(game) : "",
     game.digital && !game.dlc ? `<span class="digital-pill">Digital</span>` : "",
     game.emulator ? `<span class="emulator-pill">Emulator</span>` : "",
     game.coop ? `<span class="coop-pill">Coop</span>` : "",
@@ -7686,6 +7689,15 @@ function platformBadge(platform, count = null, options = {}) {
       ${count == null ? "" : `<span class="platform-count">${count}</span>`}
     </span>
   `;
+}
+
+function dlcBadge(game, label = "DLC", options = {}) {
+  const platform = typeof game === "string" ? game : game?.platform;
+  const title = typeof game === "object" ? game?.title : "";
+  const cls = platformClass(platform, { title });
+  const className = ["dlc-pill", cls, options.className || ""].filter(Boolean).join(" ");
+  const platformLabel = platformDisplayName(platform);
+  return `<span class="${escapeHtml(className)}" title="${escapeHtml([label, platformLabel].filter(Boolean).join(" - "))}">${escapeHtml(label)}</span>`;
 }
 
 function ownerBadge(owner) {
