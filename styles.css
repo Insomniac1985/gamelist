@@ -6383,6 +6383,13 @@ body.theme-kash .finished-stats-kpi.is-completed:focus-visible strong {
   text-transform: uppercase;
 }
 
+.finished-stats-release-kpi > .finished-stats-release-subline {
+  color: #ffd479;
+  font-size: 11px;
+  font-weight: 820;
+  text-transform: none;
+}
+
 .finished-stats-months h3 {
   margin: 0;
   color: var(--accent-1);
