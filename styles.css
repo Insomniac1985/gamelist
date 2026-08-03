@@ -10823,7 +10823,6 @@ body.theme-kash
 .collection-form-grid > .dlc-check {
   grid-column: span 2;
   align-self: end;
-  justify-content: center;
   min-width: 0;
   padding-inline: 8px;
 }
