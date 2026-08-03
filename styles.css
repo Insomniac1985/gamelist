@@ -3684,6 +3684,10 @@ textarea {
   padding: 11px 12px;
 }
 
+textarea {
+  resize: vertical;
+}
+
 .icon-input {
   position: relative;
   display: block;
@@ -10885,6 +10889,19 @@ body.theme-kash
 
 .game-data-grid > .store-link-field {
   grid-column: span 1;
+}
+
+.game-data-grid,
+.game-data-grid > label {
+  min-width: 0;
+  max-width: 100%;
+}
+
+.game-data-grid input:not([type="checkbox"]),
+.game-data-grid textarea {
+  min-width: 0;
+  max-width: 100%;
+  box-sizing: border-box;
 }
 
 .playing-form-grid {

@@ -312,20 +312,6 @@
         <div class="lookup-results" id="lookupResults"></div>
 
         <section class="form-group">
-          <h3>Physical Data</h3>
-          <fieldset class="condition-editor"><div class="condition-grid">
-              <label class="check-filter toggle-check"><input id="conditionGameInput" type="checkbox"><span>Game</span></label>
-              <label class="check-filter toggle-check"><input id="conditionManualInput" type="checkbox"><span>Manual</span></label>
-              <label class="check-filter toggle-check"><input id="conditionBoxInput" type="checkbox"><span>Box</span></label>
-              <label class="check-filter toggle-check"><input id="conditionOtherInput" type="checkbox"><span>Other</span></label>
-              <label class="check-filter toggle-check condition-sealed"><input id="conditionSealedInput" type="checkbox"><span>Sealed</span></label>
-          </div></fieldset>
-          <div class="form-grid">
-            <label class="wide shelf-condition-notes-field"><span>Condition Notes</span><textarea id="notesInput" rows="3" placeholder="Missing booklet, sealed, damaged case..."></textarea></label>
-          </div>
-        </section>
-
-        <section class="form-group">
           <h3>Collecting Information</h3>
           <div class="form-grid shelf-editor-grid">
             <label class="shelf-title-field"><span>Title</span><input id="titleInput" required></label>
@@ -335,6 +321,14 @@
             <label class="shelf-value-field"><span>Estimated Value</span><input id="priceInput" inputmode="decimal" placeholder="0.00"></label>
             <label class="shelf-owner-field"><span>Owner</span><input id="ownersInput" placeholder="Judy, Jordi, Cage"></label>
             <label class="shelf-achievement-search-field"><span>Alternate Achievement search name</span><input id="trophyNameInput" placeholder="Optional alternate title"></label>
+            <fieldset class="condition-editor shelf-condition-field"><div class="condition-grid">
+                <label class="check-filter toggle-check"><input id="conditionGameInput" type="checkbox"><span>Game</span></label>
+                <label class="check-filter toggle-check"><input id="conditionManualInput" type="checkbox"><span>Manual</span></label>
+                <label class="check-filter toggle-check"><input id="conditionBoxInput" type="checkbox"><span>Box</span></label>
+                <label class="check-filter toggle-check"><input id="conditionOtherInput" type="checkbox"><span>Other</span></label>
+                <label class="check-filter toggle-check condition-sealed"><input id="conditionSealedInput" type="checkbox"><span>Sealed</span></label>
+            </div></fieldset>
+            <label class="wide shelf-condition-notes-field"><span>Condition Notes</span><textarea id="notesInput" rows="3" placeholder="Missing booklet, sealed, damaged case..."></textarea></label>
           </div>
         </section>
 
