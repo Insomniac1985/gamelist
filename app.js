@@ -6200,13 +6200,12 @@ function completedGamesForYear(year) {
 }
 
 function gameOfTheYearCandidateGames(year) {
-  const scopeYear = String(year);
   const games = new Map();
   completedGamesForYear(year)
-    .filter((game) => !game.dlc && releaseYear(game) === scopeYear)
+    .filter((game) => !game.dlc)
     .forEach((game) => games.set(game.id, game));
   activeGames()
-    .filter((game) => game.playing && !game.dlc && releaseYear(game) === scopeYear)
+    .filter((game) => game.playing && !game.dlc)
     .forEach((game) => games.set(game.id, game));
   return [...games.values()];
 }
