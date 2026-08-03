@@ -5008,6 +5008,7 @@ body.theme-kash .game-card.stream-card.completed-trophy-card {
 .owner-pill,
 .status-pill,
 .time-pill,
+.dlc-pill,
 .digital-pill,
 .emulator-pill,
 .coop-pill,
@@ -5235,6 +5236,7 @@ body.theme-kash .game-card.stream-card.completed-trophy-card {
 .release-pill,
 .owner-pill,
 .status-pill,
+.dlc-pill,
 .digital-pill,
 .emulator-pill,
 .coop-pill,
@@ -5333,6 +5335,13 @@ body.theme-kash .game-card.stream-card.completed-trophy-card {
   color: #eef0f5 !important;
   border-color: rgba(225, 230, 240, 0.28);
   background: rgba(225, 230, 240, 0.1);
+}
+
+.dlc-pill {
+  color: #ffd479 !important;
+  border-color: rgba(255, 212, 121, 0.34);
+  background: rgba(255, 184, 77, 0.14);
+  font-weight: 840;
 }
 
 .emulator-pill {
@@ -8837,6 +8846,7 @@ html.theme-light .platform-badge,
 html.theme-light .release-pill,
 html.theme-light .owner-pill,
 html.theme-light .status-pill,
+html.theme-light .dlc-pill,
 html.theme-light .digital-pill,
 html.theme-light .emulator-pill,
 html.theme-light .coop-pill,
@@ -10637,6 +10647,22 @@ body.theme-kash
   gap: 12px;
 }
 
+.collection-form-grid {
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+}
+
+.collection-form-grid > label {
+  grid-column: span 3;
+}
+
+.collection-form-grid > .platform-field {
+  grid-column: span 2;
+}
+
+.collection-form-grid > .dlc-check {
+  grid-column: span 1;
+}
+
 .playing-form-grid {
   grid-template-columns: repeat(6, minmax(0, 1fr));
 }
@@ -11114,6 +11140,12 @@ body.theme-kash
   .toolbar,
   .form-grid {
     grid-template-columns: 1fr;
+  }
+
+  .collection-form-grid > label,
+  .collection-form-grid > .platform-field,
+  .collection-form-grid > .dlc-check {
+    grid-column: 1 / -1;
   }
 
   .modal-head {
