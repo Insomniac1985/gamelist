@@ -10895,17 +10895,17 @@ body.theme-kash
 
 .playing-form-grid > .modal-playing-check,
 .playing-form-grid > label.stream-check {
-  grid-column: span 2;
+  grid-column: span 3;
   padding-inline: 8px;
 }
 
 .playing-form-grid > label.playing-replay-field {
-  grid-column: span 2;
+  grid-column: span 4;
 }
 
 .playing-form-grid > label.playing-started-field,
 .playing-form-grid > label.playing-completed-field {
-  grid-column: span 4;
+  grid-column: span 3;
 }
 
 .playing-form-grid > label.playing-finish-time-field {
@@ -10917,8 +10917,42 @@ body.theme-kash
 }
 
 .playing-form-grid > label.playing-achievements-check {
-  grid-column: span 3;
+  grid-column: span 1;
+  justify-content: center;
   padding-inline: 8px;
+}
+
+.playing-achievements-check input[type="checkbox"] {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.playing-achievements-check .achievement-check-icon {
+  display: grid;
+  place-items: center;
+  margin-bottom: 0;
+  color: var(--text);
+}
+
+.playing-achievements-check .trophy-icon {
+  width: 18px;
+  height: 18px;
+}
+
+.playing-achievements-check:has(input:checked) {
+  color: #ffe985;
+  border-color: rgba(255, 233, 133, 0.48);
+  background: rgba(255, 211, 94, 0.16);
+  box-shadow: inset 0 0 0 1px rgba(255, 233, 133, 0.12);
+}
+
+.playing-achievements-check:has(input:checked) .achievement-check-icon {
+  color: #ffe985;
 }
 
 .form-group:has(.playing-form-grid) {

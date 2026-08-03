@@ -441,17 +441,26 @@
               <span>Started</span>
               <input id="startedAtInput" type="date">
             </label>
+            <label class="playing-completed-field">
+              <span>Finished</span>
+              <input id="completedAtInput" type="date">
+            </label>
             <label class="playing-finish-time-field">
               <span>Time to finish</span>
               <input id="finishHoursInput" type="text" inputmode="numeric" placeholder="Hours">
             </label>
             <label class="check-filter toggle-check form-check playing-achievements-check">
               <input id="platinumInput" type="checkbox">
-              <span>Completed Achievements</span>
-            </label>
-            <label class="playing-completed-field">
-              <span>Finished</span>
-              <input id="completedAtInput" type="date">
+              <span class="achievement-check-icon" title="Completed achievements" aria-label="Completed achievements">
+                <svg class="trophy-icon" viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M8 4h8v4a4 4 0 0 1-8 0V4Z"></path>
+                  <path d="M8 6H5a3 3 0 0 0 3 3"></path>
+                  <path d="M16 6h3a3 3 0 0 1-3 3"></path>
+                  <path d="M12 12v4"></path>
+                  <path d="M9 20h6"></path>
+                  <path d="M10 16h4v4h-4z"></path>
+                </svg>
+              </span>
             </label>
           </div>
         </section>
