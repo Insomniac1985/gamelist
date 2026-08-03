@@ -396,6 +396,7 @@ const el = {
     publisher: document.querySelector("#publisherInput"),
     description: document.querySelector("#descriptionInput"),
     igdbUrl: document.querySelector("#igdbUrlInput"),
+    hltbUrl: document.querySelector("#hltbUrlInput"),
     trailerUrl: document.querySelector("#trailerUrlInput"),
     playstationUrl: document.querySelector("#playstationUrlInput"),
     nintendoUrl: document.querySelector("#nintendoUrlInput"),
@@ -8316,6 +8317,7 @@ function normalizeGameRecord(game) {
   normalized.trophyName = String(normalized.trophyName || "").trim();
   normalized.description = String(normalized.description || "");
   normalized.igdbUrl = String(normalized.igdbUrl || "");
+  normalized.hltbUrl = normalizeGuideUrl(normalized.hltbUrl || normalized.howLongToBeatUrl || "");
   normalized.trailerUrl = String(normalized.trailerUrl || "");
   normalized.trailerUrlRemoved = Boolean(normalized.trailerUrlRemoved);
   normalized.storeLinks = normalizeStoreLinks(normalized.storeLinks);
@@ -8485,6 +8487,11 @@ function guideLinksFor(game) {
 function normalizeGuideUrl(value) {
   const url = String(value || "").trim();
   return /^https?:\/\//i.test(url) ? url : "";
+}
+
+function hltbUrlFromId(value) {
+  const id = String(value || "").trim();
+  return /^\d+$/.test(id) ? `https://howlongtobeat.com/game/${encodeURIComponent(id)}` : "";
 }
 
 function pricesFor(game) {
@@ -8801,13 +8808,14 @@ async function openEditor(id = "") {
   el.fields.publisher.value = game.publisher || "";
   el.fields.description.value = game.description || "";
   el.fields.igdbUrl.value = game.igdbUrl || "";
+  el.fields.hltbUrl.value = game.hltbUrl || game.howLongToBeatUrl || "";
   el.fields.trailerUrl.value = game.trailerUrl || "";
   el.fields.playstationUrl.value = game.storeLinks?.playstation || "";
   el.fields.nintendoUrl.value = game.storeLinks?.nintendo || "";
   el.fields.xboxUrl.value = game.storeLinks?.xbox || "";
   el.fields.steamUrl.value = game.storeLinks?.steam || "";
   el.fields.cover.value = game.cover || "";
-  el.fields.notes.value = game.notes || "";
+  if (el.fields.notes) el.fields.notes.value = game.notes || "";
   syncEditFieldIcons();
   syncDialogPriceVisibility();
   syncStyledSelect(el.fields.section, { activeValue: null });
@@ -8855,6 +8863,7 @@ function blankGame() {
     developer: "",
     publisher: "",
     igdbUrl: "",
+    hltbUrl: "",
     trailerUrl: "",
     steamAppId: "",
     storeLinks: { playstation: "", nintendo: "", xbox: "", steam: "" },
@@ -8928,6 +8937,7 @@ async function saveCurrentFormGame() {
     publisher: el.fields.publisher.value.trim(),
     description: el.fields.description.value.trim() || state.pendingDescription || existing?.description || "",
     igdbUrl: el.fields.igdbUrl.value.trim(),
+    hltbUrl: normalizeGuideUrl(el.fields.hltbUrl.value),
     trailerUrl,
     trailerUrlRemoved,
     steamAppId: steamAppIdFromUrl(el.fields.steamUrl.value),
@@ -8938,7 +8948,7 @@ async function saveCurrentFormGame() {
       steam: el.fields.steamUrl.value.trim(),
     },
     cover: el.fields.cover.value.trim(),
-    notes: el.fields.notes.value.trim(),
+    notes: el.fields.notes ? el.fields.notes.value.trim() : existing?.notes || "",
     order: existing?.section === section ? existing.order : nextOrder(section),
     editedAt,
     updatedAt: editedAt,
@@ -9329,6 +9339,7 @@ function applyLookup(result) {
   el.fields.cover.value = result.cover || el.fields.cover.value;
   el.fields.description.value = result.description || el.fields.description.value;
   el.fields.igdbUrl.value = result.igdbUrl || el.fields.igdbUrl.value;
+  el.fields.hltbUrl.value = normalizeGuideUrl(result.hltbUrl || result.howLongToBeatUrl) || hltbUrlFromId(result.hltbId || result.howLongToBeatId) || el.fields.hltbUrl.value;
   el.fields.trailerUrl.value = result.trailerUrl || el.fields.trailerUrl.value;
   const links = normalizeStoreLinks(result.storeLinks);
   el.fields.playstationUrl.value = links.playstation || el.fields.playstationUrl.value;

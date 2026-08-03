@@ -1,5 +1,6 @@
 const OPENXBL_BASE = "https://api.xbl.io";
 const XBOX_CACHE_SECONDS = 60 * 60;
+const OPENXBL_TIMEOUT_MS = 6000;
 
 export async function onRequestGet({ request, env = {} }) {
   const apiKey = String(env.OPENXBL_API_KEY || globalThis.process?.env?.OPENXBL_API_KEY || "").trim();
@@ -157,16 +158,26 @@ function cleanXboxUser(value) {
 }
 
 async function openXblGet(path, apiKey) {
-  const response = await fetch(`${OPENXBL_BASE}${path}`, {
-    headers: {
-      "Accept": "application/json",
-      "Accept-Language": "en-US",
-      "X-Authorization": apiKey,
-    },
-    cf: { cacheTtl: XBOX_CACHE_SECONDS, cacheEverything: true },
-  });
-  if (!response.ok) throw new Error(`OpenXBL request failed (${response.status})`);
-  return response.json();
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), OPENXBL_TIMEOUT_MS);
+  try {
+    const response = await fetch(`${OPENXBL_BASE}${path}`, {
+      headers: {
+        "Accept": "application/json",
+        "Accept-Language": "en-US",
+        "X-Authorization": apiKey,
+      },
+      signal: controller.signal,
+      cf: { cacheTtl: XBOX_CACHE_SECONDS, cacheEverything: true },
+    });
+    if (!response.ok) throw new Error(`OpenXBL request failed (${response.status})`);
+    return response.json();
+  } catch (error) {
+    if (error?.name === "AbortError") throw new Error("OpenXBL request timed out");
+    throw error;
+  } finally {
+    clearTimeout(timeout);
+  }
 }
 
 function contentOf(data) {

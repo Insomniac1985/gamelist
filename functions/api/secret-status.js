@@ -32,7 +32,7 @@ function siteUrl(request) {
 
 async function integrationHealth(env, request) {
   if (healthCache && Date.now() < healthCache.expiresAt) return healthCache.value;
-  const checks = await Promise.all([
+  const checks = await Promise.allSettled([
     checkIgdb(env),
     checkPriceCharting(),
     checkPsn(env),
@@ -40,14 +40,16 @@ async function integrationHealth(env, request) {
     checkSteam(env),
     checkUpdateWorkflow(env, request),
   ]);
+  const ok = (index) => checks[index].status === "fulfilled" ? checks[index].value : false;
+  const update = checks[5].status === "fulfilled" ? checks[5].value : { ok: false, repoUrl: "" };
   const value = {
-    IGDB: checks[0],
-    PRICECHARTING: checks[1],
-    PSN: checks[2],
-    XBOX: checks[3],
-    STEAM: checks[4],
-    UPDATE: checks[5].ok,
-    CURRENT_REPO: checks[5].repoUrl,
+    IGDB: ok(0),
+    PRICECHARTING: ok(1),
+    PSN: ok(2),
+    XBOX: ok(3),
+    STEAM: ok(4),
+    UPDATE: Boolean(update.ok),
+    CURRENT_REPO: update.repoUrl || "",
   };
   healthCache = { value, expiresAt: Date.now() + HEALTH_CACHE_MS };
   return value;

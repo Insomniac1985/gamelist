@@ -10804,20 +10804,20 @@ body.theme-kash
 }
 
 .collection-form-grid {
-  grid-template-columns: repeat(16, minmax(0, 1fr));
+  grid-template-columns: repeat(12, minmax(0, 1fr));
   gap: 10px 12px;
 }
 
 .collection-form-grid > label {
-  grid-column: span 8;
+  grid-column: span 6;
 }
 
 .collection-form-grid > .title-field {
-  grid-column: span 9;
+  grid-column: span 7;
 }
 
 .collection-form-grid > .platform-field {
-  grid-column: span 5;
+  grid-column: span 3;
 }
 
 .collection-form-grid > .dlc-check {
@@ -10832,37 +10832,36 @@ body.theme-kash
 }
 
 .collection-form-grid > .collection-check {
-  grid-column: span 5;
+  grid-column: span 4;
   padding-inline: 8px;
 }
 
 .collection-form-grid > .digital-check {
-  grid-column: span 6;
+  grid-column: span 4;
 }
 
 .collection-form-grid > .release-date-field,
 .collection-form-grid > .release-text-field {
-  grid-column: span 6;
+  grid-column: span 4;
 }
 
 .collection-form-grid > .length-field,
 .collection-form-grid > .preorder-store-field,
 .collection-form-grid > .preferred-store-field {
-  grid-column: span 5;
+  grid-column: span 4;
 }
 
 .collection-form-grid > .preferred-store-field {
-  grid-column: span 6;
+  grid-column: span 4;
 }
 
 .collection-form-grid > .owners-field,
 .collection-form-grid > .status-field {
-  grid-column: span 8;
+  grid-column: span 6;
 }
 
-.collection-form-grid > .game-tags-field,
 .collection-form-grid > .trophy-search-field {
-  grid-column: span 8;
+  grid-column: 1 / -1;
 }
 
 .collection-form-grid > .notes-field {
@@ -11421,7 +11420,6 @@ body.theme-kash
   .collection-form-grid > .preferred-store-field,
   .collection-form-grid > .owners-field,
   .collection-form-grid > .status-field,
-  .collection-form-grid > .game-tags-field,
   .collection-form-grid > .trophy-search-field,
   .collection-form-grid > .notes-field {
     grid-column: 1 / -1;

@@ -41,7 +41,7 @@ const PLATFORM_OPTIONS = [
 const COUNTRY_OPTIONS = [
   ["Australia", "Australia"], ["China", "China"], ["Europe", "EU"], ["France", "France"], ["Germany", "Germany"],
   ["Ireland", "Ireland"], ["Italy", "Italy"], ["Japan", "Japan"], ["Mexico", "Mexico"], ["Portugal", "Portugal"],
-  ["Spain", "Spain"], ["Taiwan", "Taiwan"], ["United Kingdom", "United Kingdom"], ["United States of America", "United States"], ["World", "World"],
+  ["Spain", "Spain"], ["Taiwan", "Taiwan"], ["United Kingdom", "UK"], ["United States of America", "US"], ["World", "World"],
 ];
 const WEEK_START_OPTIONS = [
   ["monday", "Monday"],
@@ -157,6 +157,7 @@ const el = {
   lookupInput: document.querySelector("#lookupInput"),
   lookupButton: document.querySelector("#lookupButton"),
   lookupResults: document.querySelector("#lookupResults"),
+  platformFieldIcon: document.querySelector(".shelf-platform-field-icon"),
   fields: {
     title: document.querySelector("#titleInput"), platform: document.querySelector("#platformInput"),
     country: document.querySelector("#countryInput"), price: document.querySelector("#priceInput"),
@@ -167,7 +168,7 @@ const el = {
     playstationUrl: document.querySelector("#playstationUrlInput"), nintendoUrl: document.querySelector("#nintendoUrlInput"),
     steamUrl: document.querySelector("#steamUrlInput"), xboxUrl: document.querySelector("#xboxUrlInput"), hltbUrl: document.querySelector("#hltbUrlInput"),
     publisher: document.querySelector("#publisherInput"), developer: document.querySelector("#developerInput"),
-    genre: document.querySelector("#genreInput"), cover: document.querySelector("#coverInput"), notes: document.querySelector("#notesInput"), description: document.querySelector("#shelfDescriptionInput"),
+    genre: document.querySelector("#genreInput"), cover: document.querySelector("#coverInput"), notes: document.querySelector("#notesInput"), description: document.querySelector("#shelfDescriptionInput"), igdbUrl: document.querySelector("#igdbUrlInput"),
   },
   conditionFields: { game: document.querySelector("#conditionGameInput"), manual: document.querySelector("#conditionManualInput"), box: document.querySelector("#conditionBoxInput"), other: document.querySelector("#conditionOtherInput"), sealed: document.querySelector("#conditionSealedInput") },
   layoutDialog: document.querySelector("#layoutDialog"),
@@ -304,6 +305,9 @@ function bindEvents() {
   el.editDelete.addEventListener("click", deleteCurrentEditedGame);
   el.addDialog.addEventListener("click", (event) => { if (event.target === el.addDialog) closeDialog(el.addDialog); });
   el.addForm.addEventListener("submit", saveEditor);
+  el.fields.platform.addEventListener("input", syncShelfEditorIcons);
+  el.fields.platform.addEventListener("change", syncShelfEditorIcons);
+  el.fields.country.addEventListener("change", syncShelfEditorIcons);
   el.lookupButton.addEventListener("click", lookupGame);
   el.lookupInput.addEventListener("keydown", (event) => { if (event.key === "Enter") { event.preventDefault(); lookupGame(); } });
   el.lookupResults.addEventListener("click", chooseLookupResult);
@@ -877,7 +881,7 @@ function renderFilters() {
   }
   el.sort.value = state.filters.sort;
   syncStyledSelect(el.platform, { logos: true, activeValue: "all" });
-  syncStyledSelect(el.region, { activeValue: "all" });
+  syncStyledSelect(el.region, { flags: true, activeValue: "all" });
   syncStyledSelect(el.condition, { activeValue: "all" });
   syncStyledSelect(el.category, { activeValue: "all" });
   syncStyledSelect(el.sort, { activeValue: null });
@@ -887,6 +891,7 @@ function renderFilters() {
 function syncStyledSelect(select, options = {}) {
   if (!select) return;
   const useLogos = Boolean(options.logos);
+  const useFlags = Boolean(options.flags) || select.id === "countryInput";
   select.classList.add(useLogos ? "native-platform-filter" : "native-styled-select");
   let control = select.nextElementSibling;
   if (!control?.classList?.contains("platform-logo-select")) {
@@ -906,12 +911,12 @@ function syncStyledSelect(select, options = {}) {
   control.classList.toggle("is-active", options.activeValue != null && selected.value !== options.activeValue);
   control.innerHTML = `
     <button class="platform-logo-button" type="button" aria-haspopup="listbox" aria-expanded="false" data-full-label="${escapeHtml(selected.label)}" aria-label="${escapeHtml(selected.label)}">
-      ${platformLogoChoiceMarkup(selected.value, selected.label, { logos: useLogos, fontFamily: selected.fontFamily })}
+      ${platformLogoChoiceMarkup(selected.value, selected.label, { logos: useLogos, flags: useFlags, fontFamily: selected.fontFamily })}
     </button>
     <div class="platform-logo-menu" role="listbox">
       ${visibleOptions.map((option) => `
         <button class="platform-logo-option ${option.selected ? "is-selected" : ""}" type="button" role="option" aria-selected="${option.selected ? "true" : "false"}" data-value="${escapeHtml(option.value)}" data-full-label="${escapeHtml(option.label)}">
-          ${platformLogoChoiceMarkup(option.value, option.label, { logos: useLogos, fontFamily: option.fontFamily })}
+          ${platformLogoChoiceMarkup(option.value, option.label, { logos: useLogos, flags: useFlags, fontFamily: option.fontFamily })}
         </button>
       `).join("")}
     </div>
@@ -1000,11 +1005,13 @@ function hidePlatformLogoOverlay() {
 
 function platformLogoChoiceMarkup(value, label, options = {}) {
   const showLogo = options.logos && value && value !== "all";
+  const showFlag = options.flags && value && value !== "all";
   const cls = showLogo ? platformClass(value) : "platform-generic";
   const fontStyle = options.fontFamily ? ` style="font-family:${escapeHtml(options.fontFamily)}"` : "";
   return `
     <span class="platform-logo-choice ${escapeHtml(cls)}">
       ${showLogo ? `<span class="platform-logo-choice-icon"><img src="${escapeHtml(platformLogo(value))}" alt="" width="18" height="18" decoding="async"></span>` : ""}
+      ${showFlag ? `<span class="platform-logo-choice-icon"><img src="${escapeHtml(flagAsset(value))}" alt="" width="18" height="18" decoding="async"></span>` : ""}
       <span class="platform-logo-choice-label"${fontStyle}>${escapeHtml(label)}</span>
     </span>
   `;
@@ -1260,12 +1267,14 @@ function openEditor(game = null) {
   el.fields.steamUrl.value = links.steam;
   el.fields.xboxUrl.value = links.xbox;
   el.fields.hltbUrl.value = values.hltbUrl || values.howLongToBeatUrl || links.hltb;
+  el.fields.igdbUrl.value = values.igdbUrl || links.igdb;
   Object.entries(el.conditionFields).forEach(([key, input]) => { input.checked = conditionValue(values, key); });
   syncConditionInputs();
   el.addForm.querySelector(".modal-head h2").textContent = game?.pendingCollection ? "Add to Collection" : game ? "Edit Game" : "Add Game";
   el.addForm.querySelectorAll("button[type='submit']").forEach((button) => { button.textContent = game?.pendingCollection ? "Add to Collection" : game ? "Save" : "Add to Shelf"; });
   el.editDelete.hidden = !game;
   syncStyledSelects(el.addDialog, { activeValue: null });
+  syncShelfEditorIcons();
   openDialog(el.addDialog);
 }
 
@@ -1424,6 +1433,7 @@ async function chooseLookupResult(event) {
     const physical = await prefillPhysicalResult(result);
     applyGameMetadata(bestGameMetadata(result.productName));
     renderPhysicalSelection(physical || result);
+    syncShelfEditorIcons();
     return;
   }
   el.fields.title.value = result.title || el.fields.title.value;
@@ -1433,6 +1443,7 @@ async function chooseLookupResult(event) {
   el.fields.genre.value = (result.genres || []).join(", ");
   el.fields.cover.value = result.cover || "";
   el.fields.releaseDate.value = result.releaseDate || "";
+  el.fields.igdbUrl.value = result.igdbUrl || el.fields.igdbUrl.value;
   fillStoreLinkFields(result.storeLinks);
   el.fields.hltbUrl.value = metadataHltbUrl(result) || el.fields.hltbUrl.value;
   state.pendingLengthHours = result.lengthHours || state.pendingLengthHours;
@@ -1440,6 +1451,7 @@ async function chooseLookupResult(event) {
   const physical = await fetchPhysicalMetadata(result.title);
   if (physical) applyPhysicalMetadata(physical);
   renderPhysicalSelection(physical, result.title);
+  syncShelfEditorIcons();
 }
 
 function bestGameMetadata(title) {
@@ -1458,6 +1470,7 @@ function applyGameMetadata(result) {
   if (result.cover && !el.fields.cover.value) el.fields.cover.value = result.cover;
   if (result.releaseDate && !el.fields.releaseDate.value) el.fields.releaseDate.value = result.releaseDate;
   if (result.description && !el.fields.description.value) el.fields.description.value = result.description;
+  if (result.igdbUrl && !el.fields.igdbUrl.value) el.fields.igdbUrl.value = result.igdbUrl;
   fillStoreLinkFields(result.storeLinks);
   if (metadataHltbUrl(result) && !el.fields.hltbUrl.value) el.fields.hltbUrl.value = metadataHltbUrl(result);
   state.pendingLengthHours = result.lengthHours || state.pendingLengthHours;
@@ -1470,6 +1483,7 @@ async function prefillPhysicalResult(result) {
   applyPriceChartingSearchResult(result);
   const physical = await fetchPhysicalMetadata(result.productName, { id: result.productId, url: result.url });
   if (physical) applyPhysicalMetadata(physical);
+  syncShelfEditorIcons();
   return physical;
 }
 
@@ -1526,7 +1540,7 @@ function renderPhysicalSelection(physical, fallbackTitle = "") {
 function priceChartingPageUrl(value) { const match = String(value || "").trim().match(/^https:\/\/www\.pricecharting\.com\/(?:[a-z]{2}\/)?game\/[^?#]+/i); return match?.[0] || ""; }
 function priceChartingProductId(value) { return priceChartingPageUrl(value) ? "" : String(value || "").trim().replace(/[^a-zA-Z0-9_-]/g, ""); }
 function blankImage() { return "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw=="; }
-function applyPriceChartingRegion(consoleName) { const value = normalize(consoleName); if (value.startsWith("jp ")) el.fields.country.value = "Japan"; else if (value.startsWith("pal ") && !["United Kingdom", "Spain", "Italy", "France", "Germany", "Europe", "Australia"].includes(el.fields.country.value)) el.fields.country.value = "Europe"; else if (!value.startsWith("pal ") && !value.startsWith("jp ") && ["Japan", "Europe"].includes(el.fields.country.value)) el.fields.country.value = "United States of America"; }
+function applyPriceChartingRegion(consoleName) { const value = normalize(consoleName); if (value.startsWith("jp ")) el.fields.country.value = "Japan"; else if (value.startsWith("pal ") && !["United Kingdom", "Spain", "Italy", "France", "Germany", "Europe", "Australia"].includes(el.fields.country.value)) el.fields.country.value = "Europe"; else if (!value.startsWith("pal ") && !value.startsWith("jp ") && ["Japan", "Europe"].includes(el.fields.country.value)) el.fields.country.value = "United States of America"; syncShelfEditorIcons(); }
 
 async function saveEditor(event) {
   event.preventDefault();
@@ -1544,6 +1558,7 @@ async function saveEditor(event) {
     releaseDate: el.fields.releaseDate.value, trophyName: el.fields.trophyName.value.trim(), websites: legacyWebsiteLinks(existing),
     storeLinks: editorStoreLinks(),
     hltbUrl: el.fields.hltbUrl.value.trim(),
+    igdbUrl: cleanUrl(el.fields.igdbUrl.value),
     lengthHours: existing?.lengthHours || state.pendingLengthHours || null,
     upc: el.fields.upc.value.trim(), sku: el.fields.sku.value.trim(), asin: el.fields.asin.value.trim(), epid: el.fields.epid.value.trim(),
     pricechartingId: el.fields.pricechartingId.value.trim(), description: el.fields.description.value.trim(),
@@ -2251,7 +2266,9 @@ function renderShowcaseFilters() {
   el.showcasePlatform.value = state.showcaseFilters.platform;
   el.showcaseRegion.value = state.showcaseFilters.region;
   el.showcaseCategory.value = state.showcaseFilters.category;
-  syncStyledSelects(el.showcaseDialog, { activeValue: null });
+  syncStyledSelect(el.showcasePlatform, { logos: true, activeValue: "all" });
+  syncStyledSelect(el.showcaseRegion, { flags: true, activeValue: "all" });
+  syncStyledSelect(el.showcaseCategory, { activeValue: "all" });
   [el.showcasePlatform, el.showcaseRegion, el.showcaseCategory].forEach(updateSelectOverflowTitle);
 }
 
@@ -3173,11 +3190,12 @@ function normalizePriceLabel(value, currency = "USD") {
   return currency === "USD" ? text : text.replace(/€\s*([0-9][0-9.,]*)/g, "$1€").replace(/\bEUR\s*([0-9][0-9.,]*)/gi, "$1€");
 }
 function normalizedStoreLinks(game = {}) {
-  const slots = { playstation: "", nintendo: "", steam: "", xbox: "", hltb: "" };
+  const slots = { playstation: "", nintendo: "", steam: "", xbox: "", hltb: "", igdb: "" };
   const source = game.storeLinks && typeof game.storeLinks === "object" ? game.storeLinks : {};
   Object.keys(slots).forEach((key) => { slots[key] = cleanUrl(source[key]); });
   for (const link of (Array.isArray(game.websites) ? game.websites : [])) mergeLinkSlot(slots, link);
   if (game.hltbUrl || game.howLongToBeatUrl) slots.hltb = cleanUrl(game.hltbUrl || game.howLongToBeatUrl);
+  if (game.igdbUrl) slots.igdb = cleanUrl(game.igdbUrl);
   return slots;
 }
 function editorStoreLinks() {
@@ -3187,6 +3205,7 @@ function editorStoreLinks() {
     steam: cleanUrl(el.fields.steamUrl.value),
     xbox: cleanUrl(el.fields.xboxUrl.value),
     hltb: cleanUrl(el.fields.hltbUrl.value),
+    igdb: cleanUrl(el.fields.igdbUrl.value),
   };
 }
 function fillStoreLinkFields(links = {}) {
@@ -3205,6 +3224,7 @@ function mergeWebsiteIntoSlots(link) {
   el.fields.steamUrl.value = slots.steam;
   el.fields.xboxUrl.value = slots.xbox;
   el.fields.hltbUrl.value = slots.hltb;
+  el.fields.igdbUrl.value = slots.igdb;
 }
 function mergeLinkSlot(slots, link) {
   const url = cleanUrl(link);
@@ -3219,6 +3239,7 @@ function linkSlot(value) {
   if (host.includes("steampowered")) return "steam";
   if (host.includes("xbox")) return "xbox";
   if (host.includes("howlongtobeat")) return "hltb";
+  if (host.includes("igdb")) return "igdb";
   return "";
 }
 function legacyWebsiteLinks(game) {
@@ -3749,6 +3770,18 @@ function platformDisplayName(value) {
 function flagAsset(country) { return `assets/flags/${({ "United Kingdom": "gb", Spain: "es", Italy: "it", Ireland: "ie", Portugal: "pt", Mexico: "mx", "United States of America": "us", Japan: "jp", Taiwan: "tw", France: "fr", Germany: "de", Australia: "au", China: "cn", Europe: "eu", World: "world" })[country] || "world"}.svg`; }
 function flagIcon(country, withClass = false) { return `<img${withClass ? ` class="detail-flag"` : ""} src="${flagAsset(country)}" alt="" width="47" height="31" decoding="async">`; }
 function platformBadge(platform, options = {}) { const label = shortPlatform(platform); return `<span class="platform-badge ${platformClass(platform, options)}" title="${escapeHtml(label)}"><span class="platform-icon"><img src="${platformLogo(platform)}" alt="" width="18" height="18" decoding="async"></span><span class="platform-label">${escapeHtml(label)}</span></span>`; }
+function syncShelfEditorIcons() {
+  const platform = canonicalShelfPlatform(el.fields.platform?.value || "");
+  const logo = platform ? platformLogo(platform) : "";
+  setShelfEditorIcon(el.platformFieldIcon, logo && logo !== "assets/Icon_shelf.png" ? logo : "", platform);
+}
+function setShelfEditorIcon(slot, icon, title = "") {
+  const wrapper = slot?.closest?.(".icon-input");
+  if (!slot || !wrapper) return;
+  wrapper.classList.toggle("has-icon", Boolean(icon));
+  slot.title = icon ? title : "";
+  slot.innerHTML = icon ? `<img src="${escapeHtml(icon)}" alt="" width="18" height="18" decoding="async">` : "";
+}
 function platformLogo(platform) { const value = normalize(shortPlatform(platform)); if (value === "wii") return "assets/platforms/wii.png"; if (value === "wii u" || value === "wiiu") return "assets/platforms/wiiu.png"; if (value === "n64") return "assets/platforms/n64.png"; if (value === "gc" || value.includes("gamecube")) return "assets/platforms/gc.png"; if (value === "nes") return "assets/platforms/nes.png"; if (value === "snes") return "assets/platforms/snes.png"; if (value === "ds") return "assets/platforms/nds.png"; if (value === "3ds") return "assets/platforms/3ds.png"; if (value === "gba") return "assets/platforms/gba.png"; if (value === "gbc") return "assets/platforms/gbc.png"; if (value === "gb") return "assets/platforms/gb.png"; if (value === "game gear") return "assets/platforms/gamegear.png"; if (value === "dc" || value.includes("dreamcast")) return "assets/platforms/dreamcast.png"; if (isSegaPlatform(value)) return "assets/platforms/sega.png"; if (value.includes("switch")) return "assets/platforms/switch.png"; if (value === "ps1" || value === "ps2") return "assets/platforms/playstation_retro.png"; if (value === "ps5") return "assets/platforms/playstation_modern.png"; if (value === "x360" || value === "xbox 360") return "assets/platforms/xbox360.png"; if (value === "xbox") return "assets/platforms/xbox_retro.png"; if (value.includes("xbox") || value === "xone") return "assets/platforms/xbox.png"; if (value.includes("steam") || value === "pc") return "assets/platforms/steam.png"; if (value.includes("ps") || value.includes("playstation") || value.includes("psp") || value.includes("vita")) return "assets/platforms/playstation.png"; return "assets/Icon_shelf.png"; }
 function platformClass(platform, options = {}) { const value = normalize(shortPlatform(platform)); const title = normalize(options.title); if (value === "wii") return "platform-wii"; if (value === "wii u" || value === "wiiu") return "platform-wiiu"; if (value === "n64") return "platform-n64"; if (value === "gc" || value.includes("gamecube")) return "platform-gamecube"; if (value === "nes") return "platform-nes"; if (value === "snes") return "platform-snes"; if (value === "ds") return "platform-ds"; if (value === "3ds") return "platform-3ds"; if (value === "gba") return "platform-gba"; if (value === "gbc") return "platform-gbc"; if (value === "gb") return "platform-gb"; if (value === "game gear") return "platform-gamegear"; if (value === "dc" || value.includes("dreamcast")) return "platform-dreamcast"; if (isSegaPlatform(value)) return "platform-sega"; if (value.includes("switch")) return "platform-nintendo"; if (value === "ps1") return "platform-playstation platform-ps1"; if (value === "ps3" && PS3_BLUE_PILL_TITLES.has(title)) return "platform-playstation platform-ps3-as-ps4"; if (value === "ps3") return "platform-playstation platform-ps3"; if (value === "ps5") return "platform-playstation platform-ps5"; if (value === "psp") return "platform-playstation platform-psp"; if (value === "x360" || value === "xbox 360") return "platform-xbox platform-xbox360"; if (value === "xbox") return "platform-xbox platform-xbox-retro"; if (value.includes("xbox") || value === "xone") return "platform-xbox"; if (value.includes("steam") || value === "pc") return "platform-pc"; if (value.includes("ps") || value.includes("playstation") || value.includes("psp") || value.includes("vita")) return "platform-playstation"; return "platform-generic"; }
 const PS3_BLUE_PILL_TITLES = new Set(["deception iv blood ties", "drakengard 3", "dynasty warriors 8 xtreme legends", "everybody dance 3", "lego hobbit", "mugen souls z", "murdered soul suspect", "rambo the video game", "sports pack vol 1", "the amazing spider man 2", "ultra street fighter iv", "watch dogs", "wolfenstein the new order"]);
@@ -3775,7 +3808,7 @@ function canonicalShelfPlatform(value) {
   };
   return aliases[key] || text;
 }
-function regionName(country) { return country === "United States of America" ? "United States" : country; }
+function regionName(country) { if (country === "United States of America") return "US"; if (country === "United Kingdom") return "UK"; return country; }
 function regionFor(country) { if (country === "Japan") return "Japan"; if (country === "Taiwan") return "Taiwan"; if (country === "United States of America") return "USA"; if (["United Kingdom", "Spain", "Italy", "France", "Germany", "Europe"].includes(country)) return country === "Spain" ? "Spain" : "Europe"; return country || "Other"; }
 function countValues(values) { const map = new Map(); values.filter(Boolean).forEach((value) => map.set(value, (map.get(value) || 0) + 1)); return [...map.entries()].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0])); }
 function conditionMatches(game, condition) { const label = conditionLabel(game).toLowerCase(); if (condition === "all") return true; if (condition === "complete") return label === "complete"; if (condition === "complete-plus") return label === "complete +"; if (condition === "loose") return label === "loose"; if (condition === "sealed") return label === "sealed"; return true; }

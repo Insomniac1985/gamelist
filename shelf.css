@@ -1269,6 +1269,67 @@ html.theme-font-mata .shelf-page .playing-section .column-head h2 {
   padding: 0;
   border: 0;
 }
+
+.shelf-editor-grid {
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+}
+
+.shelf-editor-grid > label {
+  grid-column: span 4;
+}
+
+.shelf-editor-grid > .shelf-title-field {
+  grid-column: span 5;
+}
+
+.shelf-editor-grid > .shelf-console-field {
+  grid-column: span 4;
+}
+
+.shelf-editor-grid > .shelf-region-field {
+  grid-column: span 3;
+}
+
+.shelf-editor-grid > .shelf-release-field,
+.shelf-editor-grid > .shelf-value-field {
+  grid-column: span 6;
+}
+
+.shelf-editor-grid > .shelf-owner-field,
+.shelf-editor-grid > .shelf-achievement-search-field {
+  grid-column: span 6;
+}
+
+.shelf-editor-grid > .shelf-condition-notes-field {
+  grid-column: 1 / -1;
+}
+
+.shelf-editor-grid input:not([type="checkbox"]),
+.shelf-editor-grid select,
+.shelf-editor-grid textarea,
+.shelf-editor-grid .platform-logo-button {
+  min-height: 44px;
+}
+
+.shelf-edit-icon-input {
+  margin-bottom: 0;
+}
+
+.shelf-edit-icon-input.has-icon input,
+.shelf-edit-icon-input.has-icon select,
+.shelf-edit-icon-input.has-icon .platform-logo-button {
+  padding-left: 40px;
+}
+
+.shelf-edit-icon-input .platform-logo-select {
+  width: 100%;
+}
+
+.shelf-edit-icon-input .field-leading-icon img {
+  max-width: 18px;
+  max-height: 18px;
+}
+
 .condition-editor legend {
   margin-bottom: 7px;
   color: var(--muted);
@@ -1646,6 +1707,22 @@ html.theme-font-mata .shelf-page .playing-section .column-head h2 {
 }
 
 @media (max-width: 760px) {
+  .shelf-editor-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .shelf-editor-grid > label,
+  .shelf-editor-grid > .shelf-title-field,
+  .shelf-editor-grid > .shelf-console-field,
+  .shelf-editor-grid > .shelf-region-field,
+  .shelf-editor-grid > .shelf-release-field,
+  .shelf-editor-grid > .shelf-value-field,
+  .shelf-editor-grid > .shelf-owner-field,
+  .shelf-editor-grid > .shelf-achievement-search-field,
+  .shelf-editor-grid > .shelf-condition-notes-field {
+    grid-column: 1 / -1;
+  }
+
   .showcase-modal {
     height: calc(100dvh - 16px);
     max-height: calc(100dvh - 16px);
