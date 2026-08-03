@@ -459,7 +459,7 @@
         <section class="form-group">
           <h3>Collecting Information</h3>
           <div class="form-grid collection-form-grid">
-            <label>
+            <label class="title-field">
               <span>Title</span>
               <input id="titleInput" required>
             </label>
@@ -486,6 +486,10 @@
               <span>Release Date</span>
               <input id="releaseDateInput" type="date">
             </label>
+            <label class="release-text-field">
+              <span>Release Text (Optional)</span>
+              <input id="releaseTextInput" placeholder="2026?, 18 June, TBA...">
+            </label>
             <label class="check-filter toggle-check form-check collection-check">
               <input id="digitalInput" type="checkbox">
               <span>Digital</span>
@@ -497,10 +501,6 @@
             <label class="check-filter toggle-check form-check collection-check">
               <input id="coopInput" type="checkbox">
               <span>Coop</span>
-            </label>
-            <label class="release-text-field">
-              <span>Release Text (Optional)</span>
-              <input id="releaseTextInput" placeholder="2026?, 18 June, TBA...">
             </label>
             <label class="length-field">
               <span>Aproximate playtime</span>
@@ -520,11 +520,11 @@
                 <input id="preferredStoreInput" placeholder="Limited Run, Amazon...">
               </span>
             </label>
-            <label>
+            <label class="owners-field">
               <span>Owners</span>
               <input id="ownersInput" list="ownerOptions" placeholder="User, Judy...">
             </label>
-            <label>
+            <label class="status-field">
               <span>Status</span>
               <input id="statusesInput" list="statusOptions" placeholder="To Collect, Scarce, Waiting for Physical">
             </label>

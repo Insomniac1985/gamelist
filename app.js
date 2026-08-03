@@ -8667,7 +8667,7 @@ function syncPlatformInputIcon() {
   const raw = String(el.fields.platform?.value || "").trim();
   const platform = canonicalPlatform(raw) || raw;
   const icon = platform && platformLogo(platform);
-  setLeadingFieldIcon(el.platformFieldIcon, icon && icon !== "assets/Icon.png" ? icon : "", platformDisplayName(platform), platform ? platformClass(platform) : "");
+  setLeadingFieldIcon(el.platformFieldIcon, icon && icon !== "assets/Icon.png" ? icon : "", platformDisplayName(platform));
 }
 
 function syncStoreInputIcon(input, slot) {
@@ -8698,8 +8698,9 @@ function knownStoreIconName(value) {
 function setLeadingFieldIcon(slot, icon, title = "", extraClass = "") {
   const wrapper = slot?.closest?.(".icon-input");
   if (!slot || !wrapper) return;
-  const classes = ["field-leading-icon", ...String(slot.className || "").split(/\s+/).filter((name) => name && !name.startsWith("platform-"))];
-  slot.className = unique([...classes, ...String(extraClass || "").split(/\s+/).filter(Boolean)]).join(" ");
+  const baseClasses = String(slot.dataset.baseClass || slot.className || "field-leading-icon").split(/\s+/).filter(Boolean);
+  slot.dataset.baseClass = baseClasses.join(" ");
+  slot.className = unique([...baseClasses, ...String(extraClass || "").split(/\s+/).filter(Boolean)]).join(" ");
   wrapper.classList.toggle("has-icon", Boolean(icon));
   slot.title = icon ? title : "";
   slot.innerHTML = icon ? `<img src="${escapeHtml(icon)}" alt="" width="18" height="18" decoding="async">` : "";
