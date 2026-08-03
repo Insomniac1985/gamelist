@@ -454,14 +454,18 @@
 
         <section class="form-group">
           <h3>Collecting Information</h3>
-          <div class="form-grid">
+          <div class="form-grid collection-form-grid">
             <label>
               <span>Title</span>
               <input id="titleInput" required>
             </label>
-            <label>
+            <label class="platform-field">
               <span>Platform</span>
               <input id="platformInput" list="platformOptions">
+            </label>
+            <label class="check-filter toggle-check form-check dlc-check">
+              <input id="dlcInput" type="checkbox">
+              <span>DLC</span>
             </label>
             <label>
               <span>List</span>
@@ -480,7 +484,7 @@
               <input id="releaseTextInput" placeholder="2026?, 18 June, TBA...">
             </label>
             <label>
-              <span>Length</span>
+              <span>Aproximate playtime</span>
               <input id="lengthInput" type="number" min="0" step="0.5" placeholder="Hours">
             </label>
             <label>

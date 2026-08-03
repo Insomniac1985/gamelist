@@ -362,6 +362,7 @@ const el = {
     id: document.querySelector("#gameId"),
     title: document.querySelector("#titleInput"),
     platform: document.querySelector("#platformInput"),
+    dlc: document.querySelector("#dlcInput"),
     section: document.querySelector("#sectionInput"),
     releaseDate: document.querySelector("#releaseDateInput"),
     releaseText: document.querySelector("#releaseTextInput"),
@@ -910,6 +911,7 @@ function bindEvents() {
   el.fields.section.addEventListener("change", syncDialogPriceVisibility);
   el.fields.platform.addEventListener("input", syncDialogPriceVisibility);
   el.fields.digital.addEventListener("change", syncDialogPriceVisibility);
+  el.fields.dlc.addEventListener("change", syncDlcDigital);
   el.fields.replayCount.addEventListener("input", syncReplaySection);
   el.form.addEventListener("submit", saveFromForm);
   el.deleteButton.addEventListener("click", deleteCurrentGame);
@@ -1864,6 +1866,7 @@ function yearlyStatsCsvRecords() {
       startedAt: dateOnly(game.startedAt),
       completedAt: dateOnly(game.completedAt),
       lengthHours: game.lengthHours || "",
+      dlc: Boolean(game.dlc),
       replayCount: game.replayCount || "",
       stream: Boolean(game.stream),
       coop: Boolean(game.coop),
@@ -1894,7 +1897,7 @@ async function importYearlyStatsCsv() {
     rows.forEach((row) => {
       const game = gameByCsvRow(row);
       if (!game) return;
-      ["startedAt", "completedAt", "lengthHours", "replayCount", "owners", "tags", "stream", "coop", "platinum", "digital", "emulator"].forEach((key) => {
+      ["startedAt", "completedAt", "lengthHours", "dlc", "replayCount", "owners", "tags", "stream", "coop", "platinum", "digital", "emulator"].forEach((key) => {
         if (row[key] !== undefined && row[key] !== "") game[key] = row[key];
       });
       markGameEdited(game, now);
@@ -4541,24 +4544,27 @@ function trophyTone(value) {
 }
 
 function renderStats() {
-  const active = filteredGames({ applyPreorder: false }).filter((game) => !game.completedAt);
+  const active = filteredGames({ applyPreorder: false }).filter((game) => !game.completedAt && !game.dlc);
   const total = active.length;
   const currentYear = String(new Date().getFullYear());
   const listedCompleted = state.games.filter((game) => !game.deletedAt && Boolean(game.completedAt));
-  const completedThisYear = listedCompleted.filter((game) => completionYear(game) === currentYear).length;
-  const markedCompleted = listedCompleted.filter((game) => game.platinum);
+  const finishedGames = listedCompleted.filter((game) => !game.dlc);
+  const finishedExpansions = listedCompleted.filter((game) => game.dlc);
+  const finishedGamesThisYear = finishedGames.filter((game) => completionYear(game) === currentYear).length;
+  const finishedExpansionsThisYear = finishedExpansions.filter((game) => completionYear(game) === currentYear).length;
+  const markedCompleted = finishedGames.filter((game) => game.platinum);
   const markedCompletedThisYear = markedCompleted.filter((game) => completionYear(game) === currentYear).length;
   const counts = {
     new: active.filter((game) => game.section === "new").length,
     wanted: active.filter((game) => game.section === "wanted").length,
     upcoming: active.filter((game) => game.section === "upcoming").length,
     backlog: active.filter((game) => game.section === "backlog").length,
-    completed: listedCompleted.length,
+    completed: finishedGames.length,
   };
   el.stats.innerHTML = [
-    stat(`Finished ${currentYear}`, completedThisYear, "done", {
+    stat(`Finished ${currentYear}`, finishedGamesThisYear, "done", {
       action: "completed",
-      detail: completedStatDetail(currentYear, completedThisYear, counts.completed, markedCompletedThisYear),
+      detail: completedStatDetail(currentYear, finishedGamesThisYear, counts.completed, markedCompletedThisYear, finishedExpansionsThisYear),
     }),
     stat("Backlog", counts.backlog, "backlog", { detail: sectionStatDetail("backlog", active, total) }),
     stat("Upcoming", counts.upcoming, "release", { detail: sectionStatDetail("upcoming", active, total) }),
@@ -4610,10 +4616,11 @@ function sectionStatDetail(section, games, total) {
   `;
 }
 
-function completedStatDetail(year, yearCount, total, completedYearCount) {
+function completedStatDetail(year, yearCount, total, completedYearCount, expansionsYearCount = 0) {
+  const expansionText = expansionsYearCount ? ` (and ${expansionsYearCount} ${expansionsYearCount === 1 ? "expansion" : "expansions"})` : "";
   return `
     <div class="stat-detail">
-      <span>${yearCount} ${yearCount === 1 ? "game" : "games"} in ${escapeHtml(year)}</span>
+      <span>${yearCount} ${yearCount === 1 ? "game" : "games"} in ${escapeHtml(year)}${escapeHtml(expansionText)}</span>
       ${completedYearCount ? `<span class="completed-year-count-pill">${completedYearCount} completed of ${yearCount} this year</span>` : ""}
       <b>Total ${total} finished ${total === 1 ? "game" : "games"}</b>
     </div>
@@ -5182,7 +5189,8 @@ function rowCoreStats(game) {
   const release = releaseStatus(game);
   return [
     game.platform ? platformBadge(game.platform, null, { title: game.title }) : "",
-    game.digital ? `<span class="digital-pill">Digital</span>` : "",
+    game.dlc ? dlcBadge(game) : "",
+    game.digital && !game.dlc ? `<span class="digital-pill">Digital</span>` : "",
     game.emulator ? `<span class="emulator-pill">Emulator</span>` : "",
     game.lengthHours ? timeBadge(game.lengthHours, hltbUrlFor(game)) : "",
     game.stream ? `<span class="stream-pill">Stream</span>` : "",
@@ -5327,13 +5335,23 @@ function handleCompletedYearChange(event) {
 
 function updateCompletedCount(count) {
   if (!el.completedCount) return;
-  el.completedCount.innerHTML = `${count} ${count === 1 ? "game" : "games"}`;
+  const games = typeof count === "object" ? Number(count.games || 0) : Number(count || 0);
+  const expansions = typeof count === "object" ? Number(count.expansions || 0) : 0;
+  const gameText = `${games} ${games === 1 ? "game" : "games"}`;
+  const expansionText = expansions ? `${expansions} ${expansions === 1 ? "expansion" : "expansions"}` : "";
+  el.completedCount.innerHTML = expansionText
+    ? `<span>${escapeHtml(gameText)}</span><span class="completed-count-separator" aria-hidden="true">&middot;</span><span>${escapeHtml(expansionText)}</span>`
+    : `<span>${escapeHtml(gameText)}</span>`;
 }
 
 function completedCountForSelectedYear() {
-  return state.games.filter((game) => !game.deletedAt
+  const finished = state.games.filter((game) => !game.deletedAt
     && game.completedAt
-    && (state.completedYear === "all" || completionYear(game) === state.completedYear)).length;
+    && (state.completedYear === "all" || completionYear(game) === state.completedYear));
+  return {
+    games: finished.filter((game) => !game.dlc).length,
+    expansions: finished.filter((game) => game.dlc).length,
+  };
 }
 
 function openFinishedStatsDialog(year = "all") {
@@ -5374,20 +5392,23 @@ function completedStatsYearFor(item) {
 }
 
 function finishedStatsMarkup(year, games, completed) {
-  const platforms = countBy(games, statsPlatformLabel);
-  const tags = countTags(games);
-  const timeBuckets = countApproximatePlaytimeBuckets(games);
-  const mediaBuckets = countPhysicalDigitalGames(games);
-  const months = countBy(games, (game) => monthShortName(game.completedAt));
-  const streamed = games.filter((game) => game.stream);
-  const coopGames = games.filter((game) => game.coop);
-  const otherOwnerGames = games.filter((game) => visibleOwnerTags(game).length);
+  const finishedGames = games.filter((game) => !game.dlc);
+  const expansions = games.filter((game) => game.dlc);
+  const platforms = countBy(finishedGames, statsPlatformLabel);
+  const tags = countTags(finishedGames);
+  const timeBuckets = countApproximatePlaytimeBuckets(finishedGames);
+  const mediaBuckets = countPhysicalDigitalGames(finishedGames);
+  const months = countBy(finishedGames, (game) => monthShortName(game.completedAt));
+  const streamed = finishedGames.filter((game) => game.stream);
+  const coopGames = finishedGames.filter((game) => game.coop);
+  const otherOwnerGames = finishedGames.filter((game) => visibleOwnerTags(game).length);
   const otherOwnerSummary = statsOtherOwnerSummary(otherOwnerGames);
   const allYears = year === "all";
   const releaseInsights = statsReleaseYearInsights(year, games);
   const showYearlyDetail = !allYears;
   const cards = [
-    statsKpiCard("Finished games", games.length, showYearlyDetail ? statsGameList(games) : "", { tone: "finished" }),
+    statsKpiCard("Finished games", finishedGames.length, showYearlyDetail ? statsGameList(finishedGames) : "", { tone: "finished" }),
+    expansions.length ? statsKpiCard("Expansions finished", expansions.length, statsGameList(expansions), { tone: "finished" }) : "",
     statsKpiCard("Completed games", completed.length, showYearlyDetail ? statsCompletedGameList(completed) : "", { action: "completed", tone: "completed", icon: trophyIcon() }),
     streamed.length ? statsKpiCard("Streamed games", streamed.length, showYearlyDetail ? statsGameList(streamed) : "", { tone: "streamed" }) : "",
     coopGames.length ? statsKpiCard("Coop games", coopGames.length, statsGameList(coopGames), { tone: "coop" }) : "",
@@ -5396,15 +5417,15 @@ function finishedStatsMarkup(year, games, completed) {
   return `
     <div class="finished-stats-kpis">${cards}</div>
     <div class="finished-stats-charts ${allYears ? "is-all" : ""}">
-      ${statsDonutCard("Platforms", platforms, "platform", 5, games)}
-      ${statsDonutCard("Categories", tags, "category", 5, games)}
-      ${statsDonutCard("Aproximate playtime", timeBuckets, "time", 5, games)}
-      ${statsDonutCard("Physical / digital / emulator", mediaBuckets, "media", 3, games)}
+      ${statsDonutCard("Platforms", platforms, "platform", 5, finishedGames)}
+      ${statsDonutCard("Categories", tags, "category", 5, finishedGames)}
+      ${statsDonutCard("Aproximate playtime", timeBuckets, "time", 5, finishedGames)}
+      ${statsDonutCard("Physical / digital / emulator", mediaBuckets, "media", 3, finishedGames)}
     </div>
     ${allYears ? "" : statsReleaseKpisCard(releaseInsights)}
     <section class="finished-stats-months">
       <h3>${allYears ? "By year" : "By month"}</h3>
-      <div class="finished-stats-period-grid ${allYears ? "is-yearly" : ""}">${allYears ? statsYearBars(games) : statsMonthBars(games, months, games.length)}</div>
+      <div class="finished-stats-period-grid ${allYears ? "is-yearly" : ""}">${allYears ? statsYearBars(finishedGames) : statsMonthBars(finishedGames, months, finishedGames.length)}</div>
     </section>
     ${games.length ? "" : `<div class="empty">No finished games${year === "all" ? "" : ` in ${escapeHtml(year)}`}.</div>`}
   `;
@@ -5447,12 +5468,14 @@ function statsReleaseKpisCard(insights) {
         ${statsReleaseMiniKpi({
           value: insights.playedFromYear.length,
           label: "Played new games",
+          subline: releaseExpansionLine(insights.newExpansions, "new expansion", "new expansions"),
           detail: insights.hoverable ? statsGameList(insights.playedFromYear) : "",
           tone: "played",
         })}
         ${statsReleaseMiniKpi({
           value: insights.playedOutsideYear.length,
           label: "Played games not from that year",
+          subline: releaseExpansionLine(insights.playedOutsideYearExpansions, "played expansion not from that year", "played expansions not from that year"),
           detail: insights.hoverable ? statsGameList(insights.playedOutsideYear) : "",
           tone: "played",
         })}
@@ -5461,36 +5484,53 @@ function statsReleaseKpisCard(insights) {
   `;
 }
 
-function statsReleaseMiniKpi({ value, label, detail = "", tone = "" }) {
+function statsReleaseMiniKpi({ value, label, subline = "", detail = "", tone = "" }) {
   return `
     <button class="finished-stats-release-kpi ${tone ? `is-${escapeHtml(tone)}` : ""}" type="button" ${detail ? `data-stats-overlay-title="${escapeHtml(label)}"` : ""}>
       <strong>${escapeHtml(String(value))}</strong>
       <span>${escapeHtml(label)}</span>
+      ${subline}
       ${detail ? `<span class="finished-stats-breakdown">${detail}</span>` : ""}
     </button>
   `;
 }
 
+function releaseExpansionLine(games, singular, plural) {
+  const count = Array.isArray(games) ? games.length : 0;
+  if (!count) return "";
+  return dlcBadge(games[0], `${count} ${count === 1 ? singular : plural}`, { className: "finished-stats-release-subline", tone: "accent" });
+}
+
 function statsReleaseYearInsights(year, games) {
-  const completionYears = unique(games.map(completionYear).filter(Boolean));
+  const finishedGames = games.filter((game) => !game.dlc);
+  const expansions = games.filter((game) => game.dlc);
+  const completionYears = unique(finishedGames.map(completionYear).filter(Boolean));
   const scopeYear = year !== "all" ? String(year) : (completionYears.length === 1 ? completionYears[0] : "");
   const libraryGames = state.games
-    .filter((game) => !game.deletedAt && game.releaseDate)
+    .filter((game) => !game.deletedAt && !game.dlc && game.releaseDate)
     .sort((a, b) => String(a.releaseDate || "").localeCompare(String(b.releaseDate || "")) || stringCompare(a.title, b.title));
   const interested = scopeYear
     ? libraryGames.filter((game) => releaseYear(game) === scopeYear)
     : libraryGames.filter((game) => completionYears.includes(releaseYear(game)));
   const playedFromYear = scopeYear
-    ? games.filter((game) => releaseYear(game) === scopeYear)
-    : games.filter((game) => releaseYear(game) && releaseYear(game) === completionYear(game));
+    ? finishedGames.filter((game) => releaseYear(game) === scopeYear)
+    : finishedGames.filter((game) => releaseYear(game) && releaseYear(game) === completionYear(game));
   const playedOutsideYear = scopeYear
-    ? games.filter((game) => releaseYear(game) !== scopeYear)
-    : games.filter((game) => releaseYear(game) && releaseYear(game) !== completionYear(game));
+    ? finishedGames.filter((game) => releaseYear(game) !== scopeYear)
+    : finishedGames.filter((game) => releaseYear(game) && releaseYear(game) !== completionYear(game));
+  const newExpansions = scopeYear
+    ? expansions.filter((game) => releaseYear(game) === scopeYear)
+    : expansions.filter((game) => releaseYear(game) && releaseYear(game) === completionYear(game));
+  const playedOutsideYearExpansions = scopeYear
+    ? expansions.filter((game) => releaseYear(game) !== scopeYear)
+    : expansions.filter((game) => releaseYear(game) && releaseYear(game) !== completionYear(game));
   return {
     scopeYear,
     interested,
     playedFromYear,
     playedOutsideYear,
+    newExpansions,
+    playedOutsideYearExpansions,
     hoverable: Boolean(scopeYear),
   };
 }
@@ -5738,7 +5778,7 @@ function statsGameList(games) {
       : progress
       ? psnProgressBadge(progress, { className: "finished-stats-progress-pill" })
       : (completed ? psnProgressBadge({ title: game.title, progress: 100 }, { className: "finished-stats-progress-pill" }) : "");
-    return `<span class="finished-stats-game-row ${completed ? "is-complete" : ""}"><b class="${escapeHtml(ownerTitleClass)}">${escapeHtml(game.title)}</b>${game.platform ? platformBadge(game.platform) : ""}${progressPill}</span>`;
+    return `<span class="finished-stats-game-row ${completed ? "is-complete" : ""}"><b class="${escapeHtml(ownerTitleClass)}">${escapeHtml(game.title)}</b>${game.platform ? platformBadge(game.platform) : ""}${game.dlc ? dlcBadge(game) : ""}${progressPill}</span>`;
   }).join("");
 }
 
@@ -6265,6 +6305,7 @@ function filteredGames(options = {}) {
       game.preferredStore,
       game.developer,
       game.publisher,
+      game.dlc ? "dlc expansion expansions downloadable content" : "",
       game.digital ? "digital" : "",
       game.coop ? "coop" : "",
       game.platinum ? "completed trophy platinum" : "",
@@ -6955,7 +6996,8 @@ function sectionRank(section) {
 function metaFor(game, options = {}) {
   const values = [];
   if (game.platform) values.push(platformBadge(game.platform, null, { title: game.title }));
-  if (game.digital) values.push(`<span class="digital-pill">Digital</span>`);
+  if (game.dlc) values.push(dlcBadge(game));
+  if (game.digital && !game.dlc) values.push(`<span class="digital-pill">Digital</span>`);
   if (game.emulator) values.push(`<span class="emulator-pill">Emulator</span>`);
   if (game.lengthHours) values.push(timeBadge(game.lengthHours, hltbUrlFor(game)));
   if (game.stream) values.push(`<span class="stream-pill">Stream</span>`);
@@ -7567,7 +7609,8 @@ function completedBadges(game, options = {}) {
   const progress = achievementProgressForGame(game);
   return [
     game.platform ? platformBadge(game.platform, null, { title: game.title }) : "",
-    game.digital ? `<span class="digital-pill">Digital</span>` : "",
+    game.dlc ? dlcBadge(game) : "",
+    game.digital && !game.dlc ? `<span class="digital-pill">Digital</span>` : "",
     game.emulator ? `<span class="emulator-pill">Emulator</span>` : "",
     game.coop ? `<span class="coop-pill">Coop</span>` : "",
     game.stream ? `<span class="stream-pill">Stream</span>` : "",
@@ -7647,6 +7690,15 @@ function platformBadge(platform, count = null, options = {}) {
       ${count == null ? "" : `<span class="platform-count">${count}</span>`}
     </span>
   `;
+}
+
+function dlcBadge(game, label = "DLC", options = {}) {
+  const platform = typeof game === "string" ? game : game?.platform;
+  const title = typeof game === "object" ? game?.title : "";
+  const cls = options.tone === "accent" ? "dlc-accent" : platformClass(platform, { title });
+  const className = ["dlc-pill", cls, options.className || ""].filter(Boolean).join(" ");
+  const platformLabel = platformDisplayName(platform);
+  return `<span class="${escapeHtml(className)}" title="${escapeHtml([label, platformLabel].filter(Boolean).join(" - "))}">${escapeHtml(label)}</span>`;
 }
 
 function ownerBadge(owner) {
@@ -8190,6 +8242,7 @@ function normalizeGameRecord(game) {
   normalized.editedAt = String(normalized.editedAt || normalized.updatedAt || normalized.createdAt || "");
   normalized.cover = MANUAL_GAME_COVER_OVERRIDES[normalizeTag(normalized.title)] || normalized.cover || "";
   normalized.digital = Boolean(normalized.digital);
+  normalized.dlc = Boolean(normalized.dlc);
   normalized.emulator = Boolean(normalized.emulator);
   normalized.coop = Boolean(normalized.coop);
   normalized.stream = Boolean(normalized.stream);
@@ -8612,6 +8665,7 @@ async function openEditor(id = "") {
   el.fields.id.value = game.id || "";
   el.fields.title.value = game.title || "";
   el.fields.platform.value = game.platform || "";
+  el.fields.dlc.checked = Boolean(game.dlc);
   el.fields.section.value = game.section === "new" ? "backlog" : game.section || "wanted";
   el.fields.releaseDate.value = game.releaseDate || "";
   el.fields.releaseText.value = game.releaseText || "";
@@ -8624,7 +8678,7 @@ async function openEditor(id = "") {
   el.fields.preferredStore.value = game.preferredStore || "";
   el.fields.owners.value = ownerTags(game).join(", ");
   el.fields.statuses.value = gameStatuses(game).join(", ");
-  el.fields.digital.checked = Boolean(game.digital);
+  el.fields.digital.checked = Boolean(game.digital || game.dlc);
   if (el.fields.emulator) el.fields.emulator.checked = Boolean(game.emulator);
   el.fields.coop.checked = Boolean(game.coop);
   if (el.fields.stream) el.fields.stream.checked = Boolean(game.stream);
@@ -8666,6 +8720,7 @@ function blankGame() {
     id: crypto.randomUUID(),
     title: "",
     platform: "",
+    dlc: false,
     section: "wanted",
     releaseDate: "",
     releaseText: "",
@@ -8734,6 +8789,7 @@ async function saveCurrentFormGame() {
     id,
     title: el.fields.title.value.trim(),
     platform: canonicalPlatform(el.fields.platform.value),
+    dlc: el.fields.dlc.checked,
     section,
     releaseDate: el.fields.releaseDate.value,
     releaseText: el.fields.releaseText.value.trim(),
@@ -8744,7 +8800,7 @@ async function saveCurrentFormGame() {
     preferredStore: el.fields.preferredStore.value.trim(),
     owners: ownerInputValues(el.fields.owners.value),
     statuses: listFrom(el.fields.statuses.value).map(canonicalStatus).filter(Boolean),
-    digital: el.fields.digital.checked,
+    digital: el.fields.dlc.checked || el.fields.digital.checked,
     emulator: Boolean(el.fields.emulator?.checked),
     coop: el.fields.coop.checked,
     stream: Boolean(el.fields.stream?.checked),
@@ -8784,9 +8840,14 @@ function syncDialogPriceVisibility() {
   const draft = {
     section: el.fields.section.value,
     platform: el.fields.platform.value,
-    digital: el.fields.digital.checked,
+    digital: el.fields.dlc.checked || el.fields.digital.checked,
   };
   if (el.pricesButton) el.pricesButton.hidden = draft.section === "backlog" || !priceProvidersForGame(draft).length;
+}
+
+function syncDlcDigital() {
+  if (el.fields.dlc.checked) el.fields.digital.checked = true;
+  syncDialogPriceVisibility();
 }
 
 function syncReplaySection() {

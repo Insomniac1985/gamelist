@@ -1656,6 +1656,7 @@ html.theme-gradient .goty-section .column-head h2 .trophy-icon {
 
 .playing-finished-tags .platform-badge,
 .playing-finished-tags .owner-pill,
+.playing-finished-tags .dlc-pill,
 .playing-finished-tags .digital-pill,
 .playing-finished-tags .emulator-pill,
 .playing-finished-tags .coop-pill,
@@ -5008,6 +5009,7 @@ body.theme-kash .game-card.stream-card.completed-trophy-card {
 .owner-pill,
 .status-pill,
 .time-pill,
+.dlc-pill,
 .digital-pill,
 .emulator-pill,
 .coop-pill,
@@ -5235,6 +5237,7 @@ body.theme-kash .game-card.stream-card.completed-trophy-card {
 .release-pill,
 .owner-pill,
 .status-pill,
+.dlc-pill,
 .digital-pill,
 .emulator-pill,
 .coop-pill,
@@ -5333,6 +5336,84 @@ body.theme-kash .game-card.stream-card.completed-trophy-card {
   color: #eef0f5 !important;
   border-color: rgba(225, 230, 240, 0.28);
   background: rgba(225, 230, 240, 0.1);
+}
+
+.dlc-pill {
+  gap: 4px;
+  padding: 4px 8px;
+  color: var(--text);
+  line-height: 1;
+  font-weight: 840;
+}
+
+.dlc-pill.platform-nintendo {
+  color: var(--switch);
+}
+
+.dlc-pill.platform-playstation {
+  color: var(--playstation);
+}
+
+.dlc-pill.platform-playstation.platform-ps5,
+.dlc-pill.platform-playstation.platform-ps5:hover {
+  color: #05070b;
+}
+
+.dlc-pill.platform-playstation.platform-ps1 {
+  color: #aeb4c0;
+}
+
+.dlc-pill.platform-playstation.platform-ps3,
+.dlc-pill.platform-playstation.platform-psp,
+.dlc-pill.platform-pc {
+  color: #ffffff;
+}
+
+.dlc-pill.platform-wii,
+.dlc-pill.platform-nes,
+.dlc-pill.platform-ds,
+.dlc-pill.platform-gb {
+  color: #d9dde6;
+}
+
+.dlc-pill.platform-wiiu {
+  color: #9bd7ff;
+}
+
+.dlc-pill.platform-3ds,
+.dlc-pill.platform-gbc,
+.dlc-pill.platform-n64 {
+  color: #ff5a66;
+}
+
+.dlc-pill.platform-gamecube,
+.dlc-pill.platform-snes,
+.dlc-pill.platform-gba {
+  color: #c9a7ff;
+}
+
+.dlc-pill.platform-sega,
+.dlc-pill.platform-gamegear {
+  color: #5aa7ff;
+}
+
+.dlc-pill.platform-xbox {
+  color: #7ed732;
+}
+
+.dlc-pill.platform-xbox.platform-xbox360 {
+  color: #29a750;
+}
+
+.dlc-pill.platform-dreamcast,
+.dlc-pill.platform-generic {
+  color: #ffad5f;
+}
+
+.dlc-pill.dlc-accent {
+  color: var(--accent-1);
+  border-color: color-mix(in srgb, var(--accent-1) 44%, transparent);
+  background: color-mix(in srgb, var(--accent-1) 14%, rgba(255, 255, 255, 0.07));
 }
 
 .emulator-pill {
@@ -6071,7 +6152,9 @@ body:not(.can-edit) .game-card:focus-within .edit-action {
 }
 
 #completedCount {
-  display: block;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
   width: max-content;
   white-space: nowrap;
 }
@@ -6372,6 +6455,14 @@ body.theme-kash .finished-stats-kpi.is-completed:focus-visible strong {
   font-weight: 900;
   line-height: 1.2;
   text-transform: uppercase;
+}
+
+.finished-stats-release-kpi > .finished-stats-release-subline {
+  justify-self: start;
+  color: var(--accent-1);
+  font-size: 11px;
+  font-weight: 820;
+  text-transform: none;
 }
 
 .finished-stats-months h3 {
@@ -7213,9 +7304,13 @@ body.theme-kash .finished-stats-kpi.is-completed:focus-visible strong {
 }
 
 .finished-stats-breakdown .platform-badge,
+.finished-stats-breakdown .dlc-pill,
 .finished-stats-chart-list .platform-badge,
+.finished-stats-chart-list .dlc-pill,
 .finished-stats-segment-tip .platform-badge,
-.finished-stats-mini-list .platform-badge {
+.finished-stats-segment-tip .dlc-pill,
+.finished-stats-mini-list .platform-badge,
+.finished-stats-mini-list .dlc-pill {
   display: inline-flex;
   align-items: center;
   width: max-content;
@@ -7305,6 +7400,14 @@ body.theme-kash .finished-stats-kpi.is-completed:focus-visible strong {
 
 .finished-stats-game-row .platform-badge {
   min-height: 20px;
+}
+
+.finished-stats-game-row .dlc-pill,
+.finished-stats-release-kpi > .finished-stats-release-subline {
+  min-height: 20px;
+  padding: 3px 5px;
+  font-size: 8px;
+  border-radius: 7px;
 }
 
 .finished-stats-game-row .finished-stats-progress-pill {
@@ -7688,6 +7791,7 @@ body.theme-kash .playing-finished-game.completed-trophy-card:hover {
 }
 
 .completed-platform .coop-pill,
+.completed-platform .dlc-pill,
 .completed-platform .digital-pill,
 .completed-platform .emulator-pill,
 .completed-platform .stream-pill,
@@ -8837,6 +8941,7 @@ html.theme-light .platform-badge,
 html.theme-light .release-pill,
 html.theme-light .owner-pill,
 html.theme-light .status-pill,
+html.theme-light .dlc-pill,
 html.theme-light .digital-pill,
 html.theme-light .emulator-pill,
 html.theme-light .coop-pill,
@@ -8852,6 +8957,12 @@ html.theme-light .row-price-link {
   background: rgba(185, 198, 216, 0.78);
   border-color: rgba(31, 42, 61, 0.4);
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.42);
+}
+
+html.theme-light .dlc-pill.dlc-accent {
+  color: #142033;
+  border-color: color-mix(in srgb, var(--accent-1) 58%, rgba(31, 42, 61, 0.36));
+  background: color-mix(in srgb, var(--accent-1) 34%, rgba(255, 255, 255, 0.78));
 }
 
 html.theme-light .chip {
@@ -10637,6 +10748,22 @@ body.theme-kash
   gap: 12px;
 }
 
+.collection-form-grid {
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+}
+
+.collection-form-grid > label {
+  grid-column: span 3;
+}
+
+.collection-form-grid > .platform-field {
+  grid-column: span 2;
+}
+
+.collection-form-grid > .dlc-check {
+  grid-column: span 1;
+}
+
 .playing-form-grid {
   grid-template-columns: repeat(6, minmax(0, 1fr));
 }
@@ -11114,6 +11241,12 @@ body.theme-kash
   .toolbar,
   .form-grid {
     grid-template-columns: 1fr;
+  }
+
+  .collection-form-grid > label,
+  .collection-form-grid > .platform-field,
+  .collection-form-grid > .dlc-check {
+    grid-column: 1 / -1;
   }
 
   .modal-head {
@@ -11910,6 +12043,18 @@ body.theme-kash
 }
 
 @media (width <= 760px) {
+  #completedCount {
+    display: grid;
+    justify-items: end;
+    gap: 1px;
+    line-height: 1.12;
+    white-space: normal;
+  }
+
+  #completedCount .completed-count-separator {
+    display: none;
+  }
+
   .game-row-actions {
     display: grid;
     grid-template-columns: 1fr;
