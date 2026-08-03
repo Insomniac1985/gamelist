@@ -158,7 +158,6 @@ const el = {
   lookupButton: document.querySelector("#lookupButton"),
   lookupResults: document.querySelector("#lookupResults"),
   platformFieldIcon: document.querySelector(".shelf-platform-field-icon"),
-  regionFieldIcon: document.querySelector(".shelf-region-field-icon"),
   fields: {
     title: document.querySelector("#titleInput"), platform: document.querySelector("#platformInput"),
     country: document.querySelector("#countryInput"), price: document.querySelector("#priceInput"),
@@ -3773,8 +3772,6 @@ function syncShelfEditorIcons() {
   const platform = canonicalShelfPlatform(el.fields.platform?.value || "");
   const logo = platform ? platformLogo(platform) : "";
   setShelfEditorIcon(el.platformFieldIcon, logo && logo !== "assets/Icon_shelf.png" ? logo : "", platform);
-  const country = el.fields.country?.value || "";
-  setShelfEditorIcon(el.regionFieldIcon, country ? flagAsset(country) : "", country);
 }
 function setShelfEditorIcon(slot, icon, title = "") {
   const wrapper = slot?.closest?.(".icon-input");

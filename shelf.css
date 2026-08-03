@@ -1330,12 +1330,6 @@ html.theme-font-mata .shelf-page .playing-section .column-head h2 {
   max-height: 18px;
 }
 
-.shelf-region-field .field-leading-icon img {
-  width: 20px;
-  height: auto;
-  border-radius: 2px;
-}
-
 .condition-editor legend {
   margin-bottom: 7px;
   color: var(--muted);
