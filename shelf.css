@@ -1916,6 +1916,11 @@ textarea {
   .condition-grid {
     grid-template-columns: repeat(2, 1fr);
   }
+  .condition-grid .condition-sealed {
+    grid-column: 1 / -1;
+    justify-self: center;
+    width: calc((100% - 8px) / 2);
+  }
   .shelf-dialog .detail-trophy-list,
   .collection-price-grid {
     grid-template-columns: 1fr 1fr;
