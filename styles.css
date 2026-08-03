@@ -10793,11 +10793,7 @@ body.theme-kash
 
 .playing-form-grid {
   grid-template-columns: repeat(8, minmax(0, 1fr));
-}
-
-.playing-form-grid > label:nth-child(3),
-.playing-form-grid > label:nth-child(4) {
-  grid-column: span 3;
+  gap: 8px;
 }
 
 .playing-form-grid > .modal-playing-check,
@@ -10810,6 +10806,11 @@ body.theme-kash
   grid-column: span 2;
 }
 
+.playing-form-grid > label.playing-started-field,
+.playing-form-grid > label.playing-completed-field {
+  grid-column: span 3;
+}
+
 .playing-form-grid > label.playing-finish-time-field {
   grid-column: span 2;
 }
@@ -10819,7 +10820,17 @@ body.theme-kash
 }
 
 .playing-form-grid > label.playing-achievements-check {
-  grid-column: span 4;
+  grid-column: span 3;
+  padding-inline: 8px;
+}
+
+.form-group:has(.playing-form-grid) {
+  margin-top: 12px;
+  padding-top: 10px;
+}
+
+.form-group:has(.playing-form-grid) h3 {
+  margin-bottom: 7px;
 }
 
 .playing-form-grid input:not([type="checkbox"]),

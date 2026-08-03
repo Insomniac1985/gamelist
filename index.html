@@ -433,25 +433,25 @@
               <input id="streamInput" type="checkbox">
               <span>Stream</span>
             </label>
-            <label>
+            <label class="playing-replay-field">
+              <span>Replay Count</span>
+              <input id="replayCountInput" type="number" min="0" step="1" placeholder="0">
+            </label>
+            <label class="playing-started-field">
               <span>Started</span>
               <input id="startedAtInput" type="date">
-            </label>
-            <label>
-              <span>Finished</span>
-              <input id="completedAtInput" type="date">
             </label>
             <label class="playing-finish-time-field">
               <span>Time to finish</span>
               <input id="finishHoursInput" type="text" inputmode="numeric" placeholder="Hours">
             </label>
-            <label class="playing-replay-field">
-              <span>Replay Count</span>
-              <input id="replayCountInput" type="number" min="0" step="1" placeholder="0">
-            </label>
             <label class="check-filter toggle-check form-check playing-achievements-check">
               <input id="platinumInput" type="checkbox">
               <span>Completed Achievements</span>
+            </label>
+            <label class="playing-completed-field">
+              <span>Finished</span>
+              <input id="completedAtInput" type="date">
             </label>
           </div>
         </section>
