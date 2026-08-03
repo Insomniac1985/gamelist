@@ -6044,14 +6044,14 @@ function physicalDigitalLabel(game) {
 function playtimeBucketLabel(game) {
   const hours = statsPlaytimeHours(game);
   if (!Number.isFinite(hours) || hours <= 0) return "";
-  if (hours >= 100) return "100+";
+  if (hours >= 100) return `${Math.floor(hours / 100) * 100}+`;
   const start = Math.floor(hours / 10) * 10;
   return start === 0 ? "<10" : `${start}-${start + 10}`;
 }
 
 function playtimeBucketOrder(label) {
   if (label === "<10") return 0;
-  if (label === "100+") return 100;
+  if (label.endsWith("+")) return Number(label.slice(0, -1)) || 100;
   return Number(label.split("-")[0]) || 0;
 }
 
@@ -6289,7 +6289,10 @@ function completedDurationLine(game) {
 }
 
 function finishHoursValue(value) {
-  const count = Number(value);
+  const raw = String(value ?? "").trim();
+  if (!raw) return 0;
+  const match = raw.match(/^\d+/);
+  const count = Number(match ? match[0] : raw);
   return Number.isInteger(count) ? Math.max(0, count) : 0;
 }
 
@@ -8966,6 +8969,7 @@ async function completeGame(id) {
   const game = getGame(id);
   if (!game?.playing) return;
   const finishHours = await requestFinishHours(game);
+  if (finishHours === undefined) return;
   game.startedAt = game.startedAt || todayDate();
   game.completedAt = todayDate();
   if (finishHours !== null) game.finishHours = finishHours;
@@ -8978,6 +8982,7 @@ async function completeGameWithTrophy(id) {
   const game = getGame(id);
   if (!game?.playing) return;
   const finishHours = await requestFinishHours(game);
+  if (finishHours === undefined) return;
   game.startedAt = game.startedAt || todayDate();
   game.completedAt = game.completedAt || todayDate();
   if (finishHours !== null) game.finishHours = finishHours;
@@ -9000,17 +9005,19 @@ function requestFinishHours(game) {
     const handleSubmit = (event) => {
       event.preventDefault();
       const value = el.finishTimeInput.value.trim();
-      if (value && !/^\d+$/.test(value)) {
+      const hours = finishHoursValue(value);
+      if (value && !hours) {
         if (el.finishTimeError) el.finishTimeError.hidden = false;
         return;
       }
       cleanup();
       el.finishTimeDialog.close("submit");
-      resolve(value ? Number(value) : null);
+      resolve(value ? hours : null);
     };
     const handleClose = () => {
+      const action = el.finishTimeDialog.returnValue;
       cleanup();
-      resolve(null);
+      resolve(action === "skip" ? null : undefined);
     };
     el.finishTimeForm.addEventListener("submit", handleSubmit);
     el.finishTimeDialog.addEventListener("close", handleClose, { once: true });

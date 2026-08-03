@@ -443,7 +443,7 @@
             </label>
             <label class="playing-finish-time-field">
               <span>Time to finish</span>
-              <input id="finishHoursInput" type="number" min="0" step="1" inputmode="numeric" placeholder="Hours">
+              <input id="finishHoursInput" type="text" inputmode="numeric" placeholder="Hours">
             </label>
             <label class="playing-replay-field">
               <span>Replay Count</span>
@@ -921,14 +921,14 @@
       <form method="dialog" class="auth-modal finish-time-modal glass" id="finishTimeForm">
         <div class="modal-head">
           <div>
-            <p class="eyebrow">Finished</p>
+            <p class="eyebrow">CONGRATULATIONS</p>
             <h2>Time to finish</h2>
           </div>
           <button class="icon-button" id="finishTimeCloseButton" type="button" title="Close">×</button>
         </div>
         <label>
-          <span>Aproximate time in whole hours</span>
-          <input id="finishTimeInput" type="number" min="0" step="1" inputmode="numeric" placeholder="Hours" autofocus>
+          <span>Aproximate time</span>
+          <input id="finishTimeInput" type="text" inputmode="numeric" placeholder="Hours" autofocus>
         </label>
         <p class="auth-error" id="finishTimeError" hidden>Use whole numbers only.</p>
         <div class="modal-actions">
