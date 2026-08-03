@@ -465,7 +465,10 @@
             </label>
             <label class="platform-field">
               <span>Platform</span>
-              <input id="platformInput" list="platformOptions">
+              <span class="icon-input platform-icon-input">
+                <span class="field-leading-icon platform-field-icon" aria-hidden="true"></span>
+                <input id="platformInput" list="platformOptions">
+              </span>
             </label>
             <label class="check-filter toggle-check form-check dlc-check">
               <input id="dlcInput" type="checkbox">
@@ -496,20 +499,26 @@
               <span>Coop</span>
             </label>
             <label class="release-text-field">
-              <span>Release Text</span>
+              <span>Release Text (Optional)</span>
               <input id="releaseTextInput" placeholder="2026?, 18 June, TBA...">
             </label>
             <label class="length-field">
               <span>Aproximate playtime</span>
               <input id="lengthInput" type="number" min="0" step="0.5" placeholder="Hours">
             </label>
-            <label>
+            <label class="preorder-store-field">
               <span>Preordered Where</span>
-              <input id="preorderStoreInput" placeholder="Xtralife, Game, Amazon...">
+              <span class="icon-input store-icon-input">
+                <span class="field-leading-icon preorder-store-field-icon" aria-hidden="true"></span>
+                <input id="preorderStoreInput" placeholder="Xtralife, Game, Amazon...">
+              </span>
             </label>
-            <label>
+            <label class="preferred-store-field">
               <span>Preferred Store</span>
-              <input id="preferredStoreInput" placeholder="Limited Run, Amazon...">
+              <span class="icon-input store-icon-input">
+                <span class="field-leading-icon preferred-store-field-icon" aria-hidden="true"></span>
+                <input id="preferredStoreInput" placeholder="Limited Run, Amazon...">
+              </span>
             </label>
             <label>
               <span>Owners</span>
@@ -524,7 +533,7 @@
               <input id="genresInput" placeholder="Adventure, RPG, FPS">
             </label>
             <label class="trophy-search-field">
-              <span>Trophy Search Name</span>
+              <span>Alternate Achievement search name</span>
               <input id="trophyNameInput" placeholder="Optional alternate title">
             </label>
             <label class="wide notes-field">
@@ -536,7 +545,7 @@
 
         <section class="form-group">
           <h3>Game Data</h3>
-          <div class="form-grid">
+          <div class="form-grid game-data-grid">
             <label>
               <span>Developer</span>
               <input id="developerInput" placeholder="Studio">
@@ -557,19 +566,23 @@
               <span>Trailer URL</span>
               <input id="trailerUrlInput" placeholder="https://www.youtube.com/watch?v=...">
             </label>
-            <label>
+            <label class="wide">
               <span>PlayStation Store URL</span>
               <input id="playstationUrlInput" placeholder="https://store.playstation.com/...">
             </label>
-            <label>
+            <label class="wide">
               <span>Nintendo Store URL</span>
               <input id="nintendoUrlInput" placeholder="https://www.nintendo.com/...">
             </label>
             <label class="wide">
+              <span>Xbox Store URL</span>
+              <input id="xboxUrlInput" placeholder="https://www.xbox.com/...">
+            </label>
+            <label class="steam-url-field">
               <span>Steam URL</span>
               <input id="steamUrlInput" placeholder="https://store.steampowered.com/app/...">
             </label>
-            <label>
+            <label class="steam-app-id-field">
               <span>Steam App ID</span>
               <input id="steamAppIdInput" inputmode="numeric" placeholder="123456">
             </label>

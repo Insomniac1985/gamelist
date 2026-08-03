@@ -3684,6 +3684,47 @@ textarea {
   padding: 11px 12px;
 }
 
+.icon-input {
+  position: relative;
+  display: block;
+  color: inherit;
+  font-size: 15px;
+  font-weight: 400;
+  text-transform: none;
+}
+
+.icon-input input {
+  display: block;
+}
+
+.icon-input.has-icon input {
+  padding-left: 40px;
+}
+
+.field-leading-icon {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  z-index: 1;
+  display: none;
+  width: 18px;
+  height: 18px;
+  pointer-events: none;
+  transform: translateY(-50%);
+}
+
+.icon-input.has-icon .field-leading-icon {
+  display: grid;
+  place-items: center;
+}
+
+.field-leading-icon img {
+  display: block;
+  max-width: 18px;
+  max-height: 18px;
+  object-fit: contain;
+}
+
 input:hover,
 select:hover,
 textarea:hover {
@@ -10805,13 +10846,13 @@ body.theme-kash
 }
 
 .playing-form-grid {
-  grid-template-columns: repeat(8, minmax(0, 1fr));
+  grid-template-columns: repeat(10, minmax(0, 1fr));
   gap: 8px;
 }
 
 .playing-form-grid > .modal-playing-check,
 .playing-form-grid > label.stream-check {
-  grid-column: span 1;
+  grid-column: span 2;
   padding-inline: 8px;
 }
 
@@ -10821,11 +10862,11 @@ body.theme-kash
 
 .playing-form-grid > label.playing-started-field,
 .playing-form-grid > label.playing-completed-field {
-  grid-column: span 3;
+  grid-column: span 4;
 }
 
 .playing-form-grid > label.playing-finish-time-field {
-  grid-column: span 2;
+  grid-column: span 3;
 }
 
 .playing-form-grid > label.stream-check {
