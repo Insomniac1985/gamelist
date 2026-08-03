@@ -12045,10 +12045,21 @@ body.theme-kash
 @media (width <= 760px) {
   #completedCount {
     display: grid;
+    grid-template-columns: max-content;
     justify-items: end;
-    gap: 1px;
-    line-height: 1.12;
+    align-content: center;
+    gap: 2px;
+    width: auto;
+    min-width: max-content;
+    margin-bottom: 0;
+    line-height: 1;
+    text-align: right;
     white-space: normal;
+  }
+
+  #completedCount > span {
+    display: block;
+    width: 100%;
   }
 
   #completedCount .completed-count-separator {
