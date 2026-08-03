@@ -317,6 +317,12 @@ const el = {
   authCancelButton: document.querySelector("#authCancelButton"),
   authPasswordInput: document.querySelector("#authPasswordInput"),
   authError: document.querySelector("#authError"),
+  finishTimeDialog: document.querySelector("#finishTimeDialog"),
+  finishTimeForm: document.querySelector("#finishTimeForm"),
+  finishTimeInput: document.querySelector("#finishTimeInput"),
+  finishTimeError: document.querySelector("#finishTimeError"),
+  finishTimeCloseButton: document.querySelector("#finishTimeCloseButton"),
+  finishTimeSkipButton: document.querySelector("#finishTimeSkipButton"),
   settingsLayoutList: document.querySelector("#settingsLayoutList"),
   settingsPsnUser: document.querySelector("#settingsPsnUser"),
   settingsMicrosoftUser: document.querySelector("#settingsMicrosoftUser"),
@@ -901,6 +907,12 @@ function bindEvents() {
     if (event.target === el.authDialog) el.authDialog.close("cancel");
   });
   el.authDialog?.addEventListener("close", syncScrollLock);
+  el.finishTimeCloseButton?.addEventListener("click", () => el.finishTimeDialog.close("cancel"));
+  el.finishTimeSkipButton?.addEventListener("click", () => el.finishTimeDialog.close("skip"));
+  el.finishTimeDialog?.addEventListener("click", (event) => {
+    if (event.target === el.finishTimeDialog) el.finishTimeDialog.close("cancel");
+  });
+  el.finishTimeDialog?.addEventListener("close", syncScrollLock);
   el.settingsForm?.addEventListener("submit", saveSettingsFromForm);
   el.mobileTabs.forEach((button) => button.addEventListener("click", () => {
     state.mobileSection = button.dataset.mobileSection;
@@ -2053,7 +2065,7 @@ function renderModeToggle(button, mode) {
 }
 
 function syncScrollLock() {
-  document.body.classList.toggle("dialog-open", el.dialog.open || el.detailDialog.open || el.historyDialog.open || el.releaseDialog.open || el.platinumDialog.open || Boolean(el.finishedStatsDialog?.open) || Boolean(el.gotyDialog?.open) || Boolean(el.settingsDialog?.open) || Boolean(el.authDialog?.open));
+  document.body.classList.toggle("dialog-open", el.dialog.open || el.detailDialog.open || el.historyDialog.open || el.releaseDialog.open || el.platinumDialog.open || Boolean(el.finishedStatsDialog?.open) || Boolean(el.gotyDialog?.open) || Boolean(el.settingsDialog?.open) || Boolean(el.authDialog?.open) || Boolean(el.finishTimeDialog?.open));
   if (document.body.classList.contains("dialog-open")) pauseAllPlayingTrailers();
   else scheduleFocusedPlayingTrailerUpdate();
   updateScrollTopButton();
@@ -8945,10 +8957,10 @@ function isShelfNewAddition(game) {
   return Boolean(game?.section === "new" && game.shelfId);
 }
 
-function completeGame(id) {
+async function completeGame(id) {
   const game = getGame(id);
   if (!game?.playing) return;
-  const finishHours = promptFinishHours(game);
+  const finishHours = await requestFinishHours(game);
   game.startedAt = game.startedAt || todayDate();
   game.completedAt = todayDate();
   if (finishHours !== null) game.finishHours = finishHours;
@@ -8957,10 +8969,10 @@ function completeGame(id) {
   upsertGame(game);
 }
 
-function completeGameWithTrophy(id) {
+async function completeGameWithTrophy(id) {
   const game = getGame(id);
   if (!game?.playing) return;
-  const finishHours = promptFinishHours(game);
+  const finishHours = await requestFinishHours(game);
   game.startedAt = game.startedAt || todayDate();
   game.completedAt = game.completedAt || todayDate();
   if (finishHours !== null) game.finishHours = finishHours;
@@ -8970,14 +8982,37 @@ function completeGameWithTrophy(id) {
   upsertGame(game);
 }
 
-function promptFinishHours(game) {
+function requestFinishHours(game) {
+  if (!el.finishTimeDialog || !el.finishTimeForm || !el.finishTimeInput) return Promise.resolve(null);
   const current = finishHoursValue(game?.finishHours);
-  while (true) {
-    const value = window.prompt("Aproximate time to finish, in whole hours:", current ? String(current) : "");
-    if (value === null || value.trim() === "") return null;
-    if (/^\d+$/.test(value.trim())) return Number(value.trim());
-    window.alert("Use whole numbers only.");
-  }
+  el.finishTimeInput.value = current ? String(current) : "";
+  if (el.finishTimeError) el.finishTimeError.hidden = true;
+  return new Promise((resolve) => {
+    const cleanup = () => {
+      el.finishTimeForm.removeEventListener("submit", handleSubmit);
+      el.finishTimeDialog.removeEventListener("close", handleClose);
+    };
+    const handleSubmit = (event) => {
+      event.preventDefault();
+      const value = el.finishTimeInput.value.trim();
+      if (value && !/^\d+$/.test(value)) {
+        if (el.finishTimeError) el.finishTimeError.hidden = false;
+        return;
+      }
+      cleanup();
+      el.finishTimeDialog.close("submit");
+      resolve(value ? Number(value) : null);
+    };
+    const handleClose = () => {
+      cleanup();
+      resolve(null);
+    };
+    el.finishTimeForm.addEventListener("submit", handleSubmit);
+    el.finishTimeDialog.addEventListener("close", handleClose, { once: true });
+    el.finishTimeDialog.showModal();
+    syncScrollLock();
+    requestAnimationFrame(() => el.finishTimeInput.focus());
+  });
 }
 
 function restoreCompletedToBacklog(id) {

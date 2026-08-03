@@ -7882,7 +7882,8 @@ dialog {
   overflow: visible;
 }
 
-#authDialog {
+#authDialog,
+#finishTimeDialog {
   width: min(420px, calc(100vw - 24px));
 }
 
@@ -10776,16 +10777,25 @@ body.theme-kash
   grid-column: span 1;
 }
 
-.playing-form-grid {
-  grid-template-columns: repeat(6, minmax(0, 1fr));
-}
-
-.playing-form-grid > label:nth-child(-n + 3) {
+.collection-form-grid > .collection-check {
   grid-column: span 2;
+  min-height: 38px;
+  padding-inline: 9px;
 }
 
-.playing-form-grid > label:nth-child(n + 4) {
+.playing-form-grid {
+  grid-template-columns: repeat(8, minmax(0, 1fr));
+}
+
+.playing-form-grid > label:nth-child(3),
+.playing-form-grid > label:nth-child(4) {
   grid-column: span 3;
+}
+
+.playing-form-grid > .modal-playing-check,
+.playing-form-grid > label.stream-check {
+  grid-column: span 1;
+  padding-inline: 8px;
 }
 
 .playing-form-grid > label.playing-replay-field {
@@ -10797,11 +10807,11 @@ body.theme-kash
 }
 
 .playing-form-grid > label.stream-check {
-  grid-column: span 1;
+  border-color: rgba(183, 116, 255, 0.24);
 }
 
 .playing-form-grid > label.playing-achievements-check {
-  grid-column: span 3;
+  grid-column: span 4;
 }
 
 .playing-form-grid input:not([type="checkbox"]),
