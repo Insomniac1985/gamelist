@@ -6273,20 +6273,18 @@ function releaseYear(game) {
 function historyRangeText(game) {
   const start = formatLongDate(game.startedAt);
   const done = formatLongDate(game.completedAt);
-  const finishTime = finishHoursText(game);
-  if (start && done) return [ `${start} -> ${done}`, finishTime ].filter(Boolean).join(" · ");
-  if (done) return [ `Finished ${done}`, finishTime ].filter(Boolean).join(" · ");
+  if (start && done) return `${start} -> ${done}`;
+  if (done) return `Finished ${done}`;
   if (start) return `Started ${start}`;
   return "No dates";
 }
 
 function finishedDateText(game) {
-  return [formatLongDate(game.completedAt), finishHoursText(game) || finishedDurationText(game.startedAt, game.completedAt)].filter(Boolean).join(" · ");
+  return [finishHoursText(game) || finishedDurationText(game.startedAt, game.completedAt), formatLongDate(game.completedAt)].filter(Boolean).join(" · ");
 }
 
 function completedDurationLine(game) {
-  if (finishHoursValue(game?.finishHours)) return "";
-  const duration = finishedDurationText(game.startedAt, game.completedAt);
+  const duration = finishHoursText(game) || finishedDurationText(game.startedAt, game.completedAt);
   return duration ? `<span class="completed-duration">${escapeHtml(duration)}</span>` : "";
 }
 
