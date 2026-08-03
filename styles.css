@@ -10779,8 +10779,16 @@ body.theme-kash
 
 .collection-form-grid > .collection-check {
   grid-column: span 2;
-  min-height: 38px;
   padding-inline: 9px;
+}
+
+.collection-form-grid > .game-tags-field,
+.collection-form-grid > .trophy-search-field {
+  grid-column: span 3;
+}
+
+.collection-form-grid > .notes-field {
+  grid-column: 1 / -1;
 }
 
 .playing-form-grid {

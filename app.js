@@ -5435,7 +5435,7 @@ function finishedStatsMarkup(year, games, completed) {
     <div class="finished-stats-charts ${allYears ? "is-all" : ""}">
       ${statsDonutCard("Platforms", platforms, "platform", 5, finishedGames)}
       ${statsDonutCard("Categories", tags, "category", 5, finishedGames)}
-      ${statsDonutCard("Aproximate playtime", timeBuckets, "time", 5, finishedGames)}
+      ${statsDonutCard("Aproximate playtime", timeBuckets, "time", timeBuckets.length, finishedGames)}
       ${statsDonutCard("Physical / digital / emulator", mediaBuckets, "media", 3, finishedGames)}
     </div>
     ${allYears ? "" : statsReleaseKpisCard(releaseInsights)}
@@ -6026,7 +6026,7 @@ function countApproximatePlaytimeBuckets(games) {
     bucketMap.set(label, (bucketMap.get(label) || 0) + 1);
   });
   const buckets = [...bucketMap.entries()]
-    .map(([label, count]) => ({ label, count, order: label === "<10" ? 0 : Number(label.split("-")[0]) }))
+    .map(([label, count]) => ({ label, count, order: playtimeBucketOrder(label) }))
     .sort((a, b) => a.order - b.order)
     .map(({ label, count }) => ({ label, count }));
   return buckets;
@@ -6044,8 +6044,15 @@ function physicalDigitalLabel(game) {
 function playtimeBucketLabel(game) {
   const hours = statsPlaytimeHours(game);
   if (!Number.isFinite(hours) || hours <= 0) return "";
+  if (hours >= 100) return "100+";
   const start = Math.floor(hours / 10) * 10;
   return start === 0 ? "<10" : `${start}-${start + 10}`;
+}
+
+function playtimeBucketOrder(label) {
+  if (label === "<10") return 0;
+  if (label === "100+") return 100;
+  return Number(label.split("-")[0]) || 0;
 }
 
 function statsPlaytimeHours(game) {
