@@ -4186,6 +4186,16 @@ body.theme-kash .game-row.stream-card:hover {
   line-height: 1;
 }
 
+.game-row .media-format-pill {
+  gap: 4px;
+}
+
+.game-row .media-format-pill img,
+.game-row .media-format-pill .download-badge-icon {
+  width: 14px;
+  height: 14px;
+}
+
 .game-row .psn-progress-pill em {
   width: 26px;
   height: 4px;
@@ -5424,6 +5434,34 @@ body.theme-kash .game-card.stream-card.completed-trophy-card {
   color: #eef0f5 !important;
   border-color: rgba(225, 230, 240, 0.28);
   background: rgba(225, 230, 240, 0.1);
+}
+
+.media-format-pill {
+  gap: 6px;
+  font-weight: 820;
+}
+
+.media-format-pill img,
+.media-format-pill .download-badge-icon {
+  width: 18px;
+  height: 18px;
+  flex: 0 0 auto;
+}
+
+.media-format-pill img {
+  object-fit: contain;
+}
+
+.media-format-pill .download-badge-icon {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2.1;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.physical-pill {
+  color: #f4f6fb !important;
 }
 
 .dlc-pill {
