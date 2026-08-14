@@ -2447,6 +2447,7 @@ h3 {
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  gap: 5px;
   min-height: 24px;
   padding: 5px 9px;
   color: #15140c;
@@ -2455,6 +2456,12 @@ h3 {
   font-size: 10px;
   font-weight: 850;
   box-shadow: 0 8px 18px rgba(247, 223, 105, 0.22);
+}
+
+.stat-detail .completed-year-count-pill .trophy-icon {
+  width: 13px;
+  height: 13px;
+  flex: 0 0 auto;
 }
 
 .preorder-count-pill {
@@ -5164,6 +5171,18 @@ body.theme-kash .game-card.stream-card.completed-trophy-card {
 
 .play-dates[hidden] {
   display: none;
+}
+
+.play-dates .preorder-chip {
+  min-height: 31px;
+  padding: 5px 9px;
+  border-radius: 7px;
+  font-size: 12px;
+}
+
+.play-dates .preorder-chip .shopping-bag-icon {
+  width: 15px;
+  height: 15px;
 }
 
 .platform-badge,
