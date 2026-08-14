@@ -445,7 +445,7 @@ function renderReleaseCalendar() {
 
 function openReleaseDialog(date, games = []) {
   if (!games.length) return;
-  el.releaseDialogTitle.textContent = formatLongDate(date);
+  el.releaseDialogTitle.innerHTML = `${calendarMiniIcon()}<span>${escapeHtml(formatLongDate(date))}</span>`;
   el.releaseDialogList.innerHTML = games.map((game) => gamelistProjectionCard(game, { releaseDialog: true })).join("");
   el.releaseDialogList.querySelectorAll(".cover-button img").forEach(bindCoverFrame);
   el.releaseDialogList.querySelectorAll(".game-card[data-gamelist-id]").forEach((card) => {
@@ -1219,7 +1219,7 @@ function openDetails(game) {
   bindCoverFrame(el.detailCover);
   const detailTags = [...(game.tags || []), game.category && game.category !== "Game" ? game.category : "", ...String(game.genre || "").split(",")].map((value) => String(value).trim()).filter((value, index, list) => value && normalize(value) !== "game" && list.indexOf(value) === index);
   el.detailChips.innerHTML = `${visibleShelfCardOwners(game.owners || []).map(ownerBadge).join("")}${detailTags.map((value) => `<span class="chip genre">${escapeHtml(value)}</span>`).join("")}`;
-  el.detailDates.innerHTML = `${game.releaseDate ? `<span class="release-pill history-date-pill"><small>Released</small><strong>${escapeHtml(formatDate(game.releaseDate))}</strong></span>` : ""}${game.createdAt ? `<span class="history-pill history-date-pill"><small>Added</small><strong>${escapeHtml(formatDate(game.createdAt))}</strong></span>` : ""}`;
+  el.detailDates.innerHTML = `${game.releaseDate ? `<span class="release-pill history-date-pill"><small class="release-date-label"><span>Released</span>${calendarMiniIcon()}</small><strong>${escapeHtml(formatDate(game.releaseDate))}</strong></span>` : ""}${game.createdAt ? `<span class="history-pill history-date-pill"><small>Added</small><strong>${escapeHtml(formatDate(game.createdAt))}</strong></span>` : ""}`;
   el.detailDates.hidden = !el.detailDates.innerHTML;
   el.detailNote.hidden = !game.notes;
   el.detailNote.textContent = game.notes || "";
@@ -2689,7 +2689,33 @@ function currentlyPlayingTitle(games) {
 function playingCountText(count) {
   return `Playing ${count} ${count === 1 ? "game" : "games"}`;
 }
-function projectionMeta(game, options = {}) { const release = options.includeRelease === false ? "" : activityReleaseStatus(game, { includePast: Boolean(options.includePast) }); return `${platformBadge(game.platform, { title: game.title })}${options.includeProgress ? shelfProgressPill(game) : ""}${game.digital ? `<span class="digital-pill">Digital</span>` : ""}${game.emulator ? `<span class="emulator-pill">Emulator</span>` : ""}${game.lengthHours ? timeBadgeMarkup(game.lengthHours, game.hltbUrl || game.howLongToBeatUrl || `https://howlongtobeat.com/?q=${encodeURIComponent(game.title)}`, escapeHtml) : ""}${game.stream ? `<span class="stream-pill">Stream</span>` : ""}${release ? releaseStatusPill(release) : ""}${game.coop ? `<span class="coop-pill">Coop</span>` : ""}${game.replayCount ? `<span class="replay-pill">Replay ${escapeHtml(game.replayCount)}</span>` : ""}`; }
+function projectionMeta(game, options = {}) { const release = options.includeRelease === false ? "" : activityReleaseStatus(game, { includePast: Boolean(options.includePast) }); return `${platformBadge(game.platform, { title: game.title })}${options.includeProgress ? shelfProgressPill(game) : ""}${mediaFormatBadge(game)}${game.emulator ? `<span class="emulator-pill">Emulator</span>` : ""}${game.lengthHours ? timeBadgeMarkup(game.lengthHours, game.hltbUrl || game.howLongToBeatUrl || `https://howlongtobeat.com/?q=${encodeURIComponent(game.title)}`, escapeHtml) : ""}${game.stream ? `<span class="stream-pill">Stream</span>` : ""}${release ? releaseStatusPill(release) : ""}${game.coop ? `<span class="coop-pill">Coop</span>` : ""}${game.replayCount ? `<span class="replay-pill">Replay ${escapeHtml(game.replayCount)}</span>` : ""}`; }
+
+function mediaFormatBadge(game) {
+  if (!game || game.dlc) return "";
+  const cls = platformClass(game.platform, { title: game.title });
+  if (game.digital) {
+    return `<span class="digital-pill media-format-pill ${escapeHtml(cls)}" title="Digital" aria-label="Digital">${downloadBadgeIcon()}</span>`;
+  }
+  return `<span class="digital-pill physical-pill media-format-pill ${escapeHtml(cls)}" title="Physical" aria-label="Physical">${physicalDiskIcon(cls)}</span>`;
+}
+
+function physicalDiskIcon(platformClassName = "") {
+  const ps5 = /\bplatform-ps5\b/.test(platformClassName);
+  const src = ps5 ? "assets/platforms/disk-inverted.png" : "assets/platforms/disk.png";
+  return `<img src="${src}" alt="" width="18" height="18" decoding="async">`;
+}
+
+function downloadBadgeIcon() {
+  return `
+    <svg class="download-badge-icon" viewBox="0 0 24 24" aria-hidden="true">
+      <rect x="5" y="4.5" width="14" height="15" rx="3"></rect>
+      <path d="M12 7.5v6.5"></path>
+      <path d="M9.5 11.8 12 14.3l2.5-2.5"></path>
+      <path d="M8.8 17h6.4"></path>
+    </svg>
+  `;
+}
 function projectionChips(game) {
   return [
     game.preorderStore ? chip(`Preordered: ${game.preorderStore}`, "accent") : "",
@@ -2705,7 +2731,21 @@ function releaseStatusPill(value) {
   if (!match) return `<span class="release-pill">${escapeHtml(text)}</span>`;
   const label = match[1].toLowerCase() === "released" ? "Released" : "Releases";
   const date = formatShortDate(match[2]) || match[2];
-  return `<span class="release-pill history-date-pill"><small>${label}</small><strong>${escapeHtml(date)}</strong></span>`;
+  return `<span class="release-pill history-date-pill"><small class="release-date-label"><span>${label}</span>${calendarMiniIcon()}</small><strong>${escapeHtml(date)}</strong></span>`;
+}
+
+function calendarMiniIcon() {
+  return `
+    <svg class="calendar-mini-icon" viewBox="0 0 24 24" aria-hidden="true">
+      <rect x="4.5" y="5.5" width="15" height="14" rx="2.5"></rect>
+      <path d="M8 3.8v4"></path>
+      <path d="M16 3.8v4"></path>
+      <path d="M4.5 10h15"></path>
+      <path d="M8.2 13.5h.1"></path>
+      <path d="M12 13.5h.1"></path>
+      <path d="M15.8 13.5h.1"></path>
+    </svg>
+  `;
 }
 function activityGameFor(game) {
   if (!shelfAllowsTrophyActivity(game.platform)) return null;
@@ -2965,7 +3005,7 @@ function updateShelfPhysicalProgressPills() {
 function finishedProjectionCard(game) {
   const cover = coverUrl(game.cover || "") || platformFallback(game.platform);
   const progress = activityProgressFor(game);
-  const badges = `${visibleProjectionOwners(game).map(ownerBadge).join("")}${platformBadge(game.platform, { title: game.title })}${game.digital ? `<span class="digital-pill">Digital</span>` : ""}${game.emulator ? `<span class="emulator-pill">Emulator</span>` : ""}${game.coop ? `<span class="coop-pill">Coop</span>` : ""}${game.stream ? `<span class="stream-pill">Stream</span>` : ""}${game.replayCount ? `<span class="replay-pill">Replay ${escapeHtml(game.replayCount)}</span>` : ""}`;
+  const badges = `${visibleProjectionOwners(game).map(ownerBadge).join("")}${platformBadge(game.platform, { title: game.title })}${mediaFormatBadge(game)}${game.emulator ? `<span class="emulator-pill">Emulator</span>` : ""}${game.coop ? `<span class="coop-pill">Coop</span>` : ""}${game.stream ? `<span class="stream-pill">Stream</span>` : ""}${game.replayCount ? `<span class="replay-pill">Replay ${escapeHtml(game.replayCount)}</span>` : ""}`;
   return finishedGameMarkup({ id: game.id, title: game.title, cover, completedClass: shelfShowsCompletedTrophyStyle(game) ? "completed-trophy-card" : "", itemClass: projectionOwnerCardClass(game), badges, dateText: finishedProjectionDateText(game), progress, dataName: "gamelist-id", escape: escapeHtml });
 }
 async function loadTrophyActivity() {

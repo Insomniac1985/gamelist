@@ -4700,7 +4700,7 @@ function renderReleaseCalendar() {
 
 function openReleaseDialog(date, games = []) {
   if (!games.length) return;
-  el.releaseDialogTitle.textContent = formatLongDate(date);
+  el.releaseDialogTitle.innerHTML = `${calendarMiniIcon()}<span>${escapeHtml(formatLongDate(date))}</span>`;
   el.releaseDialogList.innerHTML = "";
   games.forEach((game) => el.releaseDialogList.appendChild(cardFor(game, { staticCard: true, includePastRelease: true, releaseDialog: true })));
   el.releaseDialog.showModal();
@@ -5217,13 +5217,13 @@ function rowCoreStats(game) {
     game.platform ? platformBadge(game.platform, null, { title: game.title }) : "",
     game.dlc ? dlcBadge(game) : "",
     mediaFormatBadge(game),
+    game.coop ? `<span class="coop-pill">Coop</span>` : "",
     game.emulator ? `<span class="emulator-pill">Emulator</span>` : "",
     game.lengthHours ? timeBadge(game.lengthHours, hltbUrlFor(game)) : "",
-    game.preorderStore ? preorderChip(game.preorderStore) : "",
     game.stream ? `<span class="stream-pill">Stream</span>` : "",
     release ? releaseStatusPill(release) : "",
+    game.preorderStore ? preorderChip(game.preorderStore) : "",
     ...gameStatuses(game).map(statusBadge),
-    game.coop ? `<span class="coop-pill">Coop</span>` : "",
     game.replayCount ? replayBadge(game.replayCount) : "",
     progress ? psnProgressBadge(progress) : "",
   ].filter(Boolean).join("");

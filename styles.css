@@ -1714,8 +1714,8 @@ html.theme-gradient .goty-section .column-head h2 .trophy-icon {
 .playing-finished-tags .media-format-pill img,
 .playing-finished-tags .media-format-pill .download-badge-icon {
   display: block;
-  width: 12px;
-  height: 12px;
+  width: 100%;
+  height: 100%;
   margin: 0;
 }
 
@@ -4262,8 +4262,8 @@ body.theme-kash .game-row.stream-card:hover {
 .game-row .media-format-pill img,
 .game-row .media-format-pill .download-badge-icon {
   display: block;
-  width: 15px;
-  height: 15px;
+  width: 100%;
+  height: 100%;
   margin: 0;
 }
 
@@ -5526,6 +5526,9 @@ body.theme-kash .game-card.stream-card.completed-trophy-card {
   justify-content: center;
   width: 31px;
   min-width: 31px;
+  max-width: 31px;
+  height: 31px;
+  min-height: 31px;
   padding: 0;
   font-weight: 820;
   line-height: 1;
@@ -5535,10 +5538,12 @@ body.theme-kash .game-card.stream-card.completed-trophy-card {
 .media-format-pill img,
 .media-format-pill .download-badge-icon {
   display: block;
-  width: 18px;
-  height: 18px;
+  width: 100%;
+  height: 100%;
   flex: 0 0 auto;
   margin: auto;
+  transform: scale(0.7);
+  transform-origin: center;
 }
 
 .media-format-pill img {
@@ -5748,14 +5753,36 @@ body.theme-kash .game-card.stream-card.completed-trophy-card {
   flex-direction: column;
   align-items: flex-start;
   gap: 1px;
+  min-height: 31px;
+  padding: 4px 8px;
   line-height: 1.05;
 }
 
 .history-date-pill small {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   color: var(--dim);
   font-size: 9px;
   font-weight: 820;
   text-transform: uppercase;
+}
+
+.release-date-label span {
+  display: inline;
+}
+
+.release-date-label .calendar-mini-icon {
+  display: none;
+}
+
+.release-date-label {
+  min-height: 0;
+}
+
+.release-date-label .calendar-mini-icon {
+  width: 16px;
+  height: 16px;
 }
 
 .calendar-mini-icon {
@@ -5769,8 +5796,9 @@ body.theme-kash .game-card.stream-card.completed-trophy-card {
 
 .history-date-pill strong {
   color: var(--muted);
-  font-size: 12px;
-  font-weight: 860;
+  font-size: 11px;
+  font-weight: 820;
+  line-height: 1.05;
 }
 
 .time-pill {
@@ -5998,6 +6026,21 @@ a.time-pill {
 
 .release-dialog-list .price-link strong {
   font-size: 10px;
+}
+
+#releaseDialogTitle,
+#shelfReleaseDialogTitle {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+
+#releaseDialogTitle .calendar-mini-icon,
+#shelfReleaseDialogTitle .calendar-mini-icon {
+  display: block;
+  width: 40px;
+  height: 40px;
+  flex: 0 0 auto;
 }
 
 .price-link.best {
@@ -8143,8 +8186,8 @@ body.theme-kash .playing-finished-game.completed-trophy-card:hover {
 .completed-platform .media-format-pill img,
 .completed-platform .media-format-pill .download-badge-icon {
   display: block;
-  width: 17px;
-  height: 17px;
+  width: 100%;
+  height: 100%;
   margin: 0;
 }
 
