@@ -4149,6 +4149,8 @@ body.theme-kash .game-row.stream-card:hover {
   gap: 4px;
   padding: 3px 6px;
   align-items: center;
+  font-size: 9px;
+  font-weight: 760;
   line-height: 1;
 }
 
@@ -4159,12 +4161,28 @@ body.theme-kash .game-row.stream-card:hover {
 }
 
 .game-row .history-date-pill small {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   color: var(--dim);
   font-size: 8px;
   font-weight: 650;
   letter-spacing: 0;
   line-height: 1;
   text-transform: none;
+}
+
+.game-row .release-date-label span {
+  display: none;
+}
+
+.game-row .release-date-label .calendar-mini-icon {
+  display: block;
+}
+
+.game-row .calendar-mini-icon {
+  width: 12px;
+  height: 12px;
 }
 
 .game-row .history-date-pill strong {
@@ -5673,6 +5691,15 @@ body.theme-kash .game-card.stream-card.completed-trophy-card {
   font-size: 9px;
   font-weight: 820;
   text-transform: uppercase;
+}
+
+.calendar-mini-icon {
+  display: none;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
 }
 
 .history-date-pill strong {
