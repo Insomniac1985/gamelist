@@ -5215,11 +5215,11 @@ function rowCoreStats(game) {
   const release = releaseStatus(game);
   return [
     game.platform ? platformBadge(game.platform, null, { title: game.title }) : "",
-    game.preorderStore ? preorderChip(game.preorderStore) : "",
     game.dlc ? dlcBadge(game) : "",
     mediaFormatBadge(game),
     game.emulator ? `<span class="emulator-pill">Emulator</span>` : "",
     game.lengthHours ? timeBadge(game.lengthHours, hltbUrlFor(game)) : "",
+    game.preorderStore ? preorderChip(game.preorderStore) : "",
     game.stream ? `<span class="stream-pill">Stream</span>` : "",
     release ? releaseStatusPill(release) : "",
     ...gameStatuses(game).map(statusBadge),
@@ -7692,7 +7692,7 @@ function playDatesFor(game, options = {}) {
   if (game.completedAt) values.push(`<span class="history-pill history-date-pill"><small>Finished</small><strong>${escapeHtml(formatDate(game.completedAt))}</strong></span>`);
   const finishTime = finishHoursText(game);
   const duration = finishTime || finishedDurationText(game.startedAt, game.completedAt);
-  if (duration) values.push(`<span class="history-pill history-date-pill"><small>Time</small><strong>${escapeHtml(duration)}</strong></span>`);
+  if (duration) values.push(`<span class="history-pill history-date-pill"><small>Play Time</small><strong>${escapeHtml(duration)}</strong></span>`);
   return values;
 }
 
