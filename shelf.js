@@ -445,7 +445,7 @@ function renderReleaseCalendar() {
 
 function openReleaseDialog(date, games = []) {
   if (!games.length) return;
-  el.releaseDialogTitle.textContent = formatLongDate(date);
+  el.releaseDialogTitle.innerHTML = `${calendarMiniIcon()}<span>${escapeHtml(formatLongDate(date))}</span>`;
   el.releaseDialogList.innerHTML = games.map((game) => gamelistProjectionCard(game, { releaseDialog: true })).join("");
   el.releaseDialogList.querySelectorAll(".cover-button img").forEach(bindCoverFrame);
   el.releaseDialogList.querySelectorAll(".game-card[data-gamelist-id]").forEach((card) => {
