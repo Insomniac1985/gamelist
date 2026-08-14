@@ -5525,10 +5525,14 @@ body.theme-kash .game-card.stream-card.completed-trophy-card {
 
 .media-format-pill .download-badge-icon {
   fill: none;
-  stroke: currentColor;
+  stroke: #ffffff;
   stroke-width: 2.1;
   stroke-linecap: round;
   stroke-linejoin: round;
+}
+
+.media-format-pill.platform-playstation.platform-ps5 .download-badge-icon {
+  stroke: #05070b;
 }
 
 .dlc-pill {
