@@ -6000,6 +6000,19 @@ a.time-pill {
   font-size: 10px;
 }
 
+#releaseDialogTitle {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+#releaseDialogTitle .calendar-mini-icon {
+  display: block;
+  width: 24px;
+  height: 24px;
+  flex: 0 0 auto;
+}
+
 .price-link.best {
   background: rgba(247, 223, 105, 0.12);
   border-color: rgba(247, 223, 105, 0.38);
