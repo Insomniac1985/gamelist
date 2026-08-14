@@ -4131,8 +4131,13 @@ body.theme-kash .game-row.stream-card:hover {
 }
 
 .game-row .dlc-pill {
+  box-sizing: border-box;
+  height: 22px;
+  min-height: 22px;
   gap: 4px;
-  padding-left: 3px;
+  padding: 3px 6px;
+  align-items: center;
+  line-height: 1;
 }
 
 .game-row .history-date-pill {
