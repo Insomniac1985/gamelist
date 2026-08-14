@@ -7801,10 +7801,11 @@ function completionPill(game) {
 
 function mediaFormatBadge(game) {
   if (!game || game.dlc) return "";
+  const cls = platformClass(game.platform, { title: game.title });
   if (game.digital) {
-    return `<span class="digital-pill media-format-pill" title="Digital">${downloadBadgeIcon()}<span>Digital</span></span>`;
+    return `<span class="digital-pill media-format-pill ${escapeHtml(cls)}" title="Digital">${downloadBadgeIcon()}<span>Digital</span></span>`;
   }
-  return `<span class="digital-pill physical-pill media-format-pill" title="Physical"><img src="assets/platforms/disk.png" alt="" width="18" height="18" decoding="async"><span>Physical</span></span>`;
+  return `<span class="digital-pill physical-pill media-format-pill ${escapeHtml(cls)}" title="Physical"><img src="assets/platforms/disk.png" alt="" width="18" height="18" decoding="async"><span>Physical</span></span>`;
 }
 
 function pencilIcon() {

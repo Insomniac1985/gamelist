@@ -5430,7 +5430,7 @@ body.theme-kash .game-card.stream-card.completed-trophy-card {
   background: rgba(121, 242, 206, 0.09);
 }
 
-.digital-pill {
+.digital-pill:not(.media-format-pill) {
   color: #eef0f5 !important;
   border-color: rgba(225, 230, 240, 0.28);
   background: rgba(225, 230, 240, 0.1);
@@ -5460,10 +5460,6 @@ body.theme-kash .game-card.stream-card.completed-trophy-card {
   stroke-linejoin: round;
 }
 
-.physical-pill {
-  color: #f4f6fb !important;
-}
-
 .dlc-pill {
   gap: 4px;
   padding: 4px 8px;
@@ -5472,67 +5468,92 @@ body.theme-kash .game-card.stream-card.completed-trophy-card {
   font-weight: 840;
 }
 
-.dlc-pill.platform-nintendo {
+.dlc-pill.platform-nintendo,
+.media-format-pill.platform-nintendo {
   color: var(--switch);
 }
 
-.dlc-pill.platform-playstation {
+.dlc-pill.platform-playstation,
+.media-format-pill.platform-playstation {
   color: var(--playstation);
 }
 
 .dlc-pill.platform-playstation.platform-ps5,
-.dlc-pill.platform-playstation.platform-ps5:hover {
+.dlc-pill.platform-playstation.platform-ps5:hover,
+.media-format-pill.platform-playstation.platform-ps5,
+.media-format-pill.platform-playstation.platform-ps5:hover {
   color: #05070b;
 }
 
-.dlc-pill.platform-playstation.platform-ps1 {
+.dlc-pill.platform-playstation.platform-ps1,
+.media-format-pill.platform-playstation.platform-ps1 {
   color: #aeb4c0;
 }
 
 .dlc-pill.platform-playstation.platform-ps3,
 .dlc-pill.platform-playstation.platform-psp,
-.dlc-pill.platform-pc {
+.dlc-pill.platform-pc,
+.media-format-pill.platform-playstation.platform-ps3,
+.media-format-pill.platform-playstation.platform-psp,
+.media-format-pill.platform-pc {
   color: #ffffff;
 }
 
 .dlc-pill.platform-wii,
 .dlc-pill.platform-nes,
 .dlc-pill.platform-ds,
-.dlc-pill.platform-gb {
+.dlc-pill.platform-gb,
+.media-format-pill.platform-wii,
+.media-format-pill.platform-nes,
+.media-format-pill.platform-ds,
+.media-format-pill.platform-gb {
   color: #d9dde6;
 }
 
-.dlc-pill.platform-wiiu {
+.dlc-pill.platform-wiiu,
+.media-format-pill.platform-wiiu {
   color: #9bd7ff;
 }
 
 .dlc-pill.platform-3ds,
 .dlc-pill.platform-gbc,
-.dlc-pill.platform-n64 {
+.dlc-pill.platform-n64,
+.media-format-pill.platform-3ds,
+.media-format-pill.platform-gbc,
+.media-format-pill.platform-n64 {
   color: #ff5a66;
 }
 
 .dlc-pill.platform-gamecube,
 .dlc-pill.platform-snes,
-.dlc-pill.platform-gba {
+.dlc-pill.platform-gba,
+.media-format-pill.platform-gamecube,
+.media-format-pill.platform-snes,
+.media-format-pill.platform-gba {
   color: #c9a7ff;
 }
 
 .dlc-pill.platform-sega,
-.dlc-pill.platform-gamegear {
+.dlc-pill.platform-gamegear,
+.media-format-pill.platform-sega,
+.media-format-pill.platform-gamegear {
   color: #5aa7ff;
 }
 
-.dlc-pill.platform-xbox {
+.dlc-pill.platform-xbox,
+.media-format-pill.platform-xbox {
   color: #7ed732;
 }
 
-.dlc-pill.platform-xbox.platform-xbox360 {
+.dlc-pill.platform-xbox.platform-xbox360,
+.media-format-pill.platform-xbox.platform-xbox360 {
   color: #29a750;
 }
 
 .dlc-pill.platform-dreamcast,
-.dlc-pill.platform-generic {
+.dlc-pill.platform-generic,
+.media-format-pill.platform-dreamcast,
+.media-format-pill.platform-generic {
   color: #ffad5f;
 }
 
