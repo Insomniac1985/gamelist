@@ -1219,7 +1219,7 @@ function openDetails(game) {
   bindCoverFrame(el.detailCover);
   const detailTags = [...(game.tags || []), game.category && game.category !== "Game" ? game.category : "", ...String(game.genre || "").split(",")].map((value) => String(value).trim()).filter((value, index, list) => value && normalize(value) !== "game" && list.indexOf(value) === index);
   el.detailChips.innerHTML = `${visibleShelfCardOwners(game.owners || []).map(ownerBadge).join("")}${detailTags.map((value) => `<span class="chip genre">${escapeHtml(value)}</span>`).join("")}`;
-  el.detailDates.innerHTML = `${game.releaseDate ? `<span class="release-pill history-date-pill"><small>Released</small><strong>${escapeHtml(formatDate(game.releaseDate))}</strong></span>` : ""}${game.createdAt ? `<span class="history-pill history-date-pill"><small>Added</small><strong>${escapeHtml(formatDate(game.createdAt))}</strong></span>` : ""}`;
+  el.detailDates.innerHTML = `${game.releaseDate ? `<span class="release-pill history-date-pill"><small class="release-date-label"><span>Released</span>${calendarMiniIcon()}</small><strong>${escapeHtml(formatDate(game.releaseDate))}</strong></span>` : ""}${game.createdAt ? `<span class="history-pill history-date-pill"><small>Added</small><strong>${escapeHtml(formatDate(game.createdAt))}</strong></span>` : ""}`;
   el.detailDates.hidden = !el.detailDates.innerHTML;
   el.detailNote.hidden = !game.notes;
   el.detailNote.textContent = game.notes || "";
@@ -2705,7 +2705,21 @@ function releaseStatusPill(value) {
   if (!match) return `<span class="release-pill">${escapeHtml(text)}</span>`;
   const label = match[1].toLowerCase() === "released" ? "Released" : "Releases";
   const date = formatShortDate(match[2]) || match[2];
-  return `<span class="release-pill history-date-pill"><small>${label}</small><strong>${escapeHtml(date)}</strong></span>`;
+  return `<span class="release-pill history-date-pill"><small class="release-date-label"><span>${label}</span>${calendarMiniIcon()}</small><strong>${escapeHtml(date)}</strong></span>`;
+}
+
+function calendarMiniIcon() {
+  return `
+    <svg class="calendar-mini-icon" viewBox="0 0 24 24" aria-hidden="true">
+      <rect x="4.5" y="5.5" width="15" height="14" rx="2.5"></rect>
+      <path d="M8 3.8v4"></path>
+      <path d="M16 3.8v4"></path>
+      <path d="M4.5 10h15"></path>
+      <path d="M8.2 13.5h.1"></path>
+      <path d="M12 13.5h.1"></path>
+      <path d="M15.8 13.5h.1"></path>
+    </svg>
+  `;
 }
 function activityGameFor(game) {
   if (!shelfAllowsTrophyActivity(game.platform)) return null;

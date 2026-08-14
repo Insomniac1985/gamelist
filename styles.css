@@ -4201,14 +4201,6 @@ body.theme-kash .game-row.stream-card:hover {
   text-transform: none;
 }
 
-.game-row .release-date-label span {
-  display: none;
-}
-
-.game-row .release-date-label .calendar-mini-icon {
-  display: block;
-}
-
 .game-row .calendar-mini-icon {
   width: 12px;
   height: 12px;
@@ -5752,10 +5744,30 @@ body.theme-kash .game-card.stream-card.completed-trophy-card {
 }
 
 .history-date-pill small {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   color: var(--dim);
   font-size: 9px;
   font-weight: 820;
   text-transform: uppercase;
+}
+
+.release-date-label span {
+  display: none;
+}
+
+.release-date-label .calendar-mini-icon {
+  display: block;
+}
+
+.release-date-label {
+  min-height: 13px;
+}
+
+.release-date-label .calendar-mini-icon {
+  width: 13px;
+  height: 13px;
 }
 
 .calendar-mini-icon {
