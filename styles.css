@@ -5765,11 +5765,11 @@ body.theme-kash .game-card.stream-card.completed-trophy-card {
 }
 
 .release-date-label span {
-  display: none;
+  display: inline;
 }
 
 .release-date-label .calendar-mini-icon {
-  display: block;
+  display: none;
 }
 
 .release-date-label {
@@ -6033,8 +6033,8 @@ a.time-pill {
 #releaseDialogTitle .calendar-mini-icon,
 #shelfReleaseDialogTitle .calendar-mini-icon {
   display: block;
-  width: 32px;
-  height: 32px;
+  width: 40px;
+  height: 40px;
   flex: 0 0 auto;
 }
 
