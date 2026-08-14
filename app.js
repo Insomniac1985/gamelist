@@ -5215,6 +5215,7 @@ function rowCoreStats(game) {
   const release = releaseStatus(game);
   return [
     game.platform ? platformBadge(game.platform, null, { title: game.title }) : "",
+    game.preorderStore ? preorderChip(game.preorderStore) : "",
     game.dlc ? dlcBadge(game) : "",
     game.digital && !game.dlc ? `<span class="digital-pill">Digital</span>` : "",
     game.emulator ? `<span class="emulator-pill">Emulator</span>` : "",
@@ -5229,7 +5230,10 @@ function rowCoreStats(game) {
 }
 
 function rowTags(game) {
-  return chipsFor(game);
+  const chips = [];
+  if (game.preferredStore) chips.push(chip(`Buy: ${game.preferredStore}`));
+  (game.genres || []).slice(0, 4).forEach((genre) => chips.push(chip(genre, "genre")));
+  return chips;
 }
 
 function rowPrices(game) {
@@ -8055,7 +8059,7 @@ function timeBadge(hours, url = "") {
 
 function chipsFor(game) {
   const chips = [];
-  if (game.preorderStore) chips.push(chip(`Preordered: ${game.preorderStore}`, "accent"));
+  if (game.preorderStore) chips.push(preorderChip(game.preorderStore));
   if (game.preferredStore) chips.push(chip(`Buy: ${game.preferredStore}`));
   (game.genres || []).slice(0, 4).forEach((genre) => chips.push(chip(genre, "genre")));
   return chips;
@@ -8063,6 +8067,10 @@ function chipsFor(game) {
 
 function cardChipsFor(game) {
   return chipsFor(game);
+}
+
+function preorderChip(store) {
+  return chip(`Preordered: ${store}`, "accent");
 }
 
 function chip(label, type = "") {
