@@ -4647,7 +4647,7 @@ function completedStatDetail(year, yearCount, total, completedYearCount, expansi
   return `
     <div class="stat-detail">
       <span>${yearCount} ${yearCount === 1 ? "game" : "games"} in ${escapeHtml(year)}${escapeHtml(expansionText)}</span>
-      ${completedYearCount ? `<span class="completed-year-count-pill">${completedYearCount} completed of ${yearCount} this year</span>` : ""}
+      ${completedYearCount ? `<span class="completed-year-count-pill">${trophyIcon()}${completedYearCount} completed of ${yearCount} this year</span>` : ""}
       <b>Total ${total} finished ${total === 1 ? "game" : "games"}</b>
     </div>
   `;
@@ -6438,7 +6438,7 @@ function cardFor(game, options = {}) {
   studioLine.hidden = !studioLine.textContent;
   card.querySelector(".meta").innerHTML = metaFor(game, { includePsn: neutralReleaseCard || !game.playing }).join("");
   const playDates = card.querySelector(".play-dates");
-  playDates.innerHTML = playDatesFor(game, { includePastRelease: Boolean(options.includePastRelease), includeRelease: !releaseDialog }).join("");
+  playDates.innerHTML = playDatesFor(game, { includePastRelease: Boolean(options.includePastRelease), includeRelease: !releaseDialog, includePreorder: !releaseDialog }).join("");
   playDates.hidden = !playDates.innerHTML;
   card.querySelector(".chips").innerHTML = cardChipsFor(game).join("");
   const trophyStrip = card.querySelector(".card-trophies");
@@ -7688,6 +7688,7 @@ function playDatesFor(game, options = {}) {
   const formatDate = game.completedAt ? formatLongDate : formatShortDate;
   const release = options.includeRelease === false ? "" : releaseStatus(game, { includePast: options.includePastRelease });
   if (release) values.push(releaseStatusPill(release));
+  if (options.includePreorder && game.preorderStore) values.push(preorderChip(game.preorderStore));
   if (game.startedAt) values.push(`<span class="history-pill history-date-pill"><small>Started</small><strong>${escapeHtml(formatDate(game.startedAt))}</strong></span>`);
   if (game.completedAt) values.push(`<span class="history-pill history-date-pill"><small>Finished</small><strong>${escapeHtml(formatDate(game.completedAt))}</strong></span>`);
   const finishTime = finishHoursText(game);
@@ -8115,7 +8116,10 @@ function chipsFor(game) {
 }
 
 function cardChipsFor(game) {
-  return chipsFor(game);
+  const chips = [];
+  if (game.preferredStore) chips.push(chip(`Buy: ${game.preferredStore}`));
+  (game.genres || []).slice(0, 4).forEach((genre) => chips.push(chip(genre, "genre")));
+  return chips;
 }
 
 function preorderChip(store) {
