@@ -4109,10 +4109,14 @@ body.theme-kash .game-row.stream-card:hover {
 .game-row .playing-pill,
 .game-row .history-pill,
 .game-row .chip {
+  box-sizing: border-box;
+  height: 22px;
   min-height: 22px;
   padding: 3px 6px;
   border-radius: 5px;
   font-size: 10px;
+  line-height: 1;
+  white-space: nowrap;
 }
 
 .game-row .platform-badge {
@@ -4126,21 +4130,55 @@ body.theme-kash .game-row.stream-card:hover {
   border-radius: 4px;
 }
 
+.game-row .dlc-pill {
+  gap: 4px;
+  padding-left: 3px;
+}
+
+.game-row .history-date-pill {
+  flex-direction: row;
+  align-items: center;
+  gap: 3px;
+}
+
+.game-row .history-date-pill small {
+  color: var(--dim);
+  font-size: 8px;
+  font-weight: 650;
+  letter-spacing: 0;
+  line-height: 1;
+  text-transform: none;
+}
+
+.game-row .history-date-pill strong {
+  color: var(--muted);
+  font-size: 10px;
+  font-weight: 650;
+  line-height: 1;
+}
+
 .game-row .psn-progress-pill strong {
   color: #ffe985;
   font-size: 10px;
 }
 
+.game-row .time-pill {
+  gap: 4px;
+}
+
 .game-row .time-pill::before {
+  width: 4px;
   height: 14px;
 }
 
 .game-row .time-pill strong {
   font-size: 10px;
+  line-height: 1;
 }
 
 .game-row .time-pill span {
   font-size: 8px;
+  line-height: 1;
 }
 
 .game-row .psn-progress-pill em {
@@ -5637,6 +5675,31 @@ a.time-pill {
   background: #f7df69;
   border-color: transparent;
   font-weight: 780;
+}
+
+.preorder-chip {
+  gap: 5px;
+}
+
+.preorder-chip .shopping-bag-icon {
+  width: 14px;
+  height: 14px;
+  flex: 0 0 auto;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.9;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.game-row .preorder-chip {
+  gap: 4px;
+}
+
+.game-row .preorder-chip .shopping-bag-icon {
+  width: 12px;
+  height: 12px;
+  stroke-width: 2.1;
 }
 
 .chip.jordi {
@@ -11819,10 +11882,13 @@ body.theme-kash
   .game-row .psn-progress-pill,
   .game-row .playing-pill,
   .game-row .history-pill {
+    box-sizing: border-box;
+    height: 22px;
     min-height: 22px;
     padding: 3px 6px;
     border-radius: 5px;
     font-size: 10px;
+    line-height: 1;
   }
 
   .game-row .platform-badge {

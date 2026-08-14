@@ -7820,6 +7820,15 @@ function trashIcon() {
   `;
 }
 
+function shoppingBagIcon() {
+  return `
+    <svg class="shopping-bag-icon" viewBox="0 0 24 24" aria-hidden="true">
+      <path d="M6.5 8.5h11l1 12h-13l1-12Z"></path>
+      <path d="M9 8.5V7a3 3 0 0 1 6 0v1.5"></path>
+    </svg>
+  `;
+}
+
 function plusIcon() {
   return `
     <svg class="plus-icon" viewBox="0 0 24 24">
@@ -8070,7 +8079,7 @@ function cardChipsFor(game) {
 }
 
 function preorderChip(store) {
-  return chip(`Preordered: ${store}`, "accent");
+  return `<span class="chip accent preorder-chip" title="${escapeHtml(`Preordered: ${store}`)}">${shoppingBagIcon()}${escapeHtml(store)}</span>`;
 }
 
 function chip(label, type = "") {
