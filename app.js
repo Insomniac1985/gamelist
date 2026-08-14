@@ -7810,7 +7810,7 @@ function mediaFormatBadge(game) {
 
 function physicalDiskIcon(platformClassName = "") {
   const ps5 = /\bplatform-ps5\b/.test(platformClassName);
-  const src = ps5 ? "assets/platforms/disk.png" : "assets/platforms/disk-inverted.png";
+  const src = ps5 ? "assets/platforms/disk-inverted.png" : "assets/platforms/disk.png";
   return `<img src="${src}" alt="" width="18" height="18" decoding="async">`;
 }
 
