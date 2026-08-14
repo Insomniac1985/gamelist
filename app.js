@@ -7805,7 +7805,13 @@ function mediaFormatBadge(game) {
   if (game.digital) {
     return `<span class="digital-pill media-format-pill ${escapeHtml(cls)}" title="Digital" aria-label="Digital">${downloadBadgeIcon()}</span>`;
   }
-  return `<span class="digital-pill physical-pill media-format-pill ${escapeHtml(cls)}" title="Physical" aria-label="Physical"><img src="assets/platforms/disk.png" alt="" width="18" height="18" decoding="async"></span>`;
+  return `<span class="digital-pill physical-pill media-format-pill ${escapeHtml(cls)}" title="Physical" aria-label="Physical">${physicalDiskIcon(cls)}</span>`;
+}
+
+function physicalDiskIcon(platformClassName = "") {
+  const ps5 = /\bplatform-ps5\b/.test(platformClassName);
+  const src = ps5 ? "assets/platforms/disk.png" : "assets/platforms/disk-inverted.png";
+  return `<img src="${src}" alt="" width="18" height="18" decoding="async">`;
 }
 
 function pencilIcon() {

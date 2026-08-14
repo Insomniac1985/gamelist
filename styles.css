@@ -1706,8 +1706,9 @@ html.theme-gradient .goty-section .column-head h2 .trophy-icon {
   max-width: 18px;
   height: 18px;
   min-height: 18px;
-  padding: 2px;
+  padding: 0;
   line-height: 1;
+  vertical-align: middle;
 }
 
 .playing-finished-tags .media-format-pill img,
@@ -4246,8 +4247,9 @@ body.theme-kash .game-row.stream-card:hover {
   max-width: 22px;
   height: 22px;
   min-height: 22px;
-  padding: 3px;
+  padding: 0;
   line-height: 1;
+  vertical-align: middle;
 }
 
 .game-row .media-format-pill img,
@@ -5505,8 +5507,10 @@ body.theme-kash .game-card.stream-card.completed-trophy-card {
   justify-content: center;
   width: 31px;
   min-width: 31px;
-  padding: 5px;
+  padding: 0;
   font-weight: 820;
+  line-height: 1;
+  vertical-align: middle;
 }
 
 .media-format-pill img,
@@ -5638,14 +5642,6 @@ body.theme-kash .game-card.stream-card.completed-trophy-card {
 
 .media-format-pill.platform-playstation.platform-ps5 {
   color: #05070b !important;
-}
-
-.physical-pill img {
-  filter: brightness(0) invert(1);
-}
-
-.physical-pill.platform-playstation.platform-ps5 img {
-  filter: brightness(0);
 }
 
 .dlc-pill.dlc-accent {
@@ -8115,20 +8111,21 @@ body.theme-kash .playing-finished-game.completed-trophy-card:hover {
   display: inline-grid;
   place-items: center;
   box-sizing: border-box;
-  width: 21px;
-  min-width: 21px;
-  max-width: 21px;
-  height: 21px;
-  min-height: 21px;
-  padding: 3px;
+  width: 25px;
+  min-width: 25px;
+  max-width: 25px;
+  height: 25px;
+  min-height: 25px;
+  padding: 0;
   line-height: 1;
+  vertical-align: middle;
 }
 
 .completed-platform .media-format-pill img,
 .completed-platform .media-format-pill .download-badge-icon {
   display: block;
-  width: 14px;
-  height: 14px;
+  width: 17px;
+  height: 17px;
   margin: 0;
 }
 
