@@ -4675,7 +4675,7 @@ function preorderCountPill(count, summary) {
   const title = summary.map(([store, storeCount]) => `${store}: ${storeCount}`).join("\n");
   return `
     <span class="preorder-count-pill preorder-count-tooltip" tabindex="0" title="${escapeHtml(title)}">
-      ${count} preordered
+      ${shoppingBagIcon()}${count} preordered
       <span class="preorder-store-list" role="tooltip">${rows}</span>
     </span>
   `;
