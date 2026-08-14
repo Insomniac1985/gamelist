@@ -5217,7 +5217,7 @@ function rowCoreStats(game) {
     game.platform ? platformBadge(game.platform, null, { title: game.title }) : "",
     game.preorderStore ? preorderChip(game.preorderStore) : "",
     game.dlc ? dlcBadge(game) : "",
-    game.digital && !game.dlc ? `<span class="digital-pill">Digital</span>` : "",
+    mediaFormatBadge(game),
     game.emulator ? `<span class="emulator-pill">Emulator</span>` : "",
     game.lengthHours ? timeBadge(game.lengthHours, hltbUrlFor(game)) : "",
     game.stream ? `<span class="stream-pill">Stream</span>` : "",
@@ -7061,7 +7061,7 @@ function metaFor(game, options = {}) {
   const values = [];
   if (game.platform) values.push(platformBadge(game.platform, null, { title: game.title }));
   if (game.dlc) values.push(dlcBadge(game));
-  if (game.digital && !game.dlc) values.push(`<span class="digital-pill">Digital</span>`);
+  values.push(mediaFormatBadge(game));
   if (game.emulator) values.push(`<span class="emulator-pill">Emulator</span>`);
   if (game.lengthHours) values.push(timeBadge(game.lengthHours, hltbUrlFor(game)));
   if (game.stream) values.push(`<span class="stream-pill">Stream</span>`);
@@ -7674,7 +7674,7 @@ function completedBadges(game, options = {}) {
   return [
     game.platform ? platformBadge(game.platform, null, { title: game.title }) : "",
     game.dlc ? dlcBadge(game) : "",
-    game.digital && !game.dlc ? `<span class="digital-pill">Digital</span>` : "",
+    mediaFormatBadge(game),
     game.emulator ? `<span class="emulator-pill">Emulator</span>` : "",
     game.coop ? `<span class="coop-pill">Coop</span>` : "",
     game.stream ? `<span class="stream-pill">Stream</span>` : "",
@@ -7799,6 +7799,15 @@ function completionPill(game) {
   return `<span class="platinum-pill achievement-${escapeHtml(provider.key)}">${icon}${escapeHtml(provider.label)}</span>`;
 }
 
+function mediaFormatBadge(game) {
+  if (!game || game.dlc) return "";
+  const cls = platformClass(game.platform, { title: game.title });
+  if (game.digital) {
+    return `<span class="digital-pill media-format-pill ${escapeHtml(cls)}" title="Digital">${downloadBadgeIcon()}<span>Digital</span></span>`;
+  }
+  return `<span class="digital-pill physical-pill media-format-pill ${escapeHtml(cls)}" title="Physical"><img src="assets/platforms/disk.png" alt="" width="18" height="18" decoding="async"><span>Physical</span></span>`;
+}
+
 function pencilIcon() {
   return `
     <svg class="pencil-icon" viewBox="0 0 24 24" aria-hidden="true">
@@ -7816,6 +7825,26 @@ function trashIcon() {
       <path d="M19 6l-1 14H6L5 6"></path>
       <path d="M10 11v5"></path>
       <path d="M14 11v5"></path>
+    </svg>
+  `;
+}
+
+function downloadBadgeIcon() {
+  return `
+    <svg class="download-badge-icon" viewBox="0 0 24 24" aria-hidden="true">
+      <rect x="5" y="4.5" width="14" height="15" rx="3"></rect>
+      <path d="M12 7.5v6.5"></path>
+      <path d="M9.5 11.8 12 14.3l2.5-2.5"></path>
+      <path d="M8.8 17h6.4"></path>
+    </svg>
+  `;
+}
+
+function shoppingBagIcon() {
+  return `
+    <svg class="shopping-bag-icon" viewBox="0 0 24 24" aria-hidden="true">
+      <path d="M6.5 8.5h11l1 12h-13l1-12Z"></path>
+      <path d="M9 8.5V7a3 3 0 0 1 6 0v1.5"></path>
     </svg>
   `;
 }
@@ -8070,7 +8099,7 @@ function cardChipsFor(game) {
 }
 
 function preorderChip(store) {
-  return chip(`Preordered: ${store}`, "accent");
+  return `<span class="chip accent preorder-chip" title="${escapeHtml(`Preordered: ${store}`)}">${shoppingBagIcon()}${escapeHtml(store)}</span>`;
 }
 
 function chip(label, type = "") {
