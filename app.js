@@ -5215,11 +5215,11 @@ function rowCoreStats(game) {
   const release = releaseStatus(game);
   return [
     game.platform ? platformBadge(game.platform, null, { title: game.title }) : "",
-    game.preorderStore ? preorderChip(game.preorderStore) : "",
     game.dlc ? dlcBadge(game) : "",
     mediaFormatBadge(game),
     game.emulator ? `<span class="emulator-pill">Emulator</span>` : "",
     game.lengthHours ? timeBadge(game.lengthHours, hltbUrlFor(game)) : "",
+    game.preorderStore ? preorderChip(game.preorderStore) : "",
     game.stream ? `<span class="stream-pill">Stream</span>` : "",
     release ? releaseStatusPill(release) : "",
     ...gameStatuses(game).map(statusBadge),
@@ -7079,7 +7079,7 @@ function releaseStatusPill(value) {
   if (!match) return `<span class="release-pill">${escapeHtml(text)}</span>`;
   const label = match[1].toLowerCase() === "released" ? "Released" : "Releases";
   const date = formatShortDate(match[2]) || match[2];
-  return `<span class="release-pill history-date-pill"><small>${label}</small><strong>${escapeHtml(date)}</strong></span>`;
+  return `<span class="release-pill history-date-pill"><small class="release-date-label"><span>${label}</span>${calendarMiniIcon()}</small><strong>${escapeHtml(date)}</strong></span>`;
 }
 
 function trophySearchTitle(game) {
@@ -7692,7 +7692,7 @@ function playDatesFor(game, options = {}) {
   if (game.completedAt) values.push(`<span class="history-pill history-date-pill"><small>Finished</small><strong>${escapeHtml(formatDate(game.completedAt))}</strong></span>`);
   const finishTime = finishHoursText(game);
   const duration = finishTime || finishedDurationText(game.startedAt, game.completedAt);
-  if (duration) values.push(`<span class="history-pill history-date-pill"><small>Time</small><strong>${escapeHtml(duration)}</strong></span>`);
+  if (duration) values.push(`<span class="history-pill history-date-pill"><small>Play Time</small><strong>${escapeHtml(duration)}</strong></span>`);
   return values;
 }
 
@@ -7803,9 +7803,9 @@ function mediaFormatBadge(game) {
   if (!game || game.dlc) return "";
   const cls = platformClass(game.platform, { title: game.title });
   if (game.digital) {
-    return `<span class="digital-pill media-format-pill ${escapeHtml(cls)}" title="Digital">${downloadBadgeIcon()}<span>Digital</span></span>`;
+    return `<span class="digital-pill media-format-pill ${escapeHtml(cls)}" title="Digital" aria-label="Digital">${downloadBadgeIcon()}</span>`;
   }
-  return `<span class="digital-pill physical-pill media-format-pill ${escapeHtml(cls)}" title="Physical"><img src="assets/platforms/disk.png" alt="" width="18" height="18" decoding="async"><span>Physical</span></span>`;
+  return `<span class="digital-pill physical-pill media-format-pill ${escapeHtml(cls)}" title="Physical" aria-label="Physical"><img src="assets/platforms/disk.png" alt="" width="18" height="18" decoding="async"></span>`;
 }
 
 function pencilIcon() {
@@ -7836,6 +7836,20 @@ function downloadBadgeIcon() {
       <path d="M12 7.5v6.5"></path>
       <path d="M9.5 11.8 12 14.3l2.5-2.5"></path>
       <path d="M8.8 17h6.4"></path>
+    </svg>
+  `;
+}
+
+function calendarMiniIcon() {
+  return `
+    <svg class="calendar-mini-icon" viewBox="0 0 24 24" aria-hidden="true">
+      <rect x="4.5" y="5.5" width="15" height="14" rx="2.5"></rect>
+      <path d="M8 3.8v4"></path>
+      <path d="M16 3.8v4"></path>
+      <path d="M4.5 10h15"></path>
+      <path d="M8.2 13.5h.1"></path>
+      <path d="M12 13.5h.1"></path>
+      <path d="M15.8 13.5h.1"></path>
     </svg>
   `;
 }
