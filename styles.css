@@ -4201,6 +4201,14 @@ body.theme-kash .game-row.stream-card:hover {
   text-transform: none;
 }
 
+.game-row .release-date-label span {
+  display: none;
+}
+
+.game-row .release-date-label .calendar-mini-icon {
+  display: block;
+}
+
 .game-row .calendar-mini-icon {
   width: 12px;
   height: 12px;
@@ -5746,12 +5754,6 @@ body.theme-kash .game-card.stream-card.completed-trophy-card {
   align-items: flex-start;
   gap: 1px;
   line-height: 1.05;
-}
-
-.release-pill.history-date-pill {
-  flex-direction: row;
-  align-items: center;
-  gap: 5px;
 }
 
 .history-date-pill small {
