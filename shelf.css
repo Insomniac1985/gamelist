@@ -145,7 +145,17 @@ body:not(.can-edit) .showcase-edit-button {
 }
 
 .shelf-library .column-head {
+  justify-content: flex-start;
   margin-bottom: 12px;
+}
+
+.shelf-library .column-head > span {
+  margin-left: auto;
+}
+
+.shelf-library .column-head h2 {
+  flex: 0 1 auto;
+  text-align: left;
 }
 
 .shelf-page .column-head h2 {
