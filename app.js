@@ -5166,8 +5166,7 @@ function rowFor(game, section, options = {}) {
     </span>
     <div class="game-row-identity">
       <strong class="${game.platinum ? "completed-achievements-title" : ""} ${ownerTitleClasses(owners)}" tabindex="0">${escapeHtml(game.title)}</strong>
-      <span class="game-row-owner-line">${visibleOwnerTags(game).map(ownerBadge).join("")}</span>
-      ${studioText(game) ? `<span>${escapeHtml(studioText(game))}</span>` : ""}
+      <span class="game-row-studio-line">${visibleOwnerTags(game).map(ownerBadge).join("")}${studioText(game) ? `<span class="game-row-studio-text">${escapeHtml(studioText(game))}</span>` : ""}</span>
     </div>
     <div class="game-row-core">${rowCoreStats(game)}</div>
     <div class="game-row-tags">${rowTags(game).join("")}</div>
@@ -5215,12 +5214,12 @@ function rowCoreStats(game) {
   const release = releaseStatus(game);
   return [
     game.platform ? platformBadge(game.platform, null, { title: game.title }) : "",
-    game.dlc ? dlcBadge(game) : "",
     mediaFormatBadge(game),
-    game.coop ? `<span class="coop-pill">Coop</span>` : "",
+    game.dlc ? dlcBadge(game) : "",
+    game.coop ? coopBadge() : "",
     game.emulator ? `<span class="emulator-pill">Emulator</span>` : "",
     game.lengthHours ? timeBadge(game.lengthHours, hltbUrlFor(game)) : "",
-    game.stream ? `<span class="stream-pill">Stream</span>` : "",
+    game.stream ? streamBadge() : "",
     release ? releaseStatusPill(release) : "",
     game.preorderStore ? preorderChip(game.preorderStore) : "",
     ...gameStatuses(game).map(statusBadge),
@@ -5441,7 +5440,7 @@ function finishedStatsMarkup(year, games, completed) {
     expansions.length ? statsKpiCard("Expansions finished", expansions.length, statsGameList(expansions), { tone: "finished" }) : "",
     statsKpiCard("Completed games", completed.length, showYearlyDetail ? statsCompletedGameList(completed) : "", { action: "completed", tone: "completed", icon: trophyIcon() }),
     streamed.length ? statsKpiCard("Streamed games", streamed.length, showYearlyDetail ? statsGameList(streamed) : "", { tone: "streamed" }) : "",
-    coopGames.length ? statsKpiCard("Coop games", coopGames.length, statsGameList(coopGames), { tone: "coop" }) : "",
+    coopGames.length ? statsKpiCard("CoOp games", coopGames.length, statsGameList(coopGames), { tone: "coop", icon: coopIcon() }) : "",
     otherOwnerGames.length ? statsKpiCard(otherOwnerSummary.label, otherOwnerGames.length, statsOwnerBreakdown(otherOwnerGames), { tone: "owners", valueClass: otherOwnerSummary.valueClass }) : "",
   ].filter(Boolean).join("");
   return `
@@ -5768,19 +5767,30 @@ function statsBreakdownRow(item, tone, index, games = []) {
       .filter((game) => physicalDigitalLabel(game) === item.label)
       .sort(statsGameListSort);
     const color = statsSegmentColor(item.label, tone, index);
-    return statsGroupedBreakdown(`<span class="finished-stats-category-row" style="--category-stat-color:${escapeHtml(color)}"><b><i></i>${escapeHtml(item.label)}</b></span>`, item.count, mediaGames);
+    return statsGroupedBreakdown(`<span class="finished-stats-category-row" style="--category-stat-color:${escapeHtml(color)}"><b>${statsMediaLabel(item.label)}</b></span>`, item.count, mediaGames);
   }
   if (tone === "platform") {
     return `<span class="finished-stats-platform-row"><b>${platformBadge(item.label)}</b><em>${item.count}</em></span>`;
   }
   if (tone === "category" || tone === "time" || tone === "media") {
     const color = statsSegmentColor(item.label, tone, index);
-    return `<span class="finished-stats-category-row" style="--category-stat-color:${escapeHtml(color)}"><b><i></i>${escapeHtml(item.label)}</b><em>${item.count}</em></span>`;
+    const label = tone === "media" ? statsMediaLabel(item.label) : `<i></i>${escapeHtml(item.label)}`;
+    return `<span class="finished-stats-category-row" style="--category-stat-color:${escapeHtml(color)}"><b>${label}</b><em>${item.count}</em></span>`;
   }
   if (tone === "owner") {
     return `<span class="finished-stats-owner-row"><b>${ownerBadge(item.label)}</b><em>${item.count}</em></span>`;
   }
   return `<span><b>${escapeHtml(item.label)}</b><em>${item.count}</em></span>`;
+}
+
+function statsMediaLabel(label) {
+  const normalized = normalizeTag(label);
+  const icon = normalized === "digital"
+    ? downloadBadgeIcon()
+    : normalized === "physical"
+      ? physicalDiskIcon()
+      : "<i></i>";
+  return `<span class="finished-stats-media-label"><span class="finished-stats-media-icon" aria-hidden="true">${icon}</span>${escapeHtml(label)}</span>`;
 }
 
 function statsGroupedBreakdown(heading, count, games) {
@@ -6431,12 +6441,15 @@ function cardFor(game, options = {}) {
   card.querySelector("h3").className = `${card.querySelector("h3").className.replace(/\bowner-[\w-]+/g, "").trim()} ${ownerTitleClasses(owners)}`.trim();
   card.querySelector("h3").classList.toggle("completed-achievements-title", Boolean(game.platinum));
   const titleOwners = card.querySelector(".title-owners");
-  titleOwners.innerHTML = visibleOwnerTags(game).map(ownerBadge).join("");
-  titleOwners.hidden = !titleOwners.innerHTML;
+  titleOwners.innerHTML = "";
+  titleOwners.hidden = true;
   const studioLine = card.querySelector(".studio-line");
-  studioLine.textContent = studioText(game);
-  studioLine.hidden = !studioLine.textContent;
-  card.querySelector(".meta").innerHTML = metaFor(game, { includePsn: neutralReleaseCard || !game.playing }).join("");
+  studioLine.innerHTML = `${visibleOwnerTags(game).map(ownerBadge).join("")}${studioText(game) ? `<span>${escapeHtml(studioText(game))}</span>` : ""}`;
+  studioLine.hidden = !studioLine.innerHTML;
+  card.querySelector(".meta").innerHTML = metaFor(game, {
+    includePsn: neutralReleaseCard || !game.playing,
+    includeCalendarState: releaseDialog,
+  }).join("");
   const playDates = card.querySelector(".play-dates");
   playDates.innerHTML = playDatesFor(game, { includePastRelease: Boolean(options.includePastRelease), includeRelease: !releaseDialog, includePreorder: !releaseDialog }).join("");
   playDates.hidden = !playDates.innerHTML;
@@ -6685,12 +6698,13 @@ function openDetail(id, options = {}) {
   const owners = ownerTags(game);
   el.detailTitle.textContent = game.title;
   el.detailTitle.className = `${el.detailTitle.className.replace(/\bowner-[\w-]+/g, "").trim()} ${ownerTitleClasses(owners)}`.trim();
-  el.detailStudio.textContent = studioText(game);
-  el.detailStudio.hidden = !el.detailStudio.textContent;
+  el.detailStudio.innerHTML = `${visibleOwnerTags(game).map(ownerBadge).join("")}${studioText(game) ? `<span>${escapeHtml(studioText(game))}</span>` : ""}`;
+  el.detailStudio.hidden = !el.detailStudio.innerHTML;
   el.detailMeta.innerHTML = metaFor(game, { includePsn: false, includeOwners: false }).join("");
+  bindDetailShelfSearch(game);
   el.detailDates.innerHTML = playDatesFor(game, { includePastRelease: true }).join("");
   el.detailDates.hidden = !el.detailDates.innerHTML;
-  el.detailChips.innerHTML = `${visibleOwnerTags(game).map(ownerBadge).join("")}${chipsFor(game).join("")}`;
+  el.detailChips.innerHTML = chipsFor(game).join("");
   el.detailStoreLinks.innerHTML = storeLinksFor(game);
   el.detailDescription.textContent = game.description || "No description yet.";
   renderDetailGuides(game);
@@ -6710,6 +6724,30 @@ function openDetail(id, options = {}) {
   renderDetailTrophies(game);
   el.detailDialog.showModal();
   syncScrollLock();
+}
+
+function bindDetailShelfSearch(game) {
+  el.detailMeta.onclick = null;
+  el.detailMeta.onkeydown = null;
+  if (pageSwitchHidden()) return;
+  const targets = el.detailMeta.querySelectorAll(".platform-badge, .physical-pill");
+  targets.forEach((target) => {
+    target.classList.add("detail-shelf-search-link");
+    target.setAttribute("role", "link");
+    target.tabIndex = 0;
+    target.title = `Find ${game.title} on the shelf`;
+  });
+  const navigate = (event) => {
+    const target = event.target.closest(".detail-shelf-search-link");
+    if (!target) return;
+    if (event.type === "keydown" && event.key !== "Enter" && event.key !== " ") return;
+    event.preventDefault();
+    const url = new URL("shelf", window.location.href);
+    url.searchParams.set("search", game.title);
+    window.location.href = url.href;
+  };
+  el.detailMeta.onclick = navigate;
+  el.detailMeta.onkeydown = navigate;
 }
 
 async function renderDetailTrophies(game) {
@@ -7060,15 +7098,19 @@ function sectionRank(section) {
 function metaFor(game, options = {}) {
   const values = [];
   if (game.platform) values.push(platformBadge(game.platform, null, { title: game.title }));
-  if (game.dlc) values.push(dlcBadge(game));
   values.push(mediaFormatBadge(game));
+  if (game.dlc) values.push(dlcBadge(game));
   if (game.emulator) values.push(`<span class="emulator-pill">Emulator</span>`);
+  if (game.coop) values.push(coopBadge());
   if (game.lengthHours) values.push(timeBadge(game.lengthHours, hltbUrlFor(game)));
-  if (game.stream) values.push(`<span class="stream-pill">Stream</span>`);
+  if (game.stream) values.push(streamBadge());
   gameStatuses(game).forEach((status) => values.push(statusBadge(status)));
+  if (options.includeCalendarState) {
+    if (game.completedAt) values.push(calendarStateBadge("Finished", "finished"));
+    else if (game.section === "backlog") values.push(calendarStateBadge("Backlog", "backlog"));
+  }
   const progress = achievementProgressForGame(game);
   if (options.includePsn !== false && progress) values.push(psnProgressBadge(progress));
-  if (game.coop) values.push(`<span class="coop-pill">Coop</span>`);
   if (game.replayCount) values.push(replayBadge(game.replayCount));
   return values;
 }
@@ -7673,11 +7715,11 @@ function completedBadges(game, options = {}) {
   const progress = achievementProgressForGame(game);
   return [
     game.platform ? platformBadge(game.platform, null, { title: game.title }) : "",
-    game.dlc ? dlcBadge(game) : "",
     mediaFormatBadge(game),
+    game.dlc ? dlcBadge(game) : "",
     game.emulator ? `<span class="emulator-pill">Emulator</span>` : "",
-    game.coop ? `<span class="coop-pill">Coop</span>` : "",
-    game.stream ? `<span class="stream-pill">Stream</span>` : "",
+    game.coop ? coopBadge() : "",
+    game.stream ? streamBadge() : "",
     game.replayCount ? replayBadge(game.replayCount) : "",
     options.includePsn === false ? "" : (progress ? psnProgressBadge(progress) : ""),
   ].filter(Boolean).join("");
@@ -7772,7 +7814,31 @@ function ownerBadge(owner) {
 }
 
 function statusBadge(status) {
-  return `<span class="status-pill ${escapeHtml(statusType(status))}">${escapeHtml(status)}</span>`;
+  return `<span class="status-pill ${escapeHtml(statusType(status))}">${alertTagIcon()}${escapeHtml(status)}</span>`;
+}
+
+function calendarStateBadge(label, tone) {
+  return `<span class="calendar-state-pill calendar-state-${escapeHtml(tone)}">${escapeHtml(label)}</span>`;
+}
+
+function coopBadge() {
+  return `<span class="coop-pill">${coopIcon()}<span>CoOp</span></span>`;
+}
+
+function streamBadge() {
+  return `<span class="stream-pill">${streamPlayIcon()}<span>Stream</span></span>`;
+}
+
+function streamPlayIcon() {
+  return `<svg class="stream-play-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5.5v13l11-6.5L8 5.5Z"></path></svg>`;
+}
+
+function coopIcon() {
+  return `<svg class="coop-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="8" cy="8" r="3"></circle><circle cx="16" cy="8" r="3"></circle><path d="M2.8 19c.4-4 2.1-6 5.2-6s4.8 2 5.2 6"></path><path d="M10.8 19c.4-4 2.1-6 5.2-6s4.8 2 5.2 6"></path></svg>`;
+}
+
+function alertTagIcon() {
+  return `<svg class="alert-tag-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4.5v11"></path><path d="M12 19h.01"></path></svg>`;
 }
 
 function replayBadge(count) {
@@ -7801,9 +7867,9 @@ function completionPill(game) {
 }
 
 function mediaFormatBadge(game) {
-  if (!game || game.dlc) return "";
+  if (!game) return "";
   const cls = platformClass(game.platform, { title: game.title });
-  if (game.digital) {
+  if (game.digital || game.dlc) {
     return `<span class="digital-pill media-format-pill ${escapeHtml(cls)}" title="Digital" aria-label="Digital">${downloadBadgeIcon()}</span>`;
   }
   return `<span class="digital-pill physical-pill media-format-pill ${escapeHtml(cls)}" title="Physical" aria-label="Physical">${physicalDiskIcon(cls)}</span>`;

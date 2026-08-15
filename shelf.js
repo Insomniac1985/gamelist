@@ -234,7 +234,15 @@ async function init() {
   applyTheme();
   loadTrophyActivity();
   rebuildGames();
+  applyShelfSearchFromUrl();
   renderAll();
+}
+
+function applyShelfSearchFromUrl() {
+  const query = new URL(window.location.href).searchParams.get("search")?.trim() || "";
+  if (!query) return;
+  el.search.value = query;
+  state.filters.query = normalizeSearchText(query);
 }
 
 function loadSharedSettings() { try { return JSON.parse(localStorage.getItem("gamelist:settings:v1") || "{}"); } catch { return {}; } }
