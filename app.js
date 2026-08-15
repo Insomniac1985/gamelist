@@ -7773,6 +7773,13 @@ function compareGames(a, b, section) {
   if (state.filters.sort === "added") {
     return direction * (addedTimeValue(a) - addedTimeValue(b) || stringCompare(a.title, b.title));
   }
+  if (state.filters.sort === "time" && section === "upcoming") {
+    const aRelease = releaseSortValue(a);
+    const bRelease = releaseSortValue(b);
+    if (!Number.isFinite(aRelease)) return Number.isFinite(bRelease) ? 1 : direction * stringCompare(a.title, b.title);
+    if (!Number.isFinite(bRelease)) return -1;
+    return direction * ((aRelease - bRelease) || stringCompare(a.title, b.title));
+  }
   if (state.filters.sort === "time" || state.filters.sort === "playtime") {
     return direction * (((a.lengthHours ?? Number.POSITIVE_INFINITY) - (b.lengthHours ?? Number.POSITIVE_INFINITY))
       || stringCompare(a.title, b.title));
