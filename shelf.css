@@ -1971,6 +1971,9 @@ textarea {
     gap: 5px;
     align-content: center;
   }
+  .shelf-grid.preorders-view.list-view .game-row-prices {
+    display: none;
+  }
   .shelf-grid.list-view .game-row-actions-top {
     display: flex;
     justify-content: flex-end;
