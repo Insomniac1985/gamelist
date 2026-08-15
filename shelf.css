@@ -162,8 +162,9 @@ body:not(.can-edit) .showcase-edit-button {
   margin: 0;
   color: transparent;
   font-family: var(--display-title-font);
-  font-size: var(--display-title-size, clamp(28px, 4vw, 48px));
-  line-height: var(--display-title-line-height, 0.95);
+  font-size: var(--display-title-size, clamp(28px, 2.5vw, 38px));
+  font-weight: 900;
+  line-height: var(--display-title-line-height, 1.05);
   letter-spacing: var(--display-title-letter-spacing, 0);
   background: var(--accent);
   -webkit-background-clip: text;
@@ -1705,8 +1706,9 @@ textarea {
 }
 .shelf-library > .column-head {
   min-height: 0;
-  justify-content: flex-end;
-  padding: 0 2px 8px;
+  justify-content: flex-start;
+  margin-top: 18px;
+  padding: 16px 2px 12px;
 }
 
 @media (max-width: 1180px) {
