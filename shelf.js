@@ -1201,7 +1201,7 @@ function gameCard(game, options = {}) {
   titleOwners.innerHTML = "";
   titleOwners.hidden = true;
   const edit = card.querySelector(".edit-action");
-  if (preorderProjection) edit.dataset.action = "show-preorder-prices"; else edit.dataset.action = "edit";
+  if (preorderProjection) edit.dataset.action = "edit-preorder"; else edit.dataset.action = "edit";
   const studioText = studio || game.genre || "Physical edition";
   card.querySelector(".studio-line").innerHTML = `${visibleOwners.map(ownerBadge).join("")}<span>${escapeHtml(studioText)}</span>`;
   card.querySelector(".meta").innerHTML = preorderProjection
@@ -1305,6 +1305,7 @@ function handleShelfClick(event) {
   else if (action === "add-collection") state.canEdit ? openEditor(game) : openAuth();
   else if (action === "add-backlog") state.canEdit ? addShelfGameToGamelistNew(game) : openAuth();
   else if (action === "accept-preorder") state.canEdit ? acceptSyncedPreorder(game) : openAuth();
+  else if (action === "edit-preorder") state.canEdit ? openPreorderInGamelistEditor(game) : openAuth();
   else if (action === "show-preorder-prices") openGamelistDetails(game);
   else if (action === "delete-preorder") state.canEdit ? deleteSyncedPreorder(game) : openAuth();
   else if (action === "delete") state.canEdit ? deleteGame(game) : openAuth();
@@ -1316,6 +1317,12 @@ function shelfDisplayedGameById(id) {
   return state.filters.tab === "preorders"
     ? syncedPreorderGames().find((item) => item.id === id)
     : state.games.find((item) => item.id === id);
+}
+
+function openPreorderInGamelistEditor(game) {
+  const url = new URL("/", window.location.origin);
+  url.searchParams.set("edit", game.id);
+  window.location.href = url.href;
 }
 
 function openDetails(game) {

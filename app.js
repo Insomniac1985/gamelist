@@ -431,8 +431,16 @@ async function init() {
   if (await maybeRenderGameOfTheYearExportPreview()) return;
   render();
   if (cloudChanged) render();
-  const requestedGame = new URLSearchParams(location.search).get("game");
-  if (requestedGame && state.games.some((game) => game.id === requestedGame && !game.deletedAt)) openDetail(requestedGame);
+  const requestedParams = new URLSearchParams(location.search);
+  const requestedEdit = requestedParams.get("edit");
+  const requestedGame = requestedParams.get("game");
+  if (requestedEdit && state.games.some((game) => game.id === requestedEdit && !game.deletedAt)) {
+    const cleanUrl = new URL(window.location.href);
+    cleanUrl.searchParams.delete("edit");
+    window.history.replaceState({}, "", `${cleanUrl.pathname}${cleanUrl.search}${cleanUrl.hash}`);
+    await openEditor(requestedEdit);
+  }
+  else if (requestedGame && state.games.some((game) => game.id === requestedGame && !game.deletedAt)) openDetail(requestedGame);
   await consoleInfoPromise;
   refreshAchievements();
   scheduleBackgroundRefreshes();
