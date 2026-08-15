@@ -1073,7 +1073,7 @@ html.theme-font-mata .shelf-page .playing-section .column-head h2 {
   display: grid;
   grid-template-columns: repeat(var(--tab-count), minmax(0, 1fr));
   gap: 6px;
-  margin: 0 0 12px;
+  margin: 14px 0 18px;
   padding: 6px;
   overflow-y: hidden;
   overflow-x: hidden;
@@ -1845,6 +1845,7 @@ textarea {
   }
   .shelf-tabs {
     top: calc(25px + var(--pull-ui-offset, 0px));
+    margin: 12px 0 16px;
   }
 
   .shelf-tabs button {

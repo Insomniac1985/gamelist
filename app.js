@@ -7767,9 +7767,6 @@ function compareGames(a, b, section) {
   const streamSort = compareStreamFirst(a, b);
   if (streamSort) return streamSort;
   if (Boolean(a.playing) !== Boolean(b.playing)) return a.playing ? -1 : 1;
-  if (section === "upcoming") {
-    return compareReleaseDates(a, b) || stringCompare(a.title, b.title);
-  }
   if (state.filters.sort === "platform") {
     return direction * (stringCompare(canonicalPlatform(a.platform), canonicalPlatform(b.platform)) || stringCompare(a.title, b.title));
   }
