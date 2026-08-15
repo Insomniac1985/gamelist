@@ -1044,6 +1044,7 @@ function renderLibrary() {
   el.count.textContent = `${games.length} ${games.length === 1 ? "game" : "games"}`;
   el.libraryTitle.textContent = state.filters.tab === "preorders" ? "Preorders" : state.filters.tab === "new" ? "New additions" : "Shelf";
   el.shelf.classList.toggle("list-view", state.viewMode === "list");
+  el.shelf.classList.toggle("preorders-view", state.filters.tab === "preorders");
   el.shelf.innerHTML = "";
   if (state.viewMode === "list") {
     el.shelf.innerHTML = games.map(gameRow).join("");
@@ -1159,16 +1160,16 @@ function gameCard(game, options = {}) {
   const preorderProjection = Boolean(game.preorderProjection);
   const fallbackCover = coverUrl(game.cover || "") || platformFallback(game.platform);
   const cover = fallbackCover;
-  const studio = [game.developer, game.publisher && game.publisher !== game.developer ? game.publisher : ""].filter(Boolean).join(" · ");
+  const studio = [game.developer, game.publisher && game.publisher !== game.developer ? game.publisher : ""].filter(Boolean).join(preorderProjection ? " / " : " · ");
   const owners = game.owners || [];
   const visibleOwners = visibleShelfCardOwners(owners);
   const ownerClasses = visibleOwners.map((owner) => ` ${ownerCardColorClass(owner)}`).join("");
-  const tags = [...(game.tags || []), game.category && game.category !== "Game" ? game.category : "", ...String(game.genre || "").split(",")].map((tag) => String(tag).trim()).filter((tag, index, list) => tag && normalize(tag) !== "game" && list.indexOf(tag) === index);
+  const tags = (preorderProjection ? (game.genres || []).slice(0, 4) : [...(game.tags || []), game.category && game.category !== "Game" ? game.category : "", ...String(game.genre || "").split(",")]).map((tag) => String(tag).trim()).filter((tag, index, list) => tag && normalize(tag) !== "game" && list.indexOf(tag) === index);
   const condition = conditionLabel(game);
   const card = createGameCardShell(document);
   card.dataset.id = game.id;
   card.setAttribute("role", "button"); card.tabIndex = 0;
-  card.className += `${cover ? " has-art" : ""}${ownerClasses}`;
+  card.className += `${cover ? " has-art" : ""}${preorderProjection ? " preorder-projection-card" : ""}${ownerClasses}`;
   if (cover) {
     card.style.setProperty("--card-art", `url("${escapeCss(cover)}")`);
     bindActivityCardParallax(card);
@@ -1181,44 +1182,58 @@ function gameCard(game, options = {}) {
   titleOwners.innerHTML = visibleOwners.map(ownerBadge).join("");
   titleOwners.hidden = !titleOwners.innerHTML;
   const edit = card.querySelector(".edit-action");
-  if (preorderProjection) edit.remove(); else edit.dataset.action = "edit";
+  if (preorderProjection) edit.dataset.action = "show-preorder-prices"; else edit.dataset.action = "edit";
   card.querySelector(".studio-line").textContent = studio || game.genre || "Physical edition";
   card.querySelector(".meta").innerHTML = preorderProjection
-    ? `${platformBadge(game.platform, { title: game.title })}${conditionBadge("Preordered")}`
+    ? `${platformBadge(game.platform, { title: game.title })}${mediaFormatBadge(game)}`
     : `<span class="region-flag" title="${escapeHtml(game.country)}">${flagIcon(game.country)}</span>${platformBadge(game.platform, { title: game.title })}${conditionBadge(condition)}${shelfProgressPill(game)}`;
   const playDates = card.querySelector(".play-dates");
-  if (preorderProjection && game.releaseDate) playDates.innerHTML = `<span class="release-pill history-date-pill"><small class="release-date-label"><span>Releases</span>${calendarMiniIcon()}</small><strong>${escapeHtml(formatDate(game.releaseDate))}</strong></span>`;
+  if (preorderProjection) playDates.innerHTML = `${game.releaseDate ? `<span class="release-pill history-date-pill"><small class="release-date-label"><span>Releases</span>${calendarMiniIcon()}</small><strong>${escapeHtml(formatDate(game.releaseDate))}</strong></span>` : ""}${game.preorderStore ? preorderProjectionChip(game.preorderStore) : ""}`;
   else playDates.remove();
-  card.querySelector(".chips").innerHTML = `${preorderProjection ? `<span class="chip accent">${escapeHtml(game.preorderStore)}</span>` : ""}${tags.map((tag) => `<span class="chip genre">${escapeHtml(tag)}</span>`).join("")}`;
+  card.querySelector(".chips").innerHTML = tags.map((tag) => `<span class="chip genre">${escapeHtml(tag)}</span>`).join("");
   card.querySelector(".card-trophies").remove();
-  card.querySelector(".card-actions").innerHTML = preorderProjection ? `<button class="primary-button editor-only" data-action="accept-preorder" type="button">Got it</button>` : isPendingCollectionGame(game) ? `<button class="primary-button add-collection-action editor-only" data-action="add-collection" type="button">Add to Collection</button><button class="danger-button icon-only-button shelf-card-delete-action editor-only" data-action="delete" type="button" title="Delete" aria-label="Delete">${trashIcon()}</button>` : `<button class="ghost-button shelf-add-backlog-action editor-only" data-action="add-backlog" type="button">Add to Backlog</button><button class="danger-button icon-only-button shelf-card-delete-action editor-only" data-action="delete" type="button" title="Delete" aria-label="Delete">${trashIcon()}</button>`;
+  card.querySelector(".card-actions").innerHTML = preorderProjection ? `<button class="ghost-button editor-only" data-action="show-preorder-prices" type="button">Prices</button><button class="ghost-button editor-only" data-action="accept-preorder" type="button">Got it</button><button class="danger-button icon-only-button shelf-card-delete-action editor-only" data-action="delete-preorder" type="button" title="Delete" aria-label="Delete">${trashIcon()}</button>` : isPendingCollectionGame(game) ? `<button class="primary-button add-collection-action editor-only" data-action="add-collection" type="button">Add to Collection</button><button class="danger-button icon-only-button shelf-card-delete-action editor-only" data-action="delete" type="button" title="Delete" aria-label="Delete">${trashIcon()}</button>` : `<button class="ghost-button shelf-add-backlog-action editor-only" data-action="add-backlog" type="button">Add to Backlog</button><button class="danger-button icon-only-button shelf-card-delete-action editor-only" data-action="delete" type="button" title="Delete" aria-label="Delete">${trashIcon()}</button>`;
   const prices = card.querySelector(".prices");
-  if (preorderProjection && Array.isArray(game.prices) && game.prices.length) prices.innerHTML = gamelistPreorderPrices(game);
+  if (preorderProjection && priceProvidersForGame(game).length) {
+    prices.style.setProperty("--price-columns", priceProvidersForGame(game).length);
+    prices.innerHTML = pricesFor(game);
+  }
   else prices.remove();
-  const note = card.querySelector(".notes"); note.textContent = game.notes || ""; note.classList.add("shelf-card-notes"); note.hidden = !game.notes;
-  if (game.description) note.insertAdjacentHTML("afterend", `<p class="shelf-card-description">${escapeHtml(game.description)}</p>`);
+  const note = card.querySelector(".notes");
+  note.textContent = preorderProjection ? shortDescription(game.description || "") : game.notes || "";
+  note.classList.add("shelf-card-notes");
+  note.hidden = !note.textContent;
+  if (!preorderProjection && game.description) note.insertAdjacentHTML("afterend", `<p class="shelf-card-description">${escapeHtml(game.description)}</p>`);
   return card;
 }
 
 function gameRow(game) {
   const preorderProjection = Boolean(game.preorderProjection);
   const cover = coverUrl(game.cover || "") || platformFallback(game.platform);
-  const studio = [game.developer, game.publisher && game.publisher !== game.developer ? game.publisher : ""].filter(Boolean).join(" · ");
+  const studio = [game.developer, game.publisher && game.publisher !== game.developer ? game.publisher : ""].filter(Boolean).join(preorderProjection ? " / " : " · ");
   const owners = game.owners || [];
   const visibleOwners = visibleShelfCardOwners(owners);
   const ownerClasses = visibleOwners.map((owner) => ` ${ownerCardColorClass(owner)}`).join("");
-  const tags = [...(game.tags || []), game.category && game.category !== "Game" ? game.category : "", ...String(game.genre || "").split(",")].map((tag) => String(tag).trim()).filter((tag, index, list) => tag && normalize(tag) !== "game" && list.indexOf(tag) === index);
+  const tags = (preorderProjection ? (game.genres || []).slice(0, 4) : [...(game.tags || []), game.category && game.category !== "Game" ? game.category : "", ...String(game.genre || "").split(",")]).map((tag) => String(tag).trim()).filter((tag, index, list) => tag && normalize(tag) !== "game" && list.indexOf(tag) === index);
   const description = game.description || "";
-  const actions = preorderProjection ? `<div class="game-row-actions-bottom"><button class="primary-button" data-action="accept-preorder" type="button">Got it</button></div>` : isPendingCollectionGame(game) ? `<div class="game-row-actions-top"><button class="primary-button add-collection-action" data-action="add-collection" type="button">Add to Collection</button></div><div class="game-row-actions-bottom"><button class="icon-button danger-button row-delete-action" data-action="delete" type="button" title="Delete" aria-label="Delete">${trashIcon()}</button></div>` : `<div class="game-row-actions-top"><button class="icon-button row-edit-action" data-action="edit" type="button" title="Edit" aria-label="Edit">${pencilIcon()}</button><button class="icon-button danger-button row-delete-action" data-action="delete" type="button" title="Delete" aria-label="Delete">${trashIcon()}</button></div><div class="game-row-actions-bottom"><button class="ghost-button shelf-add-backlog-action" data-action="add-backlog" type="button">Add to Backlog</button></div>`;
+  const actions = preorderProjection ? `<div class="game-row-actions-top"><button class="ghost-button" data-action="show-preorder-prices" type="button">Prices</button></div><div class="game-row-actions-bottom"><button class="ghost-button" data-action="accept-preorder" type="button">Got it</button><button class="icon-button danger-button row-delete-action" data-action="delete-preorder" type="button" title="Delete" aria-label="Delete">${trashIcon()}</button></div>` : isPendingCollectionGame(game) ? `<div class="game-row-actions-top"><button class="primary-button add-collection-action" data-action="add-collection" type="button">Add to Collection</button></div><div class="game-row-actions-bottom"><button class="icon-button danger-button row-delete-action" data-action="delete" type="button" title="Delete" aria-label="Delete">${trashIcon()}</button></div>` : `<div class="game-row-actions-top"><button class="icon-button row-edit-action" data-action="edit" type="button" title="Edit" aria-label="Edit">${pencilIcon()}</button><button class="icon-button danger-button row-delete-action" data-action="delete" type="button" title="Delete" aria-label="Delete">${trashIcon()}</button></div><div class="game-row-actions-bottom"><button class="ghost-button shelf-add-backlog-action" data-action="add-backlog" type="button">Add to Backlog</button></div>`;
   const core = preorderProjection
-    ? `${platformBadge(game.platform, { title: game.title })}${conditionBadge("Preordered")}`
+    ? `${platformBadge(game.platform, { title: game.title })}${mediaFormatBadge(game)}${game.releaseDate ? `<span class="release-pill history-date-pill"><small class="release-date-label"><span>Releases</span>${calendarMiniIcon()}</small><strong>${escapeHtml(formatDate(game.releaseDate))}</strong></span>` : ""}`
     : `<span class="region-flag" title="${escapeHtml(game.country)}">${flagIcon(game.country)}</span>${platformBadge(game.platform, { title: game.title })}${conditionBadge(conditionLabel(game))}${shelfProgressPill(game)}`;
   const prices = preorderProjection ? gamelistPreorderPrices(game) : "";
-  return `<article class="game-row${ownerClasses}" data-id="${escapeHtml(game.id)}" role="button" tabindex="0" aria-label="${escapeHtml(`Open ${game.title}`)}"><span class="game-row-cover-wrap"><img class="game-row-cover" src="${escapeHtml(cover)}" alt="" loading="lazy" decoding="async"><img class="game-row-cover-preview" src="${escapeHtml(cover)}" alt="" loading="lazy" decoding="async" aria-hidden="true"></span><div class="game-row-identity"><strong class="${visibleOwners.map(ownerColorClass).join(" ")}">${escapeHtml(game.title)}</strong><span class="game-row-owner-line">${visibleOwners.map(ownerBadge).join("")}</span>${studio ? `<span>${escapeHtml(studio)}</span>` : ""}</div><div class="game-row-core">${core}</div><div class="game-row-tags">${preorderProjection ? `<span class="chip accent">${escapeHtml(game.preorderStore)}</span>` : ""}${tags.map((tag) => `<span class="chip genre">${escapeHtml(tag)}</span>`).join("")}</div>${prices ? `<div class="game-row-prices">${prices}</div>` : ""}${description ? `<div class="game-row-description shelf-row-description">${escapeHtml(description)}</div>` : ""}<div class="game-row-actions">${actions}</div></article>`;
+  return `<article class="game-row${preorderProjection ? " preorder-projection-row" : ""}${ownerClasses}" data-id="${escapeHtml(game.id)}" role="button" tabindex="0" aria-label="${escapeHtml(`Open ${game.title}`)}"><span class="game-row-cover-wrap"><img class="game-row-cover" src="${escapeHtml(cover)}" alt="" loading="lazy" decoding="async"><img class="game-row-cover-preview" src="${escapeHtml(cover)}" alt="" loading="lazy" decoding="async" aria-hidden="true"></span><div class="game-row-identity"><strong class="${visibleOwners.map(ownerColorClass).join(" ")}">${escapeHtml(game.title)}</strong><span class="game-row-owner-line">${visibleOwners.map(ownerBadge).join("")}</span>${studio ? `<span>${escapeHtml(studio)}</span>` : ""}</div><div class="game-row-core">${core}</div><div class="game-row-tags">${preorderProjection && game.preorderStore ? preorderProjectionChip(game.preorderStore) : ""}${tags.map((tag) => `<span class="chip genre">${escapeHtml(tag)}</span>`).join("")}</div>${prices ? `<div class="game-row-prices">${prices}</div>` : ""}${description ? `<div class="game-row-description shelf-row-description">${escapeHtml(description)}</div>` : ""}<div class="game-row-actions">${actions}</div></article>`;
 }
 
 function gamelistPreorderPrices(game) {
-  return storePricesMarkup((game.prices || []).filter((price) => price?.price || price?.numericPrice != null), normalizePriceSettings(state.gamelistSettings).currency);
+  return priceProvidersForGame(game).length ? pricesFor(game) : "";
+}
+
+function preorderProjectionChip(store) {
+  return `<span class="chip accent preorder-chip" title="${escapeHtml(`Preordered: ${store}`)}">${shoppingBagIcon()}${escapeHtml(store)}</span>`;
+}
+
+function shoppingBagIcon() {
+  return `<svg class="shopping-bag-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M6.5 8.5h11l1 12h-13l1-12Z"></path><path d="M9 8.5V7a3 3 0 0 1 6 0v1.5"></path></svg>`;
 }
 
 function visibleShelfCardOwners(owners = []) {
@@ -1252,6 +1267,8 @@ function handleShelfClick(event) {
   else if (action === "add-collection") state.canEdit ? openEditor(game) : openAuth();
   else if (action === "add-backlog") state.canEdit ? addShelfGameToGamelistNew(game) : openAuth();
   else if (action === "accept-preorder") state.canEdit ? acceptSyncedPreorder(game) : openAuth();
+  else if (action === "show-preorder-prices") openGamelistDetails(game);
+  else if (action === "delete-preorder") state.canEdit ? deleteSyncedPreorder(game) : openAuth();
   else if (action === "delete") state.canEdit ? deleteGame(game) : openAuth();
   else if (game.preorderProjection) openGamelistDetails(game);
   else openDetails(game);
@@ -1712,6 +1729,22 @@ async function acceptSyncedPreorder(game) {
     showToast("Moved to Gamelist backlog and new additions.");
   } catch (error) {
     showToast(error?.message || "Could not sync this preorder.", "error");
+  }
+}
+
+async function deleteSyncedPreorder(game) {
+  if (!await confirmGameDelete(game?.title)) return;
+  const now = new Date().toISOString();
+  const nextGames = state.gamelistGames.map((item) => item.id === game.id ? { ...item, deletedAt: now, editedAt: now, updatedAt: now } : item);
+  try {
+    await persistGamelistData(nextGames, state.gamelistSettings);
+    state.gamelistGames = nextGames;
+    renderGamelistModules();
+    renderLibrary();
+    closeDialog(el.detailDialog);
+    showToast("Deleted from Gamelist.");
+  } catch (error) {
+    showToast(error?.message || "Could not delete this preorder.", "error");
   }
 }
 
@@ -2667,7 +2700,7 @@ function renderGamelistModules() {
   schedulePlayingCardHeightSync();
   requestAnimationFrame(() => { updatePlayingControls(); updateFinishedControls(); scheduleShelfTrailerUpdate(); });
 }
-function projectedDetailGame(game) { const shelf = state.games.find((item) => item.gamelistId === game.id || game.shelfId === item.id); return { ...(shelf || {}), ...game, country: shelf?.country || "", genre: shelf?.genre || (game.genres || []).join(", "), category: shelf?.category || "", notes: shelf?.notes || game.notes || "", _gamelistProjection: true }; }
+function projectedDetailGame(game) { return { ...game, _gamelistProjection: true }; }
 function activityGuideLinks(game) { return guideLinksMarkup(game, { title: game.title, playstation: ["PS4", "PS5"].includes(shortPlatform(game.platform || "").toUpperCase()), escape: escapeHtml }); }
 function openGamelistDetails(sourceGame) {
   const game = projectedDetailGame(sourceGame);
@@ -2680,21 +2713,24 @@ function openGamelistDetails(sourceGame) {
   el.detailTitle.className = `${el.detailTitle.className.replace(/\bowner-[\w-]+/g, "").trim()} ${owners.map(ownerColorClass).join(" ")}`.trim();
   el.detailStudio.textContent = [game.developer, game.publisher].filter(Boolean).join(" / ");
   el.detailStudio.hidden = !el.detailStudio.textContent;
-  el.detailMeta.innerHTML = projectionMeta(game, { includePast: true });
-  el.detailDates.innerHTML = `${game.startedAt ? `<span class="history-pill history-date-pill"><small>Started</small><strong>${escapeHtml(formatShortDate(game.startedAt))}</strong></span>` : ""}${game.completedAt ? `<span class="history-pill history-date-pill"><small>Finished</small><strong>${escapeHtml(formatLongDate(game.completedAt))}</strong></span>` : ""}${finishedDurationText(game.startedAt, game.completedAt) ? `<span class="history-pill history-date-pill"><small>Time</small><strong>${escapeHtml(finishedDurationText(game.startedAt, game.completedAt))}</strong></span>` : ""}`;
+  el.detailMeta.innerHTML = `${platformBadge(game.platform, { title: game.title })}${mediaFormatBadge(game)}`;
+  el.detailDates.innerHTML = `${game.releaseDate ? `<span class="release-pill history-date-pill"><small class="release-date-label"><span>Releases</span>${calendarMiniIcon()}</small><strong>${escapeHtml(formatDate(game.releaseDate))}</strong></span>` : ""}`;
   el.detailDates.hidden = !el.detailDates.innerHTML;
-  el.detailChips.innerHTML = `${visibleShelfCardOwners(owners).map(ownerBadge).join("")}${(game.genres || []).slice(0, 4).map((genre) => `<span class="chip genre">${escapeHtml(genre)}</span>`).join("")}`;
+  el.detailChips.innerHTML = `${game.preorderStore ? preorderProjectionChip(game.preorderStore) : ""}${(game.genres || []).slice(0, 4).map((genre) => `<span class="chip genre">${escapeHtml(genre)}</span>`).join("")}`;
   el.detailCover.src = cover;
   el.detailCover.hidden = !cover;
   el.detailCover.alt = cover ? `${game.title} cover` : "";
   bindCoverFrame(el.detailCover);
   el.detailDescription.textContent = game.description || "No description yet.";
   el.detailDescription.hidden = false;
+  el.detailDescription.after(el.detailStorePricePanel);
   el.detailPricePanel.classList.remove("is-collapsed");
   el.detailPriceToggle.setAttribute("aria-expanded", "true");
   el.detailLinks.innerHTML = activityStoreLinks(game);
-  el.detailStorePrices.innerHTML = "";
-  el.detailStorePricePanel.hidden = true;
+  const priceProviders = priceProvidersForGame(game);
+  el.detailStorePrices.style.setProperty("--price-columns", priceProviders.length || 1);
+  el.detailStorePrices.innerHTML = priceProviders.length ? pricesFor(game) : "";
+  el.detailStorePricePanel.hidden = !priceProviders.length;
   el.detailNote.hidden = true;
   el.detailPricePanel.hidden = true;
   el.detailConditionPanel.hidden = true;
