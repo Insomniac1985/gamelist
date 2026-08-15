@@ -698,6 +698,34 @@ html.theme-font-mata .shelf-page .playing-section .column-head h2 {
   contain: layout;
 }
 
+.shelf-grid.preorders-view .game-card {
+  grid-template-columns: 104px minmax(0, 1fr);
+  min-height: 240px;
+  padding: 12px;
+}
+
+.shelf-grid.preorders-view .cover-button {
+  width: 104px;
+  height: 142px;
+  aspect-ratio: 104 / 142;
+  border: 1px solid var(--line);
+}
+
+.shelf-grid.preorders-view .cover-button img {
+  object-fit: cover;
+}
+
+.shelf-grid.preorders-view .preorder-projection-card .card-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-start;
+  gap: 8px;
+}
+
+.shelf-grid.preorders-view .preorder-projection-card .prices {
+  grid-column: 1 / -1;
+}
+
 .shelf-grid .cover-button {
   width: var(--shelf-cover-width, 104px);
   height: var(--shelf-cover-height, 142px);
@@ -1900,6 +1928,21 @@ textarea {
       );
     min-height: 214px;
   }
+  .shelf-grid.preorders-view .game-card {
+    grid-template-columns: 96px minmax(0, 1fr);
+    min-height: 214px;
+  }
+  .shelf-grid.preorders-view .cover-button {
+    width: 96px;
+    height: 131px;
+  }
+  .shelf-grid.preorders-view .preorder-projection-card .card-actions {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) 42px;
+    align-items: stretch;
+    justify-content: normal;
+    gap: 8px;
+  }
   .shelf-grid .game-card .card-actions {
     grid-template-columns: minmax(0, max-content) 42px;
     justify-content: end;
@@ -2035,10 +2078,28 @@ textarea {
   border-radius: inherit;
 }
 
+#detailDialog[data-projection="true"] .detail-cover#detailCoverWrap {
+  box-sizing: border-box;
+  width: 100%;
+  height: auto;
+  max-width: none;
+  aspect-ratio: 104 / 142;
+  border: 1px solid var(--line);
+}
+
+#detailDialog[data-projection="true"] .detail-cover#detailCoverWrap img#detailCover {
+  object-fit: cover;
+}
+
 @media (max-width: 760px) {
   .shelf-dialog .detail-cover#detailCoverWrap {
     width: min(100%, var(--shelf-cover-width, 360px));
     height: var(--shelf-cover-height, 520px);
     margin: 38px 0 0;
+  }
+
+  #detailDialog[data-projection="true"] .detail-cover#detailCoverWrap {
+    width: 100%;
+    height: auto;
   }
 }
