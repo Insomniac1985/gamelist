@@ -5220,7 +5220,7 @@ function rowCoreStats(game) {
     game.coop ? coopBadge() : "",
     game.emulator ? `<span class="emulator-pill">Emulator</span>` : "",
     game.lengthHours ? timeBadge(game.lengthHours, hltbUrlFor(game)) : "",
-    game.stream ? `<span class="stream-pill">Stream</span>` : "",
+    game.stream ? streamBadge() : "",
     release ? releaseStatusPill(release) : "",
     game.preorderStore ? preorderChip(game.preorderStore) : "",
     ...gameStatuses(game).map(statusBadge),
@@ -5441,7 +5441,7 @@ function finishedStatsMarkup(year, games, completed) {
     expansions.length ? statsKpiCard("Expansions finished", expansions.length, statsGameList(expansions), { tone: "finished" }) : "",
     statsKpiCard("Completed games", completed.length, showYearlyDetail ? statsCompletedGameList(completed) : "", { action: "completed", tone: "completed", icon: trophyIcon() }),
     streamed.length ? statsKpiCard("Streamed games", streamed.length, showYearlyDetail ? statsGameList(streamed) : "", { tone: "streamed" }) : "",
-    coopGames.length ? statsKpiCard("Coop games", coopGames.length, statsGameList(coopGames), { tone: "coop" }) : "",
+    coopGames.length ? statsKpiCard("CoOp games", coopGames.length, statsGameList(coopGames), { tone: "coop", icon: coopIcon() }) : "",
     otherOwnerGames.length ? statsKpiCard(otherOwnerSummary.label, otherOwnerGames.length, statsOwnerBreakdown(otherOwnerGames), { tone: "owners", valueClass: otherOwnerSummary.valueClass }) : "",
   ].filter(Boolean).join("");
   return `
@@ -5768,19 +5768,30 @@ function statsBreakdownRow(item, tone, index, games = []) {
       .filter((game) => physicalDigitalLabel(game) === item.label)
       .sort(statsGameListSort);
     const color = statsSegmentColor(item.label, tone, index);
-    return statsGroupedBreakdown(`<span class="finished-stats-category-row" style="--category-stat-color:${escapeHtml(color)}"><b><i></i>${escapeHtml(item.label)}</b></span>`, item.count, mediaGames);
+    return statsGroupedBreakdown(`<span class="finished-stats-category-row" style="--category-stat-color:${escapeHtml(color)}"><b>${statsMediaLabel(item.label)}</b></span>`, item.count, mediaGames);
   }
   if (tone === "platform") {
     return `<span class="finished-stats-platform-row"><b>${platformBadge(item.label)}</b><em>${item.count}</em></span>`;
   }
   if (tone === "category" || tone === "time" || tone === "media") {
     const color = statsSegmentColor(item.label, tone, index);
-    return `<span class="finished-stats-category-row" style="--category-stat-color:${escapeHtml(color)}"><b><i></i>${escapeHtml(item.label)}</b><em>${item.count}</em></span>`;
+    const label = tone === "media" ? statsMediaLabel(item.label) : `<i></i>${escapeHtml(item.label)}`;
+    return `<span class="finished-stats-category-row" style="--category-stat-color:${escapeHtml(color)}"><b>${label}</b><em>${item.count}</em></span>`;
   }
   if (tone === "owner") {
     return `<span class="finished-stats-owner-row"><b>${ownerBadge(item.label)}</b><em>${item.count}</em></span>`;
   }
   return `<span><b>${escapeHtml(item.label)}</b><em>${item.count}</em></span>`;
+}
+
+function statsMediaLabel(label) {
+  const normalized = normalizeTag(label);
+  const icon = normalized === "digital"
+    ? downloadBadgeIcon()
+    : normalized === "physical"
+      ? physicalDiskIcon()
+      : "<i></i>";
+  return `<span class="finished-stats-media-label"><span class="finished-stats-media-icon" aria-hidden="true">${icon}</span>${escapeHtml(label)}</span>`;
 }
 
 function statsGroupedBreakdown(heading, count, games) {
@@ -7066,8 +7077,9 @@ function metaFor(game, options = {}) {
   values.push(mediaFormatBadge(game));
   if (game.dlc) values.push(dlcBadge(game));
   if (game.emulator) values.push(`<span class="emulator-pill">Emulator</span>`);
+  if (game.coop) values.push(coopBadge());
   if (game.lengthHours) values.push(timeBadge(game.lengthHours, hltbUrlFor(game)));
-  if (game.stream) values.push(`<span class="stream-pill">Stream</span>`);
+  if (game.stream) values.push(streamBadge());
   gameStatuses(game).forEach((status) => values.push(statusBadge(status)));
   if (options.includeCalendarState) {
     if (game.completedAt) values.push(calendarStateBadge("Finished", "finished"));
@@ -7075,7 +7087,6 @@ function metaFor(game, options = {}) {
   }
   const progress = achievementProgressForGame(game);
   if (options.includePsn !== false && progress) values.push(psnProgressBadge(progress));
-  if (game.coop) values.push(coopBadge());
   if (game.replayCount) values.push(replayBadge(game.replayCount));
   return values;
 }
@@ -7684,7 +7695,7 @@ function completedBadges(game, options = {}) {
     game.dlc ? dlcBadge(game) : "",
     game.emulator ? `<span class="emulator-pill">Emulator</span>` : "",
     game.coop ? coopBadge() : "",
-    game.stream ? `<span class="stream-pill">Stream</span>` : "",
+    game.stream ? streamBadge() : "",
     game.replayCount ? replayBadge(game.replayCount) : "",
     options.includePsn === false ? "" : (progress ? psnProgressBadge(progress) : ""),
   ].filter(Boolean).join("");
@@ -7790,12 +7801,20 @@ function coopBadge() {
   return `<span class="coop-pill">${coopIcon()}<span>CoOp</span></span>`;
 }
 
+function streamBadge() {
+  return `<span class="stream-pill">${streamPlayIcon()}<span>Stream</span></span>`;
+}
+
+function streamPlayIcon() {
+  return `<svg class="stream-play-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5.5v13l11-6.5L8 5.5Z"></path></svg>`;
+}
+
 function coopIcon() {
   return `<svg class="coop-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="8" cy="8" r="3"></circle><circle cx="16" cy="8" r="3"></circle><path d="M2.8 19c.4-4 2.1-6 5.2-6s4.8 2 5.2 6"></path><path d="M10.8 19c.4-4 2.1-6 5.2-6s4.8 2 5.2 6"></path></svg>`;
 }
 
 function alertTagIcon() {
-  return `<svg class="alert-tag-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3 2.8 20h18.4L12 3Z"></path><path d="M12 9v5"></path><circle cx="12" cy="17" r=".8"></circle></svg>`;
+  return `<svg class="alert-tag-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4.5v11"></path><path d="M12 19h.01"></path></svg>`;
 }
 
 function replayBadge(count) {

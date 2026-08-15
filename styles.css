@@ -5680,6 +5680,14 @@ body.theme-kash .game-card.stream-card.completed-trophy-card {
   );
 }
 
+.dlc-pill {
+  color: #ffffff !important;
+}
+
+.dlc-pill.platform-playstation.platform-ps5 {
+  color: #05070b !important;
+}
+
 .emulator-pill {
   color: #d7c7ff !important;
   border-color: rgba(170, 139, 255, 0.34);
@@ -5695,6 +5703,7 @@ body.theme-kash .game-card.stream-card.completed-trophy-card {
 }
 
 .coop-pill,
+.stream-pill,
 .status-pill {
   align-items: center;
   gap: 4px;
@@ -5707,9 +5716,24 @@ body.theme-kash .game-card.stream-card.completed-trophy-card {
   flex: 0 0 14px;
   fill: none;
   stroke: currentColor;
-  stroke-width: 1.8;
   stroke-linecap: round;
   stroke-linejoin: round;
+}
+
+.coop-icon {
+  stroke-width: 2.5;
+}
+
+.alert-tag-icon {
+  stroke-width: 3.2;
+}
+
+.stream-play-icon {
+  width: 13px;
+  height: 13px;
+  flex: 0 0 13px;
+  fill: currentColor;
+  stroke: none;
 }
 
 .calendar-state-pill {
@@ -6712,6 +6736,12 @@ body:not(.can-edit) .game-card:focus-within .edit-action {
   stroke: currentColor;
 }
 
+.finished-stats-kpi strong .coop-icon {
+  width: 0.86em;
+  height: 0.86em;
+  flex-basis: 0.86em;
+}
+
 .finished-stats-kpi > span:not(.finished-stats-breakdown) {
   color: var(--muted);
   font-size: 12px;
@@ -7674,6 +7704,39 @@ body.theme-kash .finished-stats-kpi.is-completed:focus-visible strong {
   border-radius: 999px;
   background: currentColor;
   box-shadow: none;
+}
+
+.finished-stats-media-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.finished-stats-media-icon {
+  display: inline-grid;
+  width: 16px;
+  height: 16px;
+  flex: 0 0 16px;
+  place-items: center;
+}
+
+.finished-stats-media-icon img,
+.finished-stats-media-icon .download-badge-icon {
+  display: block;
+  width: 16px;
+  height: 16px;
+}
+
+.finished-stats-media-icon img {
+  object-fit: contain;
+}
+
+.finished-stats-media-icon .download-badge-icon {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2.1;
+  stroke-linecap: round;
+  stroke-linejoin: round;
 }
 
 .finished-stats-breakdown .platform-badge,
