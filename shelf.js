@@ -288,7 +288,7 @@ function bindEvents() {
   window.addEventListener("scroll", updateFloatingActions, { passive: true });
   window.addEventListener("storage", (event) => { if (event.key === "gamelist-editor-signal") refreshSharedAuth(); });
   window.addEventListener("focus", refreshSharedAuth);
-  window.addEventListener("resize", () => { updatePlayingControls(); updateFinishedControls(); schedulePlayingCardHeightSync(); }, { passive: true });
+  window.addEventListener("resize", () => { updatePlayingControls(); updateFinishedControls(); schedulePlayingCardHeightSync(); syncShelfTabIndicator(); }, { passive: true });
   document.addEventListener("pointerover", handleSelectOverflowTitle);
   document.addEventListener("focusin", handleSelectOverflowTitle);
   document.addEventListener("pointerout", handleSelectOverflowLeave);
@@ -1033,11 +1033,14 @@ function renderLibrary() {
   state.filters.tab = tabs.includes(state.filters.tab) ? state.filters.tab : "shelf";
   const games = filteredGames();
   el.tabs.hidden = tabs.length < 2;
+  el.tabs.classList.toggle("sync-preorders-enabled", state.canEdit && state.gamelistSettings.syncPreorders === true);
   el.tabs.dataset.activeTab = state.filters.tab;
   el.tabs.style.setProperty("--tab-count", String(tabs.length));
+  el.tabs.style.setProperty("--compact-tab-count", String(Math.max(1, tabs.length - 1)));
   el.tabs.style.setProperty("--tab-width", `calc((100% - 18px) / ${tabs.length})`);
   el.tabs.style.setProperty("--tab-index", String(tabs.indexOf(state.filters.tab)));
   el.tabs.innerHTML = tabs.map((tab) => `<button class="${state.filters.tab === tab ? "active" : ""}" data-shelf-tab="${tab}" type="button"><span class="label">${tab === "shelf" ? "Shelf" : tab === "preorders" ? "Preorders" : "New additions"}</span>${tab === "preorders" ? `<span class="count">${preorderCount}</span>` : tab === "new" ? `<span class="count">${pendingCount}</span>` : ""}</button>`).join("");
+  requestAnimationFrame(syncShelfTabIndicator);
   el.count.textContent = `${games.length} ${games.length === 1 ? "game" : "games"}`;
   el.libraryTitle.textContent = state.filters.tab === "preorders" ? "Preorders" : state.filters.tab === "new" ? "New additions" : "Shelf";
   el.shelf.classList.toggle("list-view", state.viewMode === "list");
@@ -1052,6 +1055,13 @@ function renderLibrary() {
     el.shelf.appendChild(fragment);
   }
   el.empty.hidden = games.length > 0;
+}
+
+function syncShelfTabIndicator() {
+  const active = el.tabs?.querySelector("button.active");
+  if (!el.tabs || !active) return;
+  el.tabs.style.setProperty("--tab-left", `${Math.max(0, active.offsetLeft - 6)}px`);
+  el.tabs.style.setProperty("--tab-active-width", `${active.offsetWidth}px`);
 }
 
 function renderFilteredShelf() {
