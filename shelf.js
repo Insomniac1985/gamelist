@@ -1064,11 +1064,11 @@ function normalizedShelfTab(tab) {
 }
 
 function shelfTabs(pendingCount = 0, preorderCount = syncedPreorderGames().length) {
-  return ["shelf", preorderCount ? "preorders" : "", pendingCount ? "new" : ""].filter(Boolean);
+  return [pendingCount ? "new" : "", "shelf", preorderCount ? "preorders" : ""].filter(Boolean);
 }
 
 function syncedPreorderGames() {
-  if (state.gamelistSettings.syncPreorders !== true) return [];
+  if (!state.canEdit || state.gamelistSettings.syncPreorders !== true) return [];
   return state.gamelistGames
     .filter((game) => !game.deletedAt && !game.completedAt && game.section === "upcoming" && game.preorderStore)
     .map((game) => ({ ...game, preorderProjection: true, genre: (game.genres || []).join(", "), country: game.country || "", condition: "Preordered" }));
