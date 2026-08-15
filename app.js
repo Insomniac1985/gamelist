@@ -69,6 +69,7 @@ const DEFAULT_SETTINGS = {
   shelfSync: true,
   hidePageSwitch: false,
   forceCacheOnLoad: false,
+  syncPreorders: false,
   gotyAlwaysShow: false,
   gameOfTheYear: {},
   weekStart: "monday",
@@ -1232,6 +1233,7 @@ function normalizeSettings(settings = {}) {
     shelfSync: settings.shelfSync !== false,
     hidePageSwitch: settings.hidePageSwitch === true,
     forceCacheOnLoad: settings.forceCacheOnLoad === true,
+    syncPreorders: settings.syncPreorders === true,
     gotyAlwaysShow: settings.gotyAlwaysShow === true,
     gameOfTheYear,
     weekStart: normalizeWeekStart(settings.weekStart),
@@ -1621,6 +1623,10 @@ function settingsDevFeaturesItem(kind) {
     </a>
   `).join("");
   return `${links}
+    <label class="check-filter toggle-check settings-visible-check settings-dev-toggle" title="Sync preorders to Shelf">
+      <input type="checkbox" id="settingsSyncPreorders" ${state.settings.syncPreorders ? "checked" : ""}>
+      <span>Sync preorders</span>
+    </label>
     <label class="check-filter toggle-check settings-visible-check settings-dev-toggle" title="${escapeHtml(tt("Force cache on page load"))}">
       <input type="checkbox" id="settingsForceCacheOnLoad" ${state.settings.forceCacheOnLoad ? "checked" : ""}>
       <span>${escapeHtml(tt("Force cache on page load"))}</span>
@@ -2054,6 +2060,7 @@ async function saveSettingsFromForm(event) {
     hidePageSwitch: el.settingsLayoutList.querySelector("[data-hide-page-switch]")?.checked === true,
     weekStart: normalizeWeekStart(el.settingsLayoutList.querySelector("[data-week-start]")?.value || state.settings.weekStart),
     forceCacheOnLoad: document.querySelector("#settingsForceCacheOnLoad")?.checked === true,
+    syncPreorders: document.querySelector("#settingsSyncPreorders")?.checked === true,
     gotyAlwaysShow: document.querySelector("#settingsGotyAlwaysShow")?.checked === true,
   });
   persistLocalSettings();
@@ -4777,7 +4784,7 @@ function mobileSections() {
 
 function mobileSectionCounts() {
   const games = filteredGames().filter((game) => !game.completedAt && !game.playing);
-  return Object.fromEntries(mobileSections().map((section) => [section, games.filter((game) => game.section === section).length]));
+  return Object.fromEntries(mobileSections().map((section) => [section, games.filter((game) => section === "new" ? isNewAdditionGame(game) : game.section === section).length]));
 }
 
 function mobileSectionLabel(section) {
@@ -4790,7 +4797,11 @@ function mobileSectionLabel(section) {
 }
 
 function hasNewAdditions() {
-  return canSeeNewAdditions() && state.games.some((game) => !game.deletedAt && !game.completedAt && !game.playing && game.section === "new");
+  return canSeeNewAdditions() && state.games.some((game) => !game.deletedAt && !game.completedAt && !game.playing && isNewAdditionGame(game));
+}
+
+function isNewAdditionGame(game) {
+  return game?.section === "new" || game?.preorderNewAddition === true;
 }
 
 function canSeeNewAdditions() {
@@ -4829,13 +4840,13 @@ function syncMobileSectionToResults() {
   if (!hasActiveFilter) return;
   const sections = state.filters.preordered ? mobileSections().filter((section) => section !== "new").sort((a, b) => ["upcoming", "backlog", "wanted"].indexOf(a) - ["upcoming", "backlog", "wanted"].indexOf(b)) : mobileSections();
   const hasCurrent = filteredGames().some((game) => (
-    game.section === state.mobileSection
+    (state.mobileSection === "new" ? isNewAdditionGame(game) : game.section === state.mobileSection)
     && !game.completedAt
     && !game.playing
   ));
   if (hasCurrent) return;
   const next = sections.find((section) => filteredGames().some((game) => (
-    game.section === section
+    (section === "new" ? isNewAdditionGame(game) : game.section === section)
     && !game.completedAt
     && !game.playing
   )));
@@ -5089,7 +5100,7 @@ function renderSection(section) {
   const list = document.querySelector(`.card-list[data-section="${section}"]`);
   const column = document.querySelector(`#${CSS.escape(section)}`);
   if (!list) return;
-  const games = filteredGames().filter((game) => game.section === section && !game.completedAt && !game.playing);
+  const games = filteredGames().filter((game) => (section === "new" ? isNewAdditionGame(game) : game.section === section) && !game.completedAt && !game.playing);
   if (column && section === "new") column.hidden = !canSeeNewAdditions() || !games.length;
   games.sort((a, b) => compareGames(a, b, section));
   list.innerHTML = "";
@@ -5104,7 +5115,7 @@ function renderSection(section) {
   games.forEach((game, index) => {
     fragment.appendChild(state.viewMode === "list"
       ? rowFor(game, section, { imagePriority: index < 10 ? "eager" : "lazy" })
-      : cardFor(game, { imagePriority: index < 6 ? "eager" : "lazy" }));
+      : cardFor(game, { imagePriority: index < 6 ? "eager" : "lazy", displaySection: section }));
   });
   list.appendChild(fragment);
   if (state.viewMode === "list") requestAnimationFrame(() => updateRowTitleOverflow(list));
@@ -6402,18 +6413,20 @@ function filteredGames(options = {}) {
 
 function cardFor(game, options = {}) {
   const releaseDialog = Boolean(options.releaseDialog);
+  const displaySection = options.displaySection || game.section;
   const neutralReleaseCard = releaseDialog && Boolean(game.playing);
   const card = createGameCardShell(document);
   const statuses = gameStatuses(game);
   const owners = ownerTags(game);
   card.dataset.id = game.id;
   card.dataset.owner = statuses.join(" ");
-  card.draggable = !options.staticCard && manualDragEnabled() && ["backlog", "upcoming", "wanted"].includes(game.section);
+  card.draggable = !options.staticCard && manualDragEnabled() && ["backlog", "upcoming", "wanted"].includes(displaySection);
   applyOwnerCardClasses(card, owners);
   card.classList.toggle("digital-card", Boolean(game.digital));
   card.classList.toggle("playing-card", Boolean(game.playing) && !neutralReleaseCard);
   card.classList.toggle("stream-card", Boolean(game.stream));
   card.classList.toggle("completed-trophy-card", Boolean(game.platinum));
+  card.classList.toggle("calendar-completed-card", releaseDialog && Boolean(game.platinum));
   const trailer = card.querySelector(".card-trailer");
   const trailerUrl = !neutralReleaseCard && shouldShowCardTrailer(game) ? trailerEmbedUrl(game.trailerUrl) : "";
   if (trailerUrl) {
@@ -6478,7 +6491,7 @@ function cardFor(game, options = {}) {
     card.querySelector(".edit-action")?.remove();
     card.querySelector(".card-actions")?.remove();
     prices.remove();
-  } else if (game.section === "new") {
+  } else if (displaySection === "new") {
     card.querySelector(".edit-action").remove();
     prices.remove();
     priceRefreshAction.remove();
@@ -6488,7 +6501,7 @@ function cardFor(game, options = {}) {
     boughtAction.addEventListener("click", () => finishSetupGame(game.id));
     completeAction.innerHTML = `<span class="action-label">Play</span>`;
     completeAction.addEventListener("click", () => startPlaying(game.id));
-  } else if (game.section === "backlog" || game.completedAt) {
+  } else if (displaySection === "backlog" || game.completedAt) {
     prices.remove();
     priceRefreshAction.remove();
     boughtAction.remove();
@@ -7106,7 +7119,8 @@ function metaFor(game, options = {}) {
   if (game.stream) values.push(streamBadge());
   gameStatuses(game).forEach((status) => values.push(statusBadge(status)));
   if (options.includeCalendarState) {
-    if (game.completedAt) values.push(calendarStateBadge("Finished", "finished"));
+    if (game.platinum) values.push(calendarStateBadge("Completed", "completed", trophyIcon()));
+    else if (game.completedAt) values.push(calendarStateBadge("Finished", "finished"));
     else if (game.section === "backlog") values.push(calendarStateBadge("Backlog", "backlog"));
   }
   const progress = achievementProgressForGame(game);
@@ -7817,8 +7831,8 @@ function statusBadge(status) {
   return `<span class="status-pill ${escapeHtml(statusType(status))}">${alertTagIcon()}${escapeHtml(status)}</span>`;
 }
 
-function calendarStateBadge(label, tone) {
-  return `<span class="calendar-state-pill calendar-state-${escapeHtml(tone)}">${escapeHtml(label)}</span>`;
+function calendarStateBadge(label, tone, icon = "") {
+  return `<span class="calendar-state-pill calendar-state-${escapeHtml(tone)}">${icon}${escapeHtml(label)}</span>`;
 }
 
 function coopBadge() {
@@ -9037,6 +9051,7 @@ async function saveCurrentFormGame() {
   const game = {
     ...(existing || blankGame()),
     id,
+    preorderNewAddition: finishingSetup ? false : Boolean(existing?.preorderNewAddition),
     title: el.fields.title.value.trim(),
     platform: canonicalPlatform(el.fields.platform.value),
     dlc: el.fields.dlc.checked,
@@ -9148,6 +9163,7 @@ function startPlaying(id) {
   if (!game || game.completedAt) return;
   if (isShelfNewAddition(game)) game.acceptedFromShelfAt = new Date().toISOString();
   game.section = "backlog";
+  game.preorderNewAddition = false;
   game.playing = true;
   game.startedAt = game.startedAt || todayDate();
   markGameEdited(game);
