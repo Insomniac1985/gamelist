@@ -4784,7 +4784,11 @@ function mobileSections() {
 
 function mobileSectionCounts() {
   const games = filteredGames().filter((game) => !game.completedAt && !game.playing);
-  return Object.fromEntries(mobileSections().map((section) => [section, games.filter((game) => section === "new" ? isNewAdditionGame(game) : game.section === section).length]));
+  return Object.fromEntries(mobileSections().map((section) => [section, games.filter((game) => gameMatchesMobileSection(game, section)).length]));
+}
+
+function gameMatchesMobileSection(game, section) {
+  return section === "new" ? isNewAdditionGame(game) : game?.section === section;
 }
 
 function mobileSectionLabel(section) {
@@ -4840,13 +4844,13 @@ function syncMobileSectionToResults() {
   if (!hasActiveFilter) return;
   const sections = state.filters.preordered ? mobileSections().filter((section) => section !== "new").sort((a, b) => ["upcoming", "backlog", "wanted"].indexOf(a) - ["upcoming", "backlog", "wanted"].indexOf(b)) : mobileSections();
   const hasCurrent = filteredGames().some((game) => (
-    (state.mobileSection === "new" ? isNewAdditionGame(game) : game.section === state.mobileSection)
+    gameMatchesMobileSection(game, state.mobileSection)
     && !game.completedAt
     && !game.playing
   ));
   if (hasCurrent) return;
   const next = sections.find((section) => filteredGames().some((game) => (
-    (section === "new" ? isNewAdditionGame(game) : game.section === section)
+    gameMatchesMobileSection(game, section)
     && !game.completedAt
     && !game.playing
   )));

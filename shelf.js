@@ -1027,6 +1027,7 @@ function platformLogoChoiceMarkup(value, label, options = {}) {
 }
 
 function renderLibrary() {
+  syncShelfTabToSearchResults();
   const pendingCount = state.canEdit ? state.games.filter(isPendingCollectionGame).length : 0;
   const preorderCount = syncedPreorderGames().length;
   const tabs = shelfTabs(pendingCount, preorderCount);
@@ -1041,7 +1042,11 @@ function renderLibrary() {
   el.tabs.style.setProperty("--tab-index", String(tabs.indexOf(state.filters.tab)));
   el.tabs.innerHTML = tabs.map((tab) => `<button class="${state.filters.tab === tab ? "active" : ""}" data-shelf-tab="${tab}" type="button"><span class="label">${tab === "shelf" ? "Shelf" : tab === "preorders" ? "Preorders" : "New additions"}</span>${tab === "preorders" ? `<span class="count">${preorderCount}</span>` : tab === "new" ? `<span class="count">${pendingCount}</span>` : ""}</button>`).join("");
   requestAnimationFrame(syncShelfTabIndicator);
-  el.count.textContent = `${games.length} ${games.length === 1 ? "game" : "games"}`;
+  if (state.filters.tab === "preorders") {
+    el.count.innerHTML = shelfPreorderCountPill(games);
+  } else {
+    el.count.textContent = `${games.length} ${games.length === 1 ? "game" : "games"}`;
+  }
   el.libraryTitle.textContent = state.filters.tab === "preorders" ? "Preorders" : state.filters.tab === "new" ? "New additions" : "Shelf";
   el.shelf.classList.toggle("list-view", state.viewMode === "list");
   el.shelf.classList.toggle("preorders-view", state.filters.tab === "preorders");
@@ -1068,6 +1073,15 @@ function syncShelfTabIndicator() {
 function renderFilteredShelf() {
   renderStats();
   renderLibrary();
+}
+
+function syncShelfTabToSearchResults() {
+  if (!state.filters.query) return;
+  const pendingCount = state.canEdit ? state.games.filter(isPendingCollectionGame).length : 0;
+  const tabs = shelfTabs(pendingCount, syncedPreorderGames().length);
+  if (tabs.some((tab) => tab === state.filters.tab && filteredGamesForShelfTab(tab).length)) return;
+  const next = tabs.find((tab) => filteredGamesForShelfTab(tab).length);
+  if (next) state.filters.tab = next;
 }
 
 function normalizedShelfTab(tab) {
@@ -1120,15 +1134,20 @@ function updateShelfRowTitleOverflow() {
 }
 
 function filteredGames() {
-  const source = state.filters.tab === "preorders" ? syncedPreorderGames() : visibleShelfGames();
+  return filteredGamesForShelfTab(state.filters.tab);
+}
+
+function filteredGamesForShelfTab(tab) {
+  const normalizedTab = normalizedShelfTab(tab);
+  const source = normalizedTab === "preorders" ? syncedPreorderGames() : visibleShelfGames();
   return source.filter((game) => {
-    const haystack = normalizeSearchText(`${game.title} ${game.platform} ${game.publisher} ${game.developer} ${game.genre} ${game.notes} ${(game.tags || []).join(" ")} ${(game.owners || []).join(" ")}`);
+    const haystack = normalizeSearchText(`${game.title} ${game.platform} ${game.publisher} ${game.developer} ${game.genre} ${(game.genres || []).join(" ")} ${game.description} ${game.notes} ${game.preorderStore} ${(game.tags || []).join(" ")} ${(game.owners || []).join(" ")}`);
     return !game.deletedAt
       && (state.filters.platform === "all" || game.platform === state.filters.platform)
       && (state.filters.region === "all" || game.country === state.filters.region)
       && conditionMatches(game, state.filters.condition)
       && (state.filters.category === "all" || [...String(game.genre || "").split(","), ...(game.genres || [])].map((value) => value.trim()).includes(state.filters.category))
-      && (state.filters.tab === "preorders" ? game.preorderProjection : normalizedShelfTab(state.filters.tab) === "new" ? isPendingCollectionGame(game) : !isPendingCollectionGame(game))
+      && (normalizedTab === "preorders" ? game.preorderProjection : normalizedTab === "new" ? isPendingCollectionGame(game) : !isPendingCollectionGame(game))
       && (!state.filters.query || haystack.includes(state.filters.query));
   }).sort(sorter(state.filters.sort));
 }
@@ -1240,6 +1259,18 @@ function preorderPlaytimePill(game) {
 
 function shoppingBagIcon() {
   return `<svg class="shopping-bag-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M6.5 8.5h11l1 12h-13l1-12Z"></path><path d="M9 8.5V7a3 3 0 0 1 6 0v1.5"></path></svg>`;
+}
+
+function shelfPreorderCountPill(games) {
+  const counts = new Map();
+  games.forEach((game) => {
+    const store = String(game.preorderStore || "").trim();
+    if (store) counts.set(store, (counts.get(store) || 0) + 1);
+  });
+  const summary = [...counts.entries()].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0], undefined, { sensitivity: "base" }));
+  const rows = summary.map(([store, count]) => `<span><strong>${escapeHtml(store)}</strong><em>${count}</em></span>`).join("");
+  const title = summary.map(([store, count]) => `${store}: ${count}`).join("\n");
+  return `<span class="preorder-count-pill preorder-count-tooltip" tabindex="0" title="${escapeHtml(title)}">${shoppingBagIcon()}${games.length} preordered<span class="preorder-store-list" role="tooltip">${rows}</span></span>`;
 }
 
 function visibleShelfCardOwners(owners = []) {
