@@ -5166,8 +5166,7 @@ function rowFor(game, section, options = {}) {
     </span>
     <div class="game-row-identity">
       <strong class="${game.platinum ? "completed-achievements-title" : ""} ${ownerTitleClasses(owners)}" tabindex="0">${escapeHtml(game.title)}</strong>
-      <span class="game-row-owner-line">${visibleOwnerTags(game).map(ownerBadge).join("")}</span>
-      ${studioText(game) ? `<span>${escapeHtml(studioText(game))}</span>` : ""}
+      <span class="game-row-studio-line">${visibleOwnerTags(game).map(ownerBadge).join("")}${studioText(game) ? `<span class="game-row-studio-text">${escapeHtml(studioText(game))}</span>` : ""}</span>
     </div>
     <div class="game-row-core">${rowCoreStats(game)}</div>
     <div class="game-row-tags">${rowTags(game).join("")}</div>
@@ -6442,11 +6441,11 @@ function cardFor(game, options = {}) {
   card.querySelector("h3").className = `${card.querySelector("h3").className.replace(/\bowner-[\w-]+/g, "").trim()} ${ownerTitleClasses(owners)}`.trim();
   card.querySelector("h3").classList.toggle("completed-achievements-title", Boolean(game.platinum));
   const titleOwners = card.querySelector(".title-owners");
-  titleOwners.innerHTML = visibleOwnerTags(game).map(ownerBadge).join("");
-  titleOwners.hidden = !titleOwners.innerHTML;
+  titleOwners.innerHTML = "";
+  titleOwners.hidden = true;
   const studioLine = card.querySelector(".studio-line");
-  studioLine.textContent = studioText(game);
-  studioLine.hidden = !studioLine.textContent;
+  studioLine.innerHTML = `${visibleOwnerTags(game).map(ownerBadge).join("")}${studioText(game) ? `<span>${escapeHtml(studioText(game))}</span>` : ""}`;
+  studioLine.hidden = !studioLine.innerHTML;
   card.querySelector(".meta").innerHTML = metaFor(game, {
     includePsn: neutralReleaseCard || !game.playing,
     includeCalendarState: releaseDialog,
@@ -6699,12 +6698,13 @@ function openDetail(id, options = {}) {
   const owners = ownerTags(game);
   el.detailTitle.textContent = game.title;
   el.detailTitle.className = `${el.detailTitle.className.replace(/\bowner-[\w-]+/g, "").trim()} ${ownerTitleClasses(owners)}`.trim();
-  el.detailStudio.textContent = studioText(game);
-  el.detailStudio.hidden = !el.detailStudio.textContent;
+  el.detailStudio.innerHTML = `${visibleOwnerTags(game).map(ownerBadge).join("")}${studioText(game) ? `<span>${escapeHtml(studioText(game))}</span>` : ""}`;
+  el.detailStudio.hidden = !el.detailStudio.innerHTML;
   el.detailMeta.innerHTML = metaFor(game, { includePsn: false, includeOwners: false }).join("");
+  bindDetailShelfSearch(game);
   el.detailDates.innerHTML = playDatesFor(game, { includePastRelease: true }).join("");
   el.detailDates.hidden = !el.detailDates.innerHTML;
-  el.detailChips.innerHTML = `${visibleOwnerTags(game).map(ownerBadge).join("")}${chipsFor(game).join("")}`;
+  el.detailChips.innerHTML = chipsFor(game).join("");
   el.detailStoreLinks.innerHTML = storeLinksFor(game);
   el.detailDescription.textContent = game.description || "No description yet.";
   renderDetailGuides(game);
@@ -6724,6 +6724,30 @@ function openDetail(id, options = {}) {
   renderDetailTrophies(game);
   el.detailDialog.showModal();
   syncScrollLock();
+}
+
+function bindDetailShelfSearch(game) {
+  el.detailMeta.onclick = null;
+  el.detailMeta.onkeydown = null;
+  if (pageSwitchHidden()) return;
+  const targets = el.detailMeta.querySelectorAll(".platform-badge, .physical-pill");
+  targets.forEach((target) => {
+    target.classList.add("detail-shelf-search-link");
+    target.setAttribute("role", "link");
+    target.tabIndex = 0;
+    target.title = `Find ${game.title} on the shelf`;
+  });
+  const navigate = (event) => {
+    const target = event.target.closest(".detail-shelf-search-link");
+    if (!target) return;
+    if (event.type === "keydown" && event.key !== "Enter" && event.key !== " ") return;
+    event.preventDefault();
+    const url = new URL("shelf", window.location.href);
+    url.searchParams.set("search", game.title);
+    window.location.href = url.href;
+  };
+  el.detailMeta.onclick = navigate;
+  el.detailMeta.onkeydown = navigate;
 }
 
 async function renderDetailTrophies(game) {
