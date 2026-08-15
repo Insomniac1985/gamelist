@@ -431,8 +431,16 @@ async function init() {
   if (await maybeRenderGameOfTheYearExportPreview()) return;
   render();
   if (cloudChanged) render();
-  const requestedGame = new URLSearchParams(location.search).get("game");
-  if (requestedGame && state.games.some((game) => game.id === requestedGame && !game.deletedAt)) openDetail(requestedGame);
+  const requestedParams = new URLSearchParams(location.search);
+  const requestedEdit = requestedParams.get("edit");
+  const requestedGame = requestedParams.get("game");
+  if (requestedEdit && state.games.some((game) => game.id === requestedEdit && !game.deletedAt)) {
+    const cleanUrl = new URL(window.location.href);
+    cleanUrl.searchParams.delete("edit");
+    window.history.replaceState({}, "", `${cleanUrl.pathname}${cleanUrl.search}${cleanUrl.hash}`);
+    await openEditor(requestedEdit);
+  }
+  else if (requestedGame && state.games.some((game) => game.id === requestedGame && !game.deletedAt)) openDetail(requestedGame);
   await consoleInfoPromise;
   refreshAchievements();
   scheduleBackgroundRefreshes();
@@ -932,7 +940,12 @@ function bindEvents() {
     syncPlatformInputIcon();
   });
   el.fields.platform.addEventListener("change", syncPlatformInputIcon);
-  el.fields.preorderStore.addEventListener("input", () => syncStoreInputIcon(el.fields.preorderStore, el.preorderStoreFieldIcon));
+  el.fields.releaseDate.addEventListener("input", syncNewGameUpcomingSection);
+  el.fields.releaseDate.addEventListener("change", syncNewGameUpcomingSection);
+  el.fields.preorderStore.addEventListener("input", () => {
+    syncStoreInputIcon(el.fields.preorderStore, el.preorderStoreFieldIcon);
+    syncNewGameUpcomingSection();
+  });
   el.fields.preferredStore.addEventListener("input", () => syncStoreInputIcon(el.fields.preferredStore, el.preferredStoreFieldIcon));
   el.fields.digital.addEventListener("change", syncDialogPriceVisibility);
   el.fields.dlc.addEventListener("change", syncDlcDigital);
@@ -8882,6 +8895,19 @@ function todayDate() {
   return new Date().toISOString().slice(0, 10);
 }
 
+function newGameShouldBeUpcoming() {
+  const releaseDate = dateOnly(el.fields.releaseDate.value);
+  const futureRelease = Boolean(releaseDate) && new Date(`${releaseDate}T00:00:00`).getTime() > new Date().setHours(0, 0, 0, 0);
+  return futureRelease || Boolean(el.fields.preorderStore.value.trim());
+}
+
+function syncNewGameUpcomingSection() {
+  if (state.editingId || !newGameShouldBeUpcoming()) return;
+  el.fields.section.value = "upcoming";
+  syncStyledSelect(el.fields.section, { activeValue: null });
+  syncDialogPriceVisibility();
+}
+
 function shouldCreatePreorderCalendarEvent(existing, game) {
   return Boolean(game?.preorderStore)
     && !existing?.preorderStore
@@ -9053,7 +9079,8 @@ async function saveCurrentFormGame() {
   const effectiveCompletedAt = completedAt || (platinum ? todayDate() : "");
   const playing = el.fields.playing.checked && !effectiveCompletedAt;
   const finishingSetup = existing?.section === "new" && state.finishSetupId === id;
-  const section = playing || replayCount || finishingSetup ? "backlog" : el.fields.section.value;
+  const requestedSection = !existing && newGameShouldBeUpcoming() ? "upcoming" : el.fields.section.value;
+  const section = playing || replayCount || finishingSetup ? "backlog" : requestedSection;
   const startedAt = el.fields.startedAt.value || (playing && !existing?.playing && !existing?.startedAt ? todayDate() : "");
   const trailerUrl = el.fields.trailerUrl.value.trim();
   const trailerUrlRemoved = !trailerUrl && Boolean(existing?.trailerUrl || existing?.trailerUrlRemoved);
@@ -9498,6 +9525,7 @@ function applyLookup(result) {
   el.fields.playstationUrl.value = links.playstation || el.fields.playstationUrl.value;
   el.fields.nintendoUrl.value = links.nintendo || el.fields.nintendoUrl.value;
   el.fields.xboxUrl.value = links.xbox || el.fields.xboxUrl.value;
+  syncNewGameUpcomingSection();
   el.fields.steamUrl.value = links.steam || el.fields.steamUrl.value;
   const current = state.games.find((game) => game.id === el.fields.id.value);
   if (current && !current.description && result.description) current.description = result.description;
