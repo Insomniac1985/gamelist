@@ -1099,11 +1099,11 @@ html.theme-font-mata .shelf-page .playing-section .column-head h2 {
   position: absolute;
   inset: 6px auto 6px 6px;
   z-index: 0;
-  width: var(--tab-width);
+  width: var(--tab-active-width, var(--tab-width));
   border-radius: 7px;
   background: var(--accent);
   box-shadow: 0 3px 24px color-mix(in srgb, var(--accent) 42%, transparent);
-  transform: translateX(calc(var(--tab-index) * (100% + 6px)));
+  transform: translateX(var(--tab-left, calc(var(--tab-index) * (100% + 6px))));
   transition: transform 180ms ease;
   pointer-events: none;
 }
@@ -1849,6 +1849,19 @@ textarea {
   .shelf-tabs {
     top: calc(25px + var(--pull-ui-offset, 0px));
     margin: 12px 0 16px;
+  }
+
+  .shelf-tabs.sync-preorders-enabled:has(button[data-shelf-tab="new"]) {
+    grid-template-columns: minmax(34px, 42px) repeat(var(--compact-tab-count), minmax(0, 1fr));
+  }
+
+  .shelf-tabs.sync-preorders-enabled button[data-shelf-tab="new"] {
+    min-width: 0;
+    padding: 0;
+  }
+
+  .shelf-tabs.sync-preorders-enabled button[data-shelf-tab="new"] .label {
+    display: none;
   }
 
   .shelf-tabs button {
