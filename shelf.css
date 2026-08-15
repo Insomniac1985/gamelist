@@ -1134,6 +1134,11 @@ html.theme-font-mata .shelf-page .playing-section .column-head h2 {
   white-space: nowrap;
 }
 
+.shelf-tabs button[data-shelf-tab="preorders"],
+.shelf-tabs button[data-shelf-tab="new"] {
+  gap: 10px;
+}
+
 .shelf-tabs button .count {
   display: inline-grid;
   place-items: center;
@@ -1871,7 +1876,12 @@ textarea {
   }
 
   .shelf-tabs button .label {
-    font-size: 11px;
+    font-size: 15px;
+  }
+
+  .shelf-tabs button[data-shelf-tab="preorders"],
+  .shelf-tabs button[data-shelf-tab="new"] {
+    gap: 7px;
   }
 
   .shelf-tabs button .count {
