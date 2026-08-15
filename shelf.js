@@ -1185,7 +1185,7 @@ function gameCard(game, options = {}) {
   if (preorderProjection) edit.dataset.action = "show-preorder-prices"; else edit.dataset.action = "edit";
   card.querySelector(".studio-line").textContent = studio || game.genre || "Physical edition";
   card.querySelector(".meta").innerHTML = preorderProjection
-    ? `${platformBadge(game.platform, { title: game.title })}${mediaFormatBadge(game)}`
+    ? `${platformBadge(game.platform, { title: game.title })}${mediaFormatBadge(game)}${preorderPlaytimePill(game)}`
     : `<span class="region-flag" title="${escapeHtml(game.country)}">${flagIcon(game.country)}</span>${platformBadge(game.platform, { title: game.title })}${conditionBadge(condition)}${shelfProgressPill(game)}`;
   const playDates = card.querySelector(".play-dates");
   if (preorderProjection) playDates.innerHTML = `${game.releaseDate ? `<span class="release-pill history-date-pill"><small class="release-date-label"><span>Releases</span>${calendarMiniIcon()}</small><strong>${escapeHtml(formatDate(game.releaseDate))}</strong></span>` : ""}${game.preorderStore ? preorderProjectionChip(game.preorderStore) : ""}`;
@@ -1201,7 +1201,7 @@ function gameCard(game, options = {}) {
   else prices.remove();
   const note = card.querySelector(".notes");
   note.textContent = preorderProjection ? shortDescription(game.description || "") : game.notes || "";
-  note.classList.add("shelf-card-notes");
+  if (!preorderProjection) note.classList.add("shelf-card-notes");
   note.hidden = !note.textContent;
   if (!preorderProjection && game.description) note.insertAdjacentHTML("afterend", `<p class="shelf-card-description">${escapeHtml(game.description)}</p>`);
   return card;
@@ -1218,10 +1218,10 @@ function gameRow(game) {
   const description = game.description || "";
   const actions = preorderProjection ? `<div class="game-row-actions-top"><button class="ghost-button" data-action="show-preorder-prices" type="button">Prices</button></div><div class="game-row-actions-bottom"><button class="ghost-button" data-action="accept-preorder" type="button">Got it</button><button class="icon-button danger-button row-delete-action" data-action="delete-preorder" type="button" title="Delete" aria-label="Delete">${trashIcon()}</button></div>` : isPendingCollectionGame(game) ? `<div class="game-row-actions-top"><button class="primary-button add-collection-action" data-action="add-collection" type="button">Add to Collection</button></div><div class="game-row-actions-bottom"><button class="icon-button danger-button row-delete-action" data-action="delete" type="button" title="Delete" aria-label="Delete">${trashIcon()}</button></div>` : `<div class="game-row-actions-top"><button class="icon-button row-edit-action" data-action="edit" type="button" title="Edit" aria-label="Edit">${pencilIcon()}</button><button class="icon-button danger-button row-delete-action" data-action="delete" type="button" title="Delete" aria-label="Delete">${trashIcon()}</button></div><div class="game-row-actions-bottom"><button class="ghost-button shelf-add-backlog-action" data-action="add-backlog" type="button">Add to Backlog</button></div>`;
   const core = preorderProjection
-    ? `${platformBadge(game.platform, { title: game.title })}${mediaFormatBadge(game)}${game.releaseDate ? `<span class="release-pill history-date-pill"><small class="release-date-label"><span>Releases</span>${calendarMiniIcon()}</small><strong>${escapeHtml(formatDate(game.releaseDate))}</strong></span>` : ""}`
+    ? `${platformBadge(game.platform, { title: game.title })}${mediaFormatBadge(game)}${preorderPlaytimePill(game)}${game.releaseDate ? `<span class="release-pill history-date-pill"><small class="release-date-label"><span>Releases</span>${calendarMiniIcon()}</small><strong>${escapeHtml(formatDate(game.releaseDate))}</strong></span>` : ""}`
     : `<span class="region-flag" title="${escapeHtml(game.country)}">${flagIcon(game.country)}</span>${platformBadge(game.platform, { title: game.title })}${conditionBadge(conditionLabel(game))}${shelfProgressPill(game)}`;
   const prices = preorderProjection ? gamelistPreorderPrices(game) : "";
-  return `<article class="game-row${preorderProjection ? " preorder-projection-row" : ""}${ownerClasses}" data-id="${escapeHtml(game.id)}" role="button" tabindex="0" aria-label="${escapeHtml(`Open ${game.title}`)}"><span class="game-row-cover-wrap"><img class="game-row-cover" src="${escapeHtml(cover)}" alt="" loading="lazy" decoding="async"><img class="game-row-cover-preview" src="${escapeHtml(cover)}" alt="" loading="lazy" decoding="async" aria-hidden="true"></span><div class="game-row-identity"><strong class="${visibleOwners.map(ownerColorClass).join(" ")}">${escapeHtml(game.title)}</strong><span class="game-row-owner-line">${visibleOwners.map(ownerBadge).join("")}</span>${studio ? `<span>${escapeHtml(studio)}</span>` : ""}</div><div class="game-row-core">${core}</div><div class="game-row-tags">${preorderProjection && game.preorderStore ? preorderProjectionChip(game.preorderStore) : ""}${tags.map((tag) => `<span class="chip genre">${escapeHtml(tag)}</span>`).join("")}</div>${prices ? `<div class="game-row-prices">${prices}</div>` : ""}${description ? `<div class="game-row-description shelf-row-description">${escapeHtml(description)}</div>` : ""}<div class="game-row-actions">${actions}</div></article>`;
+  return `<article class="game-row${preorderProjection ? " preorder-projection-row" : ""}${ownerClasses}" data-id="${escapeHtml(game.id)}" role="button" tabindex="0" aria-label="${escapeHtml(`Open ${game.title}`)}"><span class="game-row-cover-wrap"><img class="game-row-cover" src="${escapeHtml(cover)}" alt="" loading="lazy" decoding="async"><img class="game-row-cover-preview" src="${escapeHtml(cover)}" alt="" loading="lazy" decoding="async" aria-hidden="true"></span><div class="game-row-identity"><strong class="${visibleOwners.map(ownerColorClass).join(" ")}">${escapeHtml(game.title)}</strong><span class="game-row-owner-line">${visibleOwners.map(ownerBadge).join("")}</span>${studio ? `<span>${escapeHtml(studio)}</span>` : ""}</div><div class="game-row-core">${core}</div><div class="game-row-tags">${preorderProjection && game.preorderStore ? preorderProjectionChip(game.preorderStore) : ""}${tags.map((tag) => `<span class="chip genre">${escapeHtml(tag)}</span>`).join("")}</div>${prices ? `<div class="game-row-prices">${prices}</div>` : ""}${description ? `<div class="game-row-description${preorderProjection ? "" : " shelf-row-description"}">${escapeHtml(description)}</div>` : ""}<div class="game-row-actions">${actions}</div></article>`;
 }
 
 function gamelistPreorderPrices(game) {
@@ -1230,6 +1230,12 @@ function gamelistPreorderPrices(game) {
 
 function preorderProjectionChip(store) {
   return `<span class="chip accent preorder-chip" title="${escapeHtml(`Preordered: ${store}`)}">${shoppingBagIcon()}${escapeHtml(store)}</span>`;
+}
+
+function preorderPlaytimePill(game) {
+  if (!game?.lengthHours) return "";
+  const url = game.hltbUrl || game.howLongToBeatUrl || `https://howlongtobeat.com/?q=${encodeURIComponent(game.title || "")}`;
+  return timeBadgeMarkup(game.lengthHours, url, escapeHtml);
 }
 
 function shoppingBagIcon() {
@@ -2713,7 +2719,7 @@ function openGamelistDetails(sourceGame) {
   el.detailTitle.className = `${el.detailTitle.className.replace(/\bowner-[\w-]+/g, "").trim()} ${owners.map(ownerColorClass).join(" ")}`.trim();
   el.detailStudio.textContent = [game.developer, game.publisher].filter(Boolean).join(" / ");
   el.detailStudio.hidden = !el.detailStudio.textContent;
-  el.detailMeta.innerHTML = `${platformBadge(game.platform, { title: game.title })}${mediaFormatBadge(game)}`;
+  el.detailMeta.innerHTML = `${platformBadge(game.platform, { title: game.title })}${mediaFormatBadge(game)}${preorderPlaytimePill(game)}`;
   el.detailDates.innerHTML = `${game.releaseDate ? `<span class="release-pill history-date-pill"><small class="release-date-label"><span>Releases</span>${calendarMiniIcon()}</small><strong>${escapeHtml(formatDate(game.releaseDate))}</strong></span>` : ""}`;
   el.detailDates.hidden = !el.detailDates.innerHTML;
   el.detailChips.innerHTML = `${game.preorderStore ? preorderProjectionChip(game.preorderStore) : ""}${(game.genres || []).slice(0, 4).map((genre) => `<span class="chip genre">${escapeHtml(genre)}</span>`).join("")}`;

@@ -691,10 +691,6 @@ html.theme-font-mata .shelf-page .playing-section .column-head h2 {
   gap: 10px;
 }
 
-.shelf-grid.preorders-view {
-  grid-template-columns: repeat(auto-fit, minmax(min(620px, 100%), 1fr));
-}
-
 .shelf-grid .game-card {
   grid-template-columns: var(--shelf-cover-width, 104px) minmax(0, 1fr);
   min-height: 240px;
