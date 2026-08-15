@@ -5215,7 +5215,7 @@ function rowFor(game, section, options = {}) {
 function rowPrimaryAction(game, section) {
   if (section === "backlog") return `<button class="primary-button row-primary-action" type="button">Play</button>`;
   if (section === "new") {
-    return `<button class="primary-button row-primary-action" type="button">Play</button><button class="ghost-button row-setup-action" type="button">Finish setup</button>`;
+    return `<button class="primary-button row-primary-action" type="button">Play</button><button class="primary-button row-setup-action" type="button">Setup</button>`;
   }
   return `<button class="ghost-button row-primary-action" type="button">Got it</button>`;
 }
@@ -6497,7 +6497,9 @@ function cardFor(game, options = {}) {
     priceRefreshAction.remove();
     backlogAction.remove();
     trophyAction.remove();
-    boughtAction.textContent = "Finish setup";
+    boughtAction.textContent = "Setup";
+    boughtAction.classList.remove("ghost-button");
+    boughtAction.classList.add("primary-button");
     boughtAction.addEventListener("click", () => finishSetupGame(game.id));
     completeAction.innerHTML = `<span class="action-label">Play</span>`;
     completeAction.addEventListener("click", () => startPlaying(game.id));
