@@ -1183,7 +1183,7 @@ function gameCard(game, options = {}) {
   const owners = game.owners || [];
   const visibleOwners = visibleShelfCardOwners(owners);
   const ownerClasses = visibleOwners.map((owner) => ` ${ownerCardColorClass(owner)}`).join("");
-  const tags = (preorderProjection ? (game.genres || []).slice(0, 4) : [...(game.tags || []), game.category && game.category !== "Game" ? game.category : "", ...String(game.genre || "").split(",")]).map((tag) => String(tag).trim()).filter((tag, index, list) => tag && normalize(tag) !== "game" && list.indexOf(tag) === index);
+  const tags = visibleShelfTags(game, preorderProjection ? (game.genres || []).slice(0, 4) : [...(game.tags || []), game.category && game.category !== "Game" ? game.category : "", ...String(game.genre || "").split(",")]);
   const condition = conditionLabel(game);
   const card = createGameCardShell(document);
   card.dataset.id = game.id;
@@ -1233,7 +1233,7 @@ function gameRow(game) {
   const owners = game.owners || [];
   const visibleOwners = visibleShelfCardOwners(owners);
   const ownerClasses = visibleOwners.map((owner) => ` ${ownerCardColorClass(owner)}`).join("");
-  const tags = (preorderProjection ? (game.genres || []).slice(0, 4) : [...(game.tags || []), game.category && game.category !== "Game" ? game.category : "", ...String(game.genre || "").split(",")]).map((tag) => String(tag).trim()).filter((tag, index, list) => tag && normalize(tag) !== "game" && list.indexOf(tag) === index);
+  const tags = visibleShelfTags(game, preorderProjection ? (game.genres || []).slice(0, 4) : [...(game.tags || []), game.category && game.category !== "Game" ? game.category : "", ...String(game.genre || "").split(",")]);
   const description = game.description || "";
   const actions = preorderProjection ? `<div class="game-row-actions-top"><button class="ghost-button" data-action="show-preorder-prices" type="button">Prices</button></div><div class="game-row-actions-bottom"><button class="ghost-button" data-action="accept-preorder" type="button">Got it</button><button class="icon-button danger-button row-delete-action" data-action="delete-preorder" type="button" title="Delete" aria-label="Delete">${trashIcon()}</button></div>` : isPendingCollectionGame(game) ? `<div class="game-row-actions-top"><button class="primary-button add-collection-action" data-action="add-collection" type="button">Add to Collection</button></div><div class="game-row-actions-bottom"><button class="icon-button danger-button row-delete-action" data-action="delete" type="button" title="Delete" aria-label="Delete">${trashIcon()}</button></div>` : `<div class="game-row-actions-top"><button class="icon-button row-edit-action" data-action="edit" type="button" title="Edit" aria-label="Edit">${pencilIcon()}</button><button class="icon-button danger-button row-delete-action" data-action="delete" type="button" title="Delete" aria-label="Delete">${trashIcon()}</button></div><div class="game-row-actions-bottom"><button class="ghost-button shelf-add-backlog-action" data-action="add-backlog" type="button">Add to Backlog</button></div>`;
   const core = preorderProjection
@@ -1330,7 +1330,7 @@ function openDetails(game) {
   el.detailCover.parentElement.classList.remove("has-wrap");
   el.detailCover.alt = `${game.title} cover`;
   bindCoverFrame(el.detailCover);
-  const detailTags = [...(game.tags || []), game.category && game.category !== "Game" ? game.category : "", ...String(game.genre || "").split(",")].map((value) => String(value).trim()).filter((value, index, list) => value && normalize(value) !== "game" && list.indexOf(value) === index);
+  const detailTags = visibleShelfTags(game, [...(game.tags || []), game.category && game.category !== "Game" ? game.category : "", ...String(game.genre || "").split(",")]);
   el.detailChips.innerHTML = `${visibleShelfCardOwners(game.owners || []).map(ownerBadge).join("")}${detailTags.map((value) => `<span class="chip genre">${escapeHtml(value)}</span>`).join("")}`;
   el.detailDates.innerHTML = `${game.releaseDate ? `<span class="release-pill history-date-pill"><small class="release-date-label"><span>Released</span>${calendarMiniIcon()}</small><strong>${escapeHtml(formatDate(game.releaseDate))}</strong></span>` : ""}${game.createdAt ? `<span class="history-pill history-date-pill"><small>Added</small><strong>${escapeHtml(formatDate(game.createdAt))}</strong></span>` : ""}`;
   el.detailDates.hidden = !el.detailDates.innerHTML;
@@ -2476,11 +2476,14 @@ function showcaseTitleMarkup(title) {
 }
 
 function showcaseGameTags(game) {
-  const tags = [...(game.tags || []), game.category && game.category !== "Game" ? game.category : "", ...String(game.genre || "").split(",")]
-    .map((tag) => String(tag).trim())
-    .filter((tag, index, list) => tag && normalize(tag) !== "game" && list.indexOf(tag) === index)
-    .slice(0, 4);
-  return tags;
+  return visibleShelfTags(game, [...(game.tags || []), game.category && game.category !== "Game" ? game.category : "", ...String(game.genre || "").split(",")]).slice(0, 4);
+}
+
+function visibleShelfTags(game, values = []) {
+  const importedFromGamelist = game?.source === "gamelist" || Boolean(game?.gamelistId) || String(game?.id || "").startsWith("gamelist-");
+  return values
+    .map((value) => String(value || "").trim())
+    .filter((value, index, list) => value && normalize(value) !== "game" && !(importedFromGamelist && normalize(value) === "gamelist") && list.indexOf(value) === index);
 }
 
 function syncShowcaseDirectionButton() {
