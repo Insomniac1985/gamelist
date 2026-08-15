@@ -5215,9 +5215,9 @@ function rowCoreStats(game) {
   const release = releaseStatus(game);
   return [
     game.platform ? platformBadge(game.platform, null, { title: game.title }) : "",
-    game.dlc ? dlcBadge(game) : "",
     mediaFormatBadge(game),
-    game.coop ? `<span class="coop-pill">Coop</span>` : "",
+    game.dlc ? dlcBadge(game) : "",
+    game.coop ? coopBadge() : "",
     game.emulator ? `<span class="emulator-pill">Emulator</span>` : "",
     game.lengthHours ? timeBadge(game.lengthHours, hltbUrlFor(game)) : "",
     game.stream ? `<span class="stream-pill">Stream</span>` : "",
@@ -6436,7 +6436,10 @@ function cardFor(game, options = {}) {
   const studioLine = card.querySelector(".studio-line");
   studioLine.textContent = studioText(game);
   studioLine.hidden = !studioLine.textContent;
-  card.querySelector(".meta").innerHTML = metaFor(game, { includePsn: neutralReleaseCard || !game.playing }).join("");
+  card.querySelector(".meta").innerHTML = metaFor(game, {
+    includePsn: neutralReleaseCard || !game.playing,
+    includeCalendarState: releaseDialog,
+  }).join("");
   const playDates = card.querySelector(".play-dates");
   playDates.innerHTML = playDatesFor(game, { includePastRelease: Boolean(options.includePastRelease), includeRelease: !releaseDialog, includePreorder: !releaseDialog }).join("");
   playDates.hidden = !playDates.innerHTML;
@@ -7060,15 +7063,19 @@ function sectionRank(section) {
 function metaFor(game, options = {}) {
   const values = [];
   if (game.platform) values.push(platformBadge(game.platform, null, { title: game.title }));
-  if (game.dlc) values.push(dlcBadge(game));
   values.push(mediaFormatBadge(game));
+  if (game.dlc) values.push(dlcBadge(game));
   if (game.emulator) values.push(`<span class="emulator-pill">Emulator</span>`);
   if (game.lengthHours) values.push(timeBadge(game.lengthHours, hltbUrlFor(game)));
   if (game.stream) values.push(`<span class="stream-pill">Stream</span>`);
   gameStatuses(game).forEach((status) => values.push(statusBadge(status)));
+  if (options.includeCalendarState) {
+    if (game.completedAt) values.push(calendarStateBadge("Finished", "finished"));
+    else if (game.section === "backlog") values.push(calendarStateBadge("Backlog", "backlog"));
+  }
   const progress = achievementProgressForGame(game);
   if (options.includePsn !== false && progress) values.push(psnProgressBadge(progress));
-  if (game.coop) values.push(`<span class="coop-pill">Coop</span>`);
+  if (game.coop) values.push(coopBadge());
   if (game.replayCount) values.push(replayBadge(game.replayCount));
   return values;
 }
@@ -7673,10 +7680,10 @@ function completedBadges(game, options = {}) {
   const progress = achievementProgressForGame(game);
   return [
     game.platform ? platformBadge(game.platform, null, { title: game.title }) : "",
-    game.dlc ? dlcBadge(game) : "",
     mediaFormatBadge(game),
+    game.dlc ? dlcBadge(game) : "",
     game.emulator ? `<span class="emulator-pill">Emulator</span>` : "",
-    game.coop ? `<span class="coop-pill">Coop</span>` : "",
+    game.coop ? coopBadge() : "",
     game.stream ? `<span class="stream-pill">Stream</span>` : "",
     game.replayCount ? replayBadge(game.replayCount) : "",
     options.includePsn === false ? "" : (progress ? psnProgressBadge(progress) : ""),
@@ -7772,7 +7779,23 @@ function ownerBadge(owner) {
 }
 
 function statusBadge(status) {
-  return `<span class="status-pill ${escapeHtml(statusType(status))}">${escapeHtml(status)}</span>`;
+  return `<span class="status-pill ${escapeHtml(statusType(status))}">${alertTagIcon()}${escapeHtml(status)}</span>`;
+}
+
+function calendarStateBadge(label, tone) {
+  return `<span class="calendar-state-pill calendar-state-${escapeHtml(tone)}">${escapeHtml(label)}</span>`;
+}
+
+function coopBadge() {
+  return `<span class="coop-pill">${coopIcon()}<span>CoOp</span></span>`;
+}
+
+function coopIcon() {
+  return `<svg class="coop-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="8" cy="8" r="3"></circle><circle cx="16" cy="8" r="3"></circle><path d="M2.8 19c.4-4 2.1-6 5.2-6s4.8 2 5.2 6"></path><path d="M10.8 19c.4-4 2.1-6 5.2-6s4.8 2 5.2 6"></path></svg>`;
+}
+
+function alertTagIcon() {
+  return `<svg class="alert-tag-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3 2.8 20h18.4L12 3Z"></path><path d="M12 9v5"></path><circle cx="12" cy="17" r=".8"></circle></svg>`;
 }
 
 function replayBadge(count) {
@@ -7801,9 +7824,9 @@ function completionPill(game) {
 }
 
 function mediaFormatBadge(game) {
-  if (!game || game.dlc) return "";
+  if (!game) return "";
   const cls = platformClass(game.platform, { title: game.title });
-  if (game.digital) {
+  if (game.digital || game.dlc) {
     return `<span class="digital-pill media-format-pill ${escapeHtml(cls)}" title="Digital" aria-label="Digital">${downloadBadgeIcon()}</span>`;
   }
   return `<span class="digital-pill physical-pill media-format-pill ${escapeHtml(cls)}" title="Physical" aria-label="Physical">${physicalDiskIcon(cls)}</span>`;

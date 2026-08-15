@@ -5189,6 +5189,7 @@ body.theme-kash .game-card.stream-card.completed-trophy-card {
 .release-pill,
 .owner-pill,
 .status-pill,
+.calendar-state-pill,
 .time-pill,
 .dlc-pill,
 .digital-pill,
@@ -5418,6 +5419,7 @@ body.theme-kash .game-card.stream-card.completed-trophy-card {
 .release-pill,
 .owner-pill,
 .status-pill,
+.calendar-state-pill,
 .dlc-pill,
 .digital-pill,
 .emulator-pill,
@@ -5690,6 +5692,41 @@ body.theme-kash .game-card.stream-card.completed-trophy-card {
   border-color: rgba(121, 242, 206, 0.32);
   background: rgba(121, 242, 206, 0.1);
   font-weight: 820;
+}
+
+.coop-pill,
+.status-pill {
+  align-items: center;
+  gap: 4px;
+}
+
+.coop-icon,
+.alert-tag-icon {
+  width: 14px;
+  height: 14px;
+  flex: 0 0 14px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.calendar-state-pill {
+  font-size: 10px;
+  font-weight: 820;
+}
+
+.calendar-state-backlog {
+  color: var(--accent-1);
+  border-color: color-mix(in srgb, var(--accent-1) 38%, transparent);
+  background: color-mix(in srgb, var(--accent-1) 12%, transparent);
+}
+
+.calendar-state-finished {
+  color: #ff9ed2;
+  border-color: rgba(255, 158, 210, 0.38);
+  background: rgba(255, 158, 210, 0.1);
 }
 
 .stream-pill {
@@ -11485,6 +11522,16 @@ body.theme-kash
 }
 
 @media (max-width: 760px) {
+  .price-refresh-action,
+  #pricesButton {
+    display: none !important;
+  }
+
+  .game-row .media-format-pill img,
+  .game-row .media-format-pill .download-badge-icon {
+    transform: scale(1.1);
+  }
+
   .page-pull-switch {
     width: min(340px, calc(100vw - 20px));
     height: 25px;
