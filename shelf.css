@@ -845,6 +845,12 @@ html.theme-font-mata .shelf-page .playing-section .column-head h2 {
   gap: 9px;
 }
 
+@media (min-width: 761px) {
+  .shelf-grid.preorders-view.list-view .preorder-projection-row .game-row-description {
+    display: none;
+  }
+}
+
 .shelf-grid.list-view .region-flag,
 .shelf-grid.list-view .condition-pill {
   width: auto;
