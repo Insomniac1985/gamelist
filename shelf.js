@@ -133,6 +133,7 @@ const el = {
   releaseDialogList: document.querySelector("#shelfReleaseDialogList"),
   footerUpdate: document.querySelector("#footerDataUpdate"),
   footerVersion: document.querySelector("#footerVersion"),
+  footerCreditText: document.querySelector("#footerCreditText"),
   scrollTop: document.querySelector("#scrollTopButton"),
   floatingActions: document.querySelector("#floatingEditActions"), floatingAdd: document.querySelector("#floatingAddButton"),
   detailDialog: document.querySelector("#detailDialog"),
@@ -498,6 +499,7 @@ function renderChrome() {
   el.footerVersion.textContent = siteVersion.version
     ? `${siteVersion.version}.${formatFooterShortDate(siteVersion.updatedAt) || "--.--"}`
     : "Version -";
+  if (el.footerCreditText) el.footerCreditText.textContent = state.gamelistSettings.shelfDigitalGames === true ? "Shelf/Drive by Shabii" : "Shelf by Shabii";
   renderBrandVersionChip();
   updateFloatingActions();
 }
