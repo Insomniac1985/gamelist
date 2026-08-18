@@ -1769,7 +1769,7 @@ async function addShelfGameToGamelistNew(game) {
     shelfId: game.id,
     title: game.title,
     platform: shortPlatform(game.platform),
-    section: "backlog",
+    section: "new",
     digital: Boolean(game.digital || game.dlc),
     dlc: Boolean(game.dlc),
     playing: false,
@@ -1796,7 +1796,7 @@ async function addShelfGameToGamelistNew(game) {
   if (!response.ok) { showToast("Could not add this game to Gamelist.", "error"); return; }
   state.gamelistGames = nextGames;
   renderGamelistModules();
-  showToast("Added to Backlog.");
+  showToast("Added to Gamelist New additions.");
 }
 
 async function acceptSyncedPreorder(game) {
