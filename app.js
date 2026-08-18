@@ -5883,7 +5883,7 @@ function statsYearBars(games) {
   });
   const max = Math.max(1, ...counts.map((item) => item.count));
   return [...years]
-    .sort((a, b) => b.localeCompare(a))
+    .sort((a, b) => a.localeCompare(b))
     .map((label, index, items) => {
       const count = countByYear.get(label) || 0;
       const yearGames = activityGames
