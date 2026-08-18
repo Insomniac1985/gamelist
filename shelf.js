@@ -2046,7 +2046,7 @@ function settingsDevFeaturesCard(kind) {
     { href: "/api/shelf-mass-add", label: "Mass add" },
     { href: "/api/shelf-metadata", label: "Fill metadata" },
     { href: "/api/shelf-price-audit", label: "Price audit" },
-    { href: "/api/shelf-import-digital", label: "Import digital" },
+    { href: "/api/shelf-import-digital", label: "Import Digital from Platforms" },
     { href: "/api/shelf-covers", label: "Mass cover add" },
   ].map((link) => `<a class="ghost-button settings-dev-link" href="${escapeHtml(link.href)}" target="_blank" rel="noreferrer" data-dev-feature="${escapeHtml(kind)}">${escapeHtml(tt(link.label))}</a>`).join("");
   return `${links}<label class="check-filter toggle-check settings-visible-check settings-dev-toggle" title="${escapeHtml(tt("Force cache on page load"))}"><input type="checkbox" id="shelfSettingsForceCacheOnLoad" ${state.gamelistSettings.forceCacheOnLoad === true ? "checked" : ""}><span>${escapeHtml(tt("Force cache on page load"))}</span></label>`;
