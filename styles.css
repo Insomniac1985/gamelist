@@ -11284,7 +11284,7 @@ body.theme-kash
 }
 
 .collection-form-grid > .dlc-check {
-  grid-column: span 2;
+  grid-column: span 4;
   align-self: end;
   min-width: 0;
   padding-inline: 8px;
@@ -11300,7 +11300,7 @@ body.theme-kash
 }
 
 .collection-form-grid > .digital-check {
-  grid-column: span 4;
+  grid-column: span 2;
 }
 
 .collection-form-grid > .release-date-field,
