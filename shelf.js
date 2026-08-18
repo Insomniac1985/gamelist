@@ -97,6 +97,7 @@ const el = {
   brandLink: document.querySelector(".brand"),
   brandVersion: document.querySelector("#brandVersion"),
   stats: document.querySelector("#shelfStats"),
+  achievementStatsButton: document.querySelector("#shelfAchievementStatsButton"),
   count: document.querySelector("#resultCount"),
   libraryTitle: document.querySelector("#shelfLibraryTitle"),
   shelf: document.querySelector("#gameShelf"),
@@ -275,6 +276,7 @@ function bindEvents() {
   el.clear.addEventListener("click", clearFilters);
   el.stats.addEventListener("click", handleStatsAction);
   el.stats.addEventListener("keydown", handleStatsActionKeydown);
+  el.achievementStatsButton?.addEventListener("click", () => { window.location.href = "/?stats=all"; });
   document.addEventListener("click", closePlatformLogoSelects);
   el.login.addEventListener("click", toggleEditMode);
   el.addButton.addEventListener("click", () => openEditor(null, { digital: state.filters.tab === "drive" }));

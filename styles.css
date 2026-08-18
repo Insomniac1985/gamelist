@@ -1737,6 +1737,10 @@ html.theme-gradient .goty-section .column-head h2 .trophy-icon {
   padding-top: 0;
 }
 
+.achievement-section .achievement-stats-button {
+  flex: 0 0 34px;
+}
+
 .achievement-section .column-head a {
   color: var(--accent-2);
   font-size: 12px;

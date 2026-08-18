@@ -247,6 +247,7 @@ const el = {
   gotyResetButton: document.querySelector("#gotyResetButton"),
   gotyGrid: document.querySelector("#gotyGrid"),
   achievementSection: document.querySelector("#achievementSection"),
+  achievementStatsButton: document.querySelector("#achievementStatsButton"),
   calendarSection: document.querySelector(".calendar-section"),
   highlightsSection: document.querySelector(".highlights-section"),
   achievementPanel: document.querySelector("#achievementPanel"),
@@ -435,6 +436,13 @@ async function init() {
   const requestedParams = new URLSearchParams(location.search);
   const requestedEdit = requestedParams.get("edit");
   const requestedGame = requestedParams.get("game");
+  const requestedStats = requestedParams.get("stats");
+  if (requestedStats && !requestedEdit && !requestedGame) {
+    const cleanUrl = new URL(window.location.href);
+    cleanUrl.searchParams.delete("stats");
+    window.history.replaceState({}, "", `${cleanUrl.pathname}${cleanUrl.search}${cleanUrl.hash}`);
+    openFinishedStatsDialog(requestedStats === "all" ? "all" : requestedStats);
+  }
   if (requestedEdit && state.games.some((game) => game.id === requestedEdit && !game.deletedAt)) {
     const cleanUrl = new URL(window.location.href);
     cleanUrl.searchParams.delete("edit");
@@ -855,6 +863,7 @@ function bindEvents() {
   });
   el.completedYearFilter?.addEventListener("change", handleCompletedYearChange);
   el.completedStatsButton?.addEventListener("click", () => openFinishedStatsDialog(state.completedYear || "all"));
+  el.achievementStatsButton?.addEventListener("click", () => openFinishedStatsDialog("all"));
   el.completedMoreButton?.addEventListener("click", () => {
     state.completedVisiblePages += 1;
     renderCompleted();
