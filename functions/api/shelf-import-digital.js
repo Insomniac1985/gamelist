@@ -38,7 +38,7 @@ async function fetchLibrary(provider, request, env) {
     user = settings.psnUser || "";
     base.pathname = "/api/achievements";
     base.search = new URLSearchParams({ user }).toString();
-  } else if (provider === "xbox") {
+  } else if (provider === "xbox" || provider === "xbox-pc") {
     handler = xboxAchievements.onRequestGet;
     user = settings.microsoftUser || "";
     base.pathname = "/api/xbox-achievements";
@@ -54,13 +54,16 @@ async function fetchLibrary(provider, request, env) {
 
 function providerGames(provider, data) {
   const source = provider === "steam" ? data.ownedGames : data.games;
-  return (Array.isArray(source) ? source : []).map((game) => ({
+  const games = (Array.isArray(source) ? source : []).map((game) => ({
     remoteId: String(game.appId || game.titleId || game.npCommunicationId || ""),
     title: String(game.name || game.title || "").trim(),
-    platform: provider === "steam" ? "Steam" : provider === "xbox" ? canonicalXboxPlatform(game.platform) : canonicalPsnPlatform(game.rarity || game.platform),
+    platform: provider === "steam" ? "Steam" : provider === "xbox" || provider === "xbox-pc" ? canonicalXboxPlatform(game.platform) : canonicalPsnPlatform(game.rarity || game.platform),
     cover: String(game.cover || game.icon || ""),
-    provider,
+    provider: provider === "xbox-pc" ? "xbox" : provider,
   })).filter((game) => game.title);
+  if (provider === "xbox-pc") return games.filter((game) => game.platform === "Xbox PC");
+  if (provider === "xbox") return games.filter((game) => game.platform !== "Xbox PC");
+  return games;
 }
 
 async function addPendingGames(rawGames, env) {
@@ -76,13 +79,16 @@ async function addPendingGames(rawGames, env) {
   const now = new Date().toISOString();
   const owner = String(list.settings?.defaultOwner || "").trim();
   let added = 0;
+  let addedToDrive = 0;
+  let addedToNewAdditions = 0;
   for (const raw of incoming) {
     const title = String(raw?.title || "").trim();
     const platform = canonicalPlatform(raw?.platform);
     if (!title || known.has(gameKey({ title, platform }))) continue;
+    const hasMetadata = Boolean(raw.metadata && typeof raw.metadata === "object" && (raw.metadata.igdbUrl || raw.metadata.hltbId || raw.metadata.cover || raw.metadata.description));
     const id = `digital-import-${slug(`${raw.provider || "digital"}-${raw.remoteId || title}-${platform}`)}-${crypto.randomUUID().slice(0, 8)}`;
     games.unshift({
-      id, title, platform, digital: true, dlc: false, pendingCollection: true,
+      id, title, platform, digital: true, dlc: false, pendingCollection: !hasMetadata, skipGamelistSync: true,
       country: "", region: "", game: false, manual: false, box: false, other: false, sealed: false,
       price: null, owners: owner ? [owner] : [], category: "Game", recordType: "Owned", releaseType: "Official",
       cover: String(raw.metadata?.cover || ""), genre: (raw.metadata?.genres || []).join(", "),
@@ -95,12 +101,14 @@ async function addPendingGames(rawGames, env) {
     });
     known.add(gameKey({ title, platform }));
     added += 1;
+    if (hasMetadata) addedToDrive += 1;
+    else addedToNewAdditions += 1;
   }
   await env.GAMELIST.put(SHELF_KEY, JSON.stringify({
     ...shelf, sourceGames, games: games.slice(0, 1000),
     overrides: shelf.overrides && typeof shelf.overrides === "object" ? shelf.overrides : {}, updatedAt: now,
   }));
-  return json({ ok: true, added, skipped: incoming.length - added });
+  return json({ ok: true, added, addedToDrive, addedToNewAdditions, skipped: incoming.length - added });
 }
 
 function gameKey(game) { return `${normalize(game?.title)}|${normalize(canonicalPlatform(game?.platform))}`; }
@@ -119,7 +127,7 @@ function importHtml(settings) {
   .game-list{list-style:none;margin:0;padding:0;display:grid;align-content:start;gap:7px;max-height:62vh;overflow:auto}.game{position:relative;display:grid;grid-template-columns:42px minmax(0,1fr) auto;gap:10px;align-items:center;min-height:56px;padding:7px 9px;border:1px solid var(--line);border-radius:7px;background:rgba(255,255,255,.035)}.game img{width:42px;height:42px;object-fit:cover;border-radius:5px;background:rgba(255,255,255,.06)}.game strong,.game small{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.game-action{opacity:0;min-width:36px;width:36px;padding:0}.game:hover .game-action,.game:focus-within .game-action{opacity:1}.empty{padding:30px 12px;text-align:center;color:var(--muted)}
   @media(max-width:760px){.workspace{grid-template-columns:1fr}.panel{min-height:380px}.provider-actions button{flex:1;min-width:135px}.game-action{opacity:1}.progress-line{grid-template-columns:82px 1fr 42px}}
   </style></head><body><main><h1>Import Digital</h1><p>Fetch owned games from the accounts configured in Shelf settings, review metadata matches, and send selected games to New additions.</p>
-  <div class="actions provider-actions"><button class="primary" data-fetch="steam">Fetch Steam</button><button class="primary" data-fetch="playstation">Fetch PlayStation</button><button class="primary" data-fetch="xbox">Fetch Xbox</button><a href="/shelf">Back to Shelf</a></div>
+  <div class="actions provider-actions"><button class="primary" data-fetch="steam">Fetch Steam</button><button class="primary" data-fetch="playstation">Fetch PlayStation</button><button class="primary" data-fetch="xbox">Fetch Xbox</button><button class="primary" data-fetch="xbox-pc">Fetch only Xbox PC</button><a href="/shelf">Back to Shelf</a></div>
   <div class="progress-stack"><div class="progress-line"><span>Account</span><div class="bar"><span id="fetchBar"></span></div><b id="fetchPct">0%</b></div><div class="progress-line"><span>Metadata</span><div class="bar"><span id="matchBar"></span></div><b id="matchPct">0%</b></div></div><div class="status" id="status">Choose an account to begin.</div>
   <div class="workspace"><section class="panel"><div class="panel-head"><h2>Ready to import</h2><span class="count" id="readyCount">0</span></div><ul class="game-list" id="ready"></ul><button class="primary" id="addReady" disabled>Add to Shelf</button></section>
   <section class="panel"><div class="panel-head"><h2>Needs attention</h2><span class="count" id="errorCount">0</span></div><ul class="game-list" id="errors"></ul><button id="addAllErrors" disabled>Add all</button></section></div></main>
@@ -133,7 +141,7 @@ function importHtml(settings) {
   function render(){q("#ready").innerHTML=state.ready.length?state.ready.map((g,i)=>row(g,i,false)).join(""):'<li class="empty">No matched games.</li>';q("#errors").innerHTML=state.errors.length?state.errors.map((g,i)=>row(g,i,true)).join(""):'<li class="empty">No errors.</li>';q("#readyCount").textContent=state.ready.length;q("#errorCount").textContent=state.errors.length;q("#addReady").disabled=!state.ready.length||state.busy;q("#addAllErrors").disabled=!state.errors.length||state.busy}
   async function search(game){const data=await fetch("/api/search?q="+encodeURIComponent(game.title),{cache:"no-store"}).then(read);const metadata=(data.results||[])[0];if(!metadata)throw new Error("No metadata match");return {...game,metadata,cover:metadata.cover||""}}
   async function fetchProvider(provider){if(state.busy)return;state.busy=true;render();progress("fetch",8);progress("match",0);q("#status").textContent="Fetching account library…";try{const data=await fetch("/api/shelf-import-digital",{method:"POST",headers:{"Content-Type":"application/json","x-edit-password":password()},body:JSON.stringify({action:"fetch",provider})}).then(read);progress("fetch",100);const games=data.games||[];state.ready=[];state.errors=[];let done=0;const queue=games.slice();const workers=Array.from({length:Math.min(4,queue.length)},async()=>{while(queue.length){const game=queue.shift();try{state.ready.push(await search(game))}catch{state.errors.push(game)}done++;progress("match",games.length?done/games.length*100:100);if(done%5===0||done===games.length)render()}});await Promise.all(workers);q("#status").textContent="Found "+state.ready.length+" matches and "+state.errors.length+" games needing attention for "+data.account+"."}catch(error){q("#status").textContent=error.message;progress("fetch",0)}finally{state.busy=false;render()}}
-  async function add(games){if(!games.length||state.busy)return;state.busy=true;render();q("#status").textContent="Adding "+games.length+" game"+(games.length===1?"":"s")+" to New additions…";try{const data=await fetch("/api/shelf-import-digital",{method:"POST",headers:{"Content-Type":"application/json","x-edit-password":password()},body:JSON.stringify({action:"add",games})}).then(read);const ids=new Set(games.map((g)=>g.provider+":"+g.remoteId+":"+g.title));state.ready=state.ready.filter((g)=>!ids.has(g.provider+":"+g.remoteId+":"+g.title));state.errors=state.errors.filter((g)=>!ids.has(g.provider+":"+g.remoteId+":"+g.title));q("#status").textContent="Added "+data.added+" to Shelf New additions"+(data.skipped?"; skipped "+data.skipped+" duplicate(s).":".")}catch(error){q("#status").textContent=error.message}finally{state.busy=false;render()}}
+  async function add(games){if(!games.length||state.busy)return;state.busy=true;render();q("#status").textContent="Adding "+games.length+" game"+(games.length===1?"":"s")+" to Shelf…";try{const data=await fetch("/api/shelf-import-digital",{method:"POST",headers:{"Content-Type":"application/json","x-edit-password":password()},body:JSON.stringify({action:"add",games})}).then(read);const ids=new Set(games.map((g)=>g.provider+":"+g.remoteId+":"+g.title));state.ready=state.ready.filter((g)=>!ids.has(g.provider+":"+g.remoteId+":"+g.title));state.errors=state.errors.filter((g)=>!ids.has(g.provider+":"+g.remoteId+":"+g.title));const parts=[];if(data.addedToDrive)parts.push(data.addedToDrive+" added to Drive");if(data.addedToNewAdditions)parts.push(data.addedToNewAdditions+" sent to New additions");if(data.skipped)parts.push(data.skipped+" duplicate(s) skipped");q("#status").textContent=parts.join("; ")+"."}catch(error){q("#status").textContent=error.message}finally{state.busy=false;render()}}
   document.querySelectorAll("[data-fetch]").forEach((button)=>button.addEventListener("click",()=>fetchProvider(button.dataset.fetch)));q("#ready").addEventListener("click",(e)=>{const button=e.target.closest("[data-remove]");if(!button)return;state.ready.splice(Number(button.dataset.remove),1);render()});q("#errors").addEventListener("click",(e)=>{const button=e.target.closest("[data-manual]");if(button)add([state.errors[Number(button.dataset.manual)]])});q("#addReady").addEventListener("click",()=>add(state.ready));q("#addAllErrors").addEventListener("click",()=>add(state.errors));render();
   </script></body></html>`;
 }
