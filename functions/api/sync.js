@@ -25,10 +25,6 @@ export async function onRequestPut({ request, env }) {
       settings: body.settings,
       updatedAt: new Date().toISOString(),
     }));
-    if (shelfSyncEnabled(body.settings) && body.settings.shelfDigitalGames === true) {
-      const digitalGames = (previous.games || []).filter(isSyncableDigitalGame);
-      await syncBacklogGamesToShelf(env, previous.games || [], digitalGames);
-    }
     return json({ ok: true });
   }
   if (!body || !Array.isArray(body.games)) {
@@ -40,8 +36,8 @@ export async function onRequestPut({ request, env }) {
     game.section === "backlog"
     && !game.shelfId
     && !game.deletedAt
-    && ((body.settings?.shelfDigitalGames === true && (game.digital || game.dlc))
-      || (!game.digital && !game.dlc && (!previousById.has(game.id) || previousById.get(game.id)?.section !== "backlog" || previousById.get(game.id)?.digital)))
+    && (!game.digital && !game.dlc || body.settings?.shelfDigitalGames === true)
+    && (!previousById.has(game.id) || previousById.get(game.id)?.section !== "backlog")
   ));
   await env.GAMELIST.put(KV_KEY, JSON.stringify({
     games: body.games,
@@ -54,10 +50,6 @@ export async function onRequestPut({ request, env }) {
 
 function shelfSyncEnabled(settings = {}) {
   return settings?.shelfSync !== false;
-}
-
-function isSyncableDigitalGame(game) {
-  return game?.section === "backlog" && !game.shelfId && !game.deletedAt && Boolean(game.digital || game.dlc);
 }
 
 async function syncBacklogGamesToShelf(env, allGames, games) {
