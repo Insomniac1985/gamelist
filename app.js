@@ -5869,15 +5869,33 @@ function statsYearMonth(value) {
 
 function statsYearBars(games) {
   const counts = countBy(games, completionYear);
+  const countByYear = new Map(counts.map((item) => [item.label, item.count]));
+  const datedGames = state.games.filter((game) => !game.deletedAt && !game.dlc && game.startedAt);
+  const activityGames = [...new Map([...games, ...datedGames]
+    .map((game) => [game.id || `${game.title}|${game.platform}`, game])).values()];
+  const currentYear = new Date().getFullYear();
+  const years = new Set(counts.map((item) => item.label));
+  activityGames.forEach((game) => {
+    const startYear = statsYearMonth(game.startedAt)?.year;
+    const endYear = statsYearMonth(game.completedAt)?.year || currentYear;
+    if (!startYear || endYear < startYear || endYear - startYear > 100) return;
+    for (let year = startYear; year <= endYear; year += 1) years.add(String(year));
+  });
   const max = Math.max(1, ...counts.map((item) => item.count));
-  return counts
-    .sort((a, b) => b.label.localeCompare(a.label))
-    .map(({ label, count }, index, items) => {
-      const yearGames = games
-        .filter((game) => completionYear(game) === label)
+  return [...years]
+    .sort((a, b) => b.localeCompare(a))
+    .map((label, index, items) => {
+      const count = countByYear.get(label) || 0;
+      const yearGames = activityGames
+        .filter((game) => {
+          const startYear = statsYearMonth(game.startedAt)?.year || statsYearMonth(game.completedAt)?.year;
+          const endYear = statsYearMonth(game.completedAt)?.year || currentYear;
+          return startYear && startYear <= Number(label) && Number(label) <= endYear;
+        })
+        .map((game) => ({ ...game, statsMonthCarry: completionYear(game) !== label }))
         .sort((a, b) => String(a.completedAt || "").localeCompare(String(b.completedAt || "")) || stringCompare(a.title, b.title));
       const edgeClass = index % 12 === 0 ? " is-start-edge" : (index % 12 === 11 || index === items.length - 1 ? " is-end-edge" : "");
-      return `<div class="finished-stats-month finished-stats-year${edgeClass}" title="${escapeHtml(`${label}: ${count}`)}" ${count ? `data-stats-overlay-title="${escapeHtml(label)}"` : ""}><span>${escapeHtml(label)}</span><em style="--month:${count / max};--platform-bar:${statsPlatformBar(yearGames)}"></em><strong>${count}</strong>${count ? `<span class="finished-stats-breakdown">${statsGameList(yearGames)}</span>` : ""}</div>`;
+      return `<div class="finished-stats-month finished-stats-year${edgeClass}" title="${escapeHtml(`${label}: ${count}`)}" ${yearGames.length ? `data-stats-overlay-title="${escapeHtml(label)}"` : ""}><span>${escapeHtml(label)}</span><em style="--month:${count / max};--platform-bar:${statsPlatformBar(yearGames)}"></em><strong>${count}</strong>${yearGames.length ? `<span class="finished-stats-breakdown">${statsGameList(yearGames)}</span>` : ""}</div>`;
     })
     .join("");
 }
