@@ -464,7 +464,7 @@ body.theme-big-logo .brand-mark {
   font-weight: 900;
   line-height: 1;
   letter-spacing: 0.08em;
-  text-transform: uppercase;
+  text-transform: none;
   cursor: pointer;
   transition:
     transform 0.18s ease,

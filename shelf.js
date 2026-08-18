@@ -31,12 +31,10 @@ const siteVersion = { version: "", updatedAt: "" };
 const MODULE_NAMES = { playing: "Currently playing", latestFinished: "Last finished", favorites: "Showcase", trophies: "Achievements", calendar: "Calendar", kpis: "Highlights", filters: "Search", library: "Shelf" };
 const PLATFORM_OPTIONS = [
   "Steam",
-  "Sega Game Gear", "Sega Genesis", "Sega Dreamcast",
-  "Game Boy", "Game Boy Color", "Nintendo Entertainment System", "Super Nintendo Entertainment System",
-  "Nintendo 64", "Nintendo GameCube", "Game Boy Advance", "Nintendo DS", "Nintendo Wii", "Nintendo Wii U", "Nintendo 3DS",
-  "Nintendo Switch", "Nintendo Switch 2",
+  "Game Gear", "Gen", "DC",
+  "GB", "GBC", "NES", "SNES", "N64", "GC", "GBA", "DS", "Wii", "Wii U", "3DS", "Switch", "Switch 2",
   "PS1", "PS2", "PS3", "PSP", "PSVita", "PS4", "PS5",
-  "Xbox", "Xbox 360", "Xbox One", "Xbox PC", "Xbox Series",
+  "Xbox", "X360", "XOne", "Xbox PC", "Xbox Series",
 ];
 const COUNTRY_OPTIONS = [
   ["Australia", "Australia"], ["China", "China"], ["Europe", "EU"], ["France", "France"], ["Germany", "Germany"],
@@ -352,8 +350,9 @@ function bindEvents() {
 }
 
 function rebuildGames() {
-  const source = state.sourceGames.map((game) => ({ ...game, ...(state.overrides[game.id] || {}), sourceRecord: true }));
-  state.games = [...source, ...state.additions.map((game) => ({ ...game, sourceRecord: false }))].filter((game) => !game.deletedAt);
+  const normalizeGame = (game) => ({ ...game, platform: canonicalShelfPlatform(game.platform || "") });
+  const source = state.sourceGames.map((game) => normalizeGame({ ...game, ...(state.overrides[game.id] || {}), sourceRecord: true }));
+  state.games = [...source, ...state.additions.map((game) => normalizeGame({ ...game, sourceRecord: false }))].filter((game) => !game.deletedAt);
 }
 
 function renderAll() {
@@ -509,7 +508,7 @@ function renderBrandVersionChip() {
   const shouldShow = state.canEdit && isShabiiOwner && Boolean(siteVersion.version);
   el.brandVersion.hidden = !shouldShow;
   el.brandVersion.textContent = shouldShow
-    ? `${siteVersion.version}.${formatFooterShortDate(siteVersion.updatedAt) || "--.--"}`
+    ? `_${siteVersion.version.toLowerCase()}.${formatFooterShortDate(siteVersion.updatedAt) || "--.--"}`
     : "Version -";
 }
 
@@ -878,6 +877,7 @@ function renderFilters() {
     state.filters.direction = "asc";
   }
   const visibleGames = visibleShelfGames();
+  if (state.filters.platform !== "all") state.filters.platform = canonicalShelfPlatform(state.filters.platform);
   const platforms = orderedPlatforms(uniqueSorted(visibleGames.map((game) => game.platform)));
   const countries = uniqueSorted(visibleGames.map((game) => game.country));
   const categories = uniqueSorted(visibleGames.flatMap((game) => [...String(game.genre || "").split(","), ...(game.genres || [])].map((value) => value.trim()).filter(Boolean)));
@@ -1102,8 +1102,8 @@ function shelfTabs(pendingCount = 0, preorderCount = syncedPreorderGames().lengt
 function syncedPreorderGames() {
   if (!state.canEdit || state.gamelistSettings.syncPreorders !== true) return [];
   return state.gamelistGames
-    .filter((game) => !game.deletedAt && !game.completedAt && game.section === "upcoming" && game.preorderStore)
-    .map((game) => ({ ...game, preorderProjection: true, genre: (game.genres || []).join(", "), country: game.country || "", condition: "Preordered" }));
+    .filter((game) => !game.deletedAt && !game.completedAt && game.section === "upcoming" && game.preorderStore && (!isDigitalShelfGame(game) || state.gamelistSettings.shelfDigitalGames === true))
+    .map((game) => ({ ...game, platform: canonicalShelfPlatform(game.platform || ""), preorderProjection: true, genre: (game.genres || []).join(", "), country: game.country || "", condition: "Preordered" }));
 }
 
 function setShelfTab(tab) {
@@ -1214,7 +1214,7 @@ function gameCard(game, options = {}) {
   const studioText = studio || game.genre || (digitalGame ? "Digital edition" : "Physical edition");
   card.querySelector(".studio-line").innerHTML = `${visibleOwners.map(ownerBadge).join("")}<span>${escapeHtml(studioText)}</span>`;
   card.querySelector(".meta").innerHTML = preorderProjection
-    ? `${platformBadge(game.platform, { title: game.title })}${mediaFormatBadge(game)}${preorderPlaytimePill(game)}`
+    ? `${platformBadge(game.platform, { title: game.title })}${mediaFormatBadge(game)}${dlcBadge(game)}${preorderPlaytimePill(game)}`
     : digitalGame ? `${platformBadge(game.platform, { title: game.title })}${mediaFormatBadge(game)}${dlcBadge(game)}${shelfProgressPill(game)}`
     : `<span class="region-flag" title="${escapeHtml(game.country)}">${flagIcon(game.country)}</span>${platformBadge(game.platform, { title: game.title })}${conditionBadge(condition)}${shelfProgressPill(game)}`;
   const playDates = card.querySelector(".play-dates");
@@ -1249,7 +1249,7 @@ function gameRow(game) {
   const description = game.description || "";
   const actions = preorderProjection ? `<div class="game-row-actions-top"><button class="icon-button row-edit-action" data-action="edit-preorder" type="button" title="Edit" aria-label="Edit">${pencilIcon()}</button><button class="icon-button danger-button row-delete-action" data-action="delete-preorder" type="button" title="Delete" aria-label="Delete">${trashIcon()}</button></div><div class="game-row-actions-bottom"><button class="ghost-button" data-action="accept-preorder" type="button">Got it</button></div>` : isPendingCollectionGame(game) ? `<div class="game-row-actions-top"><button class="primary-button add-collection-action" data-action="add-collection" type="button">Add to Collection</button></div><div class="game-row-actions-bottom"><button class="icon-button danger-button row-delete-action" data-action="delete" type="button" title="Delete" aria-label="Delete">${trashIcon()}</button></div>` : `<div class="game-row-actions-top"><button class="icon-button row-edit-action" data-action="edit" type="button" title="Edit" aria-label="Edit">${pencilIcon()}</button><button class="icon-button danger-button row-delete-action" data-action="delete" type="button" title="Delete" aria-label="Delete">${trashIcon()}</button></div><div class="game-row-actions-bottom"><button class="ghost-button shelf-add-backlog-action" data-action="add-backlog" type="button">Add to Backlog</button></div>`;
   const core = preorderProjection
-    ? `${platformBadge(game.platform, { title: game.title })}${mediaFormatBadge(game)}${preorderPlaytimePill(game)}${game.releaseDate ? `<span class="release-pill history-date-pill"><small class="release-date-label"><span>Releases</span>${calendarMiniIcon()}</small><strong>${escapeHtml(formatDate(game.releaseDate))}</strong></span>` : ""}`
+    ? `${platformBadge(game.platform, { title: game.title })}${mediaFormatBadge(game)}${dlcBadge(game)}${preorderPlaytimePill(game)}${game.releaseDate ? `<span class="release-pill history-date-pill"><small class="release-date-label"><span>Releases</span>${calendarMiniIcon()}</small><strong>${escapeHtml(formatDate(game.releaseDate))}</strong></span>` : ""}`
     : digitalGame ? `${platformBadge(game.platform, { title: game.title })}${mediaFormatBadge(game)}${dlcBadge(game)}${shelfProgressPill(game)}`
     : `<span class="region-flag" title="${escapeHtml(game.country)}">${flagIcon(game.country)}</span>${platformBadge(game.platform, { title: game.title })}${conditionBadge(conditionLabel(game))}${shelfProgressPill(game)}`;
   const prices = preorderProjection ? gamelistPreorderPrices(game) : "";
@@ -2809,7 +2809,7 @@ function openGamelistDetails(sourceGame) {
   const detailStudio = [game.developer, game.publisher].filter(Boolean).join(" / ");
   el.detailStudio.innerHTML = `${visibleOwners.map(ownerBadge).join("")}${detailStudio ? `<span>${escapeHtml(detailStudio)}</span>` : ""}`;
   el.detailStudio.hidden = !el.detailStudio.textContent;
-  el.detailMeta.innerHTML = `${platformBadge(game.platform, { title: game.title })}${mediaFormatBadge(game)}${preorderPlaytimePill(game)}`;
+  el.detailMeta.innerHTML = `${platformBadge(game.platform, { title: game.title })}${mediaFormatBadge(game)}${dlcBadge(game)}${preorderPlaytimePill(game)}`;
   el.detailDates.innerHTML = `${game.releaseDate ? `<span class="release-pill history-date-pill"><small class="release-date-label"><span>Releases</span>${calendarMiniIcon()}</small><strong>${escapeHtml(formatDate(game.releaseDate))}</strong></span>` : ""}`;
   el.detailDates.hidden = !el.detailDates.innerHTML;
   el.detailChips.innerHTML = `${game.preorderStore ? preorderProjectionChip(game.preorderStore) : ""}${(game.genres || []).slice(0, 4).map((genre) => `<span class="chip genre">${escapeHtml(genre)}</span>`).join("")}`;
@@ -2904,7 +2904,7 @@ function currentlyPlayingTitle(games) {
 function playingCountText(count) {
   return `Playing ${count} ${count === 1 ? "game" : "games"}`;
 }
-function projectionMeta(game, options = {}) { const release = options.includeRelease === false ? "" : activityReleaseStatus(game, { includePast: Boolean(options.includePast) }); return `${platformBadge(game.platform, { title: game.title })}${options.includeProgress ? shelfProgressPill(game) : ""}${mediaFormatBadge(game)}${game.emulator ? `<span class="emulator-pill">Emulator</span>` : ""}${game.lengthHours ? timeBadgeMarkup(game.lengthHours, game.hltbUrl || game.howLongToBeatUrl || `https://howlongtobeat.com/?q=${encodeURIComponent(game.title)}`, escapeHtml) : ""}${game.stream ? `<span class="stream-pill">Stream</span>` : ""}${release ? releaseStatusPill(release) : ""}${game.coop ? `<span class="coop-pill">Coop</span>` : ""}${game.replayCount ? `<span class="replay-pill">Replay ${escapeHtml(game.replayCount)}</span>` : ""}`; }
+function projectionMeta(game, options = {}) { const release = options.includeRelease === false ? "" : activityReleaseStatus(game, { includePast: Boolean(options.includePast) }); return `${platformBadge(game.platform, { title: game.title })}${options.includeProgress ? shelfProgressPill(game) : ""}${mediaFormatBadge(game)}${dlcBadge(game)}${game.emulator ? `<span class="emulator-pill">Emulator</span>` : ""}${game.lengthHours ? timeBadgeMarkup(game.lengthHours, game.hltbUrl || game.howLongToBeatUrl || `https://howlongtobeat.com/?q=${encodeURIComponent(game.title)}`, escapeHtml) : ""}${game.stream ? `<span class="stream-pill">Stream</span>` : ""}${release ? releaseStatusPill(release) : ""}${game.coop ? `<span class="coop-pill">Coop</span>` : ""}${game.replayCount ? `<span class="replay-pill">Replay ${escapeHtml(game.replayCount)}</span>` : ""}`; }
 
 function mediaFormatBadge(game) {
   if (!game) return "";
@@ -4031,6 +4031,9 @@ function platformDisplayName(value) {
     PS5: "Sony PlayStation 5",
     PSP: "Sony Playstation Portable",
     PSVita: "Sony Playstation Vita",
+    Switch: "Nintendo Switch",
+    "Switch 2": "Nintendo Switch 2",
+    "Game Gear": "Sega Game Gear",
     X360: "Xbox 360",
     XOne: "Xbox One",
     GBC: "Game Boy Color",
@@ -4082,6 +4085,7 @@ function canonicalShelfPlatform(value) {
     nintendo64: "N64", n64: "N64", nintendogamecube: "GC", gamecube: "GC", gc: "GC",
     nintendoentertainmentsystem: "NES", nes: "NES", supernintendo: "SNES", supernintendoentertainmentsystem: "SNES", snes: "SNES",
     nintendods: "DS", nds: "DS", ds: "DS", nintendo3ds: "3DS", n3ds: "3DS", "3ds": "3DS",
+    nintendowii: "Wii", wii: "Wii", nintendowiiu: "Wii U", wiiu: "Wii U",
     gameboyadvance: "GBA", gameboyadvanced: "GBA", gba: "GBA", gameboycolor: "GBC", gbc: "GBC", gameboy: "GB", gb: "GB",
     genesis: "Gen", megadrive: "Gen", segamegadrive: "Gen", segagenesis: "Gen", sega: "Sega",
     dreamcast: "DC", segadreamcast: "DC", dc: "DC", segacd: "Sega CD", saturn: "Saturn", segasaturn: "Saturn",
@@ -4113,8 +4117,8 @@ function shelfSortForDefault(value) { if (value === "time") return "added"; if (
 function applyShelfDefaultOrder(value) { state.filters.sort = shelfSortForDefault(value); state.filters.direction = ["added", "value"].includes(state.filters.sort) ? "desc" : "asc"; }
 function bestCollectionPlatform(platforms, fallback) {
   const value = platforms.map(normalize).join(" ");
-  if (value.includes("nintendo switch 2")) return "Nintendo Switch 2";
-  if (value.includes("nintendo switch")) return "Nintendo Switch";
+  if (value.includes("nintendo switch 2")) return "Switch 2";
+  if (value.includes("nintendo switch")) return "Switch";
   if (value.includes("playstation 5")) return "PS5";
   if (value.includes("playstation 4")) return "PS4";
   if (value.includes("playstation 3")) return "PS3";
@@ -4122,10 +4126,10 @@ function bestCollectionPlatform(platforms, fallback) {
   if (value.includes("playstation portable")) return "PSP";
   if (value.includes("playstation vita")) return "PSVita";
   if (value.includes("playstation")) return "PS1";
-  if (value.includes("nintendo 3ds")) return "Nintendo 3DS";
-  if (value.includes("nintendo ds")) return "Nintendo DS";
-  if (value.includes("nintendo 64")) return "Nintendo 64";
-  return fallback || "Nintendo Switch";
+  if (value.includes("nintendo 3ds")) return "3DS";
+  if (value.includes("nintendo ds")) return "DS";
+  if (value.includes("nintendo 64")) return "N64";
+  return canonicalShelfPlatform(fallback || "Switch");
 }
 function normalize(value) { return String(value || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]+/g, " ").trim(); }
 function shortDescription(value, max = 260) { const text = String(value || "").trim(); return text.length > max ? `${text.slice(0, max - 1).trimEnd()}…` : text; }

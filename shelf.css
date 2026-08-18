@@ -1182,6 +1182,11 @@ html.theme-font-mata .shelf-page .playing-section .column-head h2 {
 .preorder-tab-icon .shopping-bag-icon {
   width: 22px;
   height: 22px;
+  fill: none !important;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
 }
 
 .shelf-tabs button[data-shelf-tab="preorders"],
@@ -1382,20 +1387,21 @@ html.theme-font-mata .shelf-page .playing-section .column-head h2 {
 
 .lookup-digital-separator {
   align-self: flex-end;
-  width: 1px;
+  width: 0;
   height: 44px;
-  flex: 0 0 1px;
-  margin: 0 12px;
-  background: linear-gradient(to bottom, transparent, color-mix(in srgb, var(--muted) 52%, transparent) 18%, color-mix(in srgb, var(--muted) 52%, transparent) 82%, transparent);
+  flex: 0 0 0;
+  margin: 0 2px;
+  border-left: 1px solid var(--line);
 }
 
-.lookup-digital-check {
+.lookup-row .lookup-digital-check {
   align-items: center;
-  justify-content: center;
-  width: 124px;
+  justify-content: flex-start;
+  width: auto;
+  min-width: max-content;
   height: 44px;
-  flex: 0 0 124px;
-  padding: 0 14px;
+  flex: 0 0 auto;
+  padding: 0 12px;
   margin: 0;
 }
 
@@ -1408,6 +1414,13 @@ html.theme-font-mata .shelf-page .playing-section .column-head h2 {
 .shelf-editor-grid > .shelf-owner-field,
 .shelf-editor-grid > .shelf-achievement-search-field {
   grid-column: span 6;
+}
+
+@media (min-width: 761px) {
+  .digital-game-editor .shelf-release-field,
+  .digital-game-editor .shelf-owner-field {
+    grid-column: 1 / span 6;
+  }
 }
 
 .shelf-editor-grid > .shelf-condition-notes-field {
@@ -1985,12 +1998,16 @@ textarea {
     font-size: 10px;
   }
 
-  .shelf-tabs.four-tabs button.active[data-shelf-tab="preorders"] .preorder-tab-text {
+  .shelf-tabs.four-tabs button[data-shelf-tab="preorders"] .preorder-tab-text {
     display: none;
   }
 
-  .shelf-tabs.four-tabs button.active[data-shelf-tab="preorders"] .preorder-tab-icon {
+  .shelf-tabs.four-tabs button[data-shelf-tab="preorders"] .preorder-tab-icon {
     display: inline-flex;
+    color: var(--muted);
+  }
+
+  .shelf-tabs.four-tabs button.active[data-shelf-tab="preorders"] .preorder-tab-icon {
     color: #fff;
   }
   .shelf-grid {
