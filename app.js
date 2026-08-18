@@ -247,6 +247,7 @@ const el = {
   gotyResetButton: document.querySelector("#gotyResetButton"),
   gotyGrid: document.querySelector("#gotyGrid"),
   achievementSection: document.querySelector("#achievementSection"),
+  achievementStatsButton: document.querySelector("#achievementStatsButton"),
   calendarSection: document.querySelector(".calendar-section"),
   highlightsSection: document.querySelector(".highlights-section"),
   achievementPanel: document.querySelector("#achievementPanel"),
@@ -435,6 +436,16 @@ async function init() {
   const requestedParams = new URLSearchParams(location.search);
   const requestedEdit = requestedParams.get("edit");
   const requestedGame = requestedParams.get("game");
+  const requestedStats = requestedParams.get("stats");
+  const embeddedStats = requestedParams.get("embed") === "1";
+  if (embeddedStats) document.documentElement.classList.add("stats-embed");
+  if (requestedStats && !requestedEdit && !requestedGame) {
+    const cleanUrl = new URL(window.location.href);
+    cleanUrl.searchParams.delete("stats");
+    if (!embeddedStats) window.history.replaceState({}, "", `${cleanUrl.pathname}${cleanUrl.search}${cleanUrl.hash}`);
+    openFinishedStatsDialog(requestedStats === "all" ? "all" : requestedStats);
+    if (embeddedStats) el.finishedStatsDialog.addEventListener("close", () => window.parent.postMessage("gamelist-stats-close", window.location.origin), { once: true });
+  }
   if (requestedEdit && state.games.some((game) => game.id === requestedEdit && !game.deletedAt)) {
     const cleanUrl = new URL(window.location.href);
     cleanUrl.searchParams.delete("edit");
@@ -855,6 +866,7 @@ function bindEvents() {
   });
   el.completedYearFilter?.addEventListener("change", handleCompletedYearChange);
   el.completedStatsButton?.addEventListener("click", () => openFinishedStatsDialog(state.completedYear || "all"));
+  el.achievementStatsButton?.addEventListener("click", () => openFinishedStatsDialog("all"));
   el.completedMoreButton?.addEventListener("click", () => {
     state.completedVisiblePages += 1;
     renderCompleted();
@@ -2640,7 +2652,7 @@ function gameOfTheYearExportMarkup({ owner, year, rows, statsGames, theme, logo,
       ${gameOfTheYearExportPlatformChartMarkup(statsGames)}
       ${rows.slice(4).map((row, offset) => gameOfTheYearExportCard({ ...row, index: offset + 4 })).join("")}
     </main>
-    ${gameOfTheYearExportBottomStatsMarkup(statsGames)}
+    ${gameOfTheYearExportBottomStatsMarkup(statsGames, year)}
     <footer>${footerLines.map((line) => `<span>${escapeHtml(line)}</span>`).join("")}</footer>
   </div>`;
 }
@@ -2661,7 +2673,7 @@ function gameOfTheYearExportTopStatsMarkup(year, games = []) {
       <span class="goty-export-kpi-separator" aria-hidden="true"></span>
       <article class="goty-export-small-kpi goty-export-new-kpi"><strong>${yearGames.length}</strong><span>New releases</span></article>
       <article class="goty-export-small-kpi goty-export-older-kpi"><strong>${otherYearGames.length}</strong><span>Older games</span></article>
-      ${coopGames.length ? `<article class="goty-export-small-kpi goty-export-coop-kpi"><strong>${coopGames.length}</strong><span>Coop games</span></article>` : ""}
+      ${coopGames.length ? `<article class="goty-export-small-kpi goty-export-coop-kpi"><strong>${coopIcon()}${coopGames.length}</strong><span>Coop games</span></article>` : ""}
     </section>
   `;
 }
@@ -2729,19 +2741,19 @@ function gameOfTheYearExportPlatformLabels(segments) {
   }).join("");
 }
 
-function gameOfTheYearExportBottomStatsMarkup(games = []) {
-  const months = gameOfTheYearExportMonthCounts(games);
+function gameOfTheYearExportBottomStatsMarkup(games = [], year = "") {
+  const months = gameOfTheYearExportMonthCounts(games, year);
   const maxMonth = Math.max(1, ...months.map((item) => item.count));
   return `
     <section class="goty-export-bottom-stats">
       <article class="goty-export-stat goty-export-stat-months">
-        <div>${months.map((item) => `<b style="--month:${(item.count / maxMonth).toFixed(3)};--month-platforms:${statsPlatformBar(item.games)}"><span>${escapeHtml(item.label)}</span><i></i><em>${item.count}</em></b>`).join("")}</div>
+        <div>${months.map((item) => `<b style="--month:${(item.count / maxMonth).toFixed(3)};--month-platforms:${statsPlatformBar(item.activeGames)}"><span>${escapeHtml(item.label)}</span><i></i><em>${item.count}</em></b>`).join("")}</div>
       </article>
     </section>
   `;
 }
 
-function gameOfTheYearExportMonthCounts(games) {
+function gameOfTheYearExportMonthCounts(games, year = "") {
   const order = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
   const counts = new Map();
   games.forEach((game) => {
@@ -2753,7 +2765,7 @@ function gameOfTheYearExportMonthCounts(games) {
   });
   return order.map((label) => {
     const monthGames = counts.get(label) || [];
-    return { label, count: monthGames.length, games: monthGames };
+    return { label, count: monthGames.length, games: monthGames, activeGames: statsGamesActiveInMonth(games, label, year) };
   });
 }
 
@@ -2929,6 +2941,11 @@ function gameOfTheYearExportCss({ theme, main, accent, gradient, bg, glowPrimary
     }
     .goty-export-coop-kpi strong {
       color: #79f2ce;
+    }
+    .goty-export-coop-kpi .coop-icon {
+      width: 24px;
+      height: 24px;
+      flex: 0 0 auto;
     }
     .goty-export-completed-kpi .trophy-icon {
       width: 24px;
@@ -5796,9 +5813,32 @@ function statsMonthBars(games, counts) {
     const monthGames = games
       .filter((game) => monthShortName(game.completedAt) === label)
       .sort((a, b) => String(a.completedAt || "").localeCompare(String(b.completedAt || "")) || stringCompare(a.title, b.title));
+    const activeGames = statsGamesActiveInMonth(games, label);
+    const displayGames = activeGames.map((game) => ({ ...game, statsMonthCarry: monthShortName(game.completedAt) !== label }));
     const edgeClass = index === 0 ? " is-start-edge" : (index === order.length - 1 ? " is-end-edge" : "");
-    return `<div class="finished-stats-month${edgeClass}" title="${escapeHtml(`${overlayTitle}: ${count}`)}" ${count ? `data-stats-overlay-title="${escapeHtml(overlayTitle)}"` : ""}><span>${escapeHtml(label)}</span><em style="--month:${count / max};--platform-bar:${statsPlatformBar(monthGames)}"></em><strong>${count}</strong>${count ? `<span class="finished-stats-breakdown">${statsGameList(monthGames)}</span>` : ""}</div>`;
+    return `<div class="finished-stats-month${edgeClass}" title="${escapeHtml(`${overlayTitle}: ${count}`)}" ${displayGames.length ? `data-stats-overlay-title="${escapeHtml(overlayTitle)}"` : ""}><span>${escapeHtml(label)}</span><em style="--month:${count / max};--platform-bar:${statsPlatformBar(activeGames)}"></em><strong>${count}</strong>${displayGames.length ? `<span class="finished-stats-breakdown">${statsGameList(displayGames)}</span>` : ""}</div>`;
   }).join("");
+}
+
+function statsGamesActiveInMonth(games, label, scopeYear = "") {
+  const month = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"].indexOf(label);
+  if (month < 0) return [];
+  return games.filter((game) => {
+    const end = statsYearMonth(game.completedAt) || statsYearMonth(new Date().toISOString());
+    const start = statsYearMonth(game.startedAt) || end;
+    if (!start || !end) return false;
+    const targetYear = Number(scopeYear) || statsYearMonth(game.completedAt)?.year || end.year;
+    const target = targetYear * 12 + month;
+    return start.key <= target && target <= end.key;
+  }).sort((a, b) => String(a.startedAt || a.completedAt || "").localeCompare(String(b.startedAt || b.completedAt || "")) || stringCompare(a.title, b.title));
+}
+
+function statsYearMonth(value) {
+  const match = String(value || "").match(/^(\d{4})-(\d{2})/);
+  if (!match) return null;
+  const year = Number(match[1]);
+  const month = Number(match[2]) - 1;
+  return Number.isInteger(year) && month >= 0 && month < 12 ? { year, month, key: year * 12 + month } : null;
 }
 
 function statsYearBars(games) {
@@ -5892,7 +5932,7 @@ function statsGameList(games) {
       : progress
       ? psnProgressBadge(progress, { className: "finished-stats-progress-pill" })
       : (completed ? psnProgressBadge({ title: game.title, progress: 100 }, { className: "finished-stats-progress-pill" }) : "");
-    return `<span class="finished-stats-game-row ${completed ? "is-complete" : ""}"><b class="${escapeHtml(ownerTitleClass)}">${escapeHtml(game.title)}</b>${game.platform ? platformBadge(game.platform) : ""}${game.dlc ? dlcBadge(game) : ""}${entitlementBadge(game)}${progressPill}</span>`;
+    return `<span class="finished-stats-game-row ${completed ? "is-complete" : ""}"><b class="${escapeHtml(ownerTitleClass)}">${escapeHtml(game.title)}</b>${game.platform ? platformBadge(game.platform) : ""}${game.statsMonthCarry ? `<span class="finished-stats-month-carry" title="Played during this month without being counted">…</span>` : ""}${game.dlc ? dlcBadge(game) : ""}${entitlementBadge(game)}${progressPill}</span>`;
   }).join("");
 }
 
@@ -6808,12 +6848,13 @@ function bindDetailShelfSearch(game) {
   el.detailMeta.onclick = null;
   el.detailMeta.onkeydown = null;
   if (pageSwitchHidden()) return;
-  const targets = el.detailMeta.querySelectorAll(".platform-badge, .physical-pill");
+  const digital = game.digital === true;
+  const targets = el.detailMeta.querySelectorAll(digital ? ".platform-badge, .digital-pill" : ".platform-badge, .physical-pill");
   targets.forEach((target) => {
     target.classList.add("detail-shelf-search-link");
     target.setAttribute("role", "link");
     target.tabIndex = 0;
-    target.title = `Find ${game.title} on the shelf`;
+    target.title = `Find ${game.title} in ${digital ? "Drive" : "Shelf"}`;
   });
   const navigate = (event) => {
     const target = event.target.closest(".detail-shelf-search-link");
@@ -6822,6 +6863,7 @@ function bindDetailShelfSearch(game) {
     event.preventDefault();
     const url = new URL("shelf", window.location.href);
     url.searchParams.set("search", game.title);
+    if (digital) url.searchParams.set("tab", "drive");
     window.location.href = url.href;
   };
   el.detailMeta.onclick = navigate;

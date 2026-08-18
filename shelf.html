@@ -193,7 +193,7 @@
           <div class="favorite-cover-row" id="favoriteGames"></div>
         </section>
         <section class="achievement-section shelf-trophy-module" data-module="trophies" hidden>
-          <div class="column-head"><div><h2>Achievements</h2></div></div>
+          <div class="column-head"><div><h2>Achievements</h2></div><button class="icon-button completed-stats-button achievement-stats-button" id="shelfAchievementStatsButton" type="button" title="Stats" aria-label="Achievement stats"><svg class="graph-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 19h16"></path><path d="M7 16V9"></path><path d="M12 16V5"></path><path d="M17 16v-4"></path></svg></button></div>
           <div id="shelfTrophyCard" class="achievement-panel glass"></div>
         </section>
         <section class="calendar-section hero" data-module="calendar">
@@ -456,6 +456,13 @@
           <button class="icon-button" id="shelfReleaseCloseButton" type="button" title="Close">×</button>
         </div>
         <div class="card-list release-dialog-list" id="shelfReleaseDialogList"></div>
+      </article>
+    </dialog>
+
+    <dialog id="shelfStatsDialog" class="shelf-stats-dialog">
+      <article class="shelf-stats-modal">
+        <button class="icon-button shelf-stats-close" id="shelfStatsCloseButton" type="button" title="Close" aria-label="Close">×</button>
+        <iframe id="shelfStatsFrame" title="Gamelist statistics"></iframe>
       </article>
     </dialog>
 

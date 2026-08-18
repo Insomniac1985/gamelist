@@ -1079,6 +1079,8 @@ html.theme-gradient .goty-section .column-head h2 .trophy-icon {
 }
 
 .goty-cover img {
+  object-fit: cover;
+  object-position: center;
   border-radius: 7px;
   clip-path: inset(0 round 7px);
 }
@@ -1697,6 +1699,17 @@ html.theme-gradient .goty-section .column-head h2 .trophy-icon {
   line-height: 1;
 }
 
+html.stats-embed,
+html.stats-embed body {
+  background: transparent;
+}
+
+html.stats-embed body::before,
+html.stats-embed body::after,
+html.stats-embed body > :not(#finishedStatsDialog) {
+  display: none !important;
+}
+
 .playing-finished-tags .media-format-pill {
   display: inline-grid;
   place-items: center;
@@ -1735,6 +1748,16 @@ html.theme-gradient .goty-section .column-head h2 .trophy-icon {
 
 .achievement-section .column-head {
   padding-top: 0;
+}
+
+.achievement-section .achievement-stats-button {
+  width: 34px;
+  height: 34px;
+  min-width: 34px;
+  min-height: 34px;
+  flex: 0 0 34px;
+  padding: 0;
+  aspect-ratio: 1;
 }
 
 .achievement-section .column-head a {
@@ -7778,6 +7801,13 @@ body.theme-kash .finished-stats-kpi.is-completed:focus-visible strong {
   border-radius: 999px;
   background: currentColor;
   box-shadow: none;
+}
+
+.finished-stats-month-carry {
+  margin-left: -3px;
+  color: var(--muted);
+  font-weight: 900;
+  letter-spacing: 1px;
 }
 
 .finished-stats-media-label {
