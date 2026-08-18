@@ -309,9 +309,11 @@
           <button class="ghost-button icon-only-button" id="lookupButton" type="button" title="Fetch info" aria-label="Fetch info">
             <svg class="search-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle><path d="M16.5 16.5 21 21"></path></svg>
           </button>
-          <span class="digital-pill media-format-pill lookup-digital-indicator" title="Digital" aria-label="Digital">
-            <svg class="download-badge-icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="4.5" width="14" height="15" rx="3"></rect><path d="M12 7.5v6.5"></path><path d="M9.5 11.8 12 14.3l2.5-2.5"></path><path d="M8.8 17h6.4"></path></svg>
-          </span>
+          <span class="lookup-digital-separator" aria-hidden="true"></span>
+          <label class="check-filter toggle-check form-check collection-check lookup-digital-check">
+            <input id="shelfDigitalInput" type="checkbox" checked disabled>
+            <span>Digital</span>
+          </label>
         </div>
         <div class="lookup-results" id="lookupResults"></div>
 
