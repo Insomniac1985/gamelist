@@ -5612,15 +5612,13 @@ function statsReleaseKpisCard(insights) {
           value: insights.playedFromYear.length,
           label: "Played new games",
           subline: releaseExpansionLine(insights.newExpansions, "new expansion", "new expansions"),
-          detail: insights.hoverable ? statsGameList(insights.playedFromYear) : "",
-          tone: "played",
+          detail: insights.hoverable ? statsGameList(insights.playedFromYearDisplay) : "",
         })}
         ${statsReleaseMiniKpi({
           value: insights.playedOutsideYear.length,
           label: "Played games not from that year",
           subline: releaseExpansionLine(insights.playedOutsideYearExpansions, "played expansion not from that year", "played expansions not from that year"),
-          detail: insights.hoverable ? statsGameList(insights.playedOutsideYear) : "",
-          tone: "played",
+          detail: insights.hoverable ? statsGameList(insights.playedOutsideYearDisplay) : "",
         })}
       </div>
     </section>
@@ -5661,6 +5659,17 @@ function statsReleaseYearInsights(year, games) {
   const playedOutsideYear = scopeYear
     ? finishedGames.filter((game) => releaseYear(game) !== scopeYear)
     : finishedGames.filter((game) => releaseYear(game) && releaseYear(game) !== completionYear(game));
+  const playingGames = scopeYear
+    ? state.games
+      .filter((game) => {
+        if (game.deletedAt || game.dlc || !game.playing || game.completedAt || !game.startedAt) return false;
+        const startYear = statsYearMonth(game.startedAt)?.year;
+        return startYear && startYear <= Number(scopeYear) && Number(scopeYear) <= new Date().getFullYear();
+      })
+      .map((game) => ({ ...game, statsMonthCarry: true }))
+    : [];
+  const playingFromYear = playingGames.filter((game) => releaseYear(game) === scopeYear);
+  const playingOutsideYear = playingGames.filter((game) => releaseYear(game) !== scopeYear);
   const newExpansions = scopeYear
     ? expansions.filter((game) => releaseYear(game) === scopeYear)
     : expansions.filter((game) => releaseYear(game) && releaseYear(game) === completionYear(game));
@@ -5672,6 +5681,8 @@ function statsReleaseYearInsights(year, games) {
     interested,
     playedFromYear,
     playedOutsideYear,
+    playedFromYearDisplay: [...playedFromYear, ...playingFromYear],
+    playedOutsideYearDisplay: [...playedOutsideYear, ...playingOutsideYear],
     newExpansions,
     playedOutsideYearExpansions,
     hoverable: Boolean(scopeYear),
@@ -5869,15 +5880,33 @@ function statsYearMonth(value) {
 
 function statsYearBars(games) {
   const counts = countBy(games, completionYear);
+  const countByYear = new Map(counts.map((item) => [item.label, item.count]));
+  const datedGames = state.games.filter((game) => !game.deletedAt && !game.dlc && game.startedAt);
+  const activityGames = [...new Map([...games, ...datedGames]
+    .map((game) => [game.id || `${game.title}|${game.platform}`, game])).values()];
+  const currentYear = new Date().getFullYear();
+  const years = new Set(counts.map((item) => item.label));
+  activityGames.forEach((game) => {
+    const startYear = statsYearMonth(game.startedAt)?.year;
+    const endYear = statsYearMonth(game.completedAt)?.year || currentYear;
+    if (!startYear || endYear < startYear || endYear - startYear > 100) return;
+    for (let year = startYear; year <= endYear; year += 1) years.add(String(year));
+  });
   const max = Math.max(1, ...counts.map((item) => item.count));
-  return counts
-    .sort((a, b) => b.label.localeCompare(a.label))
-    .map(({ label, count }, index, items) => {
-      const yearGames = games
-        .filter((game) => completionYear(game) === label)
+  return [...years]
+    .sort((a, b) => a.localeCompare(b))
+    .map((label, index, items) => {
+      const count = countByYear.get(label) || 0;
+      const yearGames = activityGames
+        .filter((game) => {
+          const startYear = statsYearMonth(game.startedAt)?.year || statsYearMonth(game.completedAt)?.year;
+          const endYear = statsYearMonth(game.completedAt)?.year || currentYear;
+          return startYear && startYear <= Number(label) && Number(label) <= endYear;
+        })
+        .map((game) => ({ ...game, statsMonthCarry: completionYear(game) !== label }))
         .sort((a, b) => String(a.completedAt || "").localeCompare(String(b.completedAt || "")) || stringCompare(a.title, b.title));
       const edgeClass = index % 12 === 0 ? " is-start-edge" : (index % 12 === 11 || index === items.length - 1 ? " is-end-edge" : "");
-      return `<div class="finished-stats-month finished-stats-year${edgeClass}" title="${escapeHtml(`${label}: ${count}`)}" ${count ? `data-stats-overlay-title="${escapeHtml(label)}"` : ""}><span>${escapeHtml(label)}</span><em style="--month:${count / max};--platform-bar:${statsPlatformBar(yearGames)}"></em><strong>${count}</strong>${count ? `<span class="finished-stats-breakdown">${statsGameList(yearGames)}</span>` : ""}</div>`;
+      return `<div class="finished-stats-month finished-stats-year${edgeClass}" title="${escapeHtml(`${label}: ${count}`)}" ${yearGames.length ? `data-stats-overlay-title="${escapeHtml(label)}"` : ""}><span>${escapeHtml(label)}</span><em style="--month:${count / max};--platform-bar:${statsPlatformBar(yearGames)}"></em><strong>${count}</strong>${yearGames.length ? `<span class="finished-stats-breakdown">${statsGameList(yearGames)}</span>` : ""}</div>`;
     })
     .join("");
 }
@@ -5947,7 +5976,9 @@ function statsGameListSort(a, b) {
 }
 
 function statsGameList(games) {
-  return games.map((game) => {
+  const orderedGames = [...games].sort((a, b) => Number(Boolean(a.statsMonthCarry)) - Number(Boolean(b.statsMonthCarry)));
+  const firstCarryIndex = orderedGames.findIndex((game) => game.statsMonthCarry);
+  return orderedGames.map((game, index) => {
     const progress = achievementProgressForGame(game);
     const progressNumber = progress ? Math.round(Number(progress.progress ?? progressValue(progress.game)) || 0) : 0;
     const forceCompleted = game.statsCompleted === true;
@@ -5958,7 +5989,10 @@ function statsGameList(games) {
       : progress
       ? psnProgressBadge(progress, { className: "finished-stats-progress-pill" })
       : (completed ? psnProgressBadge({ title: game.title, progress: 100 }, { className: "finished-stats-progress-pill" }) : "");
-    return `<span class="finished-stats-game-row ${completed ? "is-complete" : ""}"><b class="${escapeHtml(ownerTitleClass)}">${escapeHtml(game.title)}</b>${game.platform ? platformBadge(game.platform) : ""}${game.dlc ? dlcBadge(game) : ""}${entitlementBadge(game)}${progressPill}${game.statsMonthCarry ? `<span class="finished-stats-month-carry" title="Played during this month without being counted">…</span>` : ""}</span>`;
+    const separator = firstCarryIndex > 0 && index === firstCarryIndex
+      ? `<span class="finished-stats-carry-separator" aria-hidden="true"></span>`
+      : "";
+    return `${separator}<span class="finished-stats-game-row ${completed ? "is-complete" : ""}"><b class="${escapeHtml(ownerTitleClass)}">${escapeHtml(game.title)}</b>${game.platform ? platformBadge(game.platform) : ""}${game.dlc ? dlcBadge(game) : ""}${entitlementBadge(game)}${progressPill}${game.statsMonthCarry ? `<span class="finished-stats-month-carry" title="Played during this month without being counted">…</span>` : ""}</span>`;
   }).join("");
 }
 
