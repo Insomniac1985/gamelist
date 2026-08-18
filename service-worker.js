@@ -36,6 +36,7 @@ const STATIC_ASSETS = [
   "/assets/platforms/switch.png",
   "/assets/platforms/xbox.png",
   "/assets/platforms/gameswithgold.png",
+  "/assets/platforms/cartridge.png",
   "/assets/platforms/wii.png",
   "/assets/platforms/wiiu.png",
   "/assets/platforms/n64.png",

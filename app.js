@@ -7964,7 +7964,15 @@ function mediaFormatBadge(game) {
   if (game.digital || game.dlc) {
     return `<span class="digital-pill media-format-pill ${escapeHtml(cls)}" title="Digital" aria-label="Digital">${downloadBadgeIcon()}</span>`;
   }
-  return `<span class="digital-pill physical-pill media-format-pill ${escapeHtml(cls)}" title="Physical" aria-label="Physical">${physicalDiskIcon(cls)}</span>`;
+  return `<span class="digital-pill physical-pill media-format-pill ${escapeHtml(cls)}" title="Physical" aria-label="Physical">${physicalMediaIcon(game, cls)}</span>`;
+}
+
+function physicalMediaIcon(game, platformClassName = "") {
+  const cartridgePlatforms = new Set(["DS", "3DS", "GB", "GBC", "GBA", "N64", "Switch", "Switch 2", "PSVita", "Game Gear", "Gen"]);
+  if (cartridgePlatforms.has(canonicalPlatform(game?.platform))) {
+    return `<img src="assets/platforms/cartridge.png" alt="" width="18" height="18" decoding="async">`;
+  }
+  return physicalDiskIcon(platformClassName);
 }
 
 function physicalDiskIcon(platformClassName = "") {
