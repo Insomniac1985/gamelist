@@ -14,7 +14,8 @@ export function runnerStyle({ maxWidth = "980px", settings = {}, page = "gamelis
   const titleColor = theme.gradient ? "transparent" : "var(--accent)";
   const titleBackground = theme.gradient ? `background:linear-gradient(135deg,var(--title-gradient-start),var(--title-gradient-end));-webkit-background-clip:text;background-clip:text;` : "";
   const titleTransform = theme.uppercaseTitles ? "uppercase" : "none";
-  return `<style>
+  const favicon = runnerAssetUrl(theme.icon || (page === "shelf" ? "assets/Icon_shelf.png" : "assets/Icon.png"));
+  return `<link rel="icon" type="image/png" href="${htmlAttribute(favicon)}"><style>
     @font-face{font-family:"Cascadia Code";src:url("/assets/fonts/CascadiaCode.woff2") format("woff2");font-weight:200 700;font-style:normal;font-display:swap}
     @font-face{font-family:"Antique Olive Nord";src:url("/assets/fonts/AntiqueOliveNord.woff2") format("woff2");font-weight:800 950;font-style:normal;font-display:swap}
     @font-face{font-family:"Georgia Bold";src:url("/assets/fonts/Georgia-Bold.ttf") format("truetype");font-weight:700 900;font-style:normal;font-display:swap}
@@ -205,4 +206,13 @@ function cssValue(value) {
 
 function cssUrl(value) {
   return String(value || "").replace(/["\\\n\r]/g, "");
+}
+
+function runnerAssetUrl(value) {
+  const source = String(value || "").trim();
+  return source.startsWith("assets/") ? `/${source}` : source;
+}
+
+function htmlAttribute(value) {
+  return String(value || "").replace(/[&"<>]/g, (character) => ({ "&": "&amp;", '"': "&quot;", "<": "&lt;", ">": "&gt;" })[character]);
 }

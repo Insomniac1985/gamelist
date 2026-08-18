@@ -373,6 +373,7 @@ const el = {
     title: document.querySelector("#titleInput"),
     platform: document.querySelector("#platformInput"),
     dlc: document.querySelector("#dlcInput"),
+    psPlus: document.querySelector("#psPlusInput"), gamesWithGold: document.querySelector("#gamesWithGoldInput"),
     section: document.querySelector("#sectionInput"),
     releaseDate: document.querySelector("#releaseDateInput"),
     releaseText: document.querySelector("#releaseTextInput"),
@@ -938,8 +939,9 @@ function bindEvents() {
   el.fields.platform.addEventListener("input", () => {
     syncDialogPriceVisibility();
     syncPlatformInputIcon();
+    syncGamelistEntitlementEditor();
   });
-  el.fields.platform.addEventListener("change", syncPlatformInputIcon);
+  el.fields.platform.addEventListener("change", () => { syncPlatformInputIcon(); syncGamelistEntitlementEditor(); });
   el.fields.releaseDate.addEventListener("input", syncNewGameUpcomingSection);
   el.fields.releaseDate.addEventListener("change", syncNewGameUpcomingSection);
   el.fields.preorderStore.addEventListener("input", () => {
@@ -947,7 +949,7 @@ function bindEvents() {
     syncNewGameUpcomingSection();
   });
   el.fields.preferredStore.addEventListener("input", () => syncStoreInputIcon(el.fields.preferredStore, el.preferredStoreFieldIcon));
-  el.fields.digital.addEventListener("change", syncDialogPriceVisibility);
+  el.fields.digital.addEventListener("change", () => { syncDialogPriceVisibility(); syncGamelistEntitlementEditor(); });
   el.fields.dlc.addEventListener("change", syncDlcDigital);
   el.fields.replayCount.addEventListener("input", syncReplaySection);
   el.form.addEventListener("submit", saveFromForm);
@@ -5287,6 +5289,7 @@ function rowCoreStats(game) {
     game.platform ? platformBadge(game.platform, null, { title: game.title }) : "",
     mediaFormatBadge(game),
     game.dlc ? dlcBadge(game) : "",
+    entitlementBadge(game),
     game.coop ? coopBadge() : "",
     game.emulator ? `<span class="emulator-pill">Emulator</span>` : "",
     game.lengthHours ? timeBadge(game.lengthHours, hltbUrlFor(game)) : "",
@@ -5889,7 +5892,7 @@ function statsGameList(games) {
       : progress
       ? psnProgressBadge(progress, { className: "finished-stats-progress-pill" })
       : (completed ? psnProgressBadge({ title: game.title, progress: 100 }, { className: "finished-stats-progress-pill" }) : "");
-    return `<span class="finished-stats-game-row ${completed ? "is-complete" : ""}"><b class="${escapeHtml(ownerTitleClass)}">${escapeHtml(game.title)}</b>${game.platform ? platformBadge(game.platform) : ""}${game.dlc ? dlcBadge(game) : ""}${progressPill}</span>`;
+    return `<span class="finished-stats-game-row ${completed ? "is-complete" : ""}"><b class="${escapeHtml(ownerTitleClass)}">${escapeHtml(game.title)}</b>${game.platform ? platformBadge(game.platform) : ""}${game.dlc ? dlcBadge(game) : ""}${entitlementBadge(game)}${progressPill}</span>`;
   }).join("");
 }
 
@@ -7175,6 +7178,7 @@ function metaFor(game, options = {}) {
   if (game.platform) values.push(platformBadge(game.platform, null, { title: game.title }));
   values.push(mediaFormatBadge(game));
   if (game.dlc) values.push(dlcBadge(game));
+  values.push(entitlementBadge(game));
   if (game.emulator) values.push(`<span class="emulator-pill">Emulator</span>`);
   if (game.coop) values.push(coopBadge());
   if (game.lengthHours) values.push(timeBadge(game.lengthHours, hltbUrlFor(game)));
@@ -7793,6 +7797,7 @@ function completedBadges(game, options = {}) {
     game.platform ? platformBadge(game.platform, null, { title: game.title }) : "",
     mediaFormatBadge(game),
     game.dlc ? dlcBadge(game) : "",
+    entitlementBadge(game),
     game.emulator ? `<span class="emulator-pill">Emulator</span>` : "",
     game.coop ? coopBadge() : "",
     game.stream ? streamBadge() : "",
@@ -7887,6 +7892,13 @@ function dlcBadge(game, label = "DLC", options = {}) {
   const className = ["dlc-pill", cls, options.className || ""].filter(Boolean).join(" ");
   const platformLabel = platformDisplayName(platform);
   return `<span class="${escapeHtml(className)}" title="${escapeHtml([label, platformLabel].filter(Boolean).join(" - "))}">${escapeHtml(label)}</span>`;
+}
+
+function entitlementBadge(game) {
+  const type = game?.psPlus ? "psplus" : game?.gamesWithGold ? "gameswithgold" : "";
+  if (!type) return "";
+  const title = type === "psplus" ? "PlayStation Plus" : "Games with Gold";
+  return `<span class="entitlement-pill entitlement-${type}" title="${title}" aria-label="${title}"><img src="assets/platforms/${type}.png" alt="" width="22" height="22" decoding="async"></span>`;
 }
 
 function ownerBadge(owner) {
@@ -8878,6 +8890,7 @@ function storeIcon(store) {
 
 function syncEditFieldIcons() {
   syncPlatformInputIcon();
+  syncGamelistEntitlementEditor();
   syncStoreInputIcon(el.fields.preorderStore, el.preorderStoreFieldIcon);
   syncStoreInputIcon(el.fields.preferredStore, el.preferredStoreFieldIcon);
 }
@@ -9010,6 +9023,8 @@ async function openEditor(id = "") {
   el.fields.title.value = game.title || "";
   el.fields.platform.value = platformDisplayName(game.platform || "");
   el.fields.dlc.checked = Boolean(game.dlc);
+  el.fields.psPlus.checked = Boolean(game.psPlus);
+  el.fields.gamesWithGold.checked = Boolean(game.gamesWithGold);
   el.fields.section.value = game.section === "new" ? "backlog" : game.section || "wanted";
   el.fields.releaseDate.value = game.releaseDate || "";
   el.fields.releaseText.value = game.releaseText || "";
@@ -9043,6 +9058,7 @@ async function openEditor(id = "") {
   el.fields.cover.value = game.cover || "";
   if (el.fields.notes) el.fields.notes.value = game.notes || "";
   syncEditFieldIcons();
+  syncGamelistEntitlementEditor();
   syncDialogPriceVisibility();
   syncStyledSelect(el.fields.section, { activeValue: null });
   pauseAllPlayingTrailers();
@@ -9068,6 +9084,8 @@ function blankGame() {
     title: "",
     platform: "",
     dlc: false,
+    psPlus: false,
+    gamesWithGold: false,
     section: "wanted",
     releaseDate: "",
     releaseText: "",
@@ -9141,6 +9159,8 @@ async function saveCurrentFormGame() {
     title: el.fields.title.value.trim(),
     platform: canonicalPlatform(el.fields.platform.value),
     dlc: el.fields.dlc.checked,
+    psPlus: (el.fields.digital.checked || el.fields.dlc.checked) && ["PS3", "PS4", "PS5"].includes(canonicalPlatform(el.fields.platform.value)) && el.fields.psPlus.checked,
+    gamesWithGold: (el.fields.digital.checked || el.fields.dlc.checked) && ["X360", "XOne"].includes(canonicalPlatform(el.fields.platform.value)) && el.fields.gamesWithGold.checked,
     section,
     releaseDate: el.fields.releaseDate.value,
     releaseText: el.fields.releaseText.value.trim(),
@@ -9202,6 +9222,14 @@ function syncDialogPriceVisibility() {
 function syncDlcDigital() {
   if (el.fields.dlc.checked) el.fields.digital.checked = true;
   syncDialogPriceVisibility();
+  syncGamelistEntitlementEditor();
+}
+
+function syncGamelistEntitlementEditor() {
+  const platform = canonicalPlatform(el.fields.platform.value);
+  const digital = el.fields.digital.checked || el.fields.dlc.checked;
+  el.dialog.classList.toggle("show-psplus-check", digital && ["PS3", "PS4", "PS5"].includes(platform));
+  el.dialog.classList.toggle("show-games-with-gold-check", digital && ["X360", "XOne"].includes(platform));
 }
 
 function syncReplaySection() {

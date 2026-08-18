@@ -1170,7 +1170,8 @@ html.theme-font-mata .shelf-page .playing-section .column-head h2 {
 
 .preorder-tab-icon,
 .lookup-label-digital,
-.shelf-dlc-field {
+.shelf-dlc-field,
+.shelf-entitlement-field {
   display: none;
 }
 
@@ -1367,6 +1368,12 @@ html.theme-font-mata .shelf-page .playing-section .column-head h2 {
   min-height: 44px;
 }
 
+.shelf-editor-grid > .shelf-entitlement-field {
+  grid-column: span 3;
+  align-self: end;
+  min-height: 44px;
+}
+
 .digital-game-editor .lookup-label-physical,
 .digital-game-editor .shelf-region-field,
 .digital-game-editor .shelf-value-field,
@@ -1379,6 +1386,33 @@ html.theme-font-mata .shelf-page .playing-section .column-head h2 {
 .digital-game-editor .lookup-label-digital,
 .digital-game-editor .shelf-dlc-field {
   display: inline-flex;
+}
+
+.digital-game-editor.shelf-psplus-editor .shelf-psplus-field,
+.digital-game-editor.shelf-games-with-gold-editor .shelf-games-with-gold-field {
+  display: inline-flex;
+}
+
+.entitlement-pill {
+  box-sizing: border-box;
+  display: inline-grid;
+  place-items: center;
+  width: 31px;
+  min-width: 31px;
+  height: 31px;
+  padding: 3px;
+  overflow: hidden;
+  border: 1px solid #f6d66a;
+  border-radius: 7px;
+  background: linear-gradient(145deg, rgba(255, 226, 113, 0.38), rgba(201, 148, 32, 0.24));
+  box-shadow: 0 3px 14px rgba(218, 166, 39, 0.26);
+}
+
+.entitlement-pill img {
+  display: block;
+  width: 24px;
+  height: 24px;
+  object-fit: contain;
 }
 
 .digital-game-editor .lookup-row > label:first-child {

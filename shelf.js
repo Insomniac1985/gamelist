@@ -163,6 +163,7 @@ const el = {
     title: document.querySelector("#titleInput"), platform: document.querySelector("#platformInput"),
     country: document.querySelector("#countryInput"), price: document.querySelector("#priceInput"),
     dlc: document.querySelector("#dlcInput"),
+    psPlus: document.querySelector("#psPlusInput"), gamesWithGold: document.querySelector("#gamesWithGoldInput"),
     owners: document.querySelector("#ownersInput"),
     releaseDate: document.querySelector("#releaseDateInput"), trophyName: document.querySelector("#trophyNameInput"),
     upc: document.querySelector("#upcInput"), sku: document.querySelector("#skuInput"), asin: document.querySelector("#asinInput"),
@@ -1216,8 +1217,8 @@ function gameCard(game, options = {}) {
   const studioText = studio || game.genre || (digitalGame ? "Digital edition" : "Physical edition");
   card.querySelector(".studio-line").innerHTML = `${visibleOwners.map(ownerBadge).join("")}<span>${escapeHtml(studioText)}</span>`;
   card.querySelector(".meta").innerHTML = preorderProjection
-    ? `${platformBadge(game.platform, { title: game.title })}${mediaFormatBadge(game)}${dlcBadge(game)}${preorderPlaytimePill(game)}`
-    : digitalGame ? `${platformBadge(game.platform, { title: game.title })}${mediaFormatBadge(game)}${dlcBadge(game)}${shelfProgressPill(game)}`
+    ? `${platformBadge(game.platform, { title: game.title })}${mediaFormatBadge(game)}${dlcBadge(game)}${entitlementBadge(game)}${preorderPlaytimePill(game)}`
+    : digitalGame ? `${platformBadge(game.platform, { title: game.title })}${mediaFormatBadge(game)}${dlcBadge(game)}${entitlementBadge(game)}${shelfProgressPill(game)}`
     : `<span class="region-flag" title="${escapeHtml(game.country)}">${flagIcon(game.country)}</span>${platformBadge(game.platform, { title: game.title })}${conditionBadge(condition)}${shelfProgressPill(game)}`;
   const playDates = card.querySelector(".play-dates");
   if (preorderProjection) playDates.innerHTML = `${game.releaseDate ? `<span class="release-pill history-date-pill"><small class="release-date-label"><span>Releases</span>${calendarMiniIcon()}</small><strong>${escapeHtml(formatDate(game.releaseDate))}</strong></span>` : ""}${game.preorderStore ? preorderProjectionChip(game.preorderStore) : ""}`;
@@ -1251,8 +1252,8 @@ function gameRow(game) {
   const description = game.description || "";
   const actions = preorderProjection ? `<div class="game-row-actions-top"><button class="icon-button row-edit-action" data-action="edit-preorder" type="button" title="Edit" aria-label="Edit">${pencilIcon()}</button><button class="icon-button danger-button row-delete-action" data-action="delete-preorder" type="button" title="Delete" aria-label="Delete">${trashIcon()}</button></div><div class="game-row-actions-bottom"><button class="ghost-button" data-action="accept-preorder" type="button">Got it</button></div>` : isPendingCollectionGame(game) ? `<div class="game-row-actions-top"><button class="primary-button add-collection-action" data-action="add-collection" type="button">Add to Collection</button></div><div class="game-row-actions-bottom"><button class="icon-button danger-button row-delete-action" data-action="delete" type="button" title="Delete" aria-label="Delete">${trashIcon()}</button></div>` : `<div class="game-row-actions-top"><button class="icon-button row-edit-action" data-action="edit" type="button" title="Edit" aria-label="Edit">${pencilIcon()}</button><button class="icon-button danger-button row-delete-action" data-action="delete" type="button" title="Delete" aria-label="Delete">${trashIcon()}</button></div><div class="game-row-actions-bottom"><button class="ghost-button shelf-add-backlog-action" data-action="add-backlog" type="button">Add to Backlog</button></div>`;
   const core = preorderProjection
-    ? `${platformBadge(game.platform, { title: game.title })}${mediaFormatBadge(game)}${dlcBadge(game)}${preorderPlaytimePill(game)}${game.releaseDate ? `<span class="release-pill history-date-pill"><small class="release-date-label"><span>Releases</span>${calendarMiniIcon()}</small><strong>${escapeHtml(formatDate(game.releaseDate))}</strong></span>` : ""}`
-    : digitalGame ? `${platformBadge(game.platform, { title: game.title })}${mediaFormatBadge(game)}${dlcBadge(game)}${shelfProgressPill(game)}`
+    ? `${platformBadge(game.platform, { title: game.title })}${mediaFormatBadge(game)}${dlcBadge(game)}${entitlementBadge(game)}${preorderPlaytimePill(game)}${game.releaseDate ? `<span class="release-pill history-date-pill"><small class="release-date-label"><span>Releases</span>${calendarMiniIcon()}</small><strong>${escapeHtml(formatDate(game.releaseDate))}</strong></span>` : ""}`
+    : digitalGame ? `${platformBadge(game.platform, { title: game.title })}${mediaFormatBadge(game)}${dlcBadge(game)}${entitlementBadge(game)}${shelfProgressPill(game)}`
     : `<span class="region-flag" title="${escapeHtml(game.country)}">${flagIcon(game.country)}</span>${platformBadge(game.platform, { title: game.title })}${conditionBadge(conditionLabel(game))}${shelfProgressPill(game)}`;
   const prices = preorderProjection ? gamelistPreorderPrices(game) : "";
   return `<article class="game-row${preorderProjection ? " preorder-projection-row" : ""}${ownerClasses}" data-id="${escapeHtml(game.id)}" role="button" tabindex="0" aria-label="${escapeHtml(`Open ${game.title}`)}"><span class="game-row-cover-wrap"><img class="game-row-cover" src="${escapeHtml(cover)}" alt="" loading="lazy" decoding="async"><img class="game-row-cover-preview" src="${escapeHtml(cover)}" alt="" loading="lazy" decoding="async" aria-hidden="true"></span><div class="game-row-identity"><strong class="${visibleOwners.map(ownerColorClass).join(" ")}">${escapeHtml(game.title)}</strong>${visibleOwners.length || studio ? `<span class="game-row-studio-line">${visibleOwners.map(ownerBadge).join("")}${studio ? `<span>${escapeHtml(studio)}</span>` : ""}</span>` : ""}</div><div class="game-row-core">${core}</div><div class="game-row-tags">${preorderProjection && game.preorderStore ? preorderProjectionChip(game.preorderStore) : ""}${tags.map((tag) => `<span class="chip genre">${escapeHtml(tag)}</span>`).join("")}</div>${prices ? `<div class="game-row-prices">${prices}</div>` : ""}${description ? `<div class="game-row-description${preorderProjection ? "" : " shelf-row-description"}">${escapeHtml(description)}</div>` : ""}<div class="game-row-actions">${actions}</div></article>`;
@@ -1348,7 +1349,7 @@ function openDetails(game) {
   el.detailStudio.innerHTML = `${visibleShelfCardOwners(game.owners || []).map(ownerBadge).join("")}${detailStudio ? `<span>${escapeHtml(detailStudio)}</span>` : ""}`;
   el.detailStudio.hidden = !el.detailStudio.innerHTML;
   const digitalGame = isDigitalShelfGame(game);
-  el.detailMeta.innerHTML = `${!digitalGame && game.country ? `<span class="region-flag" title="${escapeHtml(game.country)}">${flagIcon(game.country)}</span>` : ""}${platformBadge(game.platform, { title: game.title })}${digitalGame ? `${mediaFormatBadge(game)}${dlcBadge(game)}` : ""}`;
+  el.detailMeta.innerHTML = `${!digitalGame && game.country ? `<span class="region-flag" title="${escapeHtml(game.country)}">${flagIcon(game.country)}</span>` : ""}${platformBadge(game.platform, { title: game.title })}${digitalGame ? `${mediaFormatBadge(game)}${dlcBadge(game)}${entitlementBadge(game)}` : ""}`;
   const fallbackCover = coverUrl(game.cover || "") || platformFallback(game.platform);
   el.detailCover.src = fallbackCover;
   el.detailCover.dataset.coverFallback = fallbackCover;
@@ -1400,9 +1401,11 @@ function openEditor(game = null, options = {}) {
   el.lookupResults.innerHTML = "";
   el.lookupInput.value = game?.title || "";
   const values = game || { platform: "", country: defaultShelfCountry(), owners: defaultShelfOwners(), game: true, box: true, manual: true };
-  for (const [key, input] of Object.entries(el.fields)) if (key !== "dlc") input.value = values[key] ?? "";
+  for (const [key, input] of Object.entries(el.fields)) if (!["dlc", "psPlus", "gamesWithGold"].includes(key)) input.value = values[key] ?? "";
   el.fields.platform.value = canonicalShelfPlatform(values.platform || "");
   el.fields.dlc.checked = Boolean(values.dlc);
+  el.fields.psPlus.checked = Boolean(values.psPlus);
+  el.fields.gamesWithGold.checked = Boolean(values.gamesWithGold);
   el.fields.owners.value = (values.owners || []).join(", ");
   const links = normalizedStoreLinks(values);
   el.fields.playstationUrl.value = links.playstation;
@@ -1429,6 +1432,7 @@ function syncShelfDigitalEditorMode(digitalMode) {
   const game = state.games.find((item) => item.id === state.editingId);
   el.addForm.querySelector(".modal-head h2").textContent = game?.pendingCollection ? "Add to Collection" : game ? "Edit Game" : digitalMode ? "Add Digital Game" : "Add Game";
   el.addForm.querySelectorAll("button[type='submit']").forEach((button) => { button.textContent = game?.pendingCollection ? "Add to Collection" : game ? "Save" : digitalMode ? "Add to Drive" : "Add to Shelf"; });
+  syncShelfEntitlementEditor();
 }
 
 async function deleteCurrentEditedGame() {
@@ -1719,6 +1723,8 @@ async function saveEditor(event) {
     title: el.fields.title.value.trim(), platform: canonicalShelfPlatform(el.fields.platform.value.trim()), country: digitalMode ? "" : el.fields.country.value,
     region: digitalMode ? "" : regionFor(el.fields.country.value), ...(digitalMode ? { game: false, manual: false, box: false, other: false, sealed: false } : conditionFromInputs()),
     digital: digitalMode, dlc: digitalMode && el.fields.dlc.checked,
+    psPlus: digitalMode && ["PS3", "PS4", "PS5"].includes(canonicalShelfPlatform(el.fields.platform.value)) && el.fields.psPlus.checked,
+    gamesWithGold: digitalMode && ["X360", "XOne"].includes(canonicalShelfPlatform(el.fields.platform.value)) && el.fields.gamesWithGold.checked,
     price: manualPrice, publisher: el.fields.publisher.value.trim(), developer: el.fields.developer.value.trim(),
     genre: el.fields.genre.value.trim(), cover: rawCoverUrl(el.fields.cover.value.trim()), notes: el.fields.notes.value.trim(),
     owners: splitValues(el.fields.owners.value).map(canonicalOwner).filter(Boolean), category: existing?.category || "Game",
@@ -1774,6 +1780,8 @@ async function addShelfGameToGamelistNew(game) {
     section: "new",
     digital: Boolean(game.digital || game.dlc),
     dlc: Boolean(game.dlc),
+    psPlus: Boolean(game.psPlus),
+    gamesWithGold: Boolean(game.gamesWithGold),
     playing: false,
     platinum: false,
     completedAt: "",
@@ -2019,7 +2027,7 @@ function normalizeWeekStart(value) {
 }
 
 function settingsPageFeatureToggles() {
-  return `<div class="settings-page-toggle-row"><label class="check-filter toggle-check settings-visible-check settings-page-toggle" title="Digital Games"><input type="checkbox" id="shelfSettingsDigitalGames" ${state.gamelistSettings.shelfDigitalGames === true ? "checked" : ""}><span>Digital Games</span></label><label class="check-filter toggle-check settings-visible-check settings-page-toggle" title="${escapeHtml(tt("Show Prices"))}"><input type="checkbox" id="shelfSettingsShowPrices" ${state.gamelistSettings.shelfHidePrices ? "" : "checked"}><span>${escapeHtml(tt("Show Prices"))}</span></label></div>`;
+  return `<div class="settings-page-toggle-row"><label class="check-filter toggle-check settings-visible-check settings-page-toggle" title="Track Digital Games (Drive)"><input type="checkbox" id="shelfSettingsDigitalGames" ${state.gamelistSettings.shelfDigitalGames === true ? "checked" : ""}><span>Track Digital Games (Drive)</span></label><label class="check-filter toggle-check settings-visible-check settings-page-toggle" title="${escapeHtml(tt("Show Prices"))}"><input type="checkbox" id="shelfSettingsShowPrices" ${state.gamelistSettings.shelfHidePrices ? "" : "checked"}><span>${escapeHtml(tt("Show Prices"))}</span></label></div>`;
 }
 
 function settingsShelfSyncCard() {
@@ -2845,7 +2853,7 @@ function openGamelistDetails(sourceGame) {
   const detailStudio = [game.developer, game.publisher].filter(Boolean).join(" / ");
   el.detailStudio.innerHTML = `${visibleOwners.map(ownerBadge).join("")}${detailStudio ? `<span>${escapeHtml(detailStudio)}</span>` : ""}`;
   el.detailStudio.hidden = !el.detailStudio.textContent;
-  el.detailMeta.innerHTML = `${platformBadge(game.platform, { title: game.title })}${mediaFormatBadge(game)}${dlcBadge(game)}${preorderPlaytimePill(game)}`;
+  el.detailMeta.innerHTML = `${platformBadge(game.platform, { title: game.title })}${mediaFormatBadge(game)}${dlcBadge(game)}${entitlementBadge(game)}${preorderPlaytimePill(game)}`;
   el.detailDates.innerHTML = `${game.releaseDate ? `<span class="release-pill history-date-pill"><small class="release-date-label"><span>Releases</span>${calendarMiniIcon()}</small><strong>${escapeHtml(formatDate(game.releaseDate))}</strong></span>` : ""}`;
   el.detailDates.hidden = !el.detailDates.innerHTML;
   el.detailChips.innerHTML = `${game.preorderStore ? preorderProjectionChip(game.preorderStore) : ""}${(game.genres || []).slice(0, 4).map((genre) => `<span class="chip genre">${escapeHtml(genre)}</span>`).join("")}`;
@@ -2940,7 +2948,7 @@ function currentlyPlayingTitle(games) {
 function playingCountText(count) {
   return `Playing ${count} ${count === 1 ? "game" : "games"}`;
 }
-function projectionMeta(game, options = {}) { const release = options.includeRelease === false ? "" : activityReleaseStatus(game, { includePast: Boolean(options.includePast) }); return `${platformBadge(game.platform, { title: game.title })}${options.includeProgress ? shelfProgressPill(game) : ""}${mediaFormatBadge(game)}${dlcBadge(game)}${game.emulator ? `<span class="emulator-pill">Emulator</span>` : ""}${game.lengthHours ? timeBadgeMarkup(game.lengthHours, game.hltbUrl || game.howLongToBeatUrl || `https://howlongtobeat.com/?q=${encodeURIComponent(game.title)}`, escapeHtml) : ""}${game.stream ? `<span class="stream-pill">Stream</span>` : ""}${release ? releaseStatusPill(release) : ""}${game.coop ? `<span class="coop-pill">Coop</span>` : ""}${game.replayCount ? `<span class="replay-pill">Replay ${escapeHtml(game.replayCount)}</span>` : ""}`; }
+function projectionMeta(game, options = {}) { const release = options.includeRelease === false ? "" : activityReleaseStatus(game, { includePast: Boolean(options.includePast) }); return `${platformBadge(game.platform, { title: game.title })}${options.includeProgress ? shelfProgressPill(game) : ""}${mediaFormatBadge(game)}${dlcBadge(game)}${entitlementBadge(game)}${game.emulator ? `<span class="emulator-pill">Emulator</span>` : ""}${game.lengthHours ? timeBadgeMarkup(game.lengthHours, game.hltbUrl || game.howLongToBeatUrl || `https://howlongtobeat.com/?q=${encodeURIComponent(game.title)}`, escapeHtml) : ""}${game.stream ? `<span class="stream-pill">Stream</span>` : ""}${release ? releaseStatusPill(release) : ""}${game.coop ? `<span class="coop-pill">Coop</span>` : ""}${game.replayCount ? `<span class="replay-pill">Replay ${escapeHtml(game.replayCount)}</span>` : ""}`; }
 
 function mediaFormatBadge(game) {
   if (!game) return "";
@@ -2955,6 +2963,13 @@ function dlcBadge(game, label = "DLC") {
   if (!game?.dlc) return "";
   const cls = platformClass(game.platform, { title: game.title });
   return `<span class="dlc-pill ${escapeHtml(cls)}" title="${escapeHtml(label)}">${escapeHtml(label)}</span>`;
+}
+
+function entitlementBadge(game) {
+  const type = game?.psPlus ? "psplus" : game?.gamesWithGold ? "gameswithgold" : "";
+  if (!type) return "";
+  const title = type === "psplus" ? "PlayStation Plus" : "Games with Gold";
+  return `<span class="entitlement-pill entitlement-${type}" title="${title}" aria-label="${title}"><img src="assets/platforms/${type}.png" alt="" width="22" height="22" decoding="async"></span>`;
 }
 
 function physicalDiskIcon(platformClassName = "") {
@@ -4095,6 +4110,12 @@ function syncShelfEditorIcons() {
   const platform = canonicalShelfPlatform(el.fields.platform?.value || "");
   const logo = platform ? platformLogo(platform) : "";
   setShelfEditorIcon(el.platformFieldIcon, logo && logo !== "assets/Icon_shelf.png" ? logo : "", platform);
+  syncShelfEntitlementEditor(platform);
+}
+function syncShelfEntitlementEditor(platform = canonicalShelfPlatform(el.fields.platform?.value || "")) {
+  const digitalMode = el.addForm.dataset.digital === "true";
+  el.addForm.classList.toggle("shelf-psplus-editor", digitalMode && ["PS3", "PS4", "PS5"].includes(platform));
+  el.addForm.classList.toggle("shelf-games-with-gold-editor", digitalMode && ["X360", "XOne"].includes(platform));
 }
 function setShelfEditorIcon(slot, icon, title = "") {
   const wrapper = slot?.closest?.(".icon-input");

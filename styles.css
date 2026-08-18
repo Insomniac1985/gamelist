@@ -5600,6 +5600,28 @@ body.theme-kash .game-card.stream-card.completed-trophy-card {
   font-weight: 840;
 }
 
+.entitlement-pill {
+  box-sizing: border-box;
+  display: inline-grid;
+  place-items: center;
+  width: 31px;
+  min-width: 31px;
+  height: 31px;
+  padding: 3px;
+  overflow: hidden;
+  border: 1px solid #f6d66a;
+  border-radius: 7px;
+  background: linear-gradient(145deg, rgba(255, 226, 113, 0.38), rgba(201, 148, 32, 0.24));
+  box-shadow: 0 3px 14px rgba(218, 166, 39, 0.26);
+}
+
+.entitlement-pill img {
+  display: block;
+  width: 24px;
+  height: 24px;
+  object-fit: contain;
+}
+
 .dlc-pill.platform-nintendo,
 .media-format-pill.platform-nintendo {
   color: var(--switch);
@@ -11315,6 +11337,25 @@ body.theme-kash
   padding-inline: 8px;
 }
 
+.collection-form-grid > .entitlement-check,
+.collection-form-grid > .entitlement-grid-spacer {
+  display: none;
+}
+
+#gameDialog.show-psplus-check .collection-form-grid > .psplus-check,
+#gameDialog.show-games-with-gold-check .collection-form-grid > .games-with-gold-check {
+  display: inline-flex;
+  grid-column: span 4;
+  min-width: 0;
+  padding-inline: 8px;
+}
+
+#gameDialog.show-psplus-check .collection-form-grid > .entitlement-grid-spacer,
+#gameDialog.show-games-with-gold-check .collection-form-grid > .entitlement-grid-spacer {
+  display: block;
+  grid-column: span 8;
+}
+
 .collection-form-grid > .list-field {
   grid-column: span 4;
 }
@@ -11934,6 +11975,7 @@ html.theme-light .playing-achievements-check input[type="checkbox"]:checked {
   .collection-form-grid > .title-field,
   .collection-form-grid > .platform-field,
   .collection-form-grid > .dlc-check,
+  .collection-form-grid > .entitlement-check,
   .collection-form-grid > .list-field,
   .collection-form-grid > .collection-check,
   .collection-form-grid > .release-date-field,
@@ -11946,6 +11988,11 @@ html.theme-light .playing-achievements-check input[type="checkbox"]:checked {
   .collection-form-grid > .trophy-search-field,
   .collection-form-grid > .notes-field {
     grid-column: 1 / -1;
+  }
+
+  #gameDialog.show-psplus-check .collection-form-grid > .entitlement-grid-spacer,
+  #gameDialog.show-games-with-gold-check .collection-form-grid > .entitlement-grid-spacer {
+    display: none;
   }
 
   .modal-head {
