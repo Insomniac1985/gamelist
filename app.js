@@ -5612,15 +5612,13 @@ function statsReleaseKpisCard(insights) {
           value: insights.playedFromYear.length,
           label: "Played new games",
           subline: releaseExpansionLine(insights.newExpansions, "new expansion", "new expansions"),
-          detail: insights.hoverable ? statsGameList(insights.playedFromYear) : "",
-          tone: "played",
+          detail: insights.hoverable ? statsGameList(insights.playedFromYearDisplay) : "",
         })}
         ${statsReleaseMiniKpi({
           value: insights.playedOutsideYear.length,
           label: "Played games not from that year",
           subline: releaseExpansionLine(insights.playedOutsideYearExpansions, "played expansion not from that year", "played expansions not from that year"),
-          detail: insights.hoverable ? statsGameList(insights.playedOutsideYear) : "",
-          tone: "played",
+          detail: insights.hoverable ? statsGameList(insights.playedOutsideYearDisplay) : "",
         })}
       </div>
     </section>
@@ -5661,6 +5659,17 @@ function statsReleaseYearInsights(year, games) {
   const playedOutsideYear = scopeYear
     ? finishedGames.filter((game) => releaseYear(game) !== scopeYear)
     : finishedGames.filter((game) => releaseYear(game) && releaseYear(game) !== completionYear(game));
+  const playingGames = scopeYear
+    ? state.games
+      .filter((game) => {
+        if (game.deletedAt || game.dlc || !game.playing || game.completedAt || !game.startedAt) return false;
+        const startYear = statsYearMonth(game.startedAt)?.year;
+        return startYear && startYear <= Number(scopeYear) && Number(scopeYear) <= new Date().getFullYear();
+      })
+      .map((game) => ({ ...game, statsMonthCarry: true }))
+    : [];
+  const playingFromYear = playingGames.filter((game) => releaseYear(game) === scopeYear);
+  const playingOutsideYear = playingGames.filter((game) => releaseYear(game) !== scopeYear);
   const newExpansions = scopeYear
     ? expansions.filter((game) => releaseYear(game) === scopeYear)
     : expansions.filter((game) => releaseYear(game) && releaseYear(game) === completionYear(game));
@@ -5672,6 +5681,8 @@ function statsReleaseYearInsights(year, games) {
     interested,
     playedFromYear,
     playedOutsideYear,
+    playedFromYearDisplay: [...playedFromYear, ...playingFromYear],
+    playedOutsideYearDisplay: [...playedOutsideYear, ...playingOutsideYear],
     newExpansions,
     playedOutsideYearExpansions,
     hoverable: Boolean(scopeYear),
