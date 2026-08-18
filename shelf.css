@@ -1182,6 +1182,11 @@ html.theme-font-mata .shelf-page .playing-section .column-head h2 {
 .preorder-tab-icon .shopping-bag-icon {
   width: 22px;
   height: 22px;
+  fill: none !important;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
 }
 
 .shelf-tabs button[data-shelf-tab="preorders"],
@@ -1414,7 +1419,7 @@ html.theme-font-mata .shelf-page .playing-section .column-head h2 {
 @media (min-width: 761px) {
   .digital-game-editor .shelf-release-field,
   .digital-game-editor .shelf-owner-field {
-    grid-column-start: 1;
+    grid-column: 1 / span 6;
   }
 }
 
