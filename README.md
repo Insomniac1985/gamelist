@@ -8,7 +8,7 @@ Gamelist is a personal game backlog, preorder, price, trophy, achievement, and p
 The app has two connected pages:
 
 - <img src="assets/Icon.png" alt="Gamelist" width="18" align="center"> `/` for the main game backlog, preorder, release, and completion status tracker.
-- <img src="assets/Icon_shelf.png" alt="Shelf" width="18" align="center"> `/shelf` for the physical collection tracker and organizer.
+- <img src="assets/Icon_shelf.png" alt="Shelf" width="18" align="center"> `/shelf` for the physical collection tracker and organizer. You can now track your digital games, as well.
 
 Pull down the top bar/handle to go to the other page!
 
@@ -25,6 +25,7 @@ Email: <a href="mailto:shabiimitjans@gmail.com">shabiimitjans@gmail.com</a>
 - Backlog, upcoming, available, currently playing, and finished-game boards.
 - Release calendar with preorder markers.
 - Physical Shelf library with multiple owners, regions, conditions, categories, selected-store prices, PriceCharting collection values, and linked Gamelist entries.
+- Digital Drive library with multiple owners, categories and linked Gamelist entries.
 - Game of the year tracking and shareable image export.
 - IGDB-powered lookup for all game covers, release dates, descriptions, genres, developers, publishers, trailers, store links, and price-search helpers.
 - Twitch stream preview in Currently Playing when a streamed game and Twitch username are configured.
@@ -320,6 +321,19 @@ If Google Calendar is configured, adding a new preorder store to an upcoming/wan
 6. Save.
 
 New physical games can sync into the Gamelist as setup-needed backlog/new-addition entries when Shelf Sync is enabled.
+
+### Add a a digital game to your Drive (Shelf) collection
+
+1. Click the **top handle** or drag it down to access the **Shelf**.
+2. Inside settings make sure **Digital games** is checked.
+3. Enter **Edit mode**.
+4. Click **Add Game**.
+5. Search by title or paste an IGDB game URL.
+6. Check **Digital**.
+7. Set platform, owners, publisher/developer, genre, cover, notes...
+8. Save.
+
+New digital games can sync into the Gamelist as setup-needed backlog/new-addition entries when Shelf Sync is enabled.
 
 ### Create your end of year GOTY image
 
