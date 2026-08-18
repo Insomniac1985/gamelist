@@ -1724,7 +1724,7 @@ async function saveEditor(event) {
     region: digitalMode ? "" : regionFor(el.fields.country.value), ...(digitalMode ? { game: false, manual: false, box: false, other: false, sealed: false } : conditionFromInputs()),
     digital: digitalMode, dlc: digitalMode && el.fields.dlc.checked,
     psPlus: digitalMode && ["PS3", "PS4", "PS5"].includes(canonicalShelfPlatform(el.fields.platform.value)) && el.fields.psPlus.checked,
-    gamesWithGold: digitalMode && ["Xbox 360", "Xbox One"].includes(canonicalShelfPlatform(el.fields.platform.value)) && el.fields.gamesWithGold.checked,
+    gamesWithGold: digitalMode && ["X360", "XOne"].includes(canonicalShelfPlatform(el.fields.platform.value)) && el.fields.gamesWithGold.checked,
     price: manualPrice, publisher: el.fields.publisher.value.trim(), developer: el.fields.developer.value.trim(),
     genre: el.fields.genre.value.trim(), cover: rawCoverUrl(el.fields.cover.value.trim()), notes: el.fields.notes.value.trim(),
     owners: splitValues(el.fields.owners.value).map(canonicalOwner).filter(Boolean), category: existing?.category || "Game",
@@ -4115,7 +4115,7 @@ function syncShelfEditorIcons() {
 function syncShelfEntitlementEditor(platform = canonicalShelfPlatform(el.fields.platform?.value || "")) {
   const digitalMode = el.addForm.dataset.digital === "true";
   el.addForm.classList.toggle("shelf-psplus-editor", digitalMode && ["PS3", "PS4", "PS5"].includes(platform));
-  el.addForm.classList.toggle("shelf-games-with-gold-editor", digitalMode && ["Xbox 360", "Xbox One"].includes(platform));
+  el.addForm.classList.toggle("shelf-games-with-gold-editor", digitalMode && ["X360", "XOne"].includes(platform));
 }
 function setShelfEditorIcon(slot, icon, title = "") {
   const wrapper = slot?.closest?.(".icon-input");

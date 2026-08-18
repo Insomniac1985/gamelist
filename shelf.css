@@ -1413,7 +1413,6 @@ html.theme-font-mata .shelf-page .playing-section .column-head h2 {
   width: 24px;
   height: 24px;
   object-fit: contain;
-  filter: brightness(0);
 }
 
 .digital-game-editor .lookup-row > label:first-child {

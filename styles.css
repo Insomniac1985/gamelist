@@ -5620,7 +5620,6 @@ body.theme-kash .game-card.stream-card.completed-trophy-card {
   width: 24px;
   height: 24px;
   object-fit: contain;
-  filter: brightness(0);
 }
 
 .dlc-pill.platform-nintendo,
