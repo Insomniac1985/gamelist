@@ -1404,7 +1404,7 @@ html.theme-font-mata .shelf-page .playing-section .column-head h2 {
   overflow: hidden;
   border: 1px solid #f6d66a;
   border-radius: 7px;
-  background: linear-gradient(145deg, #ffe271, #c99420);
+  background: linear-gradient(145deg, rgba(255, 226, 113, 0.38), rgba(201, 148, 32, 0.24));
   box-shadow: 0 3px 14px rgba(218, 166, 39, 0.26);
 }
 
