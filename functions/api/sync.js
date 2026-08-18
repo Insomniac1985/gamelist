@@ -25,10 +25,6 @@ export async function onRequestPut({ request, env }) {
       settings: body.settings,
       updatedAt: new Date().toISOString(),
     }));
-    if (shelfSyncEnabled(body.settings) && body.settings.shelfDigitalGames === true) {
-      const digitalGames = (previous.games || []).filter(isSyncableDigitalGame);
-      await syncBacklogGamesToShelf(env, previous.games || [], digitalGames);
-    }
     return json({ ok: true });
   }
   if (!body || !Array.isArray(body.games)) {
@@ -40,8 +36,8 @@ export async function onRequestPut({ request, env }) {
     game.section === "backlog"
     && !game.shelfId
     && !game.deletedAt
-    && ((body.settings?.shelfDigitalGames === true && (game.digital || game.dlc))
-      || (!game.digital && !game.dlc && (!previousById.has(game.id) || previousById.get(game.id)?.section !== "backlog" || previousById.get(game.id)?.digital)))
+    && (!game.digital && !game.dlc || body.settings?.shelfDigitalGames === true)
+    && (!previousById.has(game.id) || previousById.get(game.id)?.section !== "backlog")
   ));
   await env.GAMELIST.put(KV_KEY, JSON.stringify({
     games: body.games,
@@ -56,10 +52,6 @@ function shelfSyncEnabled(settings = {}) {
   return settings?.shelfSync !== false;
 }
 
-function isSyncableDigitalGame(game) {
-  return game?.section === "backlog" && !game.shelfId && !game.deletedAt && Boolean(game.digital || game.dlc);
-}
-
 async function syncBacklogGamesToShelf(env, allGames, games) {
   const shelf = await env.GAMELIST.get("shelf-data", "json") || { sourceGames: [], games: [], overrides: {} };
   const byId = new Map(allGames.map((game) => [game.id, game]));
@@ -71,9 +63,9 @@ async function syncBacklogGamesToShelf(env, allGames, games) {
     const trophyName = linked.trophyName || "";
     const digital = Boolean(linked.digital || linked.dlc);
     const dlc = Boolean(linked.dlc);
-    if (JSON.stringify(game.owners || []) === JSON.stringify(owners) && String(game.trophyName || "") === trophyName && Boolean(game.digital) === digital && Boolean(game.dlc) === dlc && (!digital || !game.pendingCollection)) return game;
+    if (JSON.stringify(game.owners || []) === JSON.stringify(owners) && String(game.trophyName || "") === trophyName && Boolean(game.digital) === digital && Boolean(game.dlc) === dlc) return game;
     changed = true;
-    return { ...game, owners, trophyName, digital, dlc, pendingCollection: digital ? false : game.pendingCollection, updatedAt: new Date().toISOString() };
+    return { ...game, owners, trophyName, digital, dlc, updatedAt: new Date().toISOString() };
   };
   const sourceGames = (shelf.sourceGames || []).map(syncOwners);
   const shelfGames = (shelf.games || []).map(syncOwners);
@@ -85,7 +77,7 @@ async function syncBacklogGamesToShelf(env, allGames, games) {
       id: `gamelist-${game.id}`,
       gamelistId: game.id,
       source: "gamelist",
-      pendingCollection: !digital,
+      pendingCollection: true,
       digital,
       dlc: Boolean(game.dlc),
       title: game.title,
