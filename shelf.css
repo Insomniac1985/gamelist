@@ -1986,12 +1986,13 @@ textarea {
     font-size: 10px;
   }
 
-  .shelf-tabs.four-tabs button[data-shelf-tab="preorders"] .preorder-tab-text {
+  .shelf-tabs.four-tabs button.active[data-shelf-tab="preorders"] .preorder-tab-text {
     display: none;
   }
 
-  .shelf-tabs.four-tabs button[data-shelf-tab="preorders"] .preorder-tab-icon {
+  .shelf-tabs.four-tabs button.active[data-shelf-tab="preorders"] .preorder-tab-icon {
     display: inline-flex;
+    color: #fff;
   }
   .shelf-grid {
     grid-template-columns: 1fr;
