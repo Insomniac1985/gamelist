@@ -1091,7 +1091,8 @@ function normalizedShelfTab(tab) {
 }
 
 function shelfTabs(pendingCount = 0, preorderCount = syncedPreorderGames().length) {
-  return [pendingCount ? "new" : "", "shelf", state.gamelistSettings.shelfDigitalGames === true ? "drive" : "", preorderCount ? "preorders" : ""].filter(Boolean);
+  const hasDigitalGames = state.games.some((game) => !game.deletedAt && !isPendingCollectionGame(game) && isDigitalShelfGame(game));
+  return [pendingCount ? "new" : "", "shelf", state.gamelistSettings.shelfDigitalGames === true && hasDigitalGames ? "drive" : "", preorderCount ? "preorders" : ""].filter(Boolean);
 }
 
 function syncedPreorderGames() {
