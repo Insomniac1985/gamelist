@@ -294,6 +294,8 @@ const el = {
   finishedStatsCloseButton: document.querySelector("#finishedStatsCloseButton"),
   finishedStatsBrow: document.querySelector("#finishedStatsBrow"),
   finishedStatsTitle: document.querySelector("#finishedStatsTitle"),
+  finishedStatsYearPicker: document.querySelector("#finishedStatsYearPicker"),
+  finishedStatsYearSelect: document.querySelector("#finishedStatsYearSelect"),
   finishedStatsBody: document.querySelector("#finishedStatsBody"),
   platinumCloseButton: document.querySelector("#platinumCloseButton"),
   platinumTitle: document.querySelector("#platinumTitle"),
@@ -438,12 +440,13 @@ async function init() {
   const requestedGame = requestedParams.get("game");
   const requestedStats = requestedParams.get("stats");
   const embeddedStats = requestedParams.get("embed") === "1";
+  const achievementStats = requestedParams.get("statsSource") === "achievements";
   if (embeddedStats) document.documentElement.classList.add("stats-embed");
   if (requestedStats && !requestedEdit && !requestedGame) {
     const cleanUrl = new URL(window.location.href);
     cleanUrl.searchParams.delete("stats");
     if (!embeddedStats) window.history.replaceState({}, "", `${cleanUrl.pathname}${cleanUrl.search}${cleanUrl.hash}`);
-    openFinishedStatsDialog(requestedStats === "all" ? "all" : requestedStats);
+    openFinishedStatsDialog(requestedStats === "all" ? "all" : requestedStats, { yearPicker: achievementStats });
     if (embeddedStats) el.finishedStatsDialog.addEventListener("close", () => window.parent.postMessage("gamelist-stats-close", window.location.origin), { once: true });
   }
   if (requestedEdit && state.games.some((game) => game.id === requestedEdit && !game.deletedAt)) {
@@ -866,7 +869,10 @@ function bindEvents() {
   });
   el.completedYearFilter?.addEventListener("change", handleCompletedYearChange);
   el.completedStatsButton?.addEventListener("click", () => openFinishedStatsDialog(state.completedYear || "all"));
-  el.achievementStatsButton?.addEventListener("click", () => openFinishedStatsDialog("all"));
+  el.achievementStatsButton?.addEventListener("click", () => openFinishedStatsDialog("all", { yearPicker: true }));
+  el.finishedStatsYearSelect?.addEventListener("change", () => {
+    renderFinishedStatsDialog(el.finishedStatsYearSelect.value || "all");
+  });
   el.completedMoreButton?.addEventListener("click", () => {
     state.completedVisiblePages += 1;
     renderCompleted();
@@ -5474,8 +5480,30 @@ function completedCountForSelectedYear() {
   };
 }
 
-function openFinishedStatsDialog(year = "all") {
-  const scope = finishedStatsScope(year);
+function openFinishedStatsDialog(year = "all", { yearPicker = false } = {}) {
+  el.finishedStatsDialog.classList.toggle("from-achievements", yearPicker);
+  el.finishedStatsYearPicker.hidden = !yearPicker;
+  if (yearPicker) {
+    const years = finishedStatsYears();
+    el.finishedStatsYearSelect.innerHTML = ["all", ...years]
+      .map((value) => `<option value="${escapeHtml(value)}">${value === "all" ? "All" : escapeHtml(value)}</option>`)
+      .join("");
+    el.finishedStatsYearSelect.value = String(year || "all");
+  }
+  renderFinishedStatsDialog(year, { preserveAll: yearPicker });
+  el.finishedStatsDialog.showModal();
+  syncScrollLock();
+}
+
+function finishedStatsYears() {
+  return unique([
+    ...completedYears(),
+    ...platinumItems().map(completedStatsYearFor).filter(Boolean),
+  ]).sort((a, b) => Number(b) - Number(a));
+}
+
+function renderFinishedStatsDialog(year = "all", { preserveAll = true } = {}) {
+  const scope = preserveAll ? String(year || "all") : finishedStatsScope(year);
   const games = finishedStatsGames(scope);
   const completed = finishedStatsCompleted(scope);
   el.finishedStatsBrow.textContent = scope === "all" ? "All-time statistics" : "YEARLY STATISTICS";
@@ -5486,8 +5514,6 @@ function openFinishedStatsDialog(year = "all") {
   });
   bindFinishedStatsDesktopOverlays();
   bindFinishedStatsMobileOverlays();
-  el.finishedStatsDialog.showModal();
-  syncScrollLock();
 }
 
 function finishedStatsScope(year = "all") {

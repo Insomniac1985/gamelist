@@ -98,7 +98,7 @@ const el = {
   brandVersion: document.querySelector("#brandVersion"),
   stats: document.querySelector("#shelfStats"),
   achievementStatsButton: document.querySelector("#shelfAchievementStatsButton"),
-  statsDialog: document.querySelector("#shelfStatsDialog"), statsFrame: document.querySelector("#shelfStatsFrame"), statsCloseButton: document.querySelector("#shelfStatsCloseButton"),
+  statsDialog: document.querySelector("#shelfStatsDialog"), statsFrame: document.querySelector("#shelfStatsFrame"),
   count: document.querySelector("#resultCount"),
   libraryTitle: document.querySelector("#shelfLibraryTitle"),
   shelf: document.querySelector("#gameShelf"),
@@ -348,7 +348,6 @@ function bindEvents() {
   el.showcaseSelected.addEventListener("click", handleShowcaseSelectedClick);
   el.completedClose.addEventListener("click", () => closeDialog(el.completedDialog));
   el.completedDialog.addEventListener("click", (event) => { if (event.target === el.completedDialog) closeDialog(el.completedDialog); });
-  el.statsCloseButton?.addEventListener("click", () => closeDialog(el.statsDialog));
   el.statsDialog?.addEventListener("click", (event) => { if (event.target === el.statsDialog) closeDialog(el.statsDialog); });
   window.addEventListener("message", (event) => { if (event.origin === window.location.origin && event.data === "gamelist-stats-close") closeDialog(el.statsDialog); });
   el.releaseCloseButton.addEventListener("click", () => closeDialog(el.releaseDialog));
@@ -360,7 +359,7 @@ function bindEvents() {
 }
 
 function openShelfStatsDialog() {
-  el.statsFrame.src = `/?stats=all&embed=1&t=${Date.now()}`;
+  el.statsFrame.src = `/?stats=all&statsSource=achievements&embed=1&t=${Date.now()}`;
   openDialog(el.statsDialog);
 }
 

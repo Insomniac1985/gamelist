@@ -1710,6 +1710,11 @@ html.stats-embed body > :not(#finishedStatsDialog) {
   display: none !important;
 }
 
+html.stats-embed #finishedStatsDialog::backdrop {
+  background: transparent;
+  backdrop-filter: none;
+}
+
 .playing-finished-tags .media-format-pill {
   display: inline-grid;
   place-items: center;
@@ -6835,6 +6840,21 @@ body:not(.can-edit) .game-card:focus-within .edit-action {
   height: 0.86em;
   min-width: 0.86em;
   stroke: currentColor;
+}
+
+.finished-stats-head-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-left: auto;
+}
+
+.finished-stats-year-picker select {
+  width: auto;
+  min-width: 92px;
+  height: 34px;
+  min-height: 34px;
+  padding: 5px 30px 5px 10px;
 }
 
 .finished-stats-kpi strong .coop-icon {
@@ -12026,6 +12046,26 @@ html.theme-light .playing-achievements-check input[type="checkbox"]:checked {
   .collection-form-grid > .trophy-search-field,
   .collection-form-grid > .notes-field {
     grid-column: 1 / -1;
+  }
+
+  #gameDialog .collection-form-grid,
+  #gameDialog .collection-form-grid > * {
+    min-width: 0;
+    max-width: 100%;
+    box-sizing: border-box;
+  }
+
+  #gameDialog .collection-form-grid > .digital-check,
+  #gameDialog.show-psplus-check .collection-form-grid > .psplus-check,
+  #gameDialog.show-games-with-gold-check .collection-form-grid > .games-with-gold-check {
+    width: 100%;
+    overflow: hidden;
+  }
+
+  #gameDialog .collection-form-grid > .digital-check span,
+  #gameDialog .collection-form-grid > .entitlement-check span {
+    min-width: 0;
+    overflow-wrap: anywhere;
   }
 
   #gameDialog.show-psplus-check .collection-form-grid > .entitlement-grid-spacer,
