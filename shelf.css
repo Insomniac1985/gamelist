@@ -1390,7 +1390,7 @@ html.theme-font-mata .shelf-page .playing-section .column-head h2 {
   width: 0;
   height: 44px;
   flex: 0 0 0;
-  margin: 0 12px;
+  margin: 0 2px;
   border-left: 1px solid var(--line);
 }
 
