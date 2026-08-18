@@ -303,11 +303,12 @@
 
         <div class="lookup-row">
           <label>
-            <span>Search DB or PriceCharting</span>
+            <span class="lookup-label-physical">Search DB or PriceCharting</span><span class="lookup-label-digital">Search IGDB</span>
             <input id="lookupInput" type="search" placeholder="Game name or PriceCharting page">
           </label>
           <button class="ghost-button icon-only-button" id="lookupButton" type="button" title="Fetch info" aria-label="Fetch info">
             <svg class="search-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle><path d="M16.5 16.5 21 21"></path></svg>
+            <svg class="download-badge-icon lookup-digital-icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="4.5" width="14" height="15" rx="3"></rect><path d="M12 7.5v6.5"></path><path d="M9.5 11.8 12 14.3l2.5-2.5"></path><path d="M8.8 17h6.4"></path></svg>
           </button>
         </div>
         <div class="lookup-results" id="lookupResults"></div>
@@ -318,6 +319,7 @@
             <label class="shelf-title-field"><span>Title</span><input id="titleInput" required></label>
             <label class="shelf-console-field"><span>Console</span><span class="icon-input shelf-edit-icon-input"><span class="field-leading-icon shelf-platform-field-icon" aria-hidden="true"></span><input id="platformInput" list="shelfPlatformOptions"></span><datalist id="shelfPlatformOptions"></datalist></label>
             <label class="shelf-region-field"><span>Region</span><span class="icon-input shelf-edit-icon-input"><select id="countryInput" required></select></span></label>
+            <label class="shelf-dlc-field check-filter toggle-check"><input id="dlcInput" type="checkbox"><span>DLC</span></label>
             <label class="shelf-release-field"><span>Release Date</span><input id="releaseDateInput" type="date"></label>
             <label class="shelf-value-field"><span>Estimated Value</span><input id="priceInput" inputmode="decimal" placeholder="0.00"></label>
             <label class="shelf-owner-field"><span>Owner</span><input id="ownersInput" placeholder="Judy, Jordi, Cage"></label>
@@ -350,7 +352,7 @@
           </div>
         </section>
 
-        <section class="form-group">
+        <section class="form-group shelf-pricecharting-section">
           <h3>PriceCharting Data</h3>
           <div class="form-grid physical-id-grid">
             <label><span>UPC / EAN</span><input id="upcInput" inputmode="numeric"></label>

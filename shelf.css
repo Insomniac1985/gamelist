@@ -1168,6 +1168,18 @@ html.theme-font-mata .shelf-page .playing-section .column-head h2 {
   white-space: nowrap;
 }
 
+.preorder-tab-icon,
+.lookup-label-digital,
+.lookup-digital-icon,
+.shelf-dlc-field {
+  display: none;
+}
+
+.preorder-tab-icon .shopping-bag-icon {
+  width: 22px;
+  height: 22px;
+}
+
 .shelf-tabs button[data-shelf-tab="preorders"],
 .shelf-tabs button[data-shelf-tab="new"] {
   gap: 10px;
@@ -1338,6 +1350,35 @@ html.theme-font-mata .shelf-page .playing-section .column-head h2 {
 
 .shelf-editor-grid > .shelf-region-field {
   grid-column: span 3;
+}
+
+.shelf-editor-grid > .shelf-dlc-field {
+  grid-column: span 3;
+  align-self: end;
+  min-height: 44px;
+}
+
+.digital-game-editor .lookup-label-physical,
+.digital-game-editor .shelf-region-field,
+.digital-game-editor .shelf-value-field,
+.digital-game-editor .shelf-condition-field,
+.digital-game-editor .shelf-condition-notes-field,
+.digital-game-editor .shelf-pricecharting-section {
+  display: none;
+}
+
+.digital-game-editor .lookup-label-digital,
+.digital-game-editor .lookup-digital-icon,
+.digital-game-editor .shelf-dlc-field {
+  display: inline-flex;
+}
+
+.digital-game-editor .lookup-digital-icon {
+  width: 22px;
+  height: 22px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
 }
 
 .shelf-editor-grid > .shelf-release-field,
@@ -1923,6 +1964,14 @@ textarea {
     height: 20px;
     padding: 0 4px;
     font-size: 10px;
+  }
+
+  .shelf-tabs.three-tabs button[data-shelf-tab="preorders"] .preorder-tab-text {
+    display: none;
+  }
+
+  .shelf-tabs.three-tabs button[data-shelf-tab="preorders"] .preorder-tab-icon {
+    display: inline-flex;
   }
   .shelf-grid {
     grid-template-columns: 1fr;
