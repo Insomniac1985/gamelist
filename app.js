@@ -5496,10 +5496,7 @@ function openFinishedStatsDialog(year = "all", { yearPicker = false } = {}) {
 }
 
 function finishedStatsYears() {
-  return unique([
-    ...completedYears(),
-    ...platinumItems().map(completedStatsYearFor).filter(Boolean),
-  ]).sort((a, b) => Number(b) - Number(a));
+  return completedYears();
 }
 
 function renderFinishedStatsDialog(year = "all", { preserveAll = true } = {}) {
@@ -5833,8 +5830,8 @@ function statsMonthBars(games, counts, scopeYear = "") {
   const order = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
   const byLabel = new Map(counts.map((item) => [item.label, item.count]));
   const max = Math.max(1, ...counts.map((item) => item.count));
-  const ongoingGames = state.games.filter((game) => !game.deletedAt && game.playing && !game.completedAt && game.startedAt);
-  const activityGames = [...new Map([...games, ...ongoingGames]
+  const datedGames = state.games.filter((game) => !game.deletedAt && !game.dlc && game.startedAt);
+  const activityGames = [...new Map([...games, ...datedGames]
     .map((game) => [game.id || `${game.title}|${game.platform}`, game])).values()];
   return order.map((label, index) => {
     const count = byLabel.get(label) || 0;
