@@ -5958,7 +5958,7 @@ function statsGameList(games) {
       : progress
       ? psnProgressBadge(progress, { className: "finished-stats-progress-pill" })
       : (completed ? psnProgressBadge({ title: game.title, progress: 100 }, { className: "finished-stats-progress-pill" }) : "");
-    return `<span class="finished-stats-game-row ${completed ? "is-complete" : ""}"><b class="${escapeHtml(ownerTitleClass)}">${escapeHtml(game.title)}</b>${game.platform ? platformBadge(game.platform) : ""}${game.statsMonthCarry ? `<span class="finished-stats-month-carry" title="Played during this month without being counted">…</span>` : ""}${game.dlc ? dlcBadge(game) : ""}${entitlementBadge(game)}${progressPill}</span>`;
+    return `<span class="finished-stats-game-row ${completed ? "is-complete" : ""}"><b class="${escapeHtml(ownerTitleClass)}">${escapeHtml(game.title)}</b>${game.platform ? platformBadge(game.platform) : ""}${game.dlc ? dlcBadge(game) : ""}${entitlementBadge(game)}${progressPill}${game.statsMonthCarry ? `<span class="finished-stats-month-carry" title="Played during this month without being counted">…</span>` : ""}</span>`;
   }).join("");
 }
 
