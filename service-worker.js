@@ -1,4 +1,4 @@
-const CACHE_VERSION = "gamelist-cache-v571";
+const CACHE_VERSION = "gamelist-cache-v572";
 const STATIC_CACHE = `${CACHE_VERSION}:static`;
 const MEDIA_CACHE = `${CACHE_VERSION}:media`;
 const STATIC_ASSETS = [
@@ -36,7 +36,6 @@ const STATIC_ASSETS = [
   "/assets/platforms/switch.png",
   "/assets/platforms/xbox.png",
   "/assets/platforms/gameswithgold.png",
-  "/assets/platforms/cartridge.png",
   "/assets/platforms/wii.png",
   "/assets/platforms/wiiu.png",
   "/assets/platforms/n64.png",
