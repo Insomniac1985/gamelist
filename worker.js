@@ -19,6 +19,7 @@ import * as shelfGamesPlatforms from "./functions/api/shelf-games-platforms.js";
 import * as shelfMassAdd from "./functions/api/shelf-mass-add.js";
 import * as shelfMetadata from "./functions/api/shelf-metadata.js";
 import * as shelfPriceAudit from "./functions/api/shelf-price-audit.js";
+import * as shelfImportDigital from "./functions/api/shelf-import-digital.js";
 import * as sync from "./functions/api/sync.js";
 import * as steamAchievements from "./functions/api/steam-achievements.js";
 import * as steamTrophiesByYear from "./functions/api/steam-trophies-by-year.js";
@@ -49,6 +50,7 @@ const routes = {
   "/api/shelf-mass-add": shelfMassAdd,
   "/api/shelf-metadata": shelfMetadata,
   "/api/shelf-price-audit": shelfPriceAudit,
+  "/api/shelf-import-digital": shelfImportDigital,
   "/api/steam-achievements": steamAchievements,
   "/api/steam-trophies-by-year": steamTrophiesByYear,
   "/api/sync": sync,
@@ -72,6 +74,7 @@ const shelfOnlyPaths = new Set([
   "/api/shelf-mass-add",
   "/api/shelf-metadata",
   "/api/shelf-price-audit",
+  "/api/shelf-import-digital",
 ]);
 
 export default {
