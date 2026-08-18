@@ -841,15 +841,17 @@ function delay(ms) {
 
 function renderStats() {
   const visibleGames = filteredShelfStatsGames();
-  const collectionGames = visibleGames.filter((game) => !isPendingCollectionGame(game));
+  const ownedGames = visibleGames.filter((game) => !isPendingCollectionGame(game));
+  const driveSelected = state.filters.tab === "drive";
+  const collectionGames = ownedGames.filter((game) => driveSelected ? isDigitalShelfGame(game) : !isDigitalShelfGame(game));
   const value = collectionGames.reduce((sum, game) => sum + (collectionValueFor(game) || 0), 0);
   const currency = normalizePriceSettings(state.gamelistSettings).currency;
   const symbol = ({ USD: "$", GBP: "\u00a3", JPY: "\u00a5", EUR: "\u20ac" })[currency] || "\u20ac";
   const valueText = currency === "EUR" ? `${Math.round(value).toLocaleString("en")}${symbol}` : `${symbol}${Math.round(value).toLocaleString("en")}`;
   const rows = [
-    [collectionGames.length, "Physical games", "stat-backlog", "shelf-start"],
-    [new Set(collectionGames.map((game) => game.platform)).size, "Platforms", "stat-available"],
-    ...(shelfPricesVisible() ? [[valueText, "Estimated value", "stat-done"]] : []),
+    [collectionGames.length, driveSelected ? "Digital games" : "Physical games", "stat-backlog", "shelf-start"],
+    [new Set(collectionGames.map((game) => game.platform)).size, driveSelected ? "Digital platforms" : "Platforms", "stat-available"],
+    ...(!driveSelected && shelfPricesVisible() ? [[valueText, "Estimated physical", "stat-done"]] : []),
   ];
   el.stats.innerHTML = rows.map(([valueText, label, className, action]) => `<div class="stat glass ${className}${action ? " stat-action" : ""}"${action ? ` data-stat-action="${escapeHtml(action)}" role="button" tabindex="0"` : ""}><strong>${escapeHtml(valueText)}</strong><span>${escapeHtml(label)}</span></div>`).join("");
 }
@@ -1106,7 +1108,7 @@ function setShelfTab(tab) {
   const next = normalizedShelfTab(tab);
   if (state.filters.tab === next) return;
   state.filters.tab = next;
-  renderLibrary();
+  renderFilteredShelf();
 }
 
 function handleShelfSwipeStart(event) {
