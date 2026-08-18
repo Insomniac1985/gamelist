@@ -35,7 +35,7 @@ const PLATFORM_OPTIONS = [
   "Game Boy", "Game Boy Color", "Nintendo Entertainment System", "Super Nintendo Entertainment System",
   "Nintendo 64", "Nintendo GameCube", "Game Boy Advance", "Nintendo DS", "Nintendo Wii", "Nintendo Wii U", "Nintendo 3DS",
   "Nintendo Switch", "Nintendo Switch 2",
-  "Sony PlayStation", "Sony PlayStation 2", "Sony PlayStation 3", "Sony Playstation Portable", "Sony Playstation Vita", "Sony PlayStation 4", "Sony Playstation 5",
+  "PS1", "PS2", "PS3", "PSP", "PSVita", "PS4", "PS5",
   "Xbox", "Xbox 360", "Xbox One", "Xbox PC", "Xbox Series",
 ];
 const COUNTRY_OPTIONS = [
@@ -158,6 +158,7 @@ const el = {
   lookupInput: document.querySelector("#lookupInput"),
   lookupButton: document.querySelector("#lookupButton"),
   lookupResults: document.querySelector("#lookupResults"),
+  digitalInput: document.querySelector("#shelfDigitalInput"),
   platformFieldIcon: document.querySelector(".shelf-platform-field-icon"),
   fields: {
     title: document.querySelector("#titleInput"), platform: document.querySelector("#platformInput"),
@@ -319,6 +320,7 @@ function bindEvents() {
   el.fields.platform.addEventListener("change", syncShelfEditorIcons);
   el.fields.country.addEventListener("change", syncShelfEditorIcons);
   el.lookupButton.addEventListener("click", lookupGame);
+  el.digitalInput.addEventListener("change", () => syncShelfDigitalEditorMode(el.digitalInput.checked));
   el.lookupInput.addEventListener("keydown", (event) => { if (event.key === "Enter") { event.preventDefault(); lookupGame(); } });
   el.lookupResults.addEventListener("click", chooseLookupResult);
   Object.values(el.conditionFields).forEach((input) => input.addEventListener("change", () => syncConditionInputs(input)));
@@ -1387,9 +1389,9 @@ function openDetails(game) {
 function openEditor(game = null, options = {}) {
   if (!state.canEdit) return openAuth();
   const digitalMode = Boolean(options.digital || isDigitalShelfGame(game));
-  el.addForm.classList.toggle("digital-game-editor", digitalMode);
-  el.addForm.dataset.digital = digitalMode ? "true" : "false";
   state.editingId = game?.id || "";
+  el.digitalInput.checked = digitalMode;
+  syncShelfDigitalEditorMode(digitalMode);
   state.pendingLengthHours = game?.lengthHours || null;
   state.lookupResults = [];
   el.lookupResults.classList.remove("loaded");
@@ -1397,9 +1399,8 @@ function openEditor(game = null, options = {}) {
   el.lookupInput.value = game?.title || "";
   const values = game || { platform: "", country: defaultShelfCountry(), owners: defaultShelfOwners(), game: true, box: true, manual: true };
   for (const [key, input] of Object.entries(el.fields)) if (key !== "dlc") input.value = values[key] ?? "";
+  el.fields.platform.value = canonicalShelfPlatform(values.platform || "");
   el.fields.dlc.checked = Boolean(values.dlc);
-  el.fields.country.required = !digitalMode;
-  el.lookupInput.placeholder = digitalMode ? "Game name" : "Game name or PriceCharting page";
   el.fields.owners.value = (values.owners || []).join(", ");
   const links = normalizedStoreLinks(values);
   el.fields.playstationUrl.value = links.playstation;
@@ -1418,6 +1419,16 @@ function openEditor(game = null, options = {}) {
   openDialog(el.addDialog);
 }
 
+function syncShelfDigitalEditorMode(digitalMode) {
+  el.addForm.classList.toggle("digital-game-editor", digitalMode);
+  el.addForm.dataset.digital = digitalMode ? "true" : "false";
+  el.fields.country.required = !digitalMode;
+  el.lookupInput.placeholder = digitalMode ? "Game name" : "Game name or PriceCharting page";
+  const game = state.games.find((item) => item.id === state.editingId);
+  el.addForm.querySelector(".modal-head h2").textContent = game?.pendingCollection ? "Add to Collection" : game ? "Edit Game" : digitalMode ? "Add Digital Game" : "Add Game";
+  el.addForm.querySelectorAll("button[type='submit']").forEach((button) => { button.textContent = game?.pendingCollection ? "Add to Collection" : game ? "Save" : digitalMode ? "Add to Drive" : "Add to Shelf"; });
+}
+
 async function deleteCurrentEditedGame() {
   const game = state.games.find((item) => item.id === state.editingId);
   if (!game) return;
@@ -1432,7 +1443,7 @@ async function lookupGame() {
   el.lookupButton.classList.add("is-loading");
   el.lookupButton.title = "Fetching game information";
   el.lookupResults.classList.remove("loaded");
-  const digitalMode = el.addForm.dataset.digital === "true";
+  const digitalMode = el.digitalInput.checked;
   el.lookupResults.innerHTML = `<div class="empty">${digitalMode ? "Searching IGDB…" : "Searching game data and PriceCharting editions…"}</div>`;
   el.lookupResults.classList.add("loaded");
   try {
@@ -1703,7 +1714,7 @@ async function saveEditor(event) {
   const game = {
     ...(existing || {}),
     id: existing?.id || `shelf-${crypto.randomUUID()}`,
-    title: el.fields.title.value.trim(), platform: el.fields.platform.value.trim(), country: digitalMode ? "" : el.fields.country.value,
+    title: el.fields.title.value.trim(), platform: canonicalShelfPlatform(el.fields.platform.value.trim()), country: digitalMode ? "" : el.fields.country.value,
     region: digitalMode ? "" : regionFor(el.fields.country.value), ...(digitalMode ? { game: false, manual: false, box: false, other: false, sealed: false } : conditionFromInputs()),
     digital: digitalMode, dlc: digitalMode && el.fields.dlc.checked,
     price: manualPrice, publisher: el.fields.publisher.value.trim(), developer: el.fields.developer.value.trim(),
@@ -3803,6 +3814,7 @@ function syncShelfGameRecord(game) {
   else if (index >= 0) state.additions[index] = clean;
 }
 async function loadShelfTrophies(game) {
+  game = shelfTrophyLookupGame(game);
   if (!shelfAllowsTrophyActivity(game.platform)) { el.detailTrophies.hidden = true; el.detailTrophyPercent.innerHTML = ""; return; }
   const external = externalActivityFor(game);
   if (external) {
@@ -3864,6 +3876,26 @@ async function loadShelfTrophies(game) {
   el.detailTrophyPercent.innerHTML = "";
   el.detailTrophies.hidden = false; el.detailTrophyList.innerHTML = `<span>Loading trophies…</span>`;
   try { const params = achievementParams({ id, service: match.npServiceName || "trophy", user: state.gamelistSettings.psnUser || "" }); const response = await fetch(`/api/trophies?${params}`); const data = await response.json(); const trophies = data.trophies || []; const earned = trophies.filter((item) => item.earned).length; const total = trophies.length; const progress = total ? Math.round((earned / total) * 100) : 0; state.cardTrophies[id] = { loading: false, allTrophies: trophies, trophies: trophies.filter((item) => item.earned).sort((a, b) => Date.parse(b.rawEarnedAt || b.earnedAt || 0) - Date.parse(a.rawEarnedAt || a.earnedAt || 0)).slice(0, 3), earned, total }; refreshShelfProjectedActivity(game); el.detailTrophyCount.textContent = ""; el.detailTrophyPercent.innerHTML = total ? shelfProgressBadge({ progress, earned, total }, { includeIcon: false, separator: true }) : ""; el.detailTrophyList.innerHTML = trophies.map((item) => `<article class="detail-trophy-card trophy-${trophyTone(item.type)} ${item.earned ? "earned" : "missing"}"><img src="${escapeHtml(item.icon || "assets/platforms/playstation.png")}" alt=""><div><strong>${escapeHtml(item.title)}</strong><span>${escapeHtml([item.earned ? item.earnedAt : "Missing", item.rarity].filter(Boolean).join(" · "))}</span>${item.description ? `<p>${escapeHtml(item.description)}</p>` : ""}</div></article>`).join(""); } catch { el.detailTrophies.hidden = true; }
+}
+
+function shelfTrophyLookupGame(game) {
+  const platform = canonicalShelfPlatform(game?.platform || "");
+  const title = normalizeSearchText(game?.title || "");
+  const linked = state.gamelistGames.find((item) => !item.deletedAt && (
+    item.id === game?.gamelistId
+    || item.shelfId === game?.id
+    || (normalizeSearchText(item.title || "") === title && canonicalShelfPlatform(item.platform || "") === platform)
+  ));
+  if (!linked) return { ...game, platform };
+  return {
+    ...linked,
+    ...game,
+    id: game.id,
+    platform: platform || canonicalShelfPlatform(linked.platform || ""),
+    trophyName: game.trophyName || linked.trophyName || "",
+    steamAppId: game.steamAppId || linked.steamAppId || "",
+    storeLinks: { ...(linked.storeLinks || {}), ...(game.storeLinks || {}) },
+  };
 }
 function pencilIcon() { return `<svg class="pencil-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h4l11-11a2.8 2.8 0 0 0-4-4L4 16v4Z"></path><path d="M13.5 6.5l4 4"></path></svg>`; }
 function trashIcon() { return `<svg class="trash-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6h18"></path><path d="M8 6V4h8v2"></path><path d="M19 6l-1 14H6L5 6"></path><path d="M10 11v5"></path><path d="M14 11v5"></path></svg>`; }
@@ -3996,7 +4028,7 @@ function platformDisplayName(value) {
     PS2: "Sony PlayStation 2",
     PS3: "Sony PlayStation 3",
     PS4: "Sony PlayStation 4",
-    PS5: "Sony Playstation 5",
+    PS5: "Sony PlayStation 5",
     PSP: "Sony Playstation Portable",
     PSVita: "Sony Playstation Vita",
     X360: "Xbox 360",
@@ -4083,11 +4115,13 @@ function bestCollectionPlatform(platforms, fallback) {
   const value = platforms.map(normalize).join(" ");
   if (value.includes("nintendo switch 2")) return "Nintendo Switch 2";
   if (value.includes("nintendo switch")) return "Nintendo Switch";
-  if (value.includes("playstation 5")) return "Sony PlayStation 5";
-  if (value.includes("playstation 4")) return "Sony PlayStation 4";
-  if (value.includes("playstation 3")) return "Sony PlayStation 3";
-  if (value.includes("playstation 2")) return "Sony PlayStation 2";
-  if (value.includes("playstation")) return "Sony PlayStation";
+  if (value.includes("playstation 5")) return "PS5";
+  if (value.includes("playstation 4")) return "PS4";
+  if (value.includes("playstation 3")) return "PS3";
+  if (value.includes("playstation 2")) return "PS2";
+  if (value.includes("playstation portable")) return "PSP";
+  if (value.includes("playstation vita")) return "PSVita";
+  if (value.includes("playstation")) return "PS1";
   if (value.includes("nintendo 3ds")) return "Nintendo 3DS";
   if (value.includes("nintendo ds")) return "Nintendo DS";
   if (value.includes("nintendo 64")) return "Nintendo 64";

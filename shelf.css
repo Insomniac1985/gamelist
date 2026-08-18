@@ -1170,10 +1170,13 @@ html.theme-font-mata .shelf-page .playing-section .column-head h2 {
 
 .preorder-tab-icon,
 .lookup-label-digital,
-.lookup-digital-separator,
-.lookup-digital-check,
 .shelf-dlc-field {
   display: none;
+}
+
+.lookup-digital-separator,
+.lookup-digital-check {
+  display: inline-flex;
 }
 
 .preorder-tab-icon .shopping-bag-icon {
@@ -1369,8 +1372,6 @@ html.theme-font-mata .shelf-page .playing-section .column-head h2 {
 }
 
 .digital-game-editor .lookup-label-digital,
-.digital-game-editor .lookup-digital-separator,
-.digital-game-editor .lookup-digital-check,
 .digital-game-editor .shelf-dlc-field {
   display: inline-flex;
 }
@@ -1379,15 +1380,16 @@ html.theme-font-mata .shelf-page .playing-section .column-head h2 {
   min-width: 0;
 }
 
-.digital-game-editor .lookup-digital-separator {
-  align-self: stretch;
+.lookup-digital-separator {
+  align-self: flex-end;
   width: 1px;
+  height: 44px;
   flex: 0 0 1px;
-  margin: 2px 4px;
-  background: var(--line);
+  margin: 0 12px;
+  background: linear-gradient(to bottom, transparent, color-mix(in srgb, var(--muted) 52%, transparent) 18%, color-mix(in srgb, var(--muted) 52%, transparent) 82%, transparent);
 }
 
-.digital-game-editor .lookup-digital-check {
+.lookup-digital-check {
   align-items: center;
   justify-content: center;
   width: 124px;
@@ -1397,9 +1399,6 @@ html.theme-font-mata .shelf-page .playing-section .column-head h2 {
   margin: 0;
 }
 
-.digital-game-editor .lookup-digital-check input:disabled + span {
-  opacity: 1;
-}
 
 .shelf-editor-grid > .shelf-release-field,
 .shelf-editor-grid > .shelf-value-field {
