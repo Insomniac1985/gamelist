@@ -63,9 +63,11 @@ async function syncBacklogGamesToShelf(env, allGames, games) {
     const trophyName = linked.trophyName || "";
     const digital = Boolean(linked.digital || linked.dlc);
     const dlc = Boolean(linked.dlc);
-    if (JSON.stringify(game.owners || []) === JSON.stringify(owners) && String(game.trophyName || "") === trophyName && Boolean(game.digital) === digital && Boolean(game.dlc) === dlc) return game;
+    const psPlus = digital && ["PS3", "PS4", "PS5"].includes(linked.platform) && Boolean(linked.psPlus);
+    const gamesWithGold = digital && ["X360", "XOne"].includes(linked.platform) && Boolean(linked.gamesWithGold);
+    if (JSON.stringify(game.owners || []) === JSON.stringify(owners) && String(game.trophyName || "") === trophyName && Boolean(game.digital) === digital && Boolean(game.dlc) === dlc && Boolean(game.psPlus) === psPlus && Boolean(game.gamesWithGold) === gamesWithGold) return game;
     changed = true;
-    return { ...game, owners, trophyName, digital, dlc, updatedAt: new Date().toISOString() };
+    return { ...game, owners, trophyName, digital, dlc, psPlus, gamesWithGold, updatedAt: new Date().toISOString() };
   };
   const sourceGames = (shelf.sourceGames || []).map(syncOwners);
   const shelfGames = (shelf.games || []).map(syncOwners);
@@ -80,6 +82,8 @@ async function syncBacklogGamesToShelf(env, allGames, games) {
       pendingCollection: true,
       digital,
       dlc: Boolean(game.dlc),
+      psPlus: digital && ["PS3", "PS4", "PS5"].includes(game.platform) && Boolean(game.psPlus),
+      gamesWithGold: digital && ["X360", "XOne"].includes(game.platform) && Boolean(game.gamesWithGold),
       title: game.title,
       trophyName: game.trophyName || "",
       platform: game.platform || "Unknown platform",

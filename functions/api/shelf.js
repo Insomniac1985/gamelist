@@ -73,9 +73,11 @@ export async function syncShelfGamesToBacklog(env, allShelfGames, games) {
     if (!linked) return game;
     const owners = Array.isArray(linked.owners) ? linked.owners : [];
     const trophyName = linked.trophyName || "";
-    if (JSON.stringify(game.owners || []) === JSON.stringify(owners) && String(game.trophyName || "") === trophyName) return game;
+    const psPlus = Boolean(linked.psPlus);
+    const gamesWithGold = Boolean(linked.gamesWithGold);
+    if (JSON.stringify(game.owners || []) === JSON.stringify(owners) && String(game.trophyName || "") === trophyName && Boolean(game.psPlus) === psPlus && Boolean(game.gamesWithGold) === gamesWithGold) return game;
     changed = true;
-    return { ...game, owners, trophyName, updatedAt: new Date().toISOString() };
+    return { ...game, owners, trophyName, psPlus, gamesWithGold, updatedAt: new Date().toISOString() };
   });
   const known = new Set(listGames.flatMap((game) => [game.shelfId, game.id]).filter(Boolean));
   const additions = games.filter((game) => !game.gamelistId && !game.skipGamelistSync && !known.has(game.id)).map((game) => ({
@@ -87,6 +89,8 @@ export async function syncShelfGamesToBacklog(env, allShelfGames, games) {
     section: "new",
     digital: Boolean(game.digital || game.dlc),
     dlc: Boolean(game.dlc),
+    psPlus: Boolean(game.psPlus),
+    gamesWithGold: Boolean(game.gamesWithGold),
     playing: false,
     platinum: false,
     completedAt: "",
