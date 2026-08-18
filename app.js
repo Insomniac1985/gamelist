@@ -5571,7 +5571,7 @@ function finishedStatsMarkup(year, games, completed) {
     ${allYears ? "" : statsReleaseKpisCard(releaseInsights)}
     <section class="finished-stats-months">
       <h3>${allYears ? "By year" : "By month"}</h3>
-      <div class="finished-stats-period-grid ${allYears ? "is-yearly" : ""}">${allYears ? statsYearBars(finishedGames) : statsMonthBars(finishedGames, months, finishedGames.length)}</div>
+      <div class="finished-stats-period-grid ${allYears ? "is-yearly" : ""}">${allYears ? statsYearBars(finishedGames) : statsMonthBars(finishedGames, months, year)}</div>
     </section>
     ${games.length ? "" : `<div class="empty">No finished games${year === "all" ? "" : ` in ${escapeHtml(year)}`}.</div>`}
   `;
@@ -5829,17 +5829,20 @@ function clampNumber(value, min, max) {
   return Math.min(max, Math.max(min, value));
 }
 
-function statsMonthBars(games, counts) {
+function statsMonthBars(games, counts, scopeYear = "") {
   const order = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
   const byLabel = new Map(counts.map((item) => [item.label, item.count]));
   const max = Math.max(1, ...counts.map((item) => item.count));
+  const ongoingGames = state.games.filter((game) => !game.deletedAt && game.playing && !game.completedAt && game.startedAt);
+  const activityGames = [...new Map([...games, ...ongoingGames]
+    .map((game) => [game.id || `${game.title}|${game.platform}`, game])).values()];
   return order.map((label, index) => {
     const count = byLabel.get(label) || 0;
     const overlayTitle = fullMonthName(label);
     const monthGames = games
       .filter((game) => monthShortName(game.completedAt) === label)
       .sort((a, b) => String(a.completedAt || "").localeCompare(String(b.completedAt || "")) || stringCompare(a.title, b.title));
-    const activeGames = statsGamesActiveInMonth(games, label);
+    const activeGames = statsGamesActiveInMonth(activityGames, label, scopeYear);
     const displayGames = activeGames.map((game) => ({ ...game, statsMonthCarry: monthShortName(game.completedAt) !== label }));
     const edgeClass = index === 0 ? " is-start-edge" : (index === order.length - 1 ? " is-end-edge" : "");
     return `<div class="finished-stats-month${edgeClass}" title="${escapeHtml(`${overlayTitle}: ${count}`)}" ${displayGames.length ? `data-stats-overlay-title="${escapeHtml(overlayTitle)}"` : ""}><span>${escapeHtml(label)}</span><em style="--month:${count / max};--platform-bar:${statsPlatformBar(activeGames)}"></em><strong>${count}</strong>${displayGames.length ? `<span class="finished-stats-breakdown">${statsGameList(displayGames)}</span>` : ""}</div>`;
