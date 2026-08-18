@@ -1636,10 +1636,6 @@ function settingsDevFeaturesItem(kind) {
     </a>
   `).join("");
   return `${links}
-    <label class="check-filter toggle-check settings-visible-check settings-dev-toggle" title="Sync preorders to Shelf">
-      <input type="checkbox" id="settingsSyncPreorders" ${state.settings.syncPreorders ? "checked" : ""}>
-      <span>Sync preorders</span>
-    </label>
     <label class="check-filter toggle-check settings-visible-check settings-dev-toggle" title="${escapeHtml(tt("Force cache on page load"))}">
       <input type="checkbox" id="settingsForceCacheOnLoad" ${state.settings.forceCacheOnLoad ? "checked" : ""}>
       <span>${escapeHtml(tt("Force cache on page load"))}</span>
@@ -2073,7 +2069,6 @@ async function saveSettingsFromForm(event) {
     hidePageSwitch: el.settingsLayoutList.querySelector("[data-hide-page-switch]")?.checked === true,
     weekStart: normalizeWeekStart(el.settingsLayoutList.querySelector("[data-week-start]")?.value || state.settings.weekStart),
     forceCacheOnLoad: document.querySelector("#settingsForceCacheOnLoad")?.checked === true,
-    syncPreorders: document.querySelector("#settingsSyncPreorders")?.checked === true,
     gotyAlwaysShow: document.querySelector("#settingsGotyAlwaysShow")?.checked === true,
   });
   persistLocalSettings();
@@ -5372,7 +5367,7 @@ function renderBrandVersionChip() {
   const shouldShow = state.canEdit && isShabiiOwner && Boolean(siteVersion.version);
   el.brandVersion.hidden = !shouldShow;
   el.brandVersion.textContent = shouldShow
-    ? `_${siteVersion.version.toLowerCase()}.${formatFooterShortDate(siteVersion.updatedAt) || "--.--"}`
+    ? `${siteVersion.version.toLowerCase()}.${formatFooterShortDate(siteVersion.updatedAt) || "--.--"}`
     : "Version -";
 }
 

@@ -508,7 +508,7 @@ function renderBrandVersionChip() {
   const shouldShow = state.canEdit && isShabiiOwner && Boolean(siteVersion.version);
   el.brandVersion.hidden = !shouldShow;
   el.brandVersion.textContent = shouldShow
-    ? `_${siteVersion.version.toLowerCase()}.${formatFooterShortDate(siteVersion.updatedAt) || "--.--"}`
+    ? `${siteVersion.version.toLowerCase()}.${formatFooterShortDate(siteVersion.updatedAt) || "--.--"}`
     : "Version -";
 }
 
@@ -1039,7 +1039,7 @@ function renderLibrary() {
   state.filters.tab = tabs.includes(state.filters.tab) ? state.filters.tab : "shelf";
   const games = filteredGames();
   el.tabs.hidden = tabs.length < 2;
-  el.tabs.classList.toggle("sync-preorders-enabled", state.canEdit && state.gamelistSettings.syncPreorders === true);
+  el.tabs.classList.toggle("sync-preorders-enabled", state.canEdit && state.gamelistSettings.shelfSync !== false);
   el.tabs.classList.toggle("four-tabs", tabs.length === 4);
   el.tabs.dataset.activeTab = state.filters.tab;
   el.tabs.style.setProperty("--tab-count", String(tabs.length));
@@ -1100,7 +1100,7 @@ function shelfTabs(pendingCount = 0, preorderCount = syncedPreorderGames().lengt
 }
 
 function syncedPreorderGames() {
-  if (!state.canEdit || state.gamelistSettings.syncPreorders !== true) return [];
+  if (!state.canEdit || state.gamelistSettings.shelfSync === false) return [];
   return state.gamelistGames
     .filter((game) => !game.deletedAt && !game.completedAt && game.section === "upcoming" && game.preorderStore && (!isDigitalShelfGame(game) || state.gamelistSettings.shelfDigitalGames === true))
     .map((game) => ({ ...game, platform: canonicalShelfPlatform(game.platform || ""), preorderProjection: true, genre: (game.genres || []).join(", "), country: game.country || "", condition: "Preordered" }));
@@ -1948,7 +1948,8 @@ function renderLayoutEditor() {
   el.layoutList.className = "settings-layout";
   el.layoutList.innerHTML = [
     ...state.layout.order.map((key, index) => settingsLayoutCard(key, index)),
-    `<div class="settings-preference-separator" role="presentation"></div><div class="settings-preference-row">${themeSettingsButton(state.gamelistSettings, escapeHtml)}${settingsSelectCard("order", tt("Default order"), "shelfSettingsDefaultOrder", [{ value: "added", label: tt("Last added") }, { value: "title", label: tt("Name") }, { value: "platform", label: tt("Platform") }, { value: "region", label: tt("Region") }, { value: "value", label: tt("Value") }])}${settingsSelectCard("calendar", tt("Week starts"), "shelfSettingsWeekStart", WEEK_START_OPTIONS.map(([value, label]) => ({ value, label: tt(label) })))}${settingsShelfSyncCard()}${settingsShelfPricesCard()}${settingsPageSwitchCard()}</div>`,
+    settingsPageFeatureToggles(),
+    `<div class="settings-preference-separator" role="presentation"></div><div class="settings-preference-row">${themeSettingsButton(state.gamelistSettings, escapeHtml)}${settingsSelectCard("order", tt("Default order"), "shelfSettingsDefaultOrder", [{ value: "added", label: tt("Last added") }, { value: "title", label: tt("Name") }, { value: "platform", label: tt("Platform") }, { value: "region", label: tt("Region") }, { value: "value", label: tt("Value") }])}${settingsSelectCard("calendar", tt("Week starts"), "shelfSettingsWeekStart", WEEK_START_OPTIONS.map(([value, label]) => ({ value, label: tt(label) })))}${settingsShelfSyncCard()}${settingsPageSwitchCard()}</div>`,
   ].join("");
   document.querySelector("#shelfSettingsCsvData").innerHTML = settingsCsvDataCard();
   if (el.settingsDevFeatures) el.settingsDevFeatures.innerHTML = settingsDevFeaturesCard("shelf");
@@ -2013,12 +2014,12 @@ function normalizeWeekStart(value) {
   return WEEK_START_OPTIONS.some(([key]) => key === value) ? value : "monday";
 }
 
-function settingsShelfSyncCard() {
-  return `<article class="settings-layout-card settings-sync-card"><div class="settings-wire wire-list" aria-hidden="true"><span></span><span></span><span></span></div><div class="settings-theme-select"><span>${escapeHtml(tt("Shelf Sync"))}</span><div class="settings-check-field"><label class="check-filter toggle-check settings-visible-check" title="${escapeHtml(tt("Shelf Sync"))}"><input type="checkbox" id="shelfSettingsSync" ${state.gamelistSettings.shelfSync === false ? "" : "checked"}><span>${escapeHtml(tt("Enabled"))}</span></label></div></div></article>`;
+function settingsPageFeatureToggles() {
+  return `<div class="settings-page-toggle-row"><label class="check-filter toggle-check settings-visible-check settings-page-toggle" title="Digital Games"><input type="checkbox" id="shelfSettingsDigitalGames" ${state.gamelistSettings.shelfDigitalGames === true ? "checked" : ""}><span>Digital Games</span></label><label class="check-filter toggle-check settings-visible-check settings-page-toggle" title="${escapeHtml(tt("Show Prices"))}"><input type="checkbox" id="shelfSettingsShowPrices" ${state.gamelistSettings.shelfHidePrices ? "" : "checked"}><span>${escapeHtml(tt("Show Prices"))}</span></label></div>`;
 }
 
-function settingsShelfPricesCard() {
-  return `<article class="settings-layout-card settings-sync-card"><div class="settings-wire wire-list" aria-hidden="true"><span></span><span></span><span></span></div><div class="settings-theme-select"><span>${escapeHtml(tt("Prices"))}</span><div class="settings-check-field"><label class="check-filter toggle-check settings-visible-check" title="${escapeHtml(tt("Show Prices"))}"><input type="checkbox" id="shelfSettingsShowPrices" ${state.gamelistSettings.shelfHidePrices ? "" : "checked"}><span>${escapeHtml(tt("Show Prices"))}</span></label></div></div></article>`;
+function settingsShelfSyncCard() {
+  return `<article class="settings-layout-card settings-sync-card"><div class="settings-wire wire-list" aria-hidden="true"><span></span><span></span><span></span></div><div class="settings-theme-select"><span>${escapeHtml(tt("Shelf Sync"))}</span><div class="settings-check-field"><label class="check-filter toggle-check settings-visible-check" title="${escapeHtml(tt("Shelf Sync"))}"><input type="checkbox" id="shelfSettingsSync" ${state.gamelistSettings.shelfSync === false ? "" : "checked"}><span>${escapeHtml(tt("Enabled"))}</span></label></div></div></article>`;
 }
 
 function settingsPageSwitchCard() {
@@ -2042,7 +2043,7 @@ function settingsDevFeaturesCard(kind) {
     { href: "/api/shelf-price-audit", label: "Price audit" },
     { href: "/api/shelf-covers", label: "Mass cover add" },
   ].map((link) => `<a class="ghost-button settings-dev-link" href="${escapeHtml(link.href)}" target="_blank" rel="noreferrer" data-dev-feature="${escapeHtml(kind)}">${escapeHtml(tt(link.label))}</a>`).join("");
-  return `${links}<label class="check-filter toggle-check settings-visible-check settings-dev-toggle" title="Sync preorders"><input type="checkbox" id="shelfSettingsSyncPreorders" ${state.gamelistSettings.syncPreorders === true ? "checked" : ""}><span>Sync preorders</span></label><label class="check-filter toggle-check settings-visible-check settings-dev-toggle" title="Digital Games"><input type="checkbox" id="shelfSettingsDigitalGames" ${state.gamelistSettings.shelfDigitalGames === true ? "checked" : ""}><span>Digital Games</span></label><label class="check-filter toggle-check settings-visible-check settings-dev-toggle" title="${escapeHtml(tt("Force cache on page load"))}"><input type="checkbox" id="shelfSettingsForceCacheOnLoad" ${state.gamelistSettings.forceCacheOnLoad === true ? "checked" : ""}><span>${escapeHtml(tt("Force cache on page load"))}</span></label>`;
+  return `${links}<label class="check-filter toggle-check settings-visible-check settings-dev-toggle" title="${escapeHtml(tt("Force cache on page load"))}"><input type="checkbox" id="shelfSettingsForceCacheOnLoad" ${state.gamelistSettings.forceCacheOnLoad === true ? "checked" : ""}><span>${escapeHtml(tt("Force cache on page load"))}</span></label>`;
 }
 
 const CSV_NUMERIC_FIELDS = new Set(["order", "lengthHours", "replayCount", "numericPrice", "price", "estimatedValue", "purchasePrice"]);
@@ -2665,7 +2666,7 @@ async function saveLayout(event) {
   state.layout.hidden = LAYOUT_KEYS.filter((key) => !el.layoutList.querySelector(`[data-layout-visible][value="${key}"]`)?.checked);
   localStorage.setItem(LAYOUT_KEY, JSON.stringify(state.layout));
   const stores = [...el.settingsStores.querySelectorAll("input:checked")].map((input) => input.value).filter((store) => STORE_OPTIONS.includes(store)).slice(0, MAX_PRICE_STORES);
-  state.gamelistSettings = { ...state.gamelistSettings, shelfDefaultOrder: el.settingsDefaultOrder.value, weekStart: normalizeWeekStart(el.settingsWeekStart?.value || state.gamelistSettings.weekStart), currency: el.settingsCurrency.value, region: el.settingsRegion.value, language: normalizeLanguage(el.settingsLanguage.value), psnUser: el.settingsPsnUser.value.trim(), microsoftUser: el.settingsMicrosoftUser.value.trim(), steamUser: el.settingsSteamUser.value.trim(), twitchUser: el.settingsTwitchUser.value.trim(), defaultOwner: el.settingsDefaultOwner.value.trim(), stores, storeSettingsVersion: 2, shelfSync: document.querySelector("#shelfSettingsSync")?.checked !== false, shelfHidePrices: document.querySelector("#shelfSettingsShowPrices")?.checked === false, hidePageSwitch: document.querySelector("#shelfSettingsHidePageSwitch")?.checked === true, syncPreorders: document.querySelector("#shelfSettingsSyncPreorders")?.checked === true, shelfDigitalGames: document.querySelector("#shelfSettingsDigitalGames")?.checked === true, forceCacheOnLoad: document.querySelector("#shelfSettingsForceCacheOnLoad")?.checked === true };
+  state.gamelistSettings = { ...state.gamelistSettings, shelfDefaultOrder: el.settingsDefaultOrder.value, weekStart: normalizeWeekStart(el.settingsWeekStart?.value || state.gamelistSettings.weekStart), currency: el.settingsCurrency.value, region: el.settingsRegion.value, language: normalizeLanguage(el.settingsLanguage.value), psnUser: el.settingsPsnUser.value.trim(), microsoftUser: el.settingsMicrosoftUser.value.trim(), steamUser: el.settingsSteamUser.value.trim(), twitchUser: el.settingsTwitchUser.value.trim(), defaultOwner: el.settingsDefaultOwner.value.trim(), stores, storeSettingsVersion: 2, shelfSync: document.querySelector("#shelfSettingsSync")?.checked !== false, shelfHidePrices: document.querySelector("#shelfSettingsShowPrices")?.checked === false, hidePageSwitch: document.querySelector("#shelfSettingsHidePageSwitch")?.checked === true, shelfDigitalGames: document.querySelector("#shelfSettingsDigitalGames")?.checked === true, forceCacheOnLoad: document.querySelector("#shelfSettingsForceCacheOnLoad")?.checked === true };
   localStorage.setItem("gamelist:settings:v1", JSON.stringify(state.gamelistSettings));
   applyShelfDefaultOrder(state.gamelistSettings.shelfDefaultOrder);
   await Promise.all([persistShelf(), persistGamelistSettings()]);
