@@ -1966,11 +1966,11 @@ textarea {
     font-size: 10px;
   }
 
-  .shelf-tabs.three-tabs button[data-shelf-tab="preorders"] .preorder-tab-text {
+  .shelf-tabs.four-tabs button[data-shelf-tab="preorders"] .preorder-tab-text {
     display: none;
   }
 
-  .shelf-tabs.three-tabs button[data-shelf-tab="preorders"] .preorder-tab-icon {
+  .shelf-tabs.four-tabs button[data-shelf-tab="preorders"] .preorder-tab-icon {
     display: inline-flex;
   }
   .shelf-grid {

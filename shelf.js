@@ -1036,7 +1036,7 @@ function renderLibrary() {
   const games = filteredGames();
   el.tabs.hidden = tabs.length < 2;
   el.tabs.classList.toggle("sync-preorders-enabled", state.canEdit && state.gamelistSettings.syncPreorders === true);
-  el.tabs.classList.toggle("three-tabs", tabs.length === 3);
+  el.tabs.classList.toggle("four-tabs", tabs.length === 4);
   el.tabs.dataset.activeTab = state.filters.tab;
   el.tabs.style.setProperty("--tab-count", String(tabs.length));
   el.tabs.style.setProperty("--compact-tab-count", String(Math.max(1, tabs.length - 1)));
