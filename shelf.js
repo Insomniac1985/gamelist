@@ -98,6 +98,7 @@ const el = {
   brandVersion: document.querySelector("#brandVersion"),
   stats: document.querySelector("#shelfStats"),
   achievementStatsButton: document.querySelector("#shelfAchievementStatsButton"),
+  statsDialog: document.querySelector("#shelfStatsDialog"), statsFrame: document.querySelector("#shelfStatsFrame"), statsCloseButton: document.querySelector("#shelfStatsCloseButton"),
   count: document.querySelector("#resultCount"),
   libraryTitle: document.querySelector("#shelfLibraryTitle"),
   shelf: document.querySelector("#gameShelf"),
@@ -243,10 +244,12 @@ async function init() {
 }
 
 function applyShelfSearchFromUrl() {
-  const query = new URL(window.location.href).searchParams.get("search")?.trim() || "";
+  const params = new URL(window.location.href).searchParams;
+  const query = params.get("search")?.trim() || "";
   if (!query) return;
   el.search.value = query;
   state.filters.query = normalizeSearchText(query);
+  if (params.get("tab") === "drive" && state.gamelistSettings.shelfDigitalGames === true) state.filters.tab = "drive";
 }
 
 function loadSharedSettings() { try { return JSON.parse(localStorage.getItem("gamelist:settings:v1") || "{}"); } catch { return {}; } }
@@ -276,7 +279,7 @@ function bindEvents() {
   el.clear.addEventListener("click", clearFilters);
   el.stats.addEventListener("click", handleStatsAction);
   el.stats.addEventListener("keydown", handleStatsActionKeydown);
-  el.achievementStatsButton?.addEventListener("click", () => { window.location.href = "/?stats=all"; });
+  el.achievementStatsButton?.addEventListener("click", openShelfStatsDialog);
   document.addEventListener("click", closePlatformLogoSelects);
   el.login.addEventListener("click", toggleEditMode);
   el.addButton.addEventListener("click", () => openEditor(null, { digital: state.filters.tab === "drive" }));
@@ -345,12 +348,20 @@ function bindEvents() {
   el.showcaseSelected.addEventListener("click", handleShowcaseSelectedClick);
   el.completedClose.addEventListener("click", () => closeDialog(el.completedDialog));
   el.completedDialog.addEventListener("click", (event) => { if (event.target === el.completedDialog) closeDialog(el.completedDialog); });
+  el.statsCloseButton?.addEventListener("click", () => closeDialog(el.statsDialog));
+  el.statsDialog?.addEventListener("click", (event) => { if (event.target === el.statsDialog) closeDialog(el.statsDialog); });
+  window.addEventListener("message", (event) => { if (event.origin === window.location.origin && event.data === "gamelist-stats-close") closeDialog(el.statsDialog); });
   el.releaseCloseButton.addEventListener("click", () => closeDialog(el.releaseDialog));
   el.releaseDialog.addEventListener("click", (event) => { if (event.target === el.releaseDialog) closeDialog(el.releaseDialog); });
   el.authClose.addEventListener("click", () => closeDialog(el.authDialog));
   el.authCancel.addEventListener("click", () => closeDialog(el.authDialog));
   el.authDialog.addEventListener("click", (event) => { if (event.target === el.authDialog) closeDialog(el.authDialog); });
   el.authForm.addEventListener("submit", submitAuth);
+}
+
+function openShelfStatsDialog() {
+  el.statsFrame.src = `/?stats=all&embed=1&t=${Date.now()}`;
+  openDialog(el.statsDialog);
 }
 
 function rebuildGames() {

@@ -437,11 +437,14 @@ async function init() {
   const requestedEdit = requestedParams.get("edit");
   const requestedGame = requestedParams.get("game");
   const requestedStats = requestedParams.get("stats");
+  const embeddedStats = requestedParams.get("embed") === "1";
+  if (embeddedStats) document.documentElement.classList.add("stats-embed");
   if (requestedStats && !requestedEdit && !requestedGame) {
     const cleanUrl = new URL(window.location.href);
     cleanUrl.searchParams.delete("stats");
-    window.history.replaceState({}, "", `${cleanUrl.pathname}${cleanUrl.search}${cleanUrl.hash}`);
+    if (!embeddedStats) window.history.replaceState({}, "", `${cleanUrl.pathname}${cleanUrl.search}${cleanUrl.hash}`);
     openFinishedStatsDialog(requestedStats === "all" ? "all" : requestedStats);
+    if (embeddedStats) el.finishedStatsDialog.addEventListener("close", () => window.parent.postMessage("gamelist-stats-close", window.location.origin), { once: true });
   }
   if (requestedEdit && state.games.some((game) => game.id === requestedEdit && !game.deletedAt)) {
     const cleanUrl = new URL(window.location.href);
@@ -2670,7 +2673,7 @@ function gameOfTheYearExportTopStatsMarkup(year, games = []) {
       <span class="goty-export-kpi-separator" aria-hidden="true"></span>
       <article class="goty-export-small-kpi goty-export-new-kpi"><strong>${yearGames.length}</strong><span>New releases</span></article>
       <article class="goty-export-small-kpi goty-export-older-kpi"><strong>${otherYearGames.length}</strong><span>Older games</span></article>
-      ${coopGames.length ? `<article class="goty-export-small-kpi goty-export-coop-kpi"><strong>${coopGames.length}</strong><span>Coop games</span></article>` : ""}
+      ${coopGames.length ? `<article class="goty-export-small-kpi goty-export-coop-kpi"><strong>${coopIcon()}${coopGames.length}</strong><span>Coop games</span></article>` : ""}
     </section>
   `;
 }
@@ -2938,6 +2941,11 @@ function gameOfTheYearExportCss({ theme, main, accent, gradient, bg, glowPrimary
     }
     .goty-export-coop-kpi strong {
       color: #79f2ce;
+    }
+    .goty-export-coop-kpi .coop-icon {
+      width: 24px;
+      height: 24px;
+      flex: 0 0 auto;
     }
     .goty-export-completed-kpi .trophy-icon {
       width: 24px;
@@ -6817,12 +6825,13 @@ function bindDetailShelfSearch(game) {
   el.detailMeta.onclick = null;
   el.detailMeta.onkeydown = null;
   if (pageSwitchHidden()) return;
-  const targets = el.detailMeta.querySelectorAll(".platform-badge, .physical-pill");
+  const digital = game.digital === true;
+  const targets = el.detailMeta.querySelectorAll(digital ? ".platform-badge, .digital-pill" : ".platform-badge, .physical-pill");
   targets.forEach((target) => {
     target.classList.add("detail-shelf-search-link");
     target.setAttribute("role", "link");
     target.tabIndex = 0;
-    target.title = `Find ${game.title} on the shelf`;
+    target.title = `Find ${game.title} in ${digital ? "Drive" : "Shelf"}`;
   });
   const navigate = (event) => {
     const target = event.target.closest(".detail-shelf-search-link");
@@ -6831,6 +6840,7 @@ function bindDetailShelfSearch(game) {
     event.preventDefault();
     const url = new URL("shelf", window.location.href);
     url.searchParams.set("search", game.title);
+    if (digital) url.searchParams.set("tab", "drive");
     window.location.href = url.href;
   };
   el.detailMeta.onclick = navigate;
