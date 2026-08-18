@@ -76,13 +76,16 @@ async function addPendingGames(rawGames, env) {
   const now = new Date().toISOString();
   const owner = String(list.settings?.defaultOwner || "").trim();
   let added = 0;
+  let addedToDrive = 0;
+  let addedToNewAdditions = 0;
   for (const raw of incoming) {
     const title = String(raw?.title || "").trim();
     const platform = canonicalPlatform(raw?.platform);
     if (!title || known.has(gameKey({ title, platform }))) continue;
+    const hasMetadata = Boolean(raw.metadata && typeof raw.metadata === "object" && (raw.metadata.igdbUrl || raw.metadata.hltbId || raw.metadata.cover || raw.metadata.description));
     const id = `digital-import-${slug(`${raw.provider || "digital"}-${raw.remoteId || title}-${platform}`)}-${crypto.randomUUID().slice(0, 8)}`;
     games.unshift({
-      id, title, platform, digital: true, dlc: false, pendingCollection: true,
+      id, title, platform, digital: true, dlc: false, pendingCollection: !hasMetadata, skipGamelistSync: true,
       country: "", region: "", game: false, manual: false, box: false, other: false, sealed: false,
       price: null, owners: owner ? [owner] : [], category: "Game", recordType: "Owned", releaseType: "Official",
       cover: String(raw.metadata?.cover || ""), genre: (raw.metadata?.genres || []).join(", "),
@@ -95,12 +98,14 @@ async function addPendingGames(rawGames, env) {
     });
     known.add(gameKey({ title, platform }));
     added += 1;
+    if (hasMetadata) addedToDrive += 1;
+    else addedToNewAdditions += 1;
   }
   await env.GAMELIST.put(SHELF_KEY, JSON.stringify({
     ...shelf, sourceGames, games: games.slice(0, 1000),
     overrides: shelf.overrides && typeof shelf.overrides === "object" ? shelf.overrides : {}, updatedAt: now,
   }));
-  return json({ ok: true, added, skipped: incoming.length - added });
+  return json({ ok: true, added, addedToDrive, addedToNewAdditions, skipped: incoming.length - added });
 }
 
 function gameKey(game) { return `${normalize(game?.title)}|${normalize(canonicalPlatform(game?.platform))}`; }
@@ -133,7 +138,7 @@ function importHtml(settings) {
   function render(){q("#ready").innerHTML=state.ready.length?state.ready.map((g,i)=>row(g,i,false)).join(""):'<li class="empty">No matched games.</li>';q("#errors").innerHTML=state.errors.length?state.errors.map((g,i)=>row(g,i,true)).join(""):'<li class="empty">No errors.</li>';q("#readyCount").textContent=state.ready.length;q("#errorCount").textContent=state.errors.length;q("#addReady").disabled=!state.ready.length||state.busy;q("#addAllErrors").disabled=!state.errors.length||state.busy}
   async function search(game){const data=await fetch("/api/search?q="+encodeURIComponent(game.title),{cache:"no-store"}).then(read);const metadata=(data.results||[])[0];if(!metadata)throw new Error("No metadata match");return {...game,metadata,cover:metadata.cover||""}}
   async function fetchProvider(provider){if(state.busy)return;state.busy=true;render();progress("fetch",8);progress("match",0);q("#status").textContent="Fetching account library…";try{const data=await fetch("/api/shelf-import-digital",{method:"POST",headers:{"Content-Type":"application/json","x-edit-password":password()},body:JSON.stringify({action:"fetch",provider})}).then(read);progress("fetch",100);const games=data.games||[];state.ready=[];state.errors=[];let done=0;const queue=games.slice();const workers=Array.from({length:Math.min(4,queue.length)},async()=>{while(queue.length){const game=queue.shift();try{state.ready.push(await search(game))}catch{state.errors.push(game)}done++;progress("match",games.length?done/games.length*100:100);if(done%5===0||done===games.length)render()}});await Promise.all(workers);q("#status").textContent="Found "+state.ready.length+" matches and "+state.errors.length+" games needing attention for "+data.account+"."}catch(error){q("#status").textContent=error.message;progress("fetch",0)}finally{state.busy=false;render()}}
-  async function add(games){if(!games.length||state.busy)return;state.busy=true;render();q("#status").textContent="Adding "+games.length+" game"+(games.length===1?"":"s")+" to New additions…";try{const data=await fetch("/api/shelf-import-digital",{method:"POST",headers:{"Content-Type":"application/json","x-edit-password":password()},body:JSON.stringify({action:"add",games})}).then(read);const ids=new Set(games.map((g)=>g.provider+":"+g.remoteId+":"+g.title));state.ready=state.ready.filter((g)=>!ids.has(g.provider+":"+g.remoteId+":"+g.title));state.errors=state.errors.filter((g)=>!ids.has(g.provider+":"+g.remoteId+":"+g.title));q("#status").textContent="Added "+data.added+" to Shelf New additions"+(data.skipped?"; skipped "+data.skipped+" duplicate(s).":".")}catch(error){q("#status").textContent=error.message}finally{state.busy=false;render()}}
+  async function add(games){if(!games.length||state.busy)return;state.busy=true;render();q("#status").textContent="Adding "+games.length+" game"+(games.length===1?"":"s")+" to Shelf…";try{const data=await fetch("/api/shelf-import-digital",{method:"POST",headers:{"Content-Type":"application/json","x-edit-password":password()},body:JSON.stringify({action:"add",games})}).then(read);const ids=new Set(games.map((g)=>g.provider+":"+g.remoteId+":"+g.title));state.ready=state.ready.filter((g)=>!ids.has(g.provider+":"+g.remoteId+":"+g.title));state.errors=state.errors.filter((g)=>!ids.has(g.provider+":"+g.remoteId+":"+g.title));const parts=[];if(data.addedToDrive)parts.push(data.addedToDrive+" added to Drive");if(data.addedToNewAdditions)parts.push(data.addedToNewAdditions+" sent to New additions");if(data.skipped)parts.push(data.skipped+" duplicate(s) skipped");q("#status").textContent=parts.join("; ")+"."}catch(error){q("#status").textContent=error.message}finally{state.busy=false;render()}}
   document.querySelectorAll("[data-fetch]").forEach((button)=>button.addEventListener("click",()=>fetchProvider(button.dataset.fetch)));q("#ready").addEventListener("click",(e)=>{const button=e.target.closest("[data-remove]");if(!button)return;state.ready.splice(Number(button.dataset.remove),1);render()});q("#errors").addEventListener("click",(e)=>{const button=e.target.closest("[data-manual]");if(button)add([state.errors[Number(button.dataset.manual)]])});q("#addReady").addEventListener("click",()=>add(state.ready));q("#addAllErrors").addEventListener("click",()=>add(state.errors));render();
   </script></body></html>`;
 }
