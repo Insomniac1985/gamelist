@@ -6846,6 +6846,7 @@ body:not(.can-edit) .game-card:focus-within .edit-action {
   display: inline-flex;
   align-items: center;
   gap: 8px;
+  flex: 0 0 auto !important;
   margin-left: auto;
 }
 
@@ -12056,9 +12057,12 @@ html.theme-light .playing-achievements-check input[type="checkbox"]:checked {
   }
 
   #gameDialog .collection-form-grid > .digital-check,
+  #gameDialog .collection-form-grid > .dlc-check,
   #gameDialog.show-psplus-check .collection-form-grid > .psplus-check,
   #gameDialog.show-games-with-gold-check .collection-form-grid > .games-with-gold-check {
-    width: 100%;
+    grid-column: 1 / -1 !important;
+    justify-self: stretch;
+    width: auto;
     overflow: hidden;
   }
 
