@@ -2652,7 +2652,7 @@ function gameOfTheYearExportMarkup({ owner, year, rows, statsGames, theme, logo,
       ${gameOfTheYearExportPlatformChartMarkup(statsGames)}
       ${rows.slice(4).map((row, offset) => gameOfTheYearExportCard({ ...row, index: offset + 4 })).join("")}
     </main>
-    ${gameOfTheYearExportBottomStatsMarkup(statsGames)}
+    ${gameOfTheYearExportBottomStatsMarkup(statsGames, year)}
     <footer>${footerLines.map((line) => `<span>${escapeHtml(line)}</span>`).join("")}</footer>
   </div>`;
 }
@@ -2741,19 +2741,19 @@ function gameOfTheYearExportPlatformLabels(segments) {
   }).join("");
 }
 
-function gameOfTheYearExportBottomStatsMarkup(games = []) {
-  const months = gameOfTheYearExportMonthCounts(games);
+function gameOfTheYearExportBottomStatsMarkup(games = [], year = "") {
+  const months = gameOfTheYearExportMonthCounts(games, year);
   const maxMonth = Math.max(1, ...months.map((item) => item.count));
   return `
     <section class="goty-export-bottom-stats">
       <article class="goty-export-stat goty-export-stat-months">
-        <div>${months.map((item) => `<b style="--month:${(item.count / maxMonth).toFixed(3)};--month-platforms:${statsPlatformBar(item.games)}"><span>${escapeHtml(item.label)}</span><i></i><em>${item.count}</em></b>`).join("")}</div>
+        <div>${months.map((item) => `<b style="--month:${(item.count / maxMonth).toFixed(3)};--month-platforms:${statsPlatformBar(item.activeGames)}"><span>${escapeHtml(item.label)}</span><i></i><em>${item.count}</em></b>`).join("")}</div>
       </article>
     </section>
   `;
 }
 
-function gameOfTheYearExportMonthCounts(games) {
+function gameOfTheYearExportMonthCounts(games, year = "") {
   const order = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
   const counts = new Map();
   games.forEach((game) => {
@@ -2765,7 +2765,7 @@ function gameOfTheYearExportMonthCounts(games) {
   });
   return order.map((label) => {
     const monthGames = counts.get(label) || [];
-    return { label, count: monthGames.length, games: monthGames };
+    return { label, count: monthGames.length, games: monthGames, activeGames: statsGamesActiveInMonth(games, label, year) };
   });
 }
 
@@ -5813,9 +5813,32 @@ function statsMonthBars(games, counts) {
     const monthGames = games
       .filter((game) => monthShortName(game.completedAt) === label)
       .sort((a, b) => String(a.completedAt || "").localeCompare(String(b.completedAt || "")) || stringCompare(a.title, b.title));
+    const activeGames = statsGamesActiveInMonth(games, label);
+    const displayGames = activeGames.map((game) => ({ ...game, statsMonthCarry: monthShortName(game.completedAt) !== label }));
     const edgeClass = index === 0 ? " is-start-edge" : (index === order.length - 1 ? " is-end-edge" : "");
-    return `<div class="finished-stats-month${edgeClass}" title="${escapeHtml(`${overlayTitle}: ${count}`)}" ${count ? `data-stats-overlay-title="${escapeHtml(overlayTitle)}"` : ""}><span>${escapeHtml(label)}</span><em style="--month:${count / max};--platform-bar:${statsPlatformBar(monthGames)}"></em><strong>${count}</strong>${count ? `<span class="finished-stats-breakdown">${statsGameList(monthGames)}</span>` : ""}</div>`;
+    return `<div class="finished-stats-month${edgeClass}" title="${escapeHtml(`${overlayTitle}: ${count}`)}" ${displayGames.length ? `data-stats-overlay-title="${escapeHtml(overlayTitle)}"` : ""}><span>${escapeHtml(label)}</span><em style="--month:${count / max};--platform-bar:${statsPlatformBar(activeGames)}"></em><strong>${count}</strong>${displayGames.length ? `<span class="finished-stats-breakdown">${statsGameList(displayGames)}</span>` : ""}</div>`;
   }).join("");
+}
+
+function statsGamesActiveInMonth(games, label, scopeYear = "") {
+  const month = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"].indexOf(label);
+  if (month < 0) return [];
+  return games.filter((game) => {
+    const end = statsYearMonth(game.completedAt) || statsYearMonth(new Date().toISOString());
+    const start = statsYearMonth(game.startedAt) || end;
+    if (!start || !end) return false;
+    const targetYear = Number(scopeYear) || statsYearMonth(game.completedAt)?.year || end.year;
+    const target = targetYear * 12 + month;
+    return start.key <= target && target <= end.key;
+  }).sort((a, b) => String(a.startedAt || a.completedAt || "").localeCompare(String(b.startedAt || b.completedAt || "")) || stringCompare(a.title, b.title));
+}
+
+function statsYearMonth(value) {
+  const match = String(value || "").match(/^(\d{4})-(\d{2})/);
+  if (!match) return null;
+  const year = Number(match[1]);
+  const month = Number(match[2]) - 1;
+  return Number.isInteger(year) && month >= 0 && month < 12 ? { year, month, key: year * 12 + month } : null;
 }
 
 function statsYearBars(games) {
@@ -5909,7 +5932,7 @@ function statsGameList(games) {
       : progress
       ? psnProgressBadge(progress, { className: "finished-stats-progress-pill" })
       : (completed ? psnProgressBadge({ title: game.title, progress: 100 }, { className: "finished-stats-progress-pill" }) : "");
-    return `<span class="finished-stats-game-row ${completed ? "is-complete" : ""}"><b class="${escapeHtml(ownerTitleClass)}">${escapeHtml(game.title)}</b>${game.platform ? platformBadge(game.platform) : ""}${game.dlc ? dlcBadge(game) : ""}${entitlementBadge(game)}${progressPill}</span>`;
+    return `<span class="finished-stats-game-row ${completed ? "is-complete" : ""}"><b class="${escapeHtml(ownerTitleClass)}">${escapeHtml(game.title)}</b>${game.platform ? platformBadge(game.platform) : ""}${game.statsMonthCarry ? `<span class="finished-stats-month-carry" title="Played during this month without being counted">…</span>` : ""}${game.dlc ? dlcBadge(game) : ""}${entitlementBadge(game)}${progressPill}</span>`;
   }).join("");
 }
 

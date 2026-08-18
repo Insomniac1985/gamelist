@@ -7803,6 +7803,13 @@ body.theme-kash .finished-stats-kpi.is-completed:focus-visible strong {
   box-shadow: none;
 }
 
+.finished-stats-month-carry {
+  margin-left: -3px;
+  color: var(--muted);
+  font-weight: 900;
+  letter-spacing: 1px;
+}
+
 .finished-stats-media-label {
   display: inline-flex;
   align-items: center;
