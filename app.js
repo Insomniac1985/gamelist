@@ -5947,7 +5947,9 @@ function statsGameListSort(a, b) {
 }
 
 function statsGameList(games) {
-  return games.map((game) => {
+  const orderedGames = [...games].sort((a, b) => Number(Boolean(a.statsMonthCarry)) - Number(Boolean(b.statsMonthCarry)));
+  const firstCarryIndex = orderedGames.findIndex((game) => game.statsMonthCarry);
+  return orderedGames.map((game, index) => {
     const progress = achievementProgressForGame(game);
     const progressNumber = progress ? Math.round(Number(progress.progress ?? progressValue(progress.game)) || 0) : 0;
     const forceCompleted = game.statsCompleted === true;
@@ -5958,7 +5960,10 @@ function statsGameList(games) {
       : progress
       ? psnProgressBadge(progress, { className: "finished-stats-progress-pill" })
       : (completed ? psnProgressBadge({ title: game.title, progress: 100 }, { className: "finished-stats-progress-pill" }) : "");
-    return `<span class="finished-stats-game-row ${completed ? "is-complete" : ""}"><b class="${escapeHtml(ownerTitleClass)}">${escapeHtml(game.title)}</b>${game.platform ? platformBadge(game.platform) : ""}${game.dlc ? dlcBadge(game) : ""}${entitlementBadge(game)}${progressPill}${game.statsMonthCarry ? `<span class="finished-stats-month-carry" title="Played during this month without being counted">…</span>` : ""}</span>`;
+    const separator = firstCarryIndex > 0 && index === firstCarryIndex
+      ? `<span class="finished-stats-carry-separator" aria-hidden="true"></span>`
+      : "";
+    return `${separator}<span class="finished-stats-game-row ${completed ? "is-complete" : ""}"><b class="${escapeHtml(ownerTitleClass)}">${escapeHtml(game.title)}</b>${game.platform ? platformBadge(game.platform) : ""}${game.dlc ? dlcBadge(game) : ""}${entitlementBadge(game)}${progressPill}${game.statsMonthCarry ? `<span class="finished-stats-month-carry" title="Played during this month without being counted">…</span>` : ""}</span>`;
   }).join("");
 }
 

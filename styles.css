@@ -7829,10 +7829,21 @@ body.theme-kash .finished-stats-kpi.is-completed:focus-visible strong {
 }
 
 .finished-stats-month-carry {
-  margin-left: 3px;
+  margin-left: 10px;
   color: var(--muted);
   font-weight: 900;
   letter-spacing: 1px;
+}
+
+.finished-stats-breakdown > .finished-stats-carry-separator {
+  width: 100%;
+  min-height: 1px;
+  height: 1px;
+  margin: 5px 0;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: var(--line);
 }
 
 .finished-stats-media-label {
