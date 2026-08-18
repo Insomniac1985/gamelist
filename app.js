@@ -294,6 +294,8 @@ const el = {
   finishedStatsCloseButton: document.querySelector("#finishedStatsCloseButton"),
   finishedStatsBrow: document.querySelector("#finishedStatsBrow"),
   finishedStatsTitle: document.querySelector("#finishedStatsTitle"),
+  finishedStatsYearPicker: document.querySelector("#finishedStatsYearPicker"),
+  finishedStatsYearSelect: document.querySelector("#finishedStatsYearSelect"),
   finishedStatsBody: document.querySelector("#finishedStatsBody"),
   platinumCloseButton: document.querySelector("#platinumCloseButton"),
   platinumTitle: document.querySelector("#platinumTitle"),
@@ -438,12 +440,13 @@ async function init() {
   const requestedGame = requestedParams.get("game");
   const requestedStats = requestedParams.get("stats");
   const embeddedStats = requestedParams.get("embed") === "1";
+  const achievementStats = requestedParams.get("statsSource") === "achievements";
   if (embeddedStats) document.documentElement.classList.add("stats-embed");
   if (requestedStats && !requestedEdit && !requestedGame) {
     const cleanUrl = new URL(window.location.href);
     cleanUrl.searchParams.delete("stats");
     if (!embeddedStats) window.history.replaceState({}, "", `${cleanUrl.pathname}${cleanUrl.search}${cleanUrl.hash}`);
-    openFinishedStatsDialog(requestedStats === "all" ? "all" : requestedStats);
+    openFinishedStatsDialog(requestedStats === "all" ? "all" : requestedStats, { yearPicker: achievementStats });
     if (embeddedStats) el.finishedStatsDialog.addEventListener("close", () => window.parent.postMessage("gamelist-stats-close", window.location.origin), { once: true });
   }
   if (requestedEdit && state.games.some((game) => game.id === requestedEdit && !game.deletedAt)) {
@@ -866,7 +869,10 @@ function bindEvents() {
   });
   el.completedYearFilter?.addEventListener("change", handleCompletedYearChange);
   el.completedStatsButton?.addEventListener("click", () => openFinishedStatsDialog(state.completedYear || "all"));
-  el.achievementStatsButton?.addEventListener("click", () => openFinishedStatsDialog("all"));
+  el.achievementStatsButton?.addEventListener("click", () => openFinishedStatsDialog("all", { yearPicker: true }));
+  el.finishedStatsYearSelect?.addEventListener("change", () => {
+    renderFinishedStatsDialog(el.finishedStatsYearSelect.value || "all");
+  });
   el.completedMoreButton?.addEventListener("click", () => {
     state.completedVisiblePages += 1;
     renderCompleted();
@@ -5474,8 +5480,27 @@ function completedCountForSelectedYear() {
   };
 }
 
-function openFinishedStatsDialog(year = "all") {
-  const scope = finishedStatsScope(year);
+function openFinishedStatsDialog(year = "all", { yearPicker = false } = {}) {
+  el.finishedStatsDialog.classList.toggle("from-achievements", yearPicker);
+  el.finishedStatsYearPicker.hidden = !yearPicker;
+  if (yearPicker) {
+    const years = finishedStatsYears();
+    el.finishedStatsYearSelect.innerHTML = ["all", ...years]
+      .map((value) => `<option value="${escapeHtml(value)}">${value === "all" ? "All" : escapeHtml(value)}</option>`)
+      .join("");
+    el.finishedStatsYearSelect.value = String(year || "all");
+  }
+  renderFinishedStatsDialog(year, { preserveAll: yearPicker });
+  el.finishedStatsDialog.showModal();
+  syncScrollLock();
+}
+
+function finishedStatsYears() {
+  return completedYears();
+}
+
+function renderFinishedStatsDialog(year = "all", { preserveAll = true } = {}) {
+  const scope = preserveAll ? String(year || "all") : finishedStatsScope(year);
   const games = finishedStatsGames(scope);
   const completed = finishedStatsCompleted(scope);
   el.finishedStatsBrow.textContent = scope === "all" ? "All-time statistics" : "YEARLY STATISTICS";
@@ -5486,8 +5511,6 @@ function openFinishedStatsDialog(year = "all") {
   });
   bindFinishedStatsDesktopOverlays();
   bindFinishedStatsMobileOverlays();
-  el.finishedStatsDialog.showModal();
-  syncScrollLock();
 }
 
 function finishedStatsScope(year = "all") {
@@ -5545,7 +5568,7 @@ function finishedStatsMarkup(year, games, completed) {
     ${allYears ? "" : statsReleaseKpisCard(releaseInsights)}
     <section class="finished-stats-months">
       <h3>${allYears ? "By year" : "By month"}</h3>
-      <div class="finished-stats-period-grid ${allYears ? "is-yearly" : ""}">${allYears ? statsYearBars(finishedGames) : statsMonthBars(finishedGames, months, finishedGames.length)}</div>
+      <div class="finished-stats-period-grid ${allYears ? "is-yearly" : ""}">${allYears ? statsYearBars(finishedGames) : statsMonthBars(finishedGames, months, year)}</div>
     </section>
     ${games.length ? "" : `<div class="empty">No finished games${year === "all" ? "" : ` in ${escapeHtml(year)}`}.</div>`}
   `;
@@ -5803,17 +5826,20 @@ function clampNumber(value, min, max) {
   return Math.min(max, Math.max(min, value));
 }
 
-function statsMonthBars(games, counts) {
+function statsMonthBars(games, counts, scopeYear = "") {
   const order = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
   const byLabel = new Map(counts.map((item) => [item.label, item.count]));
   const max = Math.max(1, ...counts.map((item) => item.count));
+  const datedGames = state.games.filter((game) => !game.deletedAt && !game.dlc && game.startedAt);
+  const activityGames = [...new Map([...games, ...datedGames]
+    .map((game) => [game.id || `${game.title}|${game.platform}`, game])).values()];
   return order.map((label, index) => {
     const count = byLabel.get(label) || 0;
     const overlayTitle = fullMonthName(label);
     const monthGames = games
       .filter((game) => monthShortName(game.completedAt) === label)
       .sort((a, b) => String(a.completedAt || "").localeCompare(String(b.completedAt || "")) || stringCompare(a.title, b.title));
-    const activeGames = statsGamesActiveInMonth(games, label);
+    const activeGames = statsGamesActiveInMonth(activityGames, label, scopeYear);
     const displayGames = activeGames.map((game) => ({ ...game, statsMonthCarry: monthShortName(game.completedAt) !== label }));
     const edgeClass = index === 0 ? " is-start-edge" : (index === order.length - 1 ? " is-end-edge" : "");
     return `<div class="finished-stats-month${edgeClass}" title="${escapeHtml(`${overlayTitle}: ${count}`)}" ${displayGames.length ? `data-stats-overlay-title="${escapeHtml(overlayTitle)}"` : ""}><span>${escapeHtml(label)}</span><em style="--month:${count / max};--platform-bar:${statsPlatformBar(activeGames)}"></em><strong>${count}</strong>${displayGames.length ? `<span class="finished-stats-breakdown">${statsGameList(displayGames)}</span>` : ""}</div>`;
@@ -5932,7 +5958,7 @@ function statsGameList(games) {
       : progress
       ? psnProgressBadge(progress, { className: "finished-stats-progress-pill" })
       : (completed ? psnProgressBadge({ title: game.title, progress: 100 }, { className: "finished-stats-progress-pill" }) : "");
-    return `<span class="finished-stats-game-row ${completed ? "is-complete" : ""}"><b class="${escapeHtml(ownerTitleClass)}">${escapeHtml(game.title)}</b>${game.platform ? platformBadge(game.platform) : ""}${game.statsMonthCarry ? `<span class="finished-stats-month-carry" title="Played during this month without being counted">…</span>` : ""}${game.dlc ? dlcBadge(game) : ""}${entitlementBadge(game)}${progressPill}</span>`;
+    return `<span class="finished-stats-game-row ${completed ? "is-complete" : ""}"><b class="${escapeHtml(ownerTitleClass)}">${escapeHtml(game.title)}</b>${game.platform ? platformBadge(game.platform) : ""}${game.dlc ? dlcBadge(game) : ""}${entitlementBadge(game)}${progressPill}${game.statsMonthCarry ? `<span class="finished-stats-month-carry" title="Played during this month without being counted">…</span>` : ""}</span>`;
   }).join("");
 }
 

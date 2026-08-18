@@ -773,7 +773,13 @@
             <p class="eyebrow" id="finishedStatsBrow">YEARLY STATISTICS</p>
             <h2 id="finishedStatsTitle">Stats</h2>
           </div>
-          <button class="icon-button" id="finishedStatsCloseButton" type="button" title="Close">×</button>
+          <div class="finished-stats-head-actions">
+            <label class="finished-stats-year-picker" id="finishedStatsYearPicker" hidden>
+              <span class="sr-only">Statistics year</span>
+              <select id="finishedStatsYearSelect" aria-label="Statistics year"></select>
+            </label>
+            <button class="icon-button" id="finishedStatsCloseButton" type="button" title="Close">×</button>
+          </div>
         </div>
         <div class="finished-stats-body" id="finishedStatsBody"></div>
       </article>

@@ -1710,6 +1710,11 @@ html.stats-embed body > :not(#finishedStatsDialog) {
   display: none !important;
 }
 
+html.stats-embed #finishedStatsDialog::backdrop {
+  background: transparent;
+  backdrop-filter: none;
+}
+
 .playing-finished-tags .media-format-pill {
   display: inline-grid;
   place-items: center;
@@ -2773,6 +2778,10 @@ body.dialog-open .scroll-top-button {
 #lookupButton:hover,
 #pricesButton:hover,
 #deleteButton:hover,
+.completed-stats-button:hover,
+.completed-stats-button:focus-visible,
+.achievement-stats-button:hover,
+.achievement-stats-button:focus-visible,
 .edit-action:hover,
 .completed-edit-action:hover,
 .history-edit-action:hover,
@@ -6833,6 +6842,22 @@ body:not(.can-edit) .game-card:focus-within .edit-action {
   stroke: currentColor;
 }
 
+.finished-stats-head-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  flex: 0 0 auto !important;
+  margin-left: auto;
+}
+
+.finished-stats-year-picker select {
+  width: auto;
+  min-width: 92px;
+  height: 34px;
+  min-height: 34px;
+  padding: 5px 30px 5px 10px;
+}
+
 .finished-stats-kpi strong .coop-icon {
   width: 0.86em;
   height: 0.86em;
@@ -7804,7 +7829,7 @@ body.theme-kash .finished-stats-kpi.is-completed:focus-visible strong {
 }
 
 .finished-stats-month-carry {
-  margin-left: -3px;
+  margin-left: 3px;
   color: var(--muted);
   font-weight: 900;
   letter-spacing: 1px;
@@ -9714,6 +9739,10 @@ html.theme-light #addButton:hover,
 html.theme-light #lookupButton:hover,
 html.theme-light #pricesButton:hover,
 html.theme-light #deleteButton:hover,
+html.theme-light .completed-stats-button:hover,
+html.theme-light .completed-stats-button:focus-visible,
+html.theme-light .achievement-stats-button:hover,
+html.theme-light .achievement-stats-button:focus-visible,
 html.theme-light .edit-action:hover,
 html.theme-light .completed-edit-action:hover,
 html.theme-light .history-edit-action:hover,
@@ -12018,6 +12047,29 @@ html.theme-light .playing-achievements-check input[type="checkbox"]:checked {
   .collection-form-grid > .trophy-search-field,
   .collection-form-grid > .notes-field {
     grid-column: 1 / -1;
+  }
+
+  #gameDialog .collection-form-grid,
+  #gameDialog .collection-form-grid > * {
+    min-width: 0;
+    max-width: 100%;
+    box-sizing: border-box;
+  }
+
+  #gameDialog .collection-form-grid > .digital-check,
+  #gameDialog .collection-form-grid > .dlc-check,
+  #gameDialog.show-psplus-check .collection-form-grid > .psplus-check,
+  #gameDialog.show-games-with-gold-check .collection-form-grid > .games-with-gold-check {
+    grid-column: 1 / -1 !important;
+    justify-self: stretch;
+    width: auto;
+    overflow: hidden;
+  }
+
+  #gameDialog .collection-form-grid > .digital-check span,
+  #gameDialog .collection-form-grid > .entitlement-check span {
+    min-width: 0;
+    overflow-wrap: anywhere;
   }
 
   #gameDialog.show-psplus-check .collection-form-grid > .entitlement-grid-spacer,
