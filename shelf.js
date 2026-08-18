@@ -1949,7 +1949,7 @@ function renderLayoutEditor() {
   el.layoutList.innerHTML = [
     ...state.layout.order.map((key, index) => settingsLayoutCard(key, index)),
     settingsPageFeatureToggles(),
-    `<div class="settings-preference-separator" role="presentation"></div><div class="settings-preference-row">${themeSettingsButton(state.gamelistSettings, escapeHtml)}${settingsSelectCard("order", tt("Default order"), "shelfSettingsDefaultOrder", [{ value: "added", label: tt("Last added") }, { value: "title", label: tt("Name") }, { value: "platform", label: tt("Platform") }, { value: "region", label: tt("Region") }, { value: "value", label: tt("Value") }])}${settingsSelectCard("calendar", tt("Week starts"), "shelfSettingsWeekStart", WEEK_START_OPTIONS.map(([value, label]) => ({ value, label: tt(label) })))}${settingsPageSwitchCard()}</div>`,
+    `<div class="settings-preference-separator" role="presentation"></div><div class="settings-preference-row">${themeSettingsButton(state.gamelistSettings, escapeHtml)}${settingsSelectCard("order", tt("Default order"), "shelfSettingsDefaultOrder", [{ value: "added", label: tt("Last added") }, { value: "title", label: tt("Name") }, { value: "platform", label: tt("Platform") }, { value: "region", label: tt("Region") }, { value: "value", label: tt("Value") }])}${settingsSelectCard("calendar", tt("Week starts"), "shelfSettingsWeekStart", WEEK_START_OPTIONS.map(([value, label]) => ({ value, label: tt(label) })))}${settingsShelfSyncCard()}${settingsPageSwitchCard()}</div>`,
   ].join("");
   document.querySelector("#shelfSettingsCsvData").innerHTML = settingsCsvDataCard();
   if (el.settingsDevFeatures) el.settingsDevFeatures.innerHTML = settingsDevFeaturesCard("shelf");
@@ -2015,7 +2015,11 @@ function normalizeWeekStart(value) {
 }
 
 function settingsPageFeatureToggles() {
-  return `<div class="settings-page-toggle-row"><label class="check-filter toggle-check settings-visible-check settings-page-toggle" title="${escapeHtml(tt("Shelf Sync"))}"><input type="checkbox" id="shelfSettingsSync" ${state.gamelistSettings.shelfSync === false ? "" : "checked"}><span>${escapeHtml(tt("Shelf Sync"))}</span></label><label class="check-filter toggle-check settings-visible-check settings-page-toggle" title="Digital Games"><input type="checkbox" id="shelfSettingsDigitalGames" ${state.gamelistSettings.shelfDigitalGames === true ? "checked" : ""}><span>Digital Games</span></label><label class="check-filter toggle-check settings-visible-check settings-page-toggle" title="${escapeHtml(tt("Show Prices"))}"><input type="checkbox" id="shelfSettingsShowPrices" ${state.gamelistSettings.shelfHidePrices ? "" : "checked"}><span>${escapeHtml(tt("Show Prices"))}</span></label></div>`;
+  return `<div class="settings-page-toggle-row"><label class="check-filter toggle-check settings-visible-check settings-page-toggle" title="Digital Games"><input type="checkbox" id="shelfSettingsDigitalGames" ${state.gamelistSettings.shelfDigitalGames === true ? "checked" : ""}><span>Digital Games</span></label><label class="check-filter toggle-check settings-visible-check settings-page-toggle" title="${escapeHtml(tt("Show Prices"))}"><input type="checkbox" id="shelfSettingsShowPrices" ${state.gamelistSettings.shelfHidePrices ? "" : "checked"}><span>${escapeHtml(tt("Show Prices"))}</span></label></div>`;
+}
+
+function settingsShelfSyncCard() {
+  return `<article class="settings-layout-card settings-sync-card"><div class="settings-wire wire-list" aria-hidden="true"><span></span><span></span><span></span></div><div class="settings-theme-select"><span>${escapeHtml(tt("Shelf Sync"))}</span><div class="settings-check-field"><label class="check-filter toggle-check settings-visible-check" title="${escapeHtml(tt("Shelf Sync"))}"><input type="checkbox" id="shelfSettingsSync" ${state.gamelistSettings.shelfSync === false ? "" : "checked"}><span>${escapeHtml(tt("Enabled"))}</span></label></div></div></article>`;
 }
 
 function settingsPageSwitchCard() {
