@@ -12945,6 +12945,8 @@ html.theme-light .playing-achievements-check input[type="checkbox"]:checked {
 
   .game-row.new-addition-row .row-primary-action,
   .game-row.new-addition-row .row-setup-action {
+    grid-column: auto;
+    grid-row: auto;
     min-width: 0;
     padding-inline: 6px;
   }

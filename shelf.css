@@ -2190,6 +2190,12 @@ textarea {
     display: grid;
     justify-content: end;
   }
+  .shelf-grid.list-view .game-row-actions:has(.add-collection-action) .game-row-actions-bottom {
+    order: 1;
+  }
+  .shelf-grid.list-view .game-row-actions:has(.add-collection-action) .game-row-actions-top {
+    order: 2;
+  }
   .shelf-grid.list-view .game-row-actions .icon-button {
     width: 34px;
     min-width: 34px;
