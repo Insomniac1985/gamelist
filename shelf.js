@@ -85,6 +85,9 @@ const state = {
   releaseCalendarOffset: 0,
   playingTrailerFrame: 0,
   playingHeightFrame: 0,
+  renderSettleFrame: 0,
+  renderSettleTimer: 0,
+  renderSettleObserver: null,
   priceFetchStatus: "",
   shelfSwipeStart: null,
   favoriteGameIds: [],
@@ -213,6 +216,7 @@ async function init() {
   bindTextureParallax();
   populateEditorOptions();
   bindEvents();
+  initRenderSettling();
   hydrateModuleCache();
   const [shelfData, auth, gamelistData] = await Promise.all([
     fetch("/api/shelf", { cache: "no-store" }).then((response) => response.ok ? response.json() : null).catch(() => null),
@@ -380,6 +384,48 @@ function renderAll() {
   renderGamelistModules();
   renderLibrary();
   saveModuleCache();
+  scheduleRenderSettle("render");
+}
+
+function scheduleRenderSettle(reason = "") {
+  cancelAnimationFrame(state.renderSettleFrame);
+  window.clearTimeout(state.renderSettleTimer);
+  state.renderSettleFrame = requestAnimationFrame(() => {
+    state.renderSettleFrame = requestAnimationFrame(() => {
+      state.renderSettleFrame = 0;
+      refreshDynamicLayout(reason);
+    });
+  });
+  state.renderSettleTimer = window.setTimeout(() => refreshDynamicLayout(`${reason}:late`), 360);
+}
+
+function refreshDynamicLayout() {
+  updatePlayingControls();
+  updateFinishedControls();
+  updateShelfRowTitleOverflow();
+  syncShelfTabIndicator();
+  schedulePlayingCardHeightSync();
+}
+
+function settleAfterImages(root = document) {
+  root.querySelectorAll?.("img").forEach((image) => {
+    if (image.dataset.renderSettleBound === "true") return;
+    image.dataset.renderSettleBound = "true";
+    image.addEventListener("load", () => scheduleRenderSettle("image"), { passive: true });
+    image.addEventListener("error", () => scheduleRenderSettle("image-error"), { passive: true });
+    if (image.complete) return;
+    image.decode?.().catch(() => {}).then(() => scheduleRenderSettle("image-decode"));
+  });
+}
+
+function initRenderSettling() {
+  document.fonts?.ready.then(() => scheduleRenderSettle("fonts"));
+  window.addEventListener("load", () => scheduleRenderSettle("load"), { once: true });
+  window.addEventListener("resize", () => scheduleRenderSettle("resize"), { passive: true });
+  window.addEventListener("orientationchange", () => window.setTimeout(() => scheduleRenderSettle("orientation"), 120), { passive: true });
+  if (!("ResizeObserver" in window)) return;
+  state.renderSettleObserver = new ResizeObserver(() => scheduleRenderSettle("resize-observer"));
+  [el.shelf, el.tabs, el.releaseCalendar, el.releaseDialogList].filter(Boolean).forEach((node) => state.renderSettleObserver.observe(node));
 }
 
 function hydrateModuleCache() {
@@ -473,6 +519,7 @@ function openReleaseDialog(date, games = []) {
   el.releaseDialogTitle.innerHTML = `${calendarMiniIcon()}<span>${escapeHtml(formatLongDate(date))}</span>`;
   el.releaseDialogList.innerHTML = games.map((game) => gamelistProjectionCard(game, { releaseDialog: true })).join("");
   el.releaseDialogList.querySelectorAll(".cover-button img").forEach(bindCoverFrame);
+  settleAfterImages(el.releaseDialogList);
   el.releaseDialogList.querySelectorAll(".game-card[data-gamelist-id]").forEach((card) => {
     const open = () => {
       closeDialog(el.releaseDialog);
@@ -488,6 +535,7 @@ function openReleaseDialog(date, games = []) {
     });
   });
   openDialog(el.releaseDialog);
+  scheduleRenderSettle("release-dialog");
 }
 
 function renderChrome() {
@@ -1082,6 +1130,8 @@ function renderLibrary() {
     el.shelf.appendChild(fragment);
   }
   el.empty.hidden = games.length > 0;
+  settleAfterImages(el.shelf);
+  scheduleRenderSettle("library");
 }
 
 function syncShelfTabIndicator() {
@@ -2846,6 +2896,8 @@ function renderGamelistModules() {
   el.finishedCarousel.innerHTML = finished.map(finishedProjectionCard).join("");
   el.playingCarousel.querySelectorAll(".game-card.has-art").forEach(bindActivityCardParallax);
   el.playingCarousel.querySelectorAll(".cover-button img").forEach((image) => { bindCoverFrame(image); image.addEventListener("load", schedulePlayingCardHeightSync, { once: true }); });
+  settleAfterImages(el.playingCarousel);
+  settleAfterImages(el.finishedCarousel);
   preloadPausedActivityTrailers(el.playingCarousel, escapeHtml);
   el.playingCarousel.querySelectorAll(".trailer-toggle").forEach((button) => button.addEventListener("click", (event) => { event.stopPropagation(); const card = button.closest(".game-card"); const paused = card.classList.toggle("trailer-user-paused"); button.innerHTML = paused ? playTrailerIcon() : pauseTrailerIcon(); button.title = paused ? "Play trailer" : "Pause trailer"; button.setAttribute("aria-label", button.title); scheduleShelfTrailerUpdate(); }));
   el.playingCarousel.querySelectorAll(".edit-action").forEach((button) => button.addEventListener("click", (event) => { event.stopPropagation(); const game = state.gamelistGames.find((item) => item.id === button.closest("[data-gamelist-id]")?.dataset.gamelistId); if (!state.canEdit) openAuth(); else if (game) openGamelistDetails(game); }));
@@ -2853,6 +2905,7 @@ function renderGamelistModules() {
   syncShelfActivityVisibility();
   el.playingCount.textContent = playingCountText(playing.length);
   schedulePlayingCardHeightSync();
+  scheduleRenderSettle("gamelist-modules");
   requestAnimationFrame(() => { updatePlayingControls(); updateFinishedControls(); scheduleShelfTrailerUpdate(); });
 }
 function projectedDetailGame(game) { return { ...game, _gamelistProjection: true }; }
