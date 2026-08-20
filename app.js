@@ -6627,7 +6627,7 @@ function cardFor(game, options = {}) {
     includeCalendarState: releaseDialog,
   }).join("");
   const playDates = card.querySelector(".play-dates");
-  playDates.innerHTML = playDatesFor(game, { includePastRelease: Boolean(options.includePastRelease), includeRelease: !releaseDialog, includePreorder: !releaseDialog }).join("");
+  playDates.innerHTML = playDatesFor(game, { includePastRelease: Boolean(options.includePastRelease), includeRelease: !releaseDialog, includePreorder: true }).join("");
   playDates.hidden = !playDates.innerHTML;
   card.querySelector(".chips").innerHTML = cardChipsFor(game).join("");
   const trophyStrip = card.querySelector(".card-trophies");
