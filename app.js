@@ -223,6 +223,9 @@ const state = {
   activeTrailerCard: null,
   playingHeightFrame: 0,
   paintRefreshFrame: 0,
+  renderSettleFrame: 0,
+  renderSettleTimer: 0,
+  renderSettleObserver: null,
 };
 
 const el = {
@@ -427,6 +430,7 @@ async function init() {
   }
   document.body.classList.toggle("can-edit", state.canEdit);
   bindEvents();
+  initRenderSettling();
   warmUiIcons();
   bindTextureParallax();
   await loadData();
@@ -1147,6 +1151,48 @@ function scheduleMobilePaintRefresh() {
   });
 }
 
+function scheduleRenderSettle(reason = "") {
+  cancelAnimationFrame(state.renderSettleFrame);
+  window.clearTimeout(state.renderSettleTimer);
+  state.renderSettleFrame = requestAnimationFrame(() => {
+    state.renderSettleFrame = requestAnimationFrame(() => {
+      state.renderSettleFrame = 0;
+      refreshDynamicLayout(reason);
+    });
+  });
+  state.renderSettleTimer = window.setTimeout(() => refreshDynamicLayout(`${reason}:late`), 360);
+}
+
+function refreshDynamicLayout() {
+  updatePlayingSliderControls();
+  updatePlayingFinishedEdges();
+  updateAllRowTitleOverflow();
+  equalizeMobilePlayingCards();
+  syncMobileTabIndicator();
+  scheduleMobilePaintRefresh();
+}
+
+function settleAfterImages(root = document) {
+  root.querySelectorAll?.("img").forEach((image) => {
+    if (image.dataset.renderSettleBound === "true") return;
+    image.dataset.renderSettleBound = "true";
+    image.addEventListener("load", () => scheduleRenderSettle("image"), { passive: true });
+    image.addEventListener("error", () => scheduleRenderSettle("image-error"), { passive: true });
+    if (image.complete) return;
+    image.decode?.().catch(() => {}).then(() => scheduleRenderSettle("image-decode"));
+  });
+}
+
+function initRenderSettling() {
+  document.fonts?.ready.then(() => scheduleRenderSettle("fonts"));
+  window.addEventListener("load", () => scheduleRenderSettle("load"), { once: true });
+  window.addEventListener("resize", () => scheduleRenderSettle("resize"), { passive: true });
+  window.addEventListener("orientationchange", () => window.setTimeout(() => scheduleRenderSettle("orientation"), 120), { passive: true });
+  if (!("ResizeObserver" in window)) return;
+  state.renderSettleObserver = new ResizeObserver(() => scheduleRenderSettle("resize-observer"));
+  [el.board, el.releaseCalendar, el.releaseDialogList].filter(Boolean).forEach((node) => state.renderSettleObserver.observe(node));
+}
+
 async function loadData() {
   state.settings = loadLocalSettings();
   const saved = localStorage.getItem(STORAGE_KEY) || localStorage.getItem(LEGACY_STORAGE_KEY);
@@ -1355,6 +1401,7 @@ function render() {
   el.tagFilter.classList.toggle("is-active", state.filters.tag !== "all");
   updateScrollTopButton();
   maybePromptGameOfTheYear();
+  scheduleRenderSettle("render");
 }
 
 function currentLanguage() {
@@ -2189,7 +2236,9 @@ function renderPlayingSection() {
   const hidden = new Set(normalizeSettings(state.settings).hiddenSections);
   el.playingCurrent.hidden = hidden.has("playing") || !games.length;
   el.playingSection.hidden = el.playingCurrent.hidden && el.playingFinished.hidden;
+  settleAfterImages(el.playingList);
   schedulePlayingCardHeightSync();
+  scheduleRenderSettle("playing");
   requestAnimationFrame(updatePlayingSliderControls);
   scheduleFocusedPlayingTrailerUpdate();
 }
@@ -2223,6 +2272,7 @@ function renderPlayingFinished() {
       openDetail(button.dataset.id);
     });
   });
+  settleAfterImages(el.playingFinishedList);
   requestAnimationFrame(updatePlayingFinishedEdges);
 }
 
@@ -4790,8 +4840,10 @@ function openReleaseDialog(date, games = []) {
   el.releaseDialogTitle.innerHTML = `${calendarMiniIcon()}<span>${escapeHtml(formatLongDate(date))}</span>`;
   el.releaseDialogList.innerHTML = "";
   games.forEach((game) => el.releaseDialogList.appendChild(cardFor(game, { staticCard: true, includePastRelease: true, releaseDialog: true })));
+  settleAfterImages(el.releaseDialogList);
   el.releaseDialog.showModal();
   syncScrollLock();
+  scheduleRenderSettle("release-dialog");
 }
 
 function validReleaseDate(value) {
@@ -5205,6 +5257,8 @@ function renderSection(section) {
   list.appendChild(fragment);
   if (state.viewMode === "list") requestAnimationFrame(() => updateRowTitleOverflow(list));
   if (manualDragEnabled()) setupDrag(list);
+  settleAfterImages(list);
+  scheduleRenderSettle(`section:${section}`);
 }
 
 function manualDragEnabled() {
