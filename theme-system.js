@@ -177,7 +177,13 @@ export function themedManifestUrl(theme) {
         sizes: "400x400",
         type: "image/png",
         purpose: "any maskable",
-      }
+      },
+      {
+        src: absoluteAsset(theme.appIconMonochrome),
+        sizes: "400x400",
+        type: "image/png",
+        purpose: "monochrome",
+      },
     ],
   };
 
