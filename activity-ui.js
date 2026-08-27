@@ -626,13 +626,13 @@ export function syncFocusedActivityTrailer(list, escape = escapeHtml) {
 export function activityReleaseStatus(game, { includePast = false, now = new Date() } = {}) {
   if (game?.releaseDate) {
     const release = new Date(`${game.releaseDate}T00:00:00`);
-    if (Number.isNaN(release.getTime()) || release.getFullYear() < 1990) return game.releaseText && (includePast || game.section === "upcoming") ? `Releases ${game.releaseText}` : game.section === "upcoming" ? "???" : "";
+    if (Number.isNaN(release.getTime()) || release.getFullYear() < 1990) return game.releaseText && (includePast || game.section === "upcoming") ? `Releases ${game.releaseText}` : game.section === "upcoming" ? "Releases ???" : "";
     const today = new Date(now); today.setHours(0, 0, 0, 0);
     if (release <= today && !includePast) return "";
     return `${release <= today ? "Released" : "Releases"} ${game.releaseText || game.releaseDate}`;
   }
-  if (game?.releaseText && (includePast || game.section === "upcoming")) return game.releaseText;
-  return game?.section === "upcoming" ? "???" : "";
+  if (game?.releaseText && (includePast || game.section === "upcoming")) return `Releases ${game.releaseText}`;
+  return game?.section === "upcoming" ? "Releases ???" : "";
 }
 
 export function formatFooterDate(value) {
@@ -701,6 +701,7 @@ function dateOnly(value) {
   if (typeof value === "string") {
     const iso = value.match(/\d{4}-\d{2}-\d{2}/);
     if (iso) return iso[0];
+    return "";
   }
   const date = new Date(value);
   return Number.isNaN(date.getTime()) ? "" : date.toISOString().slice(0, 10);

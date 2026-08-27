@@ -74,7 +74,7 @@ export async function igdbLookup(rawQuery, credentials) {
 
 async function igdbSearch(query, credentials, lookup = {}, language = "en") {
   const token = await getIgdbToken(credentials);
-  const fields = "fields name,slug,summary,storyline,first_release_date,cover.image_id,genres.name,hypes,total_rating,total_rating_count,involved_companies.company.name,involved_companies.developer,involved_companies.publisher,platforms.name,release_dates.date,release_dates.platform.name,websites.url,websites.category,videos.name,videos.video_id;";
+  const fields = "fields name,slug,summary,storyline,first_release_date,cover.image_id,genres.name,hypes,total_rating,total_rating_count,involved_companies.company.name,involved_companies.developer,involved_companies.publisher,platforms.name,release_dates.category,release_dates.date,release_dates.date_format,release_dates.human,release_dates.platform.name,release_dates.y,websites.url,websites.category,videos.name,videos.video_id;";
   const slugBody = lookup.igdbSlug ? [
     fields,
     `where slug = "${escapeIgdbString(lookup.igdbSlug)}";`,
@@ -131,7 +131,7 @@ async function igdbResult(game, query, hltbResults, lookup = {}, language = "en"
   if (!title || textScore < 0.28) return null;
   const hltbMatch = bestExternalMatch(title, hltbResults);
   const companies = game.involved_companies || [];
-  const release = bestIgdbRelease(game.release_dates) || unixDate(game.first_release_date);
+  const release = bestIgdbRelease(game.release_dates) || igdbFirstReleaseDate(game.first_release_date);
   const score = textScore + igdbQualityScore(game, hltbMatch);
   const storeLinks = storeLinksFromWebsites(game.websites);
   const steamTrailerUrl = await steamTrailer(storeLinks.steam);
@@ -262,7 +262,18 @@ function bestIgdbRelease(releaseDates = []) {
   const dated = releaseDates
     .filter((release) => release.date)
     .sort((a, b) => a.date - b.date);
-  return unixDate(dated[0]?.date);
+  return igdbReleaseDate(dated[0]);
+}
+
+function igdbReleaseDate(release) {
+  if (!release?.date) return null;
+  const dateFormat = Number(release.date_format ?? release.category);
+  if (Number.isFinite(dateFormat) && dateFormat !== 0) return { date: "", text: igdbReleaseText(release) };
+  return unixDate(release.date);
+}
+
+function igdbReleaseText(release) {
+  return String(release?.human || release?.y || "").trim();
 }
 
 function unixDate(seconds) {
@@ -270,6 +281,16 @@ function unixDate(seconds) {
   const date = new Date(Number(seconds) * 1000);
   if (Number.isNaN(date.getTime())) return { date: "", text: "" };
   return { date: date.toISOString().slice(0, 10), text: String(date.getUTCFullYear()) };
+}
+
+function igdbFirstReleaseDate(seconds) {
+  const release = unixDate(seconds);
+  if (!release.date) return release;
+  const date = new Date(`${release.date}T00:00:00`);
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  if (date > today && date.getUTCMonth() === 0 && date.getUTCDate() === 1) return { date: "", text: release.text };
+  return release;
 }
 
 function escapeIgdbString(value) {

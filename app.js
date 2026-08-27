@@ -7999,11 +7999,7 @@ function compareGames(a, b, section) {
     return direction * (addedTimeValue(a) - addedTimeValue(b) || stringCompare(a.title, b.title));
   }
   if (state.filters.sort === "time" && section === "upcoming") {
-    const aRelease = releaseSortValue(a);
-    const bRelease = releaseSortValue(b);
-    if (!Number.isFinite(aRelease)) return Number.isFinite(bRelease) ? 1 : direction * stringCompare(a.title, b.title);
-    if (!Number.isFinite(bRelease)) return -1;
-    return direction * ((aRelease - bRelease) || stringCompare(a.title, b.title));
+    return compareReleaseSort(a, b, direction);
   }
   if (state.filters.sort === "time" || state.filters.sort === "playtime") {
     return direction * (((a.lengthHours ?? Number.POSITIVE_INFINITY) - (b.lengthHours ?? Number.POSITIVE_INFINITY))
@@ -8017,11 +8013,34 @@ function compareStreamFirst(a, b) {
 }
 
 function compareReleaseDates(a, b) {
-  return releaseSortValue(a) - releaseSortValue(b);
+  return compareReleaseSort(a, b, 1);
 }
 
-function releaseSortValue(game) {
-  return game.releaseDate ? new Date(`${game.releaseDate}T00:00:00`).getTime() : Number.POSITIVE_INFINITY;
+function compareReleaseSort(a, b, direction = 1) {
+  const aRelease = releaseSortKey(a);
+  const bRelease = releaseSortKey(b);
+  if (aRelease.vague !== bRelease.vague) return aRelease.vague ? 1 : -1;
+  if (aRelease.group !== bRelease.group) return aRelease.group - bRelease.group;
+  return direction * ((aRelease.time - bRelease.time) || stringCompare(aRelease.text, bRelease.text) || stringCompare(a.title, b.title));
+}
+
+function releaseSortKey(game) {
+  const date = dateOnly(game?.releaseDate);
+  if (date) {
+    const time = new Date(`${date}T00:00:00`).getTime();
+    if (Number.isFinite(time)) return { group: 0, time, text: date, vague: releaseTextStartsUnknown(game.releaseText) };
+  }
+  const text = String(game?.releaseText || "").trim();
+  return {
+    group: text ? 1 : 2,
+    time: Number.POSITIVE_INFINITY,
+    text,
+    vague: releaseTextStartsUnknown(text),
+  };
+}
+
+function releaseTextStartsUnknown(value) {
+  return /^\?+/.test(String(value || "").trim());
 }
 
 function stringCompare(a = "", b = "") {
@@ -9105,6 +9124,7 @@ function dateOnly(value) {
   if (typeof value === "string") {
     const iso = value.match(/\d{4}-\d{2}-\d{2}/);
     if (iso) return iso[0];
+    return "";
   }
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return "";
