@@ -9834,14 +9834,15 @@ async function normalizeGameBeforeSave(game) {
 }
 
 async function refreshUnreleasedGamesOnOpen() {
-  const games = state.games.filter((game) => !game.deletedAt && !game.completedAt && (
-    shouldRefreshRelease(game)
-    || shouldMoveReleasedToAvailable(game)
+  const moveGames = state.games.filter((game) => !game.deletedAt && !game.completedAt && (
+    shouldMoveReleasedToAvailable(game)
     || shouldMoveUnreleasedToUpcoming(game)
   ));
+  const refreshGames = state.games.filter((game) => !game.deletedAt && !game.completedAt && shouldRefreshRelease(game) && !moveGames.includes(game)).slice(0, 25);
+  const games = [...moveGames, ...refreshGames];
   if (!games.length) return;
   let changed = false;
-  for (const game of games.slice(0, 25)) {
+  for (const game of games) {
     try {
       let localChanged = false;
       if (shouldMoveReleasedToAvailable(game)) {
