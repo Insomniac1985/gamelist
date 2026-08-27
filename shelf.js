@@ -1289,7 +1289,7 @@ function gameCard(game, options = {}) {
   titleOwners.hidden = true;
   const edit = card.querySelector(".edit-action");
   if (preorderProjection) edit.dataset.action = "edit-preorder"; else edit.dataset.action = "edit";
-  const studioText = studio || game.genre || (digitalGame ? "Digital edition" : "Physical edition");
+  const studioText = studio || game.genre || tt(digitalGame ? "Digital edition" : "Physical edition");
   card.querySelector(".studio-line").innerHTML = `${visibleOwners.map(ownerBadge).join("")}<span>${escapeHtml(studioText)}</span>`;
   card.querySelector(".meta").innerHTML = preorderProjection
     ? `${platformBadge(game.platform, { title: game.title })}${mediaFormatBadge(game)}${dlcBadge(game)}${entitlementBadge(game)}${preorderPlaytimePill(game)}`
@@ -1389,7 +1389,7 @@ function projectionOwnerCardClass(game) {
   return owners.map(ownerCardColorClass).join(" ");
 }
 
-function conditionBadge(condition) { const tone = condition === "Complete +" ? "complete-plus" : normalize(condition).replace(/ /g, "-"); return `<span class="condition-pill condition-${tone}"><img src="assets/platforms/disk.png" alt="" width="18" height="18"><span>${escapeHtml(condition)}</span></span>`; }
+function conditionBadge(condition) { const tone = condition === "Complete +" ? "complete-plus" : normalize(condition).replace(/ /g, "-"); return `<span class="condition-pill condition-${tone}"><img src="assets/platforms/disk.png" alt="" width="18" height="18"><span>${escapeHtml(tt(condition))}</span></span>`; }
 
 function handleShelfClick(event) {
   const card = event.target.closest("[data-id]");
@@ -1447,7 +1447,7 @@ function openDetails(game) {
   el.detailDescription.hidden = !game.description;
   el.detailPricePanel.classList.remove("is-collapsed");
   el.detailPriceToggle.setAttribute("aria-expanded", "true");
-  el.detailCondition.innerHTML = ["game", "manual", "box", "other", "sealed"].map((key) => `<label class="check-filter toggle-check detail-condition-check condition-${key}"><input type="checkbox" ${conditionValue(game, key) ? "checked" : ""} disabled><span>${escapeHtml(key[0].toUpperCase() + key.slice(1))}</span></label>`).join("");
+  el.detailCondition.innerHTML = ["game", "manual", "box", "other", "sealed"].map((key) => `<label class="check-filter toggle-check detail-condition-check condition-${key}"><input type="checkbox" ${conditionValue(game, key) ? "checked" : ""} disabled><span>${escapeHtml(tt(key[0].toUpperCase() + key.slice(1)))}</span></label>`).join("");
   el.detailConditionPanel.hidden = Boolean(game._gamelistProjection || digitalGame);
   const links = websiteLinks(game);
   el.detailLinks.innerHTML = storeLinkButtons(game, links);
@@ -1509,7 +1509,7 @@ function syncShelfDigitalEditorMode(digitalMode) {
   el.addForm.classList.toggle("digital-game-editor", digitalMode);
   el.addForm.dataset.digital = digitalMode ? "true" : "false";
   el.fields.country.required = !digitalMode;
-  el.lookupInput.placeholder = digitalMode ? "Game name" : "Game name or PriceCharting page";
+  el.lookupInput.placeholder = tt(digitalMode ? "Game name" : "Game name or PriceCharting page");
   const game = state.games.find((item) => item.id === state.editingId);
   el.addForm.querySelector(".modal-head h2").textContent = tt(game?.pendingCollection ? "Add to Collection" : game ? "Edit Game" : digitalMode ? "Add Digital Game" : "Add Game");
   el.addForm.querySelectorAll("button[type='submit']").forEach((button) => { button.textContent = game?.pendingCollection ? "Add to Collection" : game ? "Save" : digitalMode ? "Add to Drive" : "Add to Shelf"; });
@@ -1531,7 +1531,7 @@ async function lookupGame() {
   el.lookupButton.title = "Fetching game information";
   el.lookupResults.classList.remove("loaded");
   const digitalMode = el.digitalInput.checked;
-  el.lookupResults.innerHTML = `<div class="empty">${digitalMode ? "Searching IGDB…" : "Searching game data and PriceCharting editions…"}</div>`;
+  el.lookupResults.innerHTML = `<div class="empty">${escapeHtml(tt(digitalMode ? "Searching IGDB…" : "Searching game data and PriceCharting editions…"))}</div>`;
   el.lookupResults.classList.add("loaded");
   try {
     if (digitalMode) {
@@ -1544,7 +1544,7 @@ async function lookupGame() {
     const directUrl = priceChartingPageUrl(query);
     if (directUrl) {
       const physical = await fetchPhysicalMetadata(el.fields.title.value.trim(), { url: directUrl });
-      if (!physical) throw new Error("PriceCharting edition unavailable");
+      if (!physical) throw new Error(tt("PriceCharting edition unavailable"));
       el.fields.platform.value = bestCollectionPlatform([physical.consoleName], el.fields.platform.value);
       applyPriceChartingRegion(physical.consoleName);
       applyPhysicalMetadata(physical);
@@ -3052,11 +3052,11 @@ function gamelistProjectionCard(game, options = {}) {
 }
 
 function currentlyPlayingTitle(games) {
-  return games.length && games.every((game) => game.stream) ? "Currently streaming" : "Currently playing";
+  return tt(games.length && games.every((game) => game.stream) ? "Currently streaming" : "Currently playing");
 }
 
 function playingCountText(count) {
-  return `Playing ${count} ${count === 1 ? "game" : "games"}`;
+  return tt("Playing {count} {item}", { count, item: tt(count === 1 ? "game" : "games") });
 }
 function projectionMeta(game, options = {}) { const release = options.includeRelease === false ? "" : activityReleaseStatus(game, { includePast: Boolean(options.includePast) }); return `${platformBadge(game.platform, { title: game.title })}${options.includeProgress ? shelfProgressPill(game) : ""}${mediaFormatBadge(game)}${dlcBadge(game)}${entitlementBadge(game)}${game.emulator ? `<span class="emulator-pill">Emulator</span>` : ""}${game.lengthHours ? timeBadgeMarkup(game.lengthHours, game.hltbUrl || game.howLongToBeatUrl || `https://howlongtobeat.com/?q=${encodeURIComponent(game.title)}`, escapeHtml) : ""}${game.stream ? `<span class="stream-pill">Stream</span>` : ""}${release ? releaseStatusPill(release) : ""}${game.coop ? `<span class="coop-pill">Coop</span>` : ""}${game.replayCount ? `<span class="replay-pill">Replay ${escapeHtml(game.replayCount)}</span>` : ""}`; }
 
@@ -3917,7 +3917,7 @@ function renderPriceDetails(game) {
   const currency = game.priceCurrency || "USD";
   const identifiers = [["UPC", game.upc], ["SKU", game.sku], ["ASIN", game.asin], ["eBay ID", game.epid]].filter(([, value]) => value);
   const productUrl = game.collectionProductUrl || priceChartingPageUrl(game.pricechartingId);
-  const priceMarkup = rows.length ? `<div class="collection-price-grid">${rows.map(([label, value]) => productUrl ? `<a href="${escapeHtml(productUrl)}" target="_blank" rel="noreferrer"><small>${label}</small><strong>${formatMoney(value, currency)}</strong></a>` : `<span><small>${label}</small><strong>${formatMoney(value, currency)}</strong></span>`).join("")}</div>` : `<span class="muted">No collection value fetched yet.</span>`;
+  const priceMarkup = rows.length ? `<div class="collection-price-grid">${rows.map(([label, value]) => productUrl ? `<a href="${escapeHtml(productUrl)}" target="_blank" rel="noreferrer"><small>${escapeHtml(tt(label))}</small><strong>${formatMoney(value, currency)}</strong></a>` : `<span><small>${escapeHtml(tt(label))}</small><strong>${formatMoney(value, currency)}</strong></span>`).join("")}</div>` : `<span class="muted">${escapeHtml(tt("No collection value fetched yet."))}</span>`;
   const identifierMarkup = identifiers.length ? `<div class="collection-product-meta">${identifiers.map(([label, value]) => `<span><small>${label}</small><strong>${escapeHtml(value)}</strong></span>`).join("")}</div>` : "";
   el.detailPriceSummary.innerHTML = `${priceMarkup}${identifierMarkup}`;
   const collectionValue = collectionValueFor(game);
@@ -3929,8 +3929,8 @@ function renderPriceDetails(game) {
 }
 function syncFetchValueButton(label = "Fetch value") {
   el.fetchValue.innerHTML = currencyIcon();
-  el.fetchValue.title = label;
-  el.fetchValue.setAttribute("aria-label", label);
+  el.fetchValue.title = tt(label);
+  el.fetchValue.setAttribute("aria-label", tt(label));
 }
 function toggleCollectionValuePanel() {
   const collapsed = el.detailPricePanel.classList.toggle("is-collapsed");
@@ -3961,8 +3961,8 @@ async function fetchCollectionValue() {
     if (!data.error && response.ok) renderPriceDetails(game);
     renderSavedStorePrices(game);
     renderStats();
-    showToast(response.ok && !data.error ? "Collection value updated." : "Store prices checked.");
-  } catch (error) { el.detailPriceSummary.innerHTML = `<span class="auth-error">${escapeHtml(error?.message || "Collection value is unavailable.")}</span>`; showToast("Collection value is unavailable.", "error"); } finally { el.fetchValue.disabled = false; syncFetchValueButton(); }
+    showToast(tt(response.ok && !data.error ? "Collection value updated." : "Store prices checked."));
+  } catch (error) { el.detailPriceSummary.innerHTML = `<span class="auth-error">${escapeHtml(error?.message || tt("Collection value is unavailable."))}</span>`; showToast(tt("Collection value is unavailable."), "error"); } finally { el.fetchValue.disabled = false; syncFetchValueButton(); }
 }
 
 function applyCollectionPrice(game, data) {
