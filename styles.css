@@ -6412,6 +6412,36 @@ body:not(.can-edit) .top-actions-separator {
   display: none;
 }
 
+@media (min-width: 761px) {
+  .top-actions #syncButton {
+    order: 1;
+  }
+
+  .top-actions #fetchPricesButton {
+    order: 2;
+  }
+
+  .top-actions-separator {
+    order: 3;
+  }
+
+  .top-actions #loginButton {
+    order: 4;
+  }
+
+  .top-actions #settingsButton {
+    order: 5;
+  }
+
+  .top-actions #searchButton {
+    order: 6;
+  }
+
+  .top-actions #addButton {
+    order: 7;
+  }
+}
+
 .button-icon {
   display: inline-grid;
   width: 17px;

@@ -117,6 +117,7 @@ const el = {
   clear: document.querySelector("#clearFilters"),
   login: document.querySelector("#loginButton"),
   addButton: document.querySelector("#addButton"),
+  searchButton: document.querySelector("#searchButton"),
   layoutButton: document.querySelector("#settingsButton"),
   syncButton: document.querySelector("#syncButton"),
   fetchPricesButton: document.querySelector("#fetchPricesButton"),
@@ -140,7 +141,7 @@ const el = {
   footerVersion: document.querySelector("#footerVersion"),
   footerCreditText: document.querySelector("#footerCreditText"),
   scrollTop: document.querySelector("#scrollTopButton"),
-  floatingActions: document.querySelector("#floatingEditActions"), floatingAdd: document.querySelector("#floatingAddButton"),
+  floatingActions: document.querySelector("#floatingEditActions"), floatingAdd: document.querySelector("#floatingAddButton"), floatingSearch: document.querySelector("#floatingSearchButton"),
   detailDialog: document.querySelector("#detailDialog"),
   detailClose: document.querySelector("#detailClose"),
   detailTitle: document.querySelector("#detailTitle"),
@@ -287,7 +288,9 @@ function bindEvents() {
   document.addEventListener("click", closePlatformLogoSelects);
   el.login.addEventListener("click", toggleEditMode);
   el.addButton.addEventListener("click", () => openEditor(null, { digital: state.filters.tab === "drive" }));
+  el.searchButton?.addEventListener("click", scrollToShelfSearch);
   el.floatingAdd.addEventListener("click", () => state.canEdit ? openEditor(null, { digital: state.filters.tab === "drive" }) : openAuth());
+  el.floatingSearch?.addEventListener("click", scrollToShelfSearch);
   el.layoutButton.addEventListener("click", openLayout);
   el.showcaseEdit.addEventListener("click", openShowcaseEditor);
   el.syncButton?.addEventListener("click", syncShelfNow);
@@ -899,6 +902,11 @@ function applyTheme() {
 function scrollToShelfLibrary() {
   document.querySelector("[data-module='library']")?.scrollIntoView({ behavior: "smooth", block: "start" });
   el.shelf.scrollTo?.({ top: 0, left: 0, behavior: "smooth" });
+}
+
+function scrollToShelfSearch() {
+  document.querySelector(".shelf-toolbar")?.scrollIntoView({ behavior: "smooth", block: "start" });
+  window.requestAnimationFrame(() => el.search?.focus({ preventScroll: true }));
 }
 
 function delay(ms) {
