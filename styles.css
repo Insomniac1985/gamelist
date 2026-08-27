@@ -12232,6 +12232,10 @@ html.theme-light .playing-achievements-check input[type="checkbox"]:checked {
     margin: 12px 0 16px;
   }
 
+  html[lang="es-ES"] .mobile-section-tabs button {
+    font-size: 12px;
+  }
+
   .mobile-section-tabs button[data-mobile-section="new"] {
     min-width: 0;
     padding: 0;

@@ -1418,6 +1418,9 @@ function tt(key, values) {
 
 function applyLanguage() {
   applyDocumentTranslations(currentLanguage());
+  if (el.playingTitle) el.playingTitle.textContent = tt("Currently playing");
+  const latestFinishedTitle = el.playingFinished?.querySelector(".achievement-subtitle");
+  if (latestFinishedTitle) latestFinishedTitle.textContent = tt("Last finished games");
 }
 
 function applyTheme() {
@@ -4189,6 +4192,7 @@ async function fetchSteamAccountActivity(steamUser = state.settings.steamUser ||
 
 function achievementParams(values = {}, forceRefresh = state.settings.forceCacheOnLoad === true) {
   const params = new URLSearchParams(values);
+  params.set("lang", currentLanguage());
   if (forceRefresh) params.set("fresh", String(Date.now()));
   return params;
 }
@@ -4314,6 +4318,7 @@ function renderAchievements(data = {}, steamData = state.steamActivity || emptyS
     platformLogo,
     trophyTone,
     escape: escapeHtml,
+    translate: tt,
   });
   el.achievementPanel.innerHTML = panel.html;
   el.achievementPanel.querySelector("[data-action='platinums']")?.addEventListener("click", () => openPlatinumDialog());
@@ -4342,13 +4347,15 @@ function renderPlatinumDialog(platinums = platinumItems(), years = platinumYears
     (selected === "all" || platinumYearFor(item) === selected)
     && (state.platinumPlatform === "all" || platinumPlatformFor(item) === state.platinumPlatform)
   )));
-  el.platinumTitle.innerHTML = `${trophyIcon()} <span>COMPLETED</span>`;
-  el.platinumCount.textContent = `${visible.length} completed`;
+  el.platinumTitle.innerHTML = `${trophyIcon()} <span>${escapeHtml(tt("COMPLETED"))}</span>`;
+  el.platinumCount.textContent = tt("{count} completed", { count: visible.length });
   el.platinumList.classList.toggle("list-view", state.platinumViewMode === "list");
   renderModeToggle(el.platinumViewToggleButton, state.platinumViewMode);
+  el.platinumViewToggleButton.title = tt(state.platinumViewMode === "grid" ? "Grid view" : "List view");
+  el.platinumViewToggleButton.setAttribute("aria-label", el.platinumViewToggleButton.title);
   el.platinumSortSelect.value = state.platinumSort;
   el.platinumSortDirection.innerHTML = sortArrowIcon(state.platinumDirection === "desc");
-  el.platinumSortDirection.title = state.platinumDirection === "asc" ? "Sort ascending" : "Sort descending";
+  el.platinumSortDirection.title = tt(state.platinumDirection === "asc" ? "Sort ascending" : "Sort descending");
   el.platinumSortDirection.setAttribute("aria-label", el.platinumSortDirection.title);
   el.platinumSortDirection.classList.toggle("desc", state.platinumDirection === "desc");
   el.platinumSortSelect.onchange = () => {
@@ -4360,16 +4367,16 @@ function renderPlatinumDialog(platinums = platinumItems(), years = platinumYears
     renderPlatinumDialog(platinums, years);
   };
   el.platinumYearSelect.innerHTML = platinums.length ? [
-    `<option value="all">All</option>`,
+    `<option value="all">${escapeHtml(tt("All"))}</option>`,
     ...years.map((year) => `<option value="${escapeHtml(year)}">${escapeHtml(year)}</option>`),
-  ].join("") : `<option value="all">No completed</option>`;
+  ].join("") : `<option value="all">${escapeHtml(tt("No completed"))}</option>`;
   el.platinumYearSelect.value = selected;
   el.platinumYearSelect.onchange = () => {
     state.platinumYear = el.platinumYearSelect.value || "all";
     renderPlatinumDialog(platinums, years);
   };
   el.platinumPlatformSelect.innerHTML = [
-    `<option value="all">All</option>`,
+    `<option value="all">${escapeHtml(tt("All"))}</option>`,
     ...platforms.map((platform) => `<option value="${escapeHtml(platform)}">${escapeHtml(platinumPlatformLabel(platform))}</option>`),
   ].join("");
   el.platinumPlatformSelect.value = state.platinumPlatform;
@@ -5449,7 +5456,7 @@ function renderCompleted() {
   `).join("") : `<div class="empty">Finished games will stay saved here.</div>`;
   if (el.completedMoreButton) {
     el.completedMoreButton.hidden = !hasMore;
-    el.completedMoreButton.textContent = "See more";
+    el.completedMoreButton.textContent = tt("See more");
   }
   list.querySelectorAll(".completed-edit-action").forEach((button) => {
     button.addEventListener("click", () => openEditor(button.closest(".completed-row").dataset.id));
@@ -5492,8 +5499,9 @@ function completedPageSize() {
 function renderFooter() {
   if (el.footerDataUpdate) {
     const latest = latestGameUpdateDate();
-    el.footerDataUpdate.textContent = latest ? `Last edit ${formatFooterDate(latest)}` : "Last edit -";
+    el.footerDataUpdate.textContent = latest ? `${tt("Last edit")} ${formatFooterDate(latest)}` : tt("Last edit -");
   }
+  document.querySelector(".footer-credit > span:first-child")?.replaceChildren(tt("Gamelist by Shabii"));
   if (el.footerVersion) {
     el.footerVersion.textContent = siteVersion.version
       ? `${siteVersion.version}.${formatFooterShortDate(siteVersion.updatedAt) || "--.--"}`
@@ -6727,11 +6735,11 @@ function cardFor(game, options = {}) {
     priceRefreshAction.remove();
     backlogAction.remove();
     trophyAction.remove();
-    boughtAction.textContent = "Setup";
+    boughtAction.textContent = tt("Setup");
     boughtAction.classList.remove("ghost-button");
     boughtAction.classList.add("primary-button");
     boughtAction.addEventListener("click", () => finishSetupGame(game.id));
-    completeAction.innerHTML = `<span class="action-label">Play</span>`;
+    completeAction.innerHTML = `<span class="action-label">${escapeHtml(tt("Play"))}</span>`;
     completeAction.addEventListener("click", () => startPlaying(game.id));
   } else if (displaySection === "backlog" || game.completedAt) {
     prices.remove();
@@ -6740,8 +6748,8 @@ function cardFor(game, options = {}) {
     if (game.playing) backlogAction.addEventListener("click", () => returnPlayingToBacklog(game.id));
     else backlogAction.remove();
     completeAction.innerHTML = game.playing
-      ? `${checkIcon()}<span class="action-label">Finished</span>`
-      : `<span class="action-label">Play</span>`;
+      ? `${checkIcon()}<span class="action-label">${escapeHtml(tt("Finished"))}</span>`
+      : `<span class="action-label">${escapeHtml(tt("Play"))}</span>`;
     completeAction.addEventListener("click", () => {
       if (game.playing) completeGame(game.id);
       else startPlaying(game.id);
@@ -7016,7 +7024,7 @@ async function renderDetailTrophies(game) {
       state.detailTrophyRequest = "";
       state.detailTrophiesData = fallback;
       el.detailTrophies.hidden = false;
-      if (el.detailTrophyTitle) el.detailTrophyTitle.textContent = "TROPHIES";
+      if (el.detailTrophyTitle) el.detailTrophyTitle.textContent = tt("TROPHIES");
       renderDetailTrophyList();
       return;
     }
@@ -7028,7 +7036,7 @@ async function renderDetailTrophies(game) {
     state.detailTrophyRequest = "";
     state.detailTrophiesData = [];
     state.detailTrophyProvider = "psn";
-    if (el.detailTrophyTitle) el.detailTrophyTitle.textContent = "TROPHIES";
+    if (el.detailTrophyTitle) el.detailTrophyTitle.textContent = tt("TROPHIES");
     el.detailTrophies.hidden = true;
     el.detailTrophyCount.textContent = "";
     el.detailTrophyPercent.innerHTML = "";
@@ -7047,7 +7055,7 @@ async function renderDetailTrophies(game) {
     state.detailTrophyRequest = "";
     state.detailTrophiesData = cachedTrophies;
     el.detailTrophies.hidden = false;
-    if (el.detailTrophyTitle) el.detailTrophyTitle.textContent = "TROPHIES";
+    if (el.detailTrophyTitle) el.detailTrophyTitle.textContent = tt("TROPHIES");
     renderDetailTrophyList();
     refreshDetailPsnTrophiesInBackground(game, psn, trophyId);
     return;
@@ -7061,7 +7069,7 @@ async function renderDetailTrophies(game) {
     state.detailTrophyRequest = "";
     state.detailTrophiesData = activityTrophies;
     el.detailTrophies.hidden = false;
-    if (el.detailTrophyTitle) el.detailTrophyTitle.textContent = "TROPHIES";
+    if (el.detailTrophyTitle) el.detailTrophyTitle.textContent = tt("TROPHIES");
     renderDetailTrophyList();
     refreshDetailPsnTrophiesInBackground(game, psn, trophyId);
     return;
@@ -7072,10 +7080,10 @@ async function renderDetailTrophies(game) {
   state.detailTrophyProvider = "psn";
   state.detailTrophyRequest = requestKey;
   el.detailTrophies.hidden = false;
-  if (el.detailTrophyTitle) el.detailTrophyTitle.textContent = "TROPHIES";
+  if (el.detailTrophyTitle) el.detailTrophyTitle.textContent = tt("TROPHIES");
   el.detailTrophyCount.textContent = "";
   el.detailTrophyPercent.innerHTML = psnProgressBadge(psn, { includeIcon: false });
-  el.detailTrophyList.innerHTML = `<div class="detail-trophy-empty">Loading earned trophies...</div>`;
+  el.detailTrophyList.innerHTML = `<div class="detail-trophy-empty">${escapeHtml(tt("Loading earned trophies..."))}</div>`;
 
   try {
     const params = achievementParams({
@@ -7117,7 +7125,7 @@ async function renderDetailSteamAchievements(game) {
     state.detailTrophyRequest = "";
     state.detailTrophiesData = [];
     state.detailTrophyProvider = "steam";
-    if (el.detailTrophyTitle) el.detailTrophyTitle.textContent = "ACHIEVEMENTS";
+    if (el.detailTrophyTitle) el.detailTrophyTitle.textContent = tt("ACHIEVEMENTS");
     el.detailTrophies.hidden = true;
     el.detailTrophyCount.textContent = "";
     el.detailTrophyPercent.innerHTML = "";
@@ -7134,17 +7142,17 @@ async function renderDetailSteamAchievements(game) {
     state.detailTrophyRequest = "";
     state.detailTrophiesData = cached.achievements;
     el.detailTrophies.hidden = false;
-    if (el.detailTrophyTitle) el.detailTrophyTitle.textContent = "ACHIEVEMENTS";
+    if (el.detailTrophyTitle) el.detailTrophyTitle.textContent = tt("ACHIEVEMENTS");
     renderDetailTrophyList();
     refreshDetailSteamAchievementsInBackground(game, appId, steamUser);
     return;
   }
   state.detailTrophyRequest = requestKey;
   el.detailTrophies.hidden = false;
-  if (el.detailTrophyTitle) el.detailTrophyTitle.textContent = "ACHIEVEMENTS";
+  if (el.detailTrophyTitle) el.detailTrophyTitle.textContent = tt("ACHIEVEMENTS");
   el.detailTrophyCount.textContent = "";
   el.detailTrophyPercent.innerHTML = "";
-  el.detailTrophyList.innerHTML = `<div class="detail-trophy-empty">Loading earned achievements...</div>`;
+  el.detailTrophyList.innerHTML = `<div class="detail-trophy-empty">${escapeHtml(tt("Loading earned achievements..."))}</div>`;
 
   try {
     const params = steamAchievementParams(appId, steamUser);
@@ -7224,7 +7232,7 @@ async function renderDetailXboxAchievements(game) {
   const xboxGame = matchedXboxGame(game);
   state.detailGameId = game.id;
   state.detailTrophyProvider = "xbox";
-  if (el.detailTrophyTitle) el.detailTrophyTitle.textContent = "ACHIEVEMENTS";
+  if (el.detailTrophyTitle) el.detailTrophyTitle.textContent = tt("ACHIEVEMENTS");
   el.detailTrophies.hidden = !xboxGame;
   el.detailTrophyCount.textContent = "";
   el.detailTrophyPercent.innerHTML = "";
@@ -7246,7 +7254,7 @@ async function renderDetailXboxAchievements(game) {
   const requestKey = `${game.id}:xbox:${xboxGame.titleId}:${Date.now()}`;
   state.detailTrophyRequest = requestKey;
   state.detailTrophiesData = [];
-  el.detailTrophyList.innerHTML = `<div class="detail-trophy-empty">Loading earned achievements...</div>`;
+  el.detailTrophyList.innerHTML = `<div class="detail-trophy-empty">${escapeHtml(tt("Loading earned achievements..."))}</div>`;
   try {
     const data = await fetchXboxTitleAchievements(xboxGame);
     if (state.detailTrophyRequest !== requestKey) return;
@@ -7278,7 +7286,7 @@ function renderDetailTrophyList() {
     ? { progress: trophies.length ? Math.round((earnedCount / trophies.length) * 100) : 0, game: "" }
     : psn;
   el.detailTrophyPercent.innerHTML = trophies.length && progressSource
-    ? psnProgressBadge(progressSource, { includeIcon: false, label: `${earnedCount}/${trophies.length} earned`, separator: true })
+    ? psnProgressBadge(progressSource, { includeIcon: false, label: tt("{earned}/{total} earned", { earned: earnedCount, total: trophies.length }), separator: true })
     : "";
   el.detailTrophyList.innerHTML = trophies.length
     ? trophies.map(detailTrophyCard).join("")
@@ -7331,7 +7339,7 @@ function detailTrophyCard(trophy) {
       <img src="${escapeHtml(trophy.icon || fallbackIcon)}" alt="">
       <div>
         <strong>${escapeHtml(trophy.title || "Trophy")}</strong>
-        <span>${escapeHtml([trophy.earned ? trophy.earnedAt : "Missing", trophy.rarity].filter(Boolean).join(" · "))}</span>
+        <span>${escapeHtml([trophy.earned ? trophy.earnedAt || tt("Earned") : tt("Missing"), trophy.rarity].filter(Boolean).join(" · "))}</span>
         ${trophy.description ? `<p>${escapeHtml(trophy.description)}</p>` : ""}
       </div>
     </article>
@@ -7486,7 +7494,7 @@ function xboxProgressLabel(earned, total, progress) {
   const inferredEarned = !earned && progress > 0 && progress < 100 && total
     ? Math.round((progress / 100) * total)
     : earned;
-  return `${inferredEarned}/${total} earned`;
+  return tt("{earned}/{total} earned", { earned: inferredEarned, total });
 }
 
 function xboxAchievementCacheKey(xboxGame) {
@@ -7549,7 +7557,7 @@ function steamProgressForGame(game) {
     title: trophySearchTitle(game),
     game: `${Math.round((earned / Math.max(total, 1)) * 100)}%`,
     progress: Math.round((earned / Math.max(total, 1)) * 100),
-    label: `${earned}/${total} earned`,
+    label: tt("{earned}/{total} earned", { earned, total }),
     provider: "steam",
   };
 }
@@ -7729,7 +7737,7 @@ function cardTrophiesFor(game) {
   if (!trophies.length) return guideRow;
   return `
     ${guideRow}
-    <div class="card-trophy-head">${trophyIcon()}<span>Trophies</span>${psn ? psnProgressBadge(psn, { includeIcon: false, className: "card-trophy-progress" }) : ""}</div>
+    <div class="card-trophy-head">${trophyIcon()}<span>${escapeHtml(tt("TROPHIES"))}</span>${psn ? psnProgressBadge(psn, { includeIcon: false, className: "card-trophy-progress" }) : ""}</div>
     <div class="card-trophy-list">
       ${trophies.map((trophy) => `
         <a class="card-trophy trophy-${escapeHtml(trophyTone(trophy.type || trophy.rarity))}" href="${escapeHtml(trophy.url || state.psnActivity.sourceUrl || "#")}" target="_blank" rel="noreferrer" title="${escapeHtml([trophy.title, trophy.earnedAt].filter(Boolean).join(" · "))}">
@@ -7757,12 +7765,12 @@ function cardSteamAchievementsFor(game) {
     .slice(0, 3);
   const progress = steamProgressForGame(game);
   if (!achievements.length) {
-    const heading = progress ? `<div class="card-trophy-head">${trophyIcon()}<span>Achievements</span>${psnProgressBadge(progress, { includeIcon: false, className: "card-trophy-progress" })}</div>` : "";
+    const heading = progress ? `<div class="card-trophy-head">${trophyIcon()}<span>${escapeHtml(tt("ACHIEVEMENTS"))}</span>${psnProgressBadge(progress, { includeIcon: false, className: "card-trophy-progress" })}</div>` : "";
     return `${guideRow}${heading}`;
   }
   return `
     ${guideRow}
-    <div class="card-trophy-head">${trophyIcon()}<span>Achievements</span>${progress ? psnProgressBadge(progress, { includeIcon: false, className: "card-trophy-progress" }) : ""}</div>
+    <div class="card-trophy-head">${trophyIcon()}<span>${escapeHtml(tt("ACHIEVEMENTS"))}</span>${progress ? psnProgressBadge(progress, { includeIcon: false, className: "card-trophy-progress" }) : ""}</div>
     <div class="card-trophy-list">
       ${achievements.map((achievement) => `
         <a class="card-trophy trophy-steam" href="${escapeHtml(game.storeLinks?.steam || hltbUrlFor(game) || "#")}" target="_blank" rel="noreferrer" title="${escapeHtml([achievement.title, achievement.earnedAt].filter(Boolean).join(" · "))}">
@@ -7789,7 +7797,7 @@ function cardXboxAchievementsFor(game) {
     .slice(0, 3);
   const progress = xboxProgressForGame(game);
   const heading = progress
-    ? `<div class="card-trophy-head">${trophyIcon()}<span>Achievements</span>${psnProgressBadge(progress, { includeIcon: false, className: "card-trophy-progress" })}</div>`
+    ? `<div class="card-trophy-head">${trophyIcon()}<span>${escapeHtml(tt("ACHIEVEMENTS"))}</span>${psnProgressBadge(progress, { includeIcon: false, className: "card-trophy-progress" })}</div>`
     : "";
   if (!achievements.length) return `${guideRow}${heading}`;
   return `
@@ -9203,7 +9211,7 @@ function formatPillDate(value) {
   if (!date) return "";
   const parsed = new Date(`${date}T00:00:00`);
   if (Number.isNaN(parsed.getTime())) return "";
-  return new Intl.DateTimeFormat("en-US", { month: "short", day: "2-digit", year: "numeric" }).format(parsed);
+  return new Intl.DateTimeFormat(currentLanguage(), { month: "short", day: "2-digit", year: "numeric" }).format(parsed);
 }
 
 async function openEditor(id = "") {
@@ -9211,7 +9219,7 @@ async function openEditor(id = "") {
   state.editingId = id;
   state.pendingDescription = "";
   const game = state.games.find((item) => item.id === id) || blankGame();
-  el.dialogTitle.textContent = id ? "Edit Game" : "Add Game";
+  el.dialogTitle.textContent = id ? tt("Edit Game") : tt("Add Game");
   el.deleteButton.hidden = !id;
   el.lookupResults.innerHTML = "";
   el.lookupInput.value = game.title || "";

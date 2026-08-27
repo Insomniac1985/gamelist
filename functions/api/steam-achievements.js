@@ -7,6 +7,7 @@ export async function onRequestGet({ request, env = {} }) {
   const user = cleanSteamUser(url.searchParams.get("user") || env.STEAM_PROFILE_USER || "");
   const ownedOnly = url.searchParams.get("owned") === "1";
   const activityOnly = url.searchParams.get("activity") === "1";
+  const language = apiLanguage(url.searchParams.get("lang"));
   const debug = url.searchParams.has("debug");
   const apiKey = String(env.STEAM_API_KEY || globalThis.process?.env?.STEAM_API_KEY || "").trim();
 
@@ -34,7 +35,7 @@ export async function onRequestGet({ request, env = {} }) {
       const batch = ownedGames.slice(cursor, cursor + limit);
       const games = await Promise.all(batch.map(async (game) => {
         try {
-          const achievements = await getSteamAchievements(game.appId, steamId, apiKey, false);
+          const achievements = await getSteamAchievements(game.appId, steamId, apiKey, false, language);
           return { ...game, achievements };
         } catch (error) {
           return {
@@ -49,7 +50,7 @@ export async function onRequestGet({ request, env = {} }) {
       return json({ source: "steam", steamId, games, cursor, nextCursor, totalGames: ownedGames.length });
     }
     if (!appId) return json({ achievements: [], error: "Missing Steam app id" }, 400, { cache: false });
-    const { achievements, gameName } = await getSteamAchievementData(appId, steamId, apiKey);
+    const { achievements, gameName } = await getSteamAchievementData(appId, steamId, apiKey, true, language);
     const earnedCount = achievements.filter((achievement) => achievement.earned).length;
     return json({
       title: gameName,
@@ -114,14 +115,14 @@ function steamVanityName(value) {
   return text.replace(/^@/, "").replace(/[^A-Za-z0-9_-]/g, "").slice(0, 64);
 }
 
-async function getSteamAchievements(appId, steamId, apiKey, includeRarity = true) {
-  return (await getSteamAchievementData(appId, steamId, apiKey, includeRarity)).achievements;
+async function getSteamAchievements(appId, steamId, apiKey, includeRarity = true, language = "english") {
+  return (await getSteamAchievementData(appId, steamId, apiKey, includeRarity, language)).achievements;
 }
 
-async function getSteamAchievementData(appId, steamId, apiKey, includeRarity = true) {
+async function getSteamAchievementData(appId, steamId, apiKey, includeRarity = true, language = "english") {
   const requests = [
-    steamGet(`${STEAM_API_BASE}/ISteamUserStats/GetSchemaForGame/v2/?${new URLSearchParams({ key: apiKey, appid: appId, l: "en" })}`),
-    steamGet(`${STEAM_API_BASE}/ISteamUserStats/GetPlayerAchievements/v0001/?${new URLSearchParams({ key: apiKey, steamid: steamId, appid: appId, l: "en" })}`),
+    steamGet(`${STEAM_API_BASE}/ISteamUserStats/GetSchemaForGame/v2/?${new URLSearchParams({ key: apiKey, appid: appId, l: language })}`),
+    steamGet(`${STEAM_API_BASE}/ISteamUserStats/GetPlayerAchievements/v0001/?${new URLSearchParams({ key: apiKey, steamid: steamId, appid: appId, l: language })}`),
   ];
   if (includeRarity) {
     requests.push(steamGet(`${STEAM_API_BASE}/ISteamUserStats/GetGlobalAchievementPercentagesForApp/v0002/?${new URLSearchParams({ gameid: appId })}`).catch(() => ({})));
@@ -157,6 +158,10 @@ async function getSteamAchievementData(appId, steamId, apiKey, includeRarity = t
     };
   });
   return { achievements, gameName };
+}
+
+function apiLanguage(value) {
+  return String(value || "").toLowerCase().startsWith("es") ? "spanish" : "english";
 }
 
 async function steamGet(url) {

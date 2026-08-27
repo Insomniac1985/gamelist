@@ -160,10 +160,10 @@
         })();
       </script>
       <div class="top-actions">
-        <button class="ghost-button" id="loginButton" type="button" title="Edit" aria-label="Edit">
+        <button class="ghost-button" id="loginButton" type="button" title="Edit" aria-label="Edit" data-i18n-title="Edit" data-i18n-aria-label="Edit">
           <svg class="pencil-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h4l11-11a2.8 2.8 0 0 0-4-4L4 16v4Z"></path><path d="M13.5 6.5l4 4"></path></svg>
         </button>
-        <button class="icon-button" id="settingsButton" type="button" title="Settings" aria-label="Settings" hidden>
+        <button class="icon-button" id="settingsButton" type="button" title="Settings" aria-label="Settings" data-i18n-title="Settings" data-i18n-aria-label="Settings" hidden>
           <svg class="settings-icon" viewBox="0 0 24 24" aria-hidden="true">
             <path d="M9.8 3.7h4.4l.42 2.1c.45.16.87.4 1.25.7l2.02-.68 2.2 3.82-1.6 1.42c.04.31.04.57 0 .88l1.6 1.42-2.2 3.82-2.02-.68c-.38.3-.8.54-1.25.7l-.42 2.1H9.8l-.42-2.1a5.3 5.3 0 0 1-1.25-.7l-2.02.68-2.2-3.82 1.6-1.42a4.1 4.1 0 0 1 0-.88l-1.6-1.42 2.2-3.82 2.02-.68c.38-.3.8-.54 1.25-.7l.42-2.1Z"></path>
             <circle cx="12" cy="12" r="2.65"></circle>
@@ -174,7 +174,7 @@
           <svg class="euro-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M19 5.5A7 7 0 0 0 8.2 7.1 7.4 7.4 0 0 0 7 12a7.4 7.4 0 0 0 1.2 4.9A7 7 0 0 0 19 18.5"></path><path d="M4 10h10"></path><path d="M4 14h10"></path></svg>
           <span class="button-label">Fetch New Prices</span>
         </button>
-        <button class="primary-button top-search-button" id="searchButton" type="button" title="Search" aria-label="Search">
+        <button class="primary-button top-search-button" id="searchButton" type="button" title="Search" aria-label="Search" data-i18n-title="Search" data-i18n-aria-label="Search">
           <span class="button-icon" aria-hidden="true">
             <svg class="search-icon" viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.5"></circle><path d="m16 16 4 4"></path></svg>
           </span>
@@ -271,11 +271,11 @@
     <button class="icon-button scroll-top-button" id="scrollTopButton" type="button" title="Back to top" aria-label="Back to top">
       <svg class="scroll-top-icon" viewBox="0 0 24 24" aria-hidden="true"><polyline points="6 14 12 8 18 14"></polyline></svg>
     </button>
-    <button class="icon-button floating-action-button floating-search-button" id="floatingSearchButton" type="button" title="Search" aria-label="Search">
+    <button class="icon-button floating-action-button floating-search-button" id="floatingSearchButton" type="button" title="Search" aria-label="Search" data-i18n-title="Search" data-i18n-aria-label="Search">
       <svg class="search-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.5"></circle><path d="m16 16 4 4"></path></svg>
     </button>
     <div class="floating-edit-actions" id="floatingEditActions" aria-label="Quick actions">
-      <button class="icon-button floating-action-button" id="floatingAddButton" type="button" title="Add Game" aria-label="Add Game"><svg class="plus-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14"></path><path d="M5 12h14"></path></svg></button>
+      <button class="icon-button floating-action-button" id="floatingAddButton" type="button" title="Add Game" aria-label="Add Game" data-i18n-title="Add Game" data-i18n-aria-label="Add Game"><svg class="plus-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14"></path><path d="M5 12h14"></path></svg></button>
     </div>
 
     <dialog id="detailDialog">
@@ -291,11 +291,11 @@
             <div class="store-links" id="detailLinks"></div>
             <div class="detail-note" id="detailNote" hidden></div>
             <p id="detailDescription"></p>
-            <section class="detail-guides" id="detailGuides" hidden><h3>Guides</h3><div class="guide-links" id="detailGuideLinks"></div></section>
-            <section class="detail-condition" id="detailConditionPanel"><h3>Collection condition</h3><div class="condition-grid" id="detailCondition"></div></section>
+            <section class="detail-guides" id="detailGuides" hidden><h3 data-i18n="Guides">Guides</h3><div class="guide-links" id="detailGuideLinks"></div></section>
+            <section class="detail-condition" id="detailConditionPanel"><h3 data-i18n="Collection condition">Collection condition</h3><div class="condition-grid" id="detailCondition"></div></section>
             <section class="detail-price-panel" id="detailPricePanel"><div class="detail-section-head"><button class="detail-section-toggle" id="detailPriceToggle" type="button" aria-expanded="true" aria-controls="detailPriceContent"><span>Collection value</span><strong id="detailPriceHeadline"></strong></button><button class="icon-button detail-fetch-value-button editor-only" id="fetchValueButton" type="button" title="Fetch value" aria-label="Fetch value"><svg class="euro-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M19 5.5A7 7 0 0 0 8.2 7.1 7.4 7.4 0 0 0 7 12a7.4 7.4 0 0 0 1.2 4.9A7 7 0 0 0 19 18.5"></path><path d="M4 10h10"></path><path d="M4 14h10"></path></svg></button></div><div class="detail-price-content" id="detailPriceContent"><div id="detailPriceSummary"></div><svg id="detailPriceGraph" class="price-history-graph" viewBox="0 0 600 150" role="img" aria-label="Collection value history"></svg></div></section>
             <section class="detail-store-price-panel" id="detailStorePricePanel"><div class="prices detail-prices detail-store-prices" id="detailStorePrices"></div></section>
-            <section class="detail-trophies" id="shelfDetailTrophies" hidden><div class="detail-trophies-head"><h3><svg class="trophy-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 4h8v4a4 4 0 0 1-8 0V4Z"></path><path d="M8 6H5a3 3 0 0 0 3 3"></path><path d="M16 6h3a3 3 0 0 1-3 3"></path><path d="M12 12v4"></path><path d="M9 20h6"></path><path d="M10 16h4v4h-4z"></path></svg><span id="shelfTrophyTitle">TROPHIES</span></h3><div class="detail-trophy-tools"><span id="shelfTrophyCount"></span><span class="detail-trophy-percent" id="shelfTrophyPercent"></span><select id="shelfTrophySort" aria-label="Sort trophies"><option value="order">Order</option><option value="name">Name</option><option value="completed">Completed</option></select><button class="direction-toggle" id="shelfTrophyDirection" type="button" title="Sort ascending" aria-label="Sort ascending">↑</button></div></div><div class="detail-trophy-scroller"><div class="detail-trophy-list" id="shelfTrophyList"></div></div></section>
+            <section class="detail-trophies" id="shelfDetailTrophies" hidden><div class="detail-trophies-head"><h3><svg class="trophy-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 4h8v4a4 4 0 0 1-8 0V4Z"></path><path d="M8 6H5a3 3 0 0 0 3 3"></path><path d="M16 6h3a3 3 0 0 1-3 3"></path><path d="M12 12v4"></path><path d="M9 20h6"></path><path d="M10 16h4v4h-4z"></path></svg><span id="shelfTrophyTitle">TROPHIES</span></h3><div class="detail-trophy-tools"><span id="shelfTrophyCount"></span><span class="detail-trophy-percent" id="shelfTrophyPercent"></span><select id="shelfTrophySort" aria-label="Sort trophies" data-i18n-aria-label="Sort trophies"><option value="order" data-i18n="Order">Order</option><option value="name" data-i18n="Name">Name</option><option value="completed" data-i18n="Completed">Completed</option></select><button class="direction-toggle" id="shelfTrophyDirection" type="button" title="Sort ascending" aria-label="Sort ascending">↑</button></div></div><div class="detail-trophy-scroller"><div class="detail-trophy-list" id="shelfTrophyList"></div></div></section>
           </div>
       </article>
     </dialog>
@@ -408,7 +408,7 @@
           <label class="settings-detail-compact"><span data-i18n="Default owner">Default owner</span><input id="shelfSettingsDefaultOwner" autocomplete="off"></label>
           <label class="settings-detail-compact"><span data-i18n="Currency">Currency</span><select id="shelfSettingsCurrency"><option value="EUR">EUR</option><option value="USD">USD</option><option value="GBP">GBP</option><option value="JPY">JPY</option></select></label>
           <label class="settings-detail-compact"><span data-i18n="Region">Region</span><select id="shelfSettingsRegion"><option value="ES" data-i18n="Spain">Spain</option><option value="IT" data-i18n="Italy">Italy</option><option value="IE" data-i18n="Ireland">Ireland</option><option value="FR" data-i18n="France">France</option><option value="PT" data-i18n="Portugal">Portugal</option><option value="JP" data-i18n="Japan">Japan</option><option value="MX" data-i18n="Mexico">Mexico</option><option value="US">US</option><option value="UK">UK</option></select></label>
-          <label class="settings-detail-compact"><span data-i18n="Language">Language</span><select id="shelfSettingsLanguage"><option value="en">English</option><option value="es-ES">Español (WIP)</option></select></label>
+          <label class="settings-detail-compact"><span data-i18n="Language">Language</span><select id="shelfSettingsLanguage"><option value="en">English</option><option value="es-ES">Castellano</option></select></label>
         </section>
         <section class="settings-section">
           <h3 data-i18n="Stores">Stores</h3>

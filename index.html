@@ -192,13 +192,13 @@
             <path d="M19.2 3.8v4.8h-4.8"></path>
           </svg>
         </button>
-        <button class="ghost-button" id="loginButton" type="button" title="Edit" aria-label="Edit">
+        <button class="ghost-button" id="loginButton" type="button" title="Edit" aria-label="Edit" data-i18n-title="Edit" data-i18n-aria-label="Edit">
           <svg class="pencil-icon" viewBox="0 0 24 24" aria-hidden="true">
             <path d="M4 20h4l11-11a2.8 2.8 0 0 0-4-4L4 16v4Z"></path>
             <path d="M13.5 6.5l4 4"></path>
           </svg>
         </button>
-        <button class="icon-button" id="settingsButton" type="button" title="Settings" aria-label="Settings" hidden>
+        <button class="icon-button" id="settingsButton" type="button" title="Settings" aria-label="Settings" data-i18n-title="Settings" data-i18n-aria-label="Settings" hidden>
           <svg class="settings-icon" viewBox="0 0 24 24" aria-hidden="true">
             <path d="M9.8 3.7h4.4l.42 2.1c.45.16.87.4 1.25.7l2.02-.68 2.2 3.82-1.6 1.42c.04.31.04.57 0 .88l1.6 1.42-2.2 3.82-2.02-.68c-.38.3-.8.54-1.25.7l-.42 2.1H9.8l-.42-2.1a5.3 5.3 0 0 1-1.25-.7l-2.02.68-2.2-3.82 1.6-1.42a4.1 4.1 0 0 1 0-.88l-1.6-1.42 2.2-3.82 2.02.68c.38-.3.8-.54 1.25-.7l.42-2.1Z"></path>
             <circle cx="12" cy="12" r="2.65"></circle>
@@ -222,7 +222,7 @@
             </svg>
           </span>
         </button>
-        <button class="primary-button top-search-button" id="searchButton" type="button">
+        <button class="primary-button top-search-button" id="searchButton" type="button" title="Search" aria-label="Search" data-i18n-title="Search" data-i18n-aria-label="Search">
           <span class="button-icon" aria-hidden="true">
             <svg class="search-icon" viewBox="0 0 24 24">
               <circle cx="11" cy="11" r="6.5"></circle>
@@ -262,7 +262,7 @@
       <section class="achievement-section" id="achievementSection">
         <div class="column-head">
           <div>
-            <h2>Achievements</h2>
+            <h2 data-i18n="Achievements">Achievements</h2>
           </div>
           <button class="icon-button completed-stats-button achievement-stats-button" id="achievementStatsButton" type="button" title="Stats" aria-label="Achievement stats">
             <svg class="graph-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 19h16"></path><path d="M7 16V9"></path><path d="M12 16V5"></path><path d="M17 16v-4"></path></svg>
@@ -316,7 +316,7 @@
       </section>
 
       <nav class="mobile-section-tabs" aria-label="Mobile sections">
-        <button type="button" data-mobile-section="new" hidden>New additions</button>
+        <button type="button" data-mobile-section="new" data-i18n="New additions" hidden>New additions</button>
         <button type="button" data-mobile-section="backlog">Backlog</button>
         <button type="button" data-mobile-section="upcoming" data-i18n="Upcoming">Upcoming</button>
         <button type="button" data-mobile-section="wanted" data-i18n="Available">Available</button>
@@ -397,14 +397,14 @@
         <polyline points="6 14 12 8 18 14"></polyline>
       </svg>
     </button>
-    <button class="icon-button floating-action-button floating-search-button" id="floatingSearchButton" type="button" title="Search" aria-label="Search">
+    <button class="icon-button floating-action-button floating-search-button" id="floatingSearchButton" type="button" title="Search" aria-label="Search" data-i18n-title="Search" data-i18n-aria-label="Search">
       <svg class="search-icon" viewBox="0 0 24 24" aria-hidden="true">
         <circle cx="11" cy="11" r="6.5"></circle>
         <path d="m16 16 4 4"></path>
       </svg>
     </button>
     <div class="floating-edit-actions" id="floatingEditActions" aria-label="Quick actions">
-      <button class="icon-button floating-action-button" id="floatingAddButton" type="button" title="Add Game" aria-label="Add Game">
+      <button class="icon-button floating-action-button" id="floatingAddButton" type="button" title="Add Game" aria-label="Add Game" data-i18n-title="Add Game" data-i18n-aria-label="Add Game">
         <svg class="plus-icon" viewBox="0 0 24 24" aria-hidden="true">
           <path d="M12 5v14"></path>
           <path d="M5 12h14"></path>
@@ -701,7 +701,7 @@
           <p id="detailDescription"></p>
           <div class="prices detail-prices" id="detailPrices"></div>
           <section class="detail-guides" id="detailGuides" hidden>
-            <h3>Guides</h3>
+            <h3 data-i18n="Guides">Guides</h3>
             <div class="guide-links" id="detailGuideLinks"></div>
           </section>
           <section class="detail-trophies" id="detailTrophies" hidden>
@@ -720,10 +720,10 @@
               <div class="detail-trophy-tools">
                 <span id="detailTrophyCount"></span>
                 <span class="detail-trophy-percent" id="detailTrophyPercent"></span>
-                <select id="detailTrophySort" aria-label="Sort trophies">
-                  <option value="order">Order</option>
-                  <option value="name">Name</option>
-                  <option value="completed">Completed</option>
+                <select id="detailTrophySort" aria-label="Sort trophies" data-i18n-aria-label="Sort trophies">
+                  <option value="order" data-i18n="Order">Order</option>
+                  <option value="name" data-i18n="Name">Name</option>
+                  <option value="completed" data-i18n="Completed">Completed</option>
                 </select>
                 <button class="direction-toggle" id="detailTrophyDirection" type="button" title="Sort ascending" aria-label="Sort ascending">↑</button>
               </div>
@@ -740,7 +740,7 @@
       <article class="history-modal glass">
         <div class="modal-head">
           <div>
-            <p class="eyebrow">Finished games</p>
+            <p class="eyebrow" data-i18n="Finished games">Finished games</p>
             <h2>Finished by year</h2>
           </div>
           <button class="icon-button" id="historyCloseButton" type="button" title="Close">×</button>
@@ -804,7 +804,7 @@
       <article class="platinum-modal glass">
         <div class="modal-head">
           <div>
-            <p class="eyebrow">Achievements</p>
+            <p class="eyebrow" data-i18n="Achievements">Achievements</p>
             <h2 class="platinum-title" id="platinumTitle"></h2>
           </div>
           <div class="platinum-head-actions">
@@ -814,19 +814,19 @@
         </div>
         <div class="platinum-filter-bar" id="platinumYearTabs">
           <label class="platinum-year-select">
-            <span>Year</span>
+            <span data-i18n="Year">Year</span>
             <select id="platinumYearSelect"></select>
           </label>
           <label class="platinum-platform-select">
-            <span>Platform</span>
+            <span data-i18n="Platform">Platform</span>
             <select id="platinumPlatformSelect"></select>
           </label>
           <label class="platinum-order-label">
-            <span>Order</span>
+            <span data-i18n="Order">Order</span>
             <div class="platinum-order-control">
-              <select id="platinumSortSelect" aria-label="Sort completed games">
-                <option value="time">Time</option>
-                <option value="name">Name</option>
+              <select id="platinumSortSelect" aria-label="Sort completed games" data-i18n-aria-label="Sort completed games">
+                <option value="time" data-i18n="Time">Time</option>
+                <option value="name" data-i18n="Name">Name</option>
               </select>
               <button class="direction-toggle" id="platinumSortDirection" type="button" title="Sort descending" aria-label="Sort descending"></button>
               <button class="icon-button view-toggle section-view-toggle" id="platinumViewToggleButton" type="button" title="Grid view" aria-label="Grid view"></button>
@@ -917,7 +917,7 @@
             <span data-i18n="Language">Language</span>
             <select id="settingsLanguage">
               <option value="en">English</option>
-              <option value="es-ES">Español (WIP)</option>
+              <option value="es-ES">Castellano</option>
             </select>
           </label>
         </section>
