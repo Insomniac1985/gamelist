@@ -309,15 +309,15 @@
       <nav class="mobile-section-tabs" aria-label="Mobile sections">
         <button type="button" data-mobile-section="new" hidden>New additions</button>
         <button type="button" data-mobile-section="backlog">Backlog</button>
-        <button type="button" data-mobile-section="upcoming">Upcoming</button>
-        <button type="button" data-mobile-section="wanted">Available</button>
+        <button type="button" data-mobile-section="upcoming" data-i18n="Upcoming">Upcoming</button>
+        <button type="button" data-mobile-section="wanted" data-i18n="Available">Available</button>
       </nav>
 
       <section class="board" aria-live="polite">
         <article class="column" id="new" hidden>
           <div class="column-head">
             <div>
-              <h2>New additions</h2>
+              <h2 data-i18n="New additions">New additions</h2>
             </div>
             <span id="newCount"></span>
           </div>
@@ -327,7 +327,7 @@
         <article class="column" id="backlog">
           <div class="column-head">
             <div>
-              <h2>Backlog</h2>
+              <h2 data-i18n="Backlog">Backlog</h2>
             </div>
             <span id="backlogCount"></span>
           </div>
@@ -337,7 +337,7 @@
         <article class="column" id="upcoming">
           <div class="column-head">
             <div>
-              <h2>Upcoming</h2>
+              <h2 data-i18n="Upcoming">Upcoming</h2>
             </div>
             <span id="upcomingCount"></span>
           </div>
@@ -347,7 +347,7 @@
         <article class="column" id="wanted">
           <div class="column-head">
             <div>
-              <h2>Available now</h2>
+              <h2 data-i18n="Available now">Available now</h2>
             </div>
             <span id="wantedCount"></span>
           </div>
@@ -358,7 +358,7 @@
       <section class="completed" id="completed">
         <div class="column-head">
           <div>
-            <h2>Finished games</h2>
+            <h2 data-i18n="Finished games">Finished games</h2>
           </div>
           <div class="completed-head-actions">
             <label class="completed-year-control" id="completedYearControl" hidden>
@@ -371,7 +371,7 @@
           </div>
         </div>
         <div class="completed-list" data-section="completed"></div>
-        <button class="ghost-button completed-more-button" id="completedMoreButton" type="button" hidden>See more</button>
+        <button class="ghost-button completed-more-button" id="completedMoreButton" type="button" hidden data-i18n="See more">See more</button>
       </section>
     </main>
 
@@ -401,11 +401,11 @@
       <form method="dialog" class="modal" id="gameForm">
         <div class="modal-head">
           <div>
-            <p class="eyebrow">Game details</p>
+            <p class="eyebrow" data-i18n="Game details">Game details</p>
             <h2 id="dialogTitle">Add Game</h2>
           </div>
           <div class="modal-head-actions">
-            <button class="primary-button modal-head-save" type="submit">Save</button>
+            <button class="primary-button modal-head-save" type="submit" data-i18n="Save">Save</button>
             <button class="icon-button" id="closeDialogButton" type="button" title="Close">×</button>
           </div>
         </div>
@@ -413,8 +413,8 @@
         <input type="hidden" id="gameId">
         <div class="lookup-row">
           <label>
-            <span>Search DB or IGDB URL</span>
-            <input id="lookupInput" type="search" placeholder="Type a game name or paste an IGDB page">
+            <span data-i18n="Search DB or IGDB URL">Search DB or IGDB URL</span>
+            <input id="lookupInput" type="search" placeholder="Type a game name or paste an IGDB page" data-i18n-placeholder="Type a game name or paste an IGDB page">
           </label>
           <button class="ghost-button icon-only-button" id="lookupButton" type="button" title="Search" aria-label="Search">
             <svg class="search-icon" viewBox="0 0 24 24" aria-hidden="true">
@@ -426,31 +426,31 @@
         <div class="lookup-results" id="lookupResults"></div>
 
         <section class="form-group">
-          <h3>Playing</h3>
+          <h3 data-i18n="Playing">Playing</h3>
           <div class="form-grid playing-form-grid">
             <label class="check-filter toggle-check modal-playing-check">
               <input id="playingInput" type="checkbox">
-              <span>Playing</span>
+              <span data-i18n="Playing">Playing</span>
             </label>
             <label class="check-filter toggle-check form-check stream-check">
               <input id="streamInput" type="checkbox">
-              <span>Stream</span>
+              <span data-i18n="Stream">Stream</span>
             </label>
             <label class="playing-replay-field">
-              <span>Replay Count</span>
+              <span data-i18n="Replay Count">Replay Count</span>
               <input id="replayCountInput" type="number" min="0" step="1" placeholder="0">
             </label>
             <label class="playing-started-field">
-              <span>Started</span>
+              <span data-i18n="Started">Started</span>
               <input id="startedAtInput" type="date">
             </label>
             <label class="playing-completed-field">
-              <span>Finished</span>
+              <span data-i18n="Finished">Finished</span>
               <input id="completedAtInput" type="date">
             </label>
             <label class="playing-finish-time-field">
-              <span>Time to finish</span>
-              <input id="finishHoursInput" type="text" inputmode="numeric" placeholder="Hours">
+              <span data-i18n="Time to finish">Time to finish</span>
+              <input id="finishHoursInput" type="text" inputmode="numeric" placeholder="Hours" data-i18n-placeholder="Hours">
             </label>
             <label class="check-filter toggle-check form-check playing-achievements-check">
               <input id="platinumInput" type="checkbox">
@@ -469,14 +469,14 @@
         </section>
 
         <section class="form-group">
-          <h3>Collecting Information</h3>
+          <h3 data-i18n="Collecting Information">Collecting Information</h3>
           <div class="form-grid collection-form-grid">
             <label class="title-field">
-              <span>Title</span>
+              <span data-i18n="Title">Title</span>
               <input id="titleInput" required>
             </label>
             <label class="platform-field">
-              <span>Platform</span>
+              <span data-i18n="Platform">Platform</span>
               <span class="icon-input platform-icon-input">
                 <span class="field-leading-icon platform-field-icon" aria-hidden="true"></span>
                 <input id="platformInput" list="platformOptions">
@@ -484,23 +484,23 @@
             </label>
             <label class="check-filter toggle-check form-check collection-check digital-check">
               <input id="digitalInput" type="checkbox">
-              <span>Digital</span>
+              <span data-i18n="Digital">Digital</span>
             </label>
             <label class="list-field">
-              <span>List</span>
+              <span data-i18n="List">List</span>
               <select id="sectionInput">
-                <option value="wanted">Available now</option>
-                <option value="upcoming">Upcoming</option>
-                <option value="backlog">Backlog</option>
+                <option value="wanted" data-i18n="Available now">Available now</option>
+                <option value="upcoming" data-i18n="Upcoming">Upcoming</option>
+                <option value="backlog" data-i18n="Backlog">Backlog</option>
               </select>
             </label>
             <label class="release-date-field">
-              <span>Release Date</span>
+              <span data-i18n="Release Date">Release Date</span>
               <input id="releaseDateInput" type="date">
             </label>
             <label class="release-text-field">
-              <span>Release Text (Optional)</span>
-              <input id="releaseTextInput" placeholder="2026?, 18 June, TBA...">
+              <span data-i18n="Release Text (Optional)">Release Text (Optional)</span>
+              <input id="releaseTextInput" placeholder="2026?, 18 June, TBA..." data-i18n-placeholder="2026?, 18 June, TBA...">
             </label>
             <label class="check-filter toggle-check form-check dlc-check">
               <input id="dlcInput" type="checkbox">
@@ -520,91 +520,91 @@
             </label>
             <label class="check-filter toggle-check form-check entitlement-check games-with-gold-check">
               <input id="gamesWithGoldInput" type="checkbox">
-              <span>Games with Gold</span>
+              <span data-i18n="Games with Gold">Games with Gold</span>
             </label>
             <span class="entitlement-grid-spacer" aria-hidden="true"></span>
             <label class="length-field">
-              <span>Aproximate playtime</span>
-              <input id="lengthInput" type="number" min="0" step="0.5" placeholder="Hours">
+              <span data-i18n="Aproximate playtime">Aproximate playtime</span>
+              <input id="lengthInput" type="number" min="0" step="0.5" placeholder="Hours" data-i18n-placeholder="Hours">
             </label>
             <label class="preorder-store-field">
-              <span>Preordered Where</span>
+              <span data-i18n="Preordered Where">Preordered Where</span>
               <span class="icon-input store-icon-input">
                 <span class="field-leading-icon preorder-store-field-icon" aria-hidden="true"></span>
                 <input id="preorderStoreInput" placeholder="Xtralife, Game, Amazon...">
               </span>
             </label>
             <label class="preferred-store-field">
-              <span>Preferred preorder store</span>
+              <span data-i18n="Preferred preorder store">Preferred preorder store</span>
               <span class="icon-input store-icon-input">
                 <span class="field-leading-icon preferred-store-field-icon" aria-hidden="true"></span>
                 <input id="preferredStoreInput" placeholder="Limited Run, Amazon...">
               </span>
             </label>
             <label class="owners-field">
-              <span>Owner</span>
-              <input id="ownersInput" list="ownerOptions" placeholder="User, Judy...">
+              <span data-i18n="Owner">Owner</span>
+              <input id="ownersInput" list="ownerOptions" placeholder="User, Judy..." data-i18n-placeholder="User, Judy...">
             </label>
             <label class="status-field">
-              <span>Other tags</span>
-              <input id="statusesInput" list="statusOptions" placeholder="To Collect, Scarce, Waiting for Physical">
+              <span data-i18n="Other tags">Other tags</span>
+              <input id="statusesInput" list="statusOptions" placeholder="To Collect, Scarce, Waiting for Physical" data-i18n-placeholder="To Collect, Scarce, Waiting for Physical">
             </label>
             <label class="trophy-search-field">
-              <span>Alternate Achievement search name</span>
-              <input id="trophyNameInput" placeholder="Optional alternate title">
+              <span data-i18n="Alternate Achievement search name">Alternate Achievement search name</span>
+              <input id="trophyNameInput" placeholder="Optional alternate title" data-i18n-placeholder="Optional alternate title">
             </label>
           </div>
         </section>
 
         <section class="form-group">
-          <h3>Game Data</h3>
+          <h3 data-i18n="Game Data">Game Data</h3>
           <div class="form-grid game-data-grid">
             <label>
-              <span>Developer</span>
-              <input id="developerInput" placeholder="Studio">
+              <span data-i18n="Developer">Developer</span>
+              <input id="developerInput" placeholder="Studio" data-i18n-placeholder="Studio">
             </label>
             <label>
-              <span>Publisher</span>
-              <input id="publisherInput" placeholder="Publisher">
+              <span data-i18n="Publisher">Publisher</span>
+              <input id="publisherInput" placeholder="Publisher" data-i18n-placeholder="Publisher">
             </label>
             <label class="wide game-tags-field">
-              <span>Genre</span>
-              <input id="genresInput" placeholder="Adventure, RPG, FPS">
+              <span data-i18n="Genre">Genre</span>
+              <input id="genresInput" placeholder="Adventure, RPG, FPS" data-i18n-placeholder="Adventure, RPG, FPS">
             </label>
             <label class="wide">
-              <span>Description</span>
-              <textarea id="descriptionInput" rows="4" placeholder="Manual description or fetched game summary"></textarea>
+              <span data-i18n="Description">Description</span>
+              <textarea id="descriptionInput" rows="4" placeholder="Manual description or fetched game summary" data-i18n-placeholder="Manual description or fetched game summary"></textarea>
             </label>
             <label class="wide">
-              <span>IGDB Page</span>
+              <span data-i18n="IGDB Page">IGDB Page</span>
               <input id="igdbUrlInput" placeholder="https://www.igdb.com/games/...">
             </label>
             <label class="wide">
-              <span>HowLongToBeat URL</span>
+              <span data-i18n="HowLongToBeat URL">HowLongToBeat URL</span>
               <input id="hltbUrlInput" placeholder="https://howlongtobeat.com/game/...">
             </label>
             <label class="wide">
-              <span>Trailer URL</span>
+              <span data-i18n="Trailer URL">Trailer URL</span>
               <input id="trailerUrlInput" placeholder="https://www.youtube.com/watch?v=...">
             </label>
             <label class="store-link-field">
-              <span>PlayStation Store URL</span>
+              <span data-i18n="PlayStation Store URL">PlayStation Store URL</span>
               <input id="playstationUrlInput" placeholder="https://store.playstation.com/...">
             </label>
             <label class="store-link-field">
-              <span>Nintendo Store URL</span>
+              <span data-i18n="Nintendo Store URL">Nintendo Store URL</span>
               <input id="nintendoUrlInput" placeholder="https://www.nintendo.com/...">
             </label>
             <label class="store-link-field">
-              <span>Steam URL</span>
+              <span data-i18n="Steam URL">Steam URL</span>
               <input id="steamUrlInput" placeholder="https://store.steampowered.com/app/...">
             </label>
             <label class="store-link-field">
-              <span>Xbox Store URL</span>
+              <span data-i18n="Xbox Store URL">Xbox Store URL</span>
               <input id="xboxUrlInput" placeholder="https://www.xbox.com/...">
             </label>
             <label class="wide">
-              <span>Cover URL</span>
+              <span data-i18n="Cover URL">Cover URL</span>
               <input id="coverInput" placeholder="https://...">
             </label>
           </div>
@@ -826,10 +826,10 @@
       <article class="release-modal glass">
         <div class="modal-head">
           <div>
-            <p class="eyebrow">Release day</p>
+            <p class="eyebrow" data-i18n="Release day">Release day</p>
             <h2 id="releaseDialogTitle"></h2>
           </div>
-          <button class="icon-button" id="releaseCloseButton" type="button" title="Close">×</button>
+          <button class="icon-button" id="releaseCloseButton" type="button" title="Close" data-i18n-title="Close">×</button>
         </div>
         <div class="card-list release-dialog-list" id="releaseDialogList"></div>
       </article>

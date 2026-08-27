@@ -4727,13 +4727,13 @@ function renderStats() {
     completed: finishedGames.length,
   };
   el.stats.innerHTML = [
-    stat(`Finished ${currentYear}`, finishedGamesThisYear, "done", {
+    stat(tt("Finished {year}", { year: currentYear }), finishedGamesThisYear, "done", {
       action: "completed",
       detail: completedStatDetail(currentYear, finishedGamesThisYear, counts.completed, markedCompletedThisYear, finishedExpansionsThisYear),
     }),
-    stat("Backlog", counts.backlog, "backlog", { detail: sectionStatDetail("backlog", active, total) }),
-    stat("Upcoming", counts.upcoming, "release", { detail: sectionStatDetail("upcoming", active, total) }),
-    stat("Available", counts.wanted, "available", { detail: sectionStatDetail("wanted", active, total) }),
+    stat(tt("Backlog"), counts.backlog, "backlog", { detail: sectionStatDetail("backlog", active, total) }),
+    stat(tt("Upcoming"), counts.upcoming, "release", { detail: sectionStatDetail("upcoming", active, total) }),
+    stat(tt("Available"), counts.wanted, "available", { detail: sectionStatDetail("wanted", active, total) }),
   ].join("");
   const completedStat = el.stats.querySelector("[data-stat-action='completed']");
   completedStat?.addEventListener("click", scrollToCompletedSection);
@@ -4774,20 +4774,20 @@ function sectionStatDetail(section, games, total) {
   const preordered = preorderSummary.reduce((sum, [, count]) => sum + count, 0);
   return `
     <div class="stat-detail">
-      <span>${sectionGames.length} ${sectionGames.length === 1 ? "game" : "games"}</span>
+      <span>${gameCountText(sectionGames.length)}</span>
       ${preordered ? preorderCountPill(preordered, preorderSummary) : ""}
-      <b>Total ${total}</b>
+      <b>${escapeHtml(tt("Total {count}", { count: total }))}</b>
     </div>
   `;
 }
 
 function completedStatDetail(year, yearCount, total, completedYearCount, expansionsYearCount = 0) {
-  const expansionText = expansionsYearCount ? ` (and ${expansionsYearCount} ${expansionsYearCount === 1 ? "expansion" : "expansions"})` : "";
+  const expansionText = expansionsYearCount ? tt(" (and {count} {item})", { count: expansionsYearCount, item: expansionsYearCount === 1 ? tt("expansion") : tt("expansions") }) : "";
   return `
     <div class="stat-detail">
-      <span>${yearCount} ${yearCount === 1 ? "game" : "games"} in ${escapeHtml(year)}${escapeHtml(expansionText)}</span>
-      ${completedYearCount ? `<span class="completed-year-count-pill">${trophyIcon()}${completedYearCount} completed of ${yearCount} this year</span>` : ""}
-      <b>Total ${total} finished ${total === 1 ? "game" : "games"}</b>
+      <span>${escapeHtml(tt("{count} {item} in {year}", { count: yearCount, item: yearCount === 1 ? tt("game") : tt("games"), year }))}${escapeHtml(expansionText)}</span>
+      ${completedYearCount ? `<span class="completed-year-count-pill">${trophyIcon()}${escapeHtml(tt("{completed} completed of {total} this year", { completed: completedYearCount, total: yearCount }))}</span>` : ""}
+      <b>${escapeHtml(tt("Total {count} finished {item}", { count: total, item: total === 1 ? tt("game") : tt("games") }))}</b>
     </div>
   `;
 }
@@ -4800,9 +4800,13 @@ function sectionCountLabel(section, games, count) {
   const preorderSummary = preorderStoreSummary(games.filter((game) => game.section === section));
   const preordered = preorderSummary.reduce((sum, [, storeCount]) => sum + storeCount, 0);
   return [
-    `${count} ${count === 1 ? "game" : "games"}`,
+    gameCountText(count),
     preordered ? preorderCountPill(preordered, preorderSummary) : "",
   ].filter(Boolean).join("");
+}
+
+function gameCountText(count) {
+  return escapeHtml(tt("{count} {item}", { count, item: count === 1 ? tt("game") : tt("games") }));
 }
 
 function preorderStoreSummary(games) {
@@ -4814,7 +4818,7 @@ function preorderCountPill(count, summary) {
   const title = summary.map(([store, storeCount]) => `${store}: ${storeCount}`).join("\n");
   return `
     <span class="preorder-count-pill preorder-count-tooltip" tabindex="0" title="${escapeHtml(title)}">
-      ${shoppingBagIcon()}${count} preordered
+      ${shoppingBagIcon()}${escapeHtml(tt("{count} preordered", { count }))}
       <span class="preorder-store-list" role="tooltip">${rows}</span>
     </span>
   `;
@@ -4825,6 +4829,8 @@ function renderReleaseCalendar() {
     games: state.games,
     offset: state.releaseCalendarOffset,
     weekStart: state.settings.weekStart,
+    locale: currentLanguage(),
+    translate: tt,
     onShift: (value) => {
       state.releaseCalendarOffset += value;
       renderReleaseCalendar();
@@ -4926,12 +4932,13 @@ function gameMatchesMobileSection(game, section) {
 }
 
 function mobileSectionLabel(section) {
-  return {
+  const label = {
     new: "New additions",
     backlog: "Backlog",
     upcoming: "Upcoming",
     wanted: "Available",
   }[section] || section;
+  return tt(label);
 }
 
 function hasNewAdditions() {
@@ -5012,7 +5019,7 @@ function fillSelect(select, values, selected, allLabel) {
     return;
   }
   select.innerHTML = values.map((value) => {
-    const label = value === "all" ? allLabel : (select === el.platformFilter ? platformFilterDisplayName(value) : platformDisplayName(value));
+    const label = value === "all" ? allLabel : (select === el.platformFilter ? platformFilterDisplayName(value) : localizedTagLabel(value));
     return `<option value="${escapeHtml(value)}">${escapeHtml(label)}</option>`;
   }).join("");
   select.value = values.includes(selected) ? selected : "all";
@@ -5370,7 +5377,7 @@ function rowCoreStats(game) {
     game.dlc ? dlcBadge(game) : "",
     entitlementBadge(game),
     game.coop ? coopBadge() : "",
-    game.emulator ? `<span class="emulator-pill">Emulator</span>` : "",
+    game.emulator ? `<span class="emulator-pill">${escapeHtml(tt("Emulator"))}</span>` : "",
     game.lengthHours ? timeBadge(game.lengthHours, hltbUrlFor(game)) : "",
     game.stream ? streamBadge() : "",
     release ? releaseStatusPill(release) : "",
@@ -5605,27 +5612,27 @@ function finishedStatsMarkup(year, games, completed) {
   const releaseInsights = statsReleaseYearInsights(year, games);
   const showYearlyDetail = !allYears;
   const cards = [
-    statsKpiCard("Finished games", finishedGames.length, showYearlyDetail ? statsGameList(finishedGames) : "", { tone: "finished" }),
-    expansions.length ? statsKpiCard("Expansions finished", expansions.length, statsGameList(expansions), { tone: "finished" }) : "",
-    statsKpiCard("Completed games", completed.length, showYearlyDetail ? statsCompletedGameList(completed) : "", { action: "completed", tone: "completed", icon: trophyIcon() }),
-    streamed.length ? statsKpiCard("Streamed games", streamed.length, showYearlyDetail ? statsGameList(streamed) : "", { tone: "streamed" }) : "",
-    coopGames.length ? statsKpiCard("CoOp games", coopGames.length, statsGameList(coopGames), { tone: "coop", icon: coopIcon() }) : "",
+    statsKpiCard(tt("Finished games"), finishedGames.length, showYearlyDetail ? statsGameList(finishedGames) : "", { tone: "finished" }),
+    expansions.length ? statsKpiCard(tt("Expansions finished"), expansions.length, statsGameList(expansions), { tone: "finished" }) : "",
+    statsKpiCard(tt("Completed games"), completed.length, showYearlyDetail ? statsCompletedGameList(completed) : "", { action: "completed", tone: "completed", icon: trophyIcon() }),
+    streamed.length ? statsKpiCard(tt("Streamed games"), streamed.length, showYearlyDetail ? statsGameList(streamed) : "", { tone: "streamed" }) : "",
+    coopGames.length ? statsKpiCard(tt("CoOp games"), coopGames.length, statsGameList(coopGames), { tone: "coop", icon: coopIcon() }) : "",
     otherOwnerGames.length ? statsKpiCard(otherOwnerSummary.label, otherOwnerGames.length, statsOwnerBreakdown(otherOwnerGames), { tone: "owners", valueClass: otherOwnerSummary.valueClass }) : "",
   ].filter(Boolean).join("");
   return `
     <div class="finished-stats-kpis">${cards}</div>
     <div class="finished-stats-charts ${allYears ? "is-all" : ""}">
-      ${statsDonutCard("Platforms", platforms, "platform", 5, finishedGames)}
-      ${statsDonutCard("Categories", tags, "category", 5, finishedGames)}
-      ${statsDonutCard("Aproximate playtime", timeBuckets, "time", 5, finishedGames)}
-      ${statsDonutCard("Physical / digital / emulator", mediaBuckets, "media", 3, finishedGames)}
+      ${statsDonutCard(tt("Platforms"), platforms, "platform", 5, finishedGames)}
+      ${statsDonutCard(tt("Categories"), tags, "category", 5, finishedGames)}
+      ${statsDonutCard(tt("Aproximate playtime"), timeBuckets, "time", 5, finishedGames)}
+      ${statsDonutCard(tt("Physical / digital / emulator"), mediaBuckets, "media", 3, finishedGames)}
     </div>
     ${allYears ? "" : statsReleaseKpisCard(releaseInsights)}
     <section class="finished-stats-months">
-      <h3>${allYears ? "By year" : "By month"}</h3>
+      <h3>${escapeHtml(allYears ? tt("By year") : tt("By month"))}</h3>
       <div class="finished-stats-period-grid ${allYears ? "is-yearly" : ""}">${allYears ? statsYearBars(finishedGames) : statsMonthBars(finishedGames, months, year)}</div>
     </section>
-    ${games.length ? "" : `<div class="empty">No finished games${year === "all" ? "" : ` in ${escapeHtml(year)}`}.</div>`}
+    ${games.length ? "" : `<div class="empty">${escapeHtml(tt("No finished games{year}.", { year: year === "all" ? "" : ` ${tt("in {year}", { year })}` }))}</div>`}
   `;
 }
 
@@ -5661,17 +5668,17 @@ function statsReleaseKpisCard(insights) {
       <div class="finished-stats-release-kpis">
         ${statsReleaseMiniKpi({
           value: insights.interested.length,
-          label: "Interested in games",
+          label: tt("Interested in games"),
         })}
         ${statsReleaseMiniKpi({
           value: insights.playedFromYear.length,
-          label: "Played new games",
+          label: tt("Played new games"),
           subline: releaseExpansionLine(insights.newExpansions, "new expansion", "new expansions"),
           detail: insights.hoverable ? statsGameList(insights.playedFromYearDisplay) : "",
         })}
         ${statsReleaseMiniKpi({
           value: insights.playedOutsideYear.length,
-          label: "Played games not from that year",
+          label: tt("Played games not from that year"),
           subline: releaseExpansionLine(insights.playedOutsideYearExpansions, "played expansion not from that year", "played expansions not from that year"),
           detail: insights.hoverable ? statsGameList(insights.playedOutsideYearDisplay) : "",
         })}
@@ -5694,7 +5701,7 @@ function statsReleaseMiniKpi({ value, label, subline = "", detail = "", tone = "
 function releaseExpansionLine(games, singular, plural) {
   const count = Array.isArray(games) ? games.length : 0;
   if (!count) return "";
-  return dlcBadge(games[0], `${count} ${count === 1 ? singular : plural}`, { className: "finished-stats-release-subline", tone: "accent" });
+  return dlcBadge(games[0], tt("{count} {item}", { count, item: tt(count === 1 ? singular : plural) }), { className: "finished-stats-release-subline", tone: "accent" });
 }
 
 function statsReleaseYearInsights(year, games) {
@@ -5969,7 +5976,7 @@ function statsYearBars(games) {
 function statsBreakdownList(counts, tone = "", games = []) {
   return counts.length
     ? counts.map((item, index) => statsBreakdownRow(item, tone, index, games)).join("")
-    : `<span><b>None</b><em>0</em></span>`;
+    : `<span><b>${escapeHtml(tt("None"))}</b><em>0</em></span>`;
 }
 
 function statsBreakdownRow(item, tone, index, games = []) {
@@ -5984,7 +5991,7 @@ function statsBreakdownRow(item, tone, index, games = []) {
       .filter((game) => playtimeBucketLabel(game) === item.label)
       .sort(statsGameListSort);
     const color = statsSegmentColor(item.label, tone, index);
-    return statsGroupedBreakdown(`<span class="finished-stats-category-row" style="--category-stat-color:${escapeHtml(color)}"><b><i></i>${escapeHtml(item.label)}</b></span>`, item.count, bucketGames);
+    return statsGroupedBreakdown(`<span class="finished-stats-category-row" style="--category-stat-color:${escapeHtml(color)}"><b><i></i>${escapeHtml(tt(item.label))}</b></span>`, item.count, bucketGames);
   }
   if (games.length && tone === "media") {
     const mediaGames = games
@@ -5998,7 +6005,7 @@ function statsBreakdownRow(item, tone, index, games = []) {
   }
   if (tone === "category" || tone === "time" || tone === "media") {
     const color = statsSegmentColor(item.label, tone, index);
-    const label = tone === "media" ? statsMediaLabel(item.label) : `<i></i>${escapeHtml(item.label)}`;
+    const label = tone === "media" ? statsMediaLabel(item.label) : `<i></i>${escapeHtml(tt(item.label))}`;
     return `<span class="finished-stats-category-row" style="--category-stat-color:${escapeHtml(color)}"><b>${label}</b><em>${item.count}</em></span>`;
   }
   if (tone === "owner") {
@@ -6014,14 +6021,14 @@ function statsMediaLabel(label) {
     : normalized === "physical"
       ? physicalDiskIcon()
       : "<i></i>";
-  return `<span class="finished-stats-media-label"><span class="finished-stats-media-icon" aria-hidden="true">${icon}</span>${escapeHtml(label)}</span>`;
+  return `<span class="finished-stats-media-label"><span class="finished-stats-media-icon" aria-hidden="true">${icon}</span>${escapeHtml(tt(label))}</span>`;
 }
 
 function statsGroupedBreakdown(heading, count, games) {
   return `
     <div class="finished-stats-owner-group finished-stats-breakdown-group">
       <div class="finished-stats-owner-heading"><b>${heading}</b><em>${count}</em></div>
-      <div class="finished-stats-owner-games">${games.length ? statsGameList(games) : `<span><b>None</b><em>0</em></span>`}</div>
+      <div class="finished-stats-owner-games">${games.length ? statsGameList(games) : `<span><b>${escapeHtml(tt("None"))}</b><em>0</em></span>`}</div>
     </div>
   `;
 }
@@ -6250,9 +6257,9 @@ function statsOwnerBreakdown(games) {
 
 function statsOtherOwnerSummary(games) {
   const owners = countBy(games.flatMap((game) => visibleOwnerTags(game).map((owner) => ({ owner }))), (item) => item.owner);
-  if (owners.length !== 1) return { label: "Other owners", valueClass: "" };
+  if (owners.length !== 1) return { label: tt("Other owners"), valueClass: "" };
   const owner = owners[0].label;
-  return { label: `games from ${owner}`, valueClass: ownerColorClass(owner) };
+  return { label: tt("games from {owner}", { owner }), valueClass: ownerColorClass(owner) };
 }
 
 function countBy(items, getter) {
@@ -6317,7 +6324,7 @@ function gameStatsTags(game) {
   const tags = [...(game.genres || []), ...(game.tags || [])]
     .map((value) => String(value || "").trim())
     .filter((value) => value && normalizeTag(value) !== "game");
-  return unique(tags).length ? unique(tags) : ["Uncategorized"];
+  return unique(tags).length ? unique(tags).map(localizedTagLabel) : [tt("Uncategorized")];
 }
 
 function monthShortName(value) {
@@ -7356,7 +7363,7 @@ function releaseStatusPill(value) {
   const text = String(value || "").trim();
   const match = text.match(/^(Released|Releases)\s+(.+)$/i);
   if (!match) return `<span class="release-pill">${escapeHtml(text)}</span>`;
-  const label = match[1].toLowerCase() === "released" ? "Released" : "Releases";
+  const label = match[1].toLowerCase() === "released" ? tt("Released") : tt("Releases");
   const date = formatShortDate(match[2]) || match[2];
   return `<span class="release-pill history-date-pill"><small class="release-date-label"><span>${label}</span>${calendarMiniIcon()}</small><strong>${escapeHtml(date)}</strong></span>`;
 }
@@ -7955,7 +7962,7 @@ function completedBadges(game, options = {}) {
     mediaFormatBadge(game),
     game.dlc ? dlcBadge(game) : "",
     entitlementBadge(game),
-    game.emulator ? `<span class="emulator-pill">Emulator</span>` : "",
+    game.emulator ? `<span class="emulator-pill">${escapeHtml(tt("Emulator"))}</span>` : "",
     game.coop ? coopBadge() : "",
     game.stream ? streamBadge() : "",
     game.replayCount ? replayBadge(game.replayCount) : "",
@@ -8083,19 +8090,19 @@ function ownerBadge(owner) {
 }
 
 function statusBadge(status) {
-  return `<span class="status-pill ${escapeHtml(statusType(status))}">${alertTagIcon()}${escapeHtml(status)}</span>`;
+  return `<span class="status-pill ${escapeHtml(statusType(status))}">${alertTagIcon()}${escapeHtml(localizedTagLabel(status))}</span>`;
 }
 
 function calendarStateBadge(label, tone, icon = "") {
-  return `<span class="calendar-state-pill calendar-state-${escapeHtml(tone)}">${icon}${escapeHtml(label)}</span>`;
+  return `<span class="calendar-state-pill calendar-state-${escapeHtml(tone)}">${icon}${escapeHtml(tt(label))}</span>`;
 }
 
 function coopBadge() {
-  return `<span class="coop-pill">${coopIcon()}<span>CoOp</span></span>`;
+  return `<span class="coop-pill">${coopIcon()}<span>${escapeHtml(tt("CoOp"))}</span></span>`;
 }
 
 function streamBadge() {
-  return `<span class="stream-pill">${streamPlayIcon()}<span>Stream</span></span>`;
+  return `<span class="stream-pill">${streamPlayIcon()}<span>${escapeHtml(tt("Stream"))}</span></span>`;
 }
 
 function streamPlayIcon() {
@@ -8111,7 +8118,7 @@ function alertTagIcon() {
 }
 
 function replayBadge(count) {
-  return `<span class="replay-pill">Replay ${escapeHtml(count)}</span>`;
+  return `<span class="replay-pill">${escapeHtml(tt("Replay {count}", { count }))}</span>`;
 }
 
 function achievementProviderForGame(game) {
@@ -8444,13 +8451,13 @@ function timeBadge(hours, url = "") {
 
 function chipsFor(game) {
   const chips = [];
-  (game.genres || []).slice(0, 4).forEach((genre) => chips.push(chip(genre, "genre")));
+  (game.genres || []).slice(0, 4).forEach((genre) => chips.push(chip(localizedTagLabel(genre), "genre")));
   return chips;
 }
 
 function cardChipsFor(game) {
   const chips = [];
-  (game.genres || []).slice(0, 4).forEach((genre) => chips.push(chip(genre, "genre")));
+  (game.genres || []).slice(0, 4).forEach((genre) => chips.push(chip(localizedTagLabel(genre), "genre")));
   return chips;
 }
 
@@ -8464,6 +8471,10 @@ function preferredPreorderChip(store) {
 
 function chip(label, type = "") {
   return `<span class="chip ${escapeHtml(type)}">${escapeHtml(label)}</span>`;
+}
+
+function localizedTagLabel(label) {
+  return tt(String(label || "").trim());
 }
 
 function gameStatuses(game) {
@@ -9727,24 +9738,24 @@ async function verifyPassword(password) {
 async function lookupGame() {
   const query = el.lookupInput.value.trim() || el.fields.title.value.trim();
   if (!query) return;
-  showToast("Fetching game info...");
+  showToast(tt("Fetching game info..."));
   el.lookupResults.classList.remove("loaded");
-  el.lookupResults.innerHTML = `<div class="empty">Searching...</div>`;
+  el.lookupResults.innerHTML = `<div class="empty">${escapeHtml(tt("Searching..."))}</div>`;
   el.lookupResults.classList.add("loaded");
   try {
     const results = await fetchSearchResults(query);
     renderLookupResults(results);
-    showToast(results.length ? `Found ${results.length} game matches.` : "No game matches found.");
+    showToast(results.length ? tt("Found {count} game matches.", { count: results.length }) : tt("No game matches found."));
   } catch {
     renderLookupResults([]);
-    showToast("Game info fetch unavailable.", "error");
+    showToast(tt("Game info fetch unavailable."), "error");
   }
 }
 
 function renderLookupResults(results) {
   el.lookupResults.classList.remove("loaded");
   if (!results.length) {
-    el.lookupResults.innerHTML = `<div class="empty">No API results yet. You can still fill the game manually.</div>`;
+    el.lookupResults.innerHTML = `<div class="empty">${escapeHtml(tt("No API results yet. You can still fill the game manually."))}</div>`;
     requestAnimationFrame(() => el.lookupResults.classList.add("loaded"));
     return;
   }
@@ -9760,7 +9771,7 @@ function renderLookupResults(results) {
         <p>${escapeHtml([...(result.genres || []), result.developer, result.publisher].filter(Boolean).join(" · "))}</p>
         <p>${escapeHtml(previewDescription(result.description || ""))}</p>
       </div>
-      <button class="ghost-button" type="button">Use</button>
+      <button class="ghost-button" type="button">${escapeHtml(tt("Use"))}</button>
     `;
     row.querySelector("button").addEventListener("click", () => applyLookup(result));
     el.lookupResults.appendChild(row);

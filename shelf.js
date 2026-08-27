@@ -502,6 +502,8 @@ function renderReleaseCalendar() {
     games: state.gamelistGames,
     offset: state.releaseCalendarOffset,
     weekStart: normalizeWeekStart(state.gamelistSettings.weekStart),
+    locale: currentLanguage(),
+    translate: tt,
     onShift: (value) => {
       state.releaseCalendarOffset += value;
       renderReleaseCalendar();
@@ -946,7 +948,7 @@ function renderFilters() {
   const categories = uniqueSorted(visibleGames.flatMap((game) => [...String(game.genre || "").split(","), ...(game.genres || [])].map((value) => value.trim()).filter(Boolean)));
   el.platform.innerHTML = `<option value="all">${escapeHtml(tt("All platforms"))}</option>${platforms.map((value) => `<option value="${escapeHtml(value)}">${escapeHtml(platformDisplayName(value))}</option>`).join("")}`;
   el.region.innerHTML = `<option value="all">${escapeHtml(tt("All regions"))}</option>${countries.map((value) => `<option value="${escapeHtml(value)}">${escapeHtml(regionName(value))}</option>`).join("")}`;
-  el.category.innerHTML = `<option value="all">${escapeHtml(tt("All categories"))}</option>${categories.map((value) => `<option value="${escapeHtml(value)}">${escapeHtml(value)}</option>`).join("")}`;
+  el.category.innerHTML = `<option value="all">${escapeHtml(tt("All categories"))}</option>${categories.map((value) => `<option value="${escapeHtml(value)}">${escapeHtml(tt(value))}</option>`).join("")}`;
   el.platform.value = state.filters.platform;
   el.region.value = state.filters.region;
   el.condition.value = state.filters.condition;
@@ -1109,14 +1111,14 @@ function renderLibrary() {
   el.tabs.style.setProperty("--compact-tab-count", String(Math.max(1, tabs.length - 1)));
   el.tabs.style.setProperty("--tab-width", `calc((100% - 18px) / ${tabs.length})`);
   el.tabs.style.setProperty("--tab-index", String(tabs.indexOf(state.filters.tab)));
-  el.tabs.innerHTML = tabs.map((tab) => `<button class="${state.filters.tab === tab ? "active" : ""}" data-shelf-tab="${tab}" type="button"><span class="label">${tab === "shelf" ? "Shelf" : tab === "drive" ? "Drive" : tab === "preorders" ? `<span class="preorder-tab-text">Preorders</span><span class="preorder-tab-icon">${shoppingBagIcon()}</span>` : "New additions"}</span>${tab === "preorders" ? `<span class="count">${preorderCount}</span>` : tab === "new" ? `<span class="count">${pendingCount}</span>` : ""}</button>`).join("");
+  el.tabs.innerHTML = tabs.map((tab) => `<button class="${state.filters.tab === tab ? "active" : ""}" data-shelf-tab="${tab}" type="button"><span class="label">${tab === "shelf" ? escapeHtml(tt("Shelf")) : tab === "drive" ? escapeHtml(tt("Drive")) : tab === "preorders" ? `<span class="preorder-tab-text">${escapeHtml(tt("Preorders"))}</span><span class="preorder-tab-icon">${shoppingBagIcon()}</span>` : escapeHtml(tt("New additions"))}</span>${tab === "preorders" ? `<span class="count">${preorderCount}</span>` : tab === "new" ? `<span class="count">${pendingCount}</span>` : ""}</button>`).join("");
   requestAnimationFrame(syncShelfTabIndicator);
   if (state.filters.tab === "preorders") {
     el.count.innerHTML = shelfPreorderCountPill(games);
   } else {
-    el.count.textContent = `${games.length} ${games.length === 1 ? "game" : "games"}`;
+    el.count.textContent = tt("{count} {item}", { count: games.length, item: games.length === 1 ? tt("game") : tt("games") });
   }
-  el.libraryTitle.textContent = state.filters.tab === "preorders" ? "Preorders" : state.filters.tab === "new" ? "New additions" : state.filters.tab === "drive" ? "Drive" : "Shelf";
+  el.libraryTitle.textContent = state.filters.tab === "preorders" ? tt("Preorders") : state.filters.tab === "new" ? tt("New additions") : state.filters.tab === "drive" ? tt("Drive") : tt("Shelf");
   el.shelf.classList.toggle("list-view", state.viewMode === "list");
   el.shelf.classList.toggle("preorders-view", state.filters.tab === "preorders");
   el.shelf.innerHTML = "";
@@ -2650,7 +2652,8 @@ function visibleShelfTags(game, values = []) {
   const importedFromGamelist = game?.source === "gamelist" || Boolean(game?.gamelistId) || String(game?.id || "").startsWith("gamelist-");
   return values
     .map((value) => String(value || "").trim())
-    .filter((value, index, list) => value && normalize(value) !== "game" && !(importedFromGamelist && normalize(value) === "gamelist") && list.indexOf(value) === index);
+    .filter((value, index, list) => value && normalize(value) !== "game" && !(importedFromGamelist && normalize(value) === "gamelist") && list.indexOf(value) === index)
+    .map((value) => tt(value));
 }
 
 function syncShowcaseDirectionButton() {
@@ -3086,8 +3089,8 @@ function downloadBadgeIcon() {
 }
 function projectionChips(game, options = {}) {
   return [
-    options.includePreorder === false || !game.preorderStore ? "" : chip(`Preordered: ${game.preorderStore}`, "accent"),
-    ...(game.genres || []).slice(0, 4).map((tag) => chip(tag, "genre")),
+    options.includePreorder === false || !game.preorderStore ? "" : chip(tt("Preordered: {store}", { store: game.preorderStore }), "accent"),
+    ...(game.genres || []).slice(0, 4).map((tag) => chip(tt(tag), "genre")),
   ].join("");
 }
 function chip(label, type = "") {
@@ -3097,7 +3100,7 @@ function releaseStatusPill(value) {
   const text = String(value || "").trim();
   const match = text.match(/^(Released|Releases)\s+(.+)$/i);
   if (!match) return `<span class="release-pill">${escapeHtml(text)}</span>`;
-  const label = match[1].toLowerCase() === "released" ? "Released" : "Releases";
+  const label = match[1].toLowerCase() === "released" ? tt("Released") : tt("Releases");
   const date = formatShortDate(match[2]) || match[2];
   return `<span class="release-pill history-date-pill"><small class="release-date-label"><span>${label}</span>${calendarMiniIcon()}</small><strong>${escapeHtml(date)}</strong></span>`;
 }
@@ -3105,7 +3108,7 @@ function releaseStatusPill(value) {
 function shelfReleaseDatePill(game, label) {
   const text = String(game?.releaseText || "").trim() || (game?.releaseDate ? formatDate(game.releaseDate) : "");
   if (!text) return "";
-  return `<span class="release-pill history-date-pill"><small class="release-date-label"><span>${escapeHtml(label)}</span>${calendarMiniIcon()}</small><strong>${escapeHtml(text)}</strong></span>`;
+  return `<span class="release-pill history-date-pill"><small class="release-date-label"><span>${escapeHtml(tt(label))}</span>${calendarMiniIcon()}</small><strong>${escapeHtml(text)}</strong></span>`;
 }
 
 function calendarMiniIcon() {
@@ -3467,7 +3470,8 @@ async function hydrateCompletedCovers(items) {
   await Promise.all(missing.map(async (item) => {
     const key = normalize(item.title);
     try {
-      const response = await fetch(`/api/search?q=${encodeURIComponent(item.title)}`);
+      const params = new URLSearchParams({ q: item.title, lang: currentLanguage() });
+      const response = await fetch(`/api/search?${params}`);
       const data = response.ok ? await response.json() : { results: [] };
       const result = (data.results || [])[0];
       state.completedCoverCache[key] = result?.cover ? coverUrl(result.cover) : "__missing";
