@@ -75,6 +75,7 @@ export function normalizeThemeSettings(settings = {}) {
     gamelistIcon: safeImage(raw.gamelistIcon),
     shelfIcon: safeImage(raw.shelfIcon),
     appIcon: safeImage(raw.appIcon),
+    appIconMonochrome: safeImage(raw.appIconMonochrome),
     ownerColors: ownerColors
       .map((item) => ({ name: cleanOwnerName(item?.name), color: hexColor(item?.color, "") }))
       .filter((item) => item.name && item.color)
