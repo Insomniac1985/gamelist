@@ -266,7 +266,7 @@ export function releaseGamesByDate(games = []) {
   const groups = new Map();
   const seen = new Set();
   games
-    .filter((game) => !game.deletedAt && validReleaseDate(game.releaseDate))
+    .filter((game) => !game.deletedAt && !String(game.releaseText || "").trim() && validReleaseDate(game.releaseDate))
     .forEach((game) => {
       const key = dateOnly(game.releaseDate);
       const identity = `${key}:${game.id || game.gamelistId || normalizeSearchText(`${game.title} ${game.platform}`)}`;

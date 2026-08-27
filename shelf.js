@@ -3224,6 +3224,7 @@ async function loadGamelistDetailTrophies(game) {
   el.detailTrophies.hidden = true;
   el.detailTrophyList.innerHTML = "";
   if (!shelfAllowsTrophyActivity(game.platform)) return;
+  if (!game?.playing && shelfIsSteamAchievementGame(game)) return;
   const external = externalActivityFor(game);
   if (external) {
     if (external.loading) { el.detailTrophies.hidden = false; el.detailTrophyTitle.textContent = "ACHIEVEMENTS"; el.detailTrophyPercent.innerHTML = ""; el.detailTrophyList.innerHTML = `<div class="detail-trophy-empty">Loading earned achievements...</div>`; return; }
@@ -3969,6 +3970,7 @@ function syncShelfGameRecord(game) {
 async function loadShelfTrophies(game) {
   game = shelfTrophyLookupGame(game);
   if (!shelfAllowsTrophyActivity(game.platform)) { el.detailTrophies.hidden = true; el.detailTrophyPercent.innerHTML = ""; return; }
+  if (!game?.playing && shelfIsSteamAchievementGame(game)) { el.detailTrophies.hidden = true; el.detailTrophyPercent.innerHTML = ""; return; }
   const external = externalActivityFor(game);
   if (external) {
     el.detailTrophies.hidden = false;
@@ -4049,6 +4051,10 @@ function shelfTrophyLookupGame(game) {
     steamAppId: game.steamAppId || linked.steamAppId || "",
     storeLinks: { ...(linked.storeLinks || {}), ...(game.storeLinks || {}) },
   };
+}
+function shelfIsSteamAchievementGame(game) {
+  const platform = normalize(shortPlatform(game?.platform || ""));
+  return platform.includes("steam") || platform === "pc";
 }
 function pencilIcon() { return `<svg class="pencil-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h4l11-11a2.8 2.8 0 0 0-4-4L4 16v4Z"></path><path d="M13.5 6.5l4 4"></path></svg>`; }
 function trashIcon() { return `<svg class="trash-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6h18"></path><path d="M8 6V4h8v2"></path><path d="M19 6l-1 14H6L5 6"></path><path d="M10 11v5"></path><path d="M14 11v5"></path></svg>`; }
