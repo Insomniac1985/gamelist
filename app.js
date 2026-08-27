@@ -5364,7 +5364,6 @@ function rowPrimaryAction(game, section) {
 function rowCoreStats(game) {
   const progress = achievementProgressForGame(game);
   const release = releaseStatus(game);
-  const preorderStore = game.preorderStore || game.preferredStore;
   return [
     game.platform ? platformBadge(game.platform, null, { title: game.title }) : "",
     mediaFormatBadge(game),
@@ -5375,7 +5374,7 @@ function rowCoreStats(game) {
     game.lengthHours ? timeBadge(game.lengthHours, hltbUrlFor(game)) : "",
     game.stream ? streamBadge() : "",
     release ? releaseStatusPill(release) : "",
-    preorderStore ? preorderChip(preorderStore) : "",
+    game.preorderStore ? preorderChip(game.preorderStore) : (game.preferredStore ? preferredPreorderChip(game.preferredStore) : ""),
     ...gameStatuses(game).map(statusBadge),
     game.replayCount ? replayBadge(game.replayCount) : "",
     progress ? psnProgressBadge(progress) : "",
@@ -7968,9 +7967,9 @@ function playDatesFor(game, options = {}) {
   const values = [];
   const formatDate = game.completedAt ? formatLongDate : formatShortDate;
   const release = options.includeRelease === false ? "" : releaseStatus(game, { includePast: options.includePastRelease });
-  const preorderStore = game.preorderStore || game.preferredStore;
   if (release) values.push(releaseStatusPill(release));
-  if (options.includePreorder && preorderStore) values.push(preorderChip(preorderStore));
+  if (options.includePreorder && game.preorderStore) values.push(preorderChip(game.preorderStore));
+  else if (options.includePreorder && game.preferredStore) values.push(preferredPreorderChip(game.preferredStore));
   if (game.startedAt) values.push(`<span class="history-pill history-date-pill"><small>Started</small><strong>${escapeHtml(formatDate(game.startedAt))}</strong></span>`);
   if (game.completedAt) values.push(`<span class="history-pill history-date-pill"><small>Finished</small><strong>${escapeHtml(formatDate(game.completedAt))}</strong></span>`);
   const finishTime = finishHoursText(game);
@@ -8457,6 +8456,10 @@ function cardChipsFor(game) {
 
 function preorderChip(store) {
   return `<span class="chip accent preorder-chip" title="${escapeHtml(`Preordered: ${store}`)}">${shoppingBagIcon()}${escapeHtml(store)}</span>`;
+}
+
+function preferredPreorderChip(store) {
+  return `<span class="chip preferred-preorder-chip" title="${escapeHtml(`Preferred preorder store: ${store}`)}">Preferred: ${escapeHtml(store)}</span>`;
 }
 
 function chip(label, type = "") {

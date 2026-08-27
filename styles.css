@@ -6055,6 +6055,13 @@ a.time-pill {
   gap: 5px;
 }
 
+.preferred-preorder-chip {
+  color: #f7df69;
+  background: rgba(247, 223, 105, 0.14);
+  border-color: rgba(247, 223, 105, 0.34);
+  font-weight: 780;
+}
+
 .preorder-chip .shopping-bag-icon {
   width: 14px;
   height: 14px;
