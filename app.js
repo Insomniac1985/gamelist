@@ -257,6 +257,7 @@ const el = {
   stats: document.querySelector("#stats"),
   loginButton: document.querySelector("#loginButton"),
   addButton: document.querySelector("#addButton"),
+  searchButton: document.querySelector("#searchButton"),
   syncButton: document.querySelector("#syncButton"),
   settingsButton: document.querySelector("#settingsButton"),
   fetchDataButton: document.querySelector("#fetchDataButton"),
@@ -278,6 +279,7 @@ const el = {
   scrollTopButton: document.querySelector("#scrollTopButton"),
   floatingEditActions: document.querySelector("#floatingEditActions"),
   floatingAddButton: document.querySelector("#floatingAddButton"),
+  floatingSearchButton: document.querySelector("#floatingSearchButton"),
   mobileTabs: document.querySelectorAll("[data-mobile-section]"),
   board: document.querySelector(".board"),
   detailDialog: document.querySelector("#detailDialog"),
@@ -768,6 +770,8 @@ function bindEvents() {
   el.loginButton.addEventListener("click", toggleEditMode);
   el.addButton.addEventListener("click", quickAddGame);
   el.floatingAddButton.addEventListener("click", quickAddGame);
+  el.searchButton?.addEventListener("click", scrollToSearchArea);
+  el.floatingSearchButton?.addEventListener("click", scrollToSearchArea);
   el.syncButton.addEventListener("click", syncNow);
   el.settingsButton?.addEventListener("click", openSettingsDialog);
   el.authCloseButton?.addEventListener("click", () => el.authDialog.close("cancel"));
@@ -3908,6 +3912,7 @@ function downloadCanvas(canvas, filename) {
 
 function scrollToSearchArea() {
   document.querySelector(".toolbar")?.scrollIntoView({ behavior: "smooth", block: "start" });
+  window.requestAnimationFrame(() => el.searchInput?.focus({ preventScroll: true }));
 }
 
 function scrollToFinishedSection() {

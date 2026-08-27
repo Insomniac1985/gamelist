@@ -6371,6 +6371,7 @@ html.theme-light #floatingAddButton:hover {
 .top-actions #settingsButton,
 .top-actions #fetchPricesButton,
 .top-actions #addButton,
+.top-actions #searchButton,
 body.can-edit #loginButton,
 body:not(.can-edit) #loginButton,
 #loginButton[title="Edit"] {
@@ -6423,6 +6424,19 @@ body:not(.can-edit) #loginButton,
   width: 24px;
   height: 24px;
   stroke-width: 2.6;
+}
+
+.floating-action-button .search-icon {
+  width: 23px;
+  height: 23px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2.4;
+  stroke-linecap: round;
+}
+
+.floating-search-button {
+  display: none;
 }
 
 .icon-only-button {
@@ -11796,6 +11810,17 @@ html.theme-light .playing-achievements-check input[type="checkbox"]:checked {
 }
 
 @media (max-width: 760px) {
+  .top-search-button {
+    display: none;
+  }
+
+  .floating-search-button {
+    position: fixed;
+    left: clamp(14px, 2.4vw, 26px);
+    bottom: clamp(16px, 3vw, 28px);
+    display: inline-grid;
+  }
+
   .price-refresh-action,
   #pricesButton {
     display: none !important;
