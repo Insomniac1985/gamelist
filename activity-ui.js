@@ -626,10 +626,10 @@ export function syncFocusedActivityTrailer(list, escape = escapeHtml) {
 export function activityReleaseStatus(game, { includePast = false, now = new Date() } = {}) {
   if (game?.releaseDate) {
     const release = new Date(`${game.releaseDate}T00:00:00`);
-    if (Number.isNaN(release.getTime()) || release.getFullYear() < 1990) return game.releaseText && (includePast || game.section === "upcoming") ? game.releaseText : game.section === "upcoming" ? "???" : "";
+    if (Number.isNaN(release.getTime()) || release.getFullYear() < 1990) return game.releaseText && (includePast || game.section === "upcoming") ? `Releases ${game.releaseText}` : game.section === "upcoming" ? "???" : "";
     const today = new Date(now); today.setHours(0, 0, 0, 0);
     if (release <= today && !includePast) return "";
-    return `${release <= today ? "Released" : "Releases"} ${game.releaseDate}`;
+    return `${release <= today ? "Released" : "Releases"} ${game.releaseText || game.releaseDate}`;
   }
   if (game?.releaseText && (includePast || game.section === "upcoming")) return game.releaseText;
   return game?.section === "upcoming" ? "???" : "";

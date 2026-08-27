@@ -2092,7 +2092,7 @@ function gameOfTheYearCsvRecords() {
         return {
           year,
           category,
-          label,
+          label: tt(label),
           order: index + 1,
           gameId: picks[category] || "",
           title: game?.title || "",
@@ -2315,13 +2315,14 @@ function renderGameOfTheYear() {
     el.gotyStatsButton.setAttribute("aria-label", `Stats for ${year}`);
   }
   el.gotyGrid.innerHTML = GAME_OF_YEAR_CATEGORIES.map(([key, label], index) => {
+    const labelText = tt(label);
     const game = gameById(picks[key]);
     if (!game || !candidateIds.has(game.id)) return "";
     const cover = coverDisplayUrl(game.cover || "") || platformLogo(game.platform || "PS5");
     const edgeClass = index >= GAME_OF_YEAR_CATEGORIES.length - 2 ? "goty-card-edge-right" : index === 0 ? "goty-card-edge-left" : "";
     return `
-      <button class="goty-card ${edgeClass}" type="button" data-id="${escapeHtml(game.id)}" aria-label="${escapeHtml(`${label}: ${game.title}`)}">
-        <span class="goty-category">${escapeHtml(label)}</span>
+      <button class="goty-card ${edgeClass}" type="button" data-id="${escapeHtml(game.id)}" aria-label="${escapeHtml(`${labelText}: ${game.title}`)}">
+        <span class="goty-category">${escapeHtml(labelText)}</span>
         <span class="goty-cover"><img src="${escapeHtml(cover)}" alt="" loading="lazy" decoding="async"></span>
         ${gameOfTheYearHoverInfo(game, "goty-hover-info")}
       </button>
@@ -2380,6 +2381,7 @@ function renderGameOfTheYearPicker(games, picks) {
   hideGameOfTheYearTitleOverlay();
   const pickedIds = new Set(Object.values(picks).filter(Boolean));
   el.gotyPickerGrid.innerHTML = GAME_OF_YEAR_CATEGORIES.map(([key, label]) => {
+    const labelText = tt(label);
     const selectedId = picks[key] || "";
     const pickedElsewhere = new Set([...pickedIds].filter((id) => id !== selectedId));
     const selectedGame = games.find((game) => game.id === selectedId);
@@ -2387,7 +2389,7 @@ function renderGameOfTheYearPicker(games, picks) {
     return `
     <section class="goty-picker-field" data-goty-category="${escapeHtml(key)}">
       <div class="goty-picker-head">
-        <span class="goty-picker-category">${escapeHtml(label)}</span>
+        <span class="goty-picker-category">${escapeHtml(labelText)}</span>
         <strong>${selectedGame ? escapeHtml(selectedGame.title) : ""}</strong>
         <div class="goty-picker-navs">
           <button class="icon-button playing-slider-button goty-choice-nav" type="button" data-goty-scroll="-1" title="Previous games" aria-label="Previous games">${gotyPickerArrowIcon("left")}</button>
@@ -2672,7 +2674,7 @@ async function gameOfTheYearExportHtml(year = state.gotyYear) {
   const picks = state.settings.gameOfTheYear?.[year]?.picks || {};
   if (!gameOfTheYearComplete(picks)) return "";
   const owner = cleanOwnerLabel(state.settings.defaultOwner) || DEFAULT_SETTINGS.defaultOwner;
-  const rows = GAME_OF_YEAR_CATEGORIES.map(([key, label]) => ({ label, game: gameById(picks[key]) })).filter((item) => item.game);
+  const rows = GAME_OF_YEAR_CATEGORIES.map(([key, label]) => ({ label: tt(label), game: gameById(picks[key]) })).filter((item) => item.game);
   const statsGames = gameOfTheYearCandidateGames(year);
   const theme = normalizeThemeSettings(state.settings);
   const assetRows = await Promise.all(rows.map(async (row) => ({
