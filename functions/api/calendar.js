@@ -25,7 +25,7 @@ async function syncCalendarGames(games, env) {
     const results = [];
     for (const game of games.slice(0, 100)) {
       const releaseDate = dateOnly(game.releaseDate);
-      if (!game.title || !releaseDate || !game.preorderStore) {
+      if (!game.title || !releaseDate || !game.preorderStore || String(game.releaseText || "").trim()) {
         results.push({ title: game.title || "", skipped: true });
         continue;
       }

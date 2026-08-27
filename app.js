@@ -9151,6 +9151,7 @@ function syncNewGameUpcomingSection() {
 function shouldCreatePreorderCalendarEvent(existing, game) {
   return Boolean(game?.preorderStore)
     && !existing?.preorderStore
+    && !String(game.releaseText || "").trim()
     && validReleaseDate(game.releaseDate);
 }
 
