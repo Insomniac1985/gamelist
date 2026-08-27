@@ -5364,6 +5364,7 @@ function rowPrimaryAction(game, section) {
 function rowCoreStats(game) {
   const progress = achievementProgressForGame(game);
   const release = releaseStatus(game);
+  const preorderStore = game.preorderStore || game.preferredStore;
   return [
     game.platform ? platformBadge(game.platform, null, { title: game.title }) : "",
     mediaFormatBadge(game),
@@ -5374,7 +5375,7 @@ function rowCoreStats(game) {
     game.lengthHours ? timeBadge(game.lengthHours, hltbUrlFor(game)) : "",
     game.stream ? streamBadge() : "",
     release ? releaseStatusPill(release) : "",
-    game.preorderStore ? preorderChip(game.preorderStore) : "",
+    preorderStore ? preorderChip(preorderStore) : "",
     ...gameStatuses(game).map(statusBadge),
     game.replayCount ? replayBadge(game.replayCount) : "",
     progress ? psnProgressBadge(progress) : "",
@@ -5383,7 +5384,6 @@ function rowCoreStats(game) {
 
 function rowTags(game) {
   const chips = [];
-  if (game.preferredStore) chips.push(chip(`Buy: ${game.preferredStore}`));
   (game.genres || []).slice(0, 4).forEach((genre) => chips.push(chip(genre, "genre")));
   return chips;
 }
@@ -6936,7 +6936,7 @@ function openDetail(id, options = {}) {
   el.detailStudio.hidden = !el.detailStudio.innerHTML;
   el.detailMeta.innerHTML = metaFor(game, { includePsn: false, includeOwners: false }).join("");
   bindDetailShelfSearch(game);
-  el.detailDates.innerHTML = playDatesFor(game, { includePastRelease: true }).join("");
+  el.detailDates.innerHTML = playDatesFor(game, { includePastRelease: true, includePreorder: true }).join("");
   el.detailDates.hidden = !el.detailDates.innerHTML;
   el.detailChips.innerHTML = chipsFor(game).join("");
   el.detailStoreLinks.innerHTML = storeLinksFor(game);
@@ -7102,7 +7102,7 @@ async function renderDetailTrophies(game) {
 async function renderDetailSteamAchievements(game) {
   const appId = steamAppIdFor(game);
   const steamUser = state.settings.steamUser || "";
-  if (!appId || (state.steamOwnedAppIds && !state.steamOwnedAppIds.has(appId))) {
+  if (!game?.playing || !appId || (state.steamOwnedAppIds && !state.steamOwnedAppIds.has(appId))) {
     state.detailTrophyRequest = "";
     state.detailTrophiesData = [];
     state.detailTrophyProvider = "steam";
@@ -7968,8 +7968,9 @@ function playDatesFor(game, options = {}) {
   const values = [];
   const formatDate = game.completedAt ? formatLongDate : formatShortDate;
   const release = options.includeRelease === false ? "" : releaseStatus(game, { includePast: options.includePastRelease });
+  const preorderStore = game.preorderStore || game.preferredStore;
   if (release) values.push(releaseStatusPill(release));
-  if (options.includePreorder && game.preorderStore) values.push(preorderChip(game.preorderStore));
+  if (options.includePreorder && preorderStore) values.push(preorderChip(preorderStore));
   if (game.startedAt) values.push(`<span class="history-pill history-date-pill"><small>Started</small><strong>${escapeHtml(formatDate(game.startedAt))}</strong></span>`);
   if (game.completedAt) values.push(`<span class="history-pill history-date-pill"><small>Finished</small><strong>${escapeHtml(formatDate(game.completedAt))}</strong></span>`);
   const finishTime = finishHoursText(game);
@@ -8444,15 +8445,12 @@ function timeBadge(hours, url = "") {
 
 function chipsFor(game) {
   const chips = [];
-  if (game.preorderStore) chips.push(preorderChip(game.preorderStore));
-  if (game.preferredStore) chips.push(chip(`Buy: ${game.preferredStore}`));
   (game.genres || []).slice(0, 4).forEach((genre) => chips.push(chip(genre, "genre")));
   return chips;
 }
 
 function cardChipsFor(game) {
   const chips = [];
-  if (game.preferredStore) chips.push(chip(`Buy: ${game.preferredStore}`));
   (game.genres || []).slice(0, 4).forEach((genre) => chips.push(chip(genre, "genre")));
   return chips;
 }
