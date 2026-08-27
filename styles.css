@@ -11456,10 +11456,6 @@ body.theme-kash
 }
 
 @media (max-width: 760px) {
-  .top-actions-separator {
-    display: none;
-  }
-
   .settings-page-toggle-row {
     grid-template-columns: 1fr;
   }
@@ -12038,12 +12034,22 @@ html.theme-light .playing-achievements-check input[type="checkbox"]:checked {
     order: 2;
   }
 
-  #loginButton {
+  .top-actions-separator {
     order: 3;
+    height: 24px;
+    margin-inline: 3px;
+  }
+
+  #loginButton {
+    order: 4;
+  }
+
+  #settingsButton {
+    order: 5;
   }
 
   #addButton {
-    order: 4;
+    order: 7;
   }
 
   body.can-edit .top-actions {
