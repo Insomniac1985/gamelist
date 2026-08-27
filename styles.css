@@ -3154,8 +3154,8 @@ body.dialog-open .floating-edit-actions {
   z-index: 12;
   display: grid;
   grid-template-columns:
-    minmax(240px, 1fr) 132px minmax(190px, 210px) minmax(150px, 165px)
-    132px var(--toolbar-control-height);
+    minmax(180px, 0.8fr) 132px minmax(190px, 210px) minmax(150px, 165px)
+    minmax(180px, 220px) var(--toolbar-control-height);
   gap: 10px;
   padding: 12px;
   border-radius: 8px;

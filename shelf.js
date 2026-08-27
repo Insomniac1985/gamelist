@@ -3103,8 +3103,7 @@ function releaseStatusPill(value) {
 }
 
 function shelfReleaseDatePill(game, label) {
-  if (!game?.releaseDate) return "";
-  const text = String(game.releaseText || "").trim() || formatDate(game.releaseDate);
+  const text = String(game?.releaseText || "").trim() || (game?.releaseDate ? formatDate(game.releaseDate) : "");
   if (!text) return "";
   return `<span class="release-pill history-date-pill"><small class="release-date-label"><span>${escapeHtml(label)}</span>${calendarMiniIcon()}</small><strong>${escapeHtml(text)}</strong></span>`;
 }
