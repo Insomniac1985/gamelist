@@ -10,6 +10,7 @@ export async function onRequestGet({ request, env = {} }) {
   const npCommunicationId = cleanNpCommunicationId(url.searchParams.get("id"));
   const npServiceName = cleanServiceName(url.searchParams.get("service"));
   const user = cleanUser(url.searchParams.get("user") || env.PSN_PROFILE_USER || "");
+  const language = apiLanguage(url.searchParams.get("lang"));
   const debug = url.searchParams.has("debug");
 
   if (!npCommunicationId) {
@@ -25,8 +26,8 @@ export async function onRequestGet({ request, env = {} }) {
     const accessToken = await getPsnAccessToken(npsso);
     const accountId = await resolvePsnAccountId(accessToken, user);
     const [trophies, title] = await Promise.all([
-      getEarnedTrophiesForTitle(accessToken, accountId, npCommunicationId, npServiceName),
-      getTrophyTitle(accessToken, accountId, npCommunicationId),
+      getEarnedTrophiesForTitle(accessToken, accountId, npCommunicationId, npServiceName, language),
+      getTrophyTitle(accessToken, accountId, npCommunicationId, language),
     ]);
     return json({ trophies, count: trophies.length, source: "psn", accountId, ...title });
   } catch (error) {
@@ -71,10 +72,10 @@ async function resolvePsnAccountIdFromLegacy(accessToken, user) {
   }
 }
 
-async function getEarnedTrophiesForTitle(accessToken, accountId, npCommunicationId, npServiceName) {
+async function getEarnedTrophiesForTitle(accessToken, accountId, npCommunicationId, npServiceName, language) {
   const [earnedData, metaData] = await Promise.all([
-    getPagedTrophies(accessToken, `${PSN_TROPHY_BASE}/v1/users/${encodeURIComponent(accountId || "me")}/npCommunicationIds/${encodeURIComponent(npCommunicationId)}/trophyGroups/all/trophies`, npServiceName),
-    getPagedTrophies(accessToken, `${PSN_TROPHY_BASE}/v1/npCommunicationIds/${encodeURIComponent(npCommunicationId)}/trophyGroups/all/trophies`, npServiceName),
+    getPagedTrophies(accessToken, `${PSN_TROPHY_BASE}/v1/users/${encodeURIComponent(accountId || "me")}/npCommunicationIds/${encodeURIComponent(npCommunicationId)}/trophyGroups/all/trophies`, npServiceName, language),
+    getPagedTrophies(accessToken, `${PSN_TROPHY_BASE}/v1/npCommunicationIds/${encodeURIComponent(npCommunicationId)}/trophyGroups/all/trophies`, npServiceName, language),
   ]);
   const metaById = new Map(metaData.map((trophy) => [String(trophy.trophyId), trophy]));
   const earnedById = new Map(earnedData.map((trophy) => [String(trophy.trophyId), trophy]));
@@ -103,11 +104,11 @@ async function getEarnedTrophiesForTitle(accessToken, accountId, npCommunication
     });
 }
 
-async function getPagedTrophies(accessToken, baseUrl, npServiceName) {
+async function getPagedTrophies(accessToken, baseUrl, npServiceName, language) {
   const trophies = [];
   const limit = 200;
   for (let offset = 0; offset < 1000; offset += limit) {
-    const params = new URLSearchParams({ npServiceName, limit: String(limit), offset: String(offset) });
+    const params = new URLSearchParams({ npServiceName, limit: String(limit), offset: String(offset), npLanguage: language });
     const data = await psnGet(`${baseUrl}?${params}`, accessToken);
     const page = data.trophies || [];
     trophies.push(...page);
@@ -116,10 +117,10 @@ async function getPagedTrophies(accessToken, baseUrl, npServiceName) {
   return trophies;
 }
 
-async function getTrophyTitle(accessToken, accountId, npCommunicationId) {
+async function getTrophyTitle(accessToken, accountId, npCommunicationId, language) {
   try {
     for (let offset = 0; offset < 1000; offset += 200) {
-      const params = new URLSearchParams({ limit: "200", offset: String(offset) });
+      const params = new URLSearchParams({ limit: "200", offset: String(offset), npLanguage: language });
       const data = await psnGet(`${PSN_TROPHY_BASE}/v1/users/${encodeURIComponent(accountId || "me")}/trophyTitles?${params}`, accessToken);
       const titles = data.trophyTitles || [];
       const match = titles.find((title) => String(title.npCommunicationId || "") === npCommunicationId);
@@ -150,6 +151,10 @@ async function psnGet(url, accessToken) {
   });
   if (!response.ok) throw new Error(`PSN request failed (${response.status})`);
   return response.json();
+}
+
+function apiLanguage(value) {
+  return String(value || "").toLowerCase().startsWith("es") ? "es-ES" : "en-US";
 }
 
 async function psnPost(url, accessToken, body) {

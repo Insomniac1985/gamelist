@@ -1418,6 +1418,9 @@ function tt(key, values) {
 
 function applyLanguage() {
   applyDocumentTranslations(currentLanguage());
+  if (el.playingTitle) el.playingTitle.textContent = tt("Currently playing");
+  const latestFinishedTitle = el.playingFinished?.querySelector(".achievement-subtitle");
+  if (latestFinishedTitle) latestFinishedTitle.textContent = tt("Last finished games");
 }
 
 function applyTheme() {
@@ -4189,6 +4192,7 @@ async function fetchSteamAccountActivity(steamUser = state.settings.steamUser ||
 
 function achievementParams(values = {}, forceRefresh = state.settings.forceCacheOnLoad === true) {
   const params = new URLSearchParams(values);
+  params.set("lang", currentLanguage());
   if (forceRefresh) params.set("fresh", String(Date.now()));
   return params;
 }
@@ -4314,6 +4318,7 @@ function renderAchievements(data = {}, steamData = state.steamActivity || emptyS
     platformLogo,
     trophyTone,
     escape: escapeHtml,
+    translate: tt,
   });
   el.achievementPanel.innerHTML = panel.html;
   el.achievementPanel.querySelector("[data-action='platinums']")?.addEventListener("click", () => openPlatinumDialog());
@@ -7017,7 +7022,7 @@ async function renderDetailTrophies(game) {
       state.detailTrophyRequest = "";
       state.detailTrophiesData = fallback;
       el.detailTrophies.hidden = false;
-      if (el.detailTrophyTitle) el.detailTrophyTitle.textContent = "TROPHIES";
+      if (el.detailTrophyTitle) el.detailTrophyTitle.textContent = tt("TROPHIES");
       renderDetailTrophyList();
       return;
     }
@@ -7029,7 +7034,7 @@ async function renderDetailTrophies(game) {
     state.detailTrophyRequest = "";
     state.detailTrophiesData = [];
     state.detailTrophyProvider = "psn";
-    if (el.detailTrophyTitle) el.detailTrophyTitle.textContent = "TROPHIES";
+    if (el.detailTrophyTitle) el.detailTrophyTitle.textContent = tt("TROPHIES");
     el.detailTrophies.hidden = true;
     el.detailTrophyCount.textContent = "";
     el.detailTrophyPercent.innerHTML = "";
@@ -7048,7 +7053,7 @@ async function renderDetailTrophies(game) {
     state.detailTrophyRequest = "";
     state.detailTrophiesData = cachedTrophies;
     el.detailTrophies.hidden = false;
-    if (el.detailTrophyTitle) el.detailTrophyTitle.textContent = "TROPHIES";
+    if (el.detailTrophyTitle) el.detailTrophyTitle.textContent = tt("TROPHIES");
     renderDetailTrophyList();
     refreshDetailPsnTrophiesInBackground(game, psn, trophyId);
     return;
@@ -7062,7 +7067,7 @@ async function renderDetailTrophies(game) {
     state.detailTrophyRequest = "";
     state.detailTrophiesData = activityTrophies;
     el.detailTrophies.hidden = false;
-    if (el.detailTrophyTitle) el.detailTrophyTitle.textContent = "TROPHIES";
+    if (el.detailTrophyTitle) el.detailTrophyTitle.textContent = tt("TROPHIES");
     renderDetailTrophyList();
     refreshDetailPsnTrophiesInBackground(game, psn, trophyId);
     return;
@@ -7073,7 +7078,7 @@ async function renderDetailTrophies(game) {
   state.detailTrophyProvider = "psn";
   state.detailTrophyRequest = requestKey;
   el.detailTrophies.hidden = false;
-  if (el.detailTrophyTitle) el.detailTrophyTitle.textContent = "TROPHIES";
+  if (el.detailTrophyTitle) el.detailTrophyTitle.textContent = tt("TROPHIES");
   el.detailTrophyCount.textContent = "";
   el.detailTrophyPercent.innerHTML = psnProgressBadge(psn, { includeIcon: false });
   el.detailTrophyList.innerHTML = `<div class="detail-trophy-empty">Loading earned trophies...</div>`;
@@ -7118,7 +7123,7 @@ async function renderDetailSteamAchievements(game) {
     state.detailTrophyRequest = "";
     state.detailTrophiesData = [];
     state.detailTrophyProvider = "steam";
-    if (el.detailTrophyTitle) el.detailTrophyTitle.textContent = "ACHIEVEMENTS";
+    if (el.detailTrophyTitle) el.detailTrophyTitle.textContent = tt("ACHIEVEMENTS");
     el.detailTrophies.hidden = true;
     el.detailTrophyCount.textContent = "";
     el.detailTrophyPercent.innerHTML = "";
@@ -7135,14 +7140,14 @@ async function renderDetailSteamAchievements(game) {
     state.detailTrophyRequest = "";
     state.detailTrophiesData = cached.achievements;
     el.detailTrophies.hidden = false;
-    if (el.detailTrophyTitle) el.detailTrophyTitle.textContent = "ACHIEVEMENTS";
+    if (el.detailTrophyTitle) el.detailTrophyTitle.textContent = tt("ACHIEVEMENTS");
     renderDetailTrophyList();
     refreshDetailSteamAchievementsInBackground(game, appId, steamUser);
     return;
   }
   state.detailTrophyRequest = requestKey;
   el.detailTrophies.hidden = false;
-  if (el.detailTrophyTitle) el.detailTrophyTitle.textContent = "ACHIEVEMENTS";
+  if (el.detailTrophyTitle) el.detailTrophyTitle.textContent = tt("ACHIEVEMENTS");
   el.detailTrophyCount.textContent = "";
   el.detailTrophyPercent.innerHTML = "";
   el.detailTrophyList.innerHTML = `<div class="detail-trophy-empty">Loading earned achievements...</div>`;
@@ -7225,7 +7230,7 @@ async function renderDetailXboxAchievements(game) {
   const xboxGame = matchedXboxGame(game);
   state.detailGameId = game.id;
   state.detailTrophyProvider = "xbox";
-  if (el.detailTrophyTitle) el.detailTrophyTitle.textContent = "ACHIEVEMENTS";
+  if (el.detailTrophyTitle) el.detailTrophyTitle.textContent = tt("ACHIEVEMENTS");
   el.detailTrophies.hidden = !xboxGame;
   el.detailTrophyCount.textContent = "";
   el.detailTrophyPercent.innerHTML = "";

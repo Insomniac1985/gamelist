@@ -2104,6 +2104,11 @@ textarea {
     font-size: 12px;
   }
 
+  html[lang="es-ES"] .shelf-tabs button[data-shelf-tab="shelf"] .label,
+  html[lang="es-ES"] .shelf-tabs button[data-shelf-tab="preorders"] .label {
+    font-size: 15px;
+  }
+
   .shelf-tabs button[data-shelf-tab="preorders"],
   .shelf-tabs button[data-shelf-tab="new"] {
     gap: 7px;

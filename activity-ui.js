@@ -171,16 +171,16 @@ export function achievementCardMarkup({ index, tone, href, game, title, icon, me
   return `<a class="achievement-card ${index === 0 ? "latest" : ""} trophy-${escape(tone)}" href="${escape(href || "#")}" ${href && href !== "#" ? `target="_blank" rel="noreferrer"` : ""}${localGame ? ` data-achievement-game="${escape(localGame)}"` : ""}><img class="achievement-icon" src="${escape(icon)}" alt=""><div><strong>${escape(title)}</strong>${game ? `<span class="achievement-game-name">${escape(game)}</span>` : ""}<span class="achievement-card-meta playing-finished-tags">${meta}</span></div></a>`;
 }
 
-export function achievementDashboardMarkup({ completedCount, completedBreakdown = "", trophyTotal, trophyBreakdown = "", level, levelLabel, counts, sourceUrl, trophyIconHtml, barHeight, escape }) {
+export function achievementDashboardMarkup({ completedCount, completedBreakdown = "", trophyTotal, trophyBreakdown = "", level, levelLabel, counts, sourceUrl, trophyIconHtml, barHeight, escape, completedLabel = "COMPLETED", trophiesLabel = "TROPHIES" }) {
   const levelCard = levelLabel ? `<a class="achievement-kpi" href="${escape(sourceUrl)}" target="_blank" rel="noreferrer"><strong>${escape(String(level))}</strong><span>${levelLabel}</span></a>` : "";
   const rarityGraph = `<div class="rarity-graph" aria-label="Trophy rarity graph">${counts.map(([type, count]) => {
     const value = Number(count) || 0;
     return `<span class="rarity-bar rarity-${escape(type.toLowerCase())} ${value ? "" : "rarity-zero"}" title="${escape(`${type}: ${value}`)}"><em style="--bar:${barHeight(value, counts)}%"></em><small>${escape(type)}</small>${value ? `<strong>${escape(String(value))}</strong>` : ""}</span>`;
   }).join("")}</div>`;
-  return `<div class="achievement-summary ${levelLabel ? "" : "achievement-summary-no-level"}"><button class="achievement-kpi platinum-highlight ${completedCount ? "has-platinum" : ""}" type="button" data-action="platinums"><strong class="kpi-with-icon">${trophyIconHtml}${escape(String(completedCount))}</strong><span>COMPLETED</span>${completedBreakdown}</button><a class="achievement-kpi trophy-kpi" href="${escape(sourceUrl)}" target="_blank" rel="noreferrer"><strong>${escape(String(trophyTotal))}</strong><span>TROPHIES</span>${trophyBreakdown}</a>${levelCard}${rarityGraph}</div>`;
+  return `<div class="achievement-summary ${levelLabel ? "" : "achievement-summary-no-level"}"><button class="achievement-kpi platinum-highlight ${completedCount ? "has-platinum" : ""}" type="button" data-action="platinums"><strong class="kpi-with-icon">${trophyIconHtml}${escape(String(completedCount))}</strong><span>${escape(completedLabel)}</span>${completedBreakdown}</button><a class="achievement-kpi trophy-kpi" href="${escape(sourceUrl)}" target="_blank" rel="noreferrer"><strong>${escape(String(trophyTotal))}</strong><span>${escape(trophiesLabel)}</span>${trophyBreakdown}</a>${levelCard}${rarityGraph}</div>`;
 }
 
-export function achievementPanelMarkup({ psn = {}, steam = {}, xbox = {}, setupNotices, trophyIconHtml, platformBadge, platformLogo, trophyTone, escape }) {
+export function achievementPanelMarkup({ psn = {}, steam = {}, xbox = {}, setupNotices, trophyIconHtml, platformBadge, platformLogo, trophyTone, escape, translate = (value) => value }) {
   const sourceUrl = psn.sourceUrl || "https://www.playstation.com/";
   const authErrorUrl = "https://ca.account.sony.com/api/v1/ssocookie";
   const fallbackUrl = psn.authError ? authErrorUrl : sourceUrl;
@@ -216,7 +216,7 @@ export function achievementPanelMarkup({ psn = {}, steam = {}, xbox = {}, setupN
           : "No recent achievement activity found yet.";
     return {
       sourceUrl,
-      html: `${authNotice}<a class="achievement-fallback" href="${escape(fallbackUrl)}" target="_blank" rel="noreferrer"><span class="achievement-fallback-logo" aria-hidden="true"></span><div><strong>Achievement activity</strong><span>${escape(fallbackText)}</span></div></a>`,
+      html: `${authNotice}<a class="achievement-fallback" href="${escape(fallbackUrl)}" target="_blank" rel="noreferrer"><span class="achievement-fallback-logo" aria-hidden="true"></span><div><strong>${escape(translate("Achievement activity"))}</strong><span>${escape(fallbackText)}</span></div></a>`,
     };
   }
   const trophies = psn.summary?.trophies || {};
@@ -237,12 +237,13 @@ export function achievementPanelMarkup({ psn = {}, steam = {}, xbox = {}, setupN
     level: psnLevel,
     levelLabel: psnLevel ? "PSN LEVEL" : "",
     counts, sourceUrl, trophyIconHtml, barHeight: sharedTrophyBarHeight, escape,
+    completedLabel: translate("COMPLETED"), trophiesLabel: translate("TROPHIES"),
   });
   const cards = achievements.map((item, index) => {
     const platform = item.source === "steam" ? "Steam" : String(item.platform || (item.source === "xbox" ? "Xbox" : "PlayStation")).trim() || "PlayStation";
-    return achievementCardMarkup({ index, tone: item.source === "steam" ? "steam" : trophyTone(item.rarity), href: item.url || sourceUrl, game: item.game || "", title: item.title || (item.source === "steam" ? "Achievement unlocked" : "Trophy unlocked"), icon: item.icon || platformLogo(item.source === "steam" ? "Steam" : item.source === "xbox" ? "Xbox" : "PS5"), meta: `${platformBadge(platform)}${item.earnedAt ? `<span class="achievement-earned-date">${escape(item.earnedAt)}</span>` : ""}`, escape });
+    return achievementCardMarkup({ index, tone: item.source === "steam" ? "steam" : trophyTone(item.rarity), href: item.url || sourceUrl, game: item.game || "", title: item.title || translate(item.source === "steam" ? "Achievement unlocked" : "Trophy unlocked"), icon: item.icon || platformLogo(item.source === "steam" ? "Steam" : item.source === "xbox" ? "Xbox" : "PS5"), meta: `${platformBadge(platform)}${item.earnedAt ? `<span class="achievement-earned-date">${escape(item.earnedAt)}</span>` : ""}`, escape });
   }).join("");
-  const subtitle = "Lastest achievements";
+  const subtitle = translate("Latest achievements");
   return { sourceUrl, html: `${dashboard}${authNotice}<span class="achievement-subtitle trophy-subtitle">${escape(subtitle)}</span>${cards}` };
 }
 
