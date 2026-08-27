@@ -38,10 +38,10 @@ export async function onRequestPut({ request, env }) {
   const existing = await env.GAMELIST.get(KV_KEY, "json") || {};
   const previousIds = new Set([...(existing.sourceGames || []), ...(existing.games || [])].map((game) => game.id));
   const newlyAdded = body.games.filter((game) => !previousIds.has(game.id));
-  const sourceGames = Array.isArray(body.sourceGames) ? body.sourceGames.slice(0, 1000) : (Array.isArray(existing.sourceGames) ? existing.sourceGames : []);
+  const sourceGames = Array.isArray(body.sourceGames) ? body.sourceGames : (Array.isArray(existing.sourceGames) ? existing.sourceGames : []);
   const data = {
     sourceGames,
-    games: body.games.slice(0, 1000),
+    games: body.games,
     overrides: body.overrides,
     layout: validLayout(body.layout) ? body.layout : (validLayout(existing.layout) ? existing.layout : null),
     favoriteGameIds: validFavoriteGameIds(body.favoriteGameIds) ? body.favoriteGameIds.slice(0, 5) : (validFavoriteGameIds(existing.favoriteGameIds) ? existing.favoriteGameIds.slice(0, 5) : []),

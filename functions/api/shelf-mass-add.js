@@ -3,7 +3,6 @@ import { runnerStyle, runnerThemeSettings } from "./runner-style.js";
 import { syncShelfGamesToBacklog } from "./shelf.js";
 
 const KV_KEY = "shelf-data";
-const MAX_GAMES = 1000;
 
 export async function onRequestGet({ env }) {
   return html(runnerHtml(await runnerThemeSettings(env)));
@@ -60,7 +59,7 @@ export async function onRequestPost({ request, env }) {
     }
   }
 
-  const nextGames = [...additions, ...games].slice(0, MAX_GAMES);
+  const nextGames = [...additions, ...games];
   const data = {
     sourceGames,
     games: nextGames,

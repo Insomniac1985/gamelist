@@ -79,7 +79,7 @@ export async function onRequestGet({ request, env }) {
   if (apply && updated) {
     const data = {
       sourceGames,
-      games: additions.slice(0, 1000),
+      games: additions,
       overrides,
       layout: validLayout(shelf.layout) ? shelf.layout : null,
       favoriteGameIds: validFavoriteGameIds(shelf.favoriteGameIds) ? shelf.favoriteGameIds.slice(0, 5) : [],
