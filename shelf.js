@@ -224,7 +224,7 @@ async function init() {
     fetch("/api/sync", { cache: "no-store" }).then((response) => response.ok ? response.json() : null).catch(() => null),
   ]);
   const draft = loadDraft();
-  if (shelfData) localStorage.removeItem(LOCAL_DRAFT_KEY);
+  if (shelfData) removeLocalStorageItem(LOCAL_DRAFT_KEY);
   state.sourceGames = shelfData?.sourceGames || draft.sourceGames || [];
   state.additions = shelfData?.games || draft.games || [];
   state.overrides = shelfData?.overrides || draft.overrides || {};
@@ -1570,7 +1570,8 @@ async function lookupGame() {
 
 async function fetchGameMetadataData(query) {
   for (const title of gameMetadataQueries(query)) {
-    const response = await fetch(`/api/search?q=${encodeURIComponent(title)}`);
+    const params = new URLSearchParams({ q: title, lang: currentLanguage() });
+    const response = await fetch(`/api/search?${params}`);
     const data = response.ok ? await response.json() : { results: [] };
     if ((data.results || []).length) return data;
   }
@@ -1943,7 +1944,7 @@ async function deleteGame(game) {
 
 async function persistShelf(options = {}) {
   const payload = { sourceGames: state.sourceGames.map(stripRuntimeFields), games: state.additions.map(stripRuntimeFields), overrides: state.overrides, layout: state.layout, favoriteGameIds: normalizeFavoriteGameIds(state.favoriteGameIds) };
-  localStorage.setItem(LOCAL_DRAFT_KEY, JSON.stringify(payload));
+  trySetLocalStorageItem(LOCAL_DRAFT_KEY, JSON.stringify(payload));
   try {
     const password = sessionStorage.getItem(`${SESSION_KEY}:password`) || "";
     const response = await fetch("/api/shelf", { method: "PUT", headers: { "Content-Type": "application/json", "x-edit-password": password }, body: JSON.stringify(payload) });
@@ -1957,7 +1958,7 @@ async function persistShelf(options = {}) {
       if (JSON.stringify(savedIds) !== JSON.stringify(expected)) throw new Error("Showcase save verification failed");
     }
     state.updatedAt = data.updatedAt || new Date().toISOString();
-    localStorage.removeItem(LOCAL_DRAFT_KEY);
+    removeLocalStorageItem(LOCAL_DRAFT_KEY);
     return true;
   } catch {
     state.updatedAt = new Date().toISOString();
@@ -2754,7 +2755,7 @@ async function persistShowcaseFavorites(ids) {
     console.warn("Showcase settings readback failed", error);
   }
   if (shelfSaved || settingsSaved) {
-    localStorage.removeItem(LOCAL_DRAFT_KEY);
+    removeLocalStorageItem(LOCAL_DRAFT_KEY);
     return true;
   }
   return false;
@@ -2885,6 +2886,24 @@ function splitShelfPlayingModules() {
 }
 
 function loadDraft() { try { return JSON.parse(localStorage.getItem(LOCAL_DRAFT_KEY) || "{}"); } catch { return {}; } }
+
+function trySetLocalStorageItem(key, value) {
+  try {
+    localStorage.setItem(key, value);
+    return true;
+  } catch (error) {
+    if (isStorageQuotaError(error)) removeLocalStorageItem(key);
+    return false;
+  }
+}
+
+function removeLocalStorageItem(key) {
+  try { localStorage.removeItem(key); } catch {}
+}
+
+function isStorageQuotaError(error) {
+  return error?.name === "QuotaExceededError" || error?.code === 22 || error?.code === 1014;
+}
 function bindTextureParallax() { if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return; let frame = 0; window.addEventListener("pointermove", (event) => { if (frame) return; frame = requestAnimationFrame(() => { frame = 0; const x = ((event.clientX / window.innerWidth) - .5) * -14; const y = ((event.clientY / window.innerHeight) - .5) * -14; document.documentElement.style.setProperty("--grid-x", `${x.toFixed(2)}px`); document.documentElement.style.setProperty("--grid-y", `${y.toFixed(2)}px`); }); }, { passive: true }); }
 function renderGamelistModules() {
   const playing = state.gamelistGames.filter((game) => game.playing && !game.deletedAt).sort(comparePlayingGames);

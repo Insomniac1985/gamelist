@@ -10021,12 +10021,14 @@ async function lookupFirstResult(title) {
 async function fetchSearchResults(query) {
   const normalized = String(query || "").trim();
   if (!normalized) return [];
-  const cacheKey = normalized.toLocaleLowerCase();
+  const language = currentLanguage();
+  const cacheKey = `${language}:${normalized.toLocaleLowerCase()}`;
   const now = Date.now();
   const cached = searchCache.get(cacheKey);
   if (cached && (now - cached.timestamp) < SEARCH_CACHE_TTL) return cached.results;
   if (searchInflight.has(cacheKey)) return searchInflight.get(cacheKey);
-  const request = fetch(`/api/search?q=${encodeURIComponent(normalized)}`)
+  const params = new URLSearchParams({ q: normalized, lang: language });
+  const request = fetch(`/api/search?${params}`)
     .then(async (response) => {
       if (!response.ok) return [];
       const data = await response.json();
