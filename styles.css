@@ -6372,7 +6372,7 @@ html.theme-light #floatingAddButton:hover {
 .top-actions #fetchPricesButton,
 .top-actions #addButton,
 .top-actions #searchButton,
-body.can-edit #loginButton,
+.top-actions #loginButton,
 body:not(.can-edit) #loginButton,
 #loginButton[title="Edit"] {
   height: 42px;
@@ -6383,6 +6383,8 @@ body:not(.can-edit) #loginButton,
 .top-actions #syncButton,
 .top-actions #settingsButton,
 .top-actions #fetchPricesButton,
+.top-actions #loginButton,
+.top-actions #searchButton,
 body:not(.can-edit) #loginButton,
 #loginButton[title="Edit"] {
   width: 42px;
@@ -6396,6 +6398,17 @@ body:not(.can-edit) #loginButton,
 }
 
 .top-actions #fetchPricesButton .button-label {
+  display: none;
+}
+
+.top-actions-separator {
+  width: 1px;
+  height: 26px;
+  margin: 0 8px;
+  background: var(--line);
+}
+
+body:not(.can-edit) .top-actions-separator {
   display: none;
 }
 
@@ -6437,6 +6450,11 @@ body:not(.can-edit) #loginButton,
 
 .floating-search-button {
   display: none;
+}
+
+body.dialog-open .floating-search-button {
+  opacity: 0;
+  pointer-events: none;
 }
 
 .icon-only-button {
@@ -11408,6 +11426,10 @@ body.theme-kash
 }
 
 @media (max-width: 760px) {
+  .top-actions-separator {
+    display: none;
+  }
+
   .settings-page-toggle-row {
     grid-template-columns: 1fr;
   }
@@ -11818,6 +11840,7 @@ html.theme-light .playing-achievements-check input[type="checkbox"]:checked {
     position: fixed;
     left: clamp(14px, 2.4vw, 26px);
     bottom: clamp(16px, 3vw, 28px);
+    z-index: 16;
     display: inline-grid;
   }
 
