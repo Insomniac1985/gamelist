@@ -1283,7 +1283,7 @@ function gameCard(game, options = {}) {
     : digitalGame ? `${platformBadge(game.platform, { title: game.title })}${mediaFormatBadge(game)}${dlcBadge(game)}${entitlementBadge(game)}${shelfProgressPill(game)}`
     : `<span class="region-flag" title="${escapeHtml(game.country)}">${flagIcon(game.country)}</span>${platformBadge(game.platform, { title: game.title })}${conditionBadge(condition)}${shelfProgressPill(game)}`;
   const playDates = card.querySelector(".play-dates");
-  if (preorderProjection) playDates.innerHTML = `${game.releaseDate ? `<span class="release-pill history-date-pill"><small class="release-date-label"><span>Releases</span>${calendarMiniIcon()}</small><strong>${escapeHtml(formatDate(game.releaseDate))}</strong></span>` : ""}${game.preorderStore ? preorderProjectionChip(game.preorderStore) : ""}`;
+  if (preorderProjection) playDates.innerHTML = `${shelfReleaseDatePill(game, "Releases")}${game.preorderStore ? preorderProjectionChip(game.preorderStore) : ""}`;
   else playDates.remove();
   card.querySelector(".chips").innerHTML = tags.map((tag) => `<span class="chip genre">${escapeHtml(tag)}</span>`).join("");
   card.querySelector(".card-trophies").remove();
@@ -1315,7 +1315,7 @@ function gameRow(game) {
   const actions = preorderProjection ? `<div class="game-row-actions-top"><button class="icon-button row-edit-action" data-action="edit-preorder" type="button" title="Edit" aria-label="Edit">${pencilIcon()}</button><button class="icon-button danger-button row-delete-action" data-action="delete-preorder" type="button" title="Delete" aria-label="Delete">${trashIcon()}</button></div><div class="game-row-actions-bottom"><button class="ghost-button" data-action="accept-preorder" type="button">Got it</button></div>` : isPendingCollectionGame(game) ? `<div class="game-row-actions-top"><button class="primary-button add-collection-action" data-action="add-collection" type="button">Add to Collection</button></div><div class="game-row-actions-bottom"><button class="icon-button danger-button row-delete-action" data-action="delete" type="button" title="Delete" aria-label="Delete">${trashIcon()}</button></div>` : `<div class="game-row-actions-top"><button class="icon-button row-edit-action" data-action="edit" type="button" title="Edit" aria-label="Edit">${pencilIcon()}</button><button class="icon-button danger-button row-delete-action" data-action="delete" type="button" title="Delete" aria-label="Delete">${trashIcon()}</button></div><div class="game-row-actions-bottom"><button class="ghost-button shelf-add-backlog-action" data-action="add-backlog" type="button">Add to Backlog</button></div>`;
   const mobilePreorderTag = game.preorderStore ? mobilePreorderProjectionChip(game.preorderStore) : "";
   const core = preorderProjection
-    ? `${platformBadge(game.platform, { title: game.title })}${mediaFormatBadge(game)}${dlcBadge(game)}${entitlementBadge(game)}${preorderPlaytimePill(game)}${game.releaseDate ? `<span class="release-pill history-date-pill"><small class="release-date-label"><span>Releases</span>${calendarMiniIcon()}</small><strong>${escapeHtml(formatDate(game.releaseDate))}</strong></span>` : ""}${mobilePreorderTag}`
+    ? `${platformBadge(game.platform, { title: game.title })}${mediaFormatBadge(game)}${dlcBadge(game)}${entitlementBadge(game)}${preorderPlaytimePill(game)}${shelfReleaseDatePill(game, "Releases")}${mobilePreorderTag}`
     : digitalGame ? `${platformBadge(game.platform, { title: game.title })}${mediaFormatBadge(game)}${dlcBadge(game)}${entitlementBadge(game)}${shelfProgressPill(game)}${mobilePreorderTag}`
     : `<span class="region-flag" title="${escapeHtml(game.country)}">${flagIcon(game.country)}</span>${platformBadge(game.platform, { title: game.title })}${conditionBadge(conditionLabel(game))}${shelfProgressPill(game)}${mobilePreorderTag}`;
   const prices = preorderProjection ? gamelistPreorderPrices(game) : "";
@@ -1425,7 +1425,7 @@ function openDetails(game) {
   bindCoverFrame(el.detailCover);
   const detailTags = visibleShelfTags(game, [...(game.tags || []), game.category && game.category !== "Game" ? game.category : "", ...String(game.genre || "").split(",")]);
   el.detailChips.innerHTML = detailTags.map((value) => `<span class="chip genre">${escapeHtml(value)}</span>`).join("");
-  el.detailDates.innerHTML = `${game.releaseDate ? `<span class="release-pill history-date-pill"><small class="release-date-label"><span>Released</span>${calendarMiniIcon()}</small><strong>${escapeHtml(formatDate(game.releaseDate))}</strong></span>` : ""}${game.createdAt ? `<span class="history-pill history-date-pill"><small>Added</small><strong>${escapeHtml(formatDate(game.createdAt))}</strong></span>` : ""}`;
+  el.detailDates.innerHTML = `${shelfReleaseDatePill(game, "Released")}${game.createdAt ? `<span class="history-pill history-date-pill"><small>Added</small><strong>${escapeHtml(formatDate(game.createdAt))}</strong></span>` : ""}`;
   el.detailDates.hidden = !el.detailDates.innerHTML;
   el.detailNote.hidden = !game.notes;
   el.detailNote.textContent = game.notes || "";
@@ -2944,7 +2944,7 @@ function openGamelistDetails(sourceGame) {
   el.detailStudio.innerHTML = `${visibleOwners.map(ownerBadge).join("")}${detailStudio ? `<span>${escapeHtml(detailStudio)}</span>` : ""}`;
   el.detailStudio.hidden = !el.detailStudio.textContent;
   el.detailMeta.innerHTML = `${platformBadge(game.platform, { title: game.title })}${mediaFormatBadge(game)}${dlcBadge(game)}${entitlementBadge(game)}${preorderPlaytimePill(game)}`;
-  el.detailDates.innerHTML = `${game.releaseDate ? `<span class="release-pill history-date-pill"><small class="release-date-label"><span>Releases</span>${calendarMiniIcon()}</small><strong>${escapeHtml(formatDate(game.releaseDate))}</strong></span>` : ""}`;
+  el.detailDates.innerHTML = `${shelfReleaseDatePill(game, "Releases")}`;
   el.detailDates.hidden = !el.detailDates.innerHTML;
   el.detailChips.innerHTML = `${game.preorderStore ? preorderProjectionChip(game.preorderStore) : ""}${(game.genres || []).slice(0, 4).map((genre) => `<span class="chip genre">${escapeHtml(genre)}</span>`).join("")}`;
   el.detailCover.src = cover;
@@ -3100,6 +3100,13 @@ function releaseStatusPill(value) {
   const label = match[1].toLowerCase() === "released" ? "Released" : "Releases";
   const date = formatShortDate(match[2]) || match[2];
   return `<span class="release-pill history-date-pill"><small class="release-date-label"><span>${label}</span>${calendarMiniIcon()}</small><strong>${escapeHtml(date)}</strong></span>`;
+}
+
+function shelfReleaseDatePill(game, label) {
+  if (!game?.releaseDate) return "";
+  const text = String(game.releaseText || "").trim() || formatDate(game.releaseDate);
+  if (!text) return "";
+  return `<span class="release-pill history-date-pill"><small class="release-date-label"><span>${escapeHtml(label)}</span>${calendarMiniIcon()}</small><strong>${escapeHtml(text)}</strong></span>`;
 }
 
 function calendarMiniIcon() {
