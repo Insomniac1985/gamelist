@@ -257,6 +257,7 @@ const el = {
   stats: document.querySelector("#stats"),
   loginButton: document.querySelector("#loginButton"),
   addButton: document.querySelector("#addButton"),
+  searchButton: document.querySelector("#searchButton"),
   syncButton: document.querySelector("#syncButton"),
   settingsButton: document.querySelector("#settingsButton"),
   fetchDataButton: document.querySelector("#fetchDataButton"),
@@ -278,6 +279,7 @@ const el = {
   scrollTopButton: document.querySelector("#scrollTopButton"),
   floatingEditActions: document.querySelector("#floatingEditActions"),
   floatingAddButton: document.querySelector("#floatingAddButton"),
+  floatingSearchButton: document.querySelector("#floatingSearchButton"),
   mobileTabs: document.querySelectorAll("[data-mobile-section]"),
   board: document.querySelector(".board"),
   detailDialog: document.querySelector("#detailDialog"),
@@ -768,6 +770,8 @@ function bindEvents() {
   el.loginButton.addEventListener("click", toggleEditMode);
   el.addButton.addEventListener("click", quickAddGame);
   el.floatingAddButton.addEventListener("click", quickAddGame);
+  el.searchButton?.addEventListener("click", scrollToSearchArea);
+  el.floatingSearchButton?.addEventListener("click", scrollToSearchArea);
   el.syncButton.addEventListener("click", syncNow);
   el.settingsButton?.addEventListener("click", openSettingsDialog);
   el.authCloseButton?.addEventListener("click", () => el.authDialog.close("cancel"));
@@ -1364,7 +1368,7 @@ function render() {
   document.documentElement.classList.remove("theme-booting");
   document.body.classList.toggle("can-edit", state.canEdit);
   document.body.classList.toggle("list-view-mode", state.viewMode === "list");
-  el.loginButton.innerHTML = state.canEdit ? `<span class="button-label">${escapeHtml(tt("Stop Editing"))}</span><span class="button-icon" aria-hidden="true">${exitIcon()}</span>` : pencilIcon();
+  el.loginButton.innerHTML = state.canEdit ? `<span class="button-icon" aria-hidden="true">${exitIcon()}</span>` : pencilIcon();
   el.loginButton.title = state.canEdit ? tt("Stop Editing") : tt("Edit");
   el.loginButton.setAttribute("aria-label", el.loginButton.title);
   el.addButton.hidden = false;
@@ -3908,6 +3912,7 @@ function downloadCanvas(canvas, filename) {
 
 function scrollToSearchArea() {
   document.querySelector(".toolbar")?.scrollIntoView({ behavior: "smooth", block: "start" });
+  window.requestAnimationFrame(() => el.searchInput?.focus({ preventScroll: true }));
 }
 
 function scrollToFinishedSection() {

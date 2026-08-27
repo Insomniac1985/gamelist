@@ -160,18 +160,24 @@
         })();
       </script>
       <div class="top-actions">
+        <button class="ghost-button" id="loginButton" type="button" title="Edit" aria-label="Edit">
+          <svg class="pencil-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h4l11-11a2.8 2.8 0 0 0-4-4L4 16v4Z"></path><path d="M13.5 6.5l4 4"></path></svg>
+        </button>
         <button class="icon-button" id="settingsButton" type="button" title="Settings" aria-label="Settings" hidden>
           <svg class="settings-icon" viewBox="0 0 24 24" aria-hidden="true">
-            <path d="M9.8 3.7h4.4l.42 2.1c.45.16.87.4 1.25.7l2.02-.68 2.2 3.82-1.6 1.42c.04.31.04.57 0 .88l1.6 1.42-2.2 3.82-2.02-.68c-.38.3-.8.54-1.25.7l-.42 2.1H9.8l-.42-2.1a5.3 5.3 0 0 1-1.25-.7l-2.02.68-2.2-3.82 1.6-1.42a4.1 4.1 0 0 1 0-.88l-1.6-1.42 2.2-3.82 2.02.68c.38-.3.8-.54 1.25-.7l.42-2.1Z"></path>
+            <path d="M9.8 3.7h4.4l.42 2.1c.45.16.87.4 1.25.7l2.02-.68 2.2 3.82-1.6 1.42c.04.31.04.57 0 .88l1.6 1.42-2.2 3.82-2.02-.68c-.38.3-.8.54-1.25.7l-.42 2.1H9.8l-.42-2.1a5.3 5.3 0 0 1-1.25-.7l-2.02.68-2.2-3.82 1.6-1.42a4.1 4.1 0 0 1 0-.88l-1.6-1.42 2.2-3.82 2.02-.68c.38-.3.8-.54 1.25-.7l.42-2.1Z"></path>
             <circle cx="12" cy="12" r="2.65"></circle>
           </svg>
         </button>
+        <span class="top-actions-separator" aria-hidden="true"></span>
         <button class="ghost-button" id="fetchPricesButton" type="button" hidden>
           <svg class="euro-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M19 5.5A7 7 0 0 0 8.2 7.1 7.4 7.4 0 0 0 7 12a7.4 7.4 0 0 0 1.2 4.9A7 7 0 0 0 19 18.5"></path><path d="M4 10h10"></path><path d="M4 14h10"></path></svg>
           <span class="button-label">Fetch New Prices</span>
         </button>
-        <button class="ghost-button" id="loginButton" type="button" title="Edit" aria-label="Edit">
-          <svg class="pencil-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h4l11-11a2.8 2.8 0 0 0-4-4L4 16v4Z"></path><path d="M13.5 6.5l4 4"></path></svg>
+        <button class="primary-button top-search-button" id="searchButton" type="button" title="Search" aria-label="Search">
+          <span class="button-icon" aria-hidden="true">
+            <svg class="search-icon" viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.5"></circle><path d="m16 16 4 4"></path></svg>
+          </span>
         </button>
         <button class="primary-button" id="addButton" type="button" hidden>
           <span class="button-label">Add Game</span>
@@ -264,6 +270,9 @@
 
     <button class="icon-button scroll-top-button" id="scrollTopButton" type="button" title="Back to top" aria-label="Back to top">
       <svg class="scroll-top-icon" viewBox="0 0 24 24" aria-hidden="true"><polyline points="6 14 12 8 18 14"></polyline></svg>
+    </button>
+    <button class="icon-button floating-action-button floating-search-button" id="floatingSearchButton" type="button" title="Search" aria-label="Search">
+      <svg class="search-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.5"></circle><path d="m16 16 4 4"></path></svg>
     </button>
     <div class="floating-edit-actions" id="floatingEditActions" aria-label="Quick actions">
       <button class="icon-button floating-action-button" id="floatingAddButton" type="button" title="Add Game" aria-label="Add Game"><svg class="plus-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14"></path><path d="M5 12h14"></path></svg></button>
