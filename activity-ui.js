@@ -252,7 +252,8 @@ export function mountReleaseCalendar(container, options = {}) {
   const releases = releaseGamesByDate(options.games || []);
   const today = localDateKey(new Date());
   const weekStart = normalizedWeekStart(options.weekStart);
-  container.innerHTML = releaseCalendarMarkup(months, releases, today, weekStart);
+  const translate = typeof options.translate === "function" ? options.translate : (value) => value;
+  container.innerHTML = releaseCalendarMarkup(months, releases, today, weekStart, { translate, locale: options.locale });
   container.querySelectorAll("[data-calendar-shift]").forEach((button) => {
     button.addEventListener("click", () => options.onShift?.(Number(button.dataset.calendarShift || 0)));
   });
@@ -279,18 +280,19 @@ export function releaseGamesByDate(games = []) {
   return groups;
 }
 
-function releaseCalendarMarkup(months, releases, today, weekStart) {
+function releaseCalendarMarkup(months, releases, today, weekStart, options = {}) {
+  const translate = options.translate || ((value) => value);
   return `
     <div class="release-calendar-head">
       <div class="release-calendar-actions">
-        <button class="ghost-button calendar-today-action" type="button" data-calendar-today>Today</button>
-        <button class="icon-button" type="button" data-calendar-shift="-1" title="Previous month" aria-label="Previous month">←</button>
-        <button class="icon-button" type="button" data-calendar-shift="1" title="Next month" aria-label="Next month">→</button>
+        <button class="ghost-button calendar-today-action" type="button" data-calendar-today>${escapeHtml(translate("Today"))}</button>
+        <button class="icon-button" type="button" data-calendar-shift="-1" title="${escapeHtml(translate("Previous month"))}" aria-label="${escapeHtml(translate("Previous month"))}">←</button>
+        <button class="icon-button" type="button" data-calendar-shift="1" title="${escapeHtml(translate("Next month"))}" aria-label="${escapeHtml(translate("Next month"))}">→</button>
       </div>
     </div>
     <div class="release-months-frame glass">
       <div class="release-months">
-        ${months.map((month) => releaseMonthMarkup(month, releases, today, weekStart)).join("")}
+        ${months.map((month) => releaseMonthMarkup(month, releases, today, weekStart, options)).join("")}
       </div>
     </div>
   `;
@@ -303,7 +305,8 @@ function releaseCalendarMonths(count, offset = 0) {
   return Array.from({ length: count }, (_, index) => new Date(start.getFullYear(), start.getMonth() + offset + index, 1));
 }
 
-function releaseMonthMarkup(monthDate, releases, today, weekStart) {
+function releaseMonthMarkup(monthDate, releases, today, weekStart, options = {}) {
+  const translate = options.translate || ((value) => value);
   const year = monthDate.getFullYear();
   const month = monthDate.getMonth();
   const totalDays = new Date(year, month + 1, 0).getDate();
@@ -329,7 +332,7 @@ function releaseMonthMarkup(monthDate, releases, today, weekStart) {
         ${games.length ? "" : "disabled"}
       >
         <span>${day}</span>
-        ${games.length > 1 ? `<em>${games.length}</em>` : ""}
+        ${games.length > 1 ? `<em title="${escapeHtml(translate("{count} releases").replace("{count}", games.length))}">${games.length}</em>` : ""}
       </button>
     `);
   }
@@ -339,11 +342,11 @@ function releaseMonthMarkup(monthDate, releases, today, weekStart) {
   return `
     <article class="release-month">
       <header>
-        <strong>${escapeHtml(monthName(monthDate))}</strong>
+        <strong>${escapeHtml(monthName(monthDate, options.locale))}</strong>
         <span>${year}</span>
       </header>
       <div class="release-weekdays" aria-hidden="true">
-        ${weekdayLabels(weekStart).map((label) => `<span>${label}</span>`).join("")}
+        ${weekdayLabels(weekStart).map((label) => `<span>${escapeHtml(translate(label))}</span>`).join("")}
       </div>
       <div class="release-days">${cells.join("")}</div>
     </article>
@@ -375,8 +378,8 @@ function weekdayLabels(weekStart) {
   return [...WEEKDAYS.slice(startIndex), ...WEEKDAYS.slice(0, startIndex)].map(([, label]) => label);
 }
 
-function monthName(date) {
-  return new Intl.DateTimeFormat("en-US", { month: "long" }).format(date);
+function monthName(date, locale = undefined) {
+  return new Intl.DateTimeFormat(locale || undefined, { month: "long" }).format(date);
 }
 
 function localDateKey(date) {

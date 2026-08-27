@@ -189,11 +189,11 @@
       <div class="shelf-modules" id="shelfModules">
         <section class="playing-section shelf-carousel-module" data-module="playing" hidden></section>
         <section class="shelf-favorites-section" data-module="favorites" hidden>
-          <div class="column-head"><div><h2>Showcase</h2></div><button class="icon-button showcase-edit-button editor-only" id="showcaseEditButton" type="button" title="Edit Showcase" aria-label="Edit Showcase"><svg class="pencil-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h4l11-11a2.8 2.8 0 0 0-4-4L4 16v4Z"></path><path d="M13.5 6.5l4 4"></path></svg></button></div>
+          <div class="column-head"><div><h2 data-i18n="Showcase">Showcase</h2></div><button class="icon-button showcase-edit-button editor-only" id="showcaseEditButton" type="button" title="Edit Showcase" aria-label="Edit Showcase" data-i18n-title="Edit Showcase" data-i18n-aria-label="Edit Showcase"><svg class="pencil-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h4l11-11a2.8 2.8 0 0 0-4-4L4 16v4Z"></path><path d="M13.5 6.5l4 4"></path></svg></button></div>
           <div class="favorite-cover-row" id="favoriteGames"></div>
         </section>
         <section class="achievement-section shelf-trophy-module" data-module="trophies" hidden>
-          <div class="column-head"><div><h2>Achievements</h2></div><button class="icon-button completed-stats-button achievement-stats-button" id="shelfAchievementStatsButton" type="button" title="Stats" aria-label="Achievement stats"><svg class="graph-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 19h16"></path><path d="M7 16V9"></path><path d="M12 16V5"></path><path d="M17 16v-4"></path></svg></button></div>
+          <div class="column-head"><div><h2 data-i18n="Achievements">Achievements</h2></div><button class="icon-button completed-stats-button achievement-stats-button" id="shelfAchievementStatsButton" type="button" title="Stats" aria-label="Achievement stats" data-i18n-title="Stats" data-i18n-aria-label="Achievement stats"><svg class="graph-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 19h16"></path><path d="M7 16V9"></path><path d="M12 16V5"></path><path d="M17 16v-4"></path></svg></button></div>
           <div id="shelfTrophyCard" class="achievement-panel glass"></div>
         </section>
         <section class="calendar-section hero" data-module="calendar">
@@ -246,9 +246,9 @@
           </div>
           <div class="shelf-grid" id="gameShelf" aria-live="polite"></div>
           <div class="empty-state glass" id="emptyState" hidden>
-            <strong>Nothing on this shelf</strong>
-            <span>Try another filter or search.</span>
-            <button class="ghost-button" id="clearFilters" type="button">Clear filters</button>
+            <strong data-i18n="Nothing on this shelf">Nothing on this shelf</strong>
+            <span data-i18n="Try another filter or search.">Try another filter or search.</span>
+            <button class="ghost-button" id="clearFilters" type="button" data-i18n="Clear filters">Clear filters</button>
           </div>
         </section>
       </div>
@@ -303,8 +303,8 @@
 
         <div class="lookup-row">
           <label>
-            <span class="lookup-label-physical">Search DB or PriceCharting</span><span class="lookup-label-digital">Search IGDB</span>
-            <input id="lookupInput" type="search" placeholder="Game name or PriceCharting page">
+            <span class="lookup-label-physical" data-i18n="Search DB or PriceCharting">Search DB or PriceCharting</span><span class="lookup-label-digital" data-i18n="Search IGDB">Search IGDB</span>
+            <input id="lookupInput" type="search" placeholder="Game name or PriceCharting page" data-i18n-placeholder="Game name or PriceCharting page">
           </label>
           <button class="ghost-button icon-only-button" id="lookupButton" type="button" title="Fetch info" aria-label="Fetch info">
             <svg class="search-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle><path d="M16.5 16.5 21 21"></path></svg>
@@ -312,67 +312,67 @@
           <span class="lookup-digital-separator" aria-hidden="true"></span>
           <label class="check-filter toggle-check form-check collection-check lookup-digital-check">
             <input id="shelfDigitalInput" type="checkbox">
-            <span>Digital</span>
+            <span data-i18n="Digital">Digital</span>
           </label>
         </div>
         <div class="lookup-results" id="lookupResults"></div>
 
         <section class="form-group">
-          <h3>Collecting Information</h3>
+          <h3 data-i18n="Collecting Information">Collecting Information</h3>
           <div class="form-grid shelf-editor-grid">
-            <label class="shelf-title-field"><span>Title</span><input id="titleInput" required></label>
-            <label class="shelf-console-field"><span>Console</span><span class="icon-input shelf-edit-icon-input"><span class="field-leading-icon shelf-platform-field-icon" aria-hidden="true"></span><input id="platformInput" list="shelfPlatformOptions"></span><datalist id="shelfPlatformOptions"></datalist></label>
-            <label class="shelf-region-field"><span>Region</span><span class="icon-input shelf-edit-icon-input"><select id="countryInput" required></select></span></label>
-            <label class="shelf-dlc-field check-filter toggle-check"><input id="dlcInput" type="checkbox"><span>DLC</span></label>
-            <label class="shelf-release-field"><span>Release Date</span><input id="releaseDateInput" type="date"></label>
+            <label class="shelf-title-field"><span data-i18n="Title">Title</span><input id="titleInput" required></label>
+            <label class="shelf-console-field"><span data-i18n="Console">Console</span><span class="icon-input shelf-edit-icon-input"><span class="field-leading-icon shelf-platform-field-icon" aria-hidden="true"></span><input id="platformInput" list="shelfPlatformOptions"></span><datalist id="shelfPlatformOptions"></datalist></label>
+            <label class="shelf-region-field"><span data-i18n="Region">Region</span><span class="icon-input shelf-edit-icon-input"><select id="countryInput" required></select></span></label>
+            <label class="shelf-dlc-field check-filter toggle-check"><input id="dlcInput" type="checkbox"><span data-i18n="DLC">DLC</span></label>
+            <label class="shelf-release-field"><span data-i18n="Release Date">Release Date</span><input id="releaseDateInput" type="date"></label>
             <label class="shelf-entitlement-field shelf-psplus-field check-filter toggle-check"><input id="psPlusInput" type="checkbox"><span>PlayStation Plus</span></label>
-            <label class="shelf-entitlement-field shelf-games-with-gold-field check-filter toggle-check"><input id="gamesWithGoldInput" type="checkbox"><span>Games with Gold</span></label>
-            <label class="shelf-value-field"><span>Estimated Value</span><input id="priceInput" inputmode="decimal" placeholder="0.00"></label>
-            <label class="shelf-owner-field"><span>Owner</span><input id="ownersInput" placeholder="Judy, Jordi, Cage"></label>
-            <label class="shelf-achievement-search-field"><span>Alternate Achievement search name</span><input id="trophyNameInput" placeholder="Optional alternate title"></label>
+            <label class="shelf-entitlement-field shelf-games-with-gold-field check-filter toggle-check"><input id="gamesWithGoldInput" type="checkbox"><span data-i18n="Games with Gold">Games with Gold</span></label>
+            <label class="shelf-value-field"><span data-i18n="Estimated Value">Estimated Value</span><input id="priceInput" inputmode="decimal" placeholder="0.00"></label>
+            <label class="shelf-owner-field"><span data-i18n="Owner">Owner</span><input id="ownersInput" placeholder="Judy, Jordi, Cage" data-i18n-placeholder="Judy, Jordi, Cage"></label>
+            <label class="shelf-achievement-search-field"><span data-i18n="Alternate Achievement search name">Alternate Achievement search name</span><input id="trophyNameInput" placeholder="Optional alternate title" data-i18n-placeholder="Optional alternate title"></label>
             <fieldset class="condition-editor shelf-condition-field"><div class="condition-grid">
-                <label class="check-filter toggle-check"><input id="conditionGameInput" type="checkbox"><span>Game</span></label>
-                <label class="check-filter toggle-check"><input id="conditionManualInput" type="checkbox"><span>Manual</span></label>
-                <label class="check-filter toggle-check"><input id="conditionBoxInput" type="checkbox"><span>Box</span></label>
-                <label class="check-filter toggle-check"><input id="conditionOtherInput" type="checkbox"><span>Other</span></label>
-                <label class="check-filter toggle-check condition-sealed"><input id="conditionSealedInput" type="checkbox"><span>Sealed</span></label>
+                <label class="check-filter toggle-check"><input id="conditionGameInput" type="checkbox"><span data-i18n="Game">Game</span></label>
+                <label class="check-filter toggle-check"><input id="conditionManualInput" type="checkbox"><span data-i18n="Manual">Manual</span></label>
+                <label class="check-filter toggle-check"><input id="conditionBoxInput" type="checkbox"><span data-i18n="Box">Box</span></label>
+                <label class="check-filter toggle-check"><input id="conditionOtherInput" type="checkbox"><span data-i18n="Other">Other</span></label>
+                <label class="check-filter toggle-check condition-sealed"><input id="conditionSealedInput" type="checkbox"><span data-i18n="Sealed">Sealed</span></label>
             </div></fieldset>
-            <label class="wide shelf-condition-notes-field"><span>Condition Notes</span><textarea id="notesInput" rows="3" placeholder="Missing booklet, sealed, damaged case..."></textarea></label>
+            <label class="wide shelf-condition-notes-field"><span data-i18n="Condition Notes">Condition Notes</span><textarea id="notesInput" rows="3" placeholder="Missing booklet, sealed, damaged case..." data-i18n-placeholder="Missing booklet, sealed, damaged case..."></textarea></label>
           </div>
         </section>
 
         <section class="form-group">
-          <h3>Game Data</h3>
+          <h3 data-i18n="Game Data">Game Data</h3>
           <div class="form-grid">
-            <label><span>Developer</span><input id="developerInput" placeholder="Studio"></label>
-            <label><span>Publisher</span><input id="publisherInput" placeholder="Publisher"></label>
-            <label class="wide"><span>Genre</span><input id="genreInput"></label>
-            <label class="wide"><span>Description</span><textarea id="shelfDescriptionInput" rows="4"></textarea></label>
-            <label class="wide"><span>IGDB Page</span><input id="igdbUrlInput" type="url" placeholder="https://www.igdb.com/games/..."></label>
-            <label class="wide"><span>HowLongToBeat URL</span><input id="hltbUrlInput" type="url" placeholder="https://howlongtobeat.com/game/..."></label>
-            <label><span>PlayStation URL</span><input id="playstationUrlInput" type="url" placeholder="https://store.playstation.com/..."></label>
-            <label><span>Nintendo URL</span><input id="nintendoUrlInput" type="url" placeholder="https://www.nintendo.com/..."></label>
-            <label><span>Steam URL</span><input id="steamUrlInput" type="url" placeholder="https://store.steampowered.com/..."></label>
-            <label><span>Xbox URL</span><input id="xboxUrlInput" type="url" placeholder="https://www.xbox.com/..."></label>
-            <label class="wide"><span>Cover URL</span><input id="coverInput" type="url"></label>
+            <label><span data-i18n="Developer">Developer</span><input id="developerInput" placeholder="Studio" data-i18n-placeholder="Studio"></label>
+            <label><span data-i18n="Publisher">Publisher</span><input id="publisherInput" placeholder="Publisher" data-i18n-placeholder="Publisher"></label>
+            <label class="wide"><span data-i18n="Genre">Genre</span><input id="genreInput"></label>
+            <label class="wide"><span data-i18n="Description">Description</span><textarea id="shelfDescriptionInput" rows="4"></textarea></label>
+            <label class="wide"><span data-i18n="IGDB Page">IGDB Page</span><input id="igdbUrlInput" type="url" placeholder="https://www.igdb.com/games/..."></label>
+            <label class="wide"><span data-i18n="HowLongToBeat URL">HowLongToBeat URL</span><input id="hltbUrlInput" type="url" placeholder="https://howlongtobeat.com/game/..."></label>
+            <label><span data-i18n="PlayStation URL">PlayStation URL</span><input id="playstationUrlInput" type="url" placeholder="https://store.playstation.com/..."></label>
+            <label><span data-i18n="Nintendo URL">Nintendo URL</span><input id="nintendoUrlInput" type="url" placeholder="https://www.nintendo.com/..."></label>
+            <label><span data-i18n="Steam URL">Steam URL</span><input id="steamUrlInput" type="url" placeholder="https://store.steampowered.com/..."></label>
+            <label><span data-i18n="Xbox URL">Xbox URL</span><input id="xboxUrlInput" type="url" placeholder="https://www.xbox.com/..."></label>
+            <label class="wide"><span data-i18n="Cover URL">Cover URL</span><input id="coverInput" type="url"></label>
           </div>
         </section>
 
         <section class="form-group shelf-pricecharting-section">
-          <h3>PriceCharting Data</h3>
+          <h3 data-i18n="PriceCharting Data">PriceCharting Data</h3>
           <div class="form-grid physical-id-grid">
             <label><span>UPC / EAN</span><input id="upcInput" inputmode="numeric"></label>
-            <label><span>SKU / Catalog Number</span><input id="skuInput"></label>
+            <label><span data-i18n="SKU / Catalog Number">SKU / Catalog Number</span><input id="skuInput"></label>
             <label><span>ASIN</span><input id="asinInput"></label>
-            <label><span>eBay Product ID</span><input id="epidInput"></label>
-            <label class="wide"><span>PriceCharting Page or Product ID</span><input id="pricechartingIdInput" placeholder="https://www.pricecharting.com/game/... or product ID"></label>
+            <label><span data-i18n="eBay Product ID">eBay Product ID</span><input id="epidInput"></label>
+            <label class="wide"><span data-i18n="PriceCharting Page or Product ID">PriceCharting Page or Product ID</span><input id="pricechartingIdInput" placeholder="https://www.pricecharting.com/game/... or product ID" data-i18n-placeholder="https://www.pricecharting.com/game/... or product ID"></label>
           </div>
         </section>
         <div class="modal-actions">
           <button class="danger-button icon-only-button edit-delete-button" id="editDeleteButton" type="button" title="Delete" aria-label="Delete" hidden>
             <svg class="trash-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6h18"></path><path d="M8 6V4h8v2"></path><path d="M19 6l-1 14H6L5 6"></path><path d="M10 11v5"></path><path d="M14 11v5"></path></svg>
           </button>
-          <button class="primary-button" type="submit">Add to Shelf</button>
+          <button class="primary-button" type="submit" data-i18n="Add to Shelf">Add to Shelf</button>
         </div>
       </form>
     </dialog>
@@ -450,7 +450,7 @@
       <article class="release-modal glass">
         <div class="modal-head">
           <div>
-            <p class="eyebrow">Release day</p>
+            <p class="eyebrow" data-i18n="Release day">Release day</p>
             <h2 id="shelfReleaseDialogTitle"></h2>
           </div>
           <button class="icon-button" id="shelfReleaseCloseButton" type="button" title="Close">×</button>

@@ -65,11 +65,11 @@ function igdbCredentials(env) {
 
 export { firstPlatform, igdbCredentials };
 
-export async function igdbLookup(rawQuery, credentials) {
+export async function igdbLookup(rawQuery, credentials, language = "en") {
   const lookup = parseLookup(rawQuery || "");
   const query = cleanTitle(lookup.query || "");
   if (!query) return [];
-  return igdbSearch(query, credentials, lookup);
+  return igdbSearch(query, credentials, lookup, normalizeMetadataLanguage(language));
 }
 
 async function igdbSearch(query, credentials, lookup = {}, language = "en") {
@@ -147,7 +147,7 @@ async function igdbResult(game, query, hltbResults, lookup = {}, language = "en"
     cover: igdbCover(game.cover?.image_id) || hltbMatch?.cover || "",
     platform: firstPlatform((game.platforms || []).map((platform) => platform.name).join(", ")),
     platforms: (game.platforms || []).map((platform) => platform.name).filter(Boolean),
-    genres: cleanGenreLabels((game.genres || []).map((genre) => genre.name).filter(Boolean)),
+    genres: cleanGenreLabels((game.genres || []).map((genre) => genre.name).filter(Boolean), language),
     developer: companyName(companies, "developer"),
     publisher: companyName(companies, "publisher"),
     description,
@@ -455,10 +455,10 @@ function titleFromSlug(slug) {
 
 async function enrichMetadata(result, language = "en") {
   const metadata = await wikidataMetadata(result.title, language);
-  const inferred = inferMetadata(result.title);
+  const inferred = localizeMetadata(inferMetadata(result.title), language);
   return {
     ...result,
-    genres: result.genres.length ? result.genres : (metadata.genres.length ? metadata.genres : inferred.genres),
+    genres: result.genres.length ? cleanGenreLabels(result.genres, language) : (metadata.genres.length ? metadata.genres : inferred.genres),
     developer: result.developer || metadata.developer || inferred.developer,
     publisher: result.publisher || metadata.publisher || inferred.publisher,
     description: result.description || metadata.description || "",
@@ -515,12 +515,12 @@ async function fetchWikidataMetadata(title, language = "en") {
       ...claimIds(entity, "P123"),
       ...claimIds(entity, "P136"),
     ];
-    const labels = await wikidataLabels(ids);
+    const labels = await wikidataLabels(ids, language);
     const description = language === "es-ES" ? await spanishWikipediaDescription(entity) : "";
     return {
       developer: claimLabels(entity, labels, "P178")[0] || "",
       publisher: claimLabels(entity, labels, "P123")[0] || "",
-      genres: cleanGenreLabels(claimLabels(entity, labels, "P136")).slice(0, 4),
+      genres: cleanGenreLabels(claimLabels(entity, labels, "P136"), language).slice(0, 4),
       description,
     };
   } catch {
@@ -546,7 +546,7 @@ function isLikelyGameLabel(label) {
   return /\b(game|chapter|recode|remake|remaster|collection|trilogy)\b/i.test(label);
 }
 
-function cleanGenreLabels(genres) {
+function cleanGenreLabels(genres, language = "en") {
   const aliases = new Map([
     ["action adventure game", "Action Adventure"],
     ["action role playing game", "Action RPG"],
@@ -572,7 +572,47 @@ function cleanGenreLabels(genres) {
       return aliases.get(key) || titleCase(genre.replace(/\bvideo game\b/gi, "").replace(/\bgame\b/gi, "").trim());
     })
     .filter(Boolean);
-  return [...new Set(cleaned)];
+  return [...new Set(cleaned.map((genre) => localizeGenreLabel(genre, language)))];
+}
+
+function localizeMetadata(metadata, language = "en") {
+  if (language !== "es-ES") return metadata;
+  return { ...metadata, genres: cleanGenreLabels(metadata.genres || [], language) };
+}
+
+function localizeGenreLabel(value, language = "en") {
+  const label = String(value || "").trim();
+  if (language !== "es-ES") return label;
+  const aliases = new Map([
+    ["action", "Acción"],
+    ["action adventure", "Acción y aventura"],
+    ["action rpg", "RPG de acción"],
+    ["adventure", "Aventura"],
+    ["arcade", "Arcade"],
+    ["beat 'em up", "Beat 'em up"],
+    ["fighting", "Lucha"],
+    ["fps", "FPS"],
+    ["hack and slash", "Hack and slash"],
+    ["indie", "Indie"],
+    ["jrpg", "JRPG"],
+    ["metroidvania", "Metroidvania"],
+    ["music", "Música"],
+    ["platformer", "Plataformas"],
+    ["point and click", "Point and click"],
+    ["puzzle", "Puzles"],
+    ["racing", "Carreras"],
+    ["rpg", "RPG"],
+    ["shooter", "Shooter"],
+    ["simulator", "Simulación"],
+    ["sport", "Deportes"],
+    ["sports", "Deportes"],
+    ["strategy", "Estrategia"],
+    ["survival horror", "Survival horror"],
+    ["tactical", "Táctico"],
+    ["turn based strategy", "Estrategia por turnos"],
+    ["visual novel", "Novela visual"],
+  ]);
+  return aliases.get(normalize(label)) || label;
 }
 
 function titleCase(value) {
@@ -595,17 +635,18 @@ function claimLabels(entity, labels, property) {
     .filter(Boolean);
 }
 
-async function wikidataLabels(ids) {
+async function wikidataLabels(ids, language = "en") {
   const uniqueIds = [...new Set(ids)].slice(0, 30);
   if (!uniqueIds.length) return {};
   const api = new URL("https://www.wikidata.org/w/api.php");
   api.searchParams.set("action", "wbgetentities");
   api.searchParams.set("ids", uniqueIds.join("|"));
   api.searchParams.set("props", "labels");
-  api.searchParams.set("languages", "en");
+  const primary = language === "es-ES" ? "es" : "en";
+  api.searchParams.set("languages", primary === "en" ? "en" : `${primary}|en`);
   api.searchParams.set("format", "json");
   const data = await getJson(api.toString());
-  return Object.fromEntries(Object.entries(data.entities || {}).map(([id, entity]) => [id, entity.labels?.en?.value || ""]));
+  return Object.fromEntries(Object.entries(data.entities || {}).map(([id, entity]) => [id, entity.labels?.[primary]?.value || entity.labels?.en?.value || ""]));
 }
 
 async function localizedDescription(title, fallback, language) {
