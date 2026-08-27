@@ -2251,11 +2251,11 @@ function renderPlayingSection() {
 }
 
 function currentlyPlayingTitle(games) {
-  return games.length && games.every((game) => game.stream) ? "Currently streaming" : "Currently playing";
+  return tt(games.length && games.every((game) => game.stream) ? "Currently streaming" : "Currently playing");
 }
 
 function playingCountText(count) {
-  return `Playing ${count} ${count === 1 ? "game" : "games"}`;
+  return tt("Playing {count} {item}", { count, item: tt(count === 1 ? "game" : "games") });
 }
 
 function renderPlayingFinished() {
@@ -2812,7 +2812,7 @@ function gameOfTheYearExportBottomStatsMarkup(games = [], year = "") {
   return `
     <section class="goty-export-bottom-stats">
       <article class="goty-export-stat goty-export-stat-months">
-        <div>${months.map((item) => `<b style="--month:${(item.count / maxMonth).toFixed(3)};--month-platforms:${statsPlatformBar(item.activeGames)}"><span>${escapeHtml(item.label)}</span><i></i><em>${item.count}</em></b>`).join("")}</div>
+        <div>${months.map((item) => `<b style="--month:${(item.count / maxMonth).toFixed(3)};--month-platforms:${statsPlatformBar(item.activeGames)}"><span>${escapeHtml(tt(item.label))}</span><i></i><em>${item.count}</em></b>`).join("")}</div>
       </article>
     </section>
   `;
@@ -5928,7 +5928,7 @@ function statsMonthBars(games, counts, scopeYear = "") {
     const activeGames = statsGamesActiveInMonth(activityGames, label, scopeYear);
     const displayGames = activeGames.map((game) => ({ ...game, statsMonthCarry: monthShortName(game.completedAt) !== label }));
     const edgeClass = index === 0 ? " is-start-edge" : (index === order.length - 1 ? " is-end-edge" : "");
-    return `<div class="finished-stats-month${edgeClass}" title="${escapeHtml(`${overlayTitle}: ${count}`)}" ${displayGames.length ? `data-stats-overlay-title="${escapeHtml(overlayTitle)}"` : ""}><span>${escapeHtml(label)}</span><em style="--month:${count / max};--platform-bar:${statsPlatformBar(activeGames)}"></em><strong>${count}</strong>${displayGames.length ? `<span class="finished-stats-breakdown">${statsGameList(displayGames)}</span>` : ""}</div>`;
+    return `<div class="finished-stats-month${edgeClass}" title="${escapeHtml(`${overlayTitle}: ${count}`)}" ${displayGames.length ? `data-stats-overlay-title="${escapeHtml(overlayTitle)}"` : ""}><span>${escapeHtml(tt(label))}</span><em style="--month:${count / max};--platform-bar:${statsPlatformBar(activeGames)}"></em><strong>${count}</strong>${displayGames.length ? `<span class="finished-stats-breakdown">${statsGameList(displayGames)}</span>` : ""}</div>`;
   }).join("");
 }
 
@@ -6360,7 +6360,7 @@ function fullMonthName(value) {
     Nov: "November",
     Dec: "December",
   };
-  return months[value] || value || "Unknown";
+  return tt(months[value] || value || "Unknown");
 }
 
 function categoryStatsColor(index) {
