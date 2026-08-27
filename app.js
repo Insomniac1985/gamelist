@@ -4347,13 +4347,15 @@ function renderPlatinumDialog(platinums = platinumItems(), years = platinumYears
     (selected === "all" || platinumYearFor(item) === selected)
     && (state.platinumPlatform === "all" || platinumPlatformFor(item) === state.platinumPlatform)
   )));
-  el.platinumTitle.innerHTML = `${trophyIcon()} <span>COMPLETED</span>`;
-  el.platinumCount.textContent = `${visible.length} completed`;
+  el.platinumTitle.innerHTML = `${trophyIcon()} <span>${escapeHtml(tt("COMPLETED"))}</span>`;
+  el.platinumCount.textContent = tt("{count} completed", { count: visible.length });
   el.platinumList.classList.toggle("list-view", state.platinumViewMode === "list");
   renderModeToggle(el.platinumViewToggleButton, state.platinumViewMode);
+  el.platinumViewToggleButton.title = tt(state.platinumViewMode === "grid" ? "Grid view" : "List view");
+  el.platinumViewToggleButton.setAttribute("aria-label", el.platinumViewToggleButton.title);
   el.platinumSortSelect.value = state.platinumSort;
   el.platinumSortDirection.innerHTML = sortArrowIcon(state.platinumDirection === "desc");
-  el.platinumSortDirection.title = state.platinumDirection === "asc" ? "Sort ascending" : "Sort descending";
+  el.platinumSortDirection.title = tt(state.platinumDirection === "asc" ? "Sort ascending" : "Sort descending");
   el.platinumSortDirection.setAttribute("aria-label", el.platinumSortDirection.title);
   el.platinumSortDirection.classList.toggle("desc", state.platinumDirection === "desc");
   el.platinumSortSelect.onchange = () => {
@@ -4365,16 +4367,16 @@ function renderPlatinumDialog(platinums = platinumItems(), years = platinumYears
     renderPlatinumDialog(platinums, years);
   };
   el.platinumYearSelect.innerHTML = platinums.length ? [
-    `<option value="all">All</option>`,
+    `<option value="all">${escapeHtml(tt("All"))}</option>`,
     ...years.map((year) => `<option value="${escapeHtml(year)}">${escapeHtml(year)}</option>`),
-  ].join("") : `<option value="all">No completed</option>`;
+  ].join("") : `<option value="all">${escapeHtml(tt("No completed"))}</option>`;
   el.platinumYearSelect.value = selected;
   el.platinumYearSelect.onchange = () => {
     state.platinumYear = el.platinumYearSelect.value || "all";
     renderPlatinumDialog(platinums, years);
   };
   el.platinumPlatformSelect.innerHTML = [
-    `<option value="all">All</option>`,
+    `<option value="all">${escapeHtml(tt("All"))}</option>`,
     ...platforms.map((platform) => `<option value="${escapeHtml(platform)}">${escapeHtml(platinumPlatformLabel(platform))}</option>`),
   ].join("");
   el.platinumPlatformSelect.value = state.platinumPlatform;
@@ -7081,7 +7083,7 @@ async function renderDetailTrophies(game) {
   if (el.detailTrophyTitle) el.detailTrophyTitle.textContent = tt("TROPHIES");
   el.detailTrophyCount.textContent = "";
   el.detailTrophyPercent.innerHTML = psnProgressBadge(psn, { includeIcon: false });
-  el.detailTrophyList.innerHTML = `<div class="detail-trophy-empty">Loading earned trophies...</div>`;
+  el.detailTrophyList.innerHTML = `<div class="detail-trophy-empty">${escapeHtml(tt("Loading earned trophies..."))}</div>`;
 
   try {
     const params = achievementParams({
@@ -7150,7 +7152,7 @@ async function renderDetailSteamAchievements(game) {
   if (el.detailTrophyTitle) el.detailTrophyTitle.textContent = tt("ACHIEVEMENTS");
   el.detailTrophyCount.textContent = "";
   el.detailTrophyPercent.innerHTML = "";
-  el.detailTrophyList.innerHTML = `<div class="detail-trophy-empty">Loading earned achievements...</div>`;
+  el.detailTrophyList.innerHTML = `<div class="detail-trophy-empty">${escapeHtml(tt("Loading earned achievements..."))}</div>`;
 
   try {
     const params = steamAchievementParams(appId, steamUser);
@@ -7252,7 +7254,7 @@ async function renderDetailXboxAchievements(game) {
   const requestKey = `${game.id}:xbox:${xboxGame.titleId}:${Date.now()}`;
   state.detailTrophyRequest = requestKey;
   state.detailTrophiesData = [];
-  el.detailTrophyList.innerHTML = `<div class="detail-trophy-empty">Loading earned achievements...</div>`;
+  el.detailTrophyList.innerHTML = `<div class="detail-trophy-empty">${escapeHtml(tt("Loading earned achievements..."))}</div>`;
   try {
     const data = await fetchXboxTitleAchievements(xboxGame);
     if (state.detailTrophyRequest !== requestKey) return;
@@ -7284,7 +7286,7 @@ function renderDetailTrophyList() {
     ? { progress: trophies.length ? Math.round((earnedCount / trophies.length) * 100) : 0, game: "" }
     : psn;
   el.detailTrophyPercent.innerHTML = trophies.length && progressSource
-    ? psnProgressBadge(progressSource, { includeIcon: false, label: `${earnedCount}/${trophies.length} earned`, separator: true })
+    ? psnProgressBadge(progressSource, { includeIcon: false, label: tt("{earned}/{total} earned", { earned: earnedCount, total: trophies.length }), separator: true })
     : "";
   el.detailTrophyList.innerHTML = trophies.length
     ? trophies.map(detailTrophyCard).join("")
@@ -7337,7 +7339,7 @@ function detailTrophyCard(trophy) {
       <img src="${escapeHtml(trophy.icon || fallbackIcon)}" alt="">
       <div>
         <strong>${escapeHtml(trophy.title || "Trophy")}</strong>
-        <span>${escapeHtml([trophy.earned ? trophy.earnedAt : "Missing", trophy.rarity].filter(Boolean).join(" · "))}</span>
+        <span>${escapeHtml([trophy.earned ? trophy.earnedAt || tt("Earned") : tt("Missing"), trophy.rarity].filter(Boolean).join(" · "))}</span>
         ${trophy.description ? `<p>${escapeHtml(trophy.description)}</p>` : ""}
       </div>
     </article>
@@ -7492,7 +7494,7 @@ function xboxProgressLabel(earned, total, progress) {
   const inferredEarned = !earned && progress > 0 && progress < 100 && total
     ? Math.round((progress / 100) * total)
     : earned;
-  return `${inferredEarned}/${total} earned`;
+  return tt("{earned}/{total} earned", { earned: inferredEarned, total });
 }
 
 function xboxAchievementCacheKey(xboxGame) {
@@ -7555,7 +7557,7 @@ function steamProgressForGame(game) {
     title: trophySearchTitle(game),
     game: `${Math.round((earned / Math.max(total, 1)) * 100)}%`,
     progress: Math.round((earned / Math.max(total, 1)) * 100),
-    label: `${earned}/${total} earned`,
+    label: tt("{earned}/{total} earned", { earned, total }),
     provider: "steam",
   };
 }
@@ -7735,7 +7737,7 @@ function cardTrophiesFor(game) {
   if (!trophies.length) return guideRow;
   return `
     ${guideRow}
-    <div class="card-trophy-head">${trophyIcon()}<span>Trophies</span>${psn ? psnProgressBadge(psn, { includeIcon: false, className: "card-trophy-progress" }) : ""}</div>
+    <div class="card-trophy-head">${trophyIcon()}<span>${escapeHtml(tt("TROPHIES"))}</span>${psn ? psnProgressBadge(psn, { includeIcon: false, className: "card-trophy-progress" }) : ""}</div>
     <div class="card-trophy-list">
       ${trophies.map((trophy) => `
         <a class="card-trophy trophy-${escapeHtml(trophyTone(trophy.type || trophy.rarity))}" href="${escapeHtml(trophy.url || state.psnActivity.sourceUrl || "#")}" target="_blank" rel="noreferrer" title="${escapeHtml([trophy.title, trophy.earnedAt].filter(Boolean).join(" · "))}">
@@ -7763,12 +7765,12 @@ function cardSteamAchievementsFor(game) {
     .slice(0, 3);
   const progress = steamProgressForGame(game);
   if (!achievements.length) {
-    const heading = progress ? `<div class="card-trophy-head">${trophyIcon()}<span>Achievements</span>${psnProgressBadge(progress, { includeIcon: false, className: "card-trophy-progress" })}</div>` : "";
+    const heading = progress ? `<div class="card-trophy-head">${trophyIcon()}<span>${escapeHtml(tt("ACHIEVEMENTS"))}</span>${psnProgressBadge(progress, { includeIcon: false, className: "card-trophy-progress" })}</div>` : "";
     return `${guideRow}${heading}`;
   }
   return `
     ${guideRow}
-    <div class="card-trophy-head">${trophyIcon()}<span>Achievements</span>${progress ? psnProgressBadge(progress, { includeIcon: false, className: "card-trophy-progress" }) : ""}</div>
+    <div class="card-trophy-head">${trophyIcon()}<span>${escapeHtml(tt("ACHIEVEMENTS"))}</span>${progress ? psnProgressBadge(progress, { includeIcon: false, className: "card-trophy-progress" }) : ""}</div>
     <div class="card-trophy-list">
       ${achievements.map((achievement) => `
         <a class="card-trophy trophy-steam" href="${escapeHtml(game.storeLinks?.steam || hltbUrlFor(game) || "#")}" target="_blank" rel="noreferrer" title="${escapeHtml([achievement.title, achievement.earnedAt].filter(Boolean).join(" · "))}">
@@ -7795,7 +7797,7 @@ function cardXboxAchievementsFor(game) {
     .slice(0, 3);
   const progress = xboxProgressForGame(game);
   const heading = progress
-    ? `<div class="card-trophy-head">${trophyIcon()}<span>Achievements</span>${psnProgressBadge(progress, { includeIcon: false, className: "card-trophy-progress" })}</div>`
+    ? `<div class="card-trophy-head">${trophyIcon()}<span>${escapeHtml(tt("ACHIEVEMENTS"))}</span>${psnProgressBadge(progress, { includeIcon: false, className: "card-trophy-progress" })}</div>`
     : "";
   if (!achievements.length) return `${guideRow}${heading}`;
   return `

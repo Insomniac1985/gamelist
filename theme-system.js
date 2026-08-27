@@ -84,14 +84,15 @@ export function resolveSiteTheme(settings = {}, page = "gamelist") {
   const theme = normalizeThemeSettings(settings);
   const owner = cleanOwnerName(settings.defaultOwner) || "Owner";
   const isShelf = page === "shelf";
+  const isSpanish = String(settings.language || "").toLowerCase().startsWith("es");
   const mainColor = theme.mainColorReset ? DEFAULT_THEME.mainColor : theme.mainColor;
   const accentColor = theme.accentColorReset ? DEFAULT_THEME.accentColor : theme.accentColor;
   const accent3 = theme.accent3 || DEFAULT_THEME.accent3;
   return {
     ...theme,
     owner,
-    title: `${owner}'s ${isShelf ? "Shelf" : "Gamelist"}`,
-    shortName: isShelf ? "Shelf" : "Gamelist",
+    title: isSpanish ? `${isShelf ? "Estantería" : "Juegos"} de ${owner}` : `${owner}'s ${isShelf ? "Shelf" : "Gamelist"}`,
+    shortName: isSpanish ? (isShelf ? "Estantería" : "Juegos") : (isShelf ? "Shelf" : "Gamelist"),
     mainColor,
     accentColor,
     accent3,

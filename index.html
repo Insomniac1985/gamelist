@@ -720,10 +720,10 @@
               <div class="detail-trophy-tools">
                 <span id="detailTrophyCount"></span>
                 <span class="detail-trophy-percent" id="detailTrophyPercent"></span>
-                <select id="detailTrophySort" aria-label="Sort trophies">
-                  <option value="order">Order</option>
-                  <option value="name">Name</option>
-                  <option value="completed">Completed</option>
+                <select id="detailTrophySort" aria-label="Sort trophies" data-i18n-aria-label="Sort trophies">
+                  <option value="order" data-i18n="Order">Order</option>
+                  <option value="name" data-i18n="Name">Name</option>
+                  <option value="completed" data-i18n="Completed">Completed</option>
                 </select>
                 <button class="direction-toggle" id="detailTrophyDirection" type="button" title="Sort ascending" aria-label="Sort ascending">↑</button>
               </div>
@@ -814,19 +814,19 @@
         </div>
         <div class="platinum-filter-bar" id="platinumYearTabs">
           <label class="platinum-year-select">
-            <span>Year</span>
+            <span data-i18n="Year">Year</span>
             <select id="platinumYearSelect"></select>
           </label>
           <label class="platinum-platform-select">
-            <span>Platform</span>
+            <span data-i18n="Platform">Platform</span>
             <select id="platinumPlatformSelect"></select>
           </label>
           <label class="platinum-order-label">
-            <span>Order</span>
+            <span data-i18n="Order">Order</span>
             <div class="platinum-order-control">
-              <select id="platinumSortSelect" aria-label="Sort completed games">
-                <option value="time">Time</option>
-                <option value="name">Name</option>
+              <select id="platinumSortSelect" aria-label="Sort completed games" data-i18n-aria-label="Sort completed games">
+                <option value="time" data-i18n="Time">Time</option>
+                <option value="name" data-i18n="Name">Name</option>
               </select>
               <button class="direction-toggle" id="platinumSortDirection" type="button" title="Sort descending" aria-label="Sort descending"></button>
               <button class="icon-button view-toggle section-view-toggle" id="platinumViewToggleButton" type="button" title="Grid view" aria-label="Grid view"></button>
