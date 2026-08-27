@@ -565,7 +565,7 @@ function renderChrome() {
   el.footerVersion.textContent = siteVersion.version
     ? `${siteVersion.version}.${formatFooterShortDate(siteVersion.updatedAt) || "--.--"}`
     : "Version -";
-  if (el.footerCreditText) el.footerCreditText.textContent = state.gamelistSettings.shelfDigitalGames === true ? "Shelf/Drive by Shabii" : "Shelf by Shabii";
+  if (el.footerCreditText) el.footerCreditText.textContent = state.gamelistSettings.shelfDigitalGames === true ? tt("Shelf/Drive by Shabii") : tt("Shelf by Shabii");
   renderBrandVersionChip();
   updateFloatingActions();
 }
@@ -1297,7 +1297,8 @@ function gameCard(game, options = {}) {
   else playDates.remove();
   card.querySelector(".chips").innerHTML = tags.map((tag) => `<span class="chip genre">${escapeHtml(tag)}</span>`).join("");
   card.querySelector(".card-trophies").remove();
-  card.querySelector(".card-actions").innerHTML = preorderProjection ? `<button class="ghost-button editor-only" data-action="show-preorder-prices" type="button">Prices</button><button class="ghost-button editor-only" data-action="accept-preorder" type="button">Got it</button><button class="danger-button icon-only-button shelf-card-delete-action editor-only" data-action="delete-preorder" type="button" title="Delete" aria-label="Delete">${trashIcon()}</button>` : isPendingCollectionGame(game) ? `<button class="primary-button add-collection-action editor-only" data-action="add-collection" type="button">Add to Collection</button><button class="danger-button icon-only-button shelf-card-delete-action editor-only" data-action="delete" type="button" title="Delete" aria-label="Delete">${trashIcon()}</button>` : `<button class="ghost-button shelf-add-backlog-action editor-only" data-action="add-backlog" type="button">Add to Backlog</button><button class="danger-button icon-only-button shelf-card-delete-action editor-only" data-action="delete" type="button" title="Delete" aria-label="Delete">${trashIcon()}</button>`;
+  const deleteLabel = escapeHtml(tt("Delete"));
+  card.querySelector(".card-actions").innerHTML = preorderProjection ? `<button class="ghost-button editor-only" data-action="show-preorder-prices" type="button">${escapeHtml(tt("Prices"))}</button><button class="ghost-button editor-only" data-action="accept-preorder" type="button">${escapeHtml(tt("Got it"))}</button><button class="danger-button icon-only-button shelf-card-delete-action editor-only" data-action="delete-preorder" type="button" title="${deleteLabel}" aria-label="${deleteLabel}">${trashIcon()}</button>` : isPendingCollectionGame(game) ? `<button class="primary-button add-collection-action editor-only" data-action="add-collection" type="button">${escapeHtml(tt("Add to Collection"))}</button><button class="danger-button icon-only-button shelf-card-delete-action editor-only" data-action="delete" type="button" title="${deleteLabel}" aria-label="${deleteLabel}">${trashIcon()}</button>` : `<button class="ghost-button shelf-add-backlog-action editor-only" data-action="add-backlog" type="button">${escapeHtml(tt("Add to Backlog"))}</button><button class="danger-button icon-only-button shelf-card-delete-action editor-only" data-action="delete" type="button" title="${deleteLabel}" aria-label="${deleteLabel}">${trashIcon()}</button>`;
   const prices = card.querySelector(".prices");
   if (preorderProjection && priceProvidersForGame(game).length) {
     prices.style.setProperty("--price-columns", priceProvidersForGame(game).length);
@@ -1363,7 +1364,7 @@ function shelfPreorderCountPill(games) {
   const summary = [...counts.entries()].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0], undefined, { sensitivity: "base" }));
   const rows = summary.map(([store, count]) => `<span><strong>${escapeHtml(store)}</strong><em>${count}</em></span>`).join("");
   const title = summary.map(([store, count]) => `${store}: ${count}`).join("\n");
-  return `<span class="preorder-count-pill preorder-count-tooltip" tabindex="0" title="${escapeHtml(title)}">${shoppingBagIcon()}${games.length} preordered<span class="preorder-store-list" role="tooltip">${rows}</span></span>`;
+  return `<span class="preorder-count-pill preorder-count-tooltip" tabindex="0" title="${escapeHtml(title)}">${shoppingBagIcon()}${escapeHtml(tt("{count} preordered", { count: games.length }))}<span class="preorder-store-list" role="tooltip">${rows}</span></span>`;
 }
 
 function visibleShelfCardOwners(owners = []) {
@@ -1493,7 +1494,7 @@ function openEditor(game = null, options = {}) {
   el.fields.igdbUrl.value = values.igdbUrl || links.igdb;
   Object.entries(el.conditionFields).forEach(([key, input]) => { input.checked = conditionValue(values, key); });
   syncConditionInputs();
-  el.addForm.querySelector(".modal-head h2").textContent = game?.pendingCollection ? "Add to Collection" : game ? "Edit Game" : digitalMode ? "Add Digital Game" : "Add Game";
+  el.addForm.querySelector(".modal-head h2").textContent = tt(game?.pendingCollection ? "Add to Collection" : game ? "Edit Game" : digitalMode ? "Add Digital Game" : "Add Game");
   el.addForm.querySelectorAll("button[type='submit']").forEach((button) => { button.textContent = game?.pendingCollection ? "Add to Collection" : game ? "Save" : digitalMode ? "Add to Drive" : "Add to Shelf"; });
   el.editDelete.hidden = !game;
   syncStyledSelects(el.addDialog, { activeValue: null });
@@ -1507,7 +1508,7 @@ function syncShelfDigitalEditorMode(digitalMode) {
   el.fields.country.required = !digitalMode;
   el.lookupInput.placeholder = digitalMode ? "Game name" : "Game name or PriceCharting page";
   const game = state.games.find((item) => item.id === state.editingId);
-  el.addForm.querySelector(".modal-head h2").textContent = game?.pendingCollection ? "Add to Collection" : game ? "Edit Game" : digitalMode ? "Add Digital Game" : "Add Game";
+  el.addForm.querySelector(".modal-head h2").textContent = tt(game?.pendingCollection ? "Add to Collection" : game ? "Edit Game" : digitalMode ? "Add Digital Game" : "Add Game");
   el.addForm.querySelectorAll("button[type='submit']").forEach((button) => { button.textContent = game?.pendingCollection ? "Add to Collection" : game ? "Save" : digitalMode ? "Add to Drive" : "Add to Shelf"; });
   syncShelfEntitlementEditor();
 }
@@ -2590,9 +2591,9 @@ function renderShowcaseFilters() {
   const platforms = orderedPlatforms(uniqueSorted(games.map((game) => game.platform)));
   const countries = uniqueSorted(games.map((game) => game.country));
   const categories = uniqueSorted(games.flatMap((game) => [...String(game.genre || "").split(","), ...(game.genres || [])].map((value) => value.trim()).filter(Boolean)));
-  el.showcasePlatform.innerHTML = `<option value="all">All platforms</option>${platforms.map((value) => `<option value="${escapeHtml(value)}">${escapeHtml(platformDisplayName(value))}</option>`).join("")}`;
+  el.showcasePlatform.innerHTML = `<option value="all">${escapeHtml(tt("All platforms"))}</option>${platforms.map((value) => `<option value="${escapeHtml(value)}">${escapeHtml(platformDisplayName(value))}</option>`).join("")}`;
   el.showcaseRegion.innerHTML = `<option value="all">All regions</option>${countries.map((value) => `<option value="${escapeHtml(value)}">${escapeHtml(regionName(value))}</option>`).join("")}`;
-  el.showcaseCategory.innerHTML = `<option value="all">All categories</option>${categories.map((value) => `<option value="${escapeHtml(value)}">${escapeHtml(value)}</option>`).join("")}`;
+  el.showcaseCategory.innerHTML = `<option value="all">${escapeHtml(tt("All categories"))}</option>${categories.map((value) => `<option value="${escapeHtml(value)}">${escapeHtml(tt(value))}</option>`).join("")}`;
   el.showcasePlatform.value = state.showcaseFilters.platform;
   el.showcaseRegion.value = state.showcaseFilters.region;
   el.showcaseCategory.value = state.showcaseFilters.category;
@@ -4313,6 +4314,6 @@ function shortDescription(value, max = 260) { const text = String(value || "").t
 function formatDate(value) { return formatPillDate(value) || "Jun 22, 2026"; }
 function formatShortDate(value) { return formatPillDate(value); }
 function formatLongDate(value) { return formatPillDate(value); }
-function formatPillDate(value) { const date = String(value || "").match(/\d{4}-\d{2}-\d{2}/)?.[0]; if (!date) return ""; const parsed = new Date(`${date}T00:00:00`); return Number.isNaN(parsed.getTime()) ? "" : new Intl.DateTimeFormat("en-US", { month: "short", day: "2-digit", year: "numeric" }).format(parsed); }
+function formatPillDate(value) { const date = String(value || "").match(/\d{4}-\d{2}-\d{2}/)?.[0]; if (!date) return ""; const parsed = new Date(`${date}T00:00:00`); return Number.isNaN(parsed.getTime()) ? "" : new Intl.DateTimeFormat(currentLanguage(), { month: "short", day: "2-digit", year: "numeric" }).format(parsed); }
 function escapeCss(value) { return String(value).replace(/["'()\\]/g, "\\$&"); }
 function escapeHtml(value) { return String(value ?? "").replace(/[&<>'"]/g, (char) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", "'": "&#39;", '"': "&quot;" })[char]); }

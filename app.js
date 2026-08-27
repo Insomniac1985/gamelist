@@ -5449,7 +5449,7 @@ function renderCompleted() {
   `).join("") : `<div class="empty">Finished games will stay saved here.</div>`;
   if (el.completedMoreButton) {
     el.completedMoreButton.hidden = !hasMore;
-    el.completedMoreButton.textContent = "See more";
+    el.completedMoreButton.textContent = tt("See more");
   }
   list.querySelectorAll(".completed-edit-action").forEach((button) => {
     button.addEventListener("click", () => openEditor(button.closest(".completed-row").dataset.id));
@@ -5492,8 +5492,9 @@ function completedPageSize() {
 function renderFooter() {
   if (el.footerDataUpdate) {
     const latest = latestGameUpdateDate();
-    el.footerDataUpdate.textContent = latest ? `Last edit ${formatFooterDate(latest)}` : "Last edit -";
+    el.footerDataUpdate.textContent = latest ? `${tt("Last edit")} ${formatFooterDate(latest)}` : tt("Last edit -");
   }
+  document.querySelector(".footer-credit > span:first-child")?.replaceChildren(tt("Gamelist by Shabii"));
   if (el.footerVersion) {
     el.footerVersion.textContent = siteVersion.version
       ? `${siteVersion.version}.${formatFooterShortDate(siteVersion.updatedAt) || "--.--"}`
@@ -6727,11 +6728,11 @@ function cardFor(game, options = {}) {
     priceRefreshAction.remove();
     backlogAction.remove();
     trophyAction.remove();
-    boughtAction.textContent = "Setup";
+    boughtAction.textContent = tt("Setup");
     boughtAction.classList.remove("ghost-button");
     boughtAction.classList.add("primary-button");
     boughtAction.addEventListener("click", () => finishSetupGame(game.id));
-    completeAction.innerHTML = `<span class="action-label">Play</span>`;
+    completeAction.innerHTML = `<span class="action-label">${escapeHtml(tt("Play"))}</span>`;
     completeAction.addEventListener("click", () => startPlaying(game.id));
   } else if (displaySection === "backlog" || game.completedAt) {
     prices.remove();
@@ -6740,8 +6741,8 @@ function cardFor(game, options = {}) {
     if (game.playing) backlogAction.addEventListener("click", () => returnPlayingToBacklog(game.id));
     else backlogAction.remove();
     completeAction.innerHTML = game.playing
-      ? `${checkIcon()}<span class="action-label">Finished</span>`
-      : `<span class="action-label">Play</span>`;
+      ? `${checkIcon()}<span class="action-label">${escapeHtml(tt("Finished"))}</span>`
+      : `<span class="action-label">${escapeHtml(tt("Play"))}</span>`;
     completeAction.addEventListener("click", () => {
       if (game.playing) completeGame(game.id);
       else startPlaying(game.id);
@@ -9203,7 +9204,7 @@ function formatPillDate(value) {
   if (!date) return "";
   const parsed = new Date(`${date}T00:00:00`);
   if (Number.isNaN(parsed.getTime())) return "";
-  return new Intl.DateTimeFormat("en-US", { month: "short", day: "2-digit", year: "numeric" }).format(parsed);
+  return new Intl.DateTimeFormat(currentLanguage(), { month: "short", day: "2-digit", year: "numeric" }).format(parsed);
 }
 
 async function openEditor(id = "") {
@@ -9211,7 +9212,7 @@ async function openEditor(id = "") {
   state.editingId = id;
   state.pendingDescription = "";
   const game = state.games.find((item) => item.id === id) || blankGame();
-  el.dialogTitle.textContent = id ? "Edit Game" : "Add Game";
+  el.dialogTitle.textContent = id ? tt("Edit Game") : tt("Add Game");
   el.deleteButton.hidden = !id;
   el.lookupResults.innerHTML = "";
   el.lookupInput.value = game.title || "";

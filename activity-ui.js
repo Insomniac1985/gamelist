@@ -342,11 +342,11 @@ function releaseMonthMarkup(monthDate, releases, today, weekStart, options = {})
   return `
     <article class="release-month">
       <header>
-        <strong>${escapeHtml(monthName(monthDate, options.locale))}</strong>
+        <strong>${escapeHtml(capitalize(monthName(monthDate, options.locale)))}</strong>
         <span>${year}</span>
       </header>
       <div class="release-weekdays" aria-hidden="true">
-        ${weekdayLabels(weekStart).map((label) => `<span>${escapeHtml(translate(label))}</span>`).join("")}
+        ${weekdayLabels(weekStart).map(([key, label]) => `<span>${escapeHtml(weekdayShortLabel(key, label, options.locale, translate))}</span>`).join("")}
       </div>
       <div class="release-days">${cells.join("")}</div>
     </article>
@@ -375,11 +375,23 @@ function weekdayIndex(date, weekStart) {
 
 function weekdayLabels(weekStart) {
   const startIndex = WEEKDAYS.findIndex(([key]) => key === normalizedWeekStart(weekStart));
-  return [...WEEKDAYS.slice(startIndex), ...WEEKDAYS.slice(0, startIndex)].map(([, label]) => label);
+  return [...WEEKDAYS.slice(startIndex), ...WEEKDAYS.slice(0, startIndex)];
+}
+
+function weekdayShortLabel(key, fallback, locale, translate) {
+  if (String(locale || "").toLowerCase().startsWith("es")) {
+    return { monday: "L", tuesday: "M", wednesday: "X", thursday: "J", friday: "V", saturday: "S", sunday: "D" }[key] || fallback;
+  }
+  return translate(fallback);
 }
 
 function monthName(date, locale = undefined) {
   return new Intl.DateTimeFormat(locale || undefined, { month: "long" }).format(date);
+}
+
+function capitalize(value) {
+  const text = String(value || "");
+  return text ? `${text.charAt(0).toLocaleUpperCase()}${text.slice(1)}` : text;
 }
 
 function localDateKey(date) {
@@ -641,7 +653,7 @@ export function activityReleaseStatus(game, { includePast = false, now = new Dat
 export function formatFooterDate(value) {
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return "";
-  return new Intl.DateTimeFormat(undefined, { day: "numeric", month: "long" }).format(date);
+  return capitalize(new Intl.DateTimeFormat(undefined, { day: "numeric", month: "long" }).format(date));
 }
 
 export function formatFooterDateTime(value) {
