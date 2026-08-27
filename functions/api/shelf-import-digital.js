@@ -67,7 +67,7 @@ function providerGames(provider, data) {
 }
 
 async function addPendingGames(rawGames, env) {
-  const incoming = Array.isArray(rawGames) ? rawGames.slice(0, 1000) : [];
+  const incoming = Array.isArray(rawGames) ? rawGames : [];
   if (!incoming.length) return json({ error: "No games selected" }, 400);
   const [shelf, list] = await Promise.all([
     env.GAMELIST.get(SHELF_KEY, "json").then((value) => value || {}),
@@ -107,7 +107,7 @@ async function addPendingGames(rawGames, env) {
     else addedToNewAdditions += 1;
   }
   await env.GAMELIST.put(SHELF_KEY, JSON.stringify({
-    ...shelf, sourceGames, games: games.slice(0, 1000),
+    ...shelf, sourceGames, games,
     overrides: shelf.overrides && typeof shelf.overrides === "object" ? shelf.overrides : {}, updatedAt: now,
   }));
   return json({ ok: true, added, addedToDrive, addedToNewAdditions, skipped: incoming.length - added });
