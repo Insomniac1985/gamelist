@@ -9124,6 +9124,7 @@ function dateOnly(value) {
   if (typeof value === "string") {
     const iso = value.match(/\d{4}-\d{2}-\d{2}/);
     if (iso) return iso[0];
+    return "";
   }
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return "";
