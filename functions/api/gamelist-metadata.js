@@ -26,6 +26,7 @@ export async function onRequestPost({ request, env }) {
     limit: Math.min(MAX_LIMIT, Math.max(1, Number(body.limit) || DEFAULT_LIMIT)),
   };
   const data = await env.GAMELIST.get(KV_KEY, "json") || { games: [], settings: {} };
+  const language = normalizeMetadataLanguage(data.settings?.language);
   const games = Array.isArray(data.games) ? data.games : [];
   const candidates = games
     .map((game, index) => ({ game, index }))
@@ -36,7 +37,7 @@ export async function onRequestPost({ request, env }) {
 
   for (const item of selected) {
     try {
-      const metadata = await fetchGameMetadata(item.game, env);
+      const metadata = await fetchGameMetadata(item.game, env, language);
       if (!metadata) continue;
       const next = mergeMetadata(item.game, metadata, options);
       if (JSON.stringify(stripRuntimeFields(item.game)) === JSON.stringify(stripRuntimeFields(next))) continue;
@@ -56,10 +57,11 @@ export async function onRequestPost({ request, env }) {
   return json({ ok: true, processed: selected.length, updated, errors, remaining: Math.max(0, candidates.length - selected.length), updatedAt: now });
 }
 
-async function fetchGameMetadata(game, env) {
+async function fetchGameMetadata(game, env, language) {
   for (const query of metadataQueries(game.title)) {
     const url = new URL("https://local/api/search");
     url.searchParams.set("q", query);
+    url.searchParams.set("lang", language);
     if (game.platform) url.searchParams.set("platform", game.platform);
     const response = await searchMetadata({ request: new Request(url), env });
     const data = response.ok ? await response.json() : { results: [] };
@@ -128,6 +130,10 @@ function stripRuntimeFields(game) {
 
 function normalize(value) {
   return String(value || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]+/g, " ").trim();
+}
+
+function normalizeMetadataLanguage(value) {
+  return /^es(?:-|$)/i.test(String(value || "")) ? "es-ES" : "en";
 }
 
 function json(data, status = 200) {

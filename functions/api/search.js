@@ -5,17 +5,19 @@ const TWITCH_TOKEN_URL = "https://id.twitch.tv/oauth2/token";
 
 let hltbClientPromise;
 let igdbTokenCache;
+const wikidataMetadataCache = new Map();
 
 export async function onRequestGet({ request, env = {} }) {
   const url = new URL(request.url);
   const lookup = parseLookup(url.searchParams.get("q") || "");
   const query = cleanTitle(lookup.query || "");
+  const language = normalizeMetadataLanguage(url.searchParams.get("lang") || url.searchParams.get("language") || "");
   if (!query) return json({ results: [] });
 
   const igdb = igdbCredentials(env);
   if (igdb) {
     try {
-      const results = await igdbSearch(query, igdb, lookup);
+      const results = await igdbSearch(query, igdb, lookup, language);
       if (results.length) return json({ results });
     } catch {
       // Fall through to HowLongToBeat when IGDB credentials or API are unavailable.
@@ -24,7 +26,7 @@ export async function onRequestGet({ request, env = {} }) {
 
   try {
     const hltb = await getHltbClient();
-    const results = await hltbSearch(query, hltb);
+    const results = await hltbSearch(query, hltb, language);
     return json({ results });
   } catch (error) {
     return json({ results: [], error: "HowLongToBeat lookup unavailable" }, 503);
@@ -70,7 +72,7 @@ export async function igdbLookup(rawQuery, credentials) {
   return igdbSearch(query, credentials, lookup);
 }
 
-async function igdbSearch(query, credentials, lookup = {}) {
+async function igdbSearch(query, credentials, lookup = {}, language = "en") {
   const token = await getIgdbToken(credentials);
   const fields = "fields name,slug,summary,storyline,first_release_date,cover.image_id,genres.name,hypes,total_rating,total_rating_count,involved_companies.company.name,involved_companies.developer,involved_companies.publisher,platforms.name,release_dates.date,release_dates.platform.name,websites.url,websites.category,videos.name,videos.video_id;";
   const slugBody = lookup.igdbSlug ? [
@@ -97,10 +99,10 @@ async function igdbSearch(query, credentials, lookup = {}) {
   });
   if (!response.ok) return [];
   const games = await response.json();
-  if (slugBody && !games.length) return igdbSearch(query, credentials, { ...lookup, igdbSlug: "" });
+  if (slugBody && !games.length) return igdbSearch(query, credentials, { ...lookup, igdbSlug: "" }, language);
   const hltbResults = await safeHltbResults(query);
   const results = await Promise.all(games
-    .map((game) => igdbResult(game, query, hltbResults, lookup)));
+    .map((game) => igdbResult(game, query, hltbResults, lookup, language)));
   return results
     .filter(Boolean)
     .sort((a, b) => b.score - a.score)
@@ -123,7 +125,7 @@ async function getIgdbToken({ clientId, clientSecret }) {
   return igdbTokenCache.token;
 }
 
-async function igdbResult(game, query, hltbResults, lookup = {}) {
+async function igdbResult(game, query, hltbResults, lookup = {}, language = "en") {
   const title = game.name || "";
   const textScore = lookup.igdbSlug && game.slug === lookup.igdbSlug ? 1 : matchScore(query, title);
   if (!title || textScore < 0.28) return null;
@@ -133,6 +135,7 @@ async function igdbResult(game, query, hltbResults, lookup = {}) {
   const score = textScore + igdbQualityScore(game, hltbMatch);
   const storeLinks = storeLinksFromWebsites(game.websites);
   const steamTrailerUrl = await steamTrailer(storeLinks.steam);
+  const description = await localizedDescription(title, game.summary || game.storyline || "", language);
   return {
     id: game.id ? `igdb:${game.id}` : title,
     igdbId: game.id || null,
@@ -147,7 +150,7 @@ async function igdbResult(game, query, hltbResults, lookup = {}) {
     genres: cleanGenreLabels((game.genres || []).map((genre) => genre.name).filter(Boolean)),
     developer: companyName(companies, "developer"),
     publisher: companyName(companies, "publisher"),
-    description: fullDescription(game.summary || game.storyline || ""),
+    description,
     trailerUrl: steamTrailerUrl || igdbTrailer(game.videos),
     storeLinks,
     lengthHours: hltbMatch?.lengthHours || null,
@@ -296,7 +299,7 @@ async function createHltbClient() {
   };
 }
 
-async function hltbSearch(query, hltb) {
+async function hltbSearch(query, hltb, language = "en") {
   if (!hltb.token) return [];
   const terms = searchTerms(query);
 
@@ -345,7 +348,7 @@ async function hltbSearch(query, hltb) {
     .filter(Boolean)
     .sort((a, b) => b.score - a.score)
     .map(({ score, ...game }) => game);
-  return Promise.all(results.map(enrichMetadata));
+  return Promise.all(results.map((result) => enrichMetadata(result, language)));
 }
 
 function hltbResult(game, query) {
@@ -429,15 +432,15 @@ function titleFromSlug(slug) {
     .trim();
 }
 
-async function enrichMetadata(result) {
-  if (result.genres.length && result.developer && result.publisher) return result;
-  const metadata = await wikidataMetadata(result.title);
+async function enrichMetadata(result, language = "en") {
+  const metadata = await wikidataMetadata(result.title, language);
   const inferred = inferMetadata(result.title);
   return {
     ...result,
     genres: result.genres.length ? result.genres : (metadata.genres.length ? metadata.genres : inferred.genres),
     developer: result.developer || metadata.developer || inferred.developer,
     publisher: result.publisher || metadata.publisher || inferred.publisher,
+    description: result.description || metadata.description || "",
   };
 }
 
@@ -464,7 +467,15 @@ function inferMetadata(title) {
   return { genres: match[1], developer: match[2], publisher: match[3] };
 }
 
-async function wikidataMetadata(title) {
+async function wikidataMetadata(title, language = "en") {
+  const cacheKey = `${language}:${normalize(title)}`;
+  if (wikidataMetadataCache.has(cacheKey)) return wikidataMetadataCache.get(cacheKey);
+  const promise = fetchWikidataMetadata(title, language).catch(() => emptyMetadata());
+  wikidataMetadataCache.set(cacheKey, promise);
+  return promise;
+}
+
+async function fetchWikidataMetadata(title, language = "en") {
   try {
     const search = new URL("https://www.wikidata.org/w/api.php");
     search.searchParams.set("action", "wbsearchentities");
@@ -484,10 +495,12 @@ async function wikidataMetadata(title) {
       ...claimIds(entity, "P136"),
     ];
     const labels = await wikidataLabels(ids);
+    const description = language === "es-ES" ? await spanishWikipediaDescription(entity) : "";
     return {
       developer: claimLabels(entity, labels, "P178")[0] || "",
       publisher: claimLabels(entity, labels, "P123")[0] || "",
       genres: cleanGenreLabels(claimLabels(entity, labels, "P136")).slice(0, 4),
+      description,
     };
   } catch {
     return emptyMetadata();
@@ -574,9 +587,39 @@ async function wikidataLabels(ids) {
   return Object.fromEntries(Object.entries(data.entities || {}).map(([id, entity]) => [id, entity.labels?.en?.value || ""]));
 }
 
+async function localizedDescription(title, fallback, language) {
+  const cleanedFallback = fullDescription(fallback);
+  if (language !== "es-ES") return cleanedFallback;
+  const metadata = await wikidataMetadata(title, language);
+  return metadata.description || cleanedFallback;
+}
+
+async function spanishWikipediaDescription(entity) {
+  const pageTitle = entity?.sitelinks?.eswiki?.title || "";
+  if (!pageTitle) return "";
+  try {
+    const api = new URL("https://es.wikipedia.org/w/api.php");
+    api.searchParams.set("action", "query");
+    api.searchParams.set("prop", "extracts");
+    api.searchParams.set("exintro", "1");
+    api.searchParams.set("explaintext", "1");
+    api.searchParams.set("redirects", "1");
+    api.searchParams.set("titles", pageTitle);
+    api.searchParams.set("format", "json");
+    const data = await getJson(api.toString());
+    const page = Object.values(data.query?.pages || {})[0];
+    return fullDescription(page?.extract || "");
+  } catch {
+    return "";
+  }
+}
 
 function emptyMetadata() {
-  return { developer: "", publisher: "", genres: [] };
+  return { developer: "", publisher: "", genres: [], description: "" };
+}
+
+function normalizeMetadataLanguage(value) {
+  return /^es(?:-|$)/i.test(String(value || "")) ? "es-ES" : "en";
 }
 
 async function getJson(url) {

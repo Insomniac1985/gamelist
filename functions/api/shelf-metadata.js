@@ -36,6 +36,7 @@ export async function onRequestPost({ request, env }) {
   const data = await env.GAMELIST.get(KV_KEY, "json") || {};
   const list = await env.GAMELIST.get("gamelist-data", "json").catch(() => null) || {};
   const settings = normalizePriceSettings(list.settings || {});
+  const language = normalizeMetadataLanguage(list.settings?.language);
   const sourceGames = Array.isArray(data.sourceGames) ? data.sourceGames : [];
   const games = Array.isArray(data.games) ? data.games : [];
   const overrides = data.overrides && typeof data.overrides === "object" ? { ...data.overrides } : {};
@@ -50,7 +51,7 @@ export async function onRequestPost({ request, env }) {
 
   for (const item of selected) {
     try {
-      const hydrated = await hydrateGame(item.game, options, settings, env);
+      const hydrated = await hydrateGame(item.game, options, settings, env, language);
       if (!changed(item.game, hydrated)) continue;
       updated += 1;
       if (item.kind === "source") overrides[item.game.id] = stripRuntimeFields(hydrated);
@@ -73,10 +74,10 @@ export async function onRequestPost({ request, env }) {
   return json({ ok: true, processed: selected.length, updated, errors, remaining: Math.max(0, candidates.length - selected.length), updatedAt: now });
 }
 
-async function hydrateGame(game, options, settings, env) {
+async function hydrateGame(game, options, settings, env, language) {
   let next = { ...game };
   const [igdb, physical] = await Promise.allSettled([
-    options.igdb ? fetchGameMetadata(next, env) : null,
+    options.igdb ? fetchGameMetadata(next, env, language) : null,
     options.pricecharting ? fetchPhysicalMetadata(next, settings, env) : null,
   ]);
   if (igdb.status === "fulfilled" && igdb.value) next = mergeIgdb(next, igdb.value, options);
@@ -85,10 +86,11 @@ async function hydrateGame(game, options, settings, env) {
   return next;
 }
 
-async function fetchGameMetadata(game, env) {
+async function fetchGameMetadata(game, env, language) {
   for (const query of metadataQueries(game.title)) {
     const url = new URL("https://local/api/search");
     url.searchParams.set("q", query);
+    url.searchParams.set("lang", language);
     const response = await searchMetadata({ request: new Request(url), env });
     const data = response.ok ? await response.json() : { results: [] };
     const result = bestTitleMatch(game.title, data.results || []);
@@ -284,6 +286,10 @@ function settingsCurrencyFallback(data) {
 
 function normalize(value) {
   return String(value || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]+/g, " ").trim();
+}
+
+function normalizeMetadataLanguage(value) {
+  return /^es(?:-|$)/i.test(String(value || "")) ? "es-ES" : "en";
 }
 
 function json(data, status = 200) {
