@@ -6550,6 +6550,13 @@ body.dialog-open .floating-search-button {
   display: none;
 }
 
+@media (min-width: 761px) {
+  .playing-card .complete-action .check-icon,
+  .playing-card .backlog-action .back-icon {
+    display: block;
+  }
+}
+
 body.can-edit #loginButton .pause-icon {
   display: none;
 }

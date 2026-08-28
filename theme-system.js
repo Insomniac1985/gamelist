@@ -190,24 +190,24 @@ export function themedManifestUrl(theme) {
   return `data:application/manifest+json,${encodeURIComponent(JSON.stringify(manifest))}`;
 }
 
-export function themeSettingsButton(settings, escapeHtml = htmlEscape) {
+export function themeSettingsButton(settings, escapeHtml = htmlEscape, translate = identityTranslate) {
   const theme = resolveSiteTheme(settings);
   return `
     <article class="settings-layout-card settings-theme-card" data-layout-key="theme">
       <div class="settings-theme-select">
-        <span>Theme</span>
+        <span>${escapeHtml(translate("Theme"))}</span>
         <button class="settings-theme-edit-button" type="button" data-theme-editor>
-          <span>Edit theme</span>
+          <span>${escapeHtml(translate("Edit theme"))}</span>
         </button>
       </div>
     </article>
   `;
 }
 
-export function openThemeEditor({ settings = {}, onSave, page = "gamelist" }) {
+export function openThemeEditor({ settings = {}, onSave, page = "gamelist", translate = identityTranslate }) {
   const dialog = ensureThemeDialog();
   const draft = structuredCloneSafe(normalizeThemeSettings(settings));
-  renderThemeDialog(dialog, draft, settings, page, onSave);
+  renderThemeDialog(dialog, draft, settings, page, onSave, translate);
   try {
     dialog.showModal();
   } catch {
@@ -228,15 +228,15 @@ function ensureThemeDialog() {
   return dialog;
 }
 
-function renderThemeDialog(dialog, draft, settings, page, onSave) {
+function renderThemeDialog(dialog, draft, settings, page, onSave, translate = identityTranslate) {
   const ownerRows = draft.ownerColors.length ? draft.ownerColors : [{ name: "", color: "#ff9ed2" }];
   dialog.innerHTML = `
     <form class="settings-modal theme-editor-modal glass" method="dialog">
       <div class="modal-head">
-        <div><p class="eyebrow">Theme</p><h2>Edit theme</h2></div>
+        <div><p class="eyebrow">${htmlEscape(translate("Theme"))}</p><h2>${htmlEscape(translate("Edit theme"))}</h2></div>
         <div class="modal-head-actions">
-          <button class="primary-button modal-head-save" type="submit">Save</button>
-          <button class="icon-button" type="button" data-theme-close title="Close" aria-label="Close">×</button>
+          <button class="primary-button modal-head-save" type="submit">${htmlEscape(translate("Save"))}</button>
+          <button class="icon-button" type="button" data-theme-close title="${htmlEscape(translate("Close"))}" aria-label="${htmlEscape(translate("Close"))}">×</button>
         </div>
       </div>
       <section class="theme-editor-grid">
@@ -274,7 +274,7 @@ function renderThemeDialog(dialog, draft, settings, page, onSave) {
           <button class="ghost-button" type="button" data-owner-add>Add owner color</button>
         </div>
       </section>
-      <div class="modal-actions"><button class="primary-button" type="submit">Save</button></div>
+      <div class="modal-actions"><button class="primary-button" type="submit">${htmlEscape(translate("Save"))}</button></div>
     </form>
   `;
   const form = dialog.querySelector("form");
@@ -590,4 +590,8 @@ function cssEscape(value) {
 
 function htmlEscape(value) {
   return String(value ?? "").replace(/[&<>'"]/g, (char) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", "'": "&#39;", '"': "&quot;" })[char]);
+}
+
+function identityTranslate(key) {
+  return key;
 }

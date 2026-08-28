@@ -121,6 +121,7 @@ const el = {
   layoutButton: document.querySelector("#settingsButton"),
   syncButton: document.querySelector("#syncButton"),
   fetchPricesButton: document.querySelector("#fetchPricesButton"),
+  topActionsSeparator: document.querySelector(".top-actions-separator"),
   modules: document.querySelector("#shelfModules"),
   favorites: document.querySelector("#favoriteGames"),
   showcaseEdit: document.querySelector("#showcaseEditButton"),
@@ -549,7 +550,9 @@ function renderChrome() {
   el.addButton.hidden = false;
   el.layoutButton.hidden = !state.canEdit;
   if (el.syncButton) el.syncButton.hidden = true;
-  el.fetchPricesButton.hidden = !state.canEdit || !shelfPricesVisible();
+  const showPriceActions = state.canEdit && shelfPricesVisible();
+  el.fetchPricesButton.hidden = !showPriceActions;
+  if (el.topActionsSeparator) el.topActionsSeparator.hidden = !showPriceActions;
   el.fetchPricesButton.innerHTML = `${currencyIcon()}<span class="button-label">${escapeHtml(tt("Fetch New Prices"))}</span>`;
   updateFetchPricesButtonStatus();
   el.login.innerHTML = state.canEdit
@@ -637,12 +640,18 @@ function initPagePullTransition({ targetLabel, targetUrl }) {
     removePagePullTransition();
     return;
   }
-  if (document.querySelector(".page-pull-switch")) return;
+  const localizedTargetLabel = tt(targetLabel);
+  const existingButton = document.querySelector(".page-pull-switch");
+  if (existingButton) {
+    existingButton.setAttribute("aria-label", tt("Switch to {target}", { target: localizedTargetLabel }));
+    existingButton.innerHTML = `<span>${escapeHtml(localizedTargetLabel)}</span>`;
+    return;
+  }
   const button = document.createElement("button");
   button.className = "page-pull-switch";
   button.type = "button";
-  button.setAttribute("aria-label", `Switch to ${targetLabel}`);
-  button.innerHTML = `<span>${escapeHtml(targetLabel)}</span>`;
+  button.setAttribute("aria-label", tt("Switch to {target}", { target: localizedTargetLabel }));
+  button.innerHTML = `<span>${escapeHtml(localizedTargetLabel)}</span>`;
   const curtain = document.createElement("div");
   curtain.className = "page-pull-curtain";
   curtain.setAttribute("aria-hidden", "true");
@@ -2041,7 +2050,7 @@ function renderLayoutEditor() {
   el.layoutList.innerHTML = [
     ...state.layout.order.map((key, index) => settingsLayoutCard(key, index)),
     settingsPageFeatureToggles(),
-    `<div class="settings-preference-separator" role="presentation"></div><div class="settings-preference-row">${themeSettingsButton(state.gamelistSettings, escapeHtml)}${settingsSelectCard("order", tt("Default order"), "shelfSettingsDefaultOrder", [{ value: "added", label: tt("Last added") }, { value: "title", label: tt("Name") }, { value: "platform", label: tt("Platform") }, { value: "region", label: tt("Region") }, { value: "value", label: tt("Value") }])}${settingsSelectCard("calendar", tt("Week starts"), "shelfSettingsWeekStart", WEEK_START_OPTIONS.map(([value, label]) => ({ value, label: tt(label) })))}${settingsShelfSyncCard()}${settingsPageSwitchCard()}</div>`,
+    `<div class="settings-preference-separator" role="presentation"></div><div class="settings-preference-row">${themeSettingsButton(state.gamelistSettings, escapeHtml, tt)}${settingsSelectCard("order", tt("Default order"), "shelfSettingsDefaultOrder", [{ value: "added", label: tt("Last added") }, { value: "title", label: tt("Name") }, { value: "platform", label: tt("Platform") }, { value: "region", label: tt("Region") }, { value: "value", label: tt("Value") }])}${settingsSelectCard("calendar", tt("Week starts"), "shelfSettingsWeekStart", WEEK_START_OPTIONS.map(([value, label]) => ({ value, label: tt(label) })))}${settingsShelfSyncCard()}${settingsPageSwitchCard()}</div>`,
   ].join("");
   document.querySelector("#shelfSettingsCsvData").innerHTML = settingsCsvDataCard();
   if (el.settingsDevFeatures) el.settingsDevFeatures.innerHTML = settingsDevFeaturesCard("shelf");
@@ -2068,6 +2077,7 @@ function renderLayoutEditor() {
     openThemeEditor({
       settings: state.gamelistSettings,
       page: "shelf",
+      translate: tt,
       onSave: async (settings) => {
         state.gamelistSettings = { ...state.gamelistSettings, ...settings, customTheme: normalizeThemeSettings(settings) };
         localStorage.setItem("gamelist:settings:v1", JSON.stringify(state.gamelistSettings));

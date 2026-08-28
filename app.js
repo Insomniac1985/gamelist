@@ -994,12 +994,18 @@ function initPagePullTransition({ targetLabel, targetUrl }) {
     removePagePullTransition();
     return;
   }
-  if (document.querySelector(".page-pull-switch")) return;
+  const localizedTargetLabel = tt(targetLabel);
+  const existingButton = document.querySelector(".page-pull-switch");
+  if (existingButton) {
+    existingButton.setAttribute("aria-label", tt("Switch to {target}", { target: localizedTargetLabel }));
+    existingButton.innerHTML = `<span>${escapeHtml(localizedTargetLabel)}</span>`;
+    return;
+  }
   const button = document.createElement("button");
   button.className = "page-pull-switch";
   button.type = "button";
-  button.setAttribute("aria-label", `Switch to ${targetLabel}`);
-  button.innerHTML = `<span>${escapeHtml(targetLabel)}</span>`;
+  button.setAttribute("aria-label", tt("Switch to {target}", { target: localizedTargetLabel }));
+  button.innerHTML = `<span>${escapeHtml(localizedTargetLabel)}</span>`;
   const curtain = document.createElement("div");
   curtain.className = "page-pull-curtain";
   curtain.setAttribute("aria-hidden", "true");
@@ -1525,6 +1531,7 @@ function renderSettingsDialog() {
     openThemeEditor({
       settings: state.settings,
       page: "gamelist",
+      translate: tt,
       onSave: async (settings) => {
         state.settings = normalizeSettings(settings);
         persistLocalSettings();
@@ -1611,7 +1618,7 @@ function moveSettingsLayoutItem(key, delta) {
 }
 
 function settingsThemeItem() {
-  return themeSettingsButton(state.settings, escapeHtml);
+  return themeSettingsButton(state.settings, escapeHtml, tt);
 }
 
 function settingsDefaultOrderItem() {
@@ -6989,7 +6996,7 @@ function bindDetailShelfSearch(game) {
     target.classList.add("detail-shelf-search-link");
     target.setAttribute("role", "link");
     target.tabIndex = 0;
-    target.title = `Find ${game.title} in ${digital ? "Drive" : "Shelf"}`;
+    target.title = tt("Find {title} in {target}", { title: game.title, target: tt(digital ? "Drive" : "Shelf") });
   });
   const navigate = (event) => {
     const target = event.target.closest(".detail-shelf-search-link");
