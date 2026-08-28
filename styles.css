@@ -12288,22 +12288,34 @@ html.theme-light .playing-achievements-check input[type="checkbox"]:checked {
     min-height: 0;
   }
 
-  .playing-section .cover-button {
-    align-self: start;
-    width: 112px;
-    height: 146px;
-    max-height: none;
-  }
-
   .playing-section .game-card {
-    grid-template-columns: 112px minmax(0, 1fr);
-    flex-basis: calc(100vw - 54px);
-    grid-template-rows: max-content;
+    grid-template-columns: minmax(0, 1fr) 86px;
+    grid-template-rows: auto auto auto auto auto auto;
+    flex-basis: calc(100vw - 28px);
     height: var(--mobile-playing-card-height, auto);
     min-height: var(--mobile-playing-card-height, 0);
     align-items: start;
     padding: 11px;
-    gap: 11px;
+    gap: 7px 8px;
+  }
+
+  .playing-section .game-card.playing-card:not(:has(.card-trophies:not([hidden]))) {
+    grid-template-columns: 1fr;
+  }
+
+  .playing-section .cover-button {
+    grid-column: 1;
+    grid-row: 1;
+    align-self: start;
+    width: 100%;
+    height: auto;
+    aspect-ratio: 104 / 142;
+    max-height: 340px;
+    min-height: 0;
+  }
+
+  .playing-section .game-card.playing-card:not(:has(.card-trophies:not([hidden]))) .cover-button {
+    max-height: 360px;
   }
 
   .twitch-preview-card {
@@ -12398,20 +12410,57 @@ html.theme-light .playing-achievements-check input[type="checkbox"]:checked {
     height: 24px;
   }
 
+  .playing-section .game-card.playing-card .game-main {
+    display: contents;
+  }
+
   .playing-section .game-main {
     min-height: 0;
     justify-content: flex-start;
+  }
+
+  .playing-section .game-card.playing-card .title-line {
+    grid-column: 1 / -1;
+    grid-row: 2;
+    padding-right: 0;
   }
 
   .playing-section .game-card h3 {
     max-width: none;
     overflow-wrap: anywhere;
     hyphens: auto;
-    font-size: clamp(17px, 5.8vw, 23px);
-    line-height: 1.05;
+    font-size: clamp(27px, 9vw, 40px);
+    line-height: 0.96;
+  }
+
+  .playing-section .game-card.playing-card .edit-action {
+    position: absolute;
+    top: 14px;
+    right: 14px;
+    z-index: 3;
+  }
+
+  .playing-section .game-card.playing-card .studio-line {
+    grid-column: 1 / -1;
+    grid-row: 3;
+    margin-top: -2px;
+    font-size: 13px;
+  }
+
+  .playing-section .game-card.playing-card .meta {
+    grid-column: 1;
+    grid-row: 4;
+    margin-top: 2px;
   }
 
   .playing-section .game-card.playing-card .play-dates {
+    grid-column: 1;
+    grid-row: 5;
+    display: flex;
+    margin-top: 0;
+  }
+
+  .playing-section .game-card.playing-card .chips {
     display: none;
   }
 
@@ -12454,11 +12503,14 @@ html.theme-light .playing-achievements-check input[type="checkbox"]:checked {
   }
 
   .playing-section .card-trophies {
-    margin-top: 14px;
+    grid-column: 2;
+    grid-row: 1 / span 5;
+    align-self: stretch;
+    margin-top: 0;
   }
 
   .playing-section .card-trophy-list {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-columns: 1fr;
     gap: 4px;
   }
 
@@ -12469,7 +12521,7 @@ html.theme-light .playing-achievements-check input[type="checkbox"]:checked {
   .playing-section .card-trophy {
     grid-template-columns: 1fr;
     gap: 4px;
-    min-height: 58px;
+    min-height: 66px;
     padding: 4px;
     text-align: center;
   }
@@ -12483,6 +12535,12 @@ html.theme-light .playing-achievements-check input[type="checkbox"]:checked {
   .playing-section .card-trophy span {
     font-size: 9px;
     line-height: 1.1;
+  }
+
+  .playing-section .game-card.playing-card .card-actions {
+    grid-column: 1 / -1;
+    grid-row: 6;
+    margin-top: 8px;
   }
 
   .playing-panel {
@@ -12792,21 +12850,22 @@ html.theme-light .playing-achievements-check input[type="checkbox"]:checked {
   }
 
   .playing-card .card-actions {
-    grid-template-columns: minmax(0, 1fr) 42px 42px 42px;
+    grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.95fr) 42px 42px;
   }
 
   .playing-card .backlog-action {
-    width: 42px;
-    min-width: 42px;
-    padding: 0;
+    width: auto;
+    min-width: 0;
+    padding: 0 10px;
   }
 
   .playing-card .backlog-action .back-icon {
     display: block;
   }
 
+  .playing-card .complete-action .check-icon + .action-label,
   .playing-card .backlog-action .action-label {
-    display: none;
+    display: inline;
   }
 
   .detail-modal {
@@ -12975,18 +13034,27 @@ html.theme-light .playing-achievements-check input[type="checkbox"]:checked {
   }
 
   .playing-section .card-guide-row {
-    flex-wrap: nowrap;
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 4px;
   }
 
   .playing-section .card-guide-row .guide-button {
-    width: 38px;
-    min-width: 38px;
-    min-height: 34px;
-    padding: 6px;
+    justify-content: flex-start;
+    width: 100%;
+    min-width: 0;
+    min-height: 30px;
+    padding: 5px 6px;
+    gap: 5px;
+    font-size: 9px;
   }
 
   .playing-section .card-guide-row .guide-button span {
-    display: none;
+    display: block;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
 
   .stats {
