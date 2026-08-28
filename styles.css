@@ -12467,7 +12467,7 @@ html.theme-light .playing-achievements-check input[type="checkbox"]:checked {
     max-width: none;
     overflow-wrap: anywhere;
     hyphens: auto;
-    font-size: clamp(23px, 7.8vw, 34px);
+    font-size: clamp(23px, 5.6vw, 34px);
     line-height: 0.98;
   }
 
