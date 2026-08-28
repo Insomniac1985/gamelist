@@ -6715,6 +6715,7 @@ function cardFor(game, options = {}) {
   const trophyStrip = card.querySelector(".card-trophies");
   trophyStrip.innerHTML = game.playing && !releaseDialog ? cardTrophiesFor(game) : "";
   trophyStrip.hidden = !trophyStrip.innerHTML;
+  if (game.playing && !releaseDialog) syncPlayingCardTrophyLayout(card, trophyStrip, game);
   trophyStrip.addEventListener("click", (event) => {
     if (event.target.closest("a")) {
       event.stopPropagation();
@@ -7926,6 +7927,7 @@ function updateCardTrophyStrips(gameId) {
   document.querySelectorAll(`.game-card[data-id="${CSS.escape(gameId)}"] .card-trophies`).forEach((node) => {
     node.innerHTML = game.playing ? cardTrophiesFor(game) : "";
     node.hidden = !node.innerHTML;
+    syncPlayingCardTrophyLayout(node.closest(".game-card"), node, game);
   });
   if (game.playing) schedulePlayingCardHeightSync();
 }
@@ -7940,6 +7942,7 @@ function updateCardAchievementUi(gameId) {
     if (trophyStrip) {
       trophyStrip.innerHTML = game.playing ? cardTrophiesFor(game) : "";
       trophyStrip.hidden = !trophyStrip.innerHTML;
+      syncPlayingCardTrophyLayout(card, trophyStrip, game);
     }
   });
   document.querySelectorAll(`.completed-row[data-id="${CSS.escape(gameId)}"] .completed-platform, .history-row[data-id="${CSS.escape(gameId)}"] .completed-platform`).forEach((node) => {
@@ -7947,6 +7950,18 @@ function updateCardAchievementUi(gameId) {
   });
   renderPlayingFinished();
   if (game.playing) schedulePlayingCardHeightSync();
+}
+
+function syncPlayingCardTrophyLayout(card, trophyStrip, game) {
+  if (!card || !trophyStrip || !game.playing) return;
+  const main = card.querySelector(".game-main");
+  [...(main?.children || [])].forEach((child) => {
+    if (child.classList.contains("card-guide-row")) child.remove();
+  });
+  const guideRow = trophyStrip.querySelector(".card-guide-row");
+  const playDates = card.querySelector(".play-dates");
+  if (guideRow && playDates) playDates.insertAdjacentElement("afterend", guideRow);
+  trophyStrip.hidden = !trophyStrip.querySelector(".card-trophy-head, .card-trophy-list");
 }
 
 function normalizeTitleForMatch(value) {
