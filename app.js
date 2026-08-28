@@ -994,12 +994,18 @@ function initPagePullTransition({ targetLabel, targetUrl }) {
     removePagePullTransition();
     return;
   }
-  if (document.querySelector(".page-pull-switch")) return;
+  const localizedTargetLabel = tt(targetLabel);
+  const existingButton = document.querySelector(".page-pull-switch");
+  if (existingButton) {
+    existingButton.setAttribute("aria-label", tt("Switch to {target}", { target: localizedTargetLabel }));
+    existingButton.innerHTML = `<span>${escapeHtml(localizedTargetLabel)}</span>`;
+    return;
+  }
   const button = document.createElement("button");
   button.className = "page-pull-switch";
   button.type = "button";
-  button.setAttribute("aria-label", `Switch to ${targetLabel}`);
-  button.innerHTML = `<span>${escapeHtml(targetLabel)}</span>`;
+  button.setAttribute("aria-label", tt("Switch to {target}", { target: localizedTargetLabel }));
+  button.innerHTML = `<span>${escapeHtml(localizedTargetLabel)}</span>`;
   const curtain = document.createElement("div");
   curtain.className = "page-pull-curtain";
   curtain.setAttribute("aria-hidden", "true");
@@ -1525,6 +1531,7 @@ function renderSettingsDialog() {
     openThemeEditor({
       settings: state.settings,
       page: "gamelist",
+      translate: tt,
       onSave: async (settings) => {
         state.settings = normalizeSettings(settings);
         persistLocalSettings();
@@ -1611,7 +1618,7 @@ function moveSettingsLayoutItem(key, delta) {
 }
 
 function settingsThemeItem() {
-  return themeSettingsButton(state.settings, escapeHtml);
+  return themeSettingsButton(state.settings, escapeHtml, tt);
 }
 
 function settingsDefaultOrderItem() {
@@ -6708,6 +6715,7 @@ function cardFor(game, options = {}) {
   const trophyStrip = card.querySelector(".card-trophies");
   trophyStrip.innerHTML = game.playing && !releaseDialog ? cardTrophiesFor(game) : "";
   trophyStrip.hidden = !trophyStrip.innerHTML;
+  if (game.playing && !releaseDialog) syncPlayingCardTrophyLayout(card, trophyStrip, game);
   trophyStrip.addEventListener("click", (event) => {
     if (event.target.closest("a")) {
       event.stopPropagation();
@@ -6989,7 +6997,7 @@ function bindDetailShelfSearch(game) {
     target.classList.add("detail-shelf-search-link");
     target.setAttribute("role", "link");
     target.tabIndex = 0;
-    target.title = `Find ${game.title} in ${digital ? "Drive" : "Shelf"}`;
+    target.title = tt("Find {title} in {target}", { title: game.title, target: tt(digital ? "Drive" : "Shelf") });
   });
   const navigate = (event) => {
     const target = event.target.closest(".detail-shelf-search-link");
@@ -7919,6 +7927,7 @@ function updateCardTrophyStrips(gameId) {
   document.querySelectorAll(`.game-card[data-id="${CSS.escape(gameId)}"] .card-trophies`).forEach((node) => {
     node.innerHTML = game.playing ? cardTrophiesFor(game) : "";
     node.hidden = !node.innerHTML;
+    syncPlayingCardTrophyLayout(node.closest(".game-card"), node, game);
   });
   if (game.playing) schedulePlayingCardHeightSync();
 }
@@ -7933,6 +7942,7 @@ function updateCardAchievementUi(gameId) {
     if (trophyStrip) {
       trophyStrip.innerHTML = game.playing ? cardTrophiesFor(game) : "";
       trophyStrip.hidden = !trophyStrip.innerHTML;
+      syncPlayingCardTrophyLayout(card, trophyStrip, game);
     }
   });
   document.querySelectorAll(`.completed-row[data-id="${CSS.escape(gameId)}"] .completed-platform, .history-row[data-id="${CSS.escape(gameId)}"] .completed-platform`).forEach((node) => {
@@ -7940,6 +7950,18 @@ function updateCardAchievementUi(gameId) {
   });
   renderPlayingFinished();
   if (game.playing) schedulePlayingCardHeightSync();
+}
+
+function syncPlayingCardTrophyLayout(card, trophyStrip, game) {
+  if (!card || !trophyStrip || !game.playing) return;
+  const main = card.querySelector(".game-main");
+  [...(main?.children || [])].forEach((child) => {
+    if (child.classList.contains("card-guide-row")) child.remove();
+  });
+  const guideRow = trophyStrip.querySelector(".card-guide-row");
+  const playDates = card.querySelector(".play-dates");
+  if (guideRow && playDates) playDates.insertAdjacentElement("afterend", guideRow);
+  trophyStrip.hidden = !trophyStrip.querySelector(".card-trophy-head, .card-trophy-list");
 }
 
 function normalizeTitleForMatch(value) {
@@ -7990,11 +8012,11 @@ function playDatesFor(game, options = {}) {
   if (release) values.push(releaseStatusPill(release));
   if (options.includePreorder && game.preorderStore) values.push(preorderChip(game.preorderStore));
   else if (options.includePreorder && game.preferredStore) values.push(preferredPreorderChip(game.preferredStore));
-  if (game.startedAt) values.push(`<span class="history-pill history-date-pill"><small>Started</small><strong>${escapeHtml(formatDate(game.startedAt))}</strong></span>`);
-  if (game.completedAt) values.push(`<span class="history-pill history-date-pill"><small>Finished</small><strong>${escapeHtml(formatDate(game.completedAt))}</strong></span>`);
+  if (game.startedAt) values.push(`<span class="history-pill history-date-pill"><small>${escapeHtml(tt("Started"))}</small><strong>${escapeHtml(formatDate(game.startedAt))}</strong></span>`);
+  if (game.completedAt) values.push(`<span class="history-pill history-date-pill"><small>${escapeHtml(tt("Finished"))}</small><strong>${escapeHtml(formatDate(game.completedAt))}</strong></span>`);
   const finishTime = finishHoursText(game);
   const duration = finishTime || finishedDurationText(game.startedAt, game.completedAt);
-  if (duration) values.push(`<span class="history-pill history-date-pill"><small>Play Time</small><strong>${escapeHtml(duration)}</strong></span>`);
+  if (duration) values.push(`<span class="history-pill history-date-pill"><small>${escapeHtml(tt("Play Time"))}</small><strong>${escapeHtml(duration)}</strong></span>`);
   return values;
 }
 
