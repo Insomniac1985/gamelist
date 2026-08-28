@@ -12447,7 +12447,7 @@ html.theme-light .playing-achievements-check input[type="checkbox"]:checked {
     ) {
     position: relative;
     z-index: 1;
-    margin-top: 35px;
+    margin-top: 15px;
   }
 
   .playing-section .game-main {
@@ -12576,8 +12576,8 @@ html.theme-light .playing-achievements-check input[type="checkbox"]:checked {
   }
 
   .playing-section .card-trophy img {
-    width: 24px;
-    height: 24px;
+    width: 35px;
+    height: 35px;
     margin: 0;
   }
 
@@ -12591,7 +12591,8 @@ html.theme-light .playing-achievements-check input[type="checkbox"]:checked {
     grid-column: 1 / -1;
     grid-row: 8;
     align-self: end;
-    margin-top: 3px;
+    margin-top: 5px;
+    margin-bottom: 5px;
   }
 
   .playing-panel {
