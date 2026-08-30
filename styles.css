@@ -11480,8 +11480,13 @@ body.theme-kash
   min-height: 18px;
   padding: 1px 6px;
   color: var(--text);
-  background: color-mix(in srgb, var(--accent-2) 14%, rgba(255, 255, 255, 0.06));
-  border: 1px solid color-mix(in srgb, var(--accent-2) 32%, rgba(255, 255, 255, 0.12));
+  background: color-mix(
+    in srgb,
+    var(--accent-2) 14%,
+    rgba(255, 255, 255, 0.06)
+  );
+  border: 1px solid
+    color-mix(in srgb, var(--accent-2) 32%, rgba(255, 255, 255, 0.12));
   border-radius: 6px;
   font-size: 10px;
   line-height: 1;
@@ -11523,7 +11528,7 @@ body.theme-kash
   align-items: center;
   justify-content: center;
   min-height: 30px;
-  padding: 0 5px;
+  padding: 0 7px 4px 7px;
   background: rgba(255, 255, 255, 0.045);
   border: 1px solid rgba(255, 255, 255, 0.16);
   border-radius: 8px;
