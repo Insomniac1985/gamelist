@@ -11496,7 +11496,7 @@ body.theme-kash
 .detail-rating-grid {
   display: flex;
   flex-wrap: nowrap;
-  gap: 10px;
+  gap: 8px;
   align-items: flex-start;
 }
 
@@ -11523,7 +11523,7 @@ body.theme-kash
   align-items: center;
   justify-content: center;
   min-height: 30px;
-  padding: 0 6px;
+  padding: 0 5px;
   background: rgba(255, 255, 255, 0.045);
   border: 1px solid rgba(255, 255, 255, 0.16);
   border-radius: 8px;
@@ -11912,7 +11912,7 @@ body.theme-kash
 }
 
 .detail-star-display {
-  gap: 0;
+  gap: 7px;
   min-width: 0;
   font-size: 25px;
 }
