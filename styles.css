@@ -11664,8 +11664,8 @@ body.theme-kash
   display: inline-flex;
   justify-content: flex-end;
   align-items: center;
-  gap: 2px;
-  min-height: 22px;
+  gap: 4px;
+  min-height: 32px;
 }
 
 .star-rating input {
@@ -11679,20 +11679,23 @@ body.theme-kash
 .star-rating label {
   display: grid;
   place-items: center;
-  width: 20px;
-  height: 22px;
+  width: 29px;
+  height: 31px;
   color: rgba(255, 255, 255, 0.22);
-  font-size: 18px;
+  font-size: 27px;
   line-height: 1;
   cursor: pointer;
+  border-radius: 999px;
   transition:
     color 120ms ease,
-    transform 120ms ease;
+    transform 120ms ease,
+    background 120ms ease;
 }
 
 .star-rating label:hover,
 .star-rating input:focus-visible + label {
-  color: #ffe985;
+  color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
 }
 
 .star-rating label:hover {
@@ -11714,18 +11717,33 @@ body.theme-kash
 .rating-row[data-rating-value="5"] label[data-star="3"],
 .rating-row[data-rating-value="5"] label[data-star="4"],
 .rating-row[data-rating-value="5"] label[data-star="5"] {
+  color: var(--accent);
+}
+
+.rating-row[data-rating-value="5"] label[data-star] {
   color: #ffe985;
 }
 
 .star-rating .star-clear {
-  width: 18px;
-  color: rgba(255, 255, 255, 0.34);
-  font-size: 14px;
-  font-weight: 900;
+  width: 31px;
+  height: 31px;
+  margin-left: auto;
+  color: var(--danger);
+  background: rgba(255, 111, 133, 0.1);
+  border: 1px solid rgba(255, 111, 133, 0.24);
+  opacity: 1;
+  pointer-events: auto;
 }
 
-.star-rating input[value="0"]:checked + .star-clear {
-  color: rgba(255, 255, 255, 0.18);
+.rating-row[data-rating-value="0"] .star-clear {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.star-rating .star-clear .trash-icon {
+  width: 16px;
+  height: 16px;
+  stroke-width: 2.4;
 }
 
 .playing-achievements-check .achievement-check-icon {

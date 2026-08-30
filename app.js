@@ -8869,12 +8869,12 @@ function renderRatingInputs(container, namePrefix) {
     <fieldset class="rating-row" data-rating-key="${escapeHtml(key)}" data-rating-value="0">
       <legend data-i18n="${escapeHtml(label)}">${escapeHtml(label)}</legend>
       <div class="star-rating" aria-label="${escapeHtml(label)}">
-        <input type="radio" id="${escapeHtml(namePrefix)}Rating-${escapeHtml(key)}-0" name="${escapeHtml(namePrefix)}Rating-${escapeHtml(key)}" value="0">
-        <label class="star-clear" for="${escapeHtml(namePrefix)}Rating-${escapeHtml(key)}-0" title="${escapeHtml(tt("No rating"))}" aria-label="${escapeHtml(tt("No rating"))}" data-i18n-title="No rating" data-i18n-aria-label="No rating">×</label>
         ${[1, 2, 3, 4, 5].map((value) => `
           <input type="radio" id="${escapeHtml(namePrefix)}Rating-${escapeHtml(key)}-${value}" name="${escapeHtml(namePrefix)}Rating-${escapeHtml(key)}" value="${value}">
           <label data-star="${value}" for="${escapeHtml(namePrefix)}Rating-${escapeHtml(key)}-${value}" title="${value}/5" aria-label="${value}/5">★</label>
         `).join("")}
+        <input type="radio" id="${escapeHtml(namePrefix)}Rating-${escapeHtml(key)}-0" name="${escapeHtml(namePrefix)}Rating-${escapeHtml(key)}" value="0">
+        <label class="star-clear" for="${escapeHtml(namePrefix)}Rating-${escapeHtml(key)}-0" title="${escapeHtml(tt("No rating"))}" aria-label="${escapeHtml(tt("No rating"))}" data-i18n-title="No rating" data-i18n-aria-label="No rating">${trashIcon()}</label>
       </div>
     </fieldset>
   `).join("");
