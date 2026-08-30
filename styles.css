@@ -1693,6 +1693,8 @@ html.theme-gradient .goty-section .column-head h2 .trophy-icon {
 .playing-finished-tags .rating-score-star {
   color: #ffe985;
   font-size: 12px;
+  line-height: 1;
+  transform: translateY(-1px);
   -webkit-text-fill-color: #ffe985;
 }
 
@@ -8729,12 +8731,8 @@ body.dialog-open .mobile-section-tabs {
 
 .finish-time-flags-row .check-filter {
   min-height: 44px;
-  color: #ffe985;
-  border-color: rgba(255, 233, 133, 0.32);
-  background: rgba(255, 211, 94, 0.08);
 }
 
-.finish-time-flags-row .check-filter:has(input:checked),
 .finish-time-main-row .finish-trophy-check:has(input:checked) {
   color: #ffe985;
   border-color: rgba(255, 233, 133, 0.56);
@@ -11482,8 +11480,13 @@ body.theme-kash
   min-height: 18px;
   padding: 1px 6px;
   color: var(--text);
-  background: color-mix(in srgb, var(--accent-2) 14%, rgba(255, 255, 255, 0.06));
-  border: 1px solid color-mix(in srgb, var(--accent-2) 32%, rgba(255, 255, 255, 0.12));
+  background: color-mix(
+    in srgb,
+    var(--accent-2) 14%,
+    rgba(255, 255, 255, 0.06)
+  );
+  border: 1px solid
+    color-mix(in srgb, var(--accent-2) 32%, rgba(255, 255, 255, 0.12));
   border-radius: 6px;
   font-size: 10px;
   line-height: 1;
@@ -11497,8 +11500,8 @@ body.theme-kash
 
 .detail-rating-grid {
   display: flex;
-  flex-wrap: wrap;
-  gap: 14px 20px;
+  flex-wrap: nowrap;
+  gap: 8px;
   align-items: flex-start;
 }
 
@@ -11524,17 +11527,18 @@ body.theme-kash
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-height: 32px;
-  padding: 0 8px;
+  min-height: 30px;
+  padding: 0 7px 4px 7px;
   background: rgba(255, 255, 255, 0.045);
   border: 1px solid rgba(255, 255, 255, 0.16);
   border-radius: 8px;
-  width: max-content;
+  width: fit-content;
   justify-self: start;
 }
 
 @media (max-width: 760px) {
   .detail-rating-grid {
+    flex-wrap: wrap;
     gap: 13px 16px;
   }
 
@@ -11672,7 +11676,7 @@ body.theme-kash
 }
 
 .collection-form-grid > .dlc-check {
-  grid-column: span 4;
+  grid-column: span 3;
   align-self: end;
   min-width: 0;
   padding-inline: 8px;
@@ -11706,7 +11710,7 @@ body.theme-kash
 }
 
 .collection-form-grid > .collection-check {
-  grid-column: span 4;
+  grid-column: span 3;
   padding-inline: 8px;
 }
 
@@ -11913,9 +11917,9 @@ body.theme-kash
 }
 
 .detail-star-display {
-  gap: 2px;
-  min-width: 111px;
-  font-size: 23px;
+  gap: 7px;
+  min-width: 0;
+  font-size: 25px;
 }
 
 .rating-star {
@@ -13571,17 +13575,19 @@ html.theme-light .finish-trophy-check input[type="checkbox"]:checked {
   }
 
   .playing-section .card-guide-row {
-    display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 4px;
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    gap: 5px;
   }
 
   .playing-section .card-guide-row .guide-button {
-    justify-content: flex-start;
-    width: auto;
-    min-width: 0;
+    flex: 0 0 auto;
+    justify-content: center;
+    width: max-content;
+    min-width: max-content;
     min-height: 28px;
-    padding: 4px 7px;
+    padding: 4px 8px;
     gap: 4px;
     font-size: 10px;
     font-weight: 850;
@@ -13595,8 +13601,8 @@ html.theme-light .finish-trophy-check input[type="checkbox"]:checked {
   .playing-section .card-guide-row .guide-button span {
     display: block;
     min-width: 0;
-    overflow: hidden;
-    text-overflow: ellipsis;
+    overflow: visible;
+    text-overflow: clip;
     white-space: nowrap;
   }
 
