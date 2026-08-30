@@ -8114,8 +8114,19 @@ function playDatesFor(game, options = {}) {
   if (game.completedAt) values.push(`<span class="history-pill history-date-pill"><small>${escapeHtml(tt("Finished"))}</small><strong>${escapeHtml(formatDate(game.completedAt))}</strong></span>`);
   const finishTime = finishHoursText(game);
   const duration = finishTime || finishedDurationText(game.startedAt, game.completedAt);
-  if (duration) values.push(`<span class="history-pill history-date-pill"><small>${escapeHtml(tt("Play Time"))}</small><strong>${escapeHtml(duration)}</strong></span>`);
+  if (duration) values.push(playTimeHistoryPill(duration, finishHoursValue(game.finishHours)));
   return values;
+}
+
+function playTimeHistoryPill(duration, hours) {
+  const style = hours ? ` style="${timePillStyle(hours)}"` : "";
+  return `<span class="history-pill history-date-pill playtime-date-pill"${style}><small>${escapeHtml(tt("Play Time"))}</small><strong>${escapeHtml(duration)}</strong></span>`;
+}
+
+function timePillStyle(hours) {
+  const clamped = Math.max(0, Math.min(1, (Number(hours) - 7) / 53));
+  const hue = Math.round(132 - (132 * clamped));
+  return `--time-color:hsl(${hue}, 88%, 56%);--time-light:hsl(${Math.min(140, hue + 10)}, 94%, 72%);--time-dark:hsl(${Math.max(0, hue - 8)}, 82%, 39%);--time-glow:hsla(${hue}, 88%, 56%, 0.34)`;
 }
 
 function studioText(game) {
