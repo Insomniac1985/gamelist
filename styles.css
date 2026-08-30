@@ -13570,17 +13570,19 @@ html.theme-light .finish-trophy-check input[type="checkbox"]:checked {
   }
 
   .playing-section .card-guide-row {
-    display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 4px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 5px;
   }
 
   .playing-section .card-guide-row .guide-button {
-    justify-content: flex-start;
-    width: auto;
-    min-width: 0;
+    flex: 0 0 auto;
+    justify-content: center;
+    width: max-content;
+    min-width: max-content;
     min-height: 28px;
-    padding: 4px 7px;
+    padding: 4px 8px;
     gap: 4px;
     font-size: 10px;
     font-weight: 850;
@@ -13594,8 +13596,8 @@ html.theme-light .finish-trophy-check input[type="checkbox"]:checked {
   .playing-section .card-guide-row .guide-button span {
     display: block;
     min-width: 0;
-    overflow: hidden;
-    text-overflow: ellipsis;
+    overflow: visible;
+    text-overflow: clip;
     white-space: nowrap;
   }
 
