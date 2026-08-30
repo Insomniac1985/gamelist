@@ -1692,9 +1692,9 @@ html.theme-gradient .goty-section .column-head h2 .trophy-icon {
 
 .playing-finished-tags .rating-score-star {
   color: #ffe985;
-  font-size: 12px;
+  font-size: 15px;
   line-height: 1;
-  transform: translateY(-1px);
+  transform: translateY(-2px);
   -webkit-text-fill-color: #ffe985;
 }
 
@@ -8546,9 +8546,10 @@ body.theme-kash .playing-finished-game.completed-trophy-card:hover {
 
 .rating-score-star {
   color: #ffe985;
-  font-size: 1.25em;
+  font-size: 1.5em;
   line-height: 0;
   text-shadow: 0 0 9px rgba(255, 233, 133, 0.38);
+  transform: translateY(-1px);
 }
 
 .rating-score-mid {
