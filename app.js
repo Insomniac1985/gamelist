@@ -32,6 +32,13 @@ const GAME_OF_YEAR_CATEGORIES = [
   ["surprise", "BIGGEST SURPRISE"],
   ["disappointment", "BIGGEST DISAPPOINTMENT"],
 ];
+const GAME_RATING_CATEGORIES = [
+  ["gameplay", "Gameplay"],
+  ["story", "Story"],
+  ["soundtrack", "Soundtrack"],
+  ["graphics", "Graphics"],
+  ["performance", "Performance"],
+];
 const THEMES = {
   shabii: {
     name: "Shabii",
@@ -329,6 +336,7 @@ const el = {
   finishTimeDialog: document.querySelector("#finishTimeDialog"),
   finishTimeForm: document.querySelector("#finishTimeForm"),
   finishTimeInput: document.querySelector("#finishTimeInput"),
+  finishRatingGrid: document.querySelector("#finishRatingGrid"),
   finishTimeError: document.querySelector("#finishTimeError"),
   finishTimeCloseButton: document.querySelector("#finishTimeCloseButton"),
   finishTimeSkipButton: document.querySelector("#finishTimeSkipButton"),
@@ -415,7 +423,11 @@ const el = {
     cover: document.querySelector("#coverInput"),
     notes: document.querySelector("#notesInput"),
   },
+  playingRatingGrid: document.querySelector("#playingRatingGrid"),
 };
+
+renderRatingInputs(el.playingRatingGrid, "edit");
+renderRatingInputs(el.finishRatingGrid, "finish");
 
 init();
 
@@ -8820,6 +8832,7 @@ function normalizeGameRecord(game) {
   normalized.playing = Boolean(normalized.playing);
   normalized.replayCount = replayCountValue(normalized.replayCount);
   normalized.finishHours = finishHoursValue(normalized.finishHours);
+  normalized.ratings = normalizeGameRatings(normalized.ratings);
   normalized.startedAt = dateOnly(normalized.startedAt);
   normalized.completedAt = dateOnly(normalized.completedAt);
   normalized.platform = canonicalPlatform(normalized.platform);
@@ -8837,6 +8850,59 @@ function normalizeGameRecord(game) {
   normalized.prices = Array.isArray(normalized.prices) ? normalized.prices : [];
   normalized.section = ["new", "backlog", "upcoming", "wanted"].includes(normalized.section) ? normalized.section : "wanted";
   return normalized;
+}
+
+function normalizeRatingValue(value) {
+  const number = Number(value);
+  if (!Number.isFinite(number)) return 0;
+  return Math.max(0, Math.min(5, Math.round(number)));
+}
+
+function normalizeGameRatings(value = {}) {
+  const ratings = value && typeof value === "object" ? value : {};
+  return Object.fromEntries(GAME_RATING_CATEGORIES.map(([key]) => [key, normalizeRatingValue(ratings[key])]));
+}
+
+function renderRatingInputs(container, namePrefix) {
+  if (!container) return;
+  container.innerHTML = GAME_RATING_CATEGORIES.map(([key, label]) => `
+    <fieldset class="rating-row" data-rating-key="${escapeHtml(key)}" data-rating-value="0">
+      <legend data-i18n="${escapeHtml(label)}">${escapeHtml(label)}</legend>
+      <div class="star-rating" aria-label="${escapeHtml(label)}">
+        <input type="radio" id="${escapeHtml(namePrefix)}Rating-${escapeHtml(key)}-0" name="${escapeHtml(namePrefix)}Rating-${escapeHtml(key)}" value="0">
+        <label class="star-clear" for="${escapeHtml(namePrefix)}Rating-${escapeHtml(key)}-0" title="${escapeHtml(tt("No rating"))}" aria-label="${escapeHtml(tt("No rating"))}" data-i18n-title="No rating" data-i18n-aria-label="No rating">×</label>
+        ${[1, 2, 3, 4, 5].map((value) => `
+          <input type="radio" id="${escapeHtml(namePrefix)}Rating-${escapeHtml(key)}-${value}" name="${escapeHtml(namePrefix)}Rating-${escapeHtml(key)}" value="${value}">
+          <label data-star="${value}" for="${escapeHtml(namePrefix)}Rating-${escapeHtml(key)}-${value}" title="${value}/5" aria-label="${value}/5">★</label>
+        `).join("")}
+      </div>
+    </fieldset>
+  `).join("");
+  container.querySelectorAll(".rating-row").forEach((row) => {
+    row.addEventListener("change", () => {
+      row.dataset.ratingValue = String(normalizeRatingValue(row.querySelector("input:checked")?.value));
+    });
+  });
+}
+
+function setRatingInputs(container, ratings = {}) {
+  if (!container) return;
+  const values = normalizeGameRatings(ratings);
+  GAME_RATING_CATEGORIES.forEach(([key]) => {
+    const value = values[key] || 0;
+    const row = container.querySelector(`[data-rating-key="${CSS.escape(key)}"]`);
+    const input = row?.querySelector(`input[value="${value}"]`);
+    if (input) input.checked = true;
+    if (row) row.dataset.ratingValue = String(value);
+  });
+}
+
+function ratingInputsValue(container) {
+  if (!container) return normalizeGameRatings();
+  return normalizeGameRatings(Object.fromEntries(GAME_RATING_CATEGORIES.map(([key]) => {
+    const selected = container.querySelector(`[data-rating-key="${CSS.escape(key)}"] input:checked`);
+    return [key, selected?.value || 0];
+  })));
 }
 
 function statusType(status) {
@@ -9319,6 +9385,7 @@ async function openEditor(id = "") {
   el.fields.completedAt.value = dateOnly(game.completedAt);
   el.fields.finishHours.value = game.finishHours || "";
   el.fields.replayCount.value = game.replayCount || "";
+  setRatingInputs(el.playingRatingGrid, game.ratings);
   el.fields.platinum.checked = Boolean(game.platinum);
   el.fields.preorderStore.value = game.preorderStore || "";
   el.fields.preferredStore.value = game.preferredStore || "";
@@ -9377,6 +9444,7 @@ function blankGame() {
     releaseText: "",
     lengthHours: null,
     finishHours: 0,
+    ratings: normalizeGameRatings(),
     notes: "",
     description: "",
     statuses: [],
@@ -9452,6 +9520,7 @@ async function saveCurrentFormGame() {
     releaseText: el.fields.releaseText.value.trim(),
     lengthHours: el.fields.length.value ? Number(el.fields.length.value) : null,
     finishHours: finishHoursValue(el.fields.finishHours.value),
+    ratings: ratingInputsValue(el.playingRatingGrid),
     startedAt,
     completedAt: effectiveCompletedAt,
     preorderStore: el.fields.preorderStore.value.trim(),
@@ -9586,7 +9655,8 @@ async function completeGame(id) {
   if (finishHours === undefined) return;
   game.startedAt = game.startedAt || todayDate();
   game.completedAt = todayDate();
-  if (finishHours !== null) game.finishHours = finishHours;
+  if (finishHours.finishHours !== null) game.finishHours = finishHours.finishHours;
+  game.ratings = finishHours.ratings;
   game.playing = false;
   markGameEdited(game);
   upsertGame(game);
@@ -9599,7 +9669,8 @@ async function completeGameWithTrophy(id) {
   if (finishHours === undefined) return;
   game.startedAt = game.startedAt || todayDate();
   game.completedAt = game.completedAt || todayDate();
-  if (finishHours !== null) game.finishHours = finishHours;
+  if (finishHours.finishHours !== null) game.finishHours = finishHours.finishHours;
+  game.ratings = finishHours.ratings;
   game.playing = false;
   game.platinum = true;
   markGameEdited(game);
@@ -9607,9 +9678,12 @@ async function completeGameWithTrophy(id) {
 }
 
 function requestFinishHours(game) {
-  if (!el.finishTimeDialog || !el.finishTimeForm || !el.finishTimeInput) return Promise.resolve(null);
+  if (!el.finishTimeDialog || !el.finishTimeForm || !el.finishTimeInput) {
+    return Promise.resolve({ finishHours: null, ratings: normalizeGameRatings(game?.ratings) });
+  }
   const current = finishHoursValue(game?.finishHours);
   el.finishTimeInput.value = current ? String(current) : "";
+  setRatingInputs(el.finishRatingGrid, game?.ratings);
   if (el.finishTimeError) el.finishTimeError.hidden = true;
   return new Promise((resolve) => {
     const cleanup = () => {
@@ -9626,12 +9700,12 @@ function requestFinishHours(game) {
       }
       cleanup();
       el.finishTimeDialog.close("submit");
-      resolve(value ? hours : null);
+      resolve({ finishHours: value ? hours : null, ratings: ratingInputsValue(el.finishRatingGrid) });
     };
     const handleClose = () => {
       const action = el.finishTimeDialog.returnValue;
       cleanup();
-      resolve(action === "skip" ? null : undefined);
+      resolve(action === "skip" ? { finishHours: null, ratings: ratingInputsValue(el.finishRatingGrid) } : undefined);
     };
     el.finishTimeForm.addEventListener("submit", handleSubmit);
     el.finishTimeDialog.addEventListener("close", handleClose, { once: true });

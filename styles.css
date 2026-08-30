@@ -11622,6 +11622,112 @@ body.theme-kash
   padding-inline: 8px;
 }
 
+.playing-form-grid > .game-rating-grid {
+  grid-column: 1 / -1;
+}
+
+.game-rating-grid,
+.finish-rating-grid {
+  display: grid;
+  gap: 7px;
+}
+
+.game-rating-grid {
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+}
+
+.finish-rating-grid {
+  grid-template-columns: 1fr;
+}
+
+.rating-row {
+  display: grid;
+  gap: 5px;
+  min-width: 0;
+  margin: 0;
+  padding: 8px 9px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 7px;
+  background: rgba(255, 255, 255, 0.045);
+}
+
+.rating-row legend {
+  padding: 0;
+  color: var(--muted);
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.star-rating {
+  display: inline-flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 2px;
+  min-height: 22px;
+}
+
+.star-rating input {
+  position: absolute;
+  inline-size: 1px;
+  block-size: 1px;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.star-rating label {
+  display: grid;
+  place-items: center;
+  width: 20px;
+  height: 22px;
+  color: rgba(255, 255, 255, 0.22);
+  font-size: 18px;
+  line-height: 1;
+  cursor: pointer;
+  transition:
+    color 120ms ease,
+    transform 120ms ease;
+}
+
+.star-rating label:hover,
+.star-rating input:focus-visible + label {
+  color: #ffe985;
+}
+
+.star-rating label:hover {
+  transform: translateY(-1px);
+}
+
+.rating-row[data-rating-value="1"] label[data-star="1"],
+.rating-row[data-rating-value="2"] label[data-star="1"],
+.rating-row[data-rating-value="2"] label[data-star="2"],
+.rating-row[data-rating-value="3"] label[data-star="1"],
+.rating-row[data-rating-value="3"] label[data-star="2"],
+.rating-row[data-rating-value="3"] label[data-star="3"],
+.rating-row[data-rating-value="4"] label[data-star="1"],
+.rating-row[data-rating-value="4"] label[data-star="2"],
+.rating-row[data-rating-value="4"] label[data-star="3"],
+.rating-row[data-rating-value="4"] label[data-star="4"],
+.rating-row[data-rating-value="5"] label[data-star="1"],
+.rating-row[data-rating-value="5"] label[data-star="2"],
+.rating-row[data-rating-value="5"] label[data-star="3"],
+.rating-row[data-rating-value="5"] label[data-star="4"],
+.rating-row[data-rating-value="5"] label[data-star="5"] {
+  color: #ffe985;
+}
+
+.star-rating .star-clear {
+  width: 18px;
+  color: rgba(255, 255, 255, 0.34);
+  font-size: 14px;
+  font-weight: 900;
+}
+
+.star-rating input[value="0"]:checked + .star-clear {
+  color: rgba(255, 255, 255, 0.18);
+}
+
 .playing-achievements-check .achievement-check-icon {
   display: grid;
   place-items: center;
@@ -12218,6 +12324,19 @@ html.theme-light .playing-achievements-check input[type="checkbox"]:checked {
   .playing-form-grid > label:nth-child(-n + 3),
   .playing-form-grid > label:nth-child(n + 4) {
     grid-column: 1 / -1;
+  }
+
+  .game-rating-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .rating-row {
+    grid-template-columns: minmax(92px, 1fr) auto;
+    align-items: center;
+  }
+
+  .rating-row legend {
+    float: left;
   }
 
   .form-grid-spacer {
