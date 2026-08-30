@@ -3624,6 +3624,7 @@ body.dialog-open .floating-edit-actions {
 .primary-button:hover,
 .icon-button:hover,
 .danger-button:hover,
+.star-rating .star-clear:hover,
 .direction-toggle:hover,
 .check-filter:hover {
   border-color: color-mix(in srgb, var(--accent) 48%, transparent);
@@ -11628,8 +11629,9 @@ body.theme-kash
 
 .rating-section {
   display: grid;
-  gap: 8px;
+  gap: 10px;
   min-width: 0;
+  margin-top: 10px;
 }
 
 .rating-section h3,
@@ -11643,7 +11645,8 @@ body.theme-kash
 }
 
 .finish-rating-section {
-  gap: 9px;
+  gap: 10px;
+  margin-top: 8px;
 }
 
 .finish-rating-section h3 {
@@ -11675,16 +11678,14 @@ body.theme-kash
   background: transparent;
 }
 
-.rating-row:nth-child(n + 4) {
-  grid-column: span 3;
-}
-
 .rating-row legend {
+  display: block;
+  margin-bottom: 0;
   padding: 0;
-  color: var(--muted);
-  font-size: 12px;
-  font-weight: 900;
-  letter-spacing: 0.04em;
+  color: var(--dim);
+  font-size: 11px;
+  font-weight: 740;
+  letter-spacing: 0;
   text-transform: uppercase;
 }
 
@@ -11763,6 +11764,7 @@ body.theme-kash
   color: var(--danger);
   background: rgba(255, 111, 133, 0.1);
   border: 1px solid rgba(255, 111, 133, 0.24);
+  border-radius: 7px;
   opacity: 1;
   pointer-events: auto;
 }
