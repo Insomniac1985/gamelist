@@ -6005,7 +6005,7 @@ body.theme-kash .game-card.stream-card.completed-trophy-card {
   position: relative;
   gap: 5px;
   overflow: hidden;
-  padding: 4px 9px;
+  padding: 4px 9px 4px 13px;
   color: var(--text);
   border-color: color-mix(
     in srgb,
@@ -6027,8 +6027,12 @@ body.theme-kash .game-card.stream-card.completed-trophy-card {
 
 .time-pill::before {
   content: "";
+  position: absolute;
+  top: 4px;
+  bottom: 4px;
+  left: 4px;
   width: 5px;
-  height: 18px;
+  min-height: 18px;
   border-radius: 999px;
   background: linear-gradient(180deg, var(--time-light), var(--time-dark));
   box-shadow: 0 0 12px var(--time-glow);
@@ -8455,12 +8459,12 @@ body.theme-kash .playing-finished-game.completed-trophy-card:hover {
 }
 
 .completed-dates {
-  color: var(--muted);
+  color: var(--dim);
   font-size: 12px;
 }
 
 .completed-duration {
-  color: var(--dim);
+  color: #ffffff;
   font-size: 12px;
 }
 
@@ -11481,22 +11485,24 @@ body.theme-kash
   min-height: 18px;
   padding: 1px 6px;
   color: var(--text);
-  background: color-mix(
-    in srgb,
-    var(--accent-2) 14%,
-    rgba(255, 255, 255, 0.06)
-  );
-  border: 1px solid
-    color-mix(in srgb, var(--accent-2) 32%, rgba(255, 255, 255, 0.12));
+  background:
+    linear-gradient(135deg, var(--rating-score-start), var(--rating-score-end)),
+    rgba(255, 255, 255, 0.06);
+  border: 1px solid var(--rating-score-border);
   border-radius: 6px;
   font-size: 10px;
   line-height: 1;
+  --rating-score-start: rgba(255, 71, 103, 0.18);
+  --rating-score-end: rgba(255, 153, 79, 0.12);
+  --rating-score-border: rgba(255, 111, 133, 0.34);
 }
 
 .detail-rating {
   display: grid;
   gap: 10px;
   margin-top: 16px;
+  padding-top: 14px;
+  border-top: 1px solid var(--line);
 }
 
 .detail-rating-grid {

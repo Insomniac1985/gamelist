@@ -5470,9 +5470,9 @@ function rowFor(game, section, options = {}) {
 function rowPrimaryAction(game, section) {
   if (section === "backlog") return `<button class="primary-button row-primary-action" type="button">Play</button>`;
   if (section === "new") {
-    return `<button class="primary-button row-primary-action" type="button">Play</button><button class="primary-button row-setup-action" type="button">Setup</button>`;
+    return `<button class="primary-button row-primary-action" type="button">Play</button><button class="primary-button row-setup-action" type="button">${checkIcon()}<span>${escapeHtml(tt("Setup"))}</span></button>`;
   }
-  return `<button class="ghost-button row-primary-action" type="button">Got it</button>`;
+  return `<button class="ghost-button row-primary-action" type="button">${checkIcon()}<span>${escapeHtml(tt("Got it"))}</span></button>`;
 }
 
 function rowCoreStats(game) {
@@ -5546,7 +5546,7 @@ function renderCompleted() {
       </div>
       <div class="completed-actions">
         <button class="icon-button completed-edit-action" type="button" title="Edit" aria-label="Edit">${pencilIcon()}</button>
-        <button class="ghost-button restore-action" type="button">Backlog</button>
+        <button class="ghost-button restore-action" type="button">${backIcon()}<span>${escapeHtml(tt("Backlog"))}</span></button>
       </div>
     </div>
   `).join("") : `<div class="empty">Finished games will stay saved here.</div>`;
@@ -8146,8 +8146,10 @@ function compareGames(a, b, section) {
   }
   if (state.filters.sort === "rating") {
     return compareRatingSort(a, b, direction)
-      || direction * (((a.lengthHours ?? Number.POSITIVE_INFINITY) - (b.lengthHours ?? Number.POSITIVE_INFINITY))
-        || stringCompare(a.title, b.title));
+      || (section === "upcoming"
+        ? compareReleaseSort(a, b, direction)
+        : direction * (((a.lengthHours ?? Number.POSITIVE_INFINITY) - (b.lengthHours ?? Number.POSITIVE_INFINITY))
+          || stringCompare(a.title, b.title)));
   }
   return direction * stringCompare(a.title, b.title);
 }
@@ -8501,6 +8503,15 @@ function checkIcon() {
   return `
     <svg class="check-icon" viewBox="0 0 24 24" aria-hidden="true">
       <path d="M5 12.5l4.2 4.2L19 7"></path>
+    </svg>
+  `;
+}
+
+function backIcon() {
+  return `
+    <svg class="back-icon" viewBox="0 0 24 24" aria-hidden="true">
+      <path d="M10 6 4 12l6 6"></path>
+      <path d="M4 12h10a6 6 0 0 1 6 6"></path>
     </svg>
   `;
 }
@@ -9141,7 +9152,10 @@ function renderDetailRatings(game) {
     .filter(([, , value]) => value > 0);
   el.detailRating.hidden = !rows.length;
   if (el.detailRatingTitle) el.detailRatingTitle.textContent = ownerRatingTitle();
-  if (el.detailRatingScore) el.detailRatingScore.textContent = scoreText ? `${scoreText}/10` : "";
+  if (el.detailRatingScore) {
+    el.detailRatingScore.textContent = scoreText ? `${scoreText}/10` : "";
+    el.detailRatingScore.className = `detail-rating-score${scoreText ? ` rating-score-${ratingScoreTone(game)}` : ""}`;
+  }
   el.detailRatingGrid.innerHTML = rows.map(([key, label, value]) => `
     <div class="detail-rating-row" data-rating-key="${escapeHtml(key)}" data-rating-value="${value}" style="${ratingStarFillStyle(value)}">
       <span>${escapeHtml(tt(label))}</span>
@@ -9158,7 +9172,7 @@ function ratingStarsMarkup() {
 
 function ownerRatingTitle() {
   const owner = cleanOwnerLabel(state.settings.defaultOwner) || DEFAULT_SETTINGS.defaultOwner;
-  return tt("{owner}'s Rating", { owner });
+  return `★ ${tt("{owner}'s Rating", { owner })}`;
 }
 
 function ratingStarFillStyle(value) {
@@ -9195,8 +9209,16 @@ function ratingScoreBadge(game) {
   const scoreValue = ratingScoreValue(game);
   const score = ratingScoreText(game);
   if (!score) return "";
-  const tone = scoreValue >= 9 ? "gold" : scoreValue >= 7 ? "high" : scoreValue >= 5 ? "mid" : "low";
+  const tone = ratingScoreTone(scoreValue);
   return `<span class="rating-score-pill rating-score-${tone}" title="${escapeHtml(`${tt("Rating")}: ${score}/10`)}" aria-label="${escapeHtml(`${tt("Rating")}: ${score}/10`)}"><span class="rating-score-star" aria-hidden="true">★</span>${escapeHtml(score)}</span>`;
+}
+
+function ratingScoreTone(gameOrScore) {
+  const score = typeof gameOrScore === "number" ? gameOrScore : ratingScoreValue(gameOrScore);
+  if (score >= 9) return "gold";
+  if (score >= 7) return "high";
+  if (score >= 5) return "mid";
+  return "low";
 }
 
 function normalizeGuideUrl(value) {
