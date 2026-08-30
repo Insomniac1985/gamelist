@@ -8606,9 +8606,9 @@ body.theme-kash .playing-finished-game.completed-trophy-card:hover {
 
 .rating-score-mid,
 .detail-rating-score.rating-score-mid {
-  --rating-score-start: rgba(255, 153, 79, 0.2);
-  --rating-score-end: rgba(255, 220, 99, 0.13);
-  --rating-score-border: rgba(255, 195, 92, 0.36);
+  --rating-score-start: rgba(255, 117, 56, 0.22);
+  --rating-score-end: rgba(255, 148, 67, 0.13);
+  --rating-score-border: rgba(255, 132, 64, 0.4);
 }
 
 .rating-score-high,
