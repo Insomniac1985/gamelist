@@ -2346,6 +2346,7 @@ function finishedGamesCsvRecords() {
       replayCount: game.replayCount || "",
       stream: Boolean(game.stream),
       coop: Boolean(game.coop),
+      multiplayer: Boolean(game.multiplayer || game.coop),
       platinum: Boolean(game.platinum),
       digital: Boolean(game.digital),
       emulator: Boolean(game.emulator),
@@ -2374,7 +2375,7 @@ async function importFinishedGamesCsv() {
     rows.forEach((row) => {
       const game = gamelistGameByCsvRow(row, nextGames);
       if (!game) return;
-      ["startedAt", "completedAt", "lengthHours", "replayCount", "owners", "tags", "stream", "coop", "platinum", "digital", "emulator"].forEach((key) => {
+      ["startedAt", "completedAt", "lengthHours", "replayCount", "owners", "tags", "stream", "coop", "multiplayer", "platinum", "digital", "emulator"].forEach((key) => {
         if (row[key] !== undefined && row[key] !== "") game[key] = row[key];
       });
       game.updatedAt = now;
@@ -3154,7 +3155,7 @@ function currentlyPlayingTitle(games) {
 function playingCountText(count) {
   return tt("Playing {count} {item}", { count, item: tt(count === 1 ? "game" : "games") });
 }
-function projectionMeta(game, options = {}) { const release = options.includeRelease === false ? "" : activityReleaseStatus(game, { includePast: Boolean(options.includePast) }); return `${platformBadge(game.platform, { title: game.title })}${options.includeProgress ? shelfProgressPill(game) : ""}${mediaFormatBadge(game)}${dlcBadge(game)}${entitlementBadge(game)}${game.emulator ? `<span class="emulator-pill">Emulator</span>` : ""}${game.lengthHours ? timeBadgeMarkup(game.lengthHours, game.hltbUrl || game.howLongToBeatUrl || `https://howlongtobeat.com/?q=${encodeURIComponent(game.title)}`, escapeHtml) : ""}${game.stream ? `<span class="stream-pill">Stream</span>` : ""}${release ? releaseStatusPill(release) : ""}${game.coop ? `<span class="coop-pill">Coop</span>` : ""}${game.replayCount ? `<span class="replay-pill">Replay ${escapeHtml(game.replayCount)}</span>` : ""}`; }
+function projectionMeta(game, options = {}) { const release = options.includeRelease === false ? "" : activityReleaseStatus(game, { includePast: Boolean(options.includePast) }); return `${platformBadge(game.platform, { title: game.title })}${options.includeProgress ? shelfProgressPill(game) : ""}${mediaFormatBadge(game)}${dlcBadge(game)}${entitlementBadge(game)}${game.emulator ? `<span class="emulator-pill">${escapeHtml(tt("Emulator"))}</span>` : ""}${game.lengthHours ? timeBadgeMarkup(game.lengthHours, game.hltbUrl || game.howLongToBeatUrl || `https://howlongtobeat.com/?q=${encodeURIComponent(game.title)}`, escapeHtml) : ""}${game.stream ? `<span class="stream-pill">${escapeHtml(tt("Stream"))}</span>` : ""}${release ? releaseStatusPill(release) : ""}${game.coop ? `<span class="coop-pill">${escapeHtml(tt("CoOp"))}</span>` : ""}${game.multiplayer && !game.coop ? `<span class="multiplayer-pill">${escapeHtml(tt("Multiplayer"))}</span>` : ""}${game.replayCount ? `<span class="replay-pill">Replay ${escapeHtml(game.replayCount)}</span>` : ""}`; }
 
 function mediaFormatBadge(game) {
   if (!game) return "";
@@ -3491,7 +3492,7 @@ function updateShelfPhysicalProgressPills() {
 function finishedProjectionCard(game) {
   const cover = coverUrl(game.cover || "") || platformFallback(game.platform);
   const progress = activityProgressFor(game);
-  const badges = `${visibleProjectionOwners(game).map(ownerBadge).join("")}${platformBadge(game.platform, { title: game.title })}${mediaFormatBadge(game)}${game.emulator ? `<span class="emulator-pill">Emulator</span>` : ""}${game.coop ? `<span class="coop-pill">Coop</span>` : ""}${game.stream ? `<span class="stream-pill">Stream</span>` : ""}${game.replayCount ? `<span class="replay-pill">Replay ${escapeHtml(game.replayCount)}</span>` : ""}`;
+  const badges = `${visibleProjectionOwners(game).map(ownerBadge).join("")}${platformBadge(game.platform, { title: game.title })}${mediaFormatBadge(game)}${game.emulator ? `<span class="emulator-pill">${escapeHtml(tt("Emulator"))}</span>` : ""}${game.coop ? `<span class="coop-pill">${escapeHtml(tt("CoOp"))}</span>` : ""}${game.multiplayer && !game.coop ? `<span class="multiplayer-pill">${escapeHtml(tt("Multiplayer"))}</span>` : ""}${game.stream ? `<span class="stream-pill">${escapeHtml(tt("Stream"))}</span>` : ""}${game.replayCount ? `<span class="replay-pill">Replay ${escapeHtml(game.replayCount)}</span>` : ""}`;
   return finishedGameMarkup({ id: game.id, title: game.title, cover, completedClass: shelfShowsCompletedTrophyStyle(game) ? "completed-trophy-card" : "", itemClass: projectionOwnerCardClass(game), badges, dateText: finishedProjectionDateText(game), progress, dataName: "gamelist-id", escape: escapeHtml });
 }
 async function loadTrophyActivity() {
