@@ -11495,8 +11495,8 @@ body.theme-kash
 
 .detail-rating-grid {
   display: flex;
-  flex-wrap: wrap;
-  gap: 14px 20px;
+  flex-wrap: nowrap;
+  gap: 10px;
   align-items: flex-start;
 }
 
@@ -11522,17 +11522,18 @@ body.theme-kash
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-height: 32px;
-  padding: 0 8px;
+  min-height: 30px;
+  padding: 0 6px;
   background: rgba(255, 255, 255, 0.045);
   border: 1px solid rgba(255, 255, 255, 0.16);
   border-radius: 8px;
-  width: max-content;
+  width: fit-content;
   justify-self: start;
 }
 
 @media (max-width: 760px) {
   .detail-rating-grid {
+    flex-wrap: wrap;
     gap: 13px 16px;
   }
 
@@ -11911,9 +11912,9 @@ body.theme-kash
 }
 
 .detail-star-display {
-  gap: 2px;
-  min-width: 111px;
-  font-size: 23px;
+  gap: 0;
+  min-width: 0;
+  font-size: 25px;
 }
 
 .rating-star {
