@@ -368,6 +368,7 @@ const el = {
   detailGuides: document.querySelector("#detailGuides"),
   detailGuideLinks: document.querySelector("#detailGuideLinks"),
   detailRating: document.querySelector("#detailRating"),
+  detailRatingTitle: document.querySelector("#detailRatingTitle"),
   detailRatingScore: document.querySelector("#detailRatingScore"),
   detailRatingGrid: document.querySelector("#detailRatingGrid"),
   detailTrophies: document.querySelector("#detailTrophies"),
@@ -1538,6 +1539,7 @@ function applyLanguage() {
   if (el.playingTitle) el.playingTitle.textContent = tt("Currently playing");
   const latestFinishedTitle = el.playingFinished?.querySelector(".achievement-subtitle");
   if (latestFinishedTitle) latestFinishedTitle.textContent = tt("Last finished games");
+  if (el.detailRatingTitle) el.detailRatingTitle.textContent = ownerRatingTitle();
 }
 
 function applyTheme() {
@@ -9119,6 +9121,7 @@ function renderDetailRatings(game) {
     .map(([key, label]) => [key, label, ratings[key] || 0])
     .filter(([, , value]) => value > 0);
   el.detailRating.hidden = !rows.length;
+  if (el.detailRatingTitle) el.detailRatingTitle.textContent = ownerRatingTitle();
   if (el.detailRatingScore) el.detailRatingScore.textContent = scoreText ? `${scoreText}/10` : "";
   el.detailRatingGrid.innerHTML = rows.map(([key, label, value]) => `
     <div class="detail-rating-row" data-rating-key="${escapeHtml(key)}" data-rating-value="${value}" style="${ratingStarFillStyle(value)}">
@@ -9132,6 +9135,11 @@ function renderDetailRatings(game) {
 
 function ratingStarsMarkup() {
   return [1, 2, 3, 4, 5].map((star) => `<span class="rating-star" style="--star-fill:var(--star-${star}-fill, 0%);">★</span>`).join("");
+}
+
+function ownerRatingTitle() {
+  const owner = cleanOwnerLabel(state.settings.defaultOwner) || DEFAULT_SETTINGS.defaultOwner;
+  return tt("{owner}'s Rating", { owner });
 }
 
 function ratingStarFillStyle(value) {

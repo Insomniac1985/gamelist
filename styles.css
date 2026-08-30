@@ -13571,7 +13571,7 @@ html.theme-light .finish-trophy-check input[type="checkbox"]:checked {
 
   .playing-section .card-guide-row {
     display: flex;
-    justify-content: center;
+    justify-content: flex-start;
     align-items: center;
     gap: 5px;
   }

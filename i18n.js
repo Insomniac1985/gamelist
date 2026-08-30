@@ -106,6 +106,7 @@ const STRINGS = {
     "Time to finish": "Tiempo para terminar",
     Hours: "Horas",
     Rating: "Valoración",
+    "{owner}'s Rating": "Valoración de {owner}",
     Gameplay: "Jugabilidad",
     Story: "Historia",
     Soundtrack: "Banda sonora",
