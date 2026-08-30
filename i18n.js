@@ -105,6 +105,7 @@ const STRINGS = {
     Finished: "Terminado",
     "Time to finish": "Tiempo para terminar",
     Hours: "Horas",
+    Rating: "Valoración",
     Gameplay: "Jugabilidad",
     Story: "Historia",
     Soundtrack: "Banda sonora",

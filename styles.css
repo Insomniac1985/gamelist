@@ -11622,8 +11622,28 @@ body.theme-kash
   padding-inline: 8px;
 }
 
-.playing-form-grid > .game-rating-grid {
+.playing-form-grid > .rating-section {
   grid-column: 1 / -1;
+}
+
+.rating-section {
+  display: grid;
+  gap: 8px;
+  min-width: 0;
+}
+
+.rating-section h3,
+.rating-section h4 {
+  margin: 0;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.finish-rating-section {
+  gap: 9px;
 }
 
 .game-rating-grid,
@@ -12349,12 +12369,12 @@ html.theme-light .playing-achievements-check input[type="checkbox"]:checked {
   }
 
   .rating-row {
-    grid-template-columns: minmax(92px, 1fr) auto;
-    align-items: center;
+    grid-template-columns: 1fr;
+    align-items: start;
   }
 
   .rating-row legend {
-    float: left;
+    float: none;
   }
 
   .form-grid-spacer {

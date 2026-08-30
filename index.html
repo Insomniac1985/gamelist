@@ -480,7 +480,10 @@
                 </svg>
               </span>
             </label>
-            <div class="game-rating-grid" id="playingRatingGrid"></div>
+            <div class="rating-section">
+              <h4 data-i18n="Rating">Rating</h4>
+              <div class="game-rating-grid" id="playingRatingGrid"></div>
+            </div>
           </div>
         </section>
 
@@ -978,7 +981,10 @@
           <span>Aproximate time</span>
           <input id="finishTimeInput" type="text" inputmode="numeric" placeholder="Hours" autofocus>
         </label>
-        <div class="finish-rating-grid" id="finishRatingGrid"></div>
+        <section class="rating-section finish-rating-section">
+          <h3 data-i18n="Rating">Rating</h3>
+          <div class="finish-rating-grid" id="finishRatingGrid"></div>
+        </section>
         <p class="auth-error" id="finishTimeError" hidden>Use whole numbers only.</p>
         <div class="modal-actions">
           <button class="ghost-button" id="finishTimeSkipButton" type="button">Skip</button>
