@@ -11646,35 +11646,43 @@ body.theme-kash
   gap: 9px;
 }
 
+.finish-rating-section h3 {
+  color: var(--accent-2);
+}
+
 .game-rating-grid,
 .finish-rating-grid {
   display: grid;
-  gap: 7px;
+  gap: 10px 12px;
 }
 
 .game-rating-grid {
-  grid-template-columns: repeat(5, minmax(0, 1fr));
+  grid-template-columns: repeat(6, minmax(0, 1fr));
 }
 
 .finish-rating-grid {
-  grid-template-columns: 1fr;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
 }
 
 .rating-row {
   display: grid;
-  gap: 5px;
+  grid-column: span 2;
+  gap: 8px;
   min-width: 0;
   margin: 0;
-  padding: 8px 9px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 7px;
-  background: rgba(255, 255, 255, 0.045);
+  padding: 0;
+  border: 0;
+  background: transparent;
+}
+
+.rating-row:nth-child(n + 4) {
+  grid-column: span 3;
 }
 
 .rating-row legend {
   padding: 0;
   color: var(--muted);
-  font-size: 10px;
+  font-size: 12px;
   font-weight: 900;
   letter-spacing: 0.04em;
   text-transform: uppercase;
@@ -11685,7 +11693,11 @@ body.theme-kash
   justify-content: flex-end;
   align-items: center;
   gap: 4px;
-  min-height: 32px;
+  min-height: 56px;
+  padding: 0 10px;
+  background: rgba(255, 255, 255, 0.045);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 8px;
 }
 
 .star-rating input {
@@ -12368,8 +12380,13 @@ html.theme-light .playing-achievements-check input[type="checkbox"]:checked {
     grid-template-columns: 1fr;
   }
 
+  .finish-rating-grid {
+    grid-template-columns: 1fr;
+  }
+
   .rating-row {
     grid-template-columns: 1fr;
+    grid-column: 1 / -1;
     align-items: start;
   }
 
