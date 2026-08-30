@@ -1197,6 +1197,7 @@ html.theme-gradient .goty-section .column-head h2 .trophy-icon {
 .goty-meta .digital-pill,
 .goty-meta .emulator-pill,
 .goty-meta .coop-pill,
+.goty-meta .multiplayer-pill,
 .goty-meta .stream-pill,
 .goty-meta .replay-pill,
 .goty-meta .platinum-pill,
@@ -1662,6 +1663,7 @@ html.theme-gradient .goty-section .column-head h2 .trophy-icon {
 .playing-finished-tags .digital-pill,
 .playing-finished-tags .emulator-pill,
 .playing-finished-tags .coop-pill,
+.playing-finished-tags .multiplayer-pill,
 .playing-finished-tags .stream-pill,
 .playing-finished-tags .replay-pill,
 .playing-finished-tags .platinum-pill,
@@ -1682,6 +1684,16 @@ html.theme-gradient .goty-section .column-head h2 .trophy-icon {
 .playing-finished-tags .platform-badge {
   gap: 3px;
   padding: 0 5px 0 3px;
+}
+
+.playing-finished-tags .rating-score-pill {
+  color: #ffffff;
+}
+
+.playing-finished-tags .rating-score-star {
+  color: #ffe985;
+  font-size: 12px;
+  -webkit-text-fill-color: #ffe985;
 }
 
 .playing-finished-tags .platform-icon {
@@ -4182,6 +4194,7 @@ body.theme-kash .game-row.stream-card:hover {
 .game-row .digital-pill,
 .game-row .emulator-pill,
 .game-row .coop-pill,
+.game-row .multiplayer-pill,
 .game-row .stream-pill,
 .game-row .replay-pill,
 .game-row .platinum-pill,
@@ -5258,6 +5271,7 @@ body.theme-kash .game-card.stream-card.completed-trophy-card {
 .digital-pill,
 .emulator-pill,
 .coop-pill,
+.multiplayer-pill,
 .stream-pill,
 .replay-pill,
 .platinum-pill,
@@ -5487,6 +5501,7 @@ body.theme-kash .game-card.stream-card.completed-trophy-card {
 .digital-pill,
 .emulator-pill,
 .coop-pill,
+.multiplayer-pill,
 .stream-pill,
 .replay-pill,
 .platinum-pill,
@@ -5791,7 +5806,15 @@ body.theme-kash .game-card.stream-card.completed-trophy-card {
   font-weight: 820;
 }
 
+.multiplayer-pill {
+  color: #9bd8ff !important;
+  border-color: rgba(155, 216, 255, 0.34);
+  background: rgba(155, 216, 255, 0.1);
+  font-weight: 820;
+}
+
 .coop-pill,
+.multiplayer-pill,
 .stream-pill,
 .status-pill {
   align-items: center;
@@ -8462,6 +8485,7 @@ body.theme-kash .playing-finished-game.completed-trophy-card:hover {
 .completed-platform .digital-pill,
 .completed-platform .emulator-pill,
 .completed-platform .stream-pill,
+.completed-platform .multiplayer-pill,
 .completed-platform .replay-pill,
 .completed-platform .platinum-pill,
 .completed-platform .psn-progress-pill,
@@ -8493,6 +8517,7 @@ body.theme-kash .playing-finished-game.completed-trophy-card:hover {
 .completed-platform .digital-pill,
 .completed-platform .emulator-pill,
 .completed-platform .stream-pill,
+.completed-platform .multiplayer-pill,
 .completed-platform .rating-score-pill {
   min-height: 21px;
   padding: 2px 6px;
@@ -8611,7 +8636,7 @@ dialog {
 
 #authDialog,
 #finishTimeDialog {
-  width: min(420px, calc(100vw - 24px));
+  width: min(560px, calc(100vw - 24px));
 }
 
 #sharedDeleteConfirmDialog {
@@ -8676,6 +8701,33 @@ body.dialog-open .mobile-section-tabs {
   color: var(--danger);
   font-size: 12px;
   font-weight: 800;
+}
+
+.finish-time-main-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 74px;
+  gap: 10px;
+  align-items: end;
+}
+
+.finish-time-main-row > label:first-child {
+  min-width: 0;
+}
+
+.finish-time-main-row .finish-trophy-check {
+  height: 47px;
+  min-height: 47px;
+  padding-inline: 10px;
+}
+
+.finish-time-flags-row {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.finish-time-flags-row .check-filter {
+  min-height: 44px;
 }
 
 .shared-confirm-message {
@@ -9681,6 +9733,7 @@ html.theme-light .dlc-pill,
 html.theme-light .digital-pill,
 html.theme-light .emulator-pill,
 html.theme-light .coop-pill,
+html.theme-light .multiplayer-pill,
 html.theme-light .stream-pill,
 html.theme-light .replay-pill,
 html.theme-light .platinum-pill,
@@ -11438,7 +11491,7 @@ body.theme-kash
 
 .detail-rating-row {
   display: grid;
-  grid-column: span 1;
+  grid-column: span 2;
   gap: 6px;
   min-width: 0;
   --rating-active-color: var(--accent);
@@ -11736,6 +11789,10 @@ body.theme-kash
   border-color: rgba(183, 116, 255, 0.24);
 }
 
+.collection-form-grid > .multiplayer-check {
+  grid-column: span 4;
+}
+
 .playing-form-grid > label.playing-achievements-check {
   grid-column: span 1;
   padding-inline: 8px;
@@ -11835,29 +11892,42 @@ body.theme-kash
 
 .star-display {
   position: relative;
-  display: inline-block;
+  display: inline-flex;
   flex: 0 0 auto;
+  align-items: center;
+  gap: 7px;
   min-width: 161px;
   color: rgba(255, 255, 255, 0.22);
-  background:
-    linear-gradient(
-      90deg,
-      var(--rating-active-color) var(--rating-fill, 0%),
-      rgba(255, 255, 255, 0.22) var(--rating-fill, 0%)
-    );
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
   font-size: 25px;
-  letter-spacing: 7px;
   line-height: 1;
   white-space: nowrap;
 }
 
 .detail-star-display {
+  gap: 2px;
   min-width: 111px;
   font-size: 23px;
-  letter-spacing: 2px;
+}
+
+.rating-star {
+  position: relative;
+  display: inline-block;
+  color: rgba(255, 255, 255, 0.22);
+  line-height: 1;
+}
+
+.rating-star::after {
+  content: "★";
+  position: absolute;
+  inset: 0;
+  width: var(--star-fill, 0%);
+  overflow: hidden;
+  color: var(--rating-active-color);
+}
+
+.rating-row[data-rating-value="5"] .rating-star::after,
+.detail-rating-row[data-rating-value="5"] .rating-star::after {
+  color: #ffe985;
 }
 
 .star-hitboxes {
@@ -13020,6 +13090,7 @@ html.theme-light .playing-achievements-check input[type="checkbox"]:checked {
   .game-row .digital-pill,
   .game-row .emulator-pill,
   .game-row .coop-pill,
+  .game-row .multiplayer-pill,
   .game-row .stream-pill,
   .game-row .replay-pill,
   .game-row .platinum-pill,

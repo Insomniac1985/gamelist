@@ -336,6 +336,9 @@ const el = {
   finishTimeDialog: document.querySelector("#finishTimeDialog"),
   finishTimeForm: document.querySelector("#finishTimeForm"),
   finishTimeInput: document.querySelector("#finishTimeInput"),
+  finishPlatinumInput: document.querySelector("#finishPlatinumInput"),
+  finishCoopInput: document.querySelector("#finishCoopInput"),
+  finishMultiplayerInput: document.querySelector("#finishMultiplayerInput"),
   finishRatingGrid: document.querySelector("#finishRatingGrid"),
   finishTimeError: document.querySelector("#finishTimeError"),
   finishTimeCloseButton: document.querySelector("#finishTimeCloseButton"),
@@ -409,6 +412,7 @@ const el = {
     digital: document.querySelector("#digitalInput"),
     emulator: document.querySelector("#emulatorInput"),
     coop: document.querySelector("#coopInput"),
+    multiplayer: document.querySelector("#multiplayerInput"),
     stream: document.querySelector("#streamInput"),
     playing: document.querySelector("#playingInput"),
     genres: document.querySelector("#genresInput"),
@@ -992,6 +996,12 @@ function bindEvents() {
   el.fields.preferredStore.addEventListener("input", () => syncStoreInputIcon(el.fields.preferredStore, el.preferredStoreFieldIcon));
   el.fields.digital.addEventListener("change", () => { syncDialogPriceVisibility(); syncGamelistEntitlementEditor(); });
   el.fields.dlc.addEventListener("change", syncDlcDigital);
+  el.fields.coop?.addEventListener("change", () => {
+    if (el.fields.coop.checked && el.fields.multiplayer) el.fields.multiplayer.checked = true;
+  });
+  el.finishCoopInput?.addEventListener("change", () => {
+    if (el.finishCoopInput.checked && el.finishMultiplayerInput) el.finishMultiplayerInput.checked = true;
+  });
   el.fields.replayCount.addEventListener("input", syncReplaySection);
   el.form.addEventListener("submit", saveFromForm);
   el.deleteButton.addEventListener("click", deleteCurrentGame);
@@ -2138,6 +2148,7 @@ function yearlyStatsCsvRecords() {
       replayCount: game.replayCount || "",
       stream: Boolean(game.stream),
       coop: Boolean(game.coop),
+      multiplayer: Boolean(game.multiplayer || game.coop),
       platinum: Boolean(game.platinum),
       digital: Boolean(game.digital),
       emulator: Boolean(game.emulator),
@@ -2165,7 +2176,7 @@ async function importYearlyStatsCsv() {
     rows.forEach((row) => {
       const game = gameByCsvRow(row);
       if (!game) return;
-      ["startedAt", "completedAt", "lengthHours", "finishHours", "dlc", "replayCount", "owners", "tags", "stream", "coop", "platinum", "digital", "emulator"].forEach((key) => {
+      ["startedAt", "completedAt", "lengthHours", "finishHours", "dlc", "replayCount", "owners", "tags", "stream", "coop", "multiplayer", "platinum", "digital", "emulator"].forEach((key) => {
         if (row[key] !== undefined && row[key] !== "") game[key] = row[key];
       });
       markGameEdited(game, now);
@@ -5471,6 +5482,7 @@ function rowCoreStats(game) {
     game.dlc ? dlcBadge(game) : "",
     entitlementBadge(game),
     game.coop ? coopBadge() : "",
+    game.multiplayer ? multiplayerBadge() : "",
     game.emulator ? `<span class="emulator-pill">${escapeHtml(tt("Emulator"))}</span>` : "",
     game.lengthHours ? timeBadge(game.lengthHours, hltbUrlFor(game)) : "",
     game.stream ? streamBadge() : "",
@@ -7442,6 +7454,7 @@ function metaFor(game, options = {}) {
   values.push(entitlementBadge(game));
   if (game.emulator) values.push(`<span class="emulator-pill">Emulator</span>`);
   if (game.coop) values.push(coopBadge());
+  if (game.multiplayer) values.push(multiplayerBadge());
   if (game.lengthHours) values.push(timeBadge(game.lengthHours, hltbUrlFor(game)));
   if (game.stream) values.push(streamBadge());
   gameStatuses(game).forEach((status) => values.push(statusBadge(status)));
@@ -8076,6 +8089,7 @@ function completedBadges(game, options = {}) {
     entitlementBadge(game),
     game.emulator ? `<span class="emulator-pill">${escapeHtml(tt("Emulator"))}</span>` : "",
     game.coop ? coopBadge() : "",
+    game.multiplayer ? multiplayerBadge() : "",
     game.stream ? streamBadge() : "",
     game.replayCount ? replayBadge(game.replayCount) : "",
     options.includePsn === false ? "" : (progress ? psnProgressBadge(progress) : ""),
@@ -8211,6 +8225,10 @@ function calendarStateBadge(label, tone, icon = "") {
 
 function coopBadge() {
   return `<span class="coop-pill">${coopIcon()}<span>${escapeHtml(tt("CoOp"))}</span></span>`;
+}
+
+function multiplayerBadge() {
+  return `<span class="multiplayer-pill"><span>${escapeHtml(tt("Multiplayer"))}</span></span>`;
 }
 
 function streamBadge() {
@@ -8832,6 +8850,7 @@ function normalizeGameRecord(game) {
   normalized.dlc = Boolean(normalized.dlc);
   normalized.emulator = Boolean(normalized.emulator);
   normalized.coop = Boolean(normalized.coop);
+  normalized.multiplayer = Boolean(normalized.multiplayer || normalized.coop);
   normalized.stream = Boolean(normalized.stream);
   normalized.platinum = Boolean(normalized.platinum);
   normalized.playing = Boolean(normalized.playing);
@@ -8872,10 +8891,10 @@ function renderRatingInputs(container, namePrefix) {
   if (!container) return;
   const values = [0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5];
   container.innerHTML = GAME_RATING_CATEGORIES.map(([key, label]) => `
-    <fieldset class="rating-row" data-rating-key="${escapeHtml(key)}" data-rating-value="0" style="--rating-fill:0%;">
+    <fieldset class="rating-row" data-rating-key="${escapeHtml(key)}" data-rating-value="0" style="${ratingStarFillStyle(0)}">
       <legend data-i18n="${escapeHtml(label)}">${escapeHtml(label)}</legend>
       <div class="star-rating" aria-label="${escapeHtml(label)}">
-        <span class="star-display" aria-hidden="true">★★★★★</span>
+        <span class="star-display" aria-hidden="true">${ratingStarsMarkup()}</span>
         <span class="star-hitboxes">
         ${values.map((value) => `
           <input type="radio" id="${escapeHtml(namePrefix)}Rating-${escapeHtml(key)}-${value}" name="${escapeHtml(namePrefix)}Rating-${escapeHtml(key)}" value="${value}">
@@ -8917,7 +8936,7 @@ function setRatingRowValue(row, value) {
   if (!row) return;
   const rating = normalizeRatingValue(value);
   row.dataset.ratingValue = String(rating);
-  row.style.setProperty("--rating-fill", `${rating * 20}%`);
+  updateRatingStarFill(row, rating);
 }
 
 function setRatingInputs(container, ratings = {}) {
@@ -9102,13 +9121,33 @@ function renderDetailRatings(game) {
   el.detailRating.hidden = !rows.length;
   if (el.detailRatingScore) el.detailRatingScore.textContent = scoreText ? `${scoreText}/10` : "";
   el.detailRatingGrid.innerHTML = rows.map(([key, label, value]) => `
-    <div class="detail-rating-row" data-rating-key="${escapeHtml(key)}" data-rating-value="${value}" style="--rating-fill:${value * 20}%;">
+    <div class="detail-rating-row" data-rating-key="${escapeHtml(key)}" data-rating-value="${value}" style="${ratingStarFillStyle(value)}">
       <span>${escapeHtml(tt(label))}</span>
       <div class="detail-stars" aria-label="${escapeHtml(`${tt(label)}: ${value}/5`)}">
-        <span class="star-display detail-star-display" aria-hidden="true">★★★★★</span>
+        <span class="star-display detail-star-display" aria-hidden="true">${ratingStarsMarkup()}</span>
       </div>
     </div>
   `).join("");
+}
+
+function ratingStarsMarkup() {
+  return [1, 2, 3, 4, 5].map((star) => `<span class="rating-star" style="--star-fill:var(--star-${star}-fill, 0%);">★</span>`).join("");
+}
+
+function ratingStarFillStyle(value) {
+  const rating = normalizeRatingValue(value);
+  return [1, 2, 3, 4, 5].map((star) => {
+    const fill = rating >= star ? 100 : rating >= star - 0.5 ? 50 : 0;
+    return `--star-${star}-fill:${fill}%;`;
+  }).join("");
+}
+
+function updateRatingStarFill(row, value) {
+  const rating = normalizeRatingValue(value);
+  [1, 2, 3, 4, 5].forEach((star) => {
+    const fill = rating >= star ? 100 : rating >= star - 0.5 ? 50 : 0;
+    row.style.setProperty(`--star-${star}-fill`, `${fill}%`);
+  });
 }
 
 function ratingScoreValue(gameOrRatings) {
@@ -9468,6 +9507,7 @@ async function openEditor(id = "") {
   el.fields.digital.checked = Boolean(game.digital || game.dlc);
   if (el.fields.emulator) el.fields.emulator.checked = Boolean(game.emulator);
   el.fields.coop.checked = Boolean(game.coop);
+  if (el.fields.multiplayer) el.fields.multiplayer.checked = Boolean(game.multiplayer || game.coop);
   if (el.fields.stream) el.fields.stream.checked = Boolean(game.stream);
   el.fields.playing.checked = Boolean(game.playing);
   el.fields.genres.value = (game.genres || []).join(", ");
@@ -9525,6 +9565,7 @@ function blankGame() {
     digital: false,
     emulator: false,
     coop: false,
+    multiplayer: false,
     stream: false,
     platinum: false,
     playing: false,
@@ -9604,6 +9645,7 @@ async function saveCurrentFormGame() {
     digital: el.fields.dlc.checked || el.fields.digital.checked,
     emulator: Boolean(el.fields.emulator?.checked),
     coop: el.fields.coop.checked,
+    multiplayer: Boolean(el.fields.multiplayer?.checked || el.fields.coop.checked),
     stream: Boolean(el.fields.stream?.checked),
     platinum,
     playing,
@@ -9731,6 +9773,9 @@ async function completeGame(id) {
   game.completedAt = todayDate();
   if (finishHours.finishHours !== null) game.finishHours = finishHours.finishHours;
   game.ratings = finishHours.ratings;
+  game.coop = finishHours.coop;
+  game.multiplayer = finishHours.multiplayer || finishHours.coop;
+  game.platinum = finishHours.platinum;
   game.playing = false;
   markGameEdited(game);
   upsertGame(game);
@@ -9739,24 +9784,29 @@ async function completeGame(id) {
 async function completeGameWithTrophy(id) {
   const game = getGame(id);
   if (!game?.playing) return;
-  const finishHours = await requestFinishHours(game);
+  const finishHours = await requestFinishHours(game, { platinum: true });
   if (finishHours === undefined) return;
   game.startedAt = game.startedAt || todayDate();
   game.completedAt = game.completedAt || todayDate();
   if (finishHours.finishHours !== null) game.finishHours = finishHours.finishHours;
   game.ratings = finishHours.ratings;
+  game.coop = finishHours.coop;
+  game.multiplayer = finishHours.multiplayer || finishHours.coop;
   game.playing = false;
-  game.platinum = true;
+  game.platinum = finishHours.platinum;
   markGameEdited(game);
   upsertGame(game);
 }
 
-function requestFinishHours(game) {
+function requestFinishHours(game, options = {}) {
   if (!el.finishTimeDialog || !el.finishTimeForm || !el.finishTimeInput) {
-    return Promise.resolve({ finishHours: null, ratings: normalizeGameRatings(game?.ratings) });
+    return Promise.resolve({ finishHours: null, ratings: normalizeGameRatings(game?.ratings), coop: Boolean(game?.coop), multiplayer: Boolean(game?.multiplayer || game?.coop), platinum: Boolean(options.platinum || game?.platinum) });
   }
   const current = finishHoursValue(game?.finishHours);
   el.finishTimeInput.value = current ? String(current) : "";
+  if (el.finishCoopInput) el.finishCoopInput.checked = Boolean(game?.coop);
+  if (el.finishMultiplayerInput) el.finishMultiplayerInput.checked = Boolean(game?.multiplayer || game?.coop);
+  if (el.finishPlatinumInput) el.finishPlatinumInput.checked = Boolean(options.platinum || game?.platinum);
   setRatingInputs(el.finishRatingGrid, game?.ratings);
   if (el.finishTimeError) el.finishTimeError.hidden = true;
   return new Promise((resolve) => {
@@ -9774,12 +9824,12 @@ function requestFinishHours(game) {
       }
       cleanup();
       el.finishTimeDialog.close("submit");
-      resolve({ finishHours: value ? hours : null, ratings: ratingInputsValue(el.finishRatingGrid) });
+      resolve(finishDialogValue(value ? hours : null));
     };
     const handleClose = () => {
       const action = el.finishTimeDialog.returnValue;
       cleanup();
-      resolve(action === "skip" ? { finishHours: null, ratings: ratingInputsValue(el.finishRatingGrid) } : undefined);
+      resolve(action === "skip" ? finishDialogValue(null) : undefined);
     };
     el.finishTimeForm.addEventListener("submit", handleSubmit);
     el.finishTimeDialog.addEventListener("close", handleClose, { once: true });
@@ -9787,6 +9837,17 @@ function requestFinishHours(game) {
     syncScrollLock();
     requestAnimationFrame(() => el.finishTimeInput.focus());
   });
+}
+
+function finishDialogValue(finishHours) {
+  const coop = Boolean(el.finishCoopInput?.checked);
+  return {
+    finishHours,
+    ratings: ratingInputsValue(el.finishRatingGrid),
+    coop,
+    multiplayer: Boolean(el.finishMultiplayerInput?.checked || coop),
+    platinum: Boolean(el.finishPlatinumInput?.checked),
+  };
 }
 
 function restoreCompletedToBacklog(id) {
