@@ -364,6 +364,8 @@ const el = {
   detailPrices: document.querySelector("#detailPrices"),
   detailGuides: document.querySelector("#detailGuides"),
   detailGuideLinks: document.querySelector("#detailGuideLinks"),
+  detailRating: document.querySelector("#detailRating"),
+  detailRatingGrid: document.querySelector("#detailRatingGrid"),
   detailTrophies: document.querySelector("#detailTrophies"),
   detailTrophyTitle: document.querySelector("#detailTrophyTitle"),
   detailTrophyCount: document.querySelector("#detailTrophyCount"),
@@ -7041,6 +7043,7 @@ function openDetail(id, options = {}) {
   el.detailStoreLinks.innerHTML = storeLinksFor(game);
   el.detailDescription.textContent = game.description || "No description yet.";
   renderDetailGuides(game);
+  renderDetailRatings(game);
   const priceProviders = priceProvidersForGame(game);
   if (game.section === "backlog" || game.completedAt || game.platinum || !priceProviders.length) {
     el.detailPrices.hidden = true;
@@ -9057,6 +9060,23 @@ function renderDetailGuides(game) {
 
 function guideLinksFor(game) {
   return guideLinksMarkup(game, { title: retailTitle(game.title), playstation: ["PS4", "PS5"].includes(canonicalPlatform(game.platform)), escape: escapeHtml });
+}
+
+function renderDetailRatings(game) {
+  if (!el.detailRating || !el.detailRatingGrid) return;
+  const ratings = normalizeGameRatings(game?.ratings);
+  const rows = GAME_RATING_CATEGORIES
+    .map(([key, label]) => [key, label, ratings[key] || 0])
+    .filter(([, , value]) => value > 0);
+  el.detailRating.hidden = !rows.length;
+  el.detailRatingGrid.innerHTML = rows.map(([key, label, value]) => `
+    <div class="detail-rating-row" data-rating-key="${escapeHtml(key)}" data-rating-value="${value}">
+      <span>${escapeHtml(tt(label))}</span>
+      <div class="detail-stars" aria-label="${escapeHtml(`${tt(label)}: ${value}/5`)}">
+        ${[1, 2, 3, 4, 5].map((star) => `<span data-star="${star}">★</span>`).join("")}
+      </div>
+    </div>
+  `).join("");
 }
 
 function normalizeGuideUrl(value) {

@@ -11347,16 +11347,86 @@ body.theme-kash
   margin-top: 14px;
 }
 
-.detail-guides[hidden] {
+.detail-guides[hidden],
+.detail-rating[hidden] {
   display: none;
 }
 
-.detail-guides h3 {
+.detail-guides h3,
+.detail-rating h3 {
   margin: 0;
   color: var(--accent-2);
   font-size: 13px;
   font-weight: 850;
   text-transform: uppercase;
+}
+
+.detail-rating {
+  display: grid;
+  gap: 10px;
+  margin-top: 16px;
+}
+
+.detail-rating-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 9px;
+}
+
+.detail-rating-row {
+  display: grid;
+  gap: 6px;
+  min-width: 0;
+}
+
+.detail-rating-row > span {
+  display: block;
+  margin-bottom: 0;
+  color: var(--dim);
+  font-size: 11px;
+  font-weight: 740;
+  letter-spacing: 0;
+  text-transform: uppercase;
+}
+
+.detail-stars {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  min-height: 40px;
+  padding: 0 10px;
+  color: rgba(255, 255, 255, 0.22);
+  background: rgba(255, 255, 255, 0.045);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 8px;
+}
+
+.detail-stars span {
+  display: grid;
+  place-items: center;
+  width: 23px;
+  height: 23px;
+  color: rgba(255, 255, 255, 0.22);
+  font-size: 22px;
+  line-height: 0;
+}
+
+.detail-rating-row[data-rating-value="1"] .detail-stars span[data-star="1"],
+.detail-rating-row[data-rating-value="2"] .detail-stars span[data-star="1"],
+.detail-rating-row[data-rating-value="2"] .detail-stars span[data-star="2"],
+.detail-rating-row[data-rating-value="3"] .detail-stars span[data-star="1"],
+.detail-rating-row[data-rating-value="3"] .detail-stars span[data-star="2"],
+.detail-rating-row[data-rating-value="3"] .detail-stars span[data-star="3"],
+.detail-rating-row[data-rating-value="4"] .detail-stars span[data-star="1"],
+.detail-rating-row[data-rating-value="4"] .detail-stars span[data-star="2"],
+.detail-rating-row[data-rating-value="4"] .detail-stars span[data-star="3"],
+.detail-rating-row[data-rating-value="4"] .detail-stars span[data-star="4"],
+.detail-rating-row[data-rating-value="5"] .detail-stars span[data-star] {
+  color: var(--accent);
+}
+
+.detail-rating-row[data-rating-value="5"] .detail-stars span {
+  color: #ffe985;
 }
 
 .guide-links {
