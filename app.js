@@ -1539,7 +1539,7 @@ function applyLanguage() {
   if (el.playingTitle) el.playingTitle.textContent = tt("Currently playing");
   const latestFinishedTitle = el.playingFinished?.querySelector(".achievement-subtitle");
   if (latestFinishedTitle) latestFinishedTitle.textContent = tt("Last finished games");
-  if (el.detailRatingTitle) el.detailRatingTitle.textContent = ownerRatingTitle();
+  if (el.detailRatingTitle) el.detailRatingTitle.innerHTML = ownerRatingTitle();
 }
 
 function applyTheme() {
@@ -5470,9 +5470,9 @@ function rowFor(game, section, options = {}) {
 function rowPrimaryAction(game, section) {
   if (section === "backlog") return `<button class="primary-button row-primary-action" type="button">Play</button>`;
   if (section === "new") {
-    return `<button class="primary-button row-primary-action" type="button">Play</button><button class="primary-button row-setup-action" type="button">Setup</button>`;
+    return `<button class="primary-button row-primary-action" type="button">Play</button><button class="primary-button row-setup-action" type="button">${forwardIcon()}<span>${escapeHtml(tt("Setup"))}</span></button>`;
   }
-  return `<button class="ghost-button row-primary-action" type="button">Got it</button>`;
+  return `<button class="ghost-button row-primary-action" type="button">${forwardIcon()}<span>${escapeHtml(tt("Got it"))}</span></button>`;
 }
 
 function rowCoreStats(game) {
@@ -5546,7 +5546,7 @@ function renderCompleted() {
       </div>
       <div class="completed-actions">
         <button class="icon-button completed-edit-action" type="button" title="Edit" aria-label="Edit">${pencilIcon()}</button>
-        <button class="ghost-button restore-action" type="button">Backlog</button>
+        <button class="ghost-button restore-action" type="button">${backIcon()}<span>${escapeHtml(tt("Backlog"))}</span></button>
       </div>
     </div>
   `).join("") : `<div class="empty">Finished games will stay saved here.</div>`;
@@ -6836,7 +6836,7 @@ function cardFor(game, options = {}) {
     priceRefreshAction.remove();
     backlogAction.remove();
     trophyAction.remove();
-    boughtAction.textContent = tt("Setup");
+    boughtAction.innerHTML = `${forwardIcon()}<span class="action-label">${escapeHtml(tt("Setup"))}</span>`;
     boughtAction.classList.remove("ghost-button");
     boughtAction.classList.add("primary-button");
     boughtAction.addEventListener("click", () => finishSetupGame(game.id));
@@ -6871,6 +6871,7 @@ function cardFor(game, options = {}) {
       prices.remove();
       priceRefreshAction.remove();
     }
+    boughtAction.innerHTML = `${forwardIcon()}<span class="action-label">${escapeHtml(tt("Got it"))}</span>`;
     boughtAction.addEventListener("click", () => moveToBacklog(game.id));
   }
   card.querySelector(".edit-action")?.addEventListener("click", () => openEditor(game.id));
@@ -8113,8 +8114,19 @@ function playDatesFor(game, options = {}) {
   if (game.completedAt) values.push(`<span class="history-pill history-date-pill"><small>${escapeHtml(tt("Finished"))}</small><strong>${escapeHtml(formatDate(game.completedAt))}</strong></span>`);
   const finishTime = finishHoursText(game);
   const duration = finishTime || finishedDurationText(game.startedAt, game.completedAt);
-  if (duration) values.push(`<span class="history-pill history-date-pill"><small>${escapeHtml(tt("Play Time"))}</small><strong>${escapeHtml(duration)}</strong></span>`);
+  if (duration) values.push(playTimeHistoryPill(duration, finishHoursValue(game.finishHours)));
   return values;
+}
+
+function playTimeHistoryPill(duration, hours) {
+  const style = hours ? ` style="${timePillStyle(hours)}"` : "";
+  return `<span class="history-pill history-date-pill playtime-date-pill"${style}><small>${escapeHtml(tt("Play Time"))}</small><strong>${escapeHtml(duration)}</strong></span>`;
+}
+
+function timePillStyle(hours) {
+  const clamped = Math.max(0, Math.min(1, (Number(hours) - 7) / 53));
+  const hue = Math.round(132 - (132 * clamped));
+  return `--time-color:hsl(${hue}, 88%, 56%);--time-light:hsl(${Math.min(140, hue + 10)}, 94%, 72%);--time-dark:hsl(${Math.max(0, hue - 8)}, 82%, 39%);--time-glow:hsla(${hue}, 88%, 56%, 0.34)`;
 }
 
 function studioText(game) {
@@ -8146,8 +8158,10 @@ function compareGames(a, b, section) {
   }
   if (state.filters.sort === "rating") {
     return compareRatingSort(a, b, direction)
-      || direction * (((a.lengthHours ?? Number.POSITIVE_INFINITY) - (b.lengthHours ?? Number.POSITIVE_INFINITY))
-        || stringCompare(a.title, b.title));
+      || (section === "upcoming"
+        ? compareReleaseSort(a, b, direction)
+        : direction * (((a.lengthHours ?? Number.POSITIVE_INFINITY) - (b.lengthHours ?? Number.POSITIVE_INFINITY))
+          || stringCompare(a.title, b.title)));
   }
   return direction * stringCompare(a.title, b.title);
 }
@@ -8501,6 +8515,24 @@ function checkIcon() {
   return `
     <svg class="check-icon" viewBox="0 0 24 24" aria-hidden="true">
       <path d="M5 12.5l4.2 4.2L19 7"></path>
+    </svg>
+  `;
+}
+
+function backIcon() {
+  return `
+    <svg class="back-icon" viewBox="0 0 24 24" aria-hidden="true">
+      <path d="M10 6 4 12l6 6"></path>
+      <path d="M4 12h10a6 6 0 0 1 6 6"></path>
+    </svg>
+  `;
+}
+
+function forwardIcon() {
+  return `
+    <svg class="forward-icon" viewBox="0 0 24 24" aria-hidden="true">
+      <path d="m10 6-6 6 6 6"></path>
+      <path d="M4 12h10a6 6 0 0 0 6-6"></path>
     </svg>
   `;
 }
@@ -9140,8 +9172,11 @@ function renderDetailRatings(game) {
     .map(([key, label]) => [key, label, ratings[key] || 0])
     .filter(([, , value]) => value > 0);
   el.detailRating.hidden = !rows.length;
-  if (el.detailRatingTitle) el.detailRatingTitle.textContent = ownerRatingTitle();
-  if (el.detailRatingScore) el.detailRatingScore.textContent = scoreText ? `${scoreText}/10` : "";
+  if (el.detailRatingTitle) el.detailRatingTitle.innerHTML = ownerRatingTitle();
+  if (el.detailRatingScore) {
+    el.detailRatingScore.textContent = scoreText ? `${scoreText}/10` : "";
+    el.detailRatingScore.className = `detail-rating-score${scoreText ? ` rating-score-${ratingScoreTone(game)}` : ""}`;
+  }
   el.detailRatingGrid.innerHTML = rows.map(([key, label, value]) => `
     <div class="detail-rating-row" data-rating-key="${escapeHtml(key)}" data-rating-value="${value}" style="${ratingStarFillStyle(value)}">
       <span>${escapeHtml(tt(label))}</span>
@@ -9158,7 +9193,7 @@ function ratingStarsMarkup() {
 
 function ownerRatingTitle() {
   const owner = cleanOwnerLabel(state.settings.defaultOwner) || DEFAULT_SETTINGS.defaultOwner;
-  return tt("{owner}'s Rating", { owner });
+  return `<span class="detail-rating-title-star" aria-hidden="true">★</span>${escapeHtml(tt("{owner}'s Rating", { owner }))}`;
 }
 
 function ratingStarFillStyle(value) {
@@ -9195,8 +9230,16 @@ function ratingScoreBadge(game) {
   const scoreValue = ratingScoreValue(game);
   const score = ratingScoreText(game);
   if (!score) return "";
-  const tone = scoreValue >= 9 ? "gold" : scoreValue >= 7 ? "high" : scoreValue >= 5 ? "mid" : "low";
+  const tone = ratingScoreTone(scoreValue);
   return `<span class="rating-score-pill rating-score-${tone}" title="${escapeHtml(`${tt("Rating")}: ${score}/10`)}" aria-label="${escapeHtml(`${tt("Rating")}: ${score}/10`)}"><span class="rating-score-star" aria-hidden="true">★</span>${escapeHtml(score)}</span>`;
+}
+
+function ratingScoreTone(gameOrScore) {
+  const score = typeof gameOrScore === "number" ? gameOrScore : ratingScoreValue(gameOrScore);
+  if (score >= 9) return "gold";
+  if (score >= 7) return "high";
+  if (score >= 5) return "mid";
+  return "low";
 }
 
 function normalizeGuideUrl(value) {

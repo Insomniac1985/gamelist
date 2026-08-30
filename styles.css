@@ -6001,11 +6001,58 @@ body.theme-kash .game-card.stream-card.completed-trophy-card {
   line-height: 1.05;
 }
 
+.playtime-date-pill {
+  position: relative;
+  overflow: hidden;
+  padding-left: 13px;
+  color: var(--text);
+  border-color: color-mix(
+    in srgb,
+    var(--time-color) 46%,
+    rgba(255, 255, 255, 0.16)
+  );
+  background:
+    linear-gradient(
+      135deg,
+      color-mix(in srgb, var(--time-color) 22%, rgba(255, 255, 255, 0.08)),
+      rgba(255, 255, 255, 0.07)
+    ),
+    rgba(255, 255, 255, 0.055);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.12),
+    0 0 16px color-mix(in srgb, var(--time-glow) 62%, transparent);
+  --time-color: var(--accent-2);
+  --time-light: color-mix(in srgb, var(--accent-2) 78%, #ffffff);
+  --time-dark: color-mix(in srgb, var(--accent-2) 72%, #000000);
+  --time-glow: color-mix(in srgb, var(--accent-2) 34%, transparent);
+}
+
+.playtime-date-pill::before {
+  content: "";
+  position: absolute;
+  top: 4px;
+  bottom: 4px;
+  left: 4px;
+  width: 5px;
+  min-height: 18px;
+  border-radius: 999px;
+  background: linear-gradient(180deg, var(--time-light), var(--time-dark));
+  box-shadow: 0 0 12px var(--time-glow);
+}
+
+.playtime-date-pill strong {
+  color: var(--time-color);
+}
+
+.playtime-date-pill small {
+  color: var(--time-color);
+}
+
 .time-pill {
   position: relative;
   gap: 5px;
   overflow: hidden;
-  padding: 4px 9px;
+  padding: 4px 9px 4px 13px;
   color: var(--text);
   border-color: color-mix(
     in srgb,
@@ -6027,8 +6074,12 @@ body.theme-kash .game-card.stream-card.completed-trophy-card {
 
 .time-pill::before {
   content: "";
+  position: absolute;
+  top: 4px;
+  bottom: 4px;
+  left: 4px;
   width: 5px;
-  height: 18px;
+  min-height: 18px;
   border-radius: 999px;
   background: linear-gradient(180deg, var(--time-light), var(--time-dark));
   box-shadow: 0 0 12px var(--time-glow);
@@ -6536,6 +6587,7 @@ body.dialog-open .floating-search-button {
 .trash-icon,
 .search-icon,
 .back-icon,
+.forward-icon,
 .pause-icon,
 .exit-icon,
 .play-icon,
@@ -8455,12 +8507,12 @@ body.theme-kash .playing-finished-game.completed-trophy-card:hover {
 }
 
 .completed-dates {
-  color: var(--muted);
+  color: var(--dim);
   font-size: 12px;
 }
 
 .completed-duration {
-  color: var(--dim);
+  color: #ffffff;
   font-size: 12px;
 }
 
@@ -8552,19 +8604,22 @@ body.theme-kash .playing-finished-game.completed-trophy-card:hover {
   transform: translateY(-1px);
 }
 
-.rating-score-mid {
-  --rating-score-start: rgba(255, 153, 79, 0.2);
-  --rating-score-end: rgba(255, 220, 99, 0.13);
-  --rating-score-border: rgba(255, 195, 92, 0.36);
+.rating-score-mid,
+.detail-rating-score.rating-score-mid {
+  --rating-score-start: rgba(255, 117, 56, 0.22);
+  --rating-score-end: rgba(255, 148, 67, 0.13);
+  --rating-score-border: rgba(255, 132, 64, 0.4);
 }
 
-.rating-score-high {
+.rating-score-high,
+.detail-rating-score.rating-score-high {
   --rating-score-start: rgba(49, 220, 141, 0.18);
   --rating-score-end: rgba(126, 255, 224, 0.12);
   --rating-score-border: rgba(126, 255, 224, 0.34);
 }
 
-.rating-score-gold {
+.rating-score-gold,
+.detail-rating-score.rating-score-gold {
   color: #fff7c9;
   --rating-score-start: rgba(255, 233, 133, 0.24);
   --rating-score-end: rgba(255, 180, 83, 0.16);
@@ -11475,28 +11530,38 @@ body.theme-kash
   text-transform: uppercase;
 }
 
+.detail-rating-title-star {
+  display: inline-block;
+  margin-right: 5px;
+  font-size: 1.45em;
+  line-height: 0;
+  transform: translateY(1px);
+}
+
 .detail-rating-score {
   display: inline-flex;
   align-items: center;
   min-height: 18px;
   padding: 1px 6px;
   color: var(--text);
-  background: color-mix(
-    in srgb,
-    var(--accent-2) 14%,
-    rgba(255, 255, 255, 0.06)
-  );
-  border: 1px solid
-    color-mix(in srgb, var(--accent-2) 32%, rgba(255, 255, 255, 0.12));
+  background:
+    linear-gradient(135deg, var(--rating-score-start), var(--rating-score-end)),
+    rgba(255, 255, 255, 0.06);
+  border: 1px solid var(--rating-score-border);
   border-radius: 6px;
   font-size: 10px;
   line-height: 1;
+  --rating-score-start: rgba(255, 71, 103, 0.18);
+  --rating-score-end: rgba(255, 153, 79, 0.12);
+  --rating-score-border: rgba(255, 111, 133, 0.34);
 }
 
 .detail-rating {
   display: grid;
   gap: 10px;
   margin-top: 16px;
+  padding-top: 14px;
+  border-top: 1px solid var(--line);
 }
 
 .detail-rating-grid {
