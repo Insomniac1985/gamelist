@@ -785,6 +785,40 @@ function initPagePullTransition({ targetLabel, targetUrl }) {
     if (!pageDragArmed && !pageDragging) return;
     endDrag(event, pagePullThreshold());
   }, { passive: true });
+  window.addEventListener("touchstart", (event) => {
+    if (dragging || event.touches.length !== 1 || !canStartPagePull(event)) return;
+    const touch = event.touches[0];
+    pageDragArmed = true;
+    startY = touch.clientY;
+    startX = touch.clientX;
+    moved = false;
+  }, { passive: true });
+  window.addEventListener("touchmove", (event) => {
+    if (!pageDragArmed || event.touches.length !== 1) return;
+    const touch = event.touches[0];
+    const distanceY = touch.clientY - startY;
+    const distanceX = Math.abs(touch.clientX - startX);
+    if (!pageDragging && (distanceY < 12 || distanceX > distanceY * 0.8)) return;
+    if (distanceY <= 0 || !isAtPageTop()) {
+      pageDragArmed = false;
+      return;
+    }
+    if (!pageDragging) {
+      pageDragging = true;
+      dragging = true;
+      document.body.classList.add("page-pull-hover");
+      button.classList.add("is-dragging");
+    }
+    event.preventDefault();
+    const pull = setPull(distanceY * 0.92);
+    moved = moved || pull > 8;
+  }, { passive: false });
+  const endTouchDrag = () => {
+    if (!pageDragArmed && !pageDragging) return;
+    endDrag({}, pagePullThreshold());
+  };
+  window.addEventListener("touchend", endTouchDrag, { passive: true });
+  window.addEventListener("touchcancel", endTouchDrag, { passive: true });
 }
 
 function syncPagePullTransition() {
