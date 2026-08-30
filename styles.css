@@ -8503,13 +8503,44 @@ body.theme-kash .playing-finished-game.completed-trophy-card:hover {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 3px;
+  gap: 4px;
   color: var(--text);
-  background: color-mix(in srgb, var(--accent-2) 14%, rgba(255, 255, 255, 0.06));
-  border: 1px solid color-mix(in srgb, var(--accent-2) 34%, rgba(255, 255, 255, 0.12));
+  background:
+    linear-gradient(135deg, var(--rating-score-start), var(--rating-score-end)),
+    rgba(255, 255, 255, 0.06);
+  border: 1px solid var(--rating-score-border);
   border-radius: 7px;
   font-weight: 850;
   line-height: 1;
+  --rating-score-start: rgba(255, 71, 103, 0.18);
+  --rating-score-end: rgba(255, 153, 79, 0.12);
+  --rating-score-border: rgba(255, 111, 133, 0.34);
+}
+
+.rating-score-star {
+  color: #ffe985;
+  font-size: 1.25em;
+  line-height: 0;
+  text-shadow: 0 0 9px rgba(255, 233, 133, 0.38);
+}
+
+.rating-score-mid {
+  --rating-score-start: rgba(255, 153, 79, 0.2);
+  --rating-score-end: rgba(255, 220, 99, 0.13);
+  --rating-score-border: rgba(255, 195, 92, 0.36);
+}
+
+.rating-score-high {
+  --rating-score-start: rgba(49, 220, 141, 0.18);
+  --rating-score-end: rgba(126, 255, 224, 0.12);
+  --rating-score-border: rgba(126, 255, 224, 0.34);
+}
+
+.rating-score-gold {
+  color: #fff7c9;
+  --rating-score-start: rgba(255, 233, 133, 0.24);
+  --rating-score-end: rgba(255, 180, 83, 0.16);
+  --rating-score-border: rgba(255, 233, 133, 0.5);
 }
 
 .completed-platform .media-format-pill {
@@ -11402,12 +11433,12 @@ body.theme-kash
 .detail-rating-grid {
   display: grid;
   grid-template-columns: repeat(6, minmax(0, 1fr));
-  gap: 9px;
+  gap: 10px 12px;
 }
 
 .detail-rating-row {
   display: grid;
-  grid-column: span 2;
+  grid-column: span 1;
   gap: 6px;
   min-width: 0;
   --rating-active-color: var(--accent);
@@ -11426,11 +11457,14 @@ body.theme-kash
 .detail-stars {
   display: inline-flex;
   align-items: center;
-  min-height: 34px;
-  padding: 0 8px;
+  justify-content: center;
+  min-height: 32px;
+  padding: 0 7px;
   background: rgba(255, 255, 255, 0.045);
   border: 1px solid rgba(255, 255, 255, 0.16);
   border-radius: 8px;
+  width: max-content;
+  max-width: 100%;
 }
 
 @media (max-width: 760px) {
@@ -11821,9 +11855,9 @@ body.theme-kash
 }
 
 .detail-star-display {
-  min-width: 118px;
-  font-size: 18px;
-  letter-spacing: 5px;
+  min-width: 111px;
+  font-size: 23px;
+  letter-spacing: 2px;
 }
 
 .star-hitboxes {
@@ -11845,40 +11879,6 @@ body.theme-kash
   height: 100%;
   color: transparent;
   cursor: pointer;
-  border-radius: 999px;
-  transition:
-    transform 120ms ease,
-    background 120ms ease;
-}
-
-.star-hitboxes label::after {
-  content: "";
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  width: 30px;
-  height: 30px;
-  border-radius: 999px;
-  opacity: 0;
-  pointer-events: none;
-  transform: translate(-50%, -50%);
-  transition:
-    opacity 120ms ease,
-    background 120ms ease,
-    box-shadow 120ms ease;
-}
-
-.star-hitboxes label:hover::after,
-.star-hitboxes input:focus-visible + label::after {
-  opacity: 1;
-  background: color-mix(in srgb, var(--accent) 14%, transparent);
-  box-shadow:
-    0 0 0 5px color-mix(in srgb, var(--accent) 10%, transparent),
-    0 0 18px color-mix(in srgb, var(--accent) 22%, transparent);
-}
-
-.star-hitboxes label:hover {
-  transform: translateY(-1px);
 }
 
 .rating-row[data-rating-value="5"],
@@ -11886,12 +11886,41 @@ body.theme-kash
   --rating-active-color: #ffe985;
 }
 
+.rating-step-controls {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  margin-left: auto;
+}
+
+.rating-step-button {
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  color: var(--text);
+  background: rgba(255, 255, 255, 0.07);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 7px;
+  font: inherit;
+  font-size: 16px;
+  font-weight: 900;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.rating-step-button:hover {
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.11);
+  border-color: rgba(255, 255, 255, 0.24);
+}
+
 .star-rating .star-clear {
   display: grid;
   place-items: center;
   width: 28px;
   height: 28px;
-  margin-left: auto;
   color: var(--danger);
   background: rgba(255, 111, 133, 0.1);
   border: 1px solid rgba(255, 111, 133, 0.24);

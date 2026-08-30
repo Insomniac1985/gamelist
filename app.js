@@ -8883,7 +8883,11 @@ function renderRatingInputs(container, namePrefix) {
         `).join("")}
         </span>
         <input type="radio" id="${escapeHtml(namePrefix)}Rating-${escapeHtml(key)}-0" name="${escapeHtml(namePrefix)}Rating-${escapeHtml(key)}" value="0">
-        <label class="star-clear" for="${escapeHtml(namePrefix)}Rating-${escapeHtml(key)}-0" title="${escapeHtml(tt("No rating"))}" aria-label="${escapeHtml(tt("No rating"))}" data-i18n-title="No rating" data-i18n-aria-label="No rating">${trashIcon()}</label>
+        <span class="rating-step-controls">
+          <button class="rating-step-button" type="button" data-rating-step="-0.5" title="-0.5" aria-label="-0.5">−</button>
+          <button class="rating-step-button" type="button" data-rating-step="0.5" title="+0.5" aria-label="+0.5">+</button>
+          <label class="star-clear" for="${escapeHtml(namePrefix)}Rating-${escapeHtml(key)}-0" title="${escapeHtml(tt("No rating"))}" aria-label="${escapeHtml(tt("No rating"))}" data-i18n-title="No rating" data-i18n-aria-label="No rating">${trashIcon()}</label>
+        </span>
       </div>
     </fieldset>
   `).join("");
@@ -8891,7 +8895,22 @@ function renderRatingInputs(container, namePrefix) {
     row.addEventListener("change", () => {
       setRatingRowValue(row, row.querySelector("input:checked")?.value);
     });
+    row.querySelectorAll("[data-rating-step]").forEach((button) => {
+      button.addEventListener("click", () => {
+        const current = normalizeRatingValue(row.querySelector("input:checked")?.value);
+        const next = normalizeRatingValue(current + Number(button.dataset.ratingStep || 0));
+        setRatingInputValue(row, next);
+      });
+    });
   });
+}
+
+function setRatingInputValue(row, value) {
+  if (!row) return;
+  const rating = normalizeRatingValue(value);
+  const input = row.querySelector(`input[value="${rating}"]`);
+  if (input) input.checked = true;
+  setRatingRowValue(row, rating);
 }
 
 function setRatingRowValue(row, value) {
@@ -8907,9 +8926,7 @@ function setRatingInputs(container, ratings = {}) {
   GAME_RATING_CATEGORIES.forEach(([key]) => {
     const value = values[key] || 0;
     const row = container.querySelector(`[data-rating-key="${CSS.escape(key)}"]`);
-    const input = row?.querySelector(`input[value="${value}"]`);
-    if (input) input.checked = true;
-    setRatingRowValue(row, value);
+    setRatingInputValue(row, value);
   });
 }
 
@@ -9096,9 +9113,10 @@ function renderDetailRatings(game) {
 
 function ratingScoreValue(gameOrRatings) {
   const ratings = normalizeGameRatings(gameOrRatings?.ratings || gameOrRatings);
-  const values = Object.values(ratings);
-  if (!values.some((value) => value > 0)) return null;
-  return Math.round(values.reduce((sum, value) => sum + value, 0) * 4) / 10;
+  const values = Object.values(ratings).filter((value) => value > 0);
+  if (!values.length) return null;
+  const averageStars = values.reduce((sum, value) => sum + value, 0) / values.length;
+  return Math.round(averageStars * 20) / 10;
 }
 
 function ratingScoreText(gameOrRatings) {
@@ -9108,9 +9126,11 @@ function ratingScoreText(gameOrRatings) {
 }
 
 function ratingScoreBadge(game) {
+  const scoreValue = ratingScoreValue(game);
   const score = ratingScoreText(game);
   if (!score) return "";
-  return `<span class="rating-score-pill" title="${escapeHtml(`${tt("Rating")}: ${score}/10`)}" aria-label="${escapeHtml(`${tt("Rating")}: ${score}/10`)}">★ ${escapeHtml(score)}</span>`;
+  const tone = scoreValue >= 9 ? "gold" : scoreValue >= 7 ? "high" : scoreValue >= 5 ? "mid" : "low";
+  return `<span class="rating-score-pill rating-score-${tone}" title="${escapeHtml(`${tt("Rating")}: ${score}/10`)}" aria-label="${escapeHtml(`${tt("Rating")}: ${score}/10`)}"><span class="rating-score-star" aria-hidden="true">★</span>${escapeHtml(score)}</span>`;
 }
 
 function normalizeGuideUrl(value) {
