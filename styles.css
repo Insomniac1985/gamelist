@@ -8729,12 +8729,8 @@ body.dialog-open .mobile-section-tabs {
 
 .finish-time-flags-row .check-filter {
   min-height: 44px;
-  color: #ffe985;
-  border-color: rgba(255, 233, 133, 0.32);
-  background: rgba(255, 211, 94, 0.08);
 }
 
-.finish-time-flags-row .check-filter:has(input:checked),
 .finish-time-main-row .finish-trophy-check:has(input:checked) {
   color: #ffe985;
   border-color: rgba(255, 233, 133, 0.56);
@@ -11672,7 +11668,7 @@ body.theme-kash
 }
 
 .collection-form-grid > .dlc-check {
-  grid-column: span 4;
+  grid-column: span 3;
   align-self: end;
   min-width: 0;
   padding-inline: 8px;
@@ -11706,7 +11702,7 @@ body.theme-kash
 }
 
 .collection-form-grid > .collection-check {
-  grid-column: span 4;
+  grid-column: span 3;
   padding-inline: 8px;
 }
 
