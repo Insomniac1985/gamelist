@@ -784,6 +784,30 @@ html.theme-font-mata .shelf-page .playing-section .column-head h2 {
   object-fit: contain;
 }
 
+body.mobile-app-mode.shelf-page .favorite-cover-card,
+body.mobile-app-mode.shelf-page .showcase-picker-cover,
+body.mobile-app-mode.shelf-page .shelf-dialog .detail-cover,
+body.mobile-app-mode.shelf-page .shelf-grid .cover-button,
+body.mobile-app-mode.shelf-page .shelf-grid.list-view .game-row-cover-wrap {
+  transform: none !important;
+  -webkit-transform: none !important;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  isolation: isolate;
+}
+
+body.mobile-app-mode.shelf-page .favorite-cover-card > img,
+body.mobile-app-mode.shelf-page .showcase-picker-cover > img,
+body.mobile-app-mode.shelf-page .shelf-dialog .detail-cover img,
+body.mobile-app-mode.shelf-page .shelf-grid .cover-button img,
+body.mobile-app-mode.shelf-page .shelf-grid.list-view .game-row-cover,
+body.mobile-app-mode.shelf-page .shelf-grid.list-view .game-row-cover-preview {
+  transform: none !important;
+  -webkit-transform: none !important;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
 .shelf-dialog .lookup-result {
   grid-template-columns: auto minmax(0, 1fr) auto;
 }

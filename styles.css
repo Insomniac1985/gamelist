@@ -12854,13 +12854,6 @@ html.theme-light .playing-achievements-check input[type="checkbox"]:checked {
     contain: none;
   }
 
-  body.mobile-app-mode img {
-    transform: none !important;
-    -webkit-transform: none !important;
-    backface-visibility: hidden;
-    -webkit-backface-visibility: hidden;
-  }
-
   body.mobile-app-mode .game-card.has-art::before,
   body.mobile-app-mode .platinum-art-layer {
     display: none;
@@ -12872,13 +12865,26 @@ html.theme-light .playing-achievements-check input[type="checkbox"]:checked {
   body.mobile-app-mode .achievement-icon,
   body.mobile-app-mode .platinum-cover-preview,
   body.mobile-app-mode .favorite-cover-card,
-  body.mobile-app-mode .showcase-picker-cover,
-  body.mobile-app-mode .media-format-pill {
+  body.mobile-app-mode .showcase-picker-cover {
     transform: none !important;
     -webkit-transform: none !important;
     backface-visibility: hidden;
     -webkit-backface-visibility: hidden;
     isolation: isolate;
+  }
+
+  body.mobile-app-mode .cover-button img,
+  body.mobile-app-mode .game-row-cover,
+  body.mobile-app-mode .game-row-cover-preview,
+  body.mobile-app-mode .completed-cover,
+  body.mobile-app-mode .achievement-icon,
+  body.mobile-app-mode .platinum-cover-preview,
+  body.mobile-app-mode .favorite-cover-card > img,
+  body.mobile-app-mode .showcase-picker-cover > img {
+    transform: none !important;
+    -webkit-transform: none !important;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
   }
 
   body.mobile-app-mode .stats,
