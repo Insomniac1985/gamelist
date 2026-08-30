@@ -11684,7 +11684,7 @@ body.theme-kash
 
 .rating-row legend {
   display: block;
-  margin-bottom: 0;
+  margin-bottom: 6px;
   padding: 0;
   color: var(--dim);
   font-size: 11px;
@@ -11717,22 +11717,26 @@ body.theme-kash
   display: grid;
   place-items: center;
   width: 25px;
-  height: 27px;
+  height: 25px;
   color: rgba(255, 255, 255, 0.22);
-  font-size: 24px;
-  line-height: 1;
+  font-size: 23px;
+  line-height: 0;
   cursor: pointer;
   border-radius: 999px;
   transition:
     color 120ms ease,
     transform 120ms ease,
-    background 120ms ease;
+    background 120ms ease,
+    box-shadow 120ms ease;
 }
 
 .star-rating label:hover,
 .star-rating input:focus-visible + label {
   color: var(--accent);
-  background: color-mix(in srgb, var(--accent) 12%, transparent);
+  background: color-mix(in srgb, var(--accent) 14%, transparent);
+  box-shadow:
+    0 0 0 4px color-mix(in srgb, var(--accent) 10%, transparent),
+    0 0 18px color-mix(in srgb, var(--accent) 22%, transparent);
 }
 
 .star-rating label:hover {
