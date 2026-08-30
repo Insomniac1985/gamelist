@@ -5799,17 +5799,11 @@ body.theme-kash .game-card.stream-card.completed-trophy-card {
   font-weight: 820;
 }
 
-.coop-pill {
+.coop-pill,
+.multiplayer-pill {
   color: #79f2ce !important;
   border-color: rgba(121, 242, 206, 0.32);
   background: rgba(121, 242, 206, 0.1);
-  font-weight: 820;
-}
-
-.multiplayer-pill {
-  color: #9bd8ff !important;
-  border-color: rgba(155, 216, 255, 0.34);
-  background: rgba(155, 216, 255, 0.1);
   font-weight: 820;
 }
 
@@ -11484,16 +11478,17 @@ body.theme-kash
 }
 
 .detail-rating-grid {
-  display: grid;
-  grid-template-columns: repeat(6, minmax(0, 1fr));
-  gap: 10px 12px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px 20px;
+  align-items: flex-start;
 }
 
 .detail-rating-row {
   display: grid;
-  grid-column: span 2;
   gap: 6px;
-  min-width: 0;
+  width: max-content;
+  min-width: max-content;
   --rating-active-color: var(--accent);
 }
 
@@ -11512,21 +11507,21 @@ body.theme-kash
   align-items: center;
   justify-content: center;
   min-height: 32px;
-  padding: 0 7px;
+  padding: 0 8px;
   background: rgba(255, 255, 255, 0.045);
   border: 1px solid rgba(255, 255, 255, 0.16);
   border-radius: 8px;
   width: max-content;
-  max-width: 100%;
+  justify-self: start;
 }
 
 @media (max-width: 760px) {
   .detail-rating-grid {
-    grid-template-columns: 1fr;
+    gap: 13px 16px;
   }
 
   .detail-rating-row {
-    grid-column: 1 / -1;
+    min-width: 0;
   }
 }
 
@@ -11762,18 +11757,20 @@ body.theme-kash
 }
 
 .playing-form-grid {
-  grid-template-columns: repeat(10, minmax(0, 1fr));
+  grid-template-columns: repeat(12, minmax(0, 1fr));
   gap: 8px;
 }
 
 .playing-form-grid > .modal-playing-check,
-.playing-form-grid > label.stream-check {
+.playing-form-grid > label.stream-check,
+.playing-form-grid > label.playing-coop-check,
+.playing-form-grid > label.playing-multiplayer-check {
   grid-column: span 3;
   padding-inline: 8px;
 }
 
 .playing-form-grid > label.playing-replay-field {
-  grid-column: span 4;
+  grid-column: span 3;
 }
 
 .playing-form-grid > label.playing-started-field,
@@ -11787,10 +11784,6 @@ body.theme-kash
 
 .playing-form-grid > label.stream-check {
   border-color: rgba(183, 116, 255, 0.24);
-}
-
-.collection-form-grid > .multiplayer-check {
-  grid-column: span 4;
 }
 
 .playing-form-grid > label.playing-achievements-check {

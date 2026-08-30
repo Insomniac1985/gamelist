@@ -5482,7 +5482,7 @@ function rowCoreStats(game) {
     game.dlc ? dlcBadge(game) : "",
     entitlementBadge(game),
     game.coop ? coopBadge() : "",
-    game.multiplayer ? multiplayerBadge() : "",
+    game.multiplayer && !game.coop ? multiplayerBadge() : "",
     game.emulator ? `<span class="emulator-pill">${escapeHtml(tt("Emulator"))}</span>` : "",
     game.lengthHours ? timeBadge(game.lengthHours, hltbUrlFor(game)) : "",
     game.stream ? streamBadge() : "",
@@ -7454,7 +7454,7 @@ function metaFor(game, options = {}) {
   values.push(entitlementBadge(game));
   if (game.emulator) values.push(`<span class="emulator-pill">Emulator</span>`);
   if (game.coop) values.push(coopBadge());
-  if (game.multiplayer) values.push(multiplayerBadge());
+  if (game.multiplayer && !game.coop) values.push(multiplayerBadge());
   if (game.lengthHours) values.push(timeBadge(game.lengthHours, hltbUrlFor(game)));
   if (game.stream) values.push(streamBadge());
   gameStatuses(game).forEach((status) => values.push(statusBadge(status)));
@@ -8089,7 +8089,7 @@ function completedBadges(game, options = {}) {
     entitlementBadge(game),
     game.emulator ? `<span class="emulator-pill">${escapeHtml(tt("Emulator"))}</span>` : "",
     game.coop ? coopBadge() : "",
-    game.multiplayer ? multiplayerBadge() : "",
+    game.multiplayer && !game.coop ? multiplayerBadge() : "",
     game.stream ? streamBadge() : "",
     game.replayCount ? replayBadge(game.replayCount) : "",
     options.includePsn === false ? "" : (progress ? psnProgressBadge(progress) : ""),
