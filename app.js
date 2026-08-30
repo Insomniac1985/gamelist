@@ -8228,7 +8228,7 @@ function coopBadge() {
 }
 
 function multiplayerBadge() {
-  return `<span class="multiplayer-pill"><span>${escapeHtml(tt("Multiplayer"))}</span></span>`;
+  return `<span class="multiplayer-pill" title="${escapeHtml(tt("Multiplayer"))}" aria-label="${escapeHtml(tt("Multiplayer"))}">${coopIcon()}</span>`;
 }
 
 function streamBadge() {
