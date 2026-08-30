@@ -6518,6 +6518,10 @@ function sortedCompletedGames(games) {
     if (state.filters.sort === "playtime") {
       return direction * (completedPlaytimeValue(a) - completedPlaytimeValue(b) || String(b.completedAt).localeCompare(String(a.completedAt)) || stringCompare(a.title, b.title));
     }
+    if (state.filters.sort === "rating") {
+      return compareRatingSort(a, b, direction)
+        || direction * (completionTimeValue(b) - completionTimeValue(a) || stringCompare(a.title, b.title));
+    }
     return direction * (completionTimeValue(b) - completionTimeValue(a) || stringCompare(a.title, b.title));
   });
 }
@@ -8140,11 +8144,26 @@ function compareGames(a, b, section) {
     return direction * (((a.lengthHours ?? Number.POSITIVE_INFINITY) - (b.lengthHours ?? Number.POSITIVE_INFINITY))
       || stringCompare(a.title, b.title));
   }
+  if (state.filters.sort === "rating") {
+    return compareRatingSort(a, b, direction)
+      || direction * (((a.lengthHours ?? Number.POSITIVE_INFINITY) - (b.lengthHours ?? Number.POSITIVE_INFINITY))
+        || stringCompare(a.title, b.title));
+  }
   return direction * stringCompare(a.title, b.title);
 }
 
 function compareStreamFirst(a, b) {
   return Number(Boolean(b.stream)) - Number(Boolean(a.stream));
+}
+
+function compareRatingSort(a, b, direction) {
+  const ratingA = ratingScoreValue(a);
+  const ratingB = ratingScoreValue(b);
+  const hasRatingA = ratingA != null;
+  const hasRatingB = ratingB != null;
+  if (hasRatingA !== hasRatingB) return hasRatingA ? -1 : 1;
+  if (!hasRatingA || ratingA === ratingB) return 0;
+  return direction * (ratingA - ratingB);
 }
 
 function compareReleaseDates(a, b) {
