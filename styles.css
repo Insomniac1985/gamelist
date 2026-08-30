@@ -6041,7 +6041,11 @@ body.theme-kash .game-card.stream-card.completed-trophy-card {
 }
 
 .playtime-date-pill strong {
-  color: var(--text);
+  color: var(--time-color);
+}
+
+.playtime-date-pill small {
+  color: var(--time-color);
 }
 
 .time-pill {
