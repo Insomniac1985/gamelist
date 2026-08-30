@@ -6589,8 +6589,8 @@ body.dialog-open .floating-search-button {
 }
 
 @media (min-width: 761px) {
-.playing-card .complete-action .check-icon,
-.playing-card .backlog-action .back-icon {
+  .playing-card .complete-action .check-icon,
+  .playing-card .backlog-action .back-icon {
     display: block;
   }
 }
@@ -11483,7 +11483,6 @@ body.theme-kash
 .detail-rating-title-star {
   display: inline-block;
   margin-right: 5px;
-  color: #ffe985;
   font-size: 1.45em;
   line-height: 0;
   transform: translateY(1px);

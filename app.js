@@ -8520,8 +8520,8 @@ function backIcon() {
 function forwardIcon() {
   return `
     <svg class="forward-icon" viewBox="0 0 24 24" aria-hidden="true">
-      <path d="m14 6 6 6-6 6"></path>
-      <path d="M20 12H10a6 6 0 0 0-6 6"></path>
+      <path d="m10 6-6 6 6 6"></path>
+      <path d="M4 12h10a6 6 0 0 0 6-6"></path>
     </svg>
   `;
 }

@@ -85,6 +85,7 @@ const state = {
   releaseCalendarOffset: 0,
   playingTrailerFrame: 0,
   playingHeightFrame: 0,
+  paintRefreshFrame: 0,
   renderSettleFrame: 0,
   renderSettleTimer: 0,
   renderSettleObserver: null,
@@ -215,6 +216,7 @@ async function init() {
   applyTheme();
   document.documentElement.classList.remove("theme-booting");
   registerServiceWorker();
+  syncDisplayMode();
   bindTextureParallax();
   populateEditorOptions();
   bindEvents();
@@ -303,7 +305,8 @@ function bindEvents() {
   window.addEventListener("scroll", updateFloatingActions, { passive: true });
   window.addEventListener("storage", (event) => { if (event.key === "gamelist-editor-signal") refreshSharedAuth(); });
   window.addEventListener("focus", refreshSharedAuth);
-  window.addEventListener("resize", () => { updatePlayingControls(); updateFinishedControls(); schedulePlayingCardHeightSync(); syncShelfTabIndicator(); }, { passive: true });
+  window.addEventListener("resize", () => { syncDisplayMode(); updatePlayingControls(); updateFinishedControls(); schedulePlayingCardHeightSync(); syncShelfTabIndicator(); }, { passive: true });
+  window.matchMedia("(display-mode: standalone)").addEventListener?.("change", syncDisplayMode);
   document.addEventListener("pointerover", handleSelectOverflowTitle);
   document.addEventListener("focusin", handleSelectOverflowTitle);
   document.addEventListener("pointerout", handleSelectOverflowLeave);
@@ -851,6 +854,25 @@ function pullNavigationUrl(targetUrl) {
   url.searchParams.set("pull", "1");
   if (siteVersion.version) url.searchParams.set("v", siteVersion.version);
   return url.href;
+}
+
+function syncDisplayMode() {
+  const standalone = window.matchMedia("(display-mode: standalone)").matches || window.navigator.standalone === true;
+  const mobile = window.matchMedia("(max-width: 760px)").matches;
+  document.body.classList.toggle("mobile-app-mode", standalone && mobile);
+  scheduleMobilePaintRefresh();
+}
+
+function scheduleMobilePaintRefresh() {
+  if (!document.body.classList.contains("mobile-app-mode")) return;
+  cancelAnimationFrame(state.paintRefreshFrame);
+  state.paintRefreshFrame = requestAnimationFrame(() => {
+    state.paintRefreshFrame = requestAnimationFrame(() => {
+      document.body.classList.add("paint-refresh");
+      void document.body.offsetHeight;
+      window.setTimeout(() => document.body.classList.remove("paint-refresh"), 120);
+    });
+  });
 }
 
 async function refreshAllShelfPrices() {
@@ -4183,7 +4205,7 @@ function pauseTrailerIcon() { return `<svg class="pause-icon" viewBox="0 0 24 24
 function playTrailerIcon() { return `<svg class="play-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m8 5 11 7-11 7Z"></path></svg>`; }
 function checkIcon() { return `<svg class="check-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5 9.5 17 19 7"></path></svg>`; }
 function backIcon() { return `<svg class="back-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M10 6 4 12l6 6"></path><path d="M4 12h10a6 6 0 0 1 6 6"></path></svg>`; }
-function forwardIcon() { return `<svg class="forward-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m14 6 6 6-6 6"></path><path d="M20 12H10a6 6 0 0 0-6 6"></path></svg>`; }
+function forwardIcon() { return `<svg class="forward-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m10 6-6 6 6 6"></path><path d="M4 12h10a6 6 0 0 0 6-6"></path></svg>`; }
 function currencyIcon() { const currency = normalizePriceSettings(state.gamelistSettings).currency; if (currency === "USD") return `<svg class="dollar-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M16.8 7.2c-1.1-1-2.7-1.7-4.8-1.7-2.8 0-4.8 1.4-4.8 3.5 0 5.3 9.8 2.1 9.8 7 0 2.1-2 3.5-5 3.5-2.3 0-4.2-.8-5.4-2"></path><path d="M12 3v18"></path></svg>`; if (currency === "GBP") return `<svg class="pound-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 20h9"></path><path d="M7 13h8"></path><path d="M16.5 6.6A4.4 4.4 0 0 0 12.8 5C10.5 5 9 6.5 9 8.8V20"></path></svg>`; if (currency === "JPY") return `<svg class="yen-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 4l6 8 6-8"></path><path d="M12 12v8"></path><path d="M8 12h8"></path><path d="M8 16h8"></path></svg>`; return `<svg class="euro-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M19 5.5A7 7 0 0 0 8.2 7.1 7.4 7.4 0 0 0 7 12a7.4 7.4 0 0 0 1.2 4.9A7 7 0 0 0 19 18.5"></path><path d="M4 10h10"></path><path d="M4 14h10"></path></svg>`; }
 function trophyIcon() { return `<svg class="trophy-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 4h8v4a4 4 0 0 1-8 0V4Z"></path><path d="M8 6H5a3 3 0 0 0 3 3"></path><path d="M16 6h3a3 3 0 0 1-3 3"></path><path d="M12 12v4"></path><path d="M9 20h6"></path><path d="M10 16h4v4h-4z"></path></svg>`; }
 function coopIcon() { return `<svg class="coop-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="8" cy="8" r="3"></circle><circle cx="16" cy="8" r="3"></circle><path d="M2.8 19c.4-4 2.1-6 5.2-6s4.8 2 5.2 6"></path><path d="M10.8 19c.4-4 2.1-6 5.2-6s4.8 2 5.2 6"></path></svg>`; }
