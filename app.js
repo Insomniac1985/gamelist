@@ -32,6 +32,13 @@ const GAME_OF_YEAR_CATEGORIES = [
   ["surprise", "BIGGEST SURPRISE"],
   ["disappointment", "BIGGEST DISAPPOINTMENT"],
 ];
+const GAME_RATING_CATEGORIES = [
+  ["gameplay", "Gameplay"],
+  ["story", "Story"],
+  ["soundtrack", "Soundtrack"],
+  ["graphics", "Graphics"],
+  ["performance", "Performance"],
+];
 const THEMES = {
   shabii: {
     name: "Shabii",
@@ -329,6 +336,7 @@ const el = {
   finishTimeDialog: document.querySelector("#finishTimeDialog"),
   finishTimeForm: document.querySelector("#finishTimeForm"),
   finishTimeInput: document.querySelector("#finishTimeInput"),
+  finishRatingGrid: document.querySelector("#finishRatingGrid"),
   finishTimeError: document.querySelector("#finishTimeError"),
   finishTimeCloseButton: document.querySelector("#finishTimeCloseButton"),
   finishTimeSkipButton: document.querySelector("#finishTimeSkipButton"),
@@ -415,7 +423,11 @@ const el = {
     cover: document.querySelector("#coverInput"),
     notes: document.querySelector("#notesInput"),
   },
+  playingRatingGrid: document.querySelector("#playingRatingGrid"),
 };
+
+renderRatingInputs(el.playingRatingGrid, "edit");
+renderRatingInputs(el.finishRatingGrid, "finish");
 
 init();
 
@@ -1012,11 +1024,25 @@ function initPagePullTransition({ targetLabel, targetUrl }) {
   curtain.innerHTML = pagePullPreviewMarkup(targetUrl);
   document.body.append(button, curtain);
   let startY = 0;
+  let startX = 0;
   let dragging = false;
+  let pageDragArmed = false;
+  let pageDragging = false;
   let moved = false;
+  const mobilePullQuery = window.matchMedia("(max-width: 760px)");
+  const pagePullThreshold = () => Math.min(260, Math.max(150, window.innerHeight * 0.34));
+  const isAtPageTop = () => window.scrollY <= 2 && document.documentElement.scrollTop <= 2 && document.body.scrollTop <= 2;
+  const canStartPagePull = (event) => {
+    if (!mobilePullQuery.matches || pageSwitchHidden() || document.body.classList.contains("dialog-open")) return false;
+    if (event.pointerType && event.pointerType !== "touch") return false;
+    if (event.button != null && event.button !== 0) return false;
+    if (!isAtPageTop()) return false;
+    const interactive = event.target?.closest?.("button, a, input, select, textarea, dialog, .platform-logo-menu, .playing-list, .playing-finished-list");
+    return !interactive || interactive.classList?.contains("cover-button");
+  };
   const setPull = (distance) => {
     const pull = Math.max(0, Math.min(window.innerHeight, distance));
-    const progress = Math.min(1, pull / Math.max(180, window.innerHeight * 0.75));
+    const progress = Math.min(1, pull / pagePullThreshold());
     document.body.style.setProperty("--pull-distance", `${pull}px`);
     document.body.style.setProperty("--pull-handle-y", `${pull}px`);
     document.body.style.setProperty("--pull-blur", `${Math.round((1 - progress) * 10)}px`);
@@ -1059,8 +1085,10 @@ function initPagePullTransition({ targetLabel, targetUrl }) {
   button.addEventListener("pointerleave", () => { if (!dragging) document.body.classList.remove("page-pull-hover"); });
   button.addEventListener("pointerdown", (event) => {
     dragging = true;
+    pageDragging = false;
     moved = false;
     startY = event.clientY;
+    startX = event.clientX;
     document.body.classList.add("page-pull-hover");
     button.classList.add("is-dragging");
     button.setPointerCapture?.(event.pointerId);
@@ -1070,14 +1098,16 @@ function initPagePullTransition({ targetLabel, targetUrl }) {
     const pull = setPull(event.clientY - startY);
     moved = moved || pull > 8;
   });
-  const endDrag = (event) => {
+  const endDrag = (event, threshold = window.innerHeight * 0.75) => {
     if (!dragging) return;
     dragging = false;
+    pageDragArmed = false;
+    pageDragging = false;
     button.classList.remove("is-dragging");
     document.body.classList.remove("page-pull-hover");
-    button.releasePointerCapture?.(event.pointerId);
+    if (button.hasPointerCapture?.(event.pointerId)) button.releasePointerCapture(event.pointerId);
     const pull = Number.parseFloat(document.body.style.getPropertyValue("--pull-distance")) || 0;
-    if (pull > window.innerHeight * 0.75) switchPage();
+    if (pull > threshold) switchPage();
     else {
       document.body.classList.remove("page-pulling");
       document.body.style.setProperty("--pull-distance", "0px");
@@ -1087,6 +1117,74 @@ function initPagePullTransition({ targetLabel, targetUrl }) {
   };
   button.addEventListener("pointerup", endDrag);
   button.addEventListener("pointercancel", endDrag);
+  window.addEventListener("pointerdown", (event) => {
+    if (dragging || !canStartPagePull(event)) return;
+    pageDragArmed = true;
+    startY = event.clientY;
+    startX = event.clientX;
+    moved = false;
+  }, { passive: true });
+  window.addEventListener("pointermove", (event) => {
+    if (!pageDragArmed) return;
+    const distanceY = event.clientY - startY;
+    const distanceX = Math.abs(event.clientX - startX);
+    if (!pageDragging && (distanceY < 12 || distanceX > distanceY * 0.8)) return;
+    if (distanceY <= 0 || !isAtPageTop()) {
+      pageDragArmed = false;
+      return;
+    }
+    if (!pageDragging) {
+      pageDragging = true;
+      dragging = true;
+      document.body.classList.add("page-pull-hover");
+      button.classList.add("is-dragging");
+    }
+    event.preventDefault();
+    const pull = setPull(distanceY * 0.92);
+    moved = moved || pull > 8;
+  }, { passive: false });
+  window.addEventListener("pointerup", (event) => {
+    if (!pageDragArmed && !pageDragging) return;
+    endDrag(event, pagePullThreshold());
+  }, { passive: true });
+  window.addEventListener("pointercancel", (event) => {
+    if (!pageDragArmed && !pageDragging) return;
+    endDrag(event, pagePullThreshold());
+  }, { passive: true });
+  window.addEventListener("touchstart", (event) => {
+    if (dragging || event.touches.length !== 1 || !canStartPagePull(event)) return;
+    const touch = event.touches[0];
+    pageDragArmed = true;
+    startY = touch.clientY;
+    startX = touch.clientX;
+    moved = false;
+  }, { passive: true });
+  window.addEventListener("touchmove", (event) => {
+    if (!pageDragArmed || event.touches.length !== 1) return;
+    const touch = event.touches[0];
+    const distanceY = touch.clientY - startY;
+    const distanceX = Math.abs(touch.clientX - startX);
+    if (!pageDragging && (distanceY < 12 || distanceX > distanceY * 0.8)) return;
+    if (distanceY <= 0 || !isAtPageTop()) {
+      pageDragArmed = false;
+      return;
+    }
+    if (!pageDragging) {
+      pageDragging = true;
+      dragging = true;
+      document.body.classList.add("page-pull-hover");
+      button.classList.add("is-dragging");
+    }
+    event.preventDefault();
+    const pull = setPull(distanceY * 0.92);
+    moved = moved || pull > 8;
+  }, { passive: false });
+  const endTouchDrag = () => {
+    if (!pageDragArmed && !pageDragging) return;
+    endDrag({}, pagePullThreshold());
+  };
+  window.addEventListener("touchend", endTouchDrag, { passive: true });
+  window.addEventListener("touchcancel", endTouchDrag, { passive: true });
 }
 
 function syncPagePullTransition() {
@@ -8734,6 +8832,7 @@ function normalizeGameRecord(game) {
   normalized.playing = Boolean(normalized.playing);
   normalized.replayCount = replayCountValue(normalized.replayCount);
   normalized.finishHours = finishHoursValue(normalized.finishHours);
+  normalized.ratings = normalizeGameRatings(normalized.ratings);
   normalized.startedAt = dateOnly(normalized.startedAt);
   normalized.completedAt = dateOnly(normalized.completedAt);
   normalized.platform = canonicalPlatform(normalized.platform);
@@ -8751,6 +8850,59 @@ function normalizeGameRecord(game) {
   normalized.prices = Array.isArray(normalized.prices) ? normalized.prices : [];
   normalized.section = ["new", "backlog", "upcoming", "wanted"].includes(normalized.section) ? normalized.section : "wanted";
   return normalized;
+}
+
+function normalizeRatingValue(value) {
+  const number = Number(value);
+  if (!Number.isFinite(number)) return 0;
+  return Math.max(0, Math.min(5, Math.round(number)));
+}
+
+function normalizeGameRatings(value = {}) {
+  const ratings = value && typeof value === "object" ? value : {};
+  return Object.fromEntries(GAME_RATING_CATEGORIES.map(([key]) => [key, normalizeRatingValue(ratings[key])]));
+}
+
+function renderRatingInputs(container, namePrefix) {
+  if (!container) return;
+  container.innerHTML = GAME_RATING_CATEGORIES.map(([key, label]) => `
+    <fieldset class="rating-row" data-rating-key="${escapeHtml(key)}" data-rating-value="0">
+      <legend data-i18n="${escapeHtml(label)}">${escapeHtml(label)}</legend>
+      <div class="star-rating" aria-label="${escapeHtml(label)}">
+        <input type="radio" id="${escapeHtml(namePrefix)}Rating-${escapeHtml(key)}-0" name="${escapeHtml(namePrefix)}Rating-${escapeHtml(key)}" value="0">
+        <label class="star-clear" for="${escapeHtml(namePrefix)}Rating-${escapeHtml(key)}-0" title="${escapeHtml(tt("No rating"))}" aria-label="${escapeHtml(tt("No rating"))}" data-i18n-title="No rating" data-i18n-aria-label="No rating">×</label>
+        ${[1, 2, 3, 4, 5].map((value) => `
+          <input type="radio" id="${escapeHtml(namePrefix)}Rating-${escapeHtml(key)}-${value}" name="${escapeHtml(namePrefix)}Rating-${escapeHtml(key)}" value="${value}">
+          <label data-star="${value}" for="${escapeHtml(namePrefix)}Rating-${escapeHtml(key)}-${value}" title="${value}/5" aria-label="${value}/5">★</label>
+        `).join("")}
+      </div>
+    </fieldset>
+  `).join("");
+  container.querySelectorAll(".rating-row").forEach((row) => {
+    row.addEventListener("change", () => {
+      row.dataset.ratingValue = String(normalizeRatingValue(row.querySelector("input:checked")?.value));
+    });
+  });
+}
+
+function setRatingInputs(container, ratings = {}) {
+  if (!container) return;
+  const values = normalizeGameRatings(ratings);
+  GAME_RATING_CATEGORIES.forEach(([key]) => {
+    const value = values[key] || 0;
+    const row = container.querySelector(`[data-rating-key="${CSS.escape(key)}"]`);
+    const input = row?.querySelector(`input[value="${value}"]`);
+    if (input) input.checked = true;
+    if (row) row.dataset.ratingValue = String(value);
+  });
+}
+
+function ratingInputsValue(container) {
+  if (!container) return normalizeGameRatings();
+  return normalizeGameRatings(Object.fromEntries(GAME_RATING_CATEGORIES.map(([key]) => {
+    const selected = container.querySelector(`[data-rating-key="${CSS.escape(key)}"] input:checked`);
+    return [key, selected?.value || 0];
+  })));
 }
 
 function statusType(status) {
@@ -9233,6 +9385,7 @@ async function openEditor(id = "") {
   el.fields.completedAt.value = dateOnly(game.completedAt);
   el.fields.finishHours.value = game.finishHours || "";
   el.fields.replayCount.value = game.replayCount || "";
+  setRatingInputs(el.playingRatingGrid, game.ratings);
   el.fields.platinum.checked = Boolean(game.platinum);
   el.fields.preorderStore.value = game.preorderStore || "";
   el.fields.preferredStore.value = game.preferredStore || "";
@@ -9291,6 +9444,7 @@ function blankGame() {
     releaseText: "",
     lengthHours: null,
     finishHours: 0,
+    ratings: normalizeGameRatings(),
     notes: "",
     description: "",
     statuses: [],
@@ -9366,6 +9520,7 @@ async function saveCurrentFormGame() {
     releaseText: el.fields.releaseText.value.trim(),
     lengthHours: el.fields.length.value ? Number(el.fields.length.value) : null,
     finishHours: finishHoursValue(el.fields.finishHours.value),
+    ratings: ratingInputsValue(el.playingRatingGrid),
     startedAt,
     completedAt: effectiveCompletedAt,
     preorderStore: el.fields.preorderStore.value.trim(),
@@ -9500,7 +9655,8 @@ async function completeGame(id) {
   if (finishHours === undefined) return;
   game.startedAt = game.startedAt || todayDate();
   game.completedAt = todayDate();
-  if (finishHours !== null) game.finishHours = finishHours;
+  if (finishHours.finishHours !== null) game.finishHours = finishHours.finishHours;
+  game.ratings = finishHours.ratings;
   game.playing = false;
   markGameEdited(game);
   upsertGame(game);
@@ -9513,7 +9669,8 @@ async function completeGameWithTrophy(id) {
   if (finishHours === undefined) return;
   game.startedAt = game.startedAt || todayDate();
   game.completedAt = game.completedAt || todayDate();
-  if (finishHours !== null) game.finishHours = finishHours;
+  if (finishHours.finishHours !== null) game.finishHours = finishHours.finishHours;
+  game.ratings = finishHours.ratings;
   game.playing = false;
   game.platinum = true;
   markGameEdited(game);
@@ -9521,9 +9678,12 @@ async function completeGameWithTrophy(id) {
 }
 
 function requestFinishHours(game) {
-  if (!el.finishTimeDialog || !el.finishTimeForm || !el.finishTimeInput) return Promise.resolve(null);
+  if (!el.finishTimeDialog || !el.finishTimeForm || !el.finishTimeInput) {
+    return Promise.resolve({ finishHours: null, ratings: normalizeGameRatings(game?.ratings) });
+  }
   const current = finishHoursValue(game?.finishHours);
   el.finishTimeInput.value = current ? String(current) : "";
+  setRatingInputs(el.finishRatingGrid, game?.ratings);
   if (el.finishTimeError) el.finishTimeError.hidden = true;
   return new Promise((resolve) => {
     const cleanup = () => {
@@ -9540,12 +9700,12 @@ function requestFinishHours(game) {
       }
       cleanup();
       el.finishTimeDialog.close("submit");
-      resolve(value ? hours : null);
+      resolve({ finishHours: value ? hours : null, ratings: ratingInputsValue(el.finishRatingGrid) });
     };
     const handleClose = () => {
       const action = el.finishTimeDialog.returnValue;
       cleanup();
-      resolve(action === "skip" ? null : undefined);
+      resolve(action === "skip" ? { finishHours: null, ratings: ratingInputsValue(el.finishRatingGrid) } : undefined);
     };
     el.finishTimeForm.addEventListener("submit", handleSubmit);
     el.finishTimeDialog.addEventListener("close", handleClose, { once: true });

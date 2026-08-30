@@ -658,11 +658,25 @@ function initPagePullTransition({ targetLabel, targetUrl }) {
   curtain.innerHTML = pagePullPreviewMarkup(targetUrl);
   document.body.append(button, curtain);
   let startY = 0;
+  let startX = 0;
   let dragging = false;
+  let pageDragArmed = false;
+  let pageDragging = false;
   let moved = false;
+  const mobilePullQuery = window.matchMedia("(max-width: 760px)");
+  const pagePullThreshold = () => Math.min(260, Math.max(150, window.innerHeight * 0.34));
+  const isAtPageTop = () => window.scrollY <= 2 && document.documentElement.scrollTop <= 2 && document.body.scrollTop <= 2;
+  const canStartPagePull = (event) => {
+    if (!mobilePullQuery.matches || pageSwitchHidden() || document.body.classList.contains("dialog-open")) return false;
+    if (event.pointerType && event.pointerType !== "touch") return false;
+    if (event.button != null && event.button !== 0) return false;
+    if (!isAtPageTop()) return false;
+    const interactive = event.target?.closest?.("button, a, input, select, textarea, dialog, .platform-logo-menu, .playing-list, .playing-finished-list");
+    return !interactive || interactive.classList?.contains("cover-button");
+  };
   const setPull = (distance) => {
     const pull = Math.max(0, Math.min(window.innerHeight, distance));
-    const progress = Math.min(1, pull / Math.max(180, window.innerHeight * 0.75));
+    const progress = Math.min(1, pull / pagePullThreshold());
     document.body.style.setProperty("--pull-distance", `${pull}px`);
     document.body.style.setProperty("--pull-handle-y", `${pull}px`);
     document.body.style.setProperty("--pull-blur", `${Math.round((1 - progress) * 10)}px`);
@@ -705,8 +719,10 @@ function initPagePullTransition({ targetLabel, targetUrl }) {
   button.addEventListener("pointerleave", () => { if (!dragging) document.body.classList.remove("page-pull-hover"); });
   button.addEventListener("pointerdown", (event) => {
     dragging = true;
+    pageDragging = false;
     moved = false;
     startY = event.clientY;
+    startX = event.clientX;
     document.body.classList.add("page-pull-hover");
     button.classList.add("is-dragging");
     button.setPointerCapture?.(event.pointerId);
@@ -716,14 +732,16 @@ function initPagePullTransition({ targetLabel, targetUrl }) {
     const pull = setPull(event.clientY - startY);
     moved = moved || pull > 8;
   });
-  const endDrag = (event) => {
+  const endDrag = (event, threshold = window.innerHeight * 0.75) => {
     if (!dragging) return;
     dragging = false;
+    pageDragArmed = false;
+    pageDragging = false;
     button.classList.remove("is-dragging");
     document.body.classList.remove("page-pull-hover");
-    button.releasePointerCapture?.(event.pointerId);
+    if (button.hasPointerCapture?.(event.pointerId)) button.releasePointerCapture(event.pointerId);
     const pull = Number.parseFloat(document.body.style.getPropertyValue("--pull-distance")) || 0;
-    if (pull > window.innerHeight * 0.75) switchPage();
+    if (pull > threshold) switchPage();
     else {
       document.body.classList.remove("page-pulling");
       document.body.style.setProperty("--pull-distance", "0px");
@@ -733,6 +751,74 @@ function initPagePullTransition({ targetLabel, targetUrl }) {
   };
   button.addEventListener("pointerup", endDrag);
   button.addEventListener("pointercancel", endDrag);
+  window.addEventListener("pointerdown", (event) => {
+    if (dragging || !canStartPagePull(event)) return;
+    pageDragArmed = true;
+    startY = event.clientY;
+    startX = event.clientX;
+    moved = false;
+  }, { passive: true });
+  window.addEventListener("pointermove", (event) => {
+    if (!pageDragArmed) return;
+    const distanceY = event.clientY - startY;
+    const distanceX = Math.abs(event.clientX - startX);
+    if (!pageDragging && (distanceY < 12 || distanceX > distanceY * 0.8)) return;
+    if (distanceY <= 0 || !isAtPageTop()) {
+      pageDragArmed = false;
+      return;
+    }
+    if (!pageDragging) {
+      pageDragging = true;
+      dragging = true;
+      document.body.classList.add("page-pull-hover");
+      button.classList.add("is-dragging");
+    }
+    event.preventDefault();
+    const pull = setPull(distanceY * 0.92);
+    moved = moved || pull > 8;
+  }, { passive: false });
+  window.addEventListener("pointerup", (event) => {
+    if (!pageDragArmed && !pageDragging) return;
+    endDrag(event, pagePullThreshold());
+  }, { passive: true });
+  window.addEventListener("pointercancel", (event) => {
+    if (!pageDragArmed && !pageDragging) return;
+    endDrag(event, pagePullThreshold());
+  }, { passive: true });
+  window.addEventListener("touchstart", (event) => {
+    if (dragging || event.touches.length !== 1 || !canStartPagePull(event)) return;
+    const touch = event.touches[0];
+    pageDragArmed = true;
+    startY = touch.clientY;
+    startX = touch.clientX;
+    moved = false;
+  }, { passive: true });
+  window.addEventListener("touchmove", (event) => {
+    if (!pageDragArmed || event.touches.length !== 1) return;
+    const touch = event.touches[0];
+    const distanceY = touch.clientY - startY;
+    const distanceX = Math.abs(touch.clientX - startX);
+    if (!pageDragging && (distanceY < 12 || distanceX > distanceY * 0.8)) return;
+    if (distanceY <= 0 || !isAtPageTop()) {
+      pageDragArmed = false;
+      return;
+    }
+    if (!pageDragging) {
+      pageDragging = true;
+      dragging = true;
+      document.body.classList.add("page-pull-hover");
+      button.classList.add("is-dragging");
+    }
+    event.preventDefault();
+    const pull = setPull(distanceY * 0.92);
+    moved = moved || pull > 8;
+  }, { passive: false });
+  const endTouchDrag = () => {
+    if (!pageDragArmed && !pageDragging) return;
+    endDrag({}, pagePullThreshold());
+  };
+  window.addEventListener("touchend", endTouchDrag, { passive: true });
+  window.addEventListener("touchcancel", endTouchDrag, { passive: true });
 }
 
 function syncPagePullTransition() {

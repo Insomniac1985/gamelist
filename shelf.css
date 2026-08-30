@@ -109,6 +109,46 @@ body:not(.can-edit) .showcase-edit-button {
   background: var(--panel);
 }
 
+body.mobile-app-mode.shelf-page {
+  --custom-backdrop-image: none;
+  --theme-control-bg:
+    linear-gradient(
+      135deg,
+      color-mix(in srgb, var(--accent) 12%, rgba(24, 25, 31, 0.84)),
+      color-mix(in srgb, var(--accent-2) 7%, rgba(18, 19, 24, 0.8))
+    );
+  --theme-control-bg-hover:
+    linear-gradient(
+      135deg,
+      color-mix(in srgb, var(--accent) 24%, rgba(24, 25, 31, 0.86)),
+      color-mix(in srgb, var(--accent-2) 12%, rgba(18, 19, 24, 0.84))
+    );
+  --theme-control-bg-active:
+    linear-gradient(
+      135deg,
+      color-mix(in srgb, var(--accent) 42%, rgba(24, 25, 31, 0.9)),
+      color-mix(in srgb, var(--accent-2) 18%, rgba(18, 19, 24, 0.88))
+    );
+  --theme-menu-bg:
+    linear-gradient(
+      135deg,
+      rgba(18, 19, 24, 0.96),
+      color-mix(in srgb, var(--accent) 10%, rgba(18, 19, 24, 0.94))
+    );
+}
+
+body.mobile-app-mode.shelf-page .backdrop {
+  background:
+    radial-gradient(circle at 78% 9%, var(--glow-primary), transparent 30%),
+    radial-gradient(circle at 11% 84%, var(--glow-secondary), transparent 34%),
+    linear-gradient(120deg, rgba(255, 255, 255, 0.04), transparent 38%),
+    var(--bg) !important;
+  background-position: center;
+  transform: none;
+  transition: none;
+  will-change: auto;
+}
+
 .shelf-stats-dialog {
   width: 100vw;
   height: 100vh;
@@ -782,6 +822,30 @@ html.theme-font-mata .shelf-page .playing-section .column-head h2 {
 .shelf-grid.list-view .game-row-cover-preview,
 .shelf-dialog .detail-cover img {
   object-fit: contain;
+}
+
+body.mobile-app-mode.shelf-page .favorite-cover-card,
+body.mobile-app-mode.shelf-page .showcase-picker-cover,
+body.mobile-app-mode.shelf-page .shelf-dialog .detail-cover,
+body.mobile-app-mode.shelf-page .shelf-grid .cover-button,
+body.mobile-app-mode.shelf-page .shelf-grid.list-view .game-row-cover-wrap {
+  transform: none !important;
+  -webkit-transform: none !important;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  isolation: isolate;
+}
+
+body.mobile-app-mode.shelf-page .favorite-cover-card > img,
+body.mobile-app-mode.shelf-page .showcase-picker-cover > img,
+body.mobile-app-mode.shelf-page .shelf-dialog .detail-cover img,
+body.mobile-app-mode.shelf-page .shelf-grid .cover-button img,
+body.mobile-app-mode.shelf-page .shelf-grid.list-view .game-row-cover,
+body.mobile-app-mode.shelf-page .shelf-grid.list-view .game-row-cover-preview {
+  transform: none !important;
+  -webkit-transform: none !important;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
 }
 
 .shelf-dialog .lookup-result {
