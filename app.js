@@ -1539,7 +1539,7 @@ function applyLanguage() {
   if (el.playingTitle) el.playingTitle.textContent = tt("Currently playing");
   const latestFinishedTitle = el.playingFinished?.querySelector(".achievement-subtitle");
   if (latestFinishedTitle) latestFinishedTitle.textContent = tt("Last finished games");
-  if (el.detailRatingTitle) el.detailRatingTitle.textContent = ownerRatingTitle();
+  if (el.detailRatingTitle) el.detailRatingTitle.innerHTML = ownerRatingTitle();
 }
 
 function applyTheme() {
@@ -5470,9 +5470,9 @@ function rowFor(game, section, options = {}) {
 function rowPrimaryAction(game, section) {
   if (section === "backlog") return `<button class="primary-button row-primary-action" type="button">Play</button>`;
   if (section === "new") {
-    return `<button class="primary-button row-primary-action" type="button">Play</button><button class="primary-button row-setup-action" type="button">${checkIcon()}<span>${escapeHtml(tt("Setup"))}</span></button>`;
+    return `<button class="primary-button row-primary-action" type="button">Play</button><button class="primary-button row-setup-action" type="button">${forwardIcon()}<span>${escapeHtml(tt("Setup"))}</span></button>`;
   }
-  return `<button class="ghost-button row-primary-action" type="button">${checkIcon()}<span>${escapeHtml(tt("Got it"))}</span></button>`;
+  return `<button class="ghost-button row-primary-action" type="button">${forwardIcon()}<span>${escapeHtml(tt("Got it"))}</span></button>`;
 }
 
 function rowCoreStats(game) {
@@ -6836,7 +6836,7 @@ function cardFor(game, options = {}) {
     priceRefreshAction.remove();
     backlogAction.remove();
     trophyAction.remove();
-    boughtAction.textContent = tt("Setup");
+    boughtAction.innerHTML = `${forwardIcon()}<span class="action-label">${escapeHtml(tt("Setup"))}</span>`;
     boughtAction.classList.remove("ghost-button");
     boughtAction.classList.add("primary-button");
     boughtAction.addEventListener("click", () => finishSetupGame(game.id));
@@ -6871,6 +6871,7 @@ function cardFor(game, options = {}) {
       prices.remove();
       priceRefreshAction.remove();
     }
+    boughtAction.innerHTML = `${forwardIcon()}<span class="action-label">${escapeHtml(tt("Got it"))}</span>`;
     boughtAction.addEventListener("click", () => moveToBacklog(game.id));
   }
   card.querySelector(".edit-action")?.addEventListener("click", () => openEditor(game.id));
@@ -8516,6 +8517,15 @@ function backIcon() {
   `;
 }
 
+function forwardIcon() {
+  return `
+    <svg class="forward-icon" viewBox="0 0 24 24" aria-hidden="true">
+      <path d="m14 6 6 6-6 6"></path>
+      <path d="M20 12H10a6 6 0 0 0-6 6"></path>
+    </svg>
+  `;
+}
+
 function trophyIcon() {
   return `
     <svg class="trophy-icon" viewBox="0 0 24 24" aria-hidden="true">
@@ -9151,7 +9161,7 @@ function renderDetailRatings(game) {
     .map(([key, label]) => [key, label, ratings[key] || 0])
     .filter(([, , value]) => value > 0);
   el.detailRating.hidden = !rows.length;
-  if (el.detailRatingTitle) el.detailRatingTitle.textContent = ownerRatingTitle();
+  if (el.detailRatingTitle) el.detailRatingTitle.innerHTML = ownerRatingTitle();
   if (el.detailRatingScore) {
     el.detailRatingScore.textContent = scoreText ? `${scoreText}/10` : "";
     el.detailRatingScore.className = `detail-rating-score${scoreText ? ` rating-score-${ratingScoreTone(game)}` : ""}`;
@@ -9172,7 +9182,7 @@ function ratingStarsMarkup() {
 
 function ownerRatingTitle() {
   const owner = cleanOwnerLabel(state.settings.defaultOwner) || DEFAULT_SETTINGS.defaultOwner;
-  return `★ ${tt("{owner}'s Rating", { owner })}`;
+  return `<span class="detail-rating-title-star" aria-hidden="true">★</span>${escapeHtml(tt("{owner}'s Rating", { owner }))}`;
 }
 
 function ratingStarFillStyle(value) {

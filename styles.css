@@ -6540,6 +6540,7 @@ body.dialog-open .floating-search-button {
 .trash-icon,
 .search-icon,
 .back-icon,
+.forward-icon,
 .pause-icon,
 .exit-icon,
 .play-icon,
@@ -6588,8 +6589,8 @@ body.dialog-open .floating-search-button {
 }
 
 @media (min-width: 761px) {
-  .playing-card .complete-action .check-icon,
-  .playing-card .backlog-action .back-icon {
+.playing-card .complete-action .check-icon,
+.playing-card .backlog-action .back-icon {
     display: block;
   }
 }
@@ -11477,6 +11478,15 @@ body.theme-kash
   font-size: 13px;
   font-weight: 850;
   text-transform: uppercase;
+}
+
+.detail-rating-title-star {
+  display: inline-block;
+  margin-right: 5px;
+  color: #ffe985;
+  font-size: 1.45em;
+  line-height: 0;
+  transform: translateY(1px);
 }
 
 .detail-rating-score {
