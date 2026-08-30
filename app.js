@@ -365,6 +365,7 @@ const el = {
   detailGuides: document.querySelector("#detailGuides"),
   detailGuideLinks: document.querySelector("#detailGuideLinks"),
   detailRating: document.querySelector("#detailRating"),
+  detailRatingScore: document.querySelector("#detailRatingScore"),
   detailRatingGrid: document.querySelector("#detailRatingGrid"),
   detailTrophies: document.querySelector("#detailTrophies"),
   detailTrophyTitle: document.querySelector("#detailTrophyTitle"),
@@ -8070,6 +8071,7 @@ function completedBadges(game, options = {}) {
   return [
     game.platform ? platformBadge(game.platform, null, { title: game.title }) : "",
     mediaFormatBadge(game),
+    ratingScoreBadge(game),
     game.dlc ? dlcBadge(game) : "",
     entitlementBadge(game),
     game.emulator ? `<span class="emulator-pill">${escapeHtml(tt("Emulator"))}</span>` : "",
@@ -8858,7 +8860,7 @@ function normalizeGameRecord(game) {
 function normalizeRatingValue(value) {
   const number = Number(value);
   if (!Number.isFinite(number)) return 0;
-  return Math.max(0, Math.min(5, Math.round(number)));
+  return Math.max(0, Math.min(5, Math.round(number * 2) / 2));
 }
 
 function normalizeGameRatings(value = {}) {
@@ -8868,14 +8870,18 @@ function normalizeGameRatings(value = {}) {
 
 function renderRatingInputs(container, namePrefix) {
   if (!container) return;
+  const values = [0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5];
   container.innerHTML = GAME_RATING_CATEGORIES.map(([key, label]) => `
-    <fieldset class="rating-row" data-rating-key="${escapeHtml(key)}" data-rating-value="0">
+    <fieldset class="rating-row" data-rating-key="${escapeHtml(key)}" data-rating-value="0" style="--rating-fill:0%;">
       <legend data-i18n="${escapeHtml(label)}">${escapeHtml(label)}</legend>
       <div class="star-rating" aria-label="${escapeHtml(label)}">
-        ${[1, 2, 3, 4, 5].map((value) => `
+        <span class="star-display" aria-hidden="true">★★★★★</span>
+        <span class="star-hitboxes">
+        ${values.map((value) => `
           <input type="radio" id="${escapeHtml(namePrefix)}Rating-${escapeHtml(key)}-${value}" name="${escapeHtml(namePrefix)}Rating-${escapeHtml(key)}" value="${value}">
-          <label data-star="${value}" for="${escapeHtml(namePrefix)}Rating-${escapeHtml(key)}-${value}" title="${value}/5" aria-label="${value}/5">★</label>
+          <label data-star-value="${value}" for="${escapeHtml(namePrefix)}Rating-${escapeHtml(key)}-${value}" title="${value}/5" aria-label="${value}/5"></label>
         `).join("")}
+        </span>
         <input type="radio" id="${escapeHtml(namePrefix)}Rating-${escapeHtml(key)}-0" name="${escapeHtml(namePrefix)}Rating-${escapeHtml(key)}" value="0">
         <label class="star-clear" for="${escapeHtml(namePrefix)}Rating-${escapeHtml(key)}-0" title="${escapeHtml(tt("No rating"))}" aria-label="${escapeHtml(tt("No rating"))}" data-i18n-title="No rating" data-i18n-aria-label="No rating">${trashIcon()}</label>
       </div>
@@ -8883,9 +8889,16 @@ function renderRatingInputs(container, namePrefix) {
   `).join("");
   container.querySelectorAll(".rating-row").forEach((row) => {
     row.addEventListener("change", () => {
-      row.dataset.ratingValue = String(normalizeRatingValue(row.querySelector("input:checked")?.value));
+      setRatingRowValue(row, row.querySelector("input:checked")?.value);
     });
   });
+}
+
+function setRatingRowValue(row, value) {
+  if (!row) return;
+  const rating = normalizeRatingValue(value);
+  row.dataset.ratingValue = String(rating);
+  row.style.setProperty("--rating-fill", `${rating * 20}%`);
 }
 
 function setRatingInputs(container, ratings = {}) {
@@ -8896,7 +8909,7 @@ function setRatingInputs(container, ratings = {}) {
     const row = container.querySelector(`[data-rating-key="${CSS.escape(key)}"]`);
     const input = row?.querySelector(`input[value="${value}"]`);
     if (input) input.checked = true;
-    if (row) row.dataset.ratingValue = String(value);
+    setRatingRowValue(row, value);
   });
 }
 
@@ -9065,18 +9078,39 @@ function guideLinksFor(game) {
 function renderDetailRatings(game) {
   if (!el.detailRating || !el.detailRatingGrid) return;
   const ratings = normalizeGameRatings(game?.ratings);
+  const scoreText = ratingScoreText(game);
   const rows = GAME_RATING_CATEGORIES
     .map(([key, label]) => [key, label, ratings[key] || 0])
     .filter(([, , value]) => value > 0);
   el.detailRating.hidden = !rows.length;
+  if (el.detailRatingScore) el.detailRatingScore.textContent = scoreText ? `${scoreText}/10` : "";
   el.detailRatingGrid.innerHTML = rows.map(([key, label, value]) => `
-    <div class="detail-rating-row" data-rating-key="${escapeHtml(key)}" data-rating-value="${value}">
+    <div class="detail-rating-row" data-rating-key="${escapeHtml(key)}" data-rating-value="${value}" style="--rating-fill:${value * 20}%;">
       <span>${escapeHtml(tt(label))}</span>
       <div class="detail-stars" aria-label="${escapeHtml(`${tt(label)}: ${value}/5`)}">
-        ${[1, 2, 3, 4, 5].map((star) => `<span data-star="${star}">★</span>`).join("")}
+        <span class="star-display detail-star-display" aria-hidden="true">★★★★★</span>
       </div>
     </div>
   `).join("");
+}
+
+function ratingScoreValue(gameOrRatings) {
+  const ratings = normalizeGameRatings(gameOrRatings?.ratings || gameOrRatings);
+  const values = Object.values(ratings);
+  if (!values.some((value) => value > 0)) return null;
+  return Math.round(values.reduce((sum, value) => sum + value, 0) * 4) / 10;
+}
+
+function ratingScoreText(gameOrRatings) {
+  const score = ratingScoreValue(gameOrRatings);
+  if (score == null) return "";
+  return score === 10 ? "10" : score.toFixed(1);
+}
+
+function ratingScoreBadge(game) {
+  const score = ratingScoreText(game);
+  if (!score) return "";
+  return `<span class="rating-score-pill" title="${escapeHtml(`${tt("Rating")}: ${score}/10`)}" aria-label="${escapeHtml(`${tt("Rating")}: ${score}/10`)}">★ ${escapeHtml(score)}</span>`;
 }
 
 function normalizeGuideUrl(value) {
