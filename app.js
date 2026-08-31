@@ -6768,11 +6768,11 @@ function historyRangeText(game) {
 }
 
 function finishedDateText(game) {
-  return [finishHoursText(game) || finishedDurationText(game.startedAt, game.completedAt), formatLongDate(game.completedAt)].filter(Boolean).join(" · ");
+  return [finishHoursText(game), formatLongDate(game.completedAt)].filter(Boolean).join(" · ");
 }
 
 function completedDurationLine(game) {
-  const duration = finishHoursText(game) || finishedDurationText(game.startedAt, game.completedAt);
+  const duration = finishHoursText(game);
   return duration ? `<span class="completed-duration">${escapeHtml(duration)}</span>` : "";
 }
 
@@ -8228,8 +8228,7 @@ function playDatesFor(game, options = {}) {
   if (game.startedAt) values.push(`<span class="history-pill history-date-pill"><small>${escapeHtml(tt("Started"))}</small><strong>${escapeHtml(formatDate(game.startedAt))}</strong></span>`);
   if (game.completedAt) values.push(`<span class="history-pill history-date-pill"><small>${escapeHtml(tt("Finished"))}</small><strong>${escapeHtml(formatDate(game.completedAt))}</strong></span>`);
   const finishTime = finishHoursText(game);
-  const duration = finishTime || finishedDurationText(game.startedAt, game.completedAt);
-  if (duration) values.push(playTimeHistoryPill(duration, finishHoursValue(game.finishHours)));
+  if (finishTime) values.push(playTimeHistoryPill(finishTime, finishHoursValue(game.finishHours)));
   return values;
 }
 
