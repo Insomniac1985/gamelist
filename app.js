@@ -2556,7 +2556,9 @@ function showGameOfTheYearAutofillLoading(games = []) {
     "Calculating your Games of the year...",
     "Comparing your ratings...",
     "Finding the strongest contenders...",
+    "Gotta go fast!",
     "Checking category fit...",
+    "Let's go!",
     "Preparing your picks...",
   ];
   const flightGames = sortedGameOfTheYearChoices(games).slice(0, 24);
@@ -2574,6 +2576,7 @@ function showGameOfTheYearAutofillLoading(games = []) {
       <span class="goty-loading-flight" aria-hidden="true">${flightMarkup}</span>
       <span class="goty-loading-icon" aria-hidden="true">${trophyIcon()}</span>
       <strong>${escapeHtml(messages[0])}</strong>
+      <em class="goty-loading-bar" aria-hidden="true"></em>
     </div>
   `;
   document.body.appendChild(overlay);
