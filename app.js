@@ -1461,7 +1461,19 @@ function normalizeGameOfTheYear(value = {}) {
 }
 
 function gameOfTheYearComplete(picks = {}) {
-  return GAME_OF_YEAR_CATEGORIES.every(([key]) => Boolean(picks[key]));
+  return gameOfTheYearCategoriesComplete(picks, GAME_OF_YEAR_CATEGORIES);
+}
+
+function gameOfTheYearCategoriesComplete(picks = {}, categories = GAME_OF_YEAR_CATEGORIES) {
+  return categories.every(([key]) => Boolean(picks[key]));
+}
+
+function gameOfTheYearCategoriesValid(picks = {}, categories = GAME_OF_YEAR_CATEGORIES, games = []) {
+  const gameMap = new Map((Array.isArray(games) ? games : []).map((game) => [game.id, game]));
+  return categories.every(([key]) => {
+    const game = gameMap.get(picks[key]);
+    return Boolean(game) && gameOfTheYearGameAllowedForCategory(game, key);
+  });
 }
 
 async function persistCloud() {
@@ -2215,7 +2227,7 @@ function gameOfTheYearCsvRecords() {
     .sort(([a], [b]) => b.localeCompare(a))
     .flatMap(([year, entry]) => {
       const picks = entry?.picks || {};
-      return GAME_OF_YEAR_CATEGORIES.map(([category, label], index) => {
+      return gameOfTheYearCategoriesForYear(year).map(([category, label], index) => {
         const game = gameById(picks[category]);
         return {
           year,
@@ -2225,7 +2237,7 @@ function gameOfTheYearCsvRecords() {
           gameId: picks[category] || "",
           title: game?.title || "",
           platform: game?.platform || "",
-          published: Boolean(entry?.published),
+          published: gameOfTheYearCategoriesValid(picks, gameOfTheYearCategoriesForYear(year), gameOfTheYearCandidateGames(year)),
           updatedAt: entry?.updatedAt || "",
         };
       });
@@ -2267,13 +2279,21 @@ async function importGameOfTheYearCsv() {
     years.forEach((year) => {
       const previous = nextGameOfTheYear[year]?.picks || {};
       const picks = Object.fromEntries(GAME_OF_YEAR_CATEGORIES.map(([key]) => [key, imported[year].picks[key] || previous[key] || ""]));
+      const candidates = gameOfTheYearCandidateGames(year);
+      const categories = gameOfTheYearCategoriesForYear(year, candidates);
       nextGameOfTheYear[year] = {
         picks,
-        published: gameOfTheYearComplete(picks),
+        published: gameOfTheYearCategoriesValid(picks, categories, candidates),
         updatedAt: imported[year].updatedAt || now,
       };
     });
     state.settings = normalizeSettings({ ...state.settings, gameOfTheYear: nextGameOfTheYear });
+    years.forEach((year) => {
+      if (state.settings.gameOfTheYear?.[year]) {
+        const candidates = gameOfTheYearCandidateGames(year);
+        state.settings.gameOfTheYear[year].published = gameOfTheYearCategoriesValid(state.settings.gameOfTheYear[year].picks, gameOfTheYearCategoriesForYear(year, candidates), candidates);
+      }
+    });
     persistLocalSettings();
     await persistCloud();
     render();
@@ -2416,6 +2436,7 @@ function renderGameOfTheYear() {
   const entry = state.settings.gameOfTheYear?.[year] || {};
   const picks = entry.picks || {};
   const candidates = gameOfTheYearCandidateGames(year);
+  const categories = gameOfTheYearCategoriesForYear(year, candidates);
   const candidateIds = new Set(candidates.map((game) => game.id));
   el.gotySection.hidden = false;
   const sectionTitle = window.matchMedia("(max-width: 520px)").matches ? `My GOTYs ${year}` : `My Games of the year ${year}`;
@@ -2432,7 +2453,7 @@ function renderGameOfTheYear() {
   el.gotyEditButton.innerHTML = pencilIcon();
   el.gotyEditButton.title = "Edit";
   el.gotyEditButton.setAttribute("aria-label", "Edit");
-  el.gotySaveButton.hidden = !gameOfTheYearComplete(picks);
+  el.gotySaveButton.hidden = !gameOfTheYearCategoriesValid(picks, categories, candidates);
   el.gotySaveButton.innerHTML = downloadIcon();
   el.gotySaveButton.title = "Download";
   el.gotySaveButton.setAttribute("aria-label", "Download");
@@ -2442,12 +2463,12 @@ function renderGameOfTheYear() {
     el.gotyStatsButton.title = "Stats";
     el.gotyStatsButton.setAttribute("aria-label", `Stats for ${year}`);
   }
-  el.gotyGrid.innerHTML = GAME_OF_YEAR_CATEGORIES.map(([key, label], index) => {
+  el.gotyGrid.innerHTML = categories.map(([key, label], index) => {
     const labelText = tt(label);
     const game = gameById(picks[key]);
-    if (!game || !candidateIds.has(game.id)) return "";
+    if (!game || !candidateIds.has(game.id) || !gameOfTheYearGameAllowedForCategory(game, key)) return "";
     const cover = coverDisplayUrl(game.cover || "") || platformLogo(game.platform || "PS5");
-    const edgeClass = index >= GAME_OF_YEAR_CATEGORIES.length - 2 ? "goty-card-edge-right" : index === 0 ? "goty-card-edge-left" : "";
+    const edgeClass = index >= categories.length - 2 ? "goty-card-edge-right" : index === 0 ? "goty-card-edge-left" : "";
     return `
       <button class="goty-card ${edgeClass}" type="button" data-id="${escapeHtml(game.id)}" aria-label="${escapeHtml(`${labelText}: ${game.title}`)}">
         <span class="goty-category">${escapeHtml(labelText)}</span>
@@ -2464,8 +2485,9 @@ function renderGameOfTheYear() {
 function maybePromptGameOfTheYear() {
   if (!state.canEdit || state.gotyPromptShown || !gameOfTheYearVisible()) return;
   const year = currentGameOfTheYear();
-  if (gameOfTheYearComplete(state.settings.gameOfTheYear?.[year]?.picks || {})) return;
-  if (!gameOfTheYearCandidateGames(year).length) return;
+  const candidates = gameOfTheYearCandidateGames(year);
+  if (!candidates.length) return;
+  if (gameOfTheYearCategoriesValid(state.settings.gameOfTheYear?.[year]?.picks || {}, gameOfTheYearCategoriesForYear(year, candidates), candidates)) return;
   state.gotyPromptShown = true;
   window.setTimeout(() => showGameOfTheYearCallout(year), 300);
 }
@@ -2480,7 +2502,7 @@ function openGameOfTheYearDialog(year = currentGameOfTheYear(), options = {}) {
   state.gotyYear = String(year);
   el.gotyForm.dataset.gotyYear = String(year);
   const entry = state.settings.gameOfTheYear?.[year] || {};
-  const picks = { ...(entry.picks || {}) };
+  const picks = options.autoPick ? gameOfTheYearAutoPicks(year, games, entry.picks || {}) : { ...(entry.picks || {}) };
   const dialogTitle = window.matchMedia("(max-width: 520px)").matches ? `GOTYs ${year}` : `Games of the year ${year}`;
   el.gotyDialogTitle.innerHTML = `${trophyIcon()} <span>${escapeHtml(dialogTitle)}</span>`;
   if (el.gotyPickerOrder) {
@@ -2507,13 +2529,21 @@ function openGameOfTheYearDialog(year = currentGameOfTheYear(), options = {}) {
 
 function renderGameOfTheYearPicker(games, picks) {
   hideGameOfTheYearTitleOverlay();
-  const pickedIds = new Set(Object.values(picks).filter(Boolean));
-  el.gotyPickerGrid.innerHTML = GAME_OF_YEAR_CATEGORIES.map(([key, label]) => {
+  const year = el.gotyForm.dataset.gotyYear || currentGameOfTheYear();
+  const categories = gameOfTheYearCategoriesForYear(year, games);
+  const allowRepeats = games.length < 6;
+  const activeKeys = new Set(categories.map(([key]) => key));
+  const pickedIds = new Set(categories.map(([key]) => {
+    const game = games.find((item) => item.id === picks[key]);
+    return game && gameOfTheYearGameAllowedForCategory(game, key) ? game.id : "";
+  }).filter(Boolean));
+  el.gotyPickerGrid.innerHTML = categories.map(([key, label]) => {
     const labelText = tt(label);
     const selectedId = picks[key] || "";
-    const pickedElsewhere = new Set([...pickedIds].filter((id) => id !== selectedId));
-    const selectedGame = games.find((game) => game.id === selectedId);
-    const choices = games.filter((game) => game.id !== selectedId);
+    const pickedElsewhere = allowRepeats ? new Set() : new Set([...pickedIds].filter((id) => id !== selectedId));
+    const categoryGames = gameOfTheYearChoicesForCategory(key, games);
+    const selectedGame = categoryGames.find((game) => game.id === selectedId);
+    const choices = categoryGames.filter((game) => game.id !== selectedId);
     return `
     <section class="goty-picker-field" data-goty-category="${escapeHtml(key)}">
       <div class="goty-picker-head">
@@ -2538,6 +2568,7 @@ function renderGameOfTheYearPicker(games, picks) {
       if (button.disabled || button.classList.contains("is-unavailable")) return;
       const field = button.closest(".goty-picker-field");
       const category = field.dataset.gotyCategory;
+      if (!activeKeys.has(category)) return;
       const gameId = button.dataset.gameId || "";
       picks[category] = picks[category] === gameId ? "" : gameId;
       renderGameOfTheYearPicker(games, picks);
@@ -2605,7 +2636,9 @@ async function saveGameOfTheYearFromForm(event) {
   event.preventDefault();
   const year = el.gotyForm.dataset.gotyYear || currentGameOfTheYear();
   const picks = currentGameOfTheYearDraftPicks();
-  if (!gameOfTheYearComplete(picks)) {
+  const candidates = gameOfTheYearCandidateGames(year);
+  const categories = gameOfTheYearCategoriesForYear(year, candidates);
+  if (!gameOfTheYearCategoriesValid(picks, categories, candidates)) {
     showToast("Choose a game for every category.", "error");
     return;
   }
@@ -2616,6 +2649,9 @@ async function saveGameOfTheYearFromForm(event) {
       [year]: { picks, published: true, updatedAt: new Date().toISOString() },
     },
   });
+  if (state.settings.gameOfTheYear?.[year]) {
+    state.settings.gameOfTheYear[year].published = true;
+  }
   state.gotyYear = year;
   persistLocalSettings();
   await persistCloud();
@@ -2662,7 +2698,7 @@ function showGameOfTheYearCallout(year) {
   callout.querySelector("[data-goty-callout-action='choose']")?.addEventListener("click", (event) => {
     event.preventDefault();
     event.stopPropagation();
-    const opened = openGameOfTheYearDialog(year, { force: true });
+    const opened = openGameOfTheYearDialog(year, { force: true, autoPick: true });
     if (opened) callout.classList.remove("visible");
   });
   callout.querySelector("[data-goty-callout-action='dismiss']")?.addEventListener("click", (event) => {
@@ -2740,7 +2776,8 @@ function gameOfTheYearVisible() {
 
 function gotyAvailabilityStatus(date = new Date()) {
   const year = currentGameOfTheYear(date);
-  const picked = gameOfTheYearComplete(state.settings.gameOfTheYear?.[year]?.picks || {}) ? "picked" : "not picked";
+  const candidates = gameOfTheYearCandidateGames(year);
+  const picked = gameOfTheYearCategoriesValid(state.settings.gameOfTheYear?.[year]?.picks || {}, gameOfTheYearCategoriesForYear(year, candidates), candidates) ? "picked" : "not picked";
   if (state.settings.gotyAlwaysShow) return `forced (${picked})`;
   if (isGameOfTheYearSeason(date)) return `available (${picked})`;
   const start = new Date(date.getFullYear(), 11, 1);
@@ -2762,13 +2799,90 @@ function currentGameOfTheYear(date = new Date()) {
 
 function gameOfTheYearYears() {
   return Object.entries(state.settings.gameOfTheYear || {})
-    .filter(([, entry]) => gameOfTheYearComplete(entry?.picks || {}))
+    .filter(([year, entry]) => {
+      const candidates = gameOfTheYearCandidateGames(year);
+      return gameOfTheYearCategoriesValid(entry?.picks || {}, gameOfTheYearCategoriesForYear(year, candidates), candidates);
+    })
     .map(([year]) => year)
     .sort((a, b) => b.localeCompare(a));
 }
 
 function gameById(id) {
   return state.games.find((game) => game.id === id && !game.deletedAt) || null;
+}
+
+function gameOfTheYearCategoriesForYear(year, games = gameOfTheYearCandidateGames(year)) {
+  const playedGames = Array.isArray(games) ? games : [];
+  const hasSingleplayer = playedGames.some((game) => gameOfTheYearGameAllowedForCategory(game, "singleplayer"));
+  const hasMultiplayer = playedGames.some((game) => gameOfTheYearGameAllowedForCategory(game, "multiplayer"));
+  const hasIndie = playedGames.some(gameHasIndieTag);
+  const hasDisappointment = playedGames.length > 5;
+  return GAME_OF_YEAR_CATEGORIES.filter(([key]) => {
+    if (key === "singleplayer") return hasSingleplayer;
+    if (key === "multiplayer") return hasMultiplayer;
+    if (key === "indie") return hasIndie;
+    if (key === "disappointment") return hasDisappointment;
+    return true;
+  });
+}
+
+function gameOfTheYearChoicesForCategory(category, games = []) {
+  return games.filter((game) => gameOfTheYearGameAllowedForCategory(game, category));
+}
+
+function gameOfTheYearGameAllowedForCategory(game, category) {
+  if (category === "singleplayer") return !game?.multiplayer && !game?.coop;
+  if (category === "multiplayer") return Boolean(game?.multiplayer || game?.coop);
+  if (category === "indie") return gameHasIndieTag(game);
+  return true;
+}
+
+function gameHasIndieTag(game) {
+  return [...(game?.genres || []), ...(game?.tags || []), ...(game?.statuses || [])]
+    .some((label) => normalizeTag(label) === "indie");
+}
+
+function gameOfTheYearAutoPicks(year, games = gameOfTheYearCandidateGames(year), previousPicks = {}) {
+  const categories = gameOfTheYearCategoriesForYear(year, games);
+  const allowRepeats = games.length < 6;
+  const picks = { ...previousPicks };
+  const usedIds = new Set();
+  categories.forEach(([key]) => {
+    const current = games.find((game) => game.id === picks[key]);
+    if (current && gameOfTheYearGameAllowedForCategory(current, key) && (allowRepeats || !usedIds.has(current.id))) {
+      usedIds.add(current.id);
+      return;
+    }
+    picks[key] = "";
+  });
+  categories.forEach(([key]) => {
+    if (picks[key]) return;
+    const choice = gameOfTheYearBestRatedChoice(key, games, allowRepeats ? new Set() : usedIds);
+    if (!choice) return;
+    picks[key] = choice.id;
+    usedIds.add(choice.id);
+  });
+  return picks;
+}
+
+function gameOfTheYearBestRatedChoice(category, games = [], usedIds = new Set()) {
+  const choices = gameOfTheYearChoicesForCategory(category, games)
+    .filter((game) => !usedIds.has(game.id));
+  const sorted = choices.sort((a, b) => {
+    const scoreA = gameOfTheYearCategoryRatingValue(a, category);
+    const scoreB = gameOfTheYearCategoryRatingValue(b, category);
+    return scoreB - scoreA
+      || gameOfTheYearTimeValue(b) - gameOfTheYearTimeValue(a)
+      || stringCompare(a.title, b.title);
+  });
+  return sorted[0] || null;
+}
+
+function gameOfTheYearCategoryRatingValue(game, category) {
+  const ratings = normalizeGameRatings(game?.ratings);
+  if (category === "soundtrack") return ratings.soundtrack ? ratings.soundtrack * 2 : ratingScoreValue(game) || 0;
+  if (category === "disappointment") return -(ratingScoreValue(game) ?? 10);
+  return ratingScoreValue(game) || 0;
 }
 
 async function downloadGameOfTheYearImage() {
@@ -2800,10 +2914,11 @@ async function maybeRenderGameOfTheYearExportPreview() {
 
 async function gameOfTheYearExportHtml(year = state.gotyYear) {
   const picks = state.settings.gameOfTheYear?.[year]?.picks || {};
-  if (!gameOfTheYearComplete(picks)) return "";
-  const owner = cleanOwnerLabel(state.settings.defaultOwner) || DEFAULT_SETTINGS.defaultOwner;
-  const rows = GAME_OF_YEAR_CATEGORIES.map(([key, label]) => ({ label: tt(label), game: gameById(picks[key]) })).filter((item) => item.game);
   const statsGames = gameOfTheYearCandidateGames(year);
+  const categories = gameOfTheYearCategoriesForYear(year, statsGames);
+  if (!gameOfTheYearCategoriesValid(picks, categories, statsGames)) return "";
+  const owner = cleanOwnerLabel(state.settings.defaultOwner) || DEFAULT_SETTINGS.defaultOwner;
+  const rows = categories.map(([key, label]) => ({ label: tt(label), game: gameById(picks[key]), key })).filter((item) => item.game && gameOfTheYearGameAllowedForCategory(item.game, item.key));
   const theme = normalizeThemeSettings(state.settings);
   const assetRows = await Promise.all(rows.map(async (row) => ({
     ...row,
@@ -6653,11 +6768,11 @@ function historyRangeText(game) {
 }
 
 function finishedDateText(game) {
-  return [finishHoursText(game) || finishedDurationText(game.startedAt, game.completedAt), formatLongDate(game.completedAt)].filter(Boolean).join(" · ");
+  return [finishHoursText(game), formatLongDate(game.completedAt)].filter(Boolean).join(" · ");
 }
 
 function completedDurationLine(game) {
-  const duration = finishHoursText(game) || finishedDurationText(game.startedAt, game.completedAt);
+  const duration = finishHoursText(game);
   return duration ? `<span class="completed-duration">${escapeHtml(duration)}</span>` : "";
 }
 
@@ -8113,8 +8228,7 @@ function playDatesFor(game, options = {}) {
   if (game.startedAt) values.push(`<span class="history-pill history-date-pill"><small>${escapeHtml(tt("Started"))}</small><strong>${escapeHtml(formatDate(game.startedAt))}</strong></span>`);
   if (game.completedAt) values.push(`<span class="history-pill history-date-pill"><small>${escapeHtml(tt("Finished"))}</small><strong>${escapeHtml(formatDate(game.completedAt))}</strong></span>`);
   const finishTime = finishHoursText(game);
-  const duration = finishTime || finishedDurationText(game.startedAt, game.completedAt);
-  if (duration) values.push(playTimeHistoryPill(duration, finishHoursValue(game.finishHours)));
+  if (finishTime) values.push(playTimeHistoryPill(finishTime, finishHoursValue(game.finishHours)));
   return values;
 }
 
