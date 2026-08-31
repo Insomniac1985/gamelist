@@ -2502,7 +2502,7 @@ function openGameOfTheYearDialog(year = currentGameOfTheYear(), options = {}) {
   state.gotyYear = String(year);
   el.gotyForm.dataset.gotyYear = String(year);
   const entry = state.settings.gameOfTheYear?.[year] || {};
-  const picks = { ...(entry.picks || {}) };
+  const picks = options.autoPick ? gameOfTheYearAutoPicks(year, games, entry.picks || {}) : { ...(entry.picks || {}) };
   const dialogTitle = window.matchMedia("(max-width: 520px)").matches ? `GOTYs ${year}` : `Games of the year ${year}`;
   el.gotyDialogTitle.innerHTML = `${trophyIcon()} <span>${escapeHtml(dialogTitle)}</span>`;
   if (el.gotyPickerOrder) {
@@ -2698,7 +2698,7 @@ function showGameOfTheYearCallout(year) {
   callout.querySelector("[data-goty-callout-action='choose']")?.addEventListener("click", (event) => {
     event.preventDefault();
     event.stopPropagation();
-    const opened = openGameOfTheYearDialog(year, { force: true });
+    const opened = openGameOfTheYearDialog(year, { force: true, autoPick: true });
     if (opened) callout.classList.remove("visible");
   });
   callout.querySelector("[data-goty-callout-action='dismiss']")?.addEventListener("click", (event) => {
@@ -2813,10 +2813,12 @@ function gameById(id) {
 
 function gameOfTheYearCategoriesForYear(year, games = gameOfTheYearCandidateGames(year)) {
   const playedGames = Array.isArray(games) ? games : [];
+  const hasSingleplayer = playedGames.some((game) => gameOfTheYearGameAllowedForCategory(game, "singleplayer"));
   const hasMultiplayer = playedGames.some((game) => gameOfTheYearGameAllowedForCategory(game, "multiplayer"));
   const hasIndie = playedGames.some(gameHasIndieTag);
   const hasDisappointment = playedGames.length > 5;
   return GAME_OF_YEAR_CATEGORIES.filter(([key]) => {
+    if (key === "singleplayer") return hasSingleplayer;
     if (key === "multiplayer") return hasMultiplayer;
     if (key === "indie") return hasIndie;
     if (key === "disappointment") return hasDisappointment;
@@ -2829,6 +2831,7 @@ function gameOfTheYearChoicesForCategory(category, games = []) {
 }
 
 function gameOfTheYearGameAllowedForCategory(game, category) {
+  if (category === "singleplayer") return !game?.multiplayer && !game?.coop;
   if (category === "multiplayer") return Boolean(game?.multiplayer || game?.coop);
   if (category === "indie") return gameHasIndieTag(game);
   return true;
@@ -2837,6 +2840,49 @@ function gameOfTheYearGameAllowedForCategory(game, category) {
 function gameHasIndieTag(game) {
   return [...(game?.genres || []), ...(game?.tags || []), ...(game?.statuses || [])]
     .some((label) => normalizeTag(label) === "indie");
+}
+
+function gameOfTheYearAutoPicks(year, games = gameOfTheYearCandidateGames(year), previousPicks = {}) {
+  const categories = gameOfTheYearCategoriesForYear(year, games);
+  const allowRepeats = games.length < 6;
+  const picks = { ...previousPicks };
+  const usedIds = new Set();
+  categories.forEach(([key]) => {
+    const current = games.find((game) => game.id === picks[key]);
+    if (current && gameOfTheYearGameAllowedForCategory(current, key) && (allowRepeats || !usedIds.has(current.id))) {
+      usedIds.add(current.id);
+      return;
+    }
+    picks[key] = "";
+  });
+  categories.forEach(([key]) => {
+    if (picks[key]) return;
+    const choice = gameOfTheYearBestRatedChoice(key, games, allowRepeats ? new Set() : usedIds);
+    if (!choice) return;
+    picks[key] = choice.id;
+    usedIds.add(choice.id);
+  });
+  return picks;
+}
+
+function gameOfTheYearBestRatedChoice(category, games = [], usedIds = new Set()) {
+  const choices = gameOfTheYearChoicesForCategory(category, games)
+    .filter((game) => !usedIds.has(game.id));
+  const sorted = choices.sort((a, b) => {
+    const scoreA = gameOfTheYearCategoryRatingValue(a, category);
+    const scoreB = gameOfTheYearCategoryRatingValue(b, category);
+    return scoreB - scoreA
+      || gameOfTheYearTimeValue(b) - gameOfTheYearTimeValue(a)
+      || stringCompare(a.title, b.title);
+  });
+  return sorted[0] || null;
+}
+
+function gameOfTheYearCategoryRatingValue(game, category) {
+  const ratings = normalizeGameRatings(game?.ratings);
+  if (category === "soundtrack") return ratings.soundtrack ? ratings.soundtrack * 2 : ratingScoreValue(game) || 0;
+  if (category === "disappointment") return -(ratingScoreValue(game) ?? 10);
+  return ratingScoreValue(game) || 0;
 }
 
 async function downloadGameOfTheYearImage() {
