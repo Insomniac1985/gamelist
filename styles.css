@@ -1657,6 +1657,128 @@ html.theme-gradient .goty-section .column-head h2 .trophy-icon {
   background: color-mix(in srgb, var(--accent) 18%, rgba(255, 255, 255, 0.08));
 }
 
+.goty-loading-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 120;
+  display: grid;
+  place-items: center;
+  padding: 18px;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 180ms ease;
+}
+
+.goty-loading-overlay.visible {
+  opacity: 1;
+}
+
+.goty-loading-window {
+  display: grid;
+  justify-items: center;
+  width: min(310px, calc(100vw - 36px));
+  padding: 18px 16px 16px;
+  border: 1px solid color-mix(in srgb, var(--accent) 46%, var(--line));
+  border-radius: 8px;
+  color: var(--text);
+  background: var(--grid-fade), var(--grid-texture), var(--panel-dark);
+  background-size: auto, 22px 22px, 22px 22px, auto;
+  background-position: center, var(--grid-x) var(--grid-y), var(--grid-x) var(--grid-y), center;
+  box-shadow:
+    0 18px 44px rgba(0, 0, 0, 0.4),
+    0 0 36px color-mix(in srgb, var(--accent) 22%, transparent);
+  backdrop-filter: blur(10px) saturate(1.12);
+  transform: translateY(8px) scale(0.96);
+  transition: transform 220ms ease;
+}
+
+.goty-loading-overlay.visible .goty-loading-window {
+  transform: translateY(0) scale(1);
+}
+
+.goty-loading-icon {
+  display: inline-grid;
+  width: 42px;
+  height: 42px;
+  margin-bottom: 10px;
+  place-items: center;
+  border-radius: 8px;
+  color: #ffe985;
+  background: rgba(255, 225, 101, 0.12);
+  border: 1px solid rgba(255, 225, 101, 0.36);
+  animation: gotyLoadingFloat 900ms ease-in-out infinite alternate;
+}
+
+.goty-loading-icon .trophy-icon {
+  width: 23px;
+  height: 23px;
+}
+
+.goty-loading-window strong {
+  max-width: 24ch;
+  min-height: 36px;
+  color: var(--text);
+  font-size: 14px;
+  line-height: 1.25;
+  text-align: center;
+}
+
+.goty-loading-dots {
+  display: inline-flex;
+  gap: 5px;
+  margin-top: 12px;
+}
+
+.goty-loading-dots i {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #d7b8ff;
+  animation: gotyLoadingDots 780ms ease-in-out infinite;
+}
+
+.goty-loading-dots i:nth-child(2) {
+  animation-delay: 120ms;
+}
+
+.goty-loading-dots i:nth-child(3) {
+  animation-delay: 240ms;
+}
+
+.goty-loading-window em {
+  width: 100%;
+  height: 3px;
+  margin-top: 14px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.goty-loading-window em::before {
+  content: "";
+  display: block;
+  width: 46%;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, var(--accent), #d7b8ff);
+  animation: gotyLoadingBar 900ms ease-in-out infinite;
+}
+
+@keyframes gotyLoadingFloat {
+  from { transform: translateY(0); }
+  to { transform: translateY(-5px); }
+}
+
+@keyframes gotyLoadingDots {
+  0%, 100% { opacity: 0.35; transform: translateY(0); }
+  50% { opacity: 1; transform: translateY(-4px); }
+}
+
+@keyframes gotyLoadingBar {
+  0% { transform: translateX(-85%); }
+  100% { transform: translateX(220%); }
+}
+
 .playing-finished-tags .platform-badge,
 .playing-finished-tags .owner-pill,
 .playing-finished-tags .dlc-pill,
