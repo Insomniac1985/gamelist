@@ -11565,8 +11565,8 @@ body.theme-kash
 }
 
 .detail-rating-grid {
-  display: flex;
-  flex-wrap: nowrap;
+  display: grid;
+  grid-template-columns: repeat(3, max-content);
   gap: 8px;
   align-items: flex-start;
 }
@@ -11604,7 +11604,7 @@ body.theme-kash
 
 @media (max-width: 760px) {
   .detail-rating-grid {
-    flex-wrap: wrap;
+    grid-template-columns: repeat(auto-fit, minmax(130px, max-content));
     gap: 13px 16px;
   }
 
