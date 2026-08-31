@@ -9132,6 +9132,7 @@ function normalizeGameRecord(game) {
   normalized.hltbUrl = normalizeGuideUrl(normalized.hltbUrl || normalized.howLongToBeatUrl || "");
   normalized.trailerUrl = String(normalized.trailerUrl || "");
   normalized.trailerUrlRemoved = Boolean(normalized.trailerUrlRemoved);
+  normalized.releaseRefreshLocked = Boolean(normalized.releaseRefreshLocked);
   normalized.storeLinks = normalizeStoreLinks(normalized.storeLinks);
   normalized.steamAppId = cleanSteamAppId(normalized.steamAppId) || steamAppIdFromUrl(normalized.storeLinks.steam);
   normalized.owners = ownerTags(normalized);
@@ -9839,6 +9840,7 @@ function blankGame() {
     section: "wanted",
     releaseDate: "",
     releaseText: "",
+    releaseRefreshLocked: false,
     lengthHours: null,
     finishHours: 0,
     ratings: normalizeGameRatings(),
@@ -9903,6 +9905,26 @@ async function saveCurrentFormGame() {
   const startedAt = el.fields.startedAt.value || (playing && !existing?.playing && !existing?.startedAt ? todayDate() : "");
   const trailerUrl = el.fields.trailerUrl.value.trim();
   const trailerUrlRemoved = !trailerUrl && Boolean(existing?.trailerUrl || existing?.trailerUrlRemoved);
+  const releaseDate = el.fields.releaseDate.value;
+  const releaseText = el.fields.releaseText.value.trim();
+  const preorderStore = el.fields.preorderStore.value.trim();
+  const releaseTime = releaseDate ? new Date(`${releaseDate}T00:00:00`).getTime() : NaN;
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const manualUpcomingPastRelease = section === "upcoming"
+    && !preorderStore
+    && Number.isFinite(releaseTime)
+    && releaseTime <= today.getTime();
+  const releaseRefreshLocked = Boolean(existing) && (
+    manualUpcomingPastRelease
+    || (
+      section === "upcoming"
+      && !preorderStore
+      && !releaseDate
+      && !releaseText
+      && Boolean(existing.releaseDate || existing.releaseText || existing.releaseRefreshLocked)
+    )
+  );
   const editedAt = new Date().toISOString();
   const game = {
     ...(existing || blankGame()),
@@ -9914,14 +9936,15 @@ async function saveCurrentFormGame() {
     psPlus: (el.fields.digital.checked || el.fields.dlc.checked) && ["PS3", "PS4", "PS5"].includes(canonicalPlatform(el.fields.platform.value)) && el.fields.psPlus.checked,
     gamesWithGold: (el.fields.digital.checked || el.fields.dlc.checked) && ["X360", "XOne"].includes(canonicalPlatform(el.fields.platform.value)) && el.fields.gamesWithGold.checked,
     section,
-    releaseDate: el.fields.releaseDate.value,
-    releaseText: el.fields.releaseText.value.trim(),
+    releaseDate,
+    releaseText,
+    releaseRefreshLocked,
     lengthHours: el.fields.length.value ? Number(el.fields.length.value) : null,
     finishHours: finishHoursValue(el.fields.finishHours.value),
     ratings: ratingInputsValue(el.playingRatingGrid),
     startedAt,
     completedAt: effectiveCompletedAt,
-    preorderStore: el.fields.preorderStore.value.trim(),
+    preorderStore,
     preferredStore: el.fields.preferredStore.value.trim(),
     owners: ownerInputValues(el.fields.owners.value),
     statuses: listFrom(el.fields.statuses.value).map(canonicalStatus).filter(Boolean),
@@ -10412,7 +10435,7 @@ async function normalizeGameBeforeSave(game) {
   try {
     const result = await lookupFirstResult(game.igdbUrl || game.title);
     if (!result) return;
-    if (!game.releaseDate && !game.releaseText) {
+    if (!game.releaseRefreshLocked && !game.releaseDate && !game.releaseText) {
       game.releaseDate = result.releaseDate || "";
       game.releaseText = result.releaseDate ? "" : (result.releaseText || "");
     }
@@ -10495,6 +10518,7 @@ async function refreshUnreleasedGamesOnOpen() {
 }
 
 function shouldMoveReleasedToAvailable(game) {
+  if (game.releaseRefreshLocked) return false;
   if (game.section !== "upcoming" || game.preorderStore) return false;
   if (!game.releaseDate) return false;
   const releaseTime = new Date(`${game.releaseDate}T00:00:00`).getTime();
@@ -10504,6 +10528,7 @@ function shouldMoveReleasedToAvailable(game) {
 }
 
 function shouldMoveUnreleasedToUpcoming(game) {
+  if (game.releaseRefreshLocked) return false;
   if (game.section !== "wanted" || game.preorderStore) return false;
   if (!game.releaseDate) return false;
   const releaseTime = new Date(`${game.releaseDate}T00:00:00`).getTime();
@@ -10592,7 +10617,7 @@ function applyFetchedGameData(game, result, options = {}) {
   } else {
     setIfEmpty("description", result.description);
   }
-  if (!game.releaseDate && !game.releaseText) {
+  if (!game.releaseRefreshLocked && !game.releaseDate && !game.releaseText) {
     game.releaseDate = result.releaseDate || "";
     game.releaseText = result.releaseDate ? "" : (result.releaseText || "");
     if (game.releaseDate || game.releaseText) changed = true;
@@ -10631,6 +10656,7 @@ function mergeStoreLinks(game, links) {
 }
 
 function shouldRefreshRelease(game) {
+  if (game.releaseRefreshLocked) return false;
   if (game.section !== "upcoming") return false;
   if (!game.releaseDate) return true;
   return new Date(`${game.releaseDate}T00:00:00`) > new Date();
