@@ -1686,12 +1686,15 @@ html.theme-gradient .goty-section .column-head h2 .trophy-icon {
   border: 1px solid color-mix(in srgb, #d7b8ff 48%, var(--line));
   border-radius: 8px;
   color: var(--text);
-  background:
-    var(--grid-fade),
-    var(--grid-texture),
-    var(--panel-dark);
-  background-size: auto, 22px 22px, auto;
-  background-position: center, var(--grid-x) var(--grid-y), center;
+  background: var(--grid-fade), var(--grid-texture), var(--panel-dark);
+  background-size:
+    auto,
+    22px 22px,
+    auto;
+  background-position:
+    center,
+    var(--grid-x) var(--grid-y),
+    center;
   box-shadow:
     0 22px 54px rgba(0, 0, 0, 0.48),
     0 0 42px color-mix(in srgb, #d7b8ff 24%, transparent);
@@ -1704,7 +1707,12 @@ html.theme-gradient .goty-section .column-head h2 .trophy-icon {
   content: "";
   position: absolute;
   inset: -40% -55%;
-  background: linear-gradient(120deg, transparent 38%, rgba(255, 255, 255, 0.14), transparent 62%);
+  background: linear-gradient(
+    120deg,
+    transparent 38%,
+    rgba(255, 255, 255, 0.14),
+    transparent 62%
+  );
   transform: translateX(-36%) rotate(8deg);
   animation: gotyLoadingShine 2800ms ease-in-out infinite;
 }
@@ -1788,7 +1796,8 @@ html.theme-gradient .goty-section .column-head h2 .trophy-icon {
     0 0 14px color-mix(in srgb, #d7b8ff 22%, transparent);
   opacity: 0;
   transform: translate(var(--from-x), var(--from-y)) scale(0.7) rotate(-12deg);
-  animation: gotyLoadingGameFlight 2800ms cubic-bezier(0.2, 0.82, 0.18, 1) var(--delay) forwards;
+  animation: gotyLoadingGameFlight 2800ms cubic-bezier(0.2, 0.82, 0.18, 1)
+    var(--delay) forwards;
 }
 
 .goty-loading-game img {
@@ -1819,25 +1828,46 @@ html.theme-gradient .goty-section .column-head h2 .trophy-icon {
 }
 
 @keyframes gotyLoadingShine {
-  0%, 28% { transform: translateX(-46%) rotate(8deg); opacity: 0; }
-  45% { opacity: 1; }
-  74%, 100% { transform: translateX(46%) rotate(8deg); opacity: 0; }
+  0%,
+  28% {
+    transform: translateX(-46%) rotate(8deg);
+    opacity: 0;
+  }
+  45% {
+    opacity: 1;
+  }
+  74%,
+  100% {
+    transform: translateX(46%) rotate(8deg);
+    opacity: 0;
+  }
 }
 
 @keyframes gotyLoadingFloat {
-  from { transform: translateY(0); }
-  to { transform: translateY(-6px); }
+  from {
+    transform: translateY(0);
+  }
+  to {
+    transform: translateY(-6px);
+  }
 }
 
 @keyframes gotyLoadingRing {
-  0% { opacity: 0.55; transform: scale(0.82); }
-  100% { opacity: 0; transform: scale(1.24); }
+  0% {
+    opacity: 0.55;
+    transform: scale(0.82);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1.24);
+  }
 }
 
 @keyframes gotyLoadingGameFlight {
   0% {
     opacity: 0;
-    transform: translate(var(--from-x), var(--from-y)) scale(0.68) rotate(-14deg);
+    transform: translate(var(--from-x), var(--from-y)) scale(0.68)
+      rotate(-14deg);
   }
   18% {
     opacity: 0.95;
@@ -1857,8 +1887,12 @@ html.theme-gradient .goty-section .column-head h2 .trophy-icon {
 }
 
 @keyframes gotyLoadingBar {
-  0% { transform: translateX(-85%); }
-  100% { transform: translateX(220%); }
+  0% {
+    transform: translateX(-85%);
+  }
+  100% {
+    transform: translateX(220%);
+  }
 }
 
 .playing-finished-tags .platform-badge,
@@ -11804,7 +11838,7 @@ body.theme-kash
   align-items: center;
   justify-content: center;
   min-height: 30px;
-  padding: 0 7px 4px 7px;
+  padding: 0 7px 2px 7px;
   background: rgba(255, 255, 255, 0.045);
   border: 1px solid rgba(255, 255, 255, 0.16);
   border-radius: 8px;
