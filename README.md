@@ -26,6 +26,7 @@ Email: <a href="mailto:shabiimitjans@gmail.com">shabiimitjans@gmail.com</a>
 - Release calendar with preorder markers.
 - Physical Shelf library with multiple owners, regions, conditions, categories, selected-store prices, PriceCharting collection values, and linked Gamelist entries.
 - Digital Drive library with multiple owners, categories and linked Gamelist entries.
+- Rate your played games.
 - Game of the year tracking and shareable image export.
 - IGDB-powered lookup for all game covers, release dates, descriptions, genres, developers, publishers, trailers, store links, and price-search helpers.
 - Twitch stream preview in Currently Playing when a streamed game and Twitch username are configured.
