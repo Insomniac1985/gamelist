@@ -2949,13 +2949,29 @@ function gameOfTheYearExportMarkup({ owner, year, rows, statsGames, theme, logo,
     </header>
     ${gameOfTheYearExportTopStatsMarkup(year, statsGames)}
     <main class="goty-export-grid">
-      ${rows.slice(0, 4).map((row, index) => gameOfTheYearExportCard({ ...row, index })).join("")}
-      ${gameOfTheYearExportPlatformChartMarkup(statsGames)}
-      ${rows.slice(4).map((row, offset) => gameOfTheYearExportCard({ ...row, index: offset + 4 })).join("")}
+      ${gameOfTheYearExportGridItems(rows, statsGames)}
     </main>
     ${gameOfTheYearExportBottomStatsMarkup(statsGames, year)}
     <footer>${footerLines.map((line) => `<span>${escapeHtml(line)}</span>`).join("")}</footer>
   </div>`;
+}
+
+function gameOfTheYearExportGridItems(rows = [], statsGames = []) {
+  const shifted = rows.length < GAME_OF_YEAR_CATEGORIES.length;
+  if (!shifted) {
+    return `
+      ${rows.slice(0, 4).map((row, index) => gameOfTheYearExportCard({ ...row, index })).join("")}
+      ${gameOfTheYearExportPlatformChartMarkup(statsGames)}
+      ${rows.slice(4).map((row, offset) => gameOfTheYearExportCard({ ...row, index: offset + 4 })).join("")}
+    `;
+  }
+  const topRows = rows.slice(0, 3);
+  const bottomRows = rows.slice(3);
+  return `
+    ${topRows.map((row, index) => gameOfTheYearExportCard({ ...row, index, gridColumn: index + 2, gridRow: 1 })).join("")}
+    ${gameOfTheYearExportPlatformChartMarkup(statsGames)}
+    ${bottomRows.map((row, index) => gameOfTheYearExportCard({ ...row, index: index + 3, gridColumn: index + 2, gridRow: 2 })).join("")}
+  `;
 }
 
 function gameOfTheYearExportFooterLines(twitchUrl, siteUrl) {
@@ -3070,7 +3086,7 @@ function gameOfTheYearExportMonthCounts(games, year = "") {
   });
 }
 
-function gameOfTheYearExportCard({ label, game, coverSrc, index }) {
+function gameOfTheYearExportCard({ label, game, coverSrc, index, gridColumn = "", gridRow = "" }) {
   const cover = coverSrc || "";
   const progress = achievementProgressForGame(game);
   const progressCount = progress ? canvasProgressCount(progress.label) : "";
@@ -3081,8 +3097,9 @@ function gameOfTheYearExportCard({ label, game, coverSrc, index }) {
     ...String(game.genres || "").split(","),
     ...(Array.isArray(game.tags) ? game.tags : []),
   ].map((tag) => tag.trim()).filter(Boolean).slice(0, 2);
+  const positionStyle = [gridColumn ? `grid-column:${gridColumn}` : "", gridRow ? `grid-row:${gridRow}` : ""].filter(Boolean).join(";");
   return `
-    <div class="goty-export-item ${index >= 4 ? "is-bottom" : ""} ${index === 4 ? "is-bottom-start" : ""}">
+    <div class="goty-export-item ${index >= 4 ? "is-bottom" : ""} ${index === 4 ? "is-bottom-start" : ""}"${positionStyle ? ` style="${escapeHtml(positionStyle)}"` : ""}>
       <strong class="goty-export-category">${escapeHtml(label)}</strong>
       <article class="goty-export-card">
         ${cover ? `<img class="goty-export-card-bg" src="${escapeHtml(cover)}" alt="" />` : ""}
