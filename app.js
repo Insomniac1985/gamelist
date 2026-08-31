@@ -2508,7 +2508,7 @@ function openGameOfTheYearDialog(year = currentGameOfTheYear(), options = {}) {
   const copy = el.gotyForm.querySelector(".goty-dialog-copy");
   if (copy) {
     copy.textContent = options.autoPick && gameOfTheYearAutofillUsesRatings(games)
-      ? "This is your guessed games, feel free to modify them for every category to make it your own"
+      ? "This is your guessed games, feel free to modify them for every category to make it your own."
       : "Choose one finished game for every category.";
   }
   if (el.gotyPickerOrder) {
@@ -2555,6 +2555,7 @@ function showGameOfTheYearAutofillLoading() {
   const messages = [
     "Calculating your Games of the year...",
     "Comparing your ratings...",
+    "Finding the strongest contenders...",
     "Checking category fit...",
     "Preparing your picks...",
   ];
@@ -2562,6 +2563,7 @@ function showGameOfTheYearAutofillLoading() {
     <div class="goty-loading-window" aria-label="${escapeHtml(messages[0])}">
       <span class="goty-loading-icon" aria-hidden="true">${trophyIcon()}</span>
       <strong>${escapeHtml(messages[0])}</strong>
+      <span class="goty-loading-signal" aria-hidden="true"><b></b><b></b><b></b><b></b><b></b></span>
       <span class="goty-loading-dots" aria-hidden="true"><i></i><i></i><i></i></span>
       <em></em>
     </div>
@@ -2574,7 +2576,7 @@ function showGameOfTheYearAutofillLoading() {
     index = (index + 1) % messages.length;
     if (text) text.textContent = messages[index];
     if (windowNode) windowNode.setAttribute("aria-label", messages[index]);
-  }, 480);
+  }, 820);
   requestAnimationFrame(() => overlay.classList.add("visible"));
   return new Promise((resolve) => {
     window.setTimeout(() => {
@@ -2583,8 +2585,8 @@ function showGameOfTheYearAutofillLoading() {
       window.setTimeout(() => {
         overlay.remove();
         resolve();
-      }, 180);
-    }, 1900);
+      }, 240);
+    }, 3400);
   });
 }
 

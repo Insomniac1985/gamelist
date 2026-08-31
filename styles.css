@@ -1666,7 +1666,10 @@ html.theme-gradient .goty-section .column-head h2 .trophy-icon {
   padding: 18px;
   pointer-events: none;
   opacity: 0;
-  transition: opacity 180ms ease;
+  background:
+    radial-gradient(circle at 50% 43%, color-mix(in srgb, var(--accent) 14%, transparent), transparent 34%),
+    rgba(0, 0, 0, 0.18);
+  transition: opacity 240ms ease;
 }
 
 .goty-loading-overlay.visible {
@@ -1674,22 +1677,43 @@ html.theme-gradient .goty-section .column-head h2 .trophy-icon {
 }
 
 .goty-loading-window {
+  position: relative;
   display: grid;
   justify-items: center;
+  overflow: hidden;
   width: min(310px, calc(100vw - 36px));
-  padding: 18px 16px 16px;
-  border: 1px solid color-mix(in srgb, var(--accent) 46%, var(--line));
+  padding: 20px 16px 16px;
+  border: 1px solid color-mix(in srgb, #d7b8ff 48%, var(--line));
   border-radius: 8px;
   color: var(--text);
-  background: var(--grid-fade), var(--grid-texture), var(--panel-dark);
+  background:
+    linear-gradient(135deg, color-mix(in srgb, var(--accent) 18%, transparent), transparent 46%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.08), transparent 38%),
+    var(--grid-fade),
+    var(--grid-texture),
+    var(--panel-dark);
   background-size: auto, 22px 22px, 22px 22px, auto;
   background-position: center, var(--grid-x) var(--grid-y), var(--grid-x) var(--grid-y), center;
   box-shadow:
-    0 18px 44px rgba(0, 0, 0, 0.4),
-    0 0 36px color-mix(in srgb, var(--accent) 22%, transparent);
-  backdrop-filter: blur(10px) saturate(1.12);
-  transform: translateY(8px) scale(0.96);
-  transition: transform 220ms ease;
+    0 22px 54px rgba(0, 0, 0, 0.48),
+    0 0 42px color-mix(in srgb, #d7b8ff 24%, transparent);
+  backdrop-filter: blur(12px) saturate(1.18);
+  transform: translateY(10px) scale(0.95);
+  transition: transform 320ms cubic-bezier(0.2, 0.9, 0.2, 1);
+}
+
+.goty-loading-window::before {
+  content: "";
+  position: absolute;
+  inset: -40% -55%;
+  background: linear-gradient(120deg, transparent 38%, rgba(255, 255, 255, 0.18), transparent 62%);
+  transform: translateX(-36%) rotate(8deg);
+  animation: gotyLoadingShine 2400ms ease-in-out infinite;
+}
+
+.goty-loading-window > * {
+  position: relative;
+  z-index: 1;
 }
 
 .goty-loading-overlay.visible .goty-loading-window {
@@ -1697,21 +1721,39 @@ html.theme-gradient .goty-section .column-head h2 .trophy-icon {
 }
 
 .goty-loading-icon {
+  position: relative;
   display: inline-grid;
-  width: 42px;
-  height: 42px;
+  width: 48px;
+  height: 48px;
   margin-bottom: 10px;
   place-items: center;
   border-radius: 8px;
   color: #ffe985;
   background: rgba(255, 225, 101, 0.12);
   border: 1px solid rgba(255, 225, 101, 0.36);
-  animation: gotyLoadingFloat 900ms ease-in-out infinite alternate;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.18),
+    0 0 22px rgba(255, 225, 101, 0.18);
+  animation: gotyLoadingFloat 1400ms ease-in-out infinite alternate;
+}
+
+.goty-loading-icon::before,
+.goty-loading-icon::after {
+  content: "";
+  position: absolute;
+  inset: -7px;
+  border-radius: 10px;
+  border: 1px solid rgba(215, 184, 255, 0.28);
+  animation: gotyLoadingRing 1800ms ease-out infinite;
+}
+
+.goty-loading-icon::after {
+  animation-delay: 650ms;
 }
 
 .goty-loading-icon .trophy-icon {
-  width: 23px;
-  height: 23px;
+  width: 25px;
+  height: 25px;
 }
 
 .goty-loading-window strong {
@@ -1723,10 +1765,45 @@ html.theme-gradient .goty-section .column-head h2 .trophy-icon {
   text-align: center;
 }
 
+.goty-loading-signal {
+  display: inline-flex;
+  align-items: end;
+  gap: 4px;
+  height: 18px;
+  margin-top: 10px;
+  color: #d7b8ff;
+}
+
+.goty-loading-signal b {
+  display: block;
+  width: 5px;
+  height: 8px;
+  border-radius: 999px;
+  background: currentColor;
+  opacity: 0.42;
+  animation: gotyLoadingSignal 1600ms ease-in-out infinite;
+}
+
+.goty-loading-signal b:nth-child(2) {
+  animation-delay: 140ms;
+}
+
+.goty-loading-signal b:nth-child(3) {
+  animation-delay: 280ms;
+}
+
+.goty-loading-signal b:nth-child(4) {
+  animation-delay: 420ms;
+}
+
+.goty-loading-signal b:nth-child(5) {
+  animation-delay: 560ms;
+}
+
 .goty-loading-dots {
   display: inline-flex;
   gap: 5px;
-  margin-top: 12px;
+  margin-top: 10px;
 }
 
 .goty-loading-dots i {
@@ -1734,7 +1811,7 @@ html.theme-gradient .goty-section .column-head h2 .trophy-icon {
   height: 6px;
   border-radius: 50%;
   background: #d7b8ff;
-  animation: gotyLoadingDots 780ms ease-in-out infinite;
+  animation: gotyLoadingDots 1100ms ease-in-out infinite;
 }
 
 .goty-loading-dots i:nth-child(2) {
@@ -1761,12 +1838,28 @@ html.theme-gradient .goty-section .column-head h2 .trophy-icon {
   height: 100%;
   border-radius: inherit;
   background: linear-gradient(90deg, var(--accent), #d7b8ff);
-  animation: gotyLoadingBar 900ms ease-in-out infinite;
+  animation: gotyLoadingBar 1500ms ease-in-out infinite;
+}
+
+@keyframes gotyLoadingShine {
+  0%, 28% { transform: translateX(-46%) rotate(8deg); opacity: 0; }
+  45% { opacity: 1; }
+  74%, 100% { transform: translateX(46%) rotate(8deg); opacity: 0; }
 }
 
 @keyframes gotyLoadingFloat {
   from { transform: translateY(0); }
-  to { transform: translateY(-5px); }
+  to { transform: translateY(-6px); }
+}
+
+@keyframes gotyLoadingRing {
+  0% { opacity: 0.55; transform: scale(0.82); }
+  100% { opacity: 0; transform: scale(1.24); }
+}
+
+@keyframes gotyLoadingSignal {
+  0%, 100% { height: 8px; opacity: 0.38; }
+  50% { height: 18px; opacity: 0.95; }
 }
 
 @keyframes gotyLoadingDots {
