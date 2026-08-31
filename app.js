@@ -2505,6 +2505,12 @@ function openGameOfTheYearDialog(year = currentGameOfTheYear(), options = {}) {
   const picks = options.autoPick ? gameOfTheYearAutoPicks(year, games, entry.picks || {}) : { ...(entry.picks || {}) };
   const dialogTitle = window.matchMedia("(max-width: 520px)").matches ? `GOTYs ${year}` : `Games of the year ${year}`;
   el.gotyDialogTitle.innerHTML = `${trophyIcon()} <span>${escapeHtml(dialogTitle)}</span>`;
+  const copy = el.gotyForm.querySelector(".goty-dialog-copy");
+  if (copy) {
+    copy.textContent = options.autoPick && gameOfTheYearAutofillUsesRatings(games)
+      ? "This is your guessed games, feel free to modify them for every category to make it your own."
+      : "Choose one finished game for every category.";
+  }
   if (el.gotyPickerOrder) {
     state.gotyPickerOrder = state.gotyPickerOrder || gotyOrderForDefault(state.settings.defaultOrder);
     el.gotyPickerOrder.value = state.gotyPickerOrder;
@@ -2525,6 +2531,74 @@ function openGameOfTheYearDialog(year = currentGameOfTheYear(), options = {}) {
   }
   syncScrollLock();
   return true;
+}
+
+async function openGameOfTheYearDialogWithAutofillLoading(year = currentGameOfTheYear(), options = {}) {
+  const candidates = gameOfTheYearCandidateGames(year);
+  if (!options.autoPick || !gameOfTheYearAutofillUsesRatings(candidates)) {
+    return openGameOfTheYearDialog(year, options);
+  }
+  await showGameOfTheYearAutofillLoading(candidates);
+  return openGameOfTheYearDialog(year, options);
+}
+
+function gameOfTheYearAutofillUsesRatings(games = []) {
+  return games.some((game) => ratingScoreValue(game) != null || normalizeGameRatings(game?.ratings).soundtrack > 0);
+}
+
+function showGameOfTheYearAutofillLoading(games = []) {
+  document.querySelector(".goty-loading-overlay")?.remove();
+  const overlay = document.createElement("div");
+  overlay.className = "goty-loading-overlay";
+  overlay.setAttribute("role", "status");
+  overlay.setAttribute("aria-live", "polite");
+  const messages = [
+    "Calculating your Games of the year...",
+    "Comparing your ratings...",
+    "Finding the strongest contenders...",
+    "Gotta go fast!",
+    "Checking category fit...",
+    "Let's go!",
+    "Preparing your picks...",
+  ];
+  const flightGames = sortedGameOfTheYearChoices(games).slice(0, 24);
+  const flightMarkup = flightGames.map((game, index) => {
+    const angle = (index / Math.max(1, flightGames.length)) * Math.PI * 2 - Math.PI / 2;
+    const radiusX = 132 + (index % 3) * 18;
+    const radiusY = 72 + (index % 4) * 8;
+    const fromX = Math.cos(angle) * radiusX;
+    const fromY = Math.sin(angle) * radiusY;
+    const cover = coverDisplayUrl(game.cover || "") || platformLogo(game.platform || "PS5");
+    return `<span class="goty-loading-game" style="--from-x:${fromX.toFixed(1)}px;--from-y:${fromY.toFixed(1)}px;--delay:${(index * 90).toFixed(0)}ms"><img src="${escapeHtml(cover)}" alt=""></span>`;
+  }).join("");
+  overlay.innerHTML = `
+    <div class="goty-loading-window" aria-label="${escapeHtml(messages[0])}">
+      <span class="goty-loading-flight" aria-hidden="true">${flightMarkup}</span>
+      <span class="goty-loading-icon" aria-hidden="true">${trophyIcon()}</span>
+      <strong>${escapeHtml(messages[0])}</strong>
+      <em class="goty-loading-bar" aria-hidden="true"></em>
+    </div>
+  `;
+  document.body.appendChild(overlay);
+  const text = overlay.querySelector("strong");
+  const windowNode = overlay.querySelector(".goty-loading-window");
+  let index = 0;
+  const timer = window.setInterval(() => {
+    index = (index + 1) % messages.length;
+    if (text) text.textContent = messages[index];
+    if (windowNode) windowNode.setAttribute("aria-label", messages[index]);
+  }, 820);
+  requestAnimationFrame(() => overlay.classList.add("visible"));
+  return new Promise((resolve) => {
+    window.setTimeout(() => {
+      window.clearInterval(timer);
+      overlay.classList.remove("visible");
+      window.setTimeout(() => {
+        overlay.remove();
+        resolve();
+      }, 240);
+    }, 3800);
+  });
 }
 
 function renderGameOfTheYearPicker(games, picks) {
@@ -2695,11 +2769,17 @@ function showGameOfTheYearCallout(year) {
     <button class="primary-button" type="button" data-goty-callout-action="choose">Choose now</button>
     <button class="icon-button" type="button" data-goty-callout-action="dismiss" title="Dismiss" aria-label="Dismiss">×</button>
   `;
-  callout.querySelector("[data-goty-callout-action='choose']")?.addEventListener("click", (event) => {
+  callout.querySelector("[data-goty-callout-action='choose']")?.addEventListener("click", async (event) => {
     event.preventDefault();
     event.stopPropagation();
-    const opened = openGameOfTheYearDialog(year, { force: true, autoPick: true });
-    if (opened) callout.classList.remove("visible");
+    const button = event.currentTarget;
+    button.disabled = true;
+    try {
+      const opened = await openGameOfTheYearDialogWithAutofillLoading(year, { force: true, autoPick: true });
+      if (opened) callout.classList.remove("visible");
+    } finally {
+      if (button.isConnected) button.disabled = false;
+    }
   });
   callout.querySelector("[data-goty-callout-action='dismiss']")?.addEventListener("click", (event) => {
     event.preventDefault();

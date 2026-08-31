@@ -1657,6 +1657,206 @@ html.theme-gradient .goty-section .column-head h2 .trophy-icon {
   background: color-mix(in srgb, var(--accent) 18%, rgba(255, 255, 255, 0.08));
 }
 
+.goty-loading-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 120;
+  display: grid;
+  place-items: center;
+  padding: 18px;
+  pointer-events: none;
+  opacity: 0;
+  background: rgba(0, 0, 0, 0.12);
+  backdrop-filter: blur(5px) saturate(1.04);
+  transition: opacity 240ms ease;
+}
+
+.goty-loading-overlay.visible {
+  opacity: 1;
+}
+
+.goty-loading-window {
+  position: relative;
+  display: grid;
+  justify-items: center;
+  overflow: hidden;
+  width: min(310px, calc(100vw - 36px));
+  min-height: 178px;
+  padding: 58px 16px 16px;
+  border: 1px solid color-mix(in srgb, #d7b8ff 48%, var(--line));
+  border-radius: 8px;
+  color: var(--text);
+  background:
+    var(--grid-fade),
+    var(--grid-texture),
+    var(--panel-dark);
+  background-size: auto, 22px 22px, auto;
+  background-position: center, var(--grid-x) var(--grid-y), center;
+  box-shadow:
+    0 22px 54px rgba(0, 0, 0, 0.48),
+    0 0 42px color-mix(in srgb, #d7b8ff 24%, transparent);
+  backdrop-filter: blur(12px) saturate(1.18);
+  transform: translateY(10px) scale(0.95);
+  transition: transform 320ms cubic-bezier(0.2, 0.9, 0.2, 1);
+}
+
+.goty-loading-window::before {
+  content: "";
+  position: absolute;
+  inset: -40% -55%;
+  background: linear-gradient(120deg, transparent 38%, rgba(255, 255, 255, 0.14), transparent 62%);
+  transform: translateX(-36%) rotate(8deg);
+  animation: gotyLoadingShine 2800ms ease-in-out infinite;
+}
+
+.goty-loading-window > * {
+  position: relative;
+  z-index: 1;
+}
+
+.goty-loading-overlay.visible .goty-loading-window {
+  transform: translateY(0) scale(1);
+}
+
+.goty-loading-icon {
+  position: relative;
+  display: inline-grid;
+  z-index: 3;
+  width: 48px;
+  height: 48px;
+  margin-bottom: 10px;
+  place-items: center;
+  border-radius: 8px;
+  color: #ffe985;
+  background: rgba(255, 225, 101, 0.12);
+  border: 1px solid rgba(255, 225, 101, 0.36);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.18),
+    0 0 22px rgba(255, 225, 101, 0.18);
+  animation: gotyLoadingFloat 1400ms ease-in-out infinite alternate;
+}
+
+.goty-loading-icon::before,
+.goty-loading-icon::after {
+  content: "";
+  position: absolute;
+  inset: -7px;
+  border-radius: 10px;
+  border: 1px solid rgba(215, 184, 255, 0.28);
+  animation: gotyLoadingRing 1800ms ease-out infinite;
+}
+
+.goty-loading-icon::after {
+  animation-delay: 650ms;
+}
+
+.goty-loading-icon .trophy-icon {
+  width: 25px;
+  height: 25px;
+}
+
+.goty-loading-window strong {
+  z-index: 3;
+  max-width: 24ch;
+  min-height: 36px;
+  color: var(--text);
+  font-size: 14px;
+  line-height: 1.25;
+  text-align: center;
+}
+
+.goty-loading-flight {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+}
+
+.goty-loading-game {
+  position: absolute;
+  left: calc(50% - 13px);
+  top: 24px;
+  display: block;
+  width: 26px;
+  height: 36px;
+  overflow: hidden;
+  border-radius: 4px;
+  border: 1px solid rgba(255, 255, 255, 0.34);
+  background: rgba(255, 255, 255, 0.08);
+  box-shadow:
+    0 8px 18px rgba(0, 0, 0, 0.34),
+    0 0 14px color-mix(in srgb, #d7b8ff 22%, transparent);
+  opacity: 0;
+  transform: translate(var(--from-x), var(--from-y)) scale(0.76) rotate(-10deg);
+  animation: gotyLoadingGameFlight 2400ms cubic-bezier(0.2, 0.82, 0.18, 1) var(--delay) forwards;
+}
+
+.goty-loading-game img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.goty-loading-bar {
+  z-index: 3;
+  width: 100%;
+  height: 3px;
+  margin-top: 14px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--accent) 18%, transparent);
+}
+
+.goty-loading-bar::before {
+  content: "";
+  display: block;
+  width: 46%;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--accent);
+  animation: gotyLoadingBar 1500ms ease-in-out infinite;
+}
+
+@keyframes gotyLoadingShine {
+  0%, 28% { transform: translateX(-46%) rotate(8deg); opacity: 0; }
+  45% { opacity: 1; }
+  74%, 100% { transform: translateX(46%) rotate(8deg); opacity: 0; }
+}
+
+@keyframes gotyLoadingFloat {
+  from { transform: translateY(0); }
+  to { transform: translateY(-6px); }
+}
+
+@keyframes gotyLoadingRing {
+  0% { opacity: 0.55; transform: scale(0.82); }
+  100% { opacity: 0; transform: scale(1.24); }
+}
+
+@keyframes gotyLoadingGameFlight {
+  0% {
+    opacity: 0;
+    transform: translate(var(--from-x), var(--from-y)) scale(0.72) rotate(-12deg);
+  }
+  18% {
+    opacity: 0.95;
+  }
+  70% {
+    opacity: 0.95;
+    transform: translate(calc(var(--from-x) * 0.16), calc(var(--from-y) * 0.1)) scale(0.9) rotate(5deg);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(0, 0) scale(0.18) rotate(18deg);
+  }
+}
+
+@keyframes gotyLoadingBar {
+  0% { transform: translateX(-85%); }
+  100% { transform: translateX(220%); }
+}
+
 .playing-finished-tags .platform-badge,
 .playing-finished-tags .owner-pill,
 .playing-finished-tags .dlc-pill,
