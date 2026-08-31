@@ -2565,11 +2565,11 @@ function showGameOfTheYearAutofillLoading(games = []) {
   const flightMarkup = flightGames.map((game, index) => {
     const angle = (index / Math.max(1, flightGames.length)) * Math.PI * 2 - Math.PI / 2;
     const radiusX = 180 + (index % 3) * 24;
-    const radiusY = 106 + (index % 4) * 10;
-    const ringX = Math.cos(angle) * (66 + (index % 2) * 10);
-    const ringY = Math.sin(angle) * (46 + (index % 3) * 6);
+    const radiusY = 88 + (index % 4) * 8;
+    const ringX = Math.cos(angle) * (58 + (index % 2) * 8);
+    const ringY = Math.sin(angle) * (30 + (index % 3) * 5);
     const fromX = Math.cos(angle) * radiusX;
-    const fromY = Math.sin(angle) * radiusY;
+    const fromY = Math.min(Math.sin(angle) * radiusY, 44);
     const cover = coverDisplayUrl(game.cover || "") || platformLogo(game.platform || "PS5");
     return `<span class="goty-loading-game" style="--from-x:${fromX.toFixed(1)}px;--from-y:${fromY.toFixed(1)}px;--ring-x:${ringX.toFixed(1)}px;--ring-y:${ringY.toFixed(1)}px;--delay:${(index * 90).toFixed(0)}ms"><img src="${escapeHtml(cover)}" alt=""></span>`;
   }).join("");

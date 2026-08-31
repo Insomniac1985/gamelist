@@ -1681,8 +1681,8 @@ html.theme-gradient .goty-section .column-head h2 .trophy-icon {
   justify-items: center;
   overflow: hidden;
   width: min(390px, calc(100vw - 36px));
-  min-height: 292px;
-  padding: 112px 20px 20px;
+  min-height: 340px;
+  padding: 76px 22px 22px;
   border: 1px solid color-mix(in srgb, #d7b8ff 48%, var(--line));
   border-radius: 8px;
   color: var(--text);
@@ -1724,7 +1724,7 @@ html.theme-gradient .goty-section .column-head h2 .trophy-icon {
   z-index: 3;
   width: 48px;
   height: 48px;
-  margin-bottom: 28px;
+  margin-bottom: 96px;
   place-items: center;
   border-radius: 8px;
   color: #ffe985;
@@ -1775,7 +1775,7 @@ html.theme-gradient .goty-section .column-head h2 .trophy-icon {
 .goty-loading-game {
   position: absolute;
   left: calc(50% - 14px);
-  top: 110px;
+  top: 82px;
   display: block;
   width: 28px;
   height: 39px;
