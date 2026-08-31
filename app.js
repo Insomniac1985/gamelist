@@ -2538,7 +2538,7 @@ async function openGameOfTheYearDialogWithAutofillLoading(year = currentGameOfTh
   if (!options.autoPick || !gameOfTheYearAutofillUsesRatings(candidates)) {
     return openGameOfTheYearDialog(year, options);
   }
-  await showGameOfTheYearAutofillLoading();
+  await showGameOfTheYearAutofillLoading(candidates);
   return openGameOfTheYearDialog(year, options);
 }
 
@@ -2546,7 +2546,7 @@ function gameOfTheYearAutofillUsesRatings(games = []) {
   return games.some((game) => ratingScoreValue(game) != null || normalizeGameRatings(game?.ratings).soundtrack > 0);
 }
 
-function showGameOfTheYearAutofillLoading() {
+function showGameOfTheYearAutofillLoading(games = []) {
   document.querySelector(".goty-loading-overlay")?.remove();
   const overlay = document.createElement("div");
   overlay.className = "goty-loading-overlay";
@@ -2559,13 +2559,21 @@ function showGameOfTheYearAutofillLoading() {
     "Checking category fit...",
     "Preparing your picks...",
   ];
+  const flightGames = sortedGameOfTheYearChoices(games).slice(0, 24);
+  const flightMarkup = flightGames.map((game, index) => {
+    const angle = (index / Math.max(1, flightGames.length)) * Math.PI * 2 - Math.PI / 2;
+    const radiusX = 132 + (index % 3) * 18;
+    const radiusY = 72 + (index % 4) * 8;
+    const fromX = Math.cos(angle) * radiusX;
+    const fromY = Math.sin(angle) * radiusY;
+    const cover = coverDisplayUrl(game.cover || "") || platformLogo(game.platform || "PS5");
+    return `<span class="goty-loading-game" style="--from-x:${fromX.toFixed(1)}px;--from-y:${fromY.toFixed(1)}px;--delay:${(index * 90).toFixed(0)}ms"><img src="${escapeHtml(cover)}" alt=""></span>`;
+  }).join("");
   overlay.innerHTML = `
     <div class="goty-loading-window" aria-label="${escapeHtml(messages[0])}">
+      <span class="goty-loading-flight" aria-hidden="true">${flightMarkup}</span>
       <span class="goty-loading-icon" aria-hidden="true">${trophyIcon()}</span>
       <strong>${escapeHtml(messages[0])}</strong>
-      <span class="goty-loading-signal" aria-hidden="true"><b></b><b></b><b></b><b></b><b></b></span>
-      <span class="goty-loading-dots" aria-hidden="true"><i></i><i></i><i></i></span>
-      <em></em>
     </div>
   `;
   document.body.appendChild(overlay);
@@ -2586,7 +2594,7 @@ function showGameOfTheYearAutofillLoading() {
         overlay.remove();
         resolve();
       }, 240);
-    }, 3400);
+    }, 3800);
   });
 }
 
