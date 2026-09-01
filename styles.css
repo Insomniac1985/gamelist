@@ -4532,7 +4532,7 @@ body.theme-kash .game-row.stream-card:hover {
 }
 
 .game-row .time-pill::before {
-  top: 4px;
+  top: 3px;
   bottom: auto;
   width: 4px;
   height: 14px;
@@ -4542,11 +4542,13 @@ body.theme-kash .game-row.stream-card:hover {
 .game-row .time-pill strong {
   font-size: 10px;
   line-height: 1;
+  margin-left: 2px;
 }
 
 .game-row .time-pill span {
-  font-size: 8px;
+  font-size: 7px;
   line-height: 1;
+  margin-top: 2px;
 }
 
 .game-row .media-format-pill {
