@@ -1783,9 +1783,27 @@ function renderShelfLookupResults() {
     const physical = result.lookupSource === "pricecharting";
     const platforms = (result.platforms || [result.platform]).filter(Boolean);
     const image = coverUrl(result.cover || "");
-    return `<div class="lookup-result shelf-lookup-result${image ? "" : " no-cover"}"><img class="${image ? "" : "lookup-placeholder"}" src="${escapeHtml(image || blankImage())}" alt=""><div><strong>${escapeHtml(result.title || "Untitled game")}</strong><p>${escapeHtml(platforms.join(" · ") || "Platform unknown")}</p></div><button class="ghost-button" type="button" data-result-index="${index}">Use</button></div>`;
+    const publisherDate = lookupPublisherDateLine(result);
+    const tags = lookupTagsLine(result);
+    const description = shortDescription(result.description || "", 180);
+    const body = physical
+      ? `<p>${escapeHtml(platforms.join(" · ") || "Platform unknown")}</p>`
+      : `${publisherDate ? `<p>${escapeHtml(publisherDate)}</p>` : ""}${tags ? `<p>${escapeHtml(tags)}</p>` : ""}${description ? `<p>${escapeHtml(description)}</p>` : ""}`;
+    return `<div class="lookup-result shelf-lookup-result${image ? "" : " no-cover"}"><img class="${image ? "" : "lookup-placeholder"}" src="${escapeHtml(image || blankImage())}" alt=""><div><strong>${escapeHtml(result.title || "Untitled game")}</strong>${body}</div><button class="ghost-button" type="button" data-result-index="${index}">Use</button></div>`;
   }).join("");
   requestAnimationFrame(() => el.lookupResults.classList.add("loaded"));
+}
+
+function lookupPublisherDateLine(result) {
+  return [
+    result.publisher,
+    result.releaseDate || result.releaseText,
+  ].filter(Boolean).join(" • ");
+}
+
+function lookupTagsLine(result) {
+  return [...new Set([...(result.genres || []), ...(result.tags || [])].filter(Boolean))]
+    .join(", ");
 }
 
 async function chooseLookupResult(event) {
