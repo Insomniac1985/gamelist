@@ -1383,7 +1383,7 @@ function gameCard(game, options = {}) {
   const digitalGame = !preorderProjection && isDigitalShelfGame(game);
   const fallbackCover = coverUrl(game.cover || "") || platformFallback(game.platform);
   const cover = fallbackCover;
-  const studio = [game.developer, game.publisher && game.publisher !== game.developer ? game.publisher : ""].filter(Boolean).join(preorderProjection ? " / " : " · ");
+  const studio = [game.developer, game.publisher && game.publisher !== game.developer ? game.publisher : ""].filter(Boolean).join(" / ");
   const owners = game.owners || [];
   const visibleOwners = visibleShelfCardOwners(owners);
   const ownerClasses = visibleOwners.map((owner) => ` ${ownerCardColorClass(owner)}`).join("");
@@ -1437,7 +1437,7 @@ function gameRow(game) {
   const preorderProjection = Boolean(game.preorderProjection);
   const digitalGame = !preorderProjection && isDigitalShelfGame(game);
   const cover = coverUrl(game.cover || "") || platformFallback(game.platform);
-  const studio = [game.developer, game.publisher && game.publisher !== game.developer ? game.publisher : ""].filter(Boolean).join(preorderProjection ? " / " : " · ");
+  const studio = [game.developer, game.publisher && game.publisher !== game.developer ? game.publisher : ""].filter(Boolean).join(" / ");
   const owners = game.owners || [];
   const visibleOwners = visibleShelfCardOwners(owners);
   const ownerClasses = visibleOwners.map((owner) => ` ${ownerCardColorClass(owner)}`).join("");
@@ -1786,10 +1786,11 @@ function renderShelfLookupResults() {
     const publisherDate = lookupPublisherDateLine(result);
     const tags = lookupTagsLine(result);
     const description = shortDescription(result.description || "", 180);
+    const igdbRating = physical ? "" : igdbRatingBadge(result);
     const body = physical
       ? `<p>${escapeHtml(platforms.join(" · ") || "Platform unknown")}</p>`
       : `${publisherDate ? `<p>${escapeHtml(publisherDate)}</p>` : ""}${tags ? `<p>${escapeHtml(tags)}</p>` : ""}${description ? `<p>${escapeHtml(description)}</p>` : ""}`;
-    return `<div class="lookup-result shelf-lookup-result${image ? "" : " no-cover"}"><img class="${image ? "" : "lookup-placeholder"}" src="${escapeHtml(image || blankImage())}" alt=""><div><strong>${escapeHtml(result.title || "Untitled game")}</strong>${body}</div><button class="ghost-button" type="button" data-result-index="${index}">Use</button></div>`;
+    return `<div class="lookup-result shelf-lookup-result${image ? "" : " no-cover"}"><img class="${image ? "" : "lookup-placeholder"}" src="${escapeHtml(image || blankImage())}" alt=""><div><strong>${escapeHtml(result.title || "Untitled game")}</strong>${igdbRating}${body}</div><button class="ghost-button" type="button" data-result-index="${index}">Use</button></div>`;
   }).join("");
   requestAnimationFrame(() => el.lookupResults.classList.add("loaded"));
 }
@@ -1804,6 +1805,23 @@ function lookupPublisherDateLine(result) {
 function lookupTagsLine(result) {
   return [...new Set([...(result.genres || []), ...(result.tags || [])].filter(Boolean))]
     .join(", ");
+}
+
+function igdbRatingBadge(result) {
+  const rating = Number(result?.igdbRating);
+  if (!Number.isFinite(rating) || rating <= 0) return "";
+  const count = Number(result?.igdbRatingCount || 0);
+  const displayRating = (Math.round(rating) / 10).toFixed(1);
+  const ratingText = `${displayRating}/10`;
+  const countText = count > 0 ? ` (${count.toLocaleString()} votes)` : "";
+  return `<span class="lookup-igdb-rating rating-score-${igdbRatingTone(Number(displayRating))}" title="${escapeHtml(`IGDB rating: ${ratingText}${countText}`)}" aria-label="${escapeHtml(`IGDB rating: ${ratingText}${countText}`)}"><span class="lookup-igdb-rating-star" aria-hidden="true">★</span>${escapeHtml(displayRating)}</span>`;
+}
+
+function igdbRatingTone(score) {
+  if (score >= 9) return "gold";
+  if (score >= 7) return "high";
+  if (score >= 5) return "mid";
+  return "low";
 }
 
 async function chooseLookupResult(event) {
