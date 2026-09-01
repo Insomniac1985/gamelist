@@ -10412,7 +10412,7 @@ function renderLookupResults(results) {
     row.innerHTML = `
       <img src="${escapeHtml(result.cover ? coverDisplayUrl(result.cover) : "")}" alt="" loading="lazy" decoding="async" ${result.cover ? "" : "hidden"}>
       <div>
-        <strong>${escapeHtml(result.title)}</strong>${igdbRating}
+        <span class="lookup-result-title"><strong>${escapeHtml(result.title)}</strong>${igdbRating}</span>
         ${publisherDate ? `<p>${escapeHtml(publisherDate)}</p>` : ""}
         ${tags ? `<p>${escapeHtml(tags)}</p>` : ""}
         ${description ? `<p>${escapeHtml(description)}</p>` : ""}

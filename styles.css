@@ -8965,7 +8965,7 @@ body.dialog-open .mobile-section-tabs {
 }
 
 .modal {
-  max-height: calc(100vh - 30px);
+  /*max-height: calc(100vh - 30px);*/
   overflow: auto;
   padding: 18px;
   background: var(--grid-fade), var(--grid-texture), var(--panel-strong);
@@ -12509,12 +12509,23 @@ html.theme-light .finish-trophy-check input[type="checkbox"]:checked {
   font-size: 12px;
 }
 
+.lookup-result-title {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+}
+
+.lookup-result-title strong {
+  min-width: 0;
+}
+
 .lookup-igdb-rating {
   display: inline-flex;
   align-items: center;
   gap: 4px;
   width: fit-content;
-  margin: 0 0 0 6px;
+  margin: 0;
   padding: 2px 7px;
   color: var(--text);
   font-size: 11px;
