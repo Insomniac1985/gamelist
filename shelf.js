@@ -3347,6 +3347,7 @@ function shelfProgressPill(game) {
 }
 function shelfCardTrophies(game, options = {}) {
   if (!shelfAllowsTrophyActivity(game.platform)) return "";
+  if (shelfIsSteamAchievementGame(game) && !steamAppIdForShelfGame(game)) return "";
   const external = externalActivityFor(game);
   if (external) {
     const label = achievementKindForPlatform(game.platform);
@@ -3471,17 +3472,11 @@ function renderGamelistDetailTrophyList() {
 }
 function externalActivityFor(game) {
   const platform = normalize(shortPlatform(game.platform)); const title = game.trophyName || game.title;
-  if (platform.includes("steam") || platform === "pc") { const appId = steamAppIdForShelfGame(game); const cached = appId ? state.cardTrophies[`steam:${appId}`] : null; if (cached) return { achievements: cached.achievements || [], earned: cached.earned || 0, total: cached.total || 0, loading: cached.loading, needsSetup: cached.needsSetup, authError: cached.authError, error: cached.error || "", debug: cached.debug || "" }; const match = state.steamActivity.games.map((item) => ({ item, score: activityTitleMatchScore(title, item.name || item.title) })).filter(({ score }) => score >= 75).sort((a, b) => b.score - a.score)[0]?.item; if (!match) { if (appId) loadShelfSteamCardAchievements(game, appId); return appId ? { achievements: [], earned: 0, total: 0, loading: true } : null; } const achievements = match.achievements || []; return { achievements, earned: achievements.filter((item) => item.earned).length, total: achievements.length, unavailable: match.unavailable, error: match.error || "", debug: match.debug || "" }; }
+  if (platform.includes("steam") || platform === "pc") { const appId = steamAppIdForShelfGame(game); if (!appId) return null; const cached = state.cardTrophies[`steam:${appId}`]; if (cached) return { achievements: cached.achievements || [], earned: cached.earned || 0, total: cached.total || 0, loading: cached.loading, needsSetup: cached.needsSetup, authError: cached.authError, error: cached.error || "", debug: cached.debug || "" }; const match = state.steamActivity.games.map((item) => ({ item, score: activityTitleMatchScore(title, item.name || item.title) })).filter(({ score }) => score >= 75).sort((a, b) => b.score - a.score)[0]?.item; if (!match) { loadShelfSteamCardAchievements(game, appId); return { achievements: [], earned: 0, total: 0, loading: true }; } const achievements = match.achievements || []; return { achievements, earned: achievements.filter((item) => item.earned).length, total: achievements.length, unavailable: match.unavailable, error: match.error || "", debug: match.debug || "" }; }
   if (platform.includes("xbox") || platform === "x360" || platform === "xone") { const match = state.xboxActivity.games.map((item) => ({ item, score: activityTitleMatchScore(title, item.title || item.game) })).filter(({ score }) => score >= 75).sort((a, b) => b.score - a.score)[0]?.item; if (!match) return null; const achievements = match.achievements || []; return { achievements, earned: Number(match.earned || achievements.filter((item) => item.earned).length), total: Number(match.total || achievements.length) }; }
   return null;
 }
 function steamAppIdForShelfGame(game) { const direct = String(game.steamAppId || "").replace(/\D/g, ""); if (direct) return direct; const value = game.storeLinks?.steam || ""; try { const parts = new URL(value).pathname.split("/").filter(Boolean); const index = parts.indexOf("app"); return index >= 0 ? String(parts[index + 1] || "").replace(/\D/g, "") : ""; } catch { return ""; } }
-function steamAchievementEmptyMessage(game, external = {}) {
-  if (external.needsSetup) return tt("Steam achievements need setup.");
-  if (external.authError || external.error || external.debug) return `${tt("Could not load achievements right now.")}${external.error || external.debug ? ` ${external.error || external.debug}` : ""}`;
-  if (!steamAppIdForShelfGame(game)) return "Add a Steam app URL for this game to load achievements.";
-  return "No Steam achievements found for this game. Check that the configured Steam account owns it and that game details are public.";
-}
 async function loadShelfSteamCardAchievements(game, appId) { const key = `steam:${appId}`; if (state.cardTrophies[key]) return; state.cardTrophies[key] = { loading: true, achievements: [], earned: 0, total: 0 }; try { const params = achievementParams({ appId, debug: "1" }); if (state.gamelistSettings.steamUser) params.set("user", state.gamelistSettings.steamUser); const response = await fetch(`/api/steam-achievements?${params}`); const data = await response.json(); const achievements = Array.isArray(data.achievements) ? data.achievements : []; state.cardTrophies[key] = { loading: false, achievements, earned: Number(data.earnedCount ?? achievements.filter((item) => item.earned).length), total: Number(data.count ?? achievements.length), needsSetup: Boolean(data.needsSetup), authError: Boolean(data.authError || data.error || !response.ok), error: data.error || "", debug: data.debug || "" }; } catch { state.cardTrophies[key] = { loading: false, achievements: [], earned: 0, total: 0, authError: true }; } refreshShelfProjectedActivity(game); if (el.detailDialog.open && el.detailDialog.dataset.id === game.id) { if (el.detailDialog.dataset.projection === "true") loadGamelistDetailTrophies(game); else loadShelfTrophies(game); } }
 async function loadShelfCardTrophies(game, remote) {
   const cacheKey = remote?.npCommunicationId || remote?.id || "";
@@ -4154,6 +4149,8 @@ function syncShelfGameRecord(game) {
 async function loadShelfTrophies(game) {
   game = shelfTrophyLookupGame(game);
   if (!shelfAllowsTrophyActivity(game.platform)) { el.detailTrophies.hidden = true; el.detailTrophyPercent.innerHTML = ""; return; }
+  const isSteamGame = shelfIsSteamAchievementGame(game);
+  if (isSteamGame && !steamAppIdForShelfGame(game)) { el.detailTrophies.hidden = true; el.detailTrophyPercent.innerHTML = ""; el.detailTrophyList.innerHTML = ""; return; }
   const external = externalActivityFor(game);
   if (external) {
     el.detailTrophies.hidden = false;
@@ -4164,11 +4161,12 @@ async function loadShelfTrophies(game) {
       el.detailTrophyList.innerHTML = `<div class="detail-trophy-empty">${escapeHtml(tt("Loading earned achievements..."))}</div>`;
       return;
     }
+    if (isSteamGame && !external.achievements.length) { el.detailTrophies.hidden = true; el.detailTrophyPercent.innerHTML = ""; el.detailTrophyList.innerHTML = ""; return; }
     const progress = external.total ? Math.round((external.earned / external.total) * 100) : 0;
     el.detailTrophyPercent.innerHTML = external.total ? shelfProgressBadge({ progress, earned: external.earned, total: external.total }, { includeIcon: false, separator: true }) : "";
     el.detailTrophyList.innerHTML = external.achievements.length
       ? external.achievements.map((item) => `<article class="detail-trophy-card trophy-${trophyTone(item.type || item.rarity)} ${item.earned ? "earned" : "missing"}"><img src="${escapeHtml(item.icon || platformLogo(game.platform))}" alt=""><div><strong>${escapeHtml(item.title || "Achievement")}</strong><span>${escapeHtml([item.earned ? item.earnedAt || tt("Earned") : tt("Missing"), item.rarity].filter(Boolean).join(" · "))}</span>${item.description ? `<p>${escapeHtml(item.description)}</p>` : ""}</div></article>`).join("")
-      : `<div class="detail-trophy-empty">${escapeHtml(shelfIsSteamAchievementGame(game) ? steamAchievementEmptyMessage(game, external) : "No achievements found for this game yet.")}</div>`;
+      : `<div class="detail-trophy-empty">No achievements found for this game yet.</div>`;
     return;
   }
   const match = activityGameFor(game);
