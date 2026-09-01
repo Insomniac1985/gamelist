@@ -154,9 +154,17 @@ async function igdbResult(game, query, hltbResults, lookup = {}, language = "en"
     trailerUrl: steamTrailerUrl || igdbTrailer(game.videos),
     storeLinks,
     lengthHours: hltbMatch?.lengthHours || null,
+    igdbRating: igdbRating(game.total_rating),
+    igdbRatingCount: Number.isFinite(Number(game.total_rating_count)) ? Number(game.total_rating_count) : 0,
     source: "IGDB",
     score,
   };
+}
+
+function igdbRating(value) {
+  const rating = Number(value);
+  if (!Number.isFinite(rating) || rating <= 0) return null;
+  return Math.round(rating);
 }
 
 function fullDescription(value) {
