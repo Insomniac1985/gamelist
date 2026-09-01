@@ -3394,7 +3394,6 @@ async function loadGamelistDetailTrophies(game) {
   el.detailTrophies.hidden = true;
   el.detailTrophyList.innerHTML = "";
   if (!shelfAllowsTrophyActivity(game.platform)) return;
-  if (!game?.playing && shelfIsSteamAchievementGame(game)) return;
   const external = externalActivityFor(game);
   if (external) {
     if (external.loading) { el.detailTrophies.hidden = false; el.detailTrophyTitle.textContent = tt("ACHIEVEMENTS"); el.detailTrophyPercent.innerHTML = ""; el.detailTrophyList.innerHTML = `<div class="detail-trophy-empty">${escapeHtml(tt("Loading earned achievements..."))}</div>`; return; }
@@ -4149,7 +4148,6 @@ function syncShelfGameRecord(game) {
 async function loadShelfTrophies(game) {
   game = shelfTrophyLookupGame(game);
   if (!shelfAllowsTrophyActivity(game.platform)) { el.detailTrophies.hidden = true; el.detailTrophyPercent.innerHTML = ""; return; }
-  if (!game?.playing && shelfIsSteamAchievementGame(game)) { el.detailTrophies.hidden = true; el.detailTrophyPercent.innerHTML = ""; return; }
   const external = externalActivityFor(game);
   if (external) {
     el.detailTrophies.hidden = false;
