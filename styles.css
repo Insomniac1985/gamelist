@@ -4525,22 +4525,30 @@ body.theme-kash .game-row.stream-card:hover {
 }
 
 .game-row .time-pill {
+  flex: 0 0 auto;
   gap: 4px;
+  min-width: 42px;
+  padding-left: 10px;
 }
 
 .game-row .time-pill::before {
+  top: 3px;
+  bottom: auto;
   width: 4px;
   height: 14px;
+  min-height: 0;
 }
 
 .game-row .time-pill strong {
   font-size: 10px;
   line-height: 1;
+  margin-left: 2px;
 }
 
 .game-row .time-pill span {
-  font-size: 8px;
+  font-size: 7px;
   line-height: 1;
+  margin-top: 2px;
 }
 
 .game-row .media-format-pill {
@@ -13476,6 +13484,21 @@ html.theme-light .finish-trophy-check input[type="checkbox"]:checked {
 
   .game-row .history-pill small {
     display: none;
+  }
+
+  .game-row .time-pill {
+    min-width: 39px;
+    padding-left: 9px;
+    padding-right: 5px;
+  }
+
+  .game-row .time-pill::before {
+    top: 4px;
+    bottom: auto;
+    width: 3px;
+    height: 14px;
+    min-height: 0;
+    left: 4px;
   }
 
   .game-row-actions {
