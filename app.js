@@ -5794,7 +5794,7 @@ function renderCompletedYearFilter(years) {
   el.completedYearControl.hidden = !showFilter;
   if (!showFilter) return;
   el.completedYearFilter.innerHTML = [
-    `<option value="all">All</option>`,
+    `<option value="all">${escapeHtml(tt("All"))}</option>`,
     ...years.map((year) => `<option value="${escapeHtml(year)}">${escapeHtml(year)}</option>`),
   ].join("");
   el.completedYearFilter.value = state.completedYear;
@@ -5848,8 +5848,8 @@ function updateCompletedCount(count) {
   if (!el.completedCount) return;
   const games = typeof count === "object" ? Number(count.games || 0) : Number(count || 0);
   const expansions = typeof count === "object" ? Number(count.expansions || 0) : 0;
-  const gameText = `${games} ${games === 1 ? "game" : "games"}`;
-  const expansionText = expansions ? `${expansions} ${expansions === 1 ? "expansion" : "expansions"}` : "";
+  const gameText = tt("{count} {item}", { count: games, item: games === 1 ? tt("game") : tt("games") });
+  const expansionText = expansions ? tt("{count} {item}", { count: expansions, item: expansions === 1 ? tt("expansion") : tt("expansions") }) : "";
   el.completedCount.innerHTML = expansionText
     ? `<span>${escapeHtml(gameText)}</span><span class="completed-count-separator" aria-hidden="true">&middot;</span><span class="completed-count-expansions">${escapeHtml(expansionText)}</span>`
     : `<span>${escapeHtml(gameText)}</span>`;
@@ -5871,7 +5871,7 @@ function openFinishedStatsDialog(year = "all", { yearPicker = false } = {}) {
   if (yearPicker) {
     const years = finishedStatsYears();
     el.finishedStatsYearSelect.innerHTML = ["all", ...years]
-      .map((value) => `<option value="${escapeHtml(value)}">${value === "all" ? "All" : escapeHtml(value)}</option>`)
+      .map((value) => `<option value="${escapeHtml(value)}">${value === "all" ? escapeHtml(tt("All")) : escapeHtml(value)}</option>`)
       .join("");
     el.finishedStatsYearSelect.value = String(year || "all");
   }
@@ -5888,8 +5888,8 @@ function renderFinishedStatsDialog(year = "all", { preserveAll = true } = {}) {
   const scope = preserveAll ? String(year || "all") : finishedStatsScope(year);
   const games = finishedStatsGames(scope);
   const completed = finishedStatsCompleted(scope);
-  el.finishedStatsBrow.textContent = scope === "all" ? "All-time statistics" : "YEARLY STATISTICS";
-  el.finishedStatsTitle.textContent = scope === "all" ? "Finished games" : `Finished games ${scope}`;
+  el.finishedStatsBrow.textContent = scope === "all" ? tt("All-time statistics") : tt("YEARLY STATISTICS");
+  el.finishedStatsTitle.textContent = scope === "all" ? tt("Finished games") : tt("Finished {year}", { year: scope });
   el.finishedStatsBody.innerHTML = finishedStatsMarkup(scope, games, completed);
   el.finishedStatsBody.querySelector("[data-stats-action='completed']")?.addEventListener("click", () => {
     openPlatinumDialog(scope);
@@ -6861,9 +6861,9 @@ function historyRangeText(game) {
   const start = formatLongDate(game.startedAt);
   const done = formatLongDate(game.completedAt);
   if (start && done) return `${start} -> ${done}`;
-  if (done) return `Finished ${done}`;
-  if (start) return `Started ${start}`;
-  return "No dates";
+  if (done) return tt("Finished {date}", { date: done });
+  if (start) return tt("Started {date}", { date: start });
+  return tt("No dates");
 }
 
 function finishedDateText(game) {
@@ -7040,6 +7040,28 @@ function cardFor(game, options = {}) {
   const backlogAction = card.querySelector(".backlog-action");
   const completeAction = card.querySelector(".complete-action");
   const trophyAction = card.querySelector(".trophy-action");
+  const editAction = card.querySelector(".edit-action");
+  const deleteAction = card.querySelector(".delete-action");
+  if (priceRefreshAction) priceRefreshAction.textContent = tt("Prices");
+  if (boughtAction) boughtAction.textContent = tt("Got it");
+  if (completeAction) completeAction.textContent = tt("Finished");
+  if (backlogAction) {
+    backlogAction.title = tt("Backlog");
+    backlogAction.setAttribute("aria-label", tt("Move back to backlog"));
+    backlogAction.querySelector(".action-label").textContent = tt("Backlog");
+  }
+  if (editAction) {
+    editAction.title = tt("Edit");
+    editAction.setAttribute("aria-label", tt("Edit"));
+  }
+  if (trophyAction) {
+    trophyAction.title = tt("Completed");
+    trophyAction.setAttribute("aria-label", tt("Completed"));
+  }
+  if (deleteAction) {
+    deleteAction.title = tt("Delete");
+    deleteAction.setAttribute("aria-label", tt("Delete"));
+  }
   if (neutralReleaseCard) {
     card.querySelector(".edit-action")?.remove();
     card.querySelector(".card-actions")?.remove();
@@ -7093,6 +7115,8 @@ function cardFor(game, options = {}) {
   if (trailerUrl) {
     trailerToggle.hidden = false;
     trailerToggle.innerHTML = pauseIcon();
+    trailerToggle.title = tt("Pause trailer");
+    trailerToggle.setAttribute("aria-label", tt("Pause trailer"));
     trailerToggle.addEventListener("click", (event) => {
       event.stopPropagation();
       toggleCardTrailer(card);
@@ -7127,7 +7151,7 @@ function toggleCardTrailer(card) {
   if (isPaused) pauseCardTrailer(card);
   else updateFocusedPlayingTrailer();
   button.innerHTML = isPaused ? playIcon() : pauseIcon();
-  button.title = isPaused ? "Play trailer" : "Pause trailer";
+  button.title = isPaused ? tt("Play trailer") : tt("Pause trailer");
   button.setAttribute("aria-label", button.title);
 }
 
@@ -8858,11 +8882,11 @@ function cardChipsFor(game) {
 }
 
 function preorderChip(store) {
-  return `<span class="chip accent preorder-chip" title="${escapeHtml(`Preordered: ${store}`)}">${shoppingBagIcon()}${escapeHtml(store)}</span>`;
+  return `<span class="chip accent preorder-chip" title="${escapeHtml(tt("Preordered: {store}", { store }))}">${shoppingBagIcon()}${escapeHtml(store)}</span>`;
 }
 
 function preferredPreorderChip(store) {
-  return `<span class="chip preferred-preorder-chip" title="${escapeHtml(`Preferred preorder store: ${store}`)}">Preferred: ${escapeHtml(store)}</span>`;
+  return `<span class="chip preferred-preorder-chip" title="${escapeHtml(tt("Preferred preorder store: {store}", { store }))}">${escapeHtml(tt("Preferred: {store}", { store }))}</span>`;
 }
 
 function chip(label, type = "") {
@@ -8911,9 +8935,17 @@ function canonicalStatus(status) {
   const aliases = {
     tocollect: "To Collect",
     collect: "To Collect",
+    porcoleccionar: "To Collect",
+    paracoleccionar: "To Collect",
     scarce: "Scarce",
+    escaso: "Scarce",
+    escasa: "Scarce",
     waitingphysical: "Waiting for Physical",
     waitingforphysical: "Waiting for Physical",
+    esperandofisico: "Waiting for Physical",
+    esperandoelfisico: "Waiting for Physical",
+    esperandoedicionfisica: "Waiting for Physical",
+    esperandoedicionenfisico: "Waiting for Physical",
   };
   return aliases[normalized] || "";
 }
@@ -10713,8 +10745,8 @@ async function refreshCurrentPrices() {
   if (!title) return;
   const savedGame = await saveCurrentFormGame();
   if (!shouldFetchPricesForGame(savedGame)) return;
-  el.pricesButton.textContent = "Refreshing...";
-  showToast("Fetching prices...");
+  el.pricesButton.textContent = tt("Refreshing...");
+  showToast(tt("Fetching prices..."));
   try {
     const data = await fetchPrices(savedGame.title, savedGame.platform, savedGame.digital);
     const game = getGame(savedGame.id);
@@ -10722,11 +10754,11 @@ async function refreshCurrentPrices() {
       game.prices = mergeFetchedPrices(game, data.prices);
       upsertGame(game);
     }
-    showToast(`Found ${game?.prices?.length || data.prices?.length || 0} price links.`);
+    showToast(tt("Found {count} price links.", { count: game?.prices?.length || data.prices?.length || 0 }));
   } catch {
-    showToast("Price refresh is unavailable right now.", "error");
+    showToast(tt("Price refresh is unavailable right now."), "error");
   } finally {
-    el.pricesButton.textContent = "Refresh Prices";
+    el.pricesButton.textContent = tt("Refresh Prices");
   }
 }
 
@@ -10765,7 +10797,7 @@ async function refreshAllPrices() {
   if (!state.canEdit) return;
   const games = activeGames().filter((game) => ["upcoming", "wanted"].includes(game.section) && game.title && priceProvidersForGame(game).length);
   if (!games.length) {
-    showToast("No Available or Upcoming games to refresh.");
+    showToast(tt("No Available or Upcoming games to refresh."));
     return;
   }
 
@@ -10911,6 +10943,8 @@ function cleanOwnerLabel(value) {
 function normalizeTag(value) {
   return String(value || "")
     .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
     .replace(/[^a-z0-9]+/g, "");
 }
 

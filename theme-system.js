@@ -240,38 +240,38 @@ function renderThemeDialog(dialog, draft, settings, page, onSave, translate = id
         </div>
       </div>
       <section class="theme-editor-grid">
-        ${colorField("mainColor", "Main color", draft.mainColor, false, false, "theme-main-color")}
-        ${colorField("accentColor", "Accent color", draft.accentColor, false, false, "theme-accent-color")}
-        ${colorField("gradientColor", "Gradient color", draft.gradientColor, false, false, "theme-gradient-color")}
-        ${colorField("extraColor", "Extra color", draft.extraColor, false, false, "theme-extra-color")}
+        ${colorField("mainColor", "Main color", draft.mainColor, false, false, "theme-main-color", translate)}
+        ${colorField("accentColor", "Accent color", draft.accentColor, false, false, "theme-accent-color", translate)}
+        ${colorField("gradientColor", "Gradient color", draft.gradientColor, false, false, "theme-gradient-color", translate)}
+        ${colorField("extraColor", "Extra color", draft.extraColor, false, false, "theme-extra-color", translate)}
         <div class="theme-editor-row theme-controls-row">
-          <label class="settings-detail-compact theme-mode-field"><span>Theme</span><select name="mode"><option value="dark" ${draft.mode === "dark" ? "selected" : ""}>Dark</option><option value="light" ${draft.mode === "light" ? "selected" : ""}>Light (WIP)</option></select></label>
-          <label class="settings-detail-compact theme-font-field"><span>Title font</span><select name="accentFont" style="font-family:&quot;${htmlEscape(FONT_OPTIONS.find((font) => font.value === draft.accentFont)?.family || "Cascadia Code")}&quot;">${FONT_OPTIONS.map((font) => `<option value="${htmlEscape(font.value)}" style="font-family:&quot;${htmlEscape(font.family)}&quot;" ${draft.accentFont === font.value ? "selected" : ""}>${htmlEscape(font.label)}</option>`).join("")}</select></label>
-          <label class="check-filter toggle-check theme-check"><input name="gradient" type="checkbox" ${draft.gradient ? "checked" : ""}><span>Gradient titles</span></label>
-          <label class="check-filter toggle-check theme-check"><input name="uppercaseTitles" type="checkbox" ${draft.uppercaseTitles ? "checked" : ""}><span>Uppercase Titles</span></label>
-          <label class="check-filter toggle-check theme-check"><input name="disableGlow" type="checkbox" ${draft.disableGlow ? "" : "checked"}><span>Background glows</span></label>
+          <label class="settings-detail-compact theme-mode-field"><span>${htmlEscape(translate("Theme"))}</span><select name="mode"><option value="dark" ${draft.mode === "dark" ? "selected" : ""}>${htmlEscape(translate("Dark"))}</option><option value="light" ${draft.mode === "light" ? "selected" : ""}>${htmlEscape(translate("Light (WIP)"))}</option></select></label>
+          <label class="settings-detail-compact theme-font-field"><span>${htmlEscape(translate("Title font"))}</span><select name="accentFont" style="font-family:&quot;${htmlEscape(FONT_OPTIONS.find((font) => font.value === draft.accentFont)?.family || "Cascadia Code")}&quot;">${FONT_OPTIONS.map((font) => `<option value="${htmlEscape(font.value)}" style="font-family:&quot;${htmlEscape(font.family)}&quot;" ${draft.accentFont === font.value ? "selected" : ""}>${htmlEscape(font.label)}</option>`).join("")}</select></label>
+          <label class="check-filter toggle-check theme-check"><input name="gradient" type="checkbox" ${draft.gradient ? "checked" : ""}><span>${htmlEscape(translate("Gradient titles"))}</span></label>
+          <label class="check-filter toggle-check theme-check"><input name="uppercaseTitles" type="checkbox" ${draft.uppercaseTitles ? "checked" : ""}><span>${htmlEscape(translate("Uppercase Titles"))}</span></label>
+          <label class="check-filter toggle-check theme-check"><input name="disableGlow" type="checkbox" ${draft.disableGlow ? "" : "checked"}><span>${htmlEscape(translate("Background glows"))}</span></label>
         </div>
         <div class="theme-editor-row theme-glow-row" ${draft.disableGlow ? "hidden" : ""}>
-          <label class="settings-detail-compact"><span>Glow 1</span>${glowSelect("glowPrimary", draft.glowPrimary)}</label>
-          <label class="settings-detail-compact"><span>Glow 2</span>${glowSelect("glowSecondary", draft.glowSecondary)}</label>
+          <label class="settings-detail-compact"><span>${htmlEscape(translate("Glow 1"))}</span>${glowSelect("glowPrimary", draft.glowPrimary, translate)}</label>
+          <label class="settings-detail-compact"><span>${htmlEscape(translate("Glow 2"))}</span>${glowSelect("glowSecondary", draft.glowSecondary, translate)}</label>
         </div>
         <div class="theme-editor-separator" role="presentation"></div>
         <div class="theme-editor-row theme-icon-row">
-          ${imageField("gamelistIcon", "Gamelist icon", draft.gamelistIcon)}
-          ${imageField("shelfIcon", "Shelf icon", draft.shelfIcon)}
+          ${imageField("gamelistIcon", "Gamelist icon", draft.gamelistIcon, translate)}
+          ${imageField("shelfIcon", "Shelf icon", draft.shelfIcon, translate)}
         </div>
-        <label class="check-filter toggle-check theme-check theme-big-logo-row"><input name="bigLogo" type="checkbox" ${draft.bigLogo ? "checked" : ""}><span>Big logo</span></label>
+        <label class="check-filter toggle-check theme-check theme-big-logo-row"><input name="bigLogo" type="checkbox" ${draft.bigLogo ? "checked" : ""}><span>${htmlEscape(translate("Big logo"))}</span></label>
         <div class="theme-editor-row theme-media-row">
-          ${imageField("appIcon", "Game app icon", draft.appIcon)}
-          ${imageField("backgroundImage", "Custom Background", draft.backgroundImage)}
+          ${imageField("appIcon", "Game app icon", draft.appIcon, translate)}
+          ${imageField("backgroundImage", "Custom Background", draft.backgroundImage, translate)}
         </div>
       </section>
       <section class="settings-section">
-        <h3>Custom Owner Colors</h3>
+        <h3>${htmlEscape(translate("Custom Owner Colors"))}</h3>
         <div class="theme-owner-table">
-          <div class="theme-owner-head"><span>Owner</span><span>Main color</span><span>Pick</span><span></span></div>
-          <div data-owner-rows>${ownerRows.map(ownerRow).join("")}</div>
-          <button class="ghost-button" type="button" data-owner-add>Add owner color</button>
+          <div class="theme-owner-head"><span>${htmlEscape(translate("Owner"))}</span><span>${htmlEscape(translate("Main color"))}</span><span>${htmlEscape(translate("Pick"))}</span><span></span></div>
+          <div data-owner-rows>${ownerRows.map((owner) => ownerRow(owner, translate)).join("")}</div>
+          <button class="ghost-button" type="button" data-owner-add>${htmlEscape(translate("Add owner color"))}</button>
         </div>
       </section>
       <div class="modal-actions"><button class="primary-button" type="submit">${htmlEscape(translate("Save"))}</button></div>
@@ -287,7 +287,7 @@ function renderThemeDialog(dialog, draft, settings, page, onSave, translate = id
   });
   form.querySelector("[data-owner-add]")?.addEventListener("click", () => {
     const rows = form.querySelector("[data-owner-rows]");
-    rows.insertAdjacentHTML("beforeend", ownerRow({ name: "", color: "#79f2ce" }));
+    rows.insertAdjacentHTML("beforeend", ownerRow({ name: "", color: "#79f2ce" }, translate));
   });
   form.addEventListener("click", (event) => {
     const remove = event.target.closest("[data-owner-remove]");
@@ -310,42 +310,42 @@ function renderThemeDialog(dialog, draft, settings, page, onSave, translate = id
   });
 }
 
-function colorField(name, label, value, reset, hasReset, className = "") {
+function colorField(name, label, value, reset, hasReset, className = "", translate = identityTranslate) {
   return `
     <div class="theme-color-field ${htmlEscape(className)}">
-      <label><span>${htmlEscape(label)}</span><input name="${name}" value="${htmlEscape(value)}" pattern="#?[0-9a-fA-F]{6}" inputmode="text"></label>
+      <label><span>${htmlEscape(translate(label))}</span><input name="${name}" value="${htmlEscape(value)}" pattern="#?[0-9a-fA-F]{6}" inputmode="text"></label>
       <input class="theme-color-picker" type="color" data-color-for="${name}" value="${htmlEscape(value)}" onchange="this.form.elements['${name}'].value=this.value">
     </div>
   `;
 }
 
-function glowSelect(name, value) {
+function glowSelect(name, value, translate = identityTranslate) {
   const options = [
     ["main", "Main"],
     ["accent", "Accent"],
     ["gradient", "Gradient"],
     ["extra", "Extra Color"],
   ];
-  return `<select name="${name}">${options.map(([source, label]) => `<option value="${source}" ${value === source ? "selected" : ""}>${label}</option>`).join("")}</select>`;
+  return `<select name="${name}">${options.map(([source, label]) => `<option value="${source}" ${value === source ? "selected" : ""}>${htmlEscape(translate(label))}</option>`).join("")}</select>`;
 }
 
-function imageField(name, label, value) {
+function imageField(name, label, value, translate = identityTranslate) {
   return `
     <label class="settings-detail-compact theme-image-field">
-      <span>${htmlEscape(label)}</span>
-      <input name="${name}" value="${htmlEscape(value || "")}" placeholder="Upload or paste URL">
+      <span>${htmlEscape(translate(label))}</span>
+      <input name="${name}" value="${htmlEscape(value || "")}" placeholder="${htmlEscape(translate("Upload or paste URL"))}">
       <input type="file" accept="image/*" data-image-input="${name}">
     </label>
   `;
 }
 
-function ownerRow(owner) {
+function ownerRow(owner, translate = identityTranslate) {
   return `
     <div class="theme-owner-row">
-      <input name="ownerName" value="${htmlEscape(owner.name || "")}" placeholder="Owner">
+      <input name="ownerName" value="${htmlEscape(owner.name || "")}" placeholder="${htmlEscape(translate("Owner"))}">
       <input name="ownerColor" value="${htmlEscape(owner.color || "#79f2ce")}" pattern="#?[0-9a-fA-F]{6}">
       <input class="theme-color-picker" type="color" value="${htmlEscape(owner.color || "#79f2ce")}" onchange="this.previousElementSibling.value=this.value">
-      <button class="icon-button" type="button" data-owner-remove title="Remove" aria-label="Remove">×</button>
+      <button class="icon-button" type="button" data-owner-remove title="${htmlEscape(translate("Remove"))}" aria-label="${htmlEscape(translate("Remove"))}">×</button>
     </div>
   `;
 }
