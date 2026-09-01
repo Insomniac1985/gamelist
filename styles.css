@@ -12508,19 +12508,25 @@ html.theme-light .finish-trophy-check input[type="checkbox"]:checked {
   width: fit-content;
   margin-top: 4px;
   padding: 2px 7px;
-  color: #ffe985;
+  color: var(--text);
   font-size: 11px;
   font-weight: 800;
   line-height: 1.2;
-  border: 1px solid rgba(255, 233, 133, 0.42);
+  border: 1px solid var(--rating-score-border);
   border-radius: 999px;
-  background: rgba(255, 233, 133, 0.12);
+  background:
+    linear-gradient(135deg, var(--rating-score-start), var(--rating-score-end)),
+    rgba(255, 255, 255, 0.06);
+  --rating-score-start: rgba(255, 71, 103, 0.18);
+  --rating-score-end: rgba(255, 153, 79, 0.12);
+  --rating-score-border: rgba(255, 111, 133, 0.34);
 }
 
 .lookup-igdb-rating-star {
-  color: currentColor;
+  color: #ffe985;
   font-size: 10px;
   letter-spacing: 0;
+  text-shadow: 0 0 9px rgba(255, 233, 133, 0.38);
 }
 
 .modal-actions {
