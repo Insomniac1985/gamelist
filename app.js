@@ -10398,7 +10398,7 @@ function igdbRatingBadge(result) {
   const displayRating = (Math.round(rating) / 10).toFixed(1);
   const ratingText = `${displayRating}/10`;
   const countText = count > 0 ? ` (${count.toLocaleString()} votes)` : "";
-  return `<span class="lookup-igdb-rating" title="${escapeHtml(`IGDB rating: ${ratingText}${countText}`)}" aria-label="${escapeHtml(`IGDB rating: ${ratingText}${countText}`)}"><span class="lookup-igdb-rating-star" aria-hidden="true">★</span>${escapeHtml(displayRating)}</span>`;
+  return `<span class="lookup-igdb-rating rating-score-${ratingScoreTone(Number(displayRating))}" title="${escapeHtml(`IGDB rating: ${ratingText}${countText}`)}" aria-label="${escapeHtml(`IGDB rating: ${ratingText}${countText}`)}"><span class="lookup-igdb-rating-star" aria-hidden="true">★</span>${escapeHtml(displayRating)}</span>`;
 }
 
 function applyLookup(result) {
