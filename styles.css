@@ -12514,20 +12514,39 @@ html.theme-light .finish-trophy-check input[type="checkbox"]:checked {
   align-items: center;
   gap: 4px;
   width: fit-content;
-  margin-top: 4px;
+  margin: 0 0 0 6px;
   padding: 2px 7px;
   color: var(--text);
   font-size: 11px;
   font-weight: 800;
   line-height: 1.2;
   border: 1px solid var(--rating-score-border);
-  border-radius: 999px;
+  border-radius: 6px;
   background:
     linear-gradient(135deg, var(--rating-score-start), var(--rating-score-end)),
     rgba(255, 255, 255, 0.06);
   --rating-score-start: rgba(255, 71, 103, 0.18);
   --rating-score-end: rgba(255, 153, 79, 0.12);
   --rating-score-border: rgba(255, 111, 133, 0.34);
+}
+
+.lookup-igdb-rating.rating-score-mid {
+  --rating-score-start: rgba(255, 117, 56, 0.22);
+  --rating-score-end: rgba(255, 148, 67, 0.13);
+  --rating-score-border: rgba(255, 132, 64, 0.4);
+}
+
+.lookup-igdb-rating.rating-score-high {
+  --rating-score-start: rgba(49, 220, 141, 0.18);
+  --rating-score-end: rgba(126, 255, 224, 0.12);
+  --rating-score-border: rgba(126, 255, 224, 0.34);
+}
+
+.lookup-igdb-rating.rating-score-gold {
+  color: #fff7c9;
+  --rating-score-start: rgba(255, 233, 133, 0.24);
+  --rating-score-end: rgba(255, 180, 83, 0.16);
+  --rating-score-border: rgba(255, 233, 133, 0.5);
 }
 
 .lookup-igdb-rating-star {
