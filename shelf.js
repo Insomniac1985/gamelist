@@ -1796,7 +1796,7 @@ function renderShelfLookupResults() {
 
 function lookupPublisherDateLine(result) {
   return [
-    result.publisher,
+    [result.developer, result.publisher].filter(Boolean).join(" / "),
     result.releaseDate || result.releaseText,
   ].filter(Boolean).join(" • ");
 }

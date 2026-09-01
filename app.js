@@ -10405,13 +10405,14 @@ function renderLookupResults(results) {
   results.slice(0, 10).forEach((result) => {
     const row = document.createElement("div");
     row.className = "lookup-result";
+    const igdbRating = igdbRatingBadge(result);
     const publisherDate = lookupPublisherDateLine(result);
     const tags = lookupTagsLine(result);
     const description = previewDescription(result.description || "");
     row.innerHTML = `
       <img src="${escapeHtml(result.cover ? coverDisplayUrl(result.cover) : "")}" alt="" loading="lazy" decoding="async" ${result.cover ? "" : "hidden"}>
       <div>
-        <strong>${escapeHtml(result.title)}</strong>
+        <strong>${escapeHtml(result.title)}</strong>${igdbRating}
         ${publisherDate ? `<p>${escapeHtml(publisherDate)}</p>` : ""}
         ${tags ? `<p>${escapeHtml(tags)}</p>` : ""}
         ${description ? `<p>${escapeHtml(description)}</p>` : ""}
@@ -10426,7 +10427,7 @@ function renderLookupResults(results) {
 
 function lookupPublisherDateLine(result) {
   return [
-    result.publisher,
+    [result.developer, result.publisher].filter(Boolean).join(" / "),
     result.releaseDate || result.releaseText,
   ].filter(Boolean).join(" • ");
 }
