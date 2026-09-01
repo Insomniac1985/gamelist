@@ -12501,6 +12501,28 @@ html.theme-light .finish-trophy-check input[type="checkbox"]:checked {
   font-size: 12px;
 }
 
+.lookup-igdb-rating {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  width: fit-content;
+  margin-top: 4px;
+  padding: 2px 7px;
+  color: #ffe985;
+  font-size: 11px;
+  font-weight: 800;
+  line-height: 1.2;
+  border: 1px solid rgba(255, 233, 133, 0.42);
+  border-radius: 999px;
+  background: rgba(255, 233, 133, 0.12);
+}
+
+.lookup-igdb-rating span {
+  color: var(--muted);
+  font-size: 9px;
+  letter-spacing: 0;
+}
+
 .modal-actions {
   justify-content: flex-end;
   margin-top: 14px;

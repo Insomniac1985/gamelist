@@ -10373,10 +10373,12 @@ function renderLookupResults(results) {
   results.slice(0, 10).forEach((result) => {
     const row = document.createElement("div");
     row.className = "lookup-result";
+    const igdbRating = igdbRatingBadge(result);
     row.innerHTML = `
       <img src="${escapeHtml(result.cover ? coverDisplayUrl(result.cover) : "")}" alt="" loading="lazy" decoding="async" ${result.cover ? "" : "hidden"}>
       <div>
         <strong>${escapeHtml(result.title)}</strong>
+        ${igdbRating}
         <p>${escapeHtml([result.releaseDate || result.releaseText, result.lengthHours ? `${result.lengthHours} hrs` : ""].filter(Boolean).join(" · "))}</p>
         <p>${escapeHtml([...(result.genres || []), result.developer, result.publisher].filter(Boolean).join(" · "))}</p>
         <p>${escapeHtml(previewDescription(result.description || ""))}</p>
@@ -10387,6 +10389,15 @@ function renderLookupResults(results) {
     el.lookupResults.appendChild(row);
   });
   requestAnimationFrame(() => el.lookupResults.classList.add("loaded"));
+}
+
+function igdbRatingBadge(result) {
+  const rating = Number(result?.igdbRating);
+  if (!Number.isFinite(rating) || rating <= 0) return "";
+  const count = Number(result?.igdbRatingCount || 0);
+  const ratingText = `${Math.round(rating)}/100`;
+  const countText = count > 0 ? ` (${count.toLocaleString()} votes)` : "";
+  return `<span class="lookup-igdb-rating" title="${escapeHtml(`IGDB rating: ${ratingText}${countText}`)}" aria-label="${escapeHtml(`IGDB rating: ${ratingText}${countText}`)}"><span aria-hidden="true">IGDB</span> ${escapeHtml(String(Math.round(rating)))}</span>`;
 }
 
 function applyLookup(result) {
