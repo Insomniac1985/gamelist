@@ -1936,9 +1936,9 @@ html.theme-gradient .goty-section .column-head h2 .trophy-icon {
 
 .playing-finished-tags .rating-score-star {
   color: #ffe985;
-  font-size: 15px;
+  font-size: 10px;
   line-height: 1;
-  transform: translateY(-2px);
+  transform: none;
   -webkit-text-fill-color: #ffe985;
 }
 
@@ -8828,6 +8828,12 @@ body.theme-kash .playing-finished-game.completed-trophy-card:hover {
   min-height: 21px;
   padding: 2px 6px;
   font-size: 10px;
+}
+
+.completed-platform .rating-score-star {
+  font-size: 11px;
+  line-height: 1;
+  transform: none;
 }
 
 .rating-score-pill {
