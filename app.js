@@ -10395,9 +10395,10 @@ function igdbRatingBadge(result) {
   const rating = Number(result?.igdbRating);
   if (!Number.isFinite(rating) || rating <= 0) return "";
   const count = Number(result?.igdbRatingCount || 0);
-  const ratingText = `${Math.round(rating)}/100`;
+  const displayRating = (Math.round(rating) / 10).toFixed(1);
+  const ratingText = `${displayRating}/10`;
   const countText = count > 0 ? ` (${count.toLocaleString()} votes)` : "";
-  return `<span class="lookup-igdb-rating" title="${escapeHtml(`IGDB rating: ${ratingText}${countText}`)}" aria-label="${escapeHtml(`IGDB rating: ${ratingText}${countText}`)}"><span aria-hidden="true">IGDB</span> ${escapeHtml(String(Math.round(rating)))}</span>`;
+  return `<span class="lookup-igdb-rating" title="${escapeHtml(`IGDB rating: ${ratingText}${countText}`)}" aria-label="${escapeHtml(`IGDB rating: ${ratingText}${countText}`)}"><span class="lookup-igdb-rating-star" aria-hidden="true">★</span>${escapeHtml(displayRating)}</span>`;
 }
 
 function applyLookup(result) {

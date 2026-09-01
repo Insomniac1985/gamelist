@@ -12517,9 +12517,9 @@ html.theme-light .finish-trophy-check input[type="checkbox"]:checked {
   background: rgba(255, 233, 133, 0.12);
 }
 
-.lookup-igdb-rating span {
-  color: var(--muted);
-  font-size: 9px;
+.lookup-igdb-rating-star {
+  color: currentColor;
+  font-size: 10px;
   letter-spacing: 0;
 }
 
