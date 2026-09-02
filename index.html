@@ -243,17 +243,17 @@
         <div class="column-head">
           <div>
             <div class="goty-title-row">
-              <h2 id="gotyTitle">Games of the year</h2>
+              <h2 id="gotyTitle" data-i18n="Games of the year">Games of the year</h2>
               <span class="goty-year-count" id="gotyYearCount"></span>
             </div>
           </div>
           <div class="goty-head-actions">
             <label class="goty-year-select">
-              <select id="gotyYearSelect" aria-label="Game of the year picks year"></select>
+              <select id="gotyYearSelect" aria-label="Game of the year picks year" data-i18n-aria-label="Game of the year picks year"></select>
             </label>
-            <button class="ghost-button goty-save-button" id="gotySaveButton" type="button">Save</button>
-            <button class="ghost-button goty-stats-button" id="gotyStatsButton" type="button" title="Stats" aria-label="Game of the year stats" hidden></button>
-            <button class="ghost-button goty-edit-button" id="gotyEditButton" type="button" hidden>Edit</button>
+            <button class="ghost-button goty-save-button" id="gotySaveButton" type="button" data-i18n="Save">Save</button>
+            <button class="ghost-button goty-stats-button" id="gotyStatsButton" type="button" title="Stats" aria-label="Game of the year stats" data-i18n-title="Stats" data-i18n-aria-label="Game of the year stats" hidden></button>
+            <button class="ghost-button goty-edit-button" id="gotyEditButton" type="button" data-i18n="Edit" hidden>Edit</button>
           </div>
         </div>
         <div class="goty-grid" id="gotyGrid"></div>
@@ -771,25 +771,25 @@
             <h2 id="gotyDialogTitle">Pick your favorites</h2>
           </div>
           <div class="modal-head-actions">
-            <button class="primary-button modal-head-save" type="submit">Save</button>
-            <button class="icon-button" id="gotyCloseButton" type="button" title="Close">×</button>
+            <button class="primary-button modal-head-save" type="submit" data-i18n="Save">Save</button>
+            <button class="icon-button" id="gotyCloseButton" type="button" title="Close" data-i18n-title="Close">×</button>
           </div>
         </div>
         <div class="goty-picker-toolbar">
-          <p class="goty-dialog-copy">Choose one finished game for every category.</p>
+          <p class="goty-dialog-copy" data-i18n="Choose one finished game for every category.">Choose one finished game for every category.</p>
           <label class="goty-picker-order">
-            <span>Order</span>
-            <select id="gotyPickerOrder" aria-label="Game of the year picker order">
-              <option value="time">Time</option>
-              <option value="name">Name</option>
-              <option value="platform">Platform</option>
+            <span data-i18n="Order">Order</span>
+            <select id="gotyPickerOrder" aria-label="Game of the year picker order" data-i18n-aria-label="Game of the year picker order">
+              <option value="time" data-i18n="Time">Time</option>
+              <option value="name" data-i18n="Name">Name</option>
+              <option value="platform" data-i18n="Platform">Platform</option>
             </select>
           </label>
         </div>
         <div class="goty-picker-grid" id="gotyPickerGrid"></div>
         <div class="goty-dialog-actions">
-          <button class="danger-button icon-only-button goty-reset-button" id="gotyResetButton" type="button" title="Reset" aria-label="Reset Game of the year picks"></button>
-          <button class="primary-button goty-publish-button" type="submit">Save</button>
+          <button class="danger-button icon-only-button goty-reset-button" id="gotyResetButton" type="button" title="Reset" aria-label="Reset Game of the year picks" data-i18n-title="Reset" data-i18n-aria-label="Reset Game of the year picks"></button>
+          <button class="primary-button goty-publish-button" type="submit" data-i18n="Save">Save</button>
         </div>
       </form>
     </dialog>

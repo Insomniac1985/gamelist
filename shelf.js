@@ -1787,12 +1787,20 @@ function renderShelfLookupResults() {
     const tags = lookupTagsLine(result);
     const description = shortDescription(result.description || "", 180);
     const igdbRating = physical ? "" : igdbRatingBadge(result);
+    const matchedTitle = physical ? "" : localizedMatchedTitleLine(result);
     const body = physical
       ? `<p>${escapeHtml(platforms.join(" · ") || "Platform unknown")}</p>`
-      : `${publisherDate ? `<p>${escapeHtml(publisherDate)}</p>` : ""}${tags ? `<p>${escapeHtml(tags)}</p>` : ""}${description ? `<p>${escapeHtml(description)}</p>` : ""}`;
+      : `${matchedTitle ? `<p>${escapeHtml(matchedTitle)}</p>` : ""}${publisherDate ? `<p>${escapeHtml(publisherDate)}</p>` : ""}${tags ? `<p>${escapeHtml(tags)}</p>` : ""}${description ? `<p>${escapeHtml(description)}</p>` : ""}`;
     return `<div class="lookup-result shelf-lookup-result${image ? "" : " no-cover"}"><img class="${image ? "" : "lookup-placeholder"}" src="${escapeHtml(image || blankImage())}" alt=""><div><span class="lookup-result-title"><strong>${escapeHtml(result.title || "Untitled game")}</strong>${igdbRating}</span>${body}</div><button class="ghost-button" type="button" data-result-index="${index}">Use</button></div>`;
   }).join("");
   requestAnimationFrame(() => el.lookupResults.classList.add("loaded"));
+}
+
+function localizedMatchedTitleLine(result) {
+  const matched = String(result?.matchedTitle || "").trim();
+  const title = String(result?.title || "").trim();
+  if (!matched || normalizeSearchText(matched) === normalizeSearchText(title)) return "";
+  return tt("Also known as {title}", { title: matched });
 }
 
 function lookupPublisherDateLine(result) {
@@ -2478,7 +2486,7 @@ function gameOfTheYearCsvRecords() {
 function exportGameOfTheYearCsv() {
   const records = gameOfTheYearCsvRecords();
   downloadCsv(records, `gamelist-goty-${dateStamp()}.csv`);
-  showToast(`Exported ${records.length} GOTY rows.`);
+  showToast(tt("Exported {count} GOTY rows.", { count: records.length }));
 }
 
 async function importGameOfTheYearCsv() {
@@ -2487,10 +2495,10 @@ async function importGameOfTheYearCsv() {
   try {
     const rows = csvToObjects(await file.text());
     if (!rows.length) {
-      showToast("No GOTY picks found in that CSV.", "error");
+      showToast(tt("No GOTY picks found in that CSV."), "error");
       return;
     }
-    if (!window.confirm(`Import GOTY picks from ${rows.length} CSV rows? This updates saved Games of the year picks.`)) return;
+    if (!window.confirm(tt("Import GOTY picks from {count} CSV rows? This updates saved Games of the year picks.", { count: rows.length }))) return;
     const imported = {};
     rows.forEach((row) => {
       const year = String(row.year || "").match(/\b(19|20)\d{2}\b/)?.[0];
@@ -2502,7 +2510,7 @@ async function importGameOfTheYearCsv() {
     });
     const years = Object.keys(imported);
     if (!years.length) {
-      showToast("No valid GOTY rows found in that CSV.", "error");
+      showToast(tt("No valid GOTY rows found in that CSV."), "error");
       return;
     }
     const now = new Date().toISOString();
@@ -2520,9 +2528,9 @@ async function importGameOfTheYearCsv() {
     localStorage.setItem("gamelist:settings:v1", JSON.stringify(state.gamelistSettings));
     await persistGamelistData(state.gamelistGames, state.gamelistSettings);
     renderGamelistModules();
-    showToast(`Imported GOTY picks for ${years.length} years.`);
+    showToast(tt("Imported GOTY picks for {count} years.", { count: years.length }));
   } catch (error) {
-    showToast(error?.message || "GOTY CSV import failed.", "error");
+    showToast(error?.message || tt("GOTY CSV import failed."), "error");
   }
 }
 
