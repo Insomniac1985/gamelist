@@ -2247,7 +2247,7 @@ function gameOfTheYearCsvRecords() {
 function exportGameOfTheYearCsv() {
   const records = gameOfTheYearCsvRecords();
   downloadCsv(records, `gamelist-goty-${dateStamp()}.csv`);
-  showToast(`Exported ${records.length} GOTY rows.`);
+  showToast(tt("Exported {count} GOTY rows.", { count: records.length }));
 }
 
 async function importGameOfTheYearCsv() {
@@ -2256,10 +2256,10 @@ async function importGameOfTheYearCsv() {
   try {
     const rows = csvToObjects(await file.text());
     if (!rows.length) {
-      showToast("No GOTY picks found in that CSV.", "error");
+      showToast(tt("No GOTY picks found in that CSV."), "error");
       return;
     }
-    if (!window.confirm(`Import GOTY picks from ${rows.length} CSV rows? This updates saved Games of the year picks.`)) return;
+    if (!window.confirm(tt("Import GOTY picks from {count} CSV rows? This updates saved Games of the year picks.", { count: rows.length }))) return;
     const imported = {};
     rows.forEach((row) => {
       const year = String(row.year || "").match(/\b(19|20)\d{2}\b/)?.[0];
@@ -2271,7 +2271,7 @@ async function importGameOfTheYearCsv() {
     });
     const years = Object.keys(imported);
     if (!years.length) {
-      showToast("No valid GOTY rows found in that CSV.", "error");
+      showToast(tt("No valid GOTY rows found in that CSV."), "error");
       return;
     }
     const now = new Date().toISOString();
@@ -2297,9 +2297,9 @@ async function importGameOfTheYearCsv() {
     persistLocalSettings();
     await persistCloud();
     render();
-    showToast(`Imported GOTY picks for ${years.length} years.`);
+    showToast(tt("Imported GOTY picks for {count} years.", { count: years.length }));
   } catch (error) {
-    showToast(error?.message || "GOTY CSV import failed.", "error");
+    showToast(error?.message || tt("GOTY CSV import failed."), "error");
   }
 }
 
@@ -2439,29 +2439,29 @@ function renderGameOfTheYear() {
   const categories = gameOfTheYearCategoriesForYear(year, candidates);
   const candidateIds = new Set(candidates.map((game) => game.id));
   el.gotySection.hidden = false;
-  const sectionTitle = window.matchMedia("(max-width: 520px)").matches ? `My GOTYs ${year}` : `My Games of the year ${year}`;
+  const sectionTitle = window.matchMedia("(max-width: 520px)").matches ? tt("My GOTYs {year}", { year }) : tt("My Games of the year {year}", { year });
   el.gotyTitle.innerHTML = `${trophyIcon()} <span>${escapeHtml(sectionTitle)}</span>`;
   el.gotyYearSelect.innerHTML = years.map((item) => `<option value="${escapeHtml(item)}">${escapeHtml(item)}</option>`).join("");
   el.gotyYearSelect.value = year;
   syncStyledSelect(el.gotyYearSelect, { activeValue: null });
   if (el.gotyYearCount) {
     const count = candidates.length;
-    el.gotyYearCount.textContent = `${count} ${count === 1 ? "game" : "games"} played`;
+    el.gotyYearCount.textContent = tt("{count} {item} played", { count, item: tt(count === 1 ? "game" : "games") });
   }
   const canEditCurrent = state.canEdit && year === currentGameOfTheYear();
   el.gotyEditButton.hidden = !canEditCurrent;
   el.gotyEditButton.innerHTML = pencilIcon();
-  el.gotyEditButton.title = "Edit";
-  el.gotyEditButton.setAttribute("aria-label", "Edit");
+  el.gotyEditButton.title = tt("Edit");
+  el.gotyEditButton.setAttribute("aria-label", tt("Edit"));
   el.gotySaveButton.hidden = !gameOfTheYearCategoriesValid(picks, categories, candidates);
   el.gotySaveButton.innerHTML = downloadIcon();
-  el.gotySaveButton.title = "Download";
-  el.gotySaveButton.setAttribute("aria-label", "Download");
+  el.gotySaveButton.title = tt("Download");
+  el.gotySaveButton.setAttribute("aria-label", tt("Download"));
   if (el.gotyStatsButton) {
     el.gotyStatsButton.hidden = !completedGamesForYear(year).length;
     el.gotyStatsButton.innerHTML = graphIcon();
-    el.gotyStatsButton.title = "Stats";
-    el.gotyStatsButton.setAttribute("aria-label", `Stats for ${year}`);
+    el.gotyStatsButton.title = tt("Stats");
+    el.gotyStatsButton.setAttribute("aria-label", tt("Stats for {year}", { year }));
   }
   el.gotyGrid.innerHTML = categories.map(([key, label], index) => {
     const labelText = tt(label);
@@ -2496,20 +2496,20 @@ function openGameOfTheYearDialog(year = currentGameOfTheYear(), options = {}) {
   if (!options.force && (!state.canEdit || year !== currentGameOfTheYear())) return false;
   const games = sortedGameOfTheYearChoices(gameOfTheYearCandidateGames(year));
   if (!games.length) {
-    showToast("No finished or currently playing games found.", "error");
+    showToast(tt("No finished or currently playing games found."), "error");
     return false;
   }
   state.gotyYear = String(year);
   el.gotyForm.dataset.gotyYear = String(year);
   const entry = state.settings.gameOfTheYear?.[year] || {};
   const picks = options.autoPick ? gameOfTheYearAutoPicks(year, games, entry.picks || {}) : { ...(entry.picks || {}) };
-  const dialogTitle = window.matchMedia("(max-width: 520px)").matches ? `GOTYs ${year}` : `Games of the year ${year}`;
+  const dialogTitle = window.matchMedia("(max-width: 520px)").matches ? tt("GOTYs {year}", { year }) : tt("Games of the year {year}", { year });
   el.gotyDialogTitle.innerHTML = `${trophyIcon()} <span>${escapeHtml(dialogTitle)}</span>`;
   const copy = el.gotyForm.querySelector(".goty-dialog-copy");
   if (copy) {
     copy.textContent = options.autoPick && gameOfTheYearAutofillUsesRatings(games)
-      ? "This is your guessed games, feel free to modify them for every category to make it your own."
-      : "Choose one finished game for every category.";
+      ? tt("This is your guessed games, feel free to modify them for every category to make it your own.")
+      : tt("Choose one finished game for every category.");
   }
   if (el.gotyPickerOrder) {
     state.gotyPickerOrder = state.gotyPickerOrder || gotyOrderForDefault(state.settings.defaultOrder);
@@ -2525,7 +2525,7 @@ function openGameOfTheYearDialog(year = currentGameOfTheYear(), options = {}) {
       if (!el.gotyDialog.open) el.gotyDialog.show();
     } catch (fallbackError) {
       console.error("Unable to open Games of the year dialog", fallbackError || error);
-      showToast("Could not open Game of the year picks.", "error");
+      showToast(tt("Could not open Game of the year picks."), "error");
       return false;
     }
   }
@@ -2553,13 +2553,13 @@ function showGameOfTheYearAutofillLoading(games = []) {
   overlay.setAttribute("role", "status");
   overlay.setAttribute("aria-live", "polite");
   const messages = [
-    "Calculating your Games of the year...",
-    "Comparing your ratings...",
-    "Finding the strongest contenders...",
-    "Gotta go fast!",
-    "Checking category fit...",
-    "Let's go!",
-    "Preparing your picks...",
+    tt("Calculating your Games of the year..."),
+    tt("Comparing your ratings..."),
+    tt("Finding the strongest contenders..."),
+    tt("Gotta go fast!"),
+    tt("Checking category fit..."),
+    tt("Let's go!"),
+    tt("Preparing your picks..."),
   ];
   const flightGames = sortedGameOfTheYearChoices(games).slice(0, 24);
   const flightMarkup = flightGames.map((game, index) => {
@@ -2626,8 +2626,8 @@ function renderGameOfTheYearPicker(games, picks) {
         <span class="goty-picker-category">${escapeHtml(labelText)}</span>
         <strong>${selectedGame ? escapeHtml(selectedGame.title) : ""}</strong>
         <div class="goty-picker-navs">
-          <button class="icon-button playing-slider-button goty-choice-nav" type="button" data-goty-scroll="-1" title="Previous games" aria-label="Previous games">${gotyPickerArrowIcon("left")}</button>
-          <button class="icon-button playing-slider-button goty-choice-nav" type="button" data-goty-scroll="1" title="Next games" aria-label="Next games">${gotyPickerArrowIcon("right")}</button>
+          <button class="icon-button playing-slider-button goty-choice-nav" type="button" data-goty-scroll="-1" title="${escapeHtml(tt("Previous games"))}" aria-label="${escapeHtml(tt("Previous games"))}">${gotyPickerArrowIcon("left")}</button>
+          <button class="icon-button playing-slider-button goty-choice-nav" type="button" data-goty-scroll="1" title="${escapeHtml(tt("Next games"))}" aria-label="${escapeHtml(tt("Next games"))}">${gotyPickerArrowIcon("right")}</button>
         </div>
       </div>
       <div class="goty-choice-strip">
@@ -2715,7 +2715,7 @@ async function saveGameOfTheYearFromForm(event) {
   const candidates = gameOfTheYearCandidateGames(year);
   const categories = gameOfTheYearCategoriesForYear(year, candidates);
   if (!gameOfTheYearCategoriesValid(picks, categories, candidates)) {
-    showToast("Choose a game for every category.", "error");
+    showToast(tt("Choose a game for every category."), "error");
     return;
   }
   state.settings = normalizeSettings({
@@ -2734,7 +2734,7 @@ async function saveGameOfTheYearFromForm(event) {
   document.querySelector(".goty-callout")?.classList.remove("visible");
   el.gotyDialog.close();
   render();
-  showToast(`Saved Games of the year ${year}.`);
+  showToast(tt("Saved Games of the year {year}.", { year }));
 }
 
 function resetGameOfTheYearFromForm(event) {
@@ -2752,8 +2752,8 @@ function resetGameOfTheYearFromForm(event) {
   render();
   state.gotyPromptShown = false;
   window.setTimeout(() => showGameOfTheYearCallout(year), 120);
-  showToast(`Reset Games of the year ${year}.`);
-  persistCloud().catch(() => showToast("Could not sync the reset yet.", "error"));
+  showToast(tt("Reset Games of the year {year}.", { year }));
+  persistCloud().catch(() => showToast(tt("Could not sync the reset yet."), "error"));
 }
 
 function showGameOfTheYearCallout(year) {
@@ -2767,9 +2767,9 @@ function showGameOfTheYearCallout(year) {
     document.body.appendChild(callout);
   }
   callout.innerHTML = `
-    <span class="goty-callout-title">${trophyIcon()}<span>Choose your games of this year.</span></span>
-    <button class="primary-button" type="button" data-goty-callout-action="choose">Choose now</button>
-    <button class="icon-button" type="button" data-goty-callout-action="dismiss" title="Dismiss" aria-label="Dismiss">×</button>
+    <span class="goty-callout-title">${trophyIcon()}<span>${escapeHtml(tt("Choose your games of this year."))}</span></span>
+    <button class="primary-button" type="button" data-goty-callout-action="choose">${escapeHtml(tt("Choose now"))}</button>
+    <button class="icon-button" type="button" data-goty-callout-action="dismiss" title="${escapeHtml(tt("Dismiss"))}" aria-label="${escapeHtml(tt("Dismiss"))}">×</button>
   `;
   callout.querySelector("[data-goty-callout-action='choose']")?.addEventListener("click", async (event) => {
     event.preventDefault();
@@ -2988,9 +2988,9 @@ async function maybeRenderGameOfTheYearExportPreview() {
   const html = await gameOfTheYearExportHtml(year);
   applyTheme();
   document.documentElement.classList.remove("theme-booting");
-  document.title = html ? `GOTY Export ${year}` : "GOTY Export";
+  document.title = html ? tt("GOTY Export {year}", { year }) : tt("GOTY Export");
   document.body.className = "goty-export-preview-page";
-  document.body.innerHTML = html || `<main class="goty-export-preview-empty"><h1>No Game of the year picks for ${escapeHtml(year)}</h1></main>`;
+  document.body.innerHTML = html || `<main class="goty-export-preview-empty"><h1>${escapeHtml(tt("No Game of the year picks for {year}", { year }))}</h1></main>`;
   return true;
 }
 
@@ -3027,7 +3027,7 @@ function gameOfTheYearExportMarkup({ owner, year, rows, statsGames, theme, logo,
     <style>${gameOfTheYearExportCss({ theme, main, accent, gradient, bg, glowPrimary, glowSecondary })}</style>
     <img class="goty-export-logo" src="${escapeHtml(logoSrc)}" alt="" />
     <header class="goty-export-head">
-      <h1><span>${escapeHtml(`${owner}'s Games of`)}</span><br><span>${escapeHtml(`the Year ${year}`)}</span></h1>
+      <h1><span>${escapeHtml(tt("{owner}'s Games of", { owner }))}</span><br><span>${escapeHtml(tt("the Year {year}", { year }))}</span></h1>
     </header>
     ${gameOfTheYearExportTopStatsMarkup(year, statsGames)}
     <main class="goty-export-grid">
@@ -3067,12 +3067,12 @@ function gameOfTheYearExportTopStatsMarkup(year, games = []) {
   const completed = finishedStatsCompleted(String(year));
   return `
     <section class="goty-export-top-kpis ${completed.length ? "has-completed" : ""} ${coopGames.length ? "has-coop" : ""}">
-      <article class="goty-export-small-kpi goty-export-total-kpi"><strong>${games.length}</strong><span>Games played</span></article>
-      ${completed.length ? `<article class="goty-export-small-kpi goty-export-completed-kpi"><strong>${trophyIcon()}${completed.length}</strong><span>Completed games</span></article>` : ""}
+      <article class="goty-export-small-kpi goty-export-total-kpi"><strong>${games.length}</strong><span>${escapeHtml(tt("Games played"))}</span></article>
+      ${completed.length ? `<article class="goty-export-small-kpi goty-export-completed-kpi"><strong>${trophyIcon()}${completed.length}</strong><span>${escapeHtml(tt("Completed games"))}</span></article>` : ""}
       <span class="goty-export-kpi-separator" aria-hidden="true"></span>
-      <article class="goty-export-small-kpi goty-export-new-kpi"><strong>${yearGames.length}</strong><span>New releases</span></article>
-      <article class="goty-export-small-kpi goty-export-older-kpi"><strong>${otherYearGames.length}</strong><span>Older games</span></article>
-      ${coopGames.length ? `<article class="goty-export-small-kpi goty-export-coop-kpi"><strong>${coopIcon()}${coopGames.length}</strong><span>Coop games</span></article>` : ""}
+      <article class="goty-export-small-kpi goty-export-new-kpi"><strong>${yearGames.length}</strong><span>${escapeHtml(tt("New releases"))}</span></article>
+      <article class="goty-export-small-kpi goty-export-older-kpi"><strong>${otherYearGames.length}</strong><span>${escapeHtml(tt("Older games"))}</span></article>
+      ${coopGames.length ? `<article class="goty-export-small-kpi goty-export-coop-kpi"><strong>${coopIcon()}${coopGames.length}</strong><span>${escapeHtml(tt("Coop games"))}</span></article>` : ""}
     </section>
   `;
 }
@@ -3174,7 +3174,7 @@ function gameOfTheYearExportCard({ label, game, coverSrc, index, gridColumn = ""
   const progressCount = progress ? canvasProgressCount(progress.label) : "";
   const developer = game.developer || "";
   const publisher = game.publisher || "";
-  const studioLine = [developer, publisher && publisher !== developer ? publisher : ""].filter(Boolean).join(" / ") || "Finished game";
+  const studioLine = [developer, publisher && publisher !== developer ? publisher : ""].filter(Boolean).join(" / ") || tt("Finished game");
   const tags = [
     ...String(game.genres || "").split(","),
     ...(Array.isArray(game.tags) ? game.tags : []),
@@ -3192,9 +3192,9 @@ function gameOfTheYearExportCard({ label, game, coverSrc, index, gridColumn = ""
           <div class="goty-export-pills">
             ${game.platform ? platformBadge(game.platform, null, { title: game.title }) : ""}
             ${progress ? psnProgressBadge(progress, { className: "goty-export-progress", label: progressCount, separator: Boolean(progressCount) }) : ""}
-            ${game.coop ? `<span class="goty-export-pill goty-export-coop">Coop</span>` : ""}
-            ${game.stream ? `<span class="goty-export-pill goty-export-stream">Stream</span>` : ""}
-            ${tags.map((tag) => `<span class="goty-export-pill goty-export-tag">${escapeHtml(tag)}</span>`).join("")}
+            ${game.coop ? `<span class="goty-export-pill goty-export-coop">${escapeHtml(tt("Coop"))}</span>` : ""}
+            ${game.stream ? `<span class="goty-export-pill goty-export-stream">${escapeHtml(tt("Stream"))}</span>` : ""}
+            ${tags.map((tag) => `<span class="goty-export-pill goty-export-tag">${escapeHtml(tt(tag))}</span>`).join("")}
           </div>
         </div>
       </article>
@@ -3968,8 +3968,8 @@ async function drawGameOfTheYearImage(ctx, { owner, year, rows, logo, theme, bac
   ctx.letterSpacing = gameOfTheYearExportTitleLetterSpacing(theme);
   ctx.textAlign = "left";
   const titleY = theme.accentFont === "mata" ? 124 : 116;
-  ctx.fillText(`${owner}'s Games of`, 220, titleY);
-  ctx.fillText(`the Year ${year}`, 220, titleY + titleLineGap);
+  ctx.fillText(tt("{owner}'s Games of", { owner }), 220, titleY);
+  ctx.fillText(tt("the Year {year}", { year }), 220, titleY + titleLineGap);
   ctx.letterSpacing = "0";
   const siteUrl = cleanCanvasSiteUrl(window.location.origin && window.location.origin !== "null" ? window.location.origin : window.location.hostname || "Gamelist");
   ctx.font = `800 24px ${bodyFont}`;
@@ -3999,7 +3999,7 @@ async function drawGameOfTheYearImage(ctx, { owner, year, rows, logo, theme, bac
     const tags = [
       ...String(game.genres || "").split(","),
       ...(Array.isArray(game.tags) ? game.tags : []),
-    ].map((tag) => tag.trim()).filter(Boolean).slice(0, 2).join(" · ");
+    ].map((tag) => tag.trim()).filter(Boolean).slice(0, 2).map((tag) => tt(tag)).join(" · ");
     drawCanvasGlow(ctx, x + 88, y + 182, 170, main, 0.18);
     drawRoundedRect(ctx, x, y, cardW, cardH, 18, theme.mode === "light" ? "rgba(255,255,255,.62)" : "rgba(255,255,255,.075)");
     drawRoundedStroke(ctx, x, y, cardW, cardH, 18, theme.mode === "light" ? "rgba(18,24,36,.16)" : "rgba(255,255,255,.14)");
@@ -4015,7 +4015,7 @@ async function drawGameOfTheYearImage(ctx, { owner, year, rows, logo, theme, bac
     wrapCanvasText(ctx, game.title || "", x + cardW - 22, y + 92, cardW - 214, 35, 3);
     ctx.fillStyle = theme.mode === "light" ? "rgba(22,28,42,.72)" : "#a6adbd";
     ctx.font = `700 19px ${bodyFont}`;
-    wrapCanvasText(ctx, details || "Finished game", x + cardW - 22, y + 212, cardW - 214, 24, 2);
+    wrapCanvasText(ctx, details || tt("Finished game"), x + cardW - 22, y + 212, cardW - 214, 24, 2);
     ctx.fillStyle = theme.mode === "light" ? "rgba(22,28,42,.62)" : "rgba(246,247,251,.68)";
     ctx.font = `700 17px ${bodyFont}`;
     wrapCanvasText(ctx, tags, x + cardW - 22, y + 264, cardW - 214, 22, 1);
@@ -10409,10 +10409,12 @@ function renderLookupResults(results) {
     const publisherDate = lookupPublisherDateLine(result);
     const tags = lookupTagsLine(result);
     const description = previewDescription(result.description || "");
+    const matchedTitle = localizedMatchedTitleLine(result);
     row.innerHTML = `
       <img src="${escapeHtml(result.cover ? coverDisplayUrl(result.cover) : "")}" alt="" loading="lazy" decoding="async" ${result.cover ? "" : "hidden"}>
       <div>
         <span class="lookup-result-title"><strong>${escapeHtml(result.title)}</strong>${igdbRating}</span>
+        ${matchedTitle ? `<p>${escapeHtml(matchedTitle)}</p>` : ""}
         ${publisherDate ? `<p>${escapeHtml(publisherDate)}</p>` : ""}
         ${tags ? `<p>${escapeHtml(tags)}</p>` : ""}
         ${description ? `<p>${escapeHtml(description)}</p>` : ""}
@@ -10423,6 +10425,13 @@ function renderLookupResults(results) {
     el.lookupResults.appendChild(row);
   });
   requestAnimationFrame(() => el.lookupResults.classList.add("loaded"));
+}
+
+function localizedMatchedTitleLine(result) {
+  const matched = String(result?.matchedTitle || "").trim();
+  const title = String(result?.title || "").trim();
+  if (!matched || normalizeSearchText(matched) === normalizeSearchText(title)) return "";
+  return tt("Also known as {title}", { title: matched });
 }
 
 function lookupPublisherDateLine(result) {

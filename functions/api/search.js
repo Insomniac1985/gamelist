@@ -74,19 +74,47 @@ export async function igdbLookup(rawQuery, credentials, language = "en") {
 
 async function igdbSearch(query, credentials, lookup = {}, language = "en") {
   const token = await getIgdbToken(credentials);
-  const fields = "fields name,slug,summary,storyline,first_release_date,cover.image_id,genres.name,hypes,total_rating,total_rating_count,involved_companies.company.name,involved_companies.developer,involved_companies.publisher,platforms.name,release_dates.category,release_dates.date,release_dates.date_format,release_dates.human,release_dates.platform.name,release_dates.y,websites.url,websites.category,videos.name,videos.video_id;";
+  const fields = "fields name,slug,summary,storyline,first_release_date,cover.image_id,genres.name,hypes,total_rating,total_rating_count,alternative_names.name,alternative_names.comment,game_localizations.name,involved_companies.company.name,involved_companies.developer,involved_companies.publisher,platforms.name,release_dates.category,release_dates.date,release_dates.date_format,release_dates.human,release_dates.platform.name,release_dates.y,websites.url,websites.category,videos.name,videos.video_id;";
   const slugBody = lookup.igdbSlug ? [
     fields,
     `where slug = "${escapeIgdbString(lookup.igdbSlug)}";`,
     "limit 1;",
   ].join(" ") : "";
-  const body = [
-    fields,
-    `search "${escapeIgdbString(searchAlias(query))}";`,
-    "where version_parent = null;",
-    "limit 10;",
-  ].join(" ");
-  const response = await fetchWithTimeout(`${IGDB_BASE}/games`, {
+  const searchQueries = slugBody ? [query] : await igdbSearchQueries(query, language, token, credentials);
+  let games = [];
+  if (slugBody) {
+    games = await igdbPost("games", slugBody, credentials, token);
+  } else {
+    const gamesById = new Map();
+    for (const searchQuery of searchQueries) {
+      const body = [
+        fields,
+        `search "${escapeIgdbString(searchAlias(searchQuery))}";`,
+        "where version_parent = null;",
+        "limit 10;",
+      ].join(" ");
+      (await igdbPost("games", body, credentials, token)).forEach((game) => {
+        gamesById.set(String(game.id || game.slug || game.name), game);
+      });
+    }
+    if (language === "es-ES") {
+      const localized = await igdbLocalizedTitleGames(query, fields, credentials, token);
+      localized.forEach((game) => gamesById.set(String(game.id || game.slug || game.name), game));
+    }
+    games = [...gamesById.values()];
+  }
+  if (slugBody && !games.length) return igdbSearch(query, credentials, { ...lookup, igdbSlug: "" }, language);
+  const hltbResults = (await Promise.all(searchQueries.map((searchQuery) => safeHltbResults(searchQuery)))).flat();
+  const results = await Promise.all(games
+    .map((game) => igdbResult(game, query, hltbResults, lookup, language, searchQueries)));
+  return results
+    .filter(Boolean)
+    .sort((a, b) => b.score - a.score)
+    .map(({ score, ...game }) => game);
+}
+
+async function igdbPost(endpoint, body, credentials, token) {
+  const response = await fetchWithTimeout(`${IGDB_BASE}/${endpoint}`, {
     method: "POST",
     timeoutMs: 16000,
     headers: {
@@ -95,18 +123,45 @@ async function igdbSearch(query, credentials, lookup = {}, language = "en") {
       "Client-ID": credentials.clientId,
       Authorization: `Bearer ${token}`,
     },
-    body: slugBody || body,
+    body,
   });
   if (!response.ok) return [];
-  const games = await response.json();
-  if (slugBody && !games.length) return igdbSearch(query, credentials, { ...lookup, igdbSlug: "" }, language);
-  const hltbResults = await safeHltbResults(query);
-  const results = await Promise.all(games
-    .map((game) => igdbResult(game, query, hltbResults, lookup, language)));
-  return results
-    .filter(Boolean)
-    .sort((a, b) => b.score - a.score)
-    .map(({ score, ...game }) => game);
+  return response.json();
+}
+
+async function igdbSearchQueries(query, language, token, credentials) {
+  const aliases = language === "es-ES" ? await spanishTitleAliases(query, token, credentials) : [];
+  return uniqueSearchQueries([query, searchAlias(query), ...aliases, ...aliases.map(searchAlias)]).slice(0, 5);
+}
+
+async function igdbLocalizedTitleGames(query, fields, credentials, token) {
+  const gameIds = await igdbLocalizedTitleGameIds(query, credentials, token);
+  if (!gameIds.length) return [];
+  const body = [
+    fields,
+    `where id = (${gameIds.join(",")}) & version_parent = null;`,
+    `limit ${gameIds.length};`,
+  ].join(" ");
+  return igdbPost("games", body, credentials, token);
+}
+
+async function igdbLocalizedTitleGameIds(query, credentials, token) {
+  const ids = new Set();
+  for (const endpoint of ["alternative_names", "game_localizations"]) {
+    const body = [
+      "fields name,game;",
+      `search "${escapeIgdbString(searchAlias(query))}";`,
+      "limit 25;",
+    ].join(" ");
+    const matches = await igdbPost(endpoint, body, credentials, token).catch(() => []);
+    matches
+      .filter((item) => matchScore(query, item.name) >= 0.62)
+      .forEach((item) => {
+        const id = Number(item.game);
+        if (Number.isFinite(id) && id > 0) ids.add(id);
+      });
+  }
+  return [...ids].slice(0, 25);
 }
 
 async function getIgdbToken({ clientId, clientSecret }) {
@@ -125,9 +180,9 @@ async function getIgdbToken({ clientId, clientSecret }) {
   return igdbTokenCache.token;
 }
 
-async function igdbResult(game, query, hltbResults, lookup = {}, language = "en") {
+async function igdbResult(game, query, hltbResults, lookup = {}, language = "en", searchQueries = [query]) {
   const title = game.name || "";
-  const textScore = lookup.igdbSlug && game.slug === lookup.igdbSlug ? 1 : matchScore(query, title);
+  const textScore = lookup.igdbSlug && game.slug === lookup.igdbSlug ? 1 : bestGameTitleScore(searchQueries, game);
   if (!title || textScore < 0.28) return null;
   const hltbMatch = bestExternalMatch(title, hltbResults);
   const companies = game.involved_companies || [];
@@ -135,13 +190,14 @@ async function igdbResult(game, query, hltbResults, lookup = {}, language = "en"
   const score = textScore + igdbQualityScore(game, hltbMatch);
   const storeLinks = storeLinksFromWebsites(game.websites);
   const steamTrailerUrl = await steamTrailer(storeLinks.steam);
-  const description = await localizedDescription(title, game.summary || game.storyline || "", language);
+  const description = await localizedDescription(title, game.summary || game.storyline || "", language, [query, ...searchQueries]);
   return {
     id: game.id ? `igdb:${game.id}` : title,
     igdbId: game.id || null,
     hltbId: hltbMatch?.hltbId || null,
     igdbUrl: lookup.igdbUrl || (game.slug ? `https://www.igdb.com/games/${game.slug}` : ""),
     title,
+    matchedTitle: bestGameTitleMatch(query, game),
     releaseDate: release.date,
     releaseText: release.text,
     cover: igdbCover(game.cover?.image_id) || hltbMatch?.cover || "",
@@ -199,6 +255,88 @@ function bestExternalMatch(title, results) {
     .map((result) => ({ result, score: matchScore(title, result.title) }))
     .filter((entry) => entry.score >= 0.62)
     .sort((a, b) => b.score - a.score)[0]?.result || null;
+}
+
+function bestGameTitleScore(queries = [], game = {}) {
+  const titles = gameTitleCandidates(game);
+  return Math.max(0, ...uniqueSearchQueries(queries).flatMap((query) => titles.map((title) => matchScore(query, title))));
+}
+
+function bestGameTitleMatch(query, game = {}) {
+  return gameTitleCandidates(game)
+    .map((title) => ({ title, score: matchScore(query, title) }))
+    .filter((item) => item.score >= 0.62)
+    .sort((a, b) => b.score - a.score)[0]?.title || "";
+}
+
+function gameTitleCandidates(game = {}) {
+  return uniqueSearchQueries([
+    game.name,
+    ...(game.alternative_names || []).map((item) => item?.name),
+    ...(game.game_localizations || []).map((item) => item?.name),
+  ]);
+}
+
+async function spanishTitleAliases(query, token, credentials) {
+  const aliases = new Set();
+  const entities = await wikidataSearchEntities(query, "es");
+  for (const candidate of entities.slice(0, 4)) {
+    if (!candidate?.id) continue;
+    const entity = await wikidataEntity(candidate.id);
+    if (!entity || !wikidataEntityLooksLikeGame(entity, candidate)) continue;
+    addWikidataTitleAliases(aliases, entity, "en");
+    addWikidataTitleAliases(aliases, entity, "es");
+  }
+  const igdbAliases = await igdbLocalizedTitleAliases(query, credentials, token);
+  igdbAliases.forEach((alias) => aliases.add(alias));
+  return [...aliases].filter((alias) => matchScore(query, alias) < 1 || normalize(alias) !== normalize(query)).slice(0, 12);
+}
+
+async function igdbLocalizedTitleAliases(query, credentials, token) {
+  const aliases = new Set();
+  for (const endpoint of ["alternative_names", "game_localizations"]) {
+    const body = [
+      "fields name;",
+      `search "${escapeIgdbString(searchAlias(query))}";`,
+      "limit 25;",
+    ].join(" ");
+    const matches = await igdbPost(endpoint, body, credentials, token).catch(() => []);
+    matches
+      .map((item) => item?.name || "")
+      .filter((name) => matchScore(query, name) >= 0.62)
+      .forEach((name) => aliases.add(name));
+  }
+  return [...aliases];
+}
+
+async function wikidataSearchEntities(title, language = "en") {
+  const search = new URL("https://www.wikidata.org/w/api.php");
+  search.searchParams.set("action", "wbsearchentities");
+  search.searchParams.set("search", title);
+  search.searchParams.set("language", language);
+  search.searchParams.set("format", "json");
+  search.searchParams.set("limit", "6");
+  const data = await getJson(search.toString());
+  return Array.isArray(data.search) ? data.search : [];
+}
+
+async function wikidataEntity(id) {
+  const data = await getJson(`https://www.wikidata.org/wiki/Special:EntityData/${encodeURIComponent(id)}.json`);
+  return data.entities?.[id] || null;
+}
+
+function wikidataEntityLooksLikeGame(entity, candidate = {}) {
+  if (isVideoGameDescription(candidate.description)) return true;
+  const instanceIds = claimIds(entity, "P31");
+  return instanceIds.includes("Q7889") || instanceIds.includes("Q7058673") || instanceIds.includes("Q15613992");
+}
+
+function addWikidataTitleAliases(target, entity, language) {
+  const label = entity.labels?.[language]?.value || "";
+  if (label) target.add(label);
+  (entity.aliases?.[language] || []).forEach((item) => {
+    if (item?.value) target.add(item.value);
+  });
 }
 
 function companyName(companies, role) {
@@ -469,8 +607,13 @@ async function enrichMetadata(result, language = "en") {
     genres: result.genres.length ? cleanGenreLabels(result.genres, language) : (metadata.genres.length ? metadata.genres : inferred.genres),
     developer: result.developer || metadata.developer || inferred.developer,
     publisher: result.publisher || metadata.publisher || inferred.publisher,
-    description: result.description || metadata.description || "",
+    description: localizedResultDescription(result, metadata, language),
   };
+}
+
+function localizedResultDescription(result, metadata, language = "en") {
+  if (language === "es-ES") return metadata.description || "";
+  return result.description || metadata.description || "";
 }
 
 function inferMetadata(title) {
@@ -506,17 +649,11 @@ async function wikidataMetadata(title, language = "en") {
 
 async function fetchWikidataMetadata(title, language = "en") {
   try {
-    const search = new URL("https://www.wikidata.org/w/api.php");
-    search.searchParams.set("action", "wbsearchentities");
-    search.searchParams.set("search", title);
-    search.searchParams.set("language", "en");
-    search.searchParams.set("format", "json");
-    search.searchParams.set("limit", "4");
-    const searchData = await getJson(search.toString());
-    const candidate = bestWikidataCandidate(title, searchData.search || []);
+    const searchLanguages = language === "es-ES" ? ["es", "en"] : ["en"];
+    const candidates = (await Promise.all(searchLanguages.map((searchLanguage) => wikidataSearchEntities(title, searchLanguage)))).flat();
+    const candidate = bestWikidataCandidate(title, candidates);
     if (!candidate?.id) return emptyMetadata();
-    const entityData = await getJson(`https://www.wikidata.org/wiki/Special:EntityData/${candidate.id}.json`);
-    const entity = entityData.entities?.[candidate.id];
+    const entity = await wikidataEntity(candidate.id);
     if (!entity) return emptyMetadata();
     const ids = [
       ...claimIds(entity, "P178"),
@@ -547,7 +684,7 @@ function bestWikidataCandidate(title, results) {
 
 function isVideoGameDescription(description) {
   const value = String(description || "").toLowerCase();
-  return value.includes("video game") || value.includes("computer game") || value.includes("console game");
+  return value.includes("video game") || value.includes("computer game") || value.includes("console game") || value.includes("videojuego");
 }
 
 function isLikelyGameLabel(label) {
@@ -657,11 +794,14 @@ async function wikidataLabels(ids, language = "en") {
   return Object.fromEntries(Object.entries(data.entities || {}).map(([id, entity]) => [id, entity.labels?.[primary]?.value || entity.labels?.en?.value || ""]));
 }
 
-async function localizedDescription(title, fallback, language) {
+async function localizedDescription(title, fallback, language, alternateTitles = []) {
   const cleanedFallback = fullDescription(fallback);
   if (language !== "es-ES") return cleanedFallback;
-  const metadata = await wikidataMetadata(title, language);
-  return metadata.description || cleanedFallback;
+  for (const candidate of uniqueSearchQueries([...alternateTitles, title])) {
+    const metadata = await wikidataMetadata(candidate, language);
+    if (metadata.description) return metadata.description;
+  }
+  return "";
 }
 
 async function spanishWikipediaDescription(entity) {

@@ -216,7 +216,7 @@ function collectionPriceParams(game, settings) {
 
 function bestTitleMatch(title, results) {
   return (results || [])
-    .map((result) => ({ result, score: titleScore(title, result.title) }))
+    .map((result) => ({ result, score: Math.max(titleScore(title, result.title), titleScore(title, result.matchedTitle)) }))
     .filter(({ score }) => score >= 0.62)
     .sort((a, b) => b.score - a.score)[0]?.result || null;
 }
