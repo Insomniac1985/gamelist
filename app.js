@@ -129,7 +129,7 @@ const UI_ICON_URLS = [
   "/assets/stores/game.ico",
   "/assets/stores/limited-run-games.png",
   "/assets/stores/retroisland.png",
-  "/assets/stores/square-enix-store.svg",
+  "/assets/stores/square-enix-store.png",
   "/assets/stores/xtralife.ico",
 ];
 const MANUAL_GAME_COVER_OVERRIDES = {
@@ -9667,7 +9667,7 @@ function storeIcon(store) {
   if (store === "GAME.es") return "assets/stores/game.ico";
   if (store === "Retro Island NY") return "assets/stores/retroisland.png";
   if (normalizedStore === "limitedrun" || normalizedStore === "limitedrungames" || normalizedStore === "lrg") return "assets/stores/limited-run-games.png";
-  if (normalizedStore === "squareenix" || normalizedStore === "squareenixstore") return "assets/stores/square-enix-store.svg";
+  if (normalizedStore === "squareenix" || normalizedStore === "squareenixstore") return "assets/stores/square-enix-store.png";
   if (store === "GameStop") return "https://www.gamestop.com/favicon.ico";
   if (store === "Walmart") return "https://www.walmart.com/favicon.ico";
   if (store.startsWith("Nintendo")) return "assets/sites/nintendo.png";
