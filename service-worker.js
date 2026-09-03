@@ -1,4 +1,4 @@
-const CACHE_VERSION = "gamelist-cache-v581";
+const CACHE_VERSION = "gamelist-cache-v583";
 const STATIC_CACHE = `${CACHE_VERSION}:static`;
 const MEDIA_CACHE = `${CACHE_VERSION}:media`;
 const STATIC_ASSETS = [
@@ -67,7 +67,7 @@ const STATIC_ASSETS = [
   "/assets/stores/game.ico",
   "/assets/stores/limited-run-games.png",
   "/assets/stores/retroisland.png",
-  "/assets/stores/square-enix-store.svg",
+  "/assets/stores/square-enix-store.png",
   "/assets/stores/xtralife.ico",
 ];
 const OPTIONAL_STATIC_ASSETS = [];
