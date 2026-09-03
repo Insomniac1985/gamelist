@@ -127,6 +127,7 @@ const UI_ICON_URLS = [
   "/assets/sites/wikipedia.ico",
   "/assets/stores/amazon.ico",
   "/assets/stores/game.ico",
+  "/assets/stores/limited-run-games.png",
   "/assets/stores/retroisland.png",
   "/assets/stores/square-enix-store.svg",
   "/assets/stores/xtralife.ico",
@@ -9665,7 +9666,8 @@ function storeIcon(store) {
   if (store === "Xtralife") return "assets/stores/xtralife.ico";
   if (store === "GAME.es") return "assets/stores/game.ico";
   if (store === "Retro Island NY") return "assets/stores/retroisland.png";
-  if (normalizedStore === "square enix" || normalizedStore === "square enix store") return "assets/stores/square-enix-store.svg";
+  if (normalizedStore === "limitedrun" || normalizedStore === "limitedrungames" || normalizedStore === "lrg") return "assets/stores/limited-run-games.png";
+  if (normalizedStore === "squareenix" || normalizedStore === "squareenixstore") return "assets/stores/square-enix-store.svg";
   if (store === "GameStop") return "https://www.gamestop.com/favicon.ico";
   if (store === "Walmart") return "https://www.walmart.com/favicon.ico";
   if (store.startsWith("Nintendo")) return "assets/sites/nintendo.png";
@@ -9705,7 +9707,8 @@ function knownStoreIconName(value) {
   if (normalized === "game" || normalized === "game es") return "GAME.es";
   if (normalized === "xtralife" || normalized === "xtra life") return "Xtralife";
   if (normalized === "retro island" || normalized === "retro island ny") return "Retro Island NY";
-  if (normalized === "square enix" || normalized === "square enix store" || normalized === "sqex" || normalized === "sqex store") return "Square Enix Store";
+  if (normalized === "limitedrun" || normalized === "limitedrungames" || normalized === "lrg") return "Limited Run";
+  if (normalized === "squareenix" || normalized === "squareenixstore" || normalized === "sqex" || normalized === "sqexstore") return "Square Enix Store";
   if (normalized === "gamestop" || normalized === "game stop") return "GameStop";
   if (normalized === "walmart" || normalized === "wallmart") return "Walmart";
   if (normalized.startsWith("nintendo")) return "Nintendo";
