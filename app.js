@@ -127,6 +127,7 @@ const UI_ICON_URLS = [
   "/assets/sites/wikipedia.ico",
   "/assets/stores/amazon.ico",
   "/assets/stores/game.ico",
+  "/assets/stores/limited-run-games.png",
   "/assets/stores/retroisland.png",
   "/assets/stores/square-enix-store.svg",
   "/assets/stores/xtralife.ico",
@@ -8888,17 +8889,11 @@ function cardChipsFor(game) {
 }
 
 function preorderChip(store) {
-  return `<span class="chip accent preorder-chip" title="${escapeHtml(tt("Preordered: {store}", { store }))}">${shoppingBagIcon()}${storeChipIconMarkup(store)}${escapeHtml(store)}</span>`;
+  return `<span class="chip accent preorder-chip" title="${escapeHtml(tt("Preordered: {store}", { store }))}">${shoppingBagIcon()}${escapeHtml(store)}</span>`;
 }
 
 function preferredPreorderChip(store) {
-  return `<span class="chip preferred-preorder-chip" title="${escapeHtml(tt("Preferred preorder store: {store}", { store }))}">${storeChipIconMarkup(store)}${escapeHtml(tt("Preferred: {store}", { store }))}</span>`;
-}
-
-function storeChipIconMarkup(store) {
-  const knownStore = knownStoreIconName(store);
-  const icon = knownStore ? storeIcon(knownStore) : "";
-  return icon ? `<img class="preorder-store-icon" src="${escapeHtml(icon)}" alt="" width="14" height="14" decoding="async">` : "";
+  return `<span class="chip preferred-preorder-chip" title="${escapeHtml(tt("Preferred preorder store: {store}", { store }))}">${escapeHtml(tt("Preferred: {store}", { store }))}</span>`;
 }
 
 function chip(label, type = "") {
@@ -9671,7 +9666,8 @@ function storeIcon(store) {
   if (store === "Xtralife") return "assets/stores/xtralife.ico";
   if (store === "GAME.es") return "assets/stores/game.ico";
   if (store === "Retro Island NY") return "assets/stores/retroisland.png";
-  if (normalizedStore === "square enix" || normalizedStore === "square enix store") return "assets/stores/square-enix-store.svg";
+  if (normalizedStore === "limitedrun" || normalizedStore === "limitedrungames" || normalizedStore === "lrg") return "assets/stores/limited-run-games.png";
+  if (normalizedStore === "squareenix" || normalizedStore === "squareenixstore") return "assets/stores/square-enix-store.svg";
   if (store === "GameStop") return "https://www.gamestop.com/favicon.ico";
   if (store === "Walmart") return "https://www.walmart.com/favicon.ico";
   if (store.startsWith("Nintendo")) return "assets/sites/nintendo.png";
@@ -9697,7 +9693,7 @@ function syncPlatformInputIcon() {
 
 function syncStoreInputIcon(input, slot) {
   const store = knownStoreIconName(input?.value);
-  setLeadingFieldIcon(slot, store ? storeIcon(store) : "", store);
+  setLeadingFieldIcon(slot, store ? storeIcon(store) : "", store, store === "Square Enix Store" ? "store-logo-wide" : "");
 }
 
 function knownStoreIconName(value) {
@@ -9711,7 +9707,8 @@ function knownStoreIconName(value) {
   if (normalized === "game" || normalized === "game es") return "GAME.es";
   if (normalized === "xtralife" || normalized === "xtra life") return "Xtralife";
   if (normalized === "retro island" || normalized === "retro island ny") return "Retro Island NY";
-  if (normalized === "square enix" || normalized === "square enix store" || normalized === "sqex" || normalized === "sqex store") return "Square Enix Store";
+  if (normalized === "limitedrun" || normalized === "limitedrungames" || normalized === "lrg") return "Limited Run";
+  if (normalized === "squareenix" || normalized === "squareenixstore" || normalized === "sqex" || normalized === "sqexstore") return "Square Enix Store";
   if (normalized === "gamestop" || normalized === "game stop") return "GameStop";
   if (normalized === "walmart" || normalized === "wallmart") return "Walmart";
   if (normalized.startsWith("nintendo")) return "Nintendo";
@@ -9728,8 +9725,9 @@ function setLeadingFieldIcon(slot, icon, title = "", extraClass = "") {
   slot.dataset.baseClass = baseClasses.join(" ");
   slot.className = unique([...baseClasses, ...String(extraClass || "").split(/\s+/).filter(Boolean)]).join(" ");
   wrapper.classList.toggle("has-icon", Boolean(icon));
+  wrapper.classList.toggle("has-wide-icon", Boolean(icon && extraClass.includes("store-logo-wide")));
   slot.title = icon ? title : "";
-  slot.innerHTML = icon ? `<img src="${escapeHtml(icon)}" alt="" width="18" height="18" decoding="async">` : "";
+  slot.innerHTML = icon ? `<img src="${escapeHtml(icon)}" alt="" decoding="async">` : "";
 }
 
 function releaseStatus(game, options = {}) {

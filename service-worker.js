@@ -1,4 +1,4 @@
-const CACHE_VERSION = "gamelist-cache-v580";
+const CACHE_VERSION = "gamelist-cache-v581";
 const STATIC_CACHE = `${CACHE_VERSION}:static`;
 const MEDIA_CACHE = `${CACHE_VERSION}:media`;
 const STATIC_ASSETS = [
@@ -65,6 +65,7 @@ const STATIC_ASSETS = [
   "/assets/sites/wikipedia.ico",
   "/assets/stores/amazon.ico",
   "/assets/stores/game.ico",
+  "/assets/stores/limited-run-games.png",
   "/assets/stores/retroisland.png",
   "/assets/stores/square-enix-store.svg",
   "/assets/stores/xtralife.ico",
@@ -133,7 +134,7 @@ function shouldCacheMedia(request, url) {
 }
 
 function shouldCacheStatic(url) {
-  return /\.(?:css|js|json|png|ico|webp|woff2?)$/i.test(url.pathname)
+  return /\.(?:css|js|json|png|ico|svg|webp|woff2?)$/i.test(url.pathname)
     || url.pathname === "/"
     || url.pathname === "/index.html";
 }
