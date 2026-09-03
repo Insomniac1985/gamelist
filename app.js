@@ -128,6 +128,7 @@ const UI_ICON_URLS = [
   "/assets/stores/amazon.ico",
   "/assets/stores/game.ico",
   "/assets/stores/retroisland.png",
+  "/assets/stores/square-enix-store.png",
   "/assets/stores/xtralife.ico",
 ];
 const MANUAL_GAME_COVER_OVERRIDES = {
@@ -8882,11 +8883,17 @@ function cardChipsFor(game) {
 }
 
 function preorderChip(store) {
-  return `<span class="chip accent preorder-chip" title="${escapeHtml(tt("Preordered: {store}", { store }))}">${shoppingBagIcon()}${escapeHtml(store)}</span>`;
+  return `<span class="chip accent preorder-chip" title="${escapeHtml(tt("Preordered: {store}", { store }))}">${shoppingBagIcon()}${storeChipIconMarkup(store)}${escapeHtml(store)}</span>`;
 }
 
 function preferredPreorderChip(store) {
-  return `<span class="chip preferred-preorder-chip" title="${escapeHtml(tt("Preferred preorder store: {store}", { store }))}">${escapeHtml(tt("Preferred: {store}", { store }))}</span>`;
+  return `<span class="chip preferred-preorder-chip" title="${escapeHtml(tt("Preferred preorder store: {store}", { store }))}">${storeChipIconMarkup(store)}${escapeHtml(tt("Preferred: {store}", { store }))}</span>`;
+}
+
+function storeChipIconMarkup(store) {
+  const knownStore = knownStoreIconName(store);
+  const icon = knownStore ? storeIcon(knownStore) : "";
+  return icon ? `<img class="preorder-store-icon" src="${escapeHtml(icon)}" alt="" width="14" height="14" decoding="async">` : "";
 }
 
 function chip(label, type = "") {
@@ -9653,11 +9660,13 @@ function xboxSearchUrl(query, region = state.settings.region) {
 }
 
 function storeIcon(store) {
+  const normalizedStore = normalizeTag(store);
   if (store.startsWith("Amazon")) return "assets/stores/amazon.ico";
   if (store === "eBay") return "https://www.ebay.com/favicon.ico";
   if (store === "Xtralife") return "assets/stores/xtralife.ico";
   if (store === "GAME.es") return "assets/stores/game.ico";
   if (store === "Retro Island NY") return "assets/stores/retroisland.png";
+  if (normalizedStore === "square enix" || normalizedStore === "square enix store") return "assets/stores/square-enix-store.png";
   if (store === "GameStop") return "https://www.gamestop.com/favicon.ico";
   if (store === "Walmart") return "https://www.walmart.com/favicon.ico";
   if (store.startsWith("Nintendo")) return "assets/sites/nintendo.png";
@@ -9697,6 +9706,7 @@ function knownStoreIconName(value) {
   if (normalized === "game" || normalized === "game es") return "GAME.es";
   if (normalized === "xtralife" || normalized === "xtra life") return "Xtralife";
   if (normalized === "retro island" || normalized === "retro island ny") return "Retro Island NY";
+  if (normalized === "square enix" || normalized === "square enix store" || normalized === "sqex" || normalized === "sqex store") return "Square Enix Store";
   if (normalized === "gamestop" || normalized === "game stop") return "GameStop";
   if (normalized === "walmart" || normalized === "wallmart") return "Walmart";
   if (normalized.startsWith("nintendo")) return "Nintendo";
