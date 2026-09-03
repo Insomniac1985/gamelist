@@ -1458,11 +1458,16 @@ function gamelistPreorderPrices(game) {
 }
 
 function preorderProjectionChip(store) {
-  return `<span class="chip accent preorder-chip" title="${escapeHtml(`Preordered: ${store}`)}">${shoppingBagIcon()}${escapeHtml(store)}</span>`;
+  return `<span class="chip accent preorder-chip" title="${escapeHtml(`Preordered: ${store}`)}">${shoppingBagIcon()}${shelfStoreChipIconMarkup(store)}${escapeHtml(store)}</span>`;
 }
 
 function mobilePreorderProjectionChip(store) {
   return `<span class="mobile-preorder-tag">${preorderProjectionChip(store)}</span>`;
+}
+
+function shelfStoreChipIconMarkup(store) {
+  const icon = storeIcon(store);
+  return icon && icon !== "assets/Icon.png" ? `<img class="preorder-store-icon" src="${escapeHtml(icon)}" alt="" width="14" height="14" decoding="async">` : "";
 }
 
 function preorderPlaytimePill(game) {
@@ -4073,7 +4078,7 @@ function storePricesMarkup(prices, currency) {
 function placeholderStorePrices(settings = normalizePriceSettings(state.gamelistSettings)) {
   return settings.stores.map((store) => ({ store, price: "", numericPrice: null, url: "" }));
 }
-function storeIcon(store) { if (String(store).startsWith("Amazon")) return "assets/stores/amazon.ico"; if (store === "eBay") return "https://www.ebay.com/favicon.ico"; if (store === "Xtralife") return "assets/stores/xtralife.ico"; if (store === "GAME.es") return "assets/stores/game.ico"; if (store === "Retro Island NY") return "assets/stores/retroisland.png"; if (store === "GameStop") return "https://www.gamestop.com/favicon.ico"; if (store === "Walmart") return "https://www.walmart.com/favicon.ico"; if (String(store).startsWith("Nintendo")) return "assets/sites/nintendo.png"; if (String(store).startsWith("PlayStation")) return "assets/sites/playstation.png"; if (store === "Steam") return "assets/sites/steam.png"; if (store === "Xbox") return "assets/platforms/xbox.png"; return "assets/Icon.png"; }
+function storeIcon(store) { const normalizedStore = normalizeTag(store); if (String(store).startsWith("Amazon")) return "assets/stores/amazon.ico"; if (store === "eBay") return "https://www.ebay.com/favicon.ico"; if (store === "Xtralife") return "assets/stores/xtralife.ico"; if (store === "GAME.es") return "assets/stores/game.ico"; if (store === "Retro Island NY") return "assets/stores/retroisland.png"; if (normalizedStore === "square enix" || normalizedStore === "square enix store" || normalizedStore === "sqex" || normalizedStore === "sqex store") return "assets/stores/square-enix-store.svg"; if (store === "GameStop") return "https://www.gamestop.com/favicon.ico"; if (store === "Walmart") return "https://www.walmart.com/favicon.ico"; if (String(store).startsWith("Nintendo")) return "assets/sites/nintendo.png"; if (String(store).startsWith("PlayStation")) return "assets/sites/playstation.png"; if (store === "Steam") return "assets/sites/steam.png"; if (store === "Xbox") return "assets/platforms/xbox.png"; return "assets/Icon.png"; }
 function renderPriceDetails(game) {
   const prices = game.collectionPrices || {};
   const rows = [["Loose", prices.loose], ["Complete", prices.complete], ["Sealed", prices.sealed]].filter(([, value]) => value != null);

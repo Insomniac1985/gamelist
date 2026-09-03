@@ -6410,6 +6410,13 @@ a.time-pill {
   stroke-linejoin: round;
 }
 
+.preorder-store-icon {
+  width: 14px;
+  height: 14px;
+  flex: 0 0 auto;
+  object-fit: contain;
+}
+
 .game-row .preorder-chip {
   gap: 4px;
 }
