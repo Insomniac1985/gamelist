@@ -43,6 +43,7 @@ const types = {
   ".js": "text/javascript",
   ".json": "application/json",
   ".png": "image/png",
+  ".svg": "image/svg+xml",
   ".webp": "image/webp",
 };
 

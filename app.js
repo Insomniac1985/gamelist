@@ -8888,17 +8888,11 @@ function cardChipsFor(game) {
 }
 
 function preorderChip(store) {
-  return `<span class="chip accent preorder-chip" title="${escapeHtml(tt("Preordered: {store}", { store }))}">${shoppingBagIcon()}${storeChipIconMarkup(store)}${escapeHtml(store)}</span>`;
+  return `<span class="chip accent preorder-chip" title="${escapeHtml(tt("Preordered: {store}", { store }))}">${shoppingBagIcon()}${escapeHtml(store)}</span>`;
 }
 
 function preferredPreorderChip(store) {
-  return `<span class="chip preferred-preorder-chip" title="${escapeHtml(tt("Preferred preorder store: {store}", { store }))}">${storeChipIconMarkup(store)}${escapeHtml(tt("Preferred: {store}", { store }))}</span>`;
-}
-
-function storeChipIconMarkup(store) {
-  const knownStore = knownStoreIconName(store);
-  const icon = knownStore ? storeIcon(knownStore) : "";
-  return icon ? `<img class="preorder-store-icon" src="${escapeHtml(icon)}" alt="" width="14" height="14" decoding="async">` : "";
+  return `<span class="chip preferred-preorder-chip" title="${escapeHtml(tt("Preferred preorder store: {store}", { store }))}">${escapeHtml(tt("Preferred: {store}", { store }))}</span>`;
 }
 
 function chip(label, type = "") {
@@ -9697,7 +9691,7 @@ function syncPlatformInputIcon() {
 
 function syncStoreInputIcon(input, slot) {
   const store = knownStoreIconName(input?.value);
-  setLeadingFieldIcon(slot, store ? storeIcon(store) : "", store);
+  setLeadingFieldIcon(slot, store ? storeIcon(store) : "", store, store === "Square Enix Store" ? "store-logo-wide" : "");
 }
 
 function knownStoreIconName(value) {
@@ -9728,8 +9722,9 @@ function setLeadingFieldIcon(slot, icon, title = "", extraClass = "") {
   slot.dataset.baseClass = baseClasses.join(" ");
   slot.className = unique([...baseClasses, ...String(extraClass || "").split(/\s+/).filter(Boolean)]).join(" ");
   wrapper.classList.toggle("has-icon", Boolean(icon));
+  wrapper.classList.toggle("has-wide-icon", Boolean(icon && extraClass.includes("store-logo-wide")));
   slot.title = icon ? title : "";
-  slot.innerHTML = icon ? `<img src="${escapeHtml(icon)}" alt="" width="18" height="18" decoding="async">` : "";
+  slot.innerHTML = icon ? `<img src="${escapeHtml(icon)}" alt="" decoding="async">` : "";
 }
 
 function releaseStatus(game, options = {}) {

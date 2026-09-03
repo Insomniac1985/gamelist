@@ -1458,16 +1458,11 @@ function gamelistPreorderPrices(game) {
 }
 
 function preorderProjectionChip(store) {
-  return `<span class="chip accent preorder-chip" title="${escapeHtml(`Preordered: ${store}`)}">${shoppingBagIcon()}${shelfStoreChipIconMarkup(store)}${escapeHtml(store)}</span>`;
+  return `<span class="chip accent preorder-chip" title="${escapeHtml(`Preordered: ${store}`)}">${shoppingBagIcon()}${escapeHtml(store)}</span>`;
 }
 
 function mobilePreorderProjectionChip(store) {
   return `<span class="mobile-preorder-tag">${preorderProjectionChip(store)}</span>`;
-}
-
-function shelfStoreChipIconMarkup(store) {
-  const icon = storeIcon(store);
-  return icon && icon !== "assets/Icon.png" ? `<img class="preorder-store-icon" src="${escapeHtml(icon)}" alt="" width="14" height="14" decoding="async">` : "";
 }
 
 function preorderPlaytimePill(game) {

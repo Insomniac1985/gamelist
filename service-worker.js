@@ -1,4 +1,4 @@
-const CACHE_VERSION = "gamelist-cache-v580";
+const CACHE_VERSION = "gamelist-cache-v581";
 const STATIC_CACHE = `${CACHE_VERSION}:static`;
 const MEDIA_CACHE = `${CACHE_VERSION}:media`;
 const STATIC_ASSETS = [
@@ -133,7 +133,7 @@ function shouldCacheMedia(request, url) {
 }
 
 function shouldCacheStatic(url) {
-  return /\.(?:css|js|json|png|ico|webp|woff2?)$/i.test(url.pathname)
+  return /\.(?:css|js|json|png|ico|svg|webp|woff2?)$/i.test(url.pathname)
     || url.pathname === "/"
     || url.pathname === "/index.html";
 }
