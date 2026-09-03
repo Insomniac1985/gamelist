@@ -128,7 +128,7 @@ const UI_ICON_URLS = [
   "/assets/stores/amazon.ico",
   "/assets/stores/game.ico",
   "/assets/stores/retroisland.png",
-  "/assets/stores/square-enix-store.png",
+  "/assets/stores/square-enix-store.svg",
   "/assets/stores/xtralife.ico",
 ];
 const MANUAL_GAME_COVER_OVERRIDES = {
@@ -995,7 +995,12 @@ function bindEvents() {
     syncStoreInputIcon(el.fields.preorderStore, el.preorderStoreFieldIcon);
     syncNewGameUpcomingSection();
   });
+  el.fields.preorderStore.addEventListener("change", () => {
+    syncStoreInputIcon(el.fields.preorderStore, el.preorderStoreFieldIcon);
+    syncNewGameUpcomingSection();
+  });
   el.fields.preferredStore.addEventListener("input", () => syncStoreInputIcon(el.fields.preferredStore, el.preferredStoreFieldIcon));
+  el.fields.preferredStore.addEventListener("change", () => syncStoreInputIcon(el.fields.preferredStore, el.preferredStoreFieldIcon));
   el.fields.digital.addEventListener("change", () => { syncDialogPriceVisibility(); syncGamelistEntitlementEditor(); });
   el.fields.dlc.addEventListener("change", syncDlcDigital);
   el.fields.coop?.addEventListener("change", () => {
@@ -9666,7 +9671,7 @@ function storeIcon(store) {
   if (store === "Xtralife") return "assets/stores/xtralife.ico";
   if (store === "GAME.es") return "assets/stores/game.ico";
   if (store === "Retro Island NY") return "assets/stores/retroisland.png";
-  if (normalizedStore === "square enix" || normalizedStore === "square enix store") return "assets/stores/square-enix-store.png";
+  if (normalizedStore === "square enix" || normalizedStore === "square enix store") return "assets/stores/square-enix-store.svg";
   if (store === "GameStop") return "https://www.gamestop.com/favicon.ico";
   if (store === "Walmart") return "https://www.walmart.com/favicon.ico";
   if (store.startsWith("Nintendo")) return "assets/sites/nintendo.png";
@@ -9851,6 +9856,8 @@ async function openEditor(id = "") {
   el.fields.cover.value = game.cover || "";
   if (el.fields.notes) el.fields.notes.value = game.notes || "";
   syncEditFieldIcons();
+  requestAnimationFrame(syncEditFieldIcons);
+  window.setTimeout(syncEditFieldIcons, 0);
   syncGamelistEntitlementEditor();
   syncDialogPriceVisibility();
   syncStyledSelect(el.fields.section, { activeValue: null });
