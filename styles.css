@@ -4040,10 +4040,6 @@ textarea {
   padding-left: 40px;
 }
 
-.icon-input.has-wide-icon input {
-  padding-left: 118px;
-}
-
 .field-leading-icon {
   position: absolute;
   left: 12px;
@@ -4066,18 +4062,6 @@ textarea {
   max-width: 18px;
   max-height: 18px;
   object-fit: contain;
-}
-
-.field-leading-icon.store-logo-wide {
-  left: 10px;
-  width: 96px;
-}
-
-.field-leading-icon.store-logo-wide img {
-  width: 96px;
-  max-width: 96px;
-  height: auto;
-  max-height: 18px;
 }
 
 input:hover,

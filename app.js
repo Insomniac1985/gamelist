@@ -9693,7 +9693,7 @@ function syncPlatformInputIcon() {
 
 function syncStoreInputIcon(input, slot) {
   const store = knownStoreIconName(input?.value);
-  setLeadingFieldIcon(slot, store ? storeIcon(store) : "", store, store === "Square Enix Store" ? "store-logo-wide" : "");
+  setLeadingFieldIcon(slot, store ? storeIcon(store) : "", store);
 }
 
 function knownStoreIconName(value) {
@@ -9725,7 +9725,6 @@ function setLeadingFieldIcon(slot, icon, title = "", extraClass = "") {
   slot.dataset.baseClass = baseClasses.join(" ");
   slot.className = unique([...baseClasses, ...String(extraClass || "").split(/\s+/).filter(Boolean)]).join(" ");
   wrapper.classList.toggle("has-icon", Boolean(icon));
-  wrapper.classList.toggle("has-wide-icon", Boolean(icon && extraClass.includes("store-logo-wide")));
   slot.title = icon ? title : "";
   slot.innerHTML = icon ? `<img src="${escapeHtml(icon)}" alt="" decoding="async">` : "";
 }
