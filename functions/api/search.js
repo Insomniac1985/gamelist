@@ -15,11 +15,13 @@ export async function onRequestGet({ request, env = {} }) {
   if (!query) return json({ results: [] });
 
   const igdb = igdbCredentials(env);
+  let igdbError = null;
   if (igdb) {
     try {
       const results = await igdbSearch(query, igdb, lookup, language);
       if (results.length) return json({ results });
-    } catch {
+    } catch (error) {
+      igdbError = error;
       // Fall through to HowLongToBeat when IGDB credentials or API are unavailable.
     }
   }
@@ -29,7 +31,20 @@ export async function onRequestGet({ request, env = {} }) {
     const results = await hltbSearch(query, hltb, language);
     return json({ results });
   } catch (error) {
-    return json({ results: [], error: "HowLongToBeat lookup unavailable" }, 503);
+    const igdbWasTried = Boolean(igdb);
+    const igdbCompleted = igdbWasTried && !igdbError;
+    return json({
+      results: [],
+      error: igdbCompleted
+        ? "No IGDB matches found. HowLongToBeat lookup unavailable."
+        : igdbWasTried
+          ? "IGDB lookup unavailable. HowLongToBeat lookup unavailable."
+          : "Game lookup unavailable. Missing IGDB credentials and HowLongToBeat lookup unavailable.",
+      providers: {
+        IGDB: igdbWasTried ? (igdbError ? "error" : "empty") : "not configured",
+        HowLongToBeat: "unavailable",
+      },
+    }, igdbCompleted ? 200 : 503);
   }
 }
 
@@ -105,8 +120,11 @@ async function igdbSearch(query, credentials, lookup = {}, language = "en") {
   }
   if (slugBody && !games.length) return igdbSearch(query, credentials, { ...lookup, igdbSlug: "" }, language);
   const hltbResults = (await Promise.all(searchQueries.map((searchQuery) => safeHltbResults(searchQuery)))).flat();
-  const results = await Promise.all(games
+  const settledResults = await Promise.allSettled(games
     .map((game) => igdbResult(game, query, hltbResults, lookup, language, searchQueries)));
+  const results = settledResults
+    .filter((entry) => entry.status === "fulfilled")
+    .map((entry) => entry.value);
   return results
     .filter(Boolean)
     .sort((a, b) => b.score - a.score)
@@ -562,6 +580,20 @@ function matchScore(query, title) {
 function searchTerms(query) {
   const normalized = normalize(searchAlias(query));
   return normalized.split(" ").filter(Boolean);
+}
+
+function uniqueSearchQueries(values) {
+  const seen = new Set();
+  const unique = [];
+  for (const value of values || []) {
+    const query = cleanTitle(String(value || ""));
+    if (!query) continue;
+    const key = normalize(query);
+    if (!key || seen.has(key)) continue;
+    seen.add(key);
+    unique.push(query);
+  }
+  return unique;
 }
 
 function searchAlias(query) {
