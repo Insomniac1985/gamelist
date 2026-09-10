@@ -1,10 +1,11 @@
+import { isEditorRequest } from "./editor-auth.js";
+
 const GOOGLE_TOKEN_URL = "https://oauth2.googleapis.com/token";
 const GOOGLE_CALENDAR_SCOPE = "https://www.googleapis.com/auth/calendar.events";
 
 export async function onRequestPost({ request, env = {} }) {
   if (!env.EDIT_PASSWORD) return json({ error: "Missing EDIT_PASSWORD secret" }, 503);
-  const password = request.headers.get("x-edit-password") || "";
-  if (password !== env.EDIT_PASSWORD) return json({ error: "Unauthorized" }, 401);
+  if (!await isEditorRequest(request, env)) return json({ error: "Unauthorized" }, 401);
 
   const body = await request.json().catch(() => null);
   const games = Array.isArray(body?.games) ? body.games : [body?.game].filter(Boolean);
