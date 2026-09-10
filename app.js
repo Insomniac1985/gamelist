@@ -9763,16 +9763,20 @@ function syncNewGameUpcomingSection() {
 }
 
 function shouldCreatePreorderCalendarEvent(existing, game) {
+  const releaseDate = dateOnly(game?.releaseDate);
+  const existingReleaseDate = dateOnly(existing?.releaseDate);
+  const preorderStore = String(game?.preorderStore || "").trim();
+  const existingPreorderStore = String(existing?.preorderStore || "").trim();
   return Boolean(game?.preorderStore)
-    && !existing?.preorderStore
     && !String(game.releaseText || "").trim()
-    && validReleaseDate(game.releaseDate);
+    && validReleaseDate(releaseDate)
+    && (!existingPreorderStore || existingPreorderStore !== preorderStore || !existingReleaseDate || existingReleaseDate !== releaseDate);
 }
 
 async function createPreorderCalendarEvent(game) {
   const password = sessionStorage.getItem(`${SESSION_KEY}:password`) || "";
   try {
-    await fetch("/api/calendar", {
+    const response = await fetch("/api/calendar", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -9780,8 +9784,15 @@ async function createPreorderCalendarEvent(game) {
       },
       body: JSON.stringify({ game }),
     });
-  } catch {
-    // Calendar sync is best-effort; the game save should never be blocked by it.
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok || data.error) {
+      throw new Error(data.detail || data.error || "Google Calendar sync failed.");
+    }
+    if (data.created) showToast(tt("Google Calendar preorder event created."));
+    else if (data.skipped) showToast(tt("Google Calendar skipped this preorder."), "error");
+  } catch (error) {
+    console.warn("Google Calendar preorder sync failed.", error);
+    showToast(tt("Google Calendar preorder sync failed."), "error");
   }
 }
 
@@ -9929,10 +9940,10 @@ async function saveFromForm(event) {
   const existing = state.games.find((game) => game.id === el.fields.id.value);
   const game = await saveCurrentFormGame();
   state.finishSetupId = "";
-  if (shouldCreatePreorderCalendarEvent(existing, game)) {
-    createPreorderCalendarEvent(game);
-  }
   el.dialog.close();
+  if (shouldCreatePreorderCalendarEvent(existing, game)) {
+    await createPreorderCalendarEvent(game);
+  }
   refreshPricesForGame(game.id, { silent: true });
 }
 
