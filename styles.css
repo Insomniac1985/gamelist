@@ -6392,7 +6392,7 @@ a.time-pill {
   gap: 5px;
 }
 
-.preorder-chip-kickstarter {
+.chip.accent.preorder-chip-kickstarter {
   background: #5ecb80;
 }
 
