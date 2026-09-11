@@ -8889,7 +8889,10 @@ function cardChipsFor(game) {
 }
 
 function preorderChip(store) {
-  return `<span class="chip accent preorder-chip" title="${escapeHtml(tt("Preordered: {store}", { store }))}">${shoppingBagIcon()}${escapeHtml(store)}</span>`;
+  const kickstarter = isKickstarterStore(store);
+  const displayStore = kickstarter ? "Kickstarter" : store;
+  const icon = kickstarter ? `<img class="preorder-store-icon" src="${escapeHtml(storeIcon(store))}" alt="" width="14" height="14" decoding="async">` : shoppingBagIcon();
+  return `<span class="chip accent preorder-chip${kickstarter ? " preorder-chip-kickstarter" : ""}" title="${escapeHtml(tt("Preordered: {store}", { store: displayStore }))}">${icon}${escapeHtml(displayStore)}</span>`;
 }
 
 function preferredPreorderChip(store) {
@@ -9663,6 +9666,7 @@ function storeIcon(store) {
   const normalizedStore = normalizeTag(store);
   if (store.startsWith("Amazon")) return "assets/stores/amazon.ico";
   if (store === "eBay") return "https://www.ebay.com/favicon.ico";
+  if (isKickstarterStore(store)) return "https://www.kickstarter.com/favicon.ico";
   if (store === "Xtralife") return "assets/stores/xtralife.ico";
   if (store === "GAME.es") return "assets/stores/game.ico";
   if (store === "Retro Island NY") return "assets/stores/retroisland.png";
@@ -9704,6 +9708,7 @@ function knownStoreIconName(value) {
   if (exact) return exact;
   if (normalized.startsWith("amazon")) return "Amazon";
   if (normalized === "ebay" || normalized === "e bay") return "eBay";
+  if (isKickstarterStore(raw)) return "Kickstarter";
   if (normalized === "game" || normalized === "game es") return "GAME.es";
   if (normalized === "xtralife" || normalized === "xtra life") return "Xtralife";
   if (normalized === "retro island" || normalized === "retro island ny") return "Retro Island NY";
@@ -9716,6 +9721,10 @@ function knownStoreIconName(value) {
   if (normalized === "steam") return "Steam";
   if (normalized === "xbox") return "Xbox";
   return "";
+}
+
+function isKickstarterStore(store) {
+  return ["kickstarter", "kickstater", "kicstarter", "kickstart"].includes(normalizeTag(store));
 }
 
 function setLeadingFieldIcon(slot, icon, title = "", extraClass = "") {
