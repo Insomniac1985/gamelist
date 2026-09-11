@@ -6392,6 +6392,10 @@ a.time-pill {
   gap: 5px;
 }
 
+.preorder-chip-kickstarter {
+  background: #5ecb80;
+}
+
 .preferred-preorder-chip {
   color: #f7df69;
   background: rgba(247, 223, 105, 0.14);
@@ -6410,6 +6414,14 @@ a.time-pill {
   stroke-linejoin: round;
 }
 
+.preorder-chip .preorder-store-icon {
+  width: 14px;
+  height: 14px;
+  flex: 0 0 auto;
+  border-radius: 3px;
+  object-fit: contain;
+}
+
 .game-row .preorder-chip {
   gap: 4px;
 }
@@ -6418,6 +6430,11 @@ a.time-pill {
   width: 12px;
   height: 12px;
   stroke-width: 2.1;
+}
+
+.game-row .preorder-chip .preorder-store-icon {
+  width: 12px;
+  height: 12px;
 }
 
 .mobile-preorder-tag {
