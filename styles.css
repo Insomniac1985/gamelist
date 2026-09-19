@@ -1934,6 +1934,12 @@ html.theme-gradient .goty-section .column-head h2 .trophy-icon {
   color: #d7b8ff !important;
 }
 
+.playing-finished-tags .coop-pill span,
+.playing-finished-tags .coop-pill .coop-icon,
+.playing-finished-tags .multiplayer-pill .coop-icon {
+  color: #79f2ce !important;
+}
+
 .playing-finished-tags .rating-score-star {
   color: #ffe985;
   font-size: 10px;
@@ -2866,6 +2872,11 @@ h3 {
   --stat-glow: rgba(247, 223, 105, 0.26);
 }
 
+.stat-digital {
+  --stat-color: #d8dde6;
+  --stat-glow: rgba(216, 221, 230, 0.22);
+}
+
 .stat-new {
   --stat-color: #79f2ce;
   --stat-glow: rgba(121, 242, 206, 0.24);
@@ -3152,6 +3163,10 @@ body.dialog-open .floating-edit-actions {
   line-height: 1;
 }
 
+.release-month.current-month header strong {
+  color: var(--accent-1, var(--accent));
+}
+
 .release-month header span {
   color: var(--dim);
   font-size: 15px;
@@ -3280,6 +3295,23 @@ body.dialog-open .floating-edit-actions {
   box-shadow:
     0 8px 20px rgba(247, 223, 105, 0.22),
     0 0 20px rgba(247, 223, 105, 0.12);
+}
+
+.release-day.today > span {
+  position: relative;
+  color: var(--accent-1, var(--accent));
+}
+
+.release-day.today > span::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: calc(100% + 4px);
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: currentColor;
+  transform: translateX(-50%);
 }
 
 .release-day em {
@@ -6558,6 +6590,11 @@ a.time-pill {
 
 .release-dialog-list .price-link strong {
   font-size: 10px;
+}
+
+.release-dialog-list .bought-action .action-label {
+  font-size: 12px;
+  line-height: 1.05;
 }
 
 #releaseDialogTitle,

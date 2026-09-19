@@ -1036,16 +1036,19 @@ function delay(ms) {
 function renderStats() {
   const visibleGames = filteredShelfStatsGames();
   const ownedGames = visibleGames.filter((game) => !isPendingCollectionGame(game));
-  const driveSelected = state.filters.tab === "drive";
-  const collectionGames = ownedGames.filter((game) => driveSelected ? isDigitalShelfGame(game) : !isDigitalShelfGame(game));
-  const value = collectionGames.reduce((sum, game) => sum + (collectionValueFor(game) || 0), 0);
+  const physicalGames = ownedGames.filter((game) => !isDigitalShelfGame(game));
+  const digitalGames = state.gamelistSettings.shelfDigitalGames === true
+    ? filteredShelfStatsGames({ drive: true }).filter((game) => !isPendingCollectionGame(game) && isDigitalShelfGame(game))
+    : [];
+  const value = physicalGames.reduce((sum, game) => sum + (collectionValueFor(game) || 0), 0);
   const currency = normalizePriceSettings(state.gamelistSettings).currency;
   const symbol = ({ USD: "$", GBP: "\u00a3", JPY: "\u00a5", EUR: "\u20ac" })[currency] || "\u20ac";
   const valueText = currency === "EUR" ? `${Math.round(value).toLocaleString("en")}${symbol}` : `${symbol}${Math.round(value).toLocaleString("en")}`;
   const rows = [
-    [collectionGames.length, driveSelected ? "Digital games" : "Physical games", "stat-backlog", "shelf-start"],
-    [new Set(collectionGames.map((game) => game.platform)).size, driveSelected ? "Digital platforms" : "Platforms", "stat-available"],
-    ...(!driveSelected && shelfPricesVisible() ? [[valueText, "Estimated physical", "stat-done"]] : []),
+    [physicalGames.length, "Physical games", "stat-backlog", "shelf-start"],
+    ...(state.gamelistSettings.shelfDigitalGames === true ? [[digitalGames.length, "Digital games", "stat-digital"]] : []),
+    [new Set(physicalGames.map((game) => game.platform)).size, "Platforms", "stat-available"],
+    ...(shelfPricesVisible() ? [[valueText, "Estimated physical", "stat-done"]] : []),
   ];
   el.stats.innerHTML = rows.map(([valueText, label, className, action]) => `<div class="stat glass ${className}${action ? " stat-action" : ""}"${action ? ` data-stat-action="${escapeHtml(action)}" role="button" tabindex="0"` : ""}><strong>${escapeHtml(valueText)}</strong><span>${escapeHtml(tt(label))}</span></div>`).join("");
 }
@@ -1353,13 +1356,14 @@ function filteredGamesForShelfTab(tab) {
       && (!state.filters.query || haystack.includes(state.filters.query));
   }).sort(sorter(state.filters.sort));
 }
-function filteredShelfStatsGames() {
+function filteredShelfStatsGames(options = {}) {
+  const driveMode = Boolean(options.drive);
   return visibleShelfGames().filter((game) => {
     const haystack = normalizeSearchText(`${game.title} ${game.platform} ${game.publisher} ${game.developer} ${game.genre} ${game.notes} ${(game.tags || []).join(" ")} ${(game.owners || []).join(" ")}`);
     return !game.deletedAt
       && (state.filters.platform === "all" || game.platform === state.filters.platform)
-      && (state.filters.region === "all" || game.country === state.filters.region)
-      && conditionMatches(game, state.filters.condition)
+      && (driveMode || state.filters.region === "all" || game.country === state.filters.region)
+      && (driveMode || conditionMatches(game, state.filters.condition))
       && (state.filters.category === "all" || [...String(game.genre || "").split(","), ...(game.genres || [])].map((value) => value.trim()).includes(state.filters.category))
       && (!state.filters.query || haystack.includes(state.filters.query));
   });
