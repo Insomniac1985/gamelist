@@ -310,6 +310,7 @@ function releaseMonthMarkup(monthDate, releases, today, weekStart, options = {})
   const translate = options.translate || ((value) => value);
   const year = monthDate.getFullYear();
   const month = monthDate.getMonth();
+  const currentMonth = localDateKey(monthDate).slice(0, 7) === today.slice(0, 7);
   const totalDays = new Date(year, month + 1, 0).getDate();
   const leading = weekdayIndex(new Date(year, month, 1), weekStart);
   const cells = [];
@@ -341,7 +342,7 @@ function releaseMonthMarkup(monthDate, releases, today, weekStart, options = {})
     cells.push(`<span class="release-day empty" aria-hidden="true"></span>`);
   }
   return `
-    <article class="release-month">
+    <article class="release-month ${currentMonth ? "current-month" : ""}">
       <header>
         <strong>${escapeHtml(capitalize(monthName(monthDate, options.locale)))}</strong>
         <span>${year}</span>
