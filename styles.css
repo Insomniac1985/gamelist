@@ -4675,24 +4675,24 @@ body.theme-kash .game-row.stream-card:hover {
 }
 
 .game-row-actions .icon-button {
-  width: 34px;
-  height: 34px;
-  min-width: 34px;
-  min-height: 34px;
+  width: 36px;
+  height: 36px;
+  min-width: 36px;
+  min-height: 36px;
 }
 
 .card-list.list-view .game-row-actions .row-edit-action,
 .card-list.list-view .game-row-actions .row-delete-action {
-  width: 34px;
-  min-width: 34px;
-  height: 34px;
-  min-height: 34px;
+  width: 36px;
+  min-width: 36px;
+  height: 36px;
+  min-height: 36px;
   padding: 0;
 }
 
 .game-row-actions .primary-button,
 .game-row-actions .ghost-button {
-  min-height: 34px;
+  min-height: 36px;
   padding: 7px 10px;
 }
 
@@ -8736,7 +8736,7 @@ body.theme-kash .finished-stats-kpi.is-completed:focus-visible strong {
 }
 
 .completed-row {
-  --completed-action-size: 32px;
+  --completed-action-size: 36px;
   display: grid;
   grid-template-columns: 56px minmax(0, 1fr) auto;
   justify-content: space-between;
