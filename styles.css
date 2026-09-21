@@ -6592,11 +6592,6 @@ a.time-pill {
   font-size: 10px;
 }
 
-.release-dialog-list .bought-action .action-label {
-  font-size: 12px;
-  line-height: 1.05;
-}
-
 #releaseDialogTitle,
 #shelfReleaseDialogTitle {
   display: inline-flex;
@@ -13806,6 +13801,11 @@ html.theme-light .finish-trophy-check input[type="checkbox"]:checked {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr)) 42px;
     align-items: stretch;
+  }
+
+  .card-actions:has(.price-refresh-action),
+  .card-actions:has([data-action="show-preorder-prices"]) {
+    grid-template-columns: minmax(0, 1fr) 42px 42px;
   }
 
   .card-actions button {

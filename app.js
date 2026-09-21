@@ -7049,7 +7049,11 @@ function cardFor(game, options = {}) {
   const trophyAction = card.querySelector(".trophy-action");
   const editAction = card.querySelector(".edit-action");
   const deleteAction = card.querySelector(".delete-action");
-  if (priceRefreshAction) priceRefreshAction.textContent = tt("Prices");
+  if (priceRefreshAction) {
+    priceRefreshAction.innerHTML = currencyIcon();
+    priceRefreshAction.title = tt("Prices");
+    priceRefreshAction.setAttribute("aria-label", tt("Prices"));
+  }
   if (boughtAction) boughtAction.textContent = tt("Got it");
   if (completeAction) completeAction.textContent = tt("Finished");
   if (backlogAction) {
@@ -7114,7 +7118,7 @@ function cardFor(game, options = {}) {
       prices.remove();
       priceRefreshAction.remove();
     }
-    boughtAction.innerHTML = `${forwardIcon()}<span class="action-label">${escapeHtml(tt("Got it"))}</span>`;
+    boughtAction.innerHTML = `${forwardIcon()}<span class="action-label">${escapeHtml(releaseDialog ? "Got" : tt("Got it"))}</span>`;
     boughtAction.addEventListener("click", () => moveToBacklog(game.id));
   }
   card.querySelector(".edit-action")?.addEventListener("click", () => openEditor(game.id));
