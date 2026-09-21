@@ -368,6 +368,7 @@ const STRINGS = {
     Play: "Jugar",
     Setup: "Configurar",
     "Finished games will stay saved here.": "Los juegos terminados se guardarán aquí.",
+    "Completed in {duration}": "Completado en {duration}",
     "Finished in {duration}": "Terminado en {duration}",
     Use: "Usar",
     "Fetching game info...": "Obteniendo datos del juego...",

@@ -5693,7 +5693,7 @@ function rowPrimaryAction(game, section) {
   if (section === "new") {
     return `<button class="primary-button row-primary-action" type="button">${playIcon()}<span>${escapeHtml(tt("Play"))}</span></button><button class="primary-button row-setup-action" type="button">${forwardIcon()}<span>${escapeHtml(tt("Setup"))}</span></button>`;
   }
-  return `<button class="ghost-button row-primary-action" type="button">${forwardIcon()}<span>${escapeHtml(tt("Got it"))}</span></button>`;
+  return `<button class="ghost-button row-primary-action" type="button">${forwardIcon()}<span>${escapeHtml(tt("Backlog"))}</span></button>`;
 }
 
 function rowCoreStats(game) {
@@ -6867,7 +6867,7 @@ function releaseYear(game) {
 function historyRangeText(game) {
   const start = formatLongDate(game.startedAt);
   const done = formatLongDate(game.completedAt);
-  if (start && done) return `${start} -> ${done}`;
+  if (start && done) return start === done ? done : `${start} -> ${done}`;
   if (done) return tt("Finished {date}", { date: done });
   if (start) return tt("Started {date}", { date: start });
   return tt("No dates");
@@ -6879,7 +6879,10 @@ function finishedDateText(game) {
 
 function completedDurationLine(game) {
   const duration = finishHoursText(game);
-  return duration ? `<span class="completed-duration">${escapeHtml(tt("Finished in {duration}", { duration }))}</span>` : "";
+  if (!duration) return "";
+  const label = game?.platinum ? "Completed in {duration}" : "Finished in {duration}";
+  const className = `completed-duration${game?.platinum ? " completed-duration-gold" : ""}`;
+  return `<span class="${className}">${escapeHtml(tt(label, { duration }))}</span>`;
 }
 
 function finishHoursValue(value) {
@@ -7054,7 +7057,7 @@ function cardFor(game, options = {}) {
     priceRefreshAction.title = tt("Prices");
     priceRefreshAction.setAttribute("aria-label", tt("Prices"));
   }
-  if (boughtAction) boughtAction.textContent = tt("Got it");
+  if (boughtAction) boughtAction.textContent = tt("Backlog");
   if (completeAction) completeAction.textContent = tt("Finished");
   if (backlogAction) {
     backlogAction.title = tt("Backlog");
@@ -7118,7 +7121,7 @@ function cardFor(game, options = {}) {
       prices.remove();
       priceRefreshAction.remove();
     }
-    boughtAction.innerHTML = `${forwardIcon()}<span class="action-label">${escapeHtml(releaseDialog ? "Got" : tt("Got it"))}</span>`;
+    boughtAction.innerHTML = `${forwardIcon()}<span class="action-label">${escapeHtml(tt("Backlog"))}</span>`;
     boughtAction.addEventListener("click", () => moveToBacklog(game.id));
   }
   card.querySelector(".edit-action")?.addEventListener("click", () => openEditor(game.id));

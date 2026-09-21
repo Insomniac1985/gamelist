@@ -8818,6 +8818,10 @@ body.theme-kash .playing-finished-game.completed-trophy-card:hover {
   font-size: 12px;
 }
 
+.completed-duration-gold {
+  color: #ffe985;
+}
+
 .completed-platform {
   display: flex;
   flex-wrap: wrap;
