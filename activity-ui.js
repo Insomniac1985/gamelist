@@ -171,12 +171,12 @@ export function achievementCardMarkup({ index, tone, href, game, title, icon, me
   return `<a class="achievement-card ${index === 0 ? "latest" : ""} trophy-${escape(tone)}" href="${escape(href || "#")}" ${href && href !== "#" ? `target="_blank" rel="noreferrer"` : ""}${localGame ? ` data-achievement-game="${escape(localGame)}"` : ""}><img class="achievement-icon" src="${escape(icon)}" alt=""><div><strong>${escape(title)}</strong>${game ? `<span class="achievement-game-name">${escape(game)}</span>` : ""}<span class="achievement-card-meta playing-finished-tags">${meta}</span></div></a>`;
 }
 
-export function achievementDashboardMarkup({ completedCount, completedBreakdown = "", trophyTotal, trophyBreakdown = "", level, levelLabel, counts, sourceUrl, trophyIconHtml, barHeight, escape, completedLabel = "COMPLETED", trophiesLabel = "TROPHIES" }) {
+export function achievementDashboardMarkup({ completedCount, completedBreakdown = "", trophyTotal, trophyBreakdown = "", level, levelLabel, counts, sourceUrl, trophyIconHtml, barHeight, escape, completedLabel = "COMPLETED", trophiesLabel = "TROPHIES", showRarityGraph = true }) {
   const levelCard = levelLabel ? `<a class="achievement-kpi" href="${escape(sourceUrl)}" target="_blank" rel="noreferrer"><strong>${escape(String(level))}</strong><span>${levelLabel}</span></a>` : "";
-  const rarityGraph = `<div class="rarity-graph" aria-label="Trophy rarity graph">${counts.map(([type, count]) => {
+  const rarityGraph = showRarityGraph ? `<div class="rarity-graph" aria-label="Trophy rarity graph">${counts.map(([type, count]) => {
     const value = Number(count) || 0;
     return `<span class="rarity-bar rarity-${escape(type.toLowerCase())} ${value ? "" : "rarity-zero"}" title="${escape(`${type}: ${value}`)}"><em style="--bar:${barHeight(value, counts)}%"></em><small>${escape(type)}</small>${value ? `<strong>${escape(String(value))}</strong>` : ""}</span>`;
-  }).join("")}</div>`;
+  }).join("")}</div>` : "";
   return `<div class="achievement-summary ${levelLabel ? "" : "achievement-summary-no-level"}"><button class="achievement-kpi platinum-highlight ${completedCount ? "has-platinum" : ""}" type="button" data-action="platinums"><strong class="kpi-with-icon">${trophyIconHtml}${escape(String(completedCount))}</strong><span>${escape(completedLabel)}</span>${completedBreakdown}</button><a class="achievement-kpi trophy-kpi" href="${escape(sourceUrl)}" target="_blank" rel="noreferrer"><strong>${escape(String(trophyTotal))}</strong><span>${escape(trophiesLabel)}</span>${trophyBreakdown}</a>${levelCard}${rarityGraph}</div>`;
 }
 
@@ -220,6 +220,7 @@ export function achievementPanelMarkup({ psn = {}, steam = {}, xbox = {}, setupN
     };
   }
   const trophies = psn.summary?.trophies || {};
+  const psnSummaryLoaded = Boolean(psn.summary);
   const psnCompleted = Number(trophies.platinum || 0);
   const pcCompleted = Number(steam.completed?.length || 0);
   const xboxCompleted = Number(xbox.completed?.length || 0);
@@ -238,6 +239,7 @@ export function achievementPanelMarkup({ psn = {}, steam = {}, xbox = {}, setupN
     levelLabel: psnLevel ? "PSN LEVEL" : "",
     counts, sourceUrl, trophyIconHtml, barHeight: sharedTrophyBarHeight, escape,
     completedLabel: translate("COMPLETED"), trophiesLabel: translate("TROPHIES"),
+    showRarityGraph: psnSummaryLoaded,
   });
   const cards = achievements.map((item, index) => {
     const platform = item.source === "steam" ? "Steam" : String(item.platform || (item.source === "xbox" ? "Xbox" : "PlayStation")).trim() || "PlayStation";

@@ -1321,6 +1321,16 @@ body.mobile-app-mode.shelf-page .shelf-grid.list-view .game-row-cover-preview {
   color: #ffffff;
 }
 
+@media (hover: none), (pointer: coarse) {
+  .shelf-tabs button:hover {
+    color: var(--muted);
+  }
+
+  .shelf-tabs button.active:hover {
+    color: #ffffff;
+  }
+}
+
 .owner-pill.owner-judy {
   color: var(--judy);
 }
@@ -2077,9 +2087,6 @@ textarea {
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 8px;
   }
-  .shelf-page .stats .stat-done {
-    grid-column: 1 / -1;
-  }
   .shelf-page .stats .stat {
     width: auto;
     flex: none;
@@ -2091,7 +2098,8 @@ textarea {
     font-size: clamp(18px, 7vw, 28px);
   }
   .shelf-page .stats .stat span {
-    font-size: 9px;
+    font-size: 10.5px;
+    line-height: 1.15;
   }
   .favorite-cover-row,
   .showcase-selected {
@@ -2270,6 +2278,14 @@ textarea {
     order: 2;
   }
   .shelf-grid.list-view .game-row-actions .icon-button {
+    width: 34px;
+    min-width: 34px;
+    height: 34px;
+    min-height: 34px;
+    padding: 0;
+  }
+  .shelf-grid.list-view .game-row-actions .row-edit-action,
+  .shelf-grid.list-view .game-row-actions .row-delete-action {
     width: 34px;
     min-width: 34px;
     height: 34px;
