@@ -6879,7 +6879,7 @@ function finishedDateText(game) {
 
 function completedDurationLine(game) {
   const duration = finishHoursText(game);
-  return duration ? `<span class="completed-duration">${escapeHtml(duration)}</span>` : "";
+  return duration ? `<span class="completed-duration">${escapeHtml(tt("Finished in {duration}", { duration }))}</span>` : "";
 }
 
 function finishHoursValue(value) {
