@@ -5873,16 +5873,19 @@ function completedCountForSelectedYear() {
 }
 
 function openFinishedStatsDialog(year = "all", { yearPicker = false } = {}) {
+  const years = yearPicker ? finishedStatsYears() : [];
+  const singleYearStats = yearPicker && years.length === 1;
+  const selectedYear = singleYearStats && String(year || "all") === "all" ? years[0] : String(year || "all");
+  const showYearPicker = yearPicker && !singleYearStats;
   el.finishedStatsDialog.classList.toggle("from-achievements", yearPicker);
-  el.finishedStatsYearPicker.hidden = !yearPicker;
-  if (yearPicker) {
-    const years = finishedStatsYears();
+  el.finishedStatsYearPicker.hidden = !showYearPicker;
+  if (showYearPicker) {
     el.finishedStatsYearSelect.innerHTML = ["all", ...years]
       .map((value) => `<option value="${escapeHtml(value)}">${value === "all" ? escapeHtml(tt("All")) : escapeHtml(value)}</option>`)
       .join("");
-    el.finishedStatsYearSelect.value = String(year || "all");
+    el.finishedStatsYearSelect.value = selectedYear;
   }
-  renderFinishedStatsDialog(year, { preserveAll: yearPicker });
+  renderFinishedStatsDialog(selectedYear, { preserveAll: showYearPicker });
   el.finishedStatsDialog.showModal();
   syncScrollLock();
 }
@@ -5941,16 +5944,18 @@ function finishedStatsMarkup(year, games, completed) {
   const allYears = year === "all";
   const releaseInsights = statsReleaseYearInsights(year, games);
   const showYearlyDetail = !allYears;
-  const cards = [
+  const kpiCards = [
     statsKpiCard(tt("Finished games"), finishedGames.length, showYearlyDetail ? statsGameList(finishedGames) : "", { tone: "finished" }),
     expansions.length ? statsKpiCard(tt("Expansions finished"), expansions.length, statsGameList(expansions), { tone: "finished" }) : "",
     statsKpiCard(tt("Completed games"), completed.length, showYearlyDetail ? statsCompletedGameList(completed) : "", { action: "completed", tone: "completed", icon: trophyIcon() }),
     streamed.length ? statsKpiCard(tt("Streamed games"), streamed.length, showYearlyDetail ? statsGameList(streamed) : "", { tone: "streamed" }) : "",
     coopGames.length ? statsKpiCard(tt("CoOp games"), coopGames.length, statsGameList(coopGames), { tone: "coop", icon: coopIcon() }) : "",
     otherOwnerGames.length ? statsKpiCard(otherOwnerSummary.label, otherOwnerGames.length, statsOwnerBreakdown(otherOwnerGames), { tone: "owners", valueClass: otherOwnerSummary.valueClass }) : "",
-  ].filter(Boolean).join("");
+  ].filter(Boolean);
+  const cards = kpiCards.join("");
+  const kpiLayoutClass = kpiCards.length > 5 ? " is-grid-3" : "";
   return `
-    <div class="finished-stats-kpis">${cards}</div>
+    <div class="finished-stats-kpis${kpiLayoutClass}">${cards}</div>
     <div class="finished-stats-charts ${allYears ? "is-all" : ""}">
       ${statsDonutCard(tt("Platforms"), platforms, "platform", 5, finishedGames)}
       ${statsDonutCard(tt("Categories"), tags, "category", 5, finishedGames)}
