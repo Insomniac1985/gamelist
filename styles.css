@@ -6860,8 +6860,8 @@ body:not(.can-edit) .top-actions-separator {
 
 .button-icon {
   display: inline-grid;
-  width: 17px;
-  height: 17px;
+  width: 18px;
+  height: 18px;
   place-items: center;
   border-radius: 999px;
   font-size: 15px;
@@ -8748,7 +8748,7 @@ body.theme-kash .finished-stats-kpi.is-completed:focus-visible strong {
   background: rgba(255, 255, 255, 0.05);
   border: 1px solid var(--line);
   border-radius: 7px;
-  color: var(--muted);
+  color: var(--text);
   cursor: pointer;
 }
 

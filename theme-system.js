@@ -420,9 +420,8 @@ function applyOwnerStyle(ownerColors) {
         border-color: ${colorMix(color, 0.48)} !important;
       }
       .owner-color-card-${slug} {
-        background: linear-gradient(135deg, ${fill}, ${faint} 42%, var(--owner-card-base)), var(--panel) !important;
+        background: linear-gradient(135deg, ${fill}, ${faint} 42%, rgba(255, 255, 255, 0.05)),  rgb(255 255 255 / 1%) !important;
         border-color: ${border} !important;
-        box-shadow: 0 0 20px ${glow} !important;
       }
       .owner-color-card-${slug}:hover {
         border-color: color-mix(in srgb, var(--accent) 50%, transparent) !important;
