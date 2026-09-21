@@ -5689,9 +5689,9 @@ function rowFor(game, section, options = {}) {
 }
 
 function rowPrimaryAction(game, section) {
-  if (section === "backlog") return `<button class="primary-button row-primary-action" type="button">Play</button>`;
+  if (section === "backlog") return `<button class="primary-button row-primary-action" type="button">${playIcon()}<span>${escapeHtml(tt("Play"))}</span></button>`;
   if (section === "new") {
-    return `<button class="primary-button row-primary-action" type="button">Play</button><button class="primary-button row-setup-action" type="button">${forwardIcon()}<span>${escapeHtml(tt("Setup"))}</span></button>`;
+    return `<button class="primary-button row-primary-action" type="button">${playIcon()}<span>${escapeHtml(tt("Play"))}</span></button><button class="primary-button row-setup-action" type="button">${forwardIcon()}<span>${escapeHtml(tt("Setup"))}</span></button>`;
   }
   return `<button class="ghost-button row-primary-action" type="button">${forwardIcon()}<span>${escapeHtml(tt("Got it"))}</span></button>`;
 }
@@ -7087,7 +7087,7 @@ function cardFor(game, options = {}) {
     boughtAction.classList.remove("ghost-button");
     boughtAction.classList.add("primary-button");
     boughtAction.addEventListener("click", () => finishSetupGame(game.id));
-    completeAction.innerHTML = `<span class="action-label">${escapeHtml(tt("Play"))}</span>`;
+    completeAction.innerHTML = `${playIcon()}<span class="action-label">${escapeHtml(tt("Play"))}</span>`;
     completeAction.addEventListener("click", () => startPlaying(game.id));
   } else if (displaySection === "backlog" || game.completedAt) {
     prices.remove();
@@ -7097,7 +7097,7 @@ function cardFor(game, options = {}) {
     else backlogAction.remove();
     completeAction.innerHTML = game.playing
       ? `${checkIcon()}<span class="action-label">${escapeHtml(tt("Finished"))}</span>`
-      : `<span class="action-label">${escapeHtml(tt("Play"))}</span>`;
+      : `${playIcon()}<span class="action-label">${escapeHtml(tt("Play"))}</span>`;
     completeAction.addEventListener("click", () => {
       if (game.playing) completeGame(game.id);
       else startPlaying(game.id);
