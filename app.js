@@ -5689,11 +5689,11 @@ function rowFor(game, section, options = {}) {
 }
 
 function rowPrimaryAction(game, section) {
-  if (section === "backlog") return `<button class="primary-button row-primary-action" type="button">Play</button>`;
+  if (section === "backlog") return `<button class="primary-button row-primary-action" type="button">${playIcon()}<span>${escapeHtml(tt("Play"))}</span></button>`;
   if (section === "new") {
-    return `<button class="primary-button row-primary-action" type="button">Play</button><button class="primary-button row-setup-action" type="button">${forwardIcon()}<span>${escapeHtml(tt("Setup"))}</span></button>`;
+    return `<button class="primary-button row-primary-action" type="button">${playIcon()}<span>${escapeHtml(tt("Play"))}</span></button><button class="primary-button row-setup-action" type="button">${forwardIcon()}<span>${escapeHtml(tt("Setup"))}</span></button>`;
   }
-  return `<button class="ghost-button row-primary-action" type="button">${forwardIcon()}<span>${escapeHtml(tt("Got it"))}</span></button>`;
+  return `<button class="ghost-button row-primary-action" type="button">${forwardIcon()}<span>${escapeHtml(tt("Backlog"))}</span></button>`;
 }
 
 function rowCoreStats(game) {
@@ -6867,7 +6867,7 @@ function releaseYear(game) {
 function historyRangeText(game) {
   const start = formatLongDate(game.startedAt);
   const done = formatLongDate(game.completedAt);
-  if (start && done) return `${start} -> ${done}`;
+  if (start && done) return start === done ? done : `${start} -> ${done}`;
   if (done) return tt("Finished {date}", { date: done });
   if (start) return tt("Started {date}", { date: start });
   return tt("No dates");
@@ -6879,7 +6879,10 @@ function finishedDateText(game) {
 
 function completedDurationLine(game) {
   const duration = finishHoursText(game);
-  return duration ? `<span class="completed-duration">${escapeHtml(duration)}</span>` : "";
+  if (!duration) return "";
+  const label = game?.platinum ? "Completed in {duration}" : "Finished in {duration}";
+  const className = `completed-duration${game?.platinum ? " completed-duration-gold" : ""}`;
+  return `<span class="${className}">${escapeHtml(tt(label, { duration }))}</span>`;
 }
 
 function finishHoursValue(value) {
@@ -7049,8 +7052,12 @@ function cardFor(game, options = {}) {
   const trophyAction = card.querySelector(".trophy-action");
   const editAction = card.querySelector(".edit-action");
   const deleteAction = card.querySelector(".delete-action");
-  if (priceRefreshAction) priceRefreshAction.textContent = tt("Prices");
-  if (boughtAction) boughtAction.textContent = tt("Got it");
+  if (priceRefreshAction) {
+    priceRefreshAction.innerHTML = currencyIcon();
+    priceRefreshAction.title = tt("Prices");
+    priceRefreshAction.setAttribute("aria-label", tt("Prices"));
+  }
+  if (boughtAction) boughtAction.textContent = tt("Backlog");
   if (completeAction) completeAction.textContent = tt("Finished");
   if (backlogAction) {
     backlogAction.title = tt("Backlog");
@@ -7083,7 +7090,7 @@ function cardFor(game, options = {}) {
     boughtAction.classList.remove("ghost-button");
     boughtAction.classList.add("primary-button");
     boughtAction.addEventListener("click", () => finishSetupGame(game.id));
-    completeAction.innerHTML = `<span class="action-label">${escapeHtml(tt("Play"))}</span>`;
+    completeAction.innerHTML = `${playIcon()}<span class="action-label">${escapeHtml(tt("Play"))}</span>`;
     completeAction.addEventListener("click", () => startPlaying(game.id));
   } else if (displaySection === "backlog" || game.completedAt) {
     prices.remove();
@@ -7093,7 +7100,7 @@ function cardFor(game, options = {}) {
     else backlogAction.remove();
     completeAction.innerHTML = game.playing
       ? `${checkIcon()}<span class="action-label">${escapeHtml(tt("Finished"))}</span>`
-      : `<span class="action-label">${escapeHtml(tt("Play"))}</span>`;
+      : `${playIcon()}<span class="action-label">${escapeHtml(tt("Play"))}</span>`;
     completeAction.addEventListener("click", () => {
       if (game.playing) completeGame(game.id);
       else startPlaying(game.id);
@@ -7114,7 +7121,7 @@ function cardFor(game, options = {}) {
       prices.remove();
       priceRefreshAction.remove();
     }
-    boughtAction.innerHTML = `${forwardIcon()}<span class="action-label">${escapeHtml(tt("Got it"))}</span>`;
+    boughtAction.innerHTML = `${forwardIcon()}<span class="action-label">${escapeHtml(tt("Backlog"))}</span>`;
     boughtAction.addEventListener("click", () => moveToBacklog(game.id));
   }
   card.querySelector(".edit-action")?.addEventListener("click", () => openEditor(game.id));
