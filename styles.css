@@ -2863,8 +2863,8 @@ h3 {
 }
 
 .stat-available {
-  --stat-color: #79f2ce;
-  --stat-glow: rgba(121, 242, 206, 0.28);
+  --stat-color: #ffffff;
+  --stat-glow: rgba(216, 221, 230, 0.18);
 }
 
 .stat-release {
@@ -2890,6 +2890,17 @@ h3 {
 .stat-done {
   --stat-color: #ff9ed2;
   --stat-glow: rgba(255, 158, 210, 0.26);
+}
+
+#shelfStats .stat-digital {
+  --stat-color: var(--accent-2);
+  --stat-glow: color-mix(in srgb, var(--accent-2) 26%, transparent);
+}
+
+#shelfStats .stat-available,
+#shelfStats .stat-done {
+  --stat-color: #ffffff;
+  --stat-glow: rgba(216, 221, 230, 0.18);
 }
 
 .release-calendar {
@@ -8700,6 +8711,7 @@ body.theme-kash .finished-stats-kpi.is-completed:focus-visible strong {
 }
 
 .completed-row {
+  --completed-action-size: 32px;
   display: grid;
   grid-template-columns: 56px minmax(0, 1fr) auto;
   justify-content: space-between;
@@ -8961,16 +8973,17 @@ body.theme-kash .playing-finished-game.completed-trophy-card:hover {
 }
 
 .completed-row .restore-action {
-  min-height: 30px;
-  padding: 6px 9px;
+  min-height: var(--completed-action-size);
+  height: var(--completed-action-size);
+  padding: 0 9px;
 }
 
 .completed-row .completed-edit-action,
 .history-row .history-edit-action {
-  width: 32px;
-  height: 32px;
-  min-width: 32px;
-  min-height: 32px;
+  width: var(--completed-action-size);
+  height: var(--completed-action-size);
+  min-width: var(--completed-action-size);
+  min-height: var(--completed-action-size);
   padding: 0;
 }
 
@@ -12707,8 +12720,9 @@ html.theme-light .finish-trophy-check input[type="checkbox"]:checked {
   }
 
   .completed-row .restore-action {
-    min-height: 32px;
-    padding: 5px 8px;
+    min-height: var(--completed-action-size);
+    height: var(--completed-action-size);
+    padding: 0 8px;
     font-size: 11px;
   }
 
