@@ -2945,8 +2945,8 @@ h3 {
 }
 
 .stat-done {
-  --stat-color: #ff9ed2;
-  --stat-glow: rgba(255, 158, 210, 0.26);
+  --stat-color: var(--finished-accent);
+  --stat-glow: color-mix(in srgb, var(--finished-accent) 26%, transparent);
 }
 
 #shelfStats .stat-digital {
@@ -7097,6 +7097,11 @@ body.can-edit #loginButton .pause-icon {
 
 .playing-completed-action .action-label {
   color: #ffe985;
+}
+
+.playing-completed-action:hover .action-label,
+.playing-completed-action.active .action-label {
+  color: #101114;
 }
 
 .pencil-icon {
@@ -14122,14 +14127,17 @@ html.theme-light .finish-trophy-check input[type="checkbox"]:checked {
   }
 
   .playing-card .card-actions {
-    grid-template-columns: minmax(0, 1.05fr) 36px minmax(0, 0.9fr);
+    grid-template-columns: minmax(0, 0.95fr) minmax(0, 1.05fr) 36px;
     gap: 5px;
   }
 
   .playing-card .backlog-action {
-    width: auto;
-    min-width: 0;
-    padding: 0 7px;
+    width: 36px;
+    min-width: 36px;
+    height: 36px;
+    min-height: 36px;
+    padding: 0;
+    gap: 0;
   }
 
   .playing-card .backlog-action .back-icon {
@@ -14137,11 +14145,11 @@ html.theme-light .finish-trophy-check input[type="checkbox"]:checked {
   }
 
   .playing-card .complete-action .check-icon + .action-label,
-  .playing-card .backlog-action .action-label {
+  .playing-card .playing-completed-action .action-label {
     display: inline;
   }
 
-  .playing-card .playing-completed-action .action-label {
+  .playing-card .backlog-action .action-label {
     display: none;
   }
 
@@ -14154,12 +14162,21 @@ html.theme-light .finish-trophy-check input[type="checkbox"]:checked {
   }
 
   .playing-card .card-actions .icon-only-button,
-  .playing-card .trophy-action {
+  .playing-card .trophy-action:not(.playing-completed-action) {
     width: 36px;
     min-width: 36px;
     height: 36px;
     min-height: 36px;
     padding: 0;
+  }
+
+  .playing-card .playing-completed-action {
+    width: auto;
+    min-width: 0;
+    height: 32px;
+    min-height: 32px;
+    padding: 0 7px;
+    gap: 5px;
   }
 
   .playing-card
