@@ -164,12 +164,24 @@ function escapeActivityText(value) {
 }
 
 export function finishedGameMarkup({ id, title, cover, completedClass = "", itemClass = "", badges = "", dateText = "", progress = null, dataName = "id", escape }) {
-  const dateLine = dateText ? `<span class="playing-finished-date">${finishedCalendarIcon()}${escape(dateText)}</span>` : "";
-  return `<button class="achievement-game playing-finished-game ${completedClass} ${itemClass}" type="button" data-${dataName}="${escape(id)}" aria-label="${escape(`Open ${title}`)}"><img src="${escape(cover)}" alt="" loading="lazy" decoding="async"><div><strong class="${completedClass ? "completed-achievements-title" : ""}">${escape(title)}</strong>${badges ? `<span class="playing-finished-tags">${badges}</span>` : ""}${dateLine}${progress != null ? `<em style="--progress:${progress}%"></em>` : ""}</div></button>`;
+  const dateLine = dateText ? finishedDateLineMarkup(dateText, escape) : "";
+  const progressLine = progress != null ? `<span class="playing-finished-progress">${finishedTrophyIcon()}<em style="--progress:${progress}%"></em></span>` : "";
+  return `<button class="achievement-game playing-finished-game ${completedClass} ${itemClass}" type="button" data-${dataName}="${escape(id)}" aria-label="${escape(`Open ${title}`)}"><img src="${escape(cover)}" alt="" loading="lazy" decoding="async"><div><strong class="${completedClass ? "completed-achievements-title" : ""}">${escape(title)}</strong>${badges ? `<span class="playing-finished-tags">${badges}</span>` : ""}${dateLine}${progressLine}</div></button>`;
+}
+
+function finishedDateLineMarkup(value, escape) {
+  const parts = String(value || "").split(/\s+[·•]\s+/).filter(Boolean);
+  if (parts.length < 2) return `<span class="playing-finished-date">${finishedCalendarIcon()}<span>${escape(value)}</span></span>`;
+  const date = parts.pop();
+  return `<span class="playing-finished-date"><span>${escape(parts.join(" · "))}</span><b aria-hidden="true">·</b>${finishedCalendarIcon()}<span>${escape(date)}</span></span>`;
 }
 
 function finishedCalendarIcon() {
   return `<svg class="playing-finished-date-icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="5.5" width="16" height="15" rx="3"></rect><path d="M8 3.5v4"></path><path d="M16 3.5v4"></path><path d="M4 10h16"></path></svg>`;
+}
+
+function finishedTrophyIcon() {
+  return `<svg class="playing-finished-progress-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 4h8v4a4 4 0 0 1-8 0V4Z"></path><path d="M8 6H5a3 3 0 0 0 3 3"></path><path d="M16 6h3a3 3 0 0 1-3 3"></path><path d="M12 12v4"></path><path d="M9 20h6"></path><path d="M10 16h4v4h-4z"></path></svg>`;
 }
 
 export function achievementCardMarkup({ index, tone, href, game, title, icon, meta, escape, localGame = "" }) {
