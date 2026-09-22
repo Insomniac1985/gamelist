@@ -80,6 +80,7 @@
   --accent-1: #79f2ce;
   --accent-2: #79f2ce;
   --accent-3: #ee32b3;
+  --finished-accent: color-mix(in srgb, var(--accent) 76%, #000000);
   --preorder-accent: #ffb666;
   --preorder-accent-text: #1b1000;
   --scrollbar-track: color-mix(
@@ -8892,15 +8893,21 @@ body.theme-kash .playing-finished-game.completed-trophy-card:hover {
   border-color: rgba(247, 223, 105, 0.52);
 }
 
-.game-card:hover,
-.completed-row:hover,
-.playing-finished-game:hover {
+.game-card:hover {
   border-color: var(--accent) !important;
 }
 
-.game-card[class*="owner-color-card-"]:hover,
+.completed-row:hover,
+.playing-finished-game:hover {
+  border-color: var(--finished-accent) !important;
+}
+
 .completed-row[class*="owner-color-card-"]:hover,
 .playing-finished-game[class*="owner-color-card-"]:hover {
+  border-color: var(--finished-accent) !important;
+}
+
+.game-card[class*="owner-color-card-"]:hover {
   border-color: var(--accent) !important;
 }
 
@@ -13968,6 +13975,44 @@ html.theme-light .finish-trophy-check input[type="checkbox"]:checked {
     border-color: rgba(255, 255, 255, 0.16);
     box-shadow: none;
     text-shadow: none;
+  }
+
+  #releaseDialog .release-dialog-list .card-actions,
+  #shelfReleaseDialog .release-dialog-list .card-actions {
+    display: inline-flex;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 6px;
+  }
+
+  #releaseDialog
+    .release-dialog-list
+    .card-actions
+    :is(.complete-action, .bought-action, .backlog-action),
+  #shelfReleaseDialog
+    .release-dialog-list
+    .card-actions
+    :is(.complete-action, .bought-action, .backlog-action) {
+    width: 42px;
+    min-width: 42px;
+    height: 42px;
+    min-height: 42px;
+    flex: 0 0 42px;
+    padding: 0;
+    gap: 0;
+  }
+
+  #releaseDialog
+    .release-dialog-list
+    .card-actions
+    :is(.complete-action, .bought-action, .backlog-action)
+    .action-label,
+  #shelfReleaseDialog
+    .release-dialog-list
+    .card-actions
+    :is(.complete-action, .bought-action, .backlog-action)
+    .action-label {
+    display: none;
   }
 
   #releaseDialog .release-dialog-list .card-actions .primary-button:hover,
