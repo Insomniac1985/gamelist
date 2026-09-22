@@ -6010,12 +6010,14 @@ function statsReleaseKpisCard(insights) {
           label: tt("Played new games"),
           subline: releaseExpansionLine(insights.newExpansions, "new expansion", "new expansions"),
           detail: insights.hoverable ? statsGameList(insights.playedFromYearDisplay) : "",
+          tone: "finished",
         })}
         ${statsReleaseMiniKpi({
           value: insights.playedOutsideYear.length,
           label: tt("Played games not from that year"),
           subline: releaseExpansionLine(insights.playedOutsideYearExpansions, "played expansion not from that year", "played expansions not from that year"),
           detail: insights.hoverable ? statsGameList(insights.playedOutsideYearDisplay) : "",
+          tone: "finished",
         })}
       </div>
     </section>
@@ -7105,8 +7107,10 @@ function cardFor(game, options = {}) {
     prices.remove();
     priceRefreshAction.remove();
     boughtAction.remove();
-    if (game.playing) backlogAction.addEventListener("click", () => returnPlayingToBacklog(game.id));
-    else backlogAction.remove();
+    if (game.playing) {
+      backlogAction.addEventListener("click", () => returnPlayingToBacklog(game.id));
+      deleteAction?.remove();
+    } else backlogAction.remove();
     completeAction.innerHTML = game.playing
       ? `${checkIcon()}<span class="action-label">${escapeHtml(tt("Finished"))}</span>`
       : `${playIcon()}<span class="action-label">${escapeHtml(tt("Play"))}</span>`;
@@ -7116,6 +7120,11 @@ function cardFor(game, options = {}) {
     });
     trophyAction.hidden = !game.playing;
     trophyAction.classList.toggle("active", Boolean(game.platinum));
+    if (game.playing) {
+      trophyAction.classList.add("playing-completed-action");
+      trophyAction.innerHTML = `${trophyIcon()}<span class="action-label">${escapeHtml(tt("Completed"))}</span>`;
+      card.querySelector(".card-actions")?.append(completeAction, trophyAction, backlogAction);
+    }
     trophyAction.addEventListener("click", () => completeGameWithTrophy(game.id));
   } else {
     backlogAction.remove();
