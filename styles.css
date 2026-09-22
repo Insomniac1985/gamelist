@@ -80,7 +80,7 @@
   --accent-1: #79f2ce;
   --accent-2: #79f2ce;
   --accent-3: #ee32b3;
-  --preorder-accent: #ff9a02;
+  --preorder-accent: #ffb666;
   --preorder-accent-text: #1b1000;
   --scrollbar-track: color-mix(
     in srgb,
@@ -13974,18 +13974,42 @@ html.theme-light .finish-trophy-check input[type="checkbox"]:checked {
   #releaseDialog .release-dialog-list .card-actions .complete-action:hover,
   #releaseDialog .release-dialog-list .card-actions .bought-action:hover,
   #releaseDialog .release-dialog-list .card-actions .backlog-action:hover,
-  #releaseDialog .release-dialog-list .card-actions .primary-button:focus-visible,
-  #releaseDialog .release-dialog-list .card-actions .complete-action:focus-visible,
-  #releaseDialog .release-dialog-list .card-actions .bought-action:focus-visible,
-  #releaseDialog .release-dialog-list .card-actions .backlog-action:focus-visible,
+  #releaseDialog
+    .release-dialog-list
+    .card-actions
+    .primary-button:focus-visible,
+  #releaseDialog
+    .release-dialog-list
+    .card-actions
+    .complete-action:focus-visible,
+  #releaseDialog
+    .release-dialog-list
+    .card-actions
+    .bought-action:focus-visible,
+  #releaseDialog
+    .release-dialog-list
+    .card-actions
+    .backlog-action:focus-visible,
   #shelfReleaseDialog .release-dialog-list .card-actions .primary-button:hover,
   #shelfReleaseDialog .release-dialog-list .card-actions .complete-action:hover,
   #shelfReleaseDialog .release-dialog-list .card-actions .bought-action:hover,
   #shelfReleaseDialog .release-dialog-list .card-actions .backlog-action:hover,
-  #shelfReleaseDialog .release-dialog-list .card-actions .primary-button:focus-visible,
-  #shelfReleaseDialog .release-dialog-list .card-actions .complete-action:focus-visible,
-  #shelfReleaseDialog .release-dialog-list .card-actions .bought-action:focus-visible,
-  #shelfReleaseDialog .release-dialog-list .card-actions .backlog-action:focus-visible {
+  #shelfReleaseDialog
+    .release-dialog-list
+    .card-actions
+    .primary-button:focus-visible,
+  #shelfReleaseDialog
+    .release-dialog-list
+    .card-actions
+    .complete-action:focus-visible,
+  #shelfReleaseDialog
+    .release-dialog-list
+    .card-actions
+    .bought-action:focus-visible,
+  #shelfReleaseDialog
+    .release-dialog-list
+    .card-actions
+    .backlog-action:focus-visible {
     color: #ffffff;
     background: rgba(255, 255, 255, 0.13);
     border-color: rgba(255, 255, 255, 0.28);
