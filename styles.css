@@ -80,7 +80,7 @@
   --accent-1: #79f2ce;
   --accent-2: #79f2ce;
   --accent-3: #ee32b3;
-  --finished-accent: color-mix(in srgb, var(--accent) 76%, #000000);
+  --finished-accent: color-mix(in srgb, var(--accent) 55%, #000000);
   --preorder-accent: #ffb666;
   --preorder-accent-text: #1b1000;
   --scrollbar-track: color-mix(
