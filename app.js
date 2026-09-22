@@ -5763,7 +5763,7 @@ function renderCompleted() {
         <strong class="${game.platinum ? "completed-achievements-title" : ""}">${escapeHtml(game.title)}</strong>
         <span class="completed-platform">${completedOwnerBadges(game)}${completedBadges(game)}</span>
         ${completedDurationLine(game)}
-        <span class="completed-dates">${escapeHtml(historyRangeText(game))}</span>
+        ${completedDateLine(game)}
       </div>
       <div class="completed-actions">
         <button class="icon-button completed-edit-action" type="button" title="Edit" aria-label="Edit">${pencilIcon()}</button>
@@ -6783,7 +6783,7 @@ function renderHistoryDialog() {
         <strong class="${game.platinum ? "completed-achievements-title" : ""}">${escapeHtml(game.title)}</strong>
         <span class="completed-platform">${completedBadges(game)}</span>
         ${completedDurationLine(game)}
-        <span>${escapeHtml(historyRangeText(game))}</span>
+        ${completedDateLine(game)}
       </div>
       <button class="icon-button history-edit-action" type="button" title="Edit" aria-label="Edit">${pencilIcon()}</button>
     </div>
@@ -6876,6 +6876,10 @@ function historyRangeText(game) {
   if (done) return tt("Finished {date}", { date: done });
   if (start) return tt("Started {date}", { date: start });
   return tt("No dates");
+}
+
+function completedDateLine(game) {
+  return `<span class="completed-dates">${calendarMiniIcon()}<span>${escapeHtml(historyRangeText(game))}</span></span>`;
 }
 
 function finishedDateText(game) {
@@ -8348,12 +8352,12 @@ function completedBadges(game, options = {}) {
   return [
     game.platform ? platformBadge(game.platform, null, { title: game.title }) : "",
     mediaFormatBadge(game),
+    game.coop ? coopBadge() : "",
+    game.multiplayer && !game.coop ? multiplayerBadge() : "",
     ratingScoreBadge(game),
     game.dlc ? dlcBadge(game) : "",
     entitlementBadge(game),
     game.emulator ? `<span class="emulator-pill">${escapeHtml(tt("Emulator"))}</span>` : "",
-    game.coop ? coopBadge() : "",
-    game.multiplayer && !game.coop ? multiplayerBadge() : "",
     game.stream ? streamBadge() : "",
     game.replayCount ? replayBadge(game.replayCount) : "",
     options.includePsn === false ? "" : (progress ? psnProgressBadge(progress) : ""),

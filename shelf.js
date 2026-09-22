@@ -1958,6 +1958,10 @@ function renderPhysicalSelection(physical, fallbackTitle = "") {
 
 function priceChartingPageUrl(value) { const match = String(value || "").trim().match(/^https:\/\/www\.pricecharting\.com\/(?:[a-z]{2}\/)?game\/[^?#]+/i); return match?.[0] || ""; }
 function priceChartingProductId(value) { return priceChartingPageUrl(value) ? "" : String(value || "").trim().replace(/[^a-zA-Z0-9_-]/g, ""); }
+function priceChartingSearchUrl(game) {
+  const query = [game?.title, shortPlatform(game?.platform)].filter(Boolean).join(" ").trim();
+  return `https://www.pricecharting.com/search-products?type=prices&region-name=all&exclude-variants=false&q=${encodeURIComponent(query || game?.title || "video game")}`;
+}
 function blankImage() { return "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw=="; }
 function applyPriceChartingRegion(consoleName) { const value = normalize(consoleName); if (value.startsWith("jp ")) el.fields.country.value = "Japan"; else if (value.startsWith("pal ") && !["United Kingdom", "Spain", "Italy", "France", "Germany", "Europe", "Australia"].includes(el.fields.country.value)) el.fields.country.value = "Europe"; else if (!value.startsWith("pal ") && !value.startsWith("jp ") && ["Japan", "Europe"].includes(el.fields.country.value)) el.fields.country.value = "United States of America"; syncShelfEditorIcons(); }
 
@@ -4088,7 +4092,8 @@ function renderPriceDetails(game) {
   const currency = game.priceCurrency || "USD";
   const identifiers = [["UPC", game.upc], ["SKU", game.sku], ["ASIN", game.asin], ["eBay ID", game.epid]].filter(([, value]) => value);
   const productUrl = game.collectionProductUrl || priceChartingPageUrl(game.pricechartingId);
-  const priceMarkup = rows.length ? `<div class="collection-price-grid">${rows.map(([label, value]) => productUrl ? `<a href="${escapeHtml(productUrl)}" target="_blank" rel="noreferrer"><small>${escapeHtml(tt(label))}</small><strong>${formatMoney(value, currency)}</strong></a>` : `<span><small>${escapeHtml(tt(label))}</small><strong>${formatMoney(value, currency)}</strong></span>`).join("")}</div>` : `<span class="muted">${escapeHtml(tt("No collection value fetched yet."))}</span>`;
+  const priceChartingUrl = productUrl || priceChartingSearchUrl(game);
+  const priceMarkup = rows.length ? `<div class="collection-price-grid">${rows.map(([label, value]) => productUrl ? `<a href="${escapeHtml(productUrl)}" target="_blank" rel="noreferrer"><small>${escapeHtml(tt(label))}</small><strong>${formatMoney(value, currency)}</strong></a>` : `<span><small>${escapeHtml(tt(label))}</small><strong>${formatMoney(value, currency)}</strong></span>`).join("")}</div>` : `<a class="collection-price-empty" href="${escapeHtml(priceChartingUrl)}" target="_blank" rel="noreferrer">${escapeHtml(tt("No collection value fetched yet."))}</a>`;
   const identifierMarkup = identifiers.length ? `<div class="collection-product-meta">${identifiers.map(([label, value]) => `<span><small>${label}</small><strong>${escapeHtml(value)}</strong></span>`).join("")}</div>` : "";
   el.detailPriceSummary.innerHTML = `${priceMarkup}${identifierMarkup}`;
   const collectionValue = collectionValueFor(game);

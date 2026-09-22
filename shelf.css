@@ -1331,6 +1331,14 @@ body.mobile-app-mode.shelf-page .shelf-grid.list-view .game-row-cover-preview {
   }
 }
 
+body.mobile-app-mode .shelf-tabs button:hover {
+  color: var(--muted);
+}
+
+body.mobile-app-mode .shelf-tabs button.active:hover {
+  color: #ffffff;
+}
+
 .owner-pill.owner-judy {
   color: var(--judy);
 }
@@ -1749,6 +1757,21 @@ textarea {
 .collection-price-grid a:hover {
   color: var(--accent);
   background: color-mix(in srgb, var(--accent) 14%, rgba(255, 255, 255, 0.05));
+}
+.collection-price-empty {
+  display: inline-flex;
+  width: max-content;
+  max-width: 100%;
+  color: var(--muted);
+  font-weight: 780;
+  text-decoration: none;
+}
+.collection-price-empty:hover,
+.collection-price-empty:focus-visible {
+  color: var(--accent);
+  outline: none;
+  text-decoration: underline;
+  text-underline-offset: 3px;
 }
 .collection-price-grid small {
   color: var(--dim);

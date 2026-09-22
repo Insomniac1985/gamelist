@@ -164,7 +164,12 @@ function escapeActivityText(value) {
 }
 
 export function finishedGameMarkup({ id, title, cover, completedClass = "", itemClass = "", badges = "", dateText = "", progress = null, dataName = "id", escape }) {
-  return `<button class="achievement-game playing-finished-game ${completedClass} ${itemClass}" type="button" data-${dataName}="${escape(id)}" aria-label="${escape(`Open ${title}`)}"><img src="${escape(cover)}" alt="" loading="lazy" decoding="async"><div><strong class="${completedClass ? "completed-achievements-title" : ""}">${escape(title)}</strong>${badges ? `<span class="playing-finished-tags">${badges}</span>` : ""}<span>${escape(dateText)}</span>${progress != null ? `<em style="--progress:${progress}%"></em>` : ""}</div></button>`;
+  const dateLine = dateText ? `<span class="playing-finished-date">${finishedCalendarIcon()}${escape(dateText)}</span>` : "";
+  return `<button class="achievement-game playing-finished-game ${completedClass} ${itemClass}" type="button" data-${dataName}="${escape(id)}" aria-label="${escape(`Open ${title}`)}"><img src="${escape(cover)}" alt="" loading="lazy" decoding="async"><div><strong class="${completedClass ? "completed-achievements-title" : ""}">${escape(title)}</strong>${badges ? `<span class="playing-finished-tags">${badges}</span>` : ""}${dateLine}${progress != null ? `<em style="--progress:${progress}%"></em>` : ""}</div></button>`;
+}
+
+function finishedCalendarIcon() {
+  return `<svg class="playing-finished-date-icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="5.5" width="16" height="15" rx="3"></rect><path d="M8 3.5v4"></path><path d="M16 3.5v4"></path><path d="M4 10h16"></path></svg>`;
 }
 
 export function achievementCardMarkup({ index, tone, href, game, title, icon, meta, escape, localGame = "" }) {
@@ -227,6 +232,7 @@ export function achievementPanelMarkup({ psn = {}, steam = {}, xbox = {}, setupN
   const completed = psnCompleted + pcCompleted + xboxCompleted;
   const counts = [["Platinum", psnCompleted], ["Gold", Number(trophies.gold || 0)], ["Silver", Number(trophies.silver || 0)], ["Bronze", Number(trophies.bronze || 0)]];
   const psnTotal = counts.reduce((sum, [, count]) => sum + count, 0);
+  const showPsnRarityGraph = psnSummaryLoaded && psnTotal > 0 && !psn.authError && !psn.needsSetup && !psn.blocked;
   const total = psnTotal + Number(steam.totalEarned || 0) + Number(xbox.totalEarned || 0);
   const breakdown = (rows) => `<span class="kpi-breakdown" aria-hidden="true">${rows.map(([value, totalValue, platform]) => `<small class="kpi-breakdown-pill kpi-breakdown-${escape(normalizeTitle(platform))}"><strong>${escape(String(value))}</strong> out of ${escape(String(totalValue))} on ${escape(platform)}</small>`).join("")}</span>`;
   const psnLevel = psn.summary?.level || "";
@@ -239,7 +245,7 @@ export function achievementPanelMarkup({ psn = {}, steam = {}, xbox = {}, setupN
     levelLabel: psnLevel ? "PSN LEVEL" : "",
     counts, sourceUrl, trophyIconHtml, barHeight: sharedTrophyBarHeight, escape,
     completedLabel: translate("COMPLETED"), trophiesLabel: translate("TROPHIES"),
-    showRarityGraph: psnSummaryLoaded,
+    showRarityGraph: showPsnRarityGraph,
   });
   const cards = achievements.map((item, index) => {
     const platform = item.source === "steam" ? "Steam" : String(item.platform || (item.source === "xbox" ? "Xbox" : "PlayStation")).trim() || "PlayStation";
