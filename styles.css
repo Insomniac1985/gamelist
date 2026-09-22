@@ -2512,6 +2512,7 @@ button.achievement-kpi {
   font-size: 13px;
   font-weight: 850;
   text-transform: uppercase;
+  margin-left: 5px;
 }
 
 .trophy-subtitle {
