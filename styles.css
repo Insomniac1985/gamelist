@@ -6937,6 +6937,15 @@ body:not(.can-edit) .top-actions-separator {
   line-height: 1;
 }
 
+.top-search-button .button-icon {
+  width: 100%;
+  height: 100%;
+}
+
+.top-search-button .search-icon {
+  transform: translate(-0.5px, -0.5px);
+}
+
 .plus-icon {
   width: 18px;
   height: 18px;
@@ -7020,11 +7029,11 @@ body.dialog-open .floating-search-button {
 }
 
 .settings-icon {
-  stroke-width: 2.25;
+  stroke-width: 2.35;
 }
 
 .settings-icon circle {
-  stroke-width: 1.65;
+  stroke-width: 2.15;
 }
 
 .complete-action .check-icon {
