@@ -836,6 +836,8 @@ html.theme-font-mata {
 }
 
 .playing-finished-game .playing-finished-date b {
+  position: relative;
+  top: 1px;
   color: color-mix(in srgb, var(--muted) 72%, transparent);
   font-weight: 800;
 }
@@ -857,7 +859,7 @@ html.theme-font-mata {
   grid-template-columns: 14px minmax(0, 1fr);
   align-items: center;
   gap: 5px;
-  width: min(78%, 190px);
+  width: 100%;
   margin-top: 5px;
 }
 
@@ -13937,6 +13939,58 @@ html.theme-light .finish-trophy-check input[type="checkbox"]:checked {
   .card-actions .icon-only-button {
     width: 42px;
     min-width: 42px;
+  }
+
+  #releaseDialog .release-dialog-list .card-actions .primary-button,
+  #releaseDialog .release-dialog-list .card-actions .complete-action,
+  #releaseDialog .release-dialog-list .card-actions .bought-action,
+  #releaseDialog .release-dialog-list .card-actions .backlog-action,
+  #shelfReleaseDialog .release-dialog-list .card-actions .primary-button,
+  #shelfReleaseDialog .release-dialog-list .card-actions .complete-action,
+  #shelfReleaseDialog .release-dialog-list .card-actions .bought-action,
+  #shelfReleaseDialog .release-dialog-list .card-actions .backlog-action {
+    color: var(--text);
+    background: rgba(255, 255, 255, 0.09);
+    border-color: rgba(255, 255, 255, 0.16);
+    box-shadow: none;
+    text-shadow: none;
+  }
+
+  #releaseDialog .release-dialog-list .card-actions .primary-button:hover,
+  #releaseDialog .release-dialog-list .card-actions .complete-action:hover,
+  #releaseDialog .release-dialog-list .card-actions .bought-action:hover,
+  #releaseDialog .release-dialog-list .card-actions .backlog-action:hover,
+  #releaseDialog .release-dialog-list .card-actions .primary-button:focus-visible,
+  #releaseDialog .release-dialog-list .card-actions .complete-action:focus-visible,
+  #releaseDialog .release-dialog-list .card-actions .bought-action:focus-visible,
+  #releaseDialog .release-dialog-list .card-actions .backlog-action:focus-visible,
+  #shelfReleaseDialog .release-dialog-list .card-actions .primary-button:hover,
+  #shelfReleaseDialog .release-dialog-list .card-actions .complete-action:hover,
+  #shelfReleaseDialog .release-dialog-list .card-actions .bought-action:hover,
+  #shelfReleaseDialog .release-dialog-list .card-actions .backlog-action:hover,
+  #shelfReleaseDialog .release-dialog-list .card-actions .primary-button:focus-visible,
+  #shelfReleaseDialog .release-dialog-list .card-actions .complete-action:focus-visible,
+  #shelfReleaseDialog .release-dialog-list .card-actions .bought-action:focus-visible,
+  #shelfReleaseDialog .release-dialog-list .card-actions .backlog-action:focus-visible {
+    color: #ffffff;
+    background: rgba(255, 255, 255, 0.13);
+    border-color: rgba(255, 255, 255, 0.28);
+    box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.06);
+  }
+
+  #releaseDialog
+    .release-dialog-list
+    .card-actions
+    :is(.play-icon, .back-icon, .forward-icon),
+  #shelfReleaseDialog
+    .release-dialog-list
+    .card-actions
+    :is(.play-icon, .back-icon, .forward-icon) {
+    display: block;
+    width: 14px;
+    height: 14px;
+    flex: 0 0 14px;
+    stroke-width: 2.7;
   }
 
   .playing-card .card-actions {
