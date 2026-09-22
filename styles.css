@@ -7099,6 +7099,11 @@ body.can-edit #loginButton .pause-icon {
   color: #ffe985;
 }
 
+.playing-completed-action:hover .action-label,
+.playing-completed-action.active .action-label {
+  color: #101114;
+}
+
 .pencil-icon {
   width: 18px;
   height: 18px;
@@ -14157,12 +14162,21 @@ html.theme-light .finish-trophy-check input[type="checkbox"]:checked {
   }
 
   .playing-card .card-actions .icon-only-button,
-  .playing-card .trophy-action {
+  .playing-card .trophy-action:not(.playing-completed-action) {
     width: 36px;
     min-width: 36px;
     height: 36px;
     min-height: 36px;
     padding: 0;
+  }
+
+  .playing-card .playing-completed-action {
+    width: auto;
+    min-width: 0;
+    height: 32px;
+    min-height: 32px;
+    padding: 0 7px;
+    gap: 5px;
   }
 
   .playing-card
