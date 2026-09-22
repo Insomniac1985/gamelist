@@ -1331,6 +1331,14 @@ body.mobile-app-mode.shelf-page .shelf-grid.list-view .game-row-cover-preview {
   }
 }
 
+body.mobile-app-mode .shelf-tabs button:hover {
+  color: var(--muted);
+}
+
+body.mobile-app-mode .shelf-tabs button.active:hover {
+  color: #ffffff;
+}
+
 .owner-pill.owner-judy {
   color: var(--judy);
 }
