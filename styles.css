@@ -80,7 +80,7 @@
   --accent-1: #79f2ce;
   --accent-2: #79f2ce;
   --accent-3: #ee32b3;
-  --preorder-accent: #ff9f1a;
+  --preorder-accent: #ff9a02;
   --preorder-accent-text: #1b1000;
   --scrollbar-track: color-mix(
     in srgb,
@@ -2889,8 +2889,8 @@ h3 {
 }
 
 .stat-release {
-  --stat-color: #f7df69;
-  --stat-glow: rgba(247, 223, 105, 0.26);
+  --stat-color: var(--preorder-accent);
+  --stat-glow: color-mix(in srgb, var(--preorder-accent) 26%, transparent);
 }
 
 .stat-digital {
@@ -10723,8 +10723,8 @@ html.theme-light .preorder-count-pill {
 }
 
 html.theme-light .stat-release {
-  --stat-color: #c49410;
-  --stat-glow: rgba(196, 148, 16, 0.24);
+  --stat-color: var(--preorder-accent);
+  --stat-glow: color-mix(in srgb, var(--preorder-accent) 24%, transparent);
 }
 
 html.theme-light .time-pill,
