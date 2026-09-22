@@ -80,7 +80,8 @@
   --accent-1: #79f2ce;
   --accent-2: #79f2ce;
   --accent-3: #ee32b3;
-  --preorder-accent: #ff9a02;
+  --finished-accent: color-mix(in srgb, var(--accent) 76%, #000000);
+  --preorder-accent: #ffb666;
   --preorder-accent-text: #1b1000;
   --scrollbar-track: color-mix(
     in srgb,
@@ -830,8 +831,16 @@ html.theme-font-mata {
 
 .playing-finished-game .playing-finished-date {
   display: inline-flex;
+  align-items: center;
   gap: 4px;
   margin-left: 2px;
+}
+
+.playing-finished-game .playing-finished-date b {
+  position: relative;
+  top: 1px;
+  color: color-mix(in srgb, var(--muted) 72%, transparent);
+  font-weight: 800;
 }
 
 .playing-finished-date-icon {
@@ -844,6 +853,32 @@ html.theme-font-mata {
   stroke-linecap: round;
   stroke-linejoin: round;
   opacity: 0.86;
+}
+
+.playing-finished-progress {
+  display: grid !important;
+  grid-template-columns: 14px minmax(0, 1fr);
+  align-items: center;
+  gap: 5px;
+  width: 100%;
+  margin-top: 5px;
+}
+
+.playing-finished-progress-icon {
+  width: 13px;
+  height: 13px;
+  flex: 0 0 auto;
+  color: #ffe985;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  filter: drop-shadow(0 0 6px rgba(255, 233, 133, 0.32));
+}
+
+.playing-finished-progress em {
+  margin-top: 0;
 }
 
 .goty-section {
@@ -2914,14 +2949,18 @@ h3 {
 }
 
 #shelfStats .stat-digital {
-  --stat-color: var(--accent-2);
-  --stat-glow: color-mix(in srgb, var(--accent-2) 26%, transparent);
+  --stat-color: var(--finished-accent);
+  --stat-glow: color-mix(in srgb, var(--finished-accent) 26%, transparent);
 }
 
-#shelfStats .stat-available,
-#shelfStats .stat-done {
+#shelfStats .stat-available {
   --stat-color: #b4b4b4;
   --stat-glow: rgba(180, 180, 180, 0.18);
+}
+
+#shelfStats .stat-done {
+  --stat-color: var(--accent-2);
+  --stat-glow: color-mix(in srgb, var(--accent-2) 26%, transparent);
 }
 
 .release-calendar {
@@ -5945,6 +5984,12 @@ body.theme-kash .game-card.stream-card.completed-trophy-card {
   background: rgba(225, 230, 240, 0.1);
 }
 
+.shelf-page .digital-pill:not(.media-format-pill) {
+  color: color-mix(in srgb, var(--finished-accent) 72%, #ffffff) !important;
+  border-color: color-mix(in srgb, var(--finished-accent) 48%, transparent);
+  background: color-mix(in srgb, var(--finished-accent) 18%, transparent);
+}
+
 .media-format-pill {
   box-sizing: border-box;
   display: inline-grid;
@@ -6903,6 +6948,15 @@ body:not(.can-edit) .top-actions-separator {
   line-height: 1;
 }
 
+.top-search-button .button-icon {
+  width: 100%;
+  height: 100%;
+}
+
+.top-search-button .search-icon {
+  transform: translate(-0.5px, -0.5px);
+}
+
 .plus-icon {
   width: 18px;
   height: 18px;
@@ -6986,11 +7040,11 @@ body.dialog-open .floating-search-button {
 }
 
 .settings-icon {
-  stroke-width: 2.25;
+  stroke-width: 2.35;
 }
 
 .settings-icon circle {
-  stroke-width: 1.65;
+  stroke-width: 2.15;
 }
 
 .complete-action .check-icon {
@@ -8849,15 +8903,21 @@ body.theme-kash .playing-finished-game.completed-trophy-card:hover {
   border-color: rgba(247, 223, 105, 0.52);
 }
 
-.game-card:hover,
-.completed-row:hover,
-.playing-finished-game:hover {
+.game-card:hover {
   border-color: var(--accent) !important;
 }
 
-.game-card[class*="owner-color-card-"]:hover,
+.completed-row:hover,
+.playing-finished-game:hover {
+  border-color: var(--finished-accent) !important;
+}
+
 .completed-row[class*="owner-color-card-"]:hover,
 .playing-finished-game[class*="owner-color-card-"]:hover {
+  border-color: var(--finished-accent) !important;
+}
+
+.game-card[class*="owner-color-card-"]:hover {
   border-color: var(--accent) !important;
 }
 
@@ -13232,6 +13292,11 @@ html.theme-light .finish-trophy-check input[type="checkbox"]:checked {
     grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
   }
 
+  .prices[style*="--price-columns: 1"],
+  .game-card .prices[style*="--price-columns: 1"] {
+    grid-template-columns: minmax(0, 1fr) !important;
+  }
+
   .stats {
     grid-template-columns: repeat(2, 1fr);
   }
@@ -13905,6 +13970,120 @@ html.theme-light .finish-trophy-check input[type="checkbox"]:checked {
   .card-actions .icon-only-button {
     width: 42px;
     min-width: 42px;
+  }
+
+  #releaseDialog .release-dialog-list .card-actions .primary-button,
+  #releaseDialog .release-dialog-list .card-actions .complete-action,
+  #releaseDialog .release-dialog-list .card-actions .bought-action,
+  #releaseDialog .release-dialog-list .card-actions .backlog-action,
+  #shelfReleaseDialog .release-dialog-list .card-actions .primary-button,
+  #shelfReleaseDialog .release-dialog-list .card-actions .complete-action,
+  #shelfReleaseDialog .release-dialog-list .card-actions .bought-action,
+  #shelfReleaseDialog .release-dialog-list .card-actions .backlog-action {
+    color: var(--text);
+    background: rgba(255, 255, 255, 0.09);
+    border-color: rgba(255, 255, 255, 0.16);
+    box-shadow: none;
+    text-shadow: none;
+  }
+
+  #releaseDialog .release-dialog-list .card-actions,
+  #shelfReleaseDialog .release-dialog-list .card-actions {
+    display: inline-flex;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 6px;
+  }
+
+  #releaseDialog
+    .release-dialog-list
+    .card-actions
+    :is(.complete-action, .bought-action, .backlog-action),
+  #shelfReleaseDialog
+    .release-dialog-list
+    .card-actions
+    :is(.complete-action, .bought-action, .backlog-action) {
+    width: 42px;
+    min-width: 42px;
+    height: 42px;
+    min-height: 42px;
+    flex: 0 0 42px;
+    padding: 0;
+    gap: 0;
+  }
+
+  #releaseDialog
+    .release-dialog-list
+    .card-actions
+    :is(.complete-action, .bought-action, .backlog-action)
+    .action-label,
+  #shelfReleaseDialog
+    .release-dialog-list
+    .card-actions
+    :is(.complete-action, .bought-action, .backlog-action)
+    .action-label {
+    display: none;
+  }
+
+  #releaseDialog .release-dialog-list .card-actions .primary-button:hover,
+  #releaseDialog .release-dialog-list .card-actions .complete-action:hover,
+  #releaseDialog .release-dialog-list .card-actions .bought-action:hover,
+  #releaseDialog .release-dialog-list .card-actions .backlog-action:hover,
+  #releaseDialog
+    .release-dialog-list
+    .card-actions
+    .primary-button:focus-visible,
+  #releaseDialog
+    .release-dialog-list
+    .card-actions
+    .complete-action:focus-visible,
+  #releaseDialog
+    .release-dialog-list
+    .card-actions
+    .bought-action:focus-visible,
+  #releaseDialog
+    .release-dialog-list
+    .card-actions
+    .backlog-action:focus-visible,
+  #shelfReleaseDialog .release-dialog-list .card-actions .primary-button:hover,
+  #shelfReleaseDialog .release-dialog-list .card-actions .complete-action:hover,
+  #shelfReleaseDialog .release-dialog-list .card-actions .bought-action:hover,
+  #shelfReleaseDialog .release-dialog-list .card-actions .backlog-action:hover,
+  #shelfReleaseDialog
+    .release-dialog-list
+    .card-actions
+    .primary-button:focus-visible,
+  #shelfReleaseDialog
+    .release-dialog-list
+    .card-actions
+    .complete-action:focus-visible,
+  #shelfReleaseDialog
+    .release-dialog-list
+    .card-actions
+    .bought-action:focus-visible,
+  #shelfReleaseDialog
+    .release-dialog-list
+    .card-actions
+    .backlog-action:focus-visible {
+    color: #ffffff;
+    background: rgba(255, 255, 255, 0.13);
+    border-color: rgba(255, 255, 255, 0.28);
+    box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.06);
+  }
+
+  #releaseDialog
+    .release-dialog-list
+    .card-actions
+    :is(.play-icon, .back-icon, .forward-icon),
+  #shelfReleaseDialog
+    .release-dialog-list
+    .card-actions
+    :is(.play-icon, .back-icon, .forward-icon) {
+    display: block;
+    width: 14px;
+    height: 14px;
+    flex: 0 0 14px;
+    stroke-width: 2.7;
   }
 
   .playing-card .card-actions {
