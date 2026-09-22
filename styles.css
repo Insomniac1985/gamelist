@@ -2949,14 +2949,18 @@ h3 {
 }
 
 #shelfStats .stat-digital {
-  --stat-color: var(--accent-2);
-  --stat-glow: color-mix(in srgb, var(--accent-2) 26%, transparent);
+  --stat-color: var(--finished-accent);
+  --stat-glow: color-mix(in srgb, var(--finished-accent) 26%, transparent);
 }
 
-#shelfStats .stat-available,
-#shelfStats .stat-done {
+#shelfStats .stat-available {
   --stat-color: #b4b4b4;
   --stat-glow: rgba(180, 180, 180, 0.18);
+}
+
+#shelfStats .stat-done {
+  --stat-color: var(--accent-2);
+  --stat-glow: color-mix(in srgb, var(--accent-2) 26%, transparent);
 }
 
 .release-calendar {
@@ -5978,6 +5982,12 @@ body.theme-kash .game-card.stream-card.completed-trophy-card {
   color: #eef0f5 !important;
   border-color: rgba(225, 230, 240, 0.28);
   background: rgba(225, 230, 240, 0.1);
+}
+
+.shelf-page .digital-pill:not(.media-format-pill) {
+  color: color-mix(in srgb, var(--finished-accent) 72%, #ffffff) !important;
+  border-color: color-mix(in srgb, var(--finished-accent) 48%, transparent);
+  background: color-mix(in srgb, var(--finished-accent) 18%, transparent);
 }
 
 .media-format-pill {
