@@ -2532,7 +2532,7 @@ button.achievement-kpi {
 
 .achievement-game span {
   display: block;
-  margin-top: 2px;
+  margin-top: 3px;
   color: var(--muted);
   font-size: 11px;
   line-height: 1.25;
@@ -8888,6 +8888,7 @@ body.theme-kash .playing-finished-game.completed-trophy-card:hover {
 }
 
 .completed-dates .calendar-mini-icon {
+  display: block;
   width: 13px;
   height: 13px;
   flex: 0 0 auto;
