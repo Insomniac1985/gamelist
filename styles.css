@@ -13266,6 +13266,11 @@ html.theme-light .finish-trophy-check input[type="checkbox"]:checked {
     grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
   }
 
+  .prices[style*="--price-columns: 1"],
+  .game-card .prices[style*="--price-columns: 1"] {
+    grid-template-columns: minmax(0, 1fr) !important;
+  }
+
   .stats {
     grid-template-columns: repeat(2, 1fr);
   }
