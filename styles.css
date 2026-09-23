@@ -1980,7 +1980,7 @@ html.theme-gradient .goty-section .column-head h2 .trophy-icon {
 }
 
 .playing-finished-tags .rating-score-pill {
-  color: #ffffff;
+  color: var(--rating-score-main);
 }
 
 .playing-finished-tags .stream-pill,
@@ -1996,12 +1996,11 @@ html.theme-gradient .goty-section .column-head h2 .trophy-icon {
 }
 
 .playing-finished-tags .rating-score-star {
-  color: #ffe985;
+  color: var(--rating-score-main);
   font-size: 10px;
   line-height: 1;
   transform: none;
-  -webkit-text-fill-color: #ffe985;
-  margin-top: -2px;
+  margin-top: -1.5px;
 }
 
 .playing-finished-tags .platform-icon {
@@ -9158,7 +9157,6 @@ body.theme-kash .playing-finished-game.completed-trophy-card:hover {
 .completed-platform .rating-score-star {
   font-size: 11px;
   line-height: 1;
-  transform: none;
 }
 
 .rating-score-pill {
@@ -9166,7 +9164,7 @@ body.theme-kash .playing-finished-game.completed-trophy-card:hover {
   align-items: center;
   justify-content: center;
   gap: 4px;
-  color: var(--text);
+  color: var(--rating-score-main);
   background:
     linear-gradient(135deg, var(--rating-score-start), var(--rating-score-end)),
     rgba(255, 255, 255, 0.06);
@@ -9177,14 +9175,14 @@ body.theme-kash .playing-finished-game.completed-trophy-card:hover {
   --rating-score-start: rgba(255, 71, 103, 0.18);
   --rating-score-end: rgba(255, 153, 79, 0.12);
   --rating-score-border: rgba(255, 111, 133, 0.34);
+  --rating-score-main: rgba(255, 111, 133, 1);
 }
 
 .rating-score-star {
-  color: #ffe985;
   font-size: 1.5em;
   line-height: 0;
   text-shadow: 0 0 9px rgba(255, 233, 133, 0.38);
-  transform: translateY(-1px);
+  transform: translateY(-0.5px);
 }
 
 .rating-score-mid,
@@ -9192,6 +9190,7 @@ body.theme-kash .playing-finished-game.completed-trophy-card:hover {
   --rating-score-start: rgba(255, 117, 56, 0.22);
   --rating-score-end: rgba(255, 148, 67, 0.13);
   --rating-score-border: rgba(255, 132, 64, 0.4);
+  --rating-score-main: rgba(255, 132, 64, 1);
 }
 
 .rating-score-high,
@@ -9199,6 +9198,7 @@ body.theme-kash .playing-finished-game.completed-trophy-card:hover {
   --rating-score-start: rgba(49, 220, 141, 0.18);
   --rating-score-end: rgba(126, 255, 224, 0.12);
   --rating-score-border: rgba(126, 255, 224, 0.34);
+  --rating-score-main: rgba(126, 255, 224, 1);
 }
 
 .rating-score-gold,
@@ -9207,6 +9207,7 @@ body.theme-kash .playing-finished-game.completed-trophy-card:hover {
   --rating-score-start: rgba(255, 233, 133, 0.24);
   --rating-score-end: rgba(255, 180, 83, 0.16);
   --rating-score-border: rgba(255, 233, 133, 0.5);
+  --rating-score-main: rgba(255, 233, 133, 1);
 }
 
 .completed-platform .media-format-pill {
@@ -12940,6 +12941,15 @@ html.theme-light .finish-trophy-check input[type="checkbox"]:checked {
 
 .empty-with-action .primary-button {
   flex: 0 0 auto;
+}
+
+.backlog-action .action-label,
+.restore-action span {
+  display: none;
+}
+.backlog-action .action-label {
+  width: 36px;
+  padding: 8px;
 }
 
 @media (max-width: 1180px) {
