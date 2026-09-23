@@ -14559,6 +14559,7 @@ html.theme-light .finish-trophy-check input[type="checkbox"]:checked {
     white-space: normal;
     line-height: 9px !important;
     margin-bottom: 1px !important;
+    font-size: 13px !important;
   }
 
   #completedCount > span {
