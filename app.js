@@ -8712,11 +8712,11 @@ function streamPlayIcon() {
 }
 
 function streamPlayOffIcon() {
-  return `<svg class="stream-play-off-icon" viewBox="0 0 24 24" aria-hidden="true"><path class="stream-play-off-triangle" d="M8 5.5v13l11-6.5L8 5.5Z"></path><path class="stream-play-off-slash" d="M4.75 19.25 19.25 4.75"></path></svg>`;
+  return `<svg class="stream-play-off-icon" viewBox="0 0 24 24" aria-hidden="true"><path class="stream-play-off-triangle" d="M8 5.5v13l11-6.5L8 5.5Z"></path><path class="stream-play-off-slash" d="M7.25 18.25 17.25 6.25"></path></svg>`;
 }
 
 function allGamesIcon() {
-  return `<span class="stream-all-icon gamelist-filter-icon" aria-hidden="true">G</span>`;
+  return `<span class="stream-all-icon gamelist-filter-icon" aria-hidden="true"></span>`;
 }
 
 function coopIcon() {
