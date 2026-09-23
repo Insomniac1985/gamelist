@@ -12997,17 +12997,6 @@ html.theme-light .finish-trophy-check input[type="checkbox"]:checked {
     grid-template-columns: 1fr;
   }
 
-  .completed-row {
-    grid-template-columns: 56px minmax(0, 1fr);
-  }
-
-  .completed-row > .completed-actions {
-    grid-column: 1 / -1;
-    justify-self: end;
-    align-self: end;
-    flex-wrap: nowrap;
-  }
-
   .completed-row .restore-action {
     min-height: var(--completed-action-size);
     height: var(--completed-action-size);
@@ -14428,14 +14417,6 @@ html.theme-light .finish-trophy-check input[type="checkbox"]:checked {
     flex: 0 0 34px;
     width: 34px;
     min-width: 34px;
-  }
-
-  .completed-row > .completed-actions {
-    display: flex;
-    flex-flow: row nowrap;
-    justify-content: flex-end;
-    align-items: center;
-    gap: 6px;
   }
 
   .completed-row .completed-edit-action,
