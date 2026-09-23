@@ -12943,7 +12943,8 @@ html.theme-light .finish-trophy-check input[type="checkbox"]:checked {
   flex: 0 0 auto;
 }
 
-.backlog-action .action-label {
+.backlog-action .action-label,
+.restore-action span {
   display: none;
 }
 
