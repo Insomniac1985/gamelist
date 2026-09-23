@@ -845,6 +845,7 @@ function bindEvents() {
     scheduleFocusedPlayingTrailerUpdate();
     requestAnimationFrame(renderMobileTabs);
     requestAnimationFrame(() => updatePlayingCountText());
+    requestAnimationFrame(renderCompletedStreamToggle);
   }, { passive: true });
   document.addEventListener("visibilitychange", () => {
     if (document.hidden) pauseAllPlayingTrailers();
@@ -2547,8 +2548,13 @@ function renderStreamFilterToggle(button, { hidden = false } = {}) {
   button.classList.toggle("is-non-stream", mode === "nonstream");
   button.innerHTML = mode === "all" ? allGamesIcon() : mode === "stream" ? streamPlayIcon() : streamPlayOffIcon();
   const tooltip = tt("Filter between stream and non-stream games");
-  button.removeAttribute("title");
-  button.dataset.tooltip = tooltip;
+  if (window.matchMedia("(min-width: 761px)").matches) {
+    button.removeAttribute("title");
+    button.dataset.tooltip = tooltip;
+  } else {
+    button.setAttribute("title", tooltip);
+    button.removeAttribute("data-tooltip");
+  }
   button.setAttribute("aria-label", tooltip);
   button.setAttribute("aria-pressed", mode === "all" ? "false" : "true");
 }

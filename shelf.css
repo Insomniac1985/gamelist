@@ -1774,9 +1774,17 @@ textarea {
 .detail-price-panel.is-collapsed .detail-price-content {
   display: none;
 }
-.detail-guide-panel h3 {
+.detail-guides h3,
+.detail-condition h3 {
+  display: flex;
+  align-items: center;
+  gap: 8px;
   margin: 0;
-  font-size: 15px;
+  color: var(--accent-2);
+  font-size: 13px;
+  font-weight: 850;
+  text-transform: uppercase;
+  height: 16px;
 }
 .detail-store-price-panel {
   margin-top: 8px;
@@ -2410,8 +2418,8 @@ textarea {
   }
   .condition-grid .condition-sealed {
     grid-column: 1 / -1;
-    justify-self: center;
-    width: calc((100% - 8px) / 2);
+    justify-self: stretch;
+    width: 100%;
   }
   .shelf-dialog .detail-trophy-list,
   .collection-price-grid {
