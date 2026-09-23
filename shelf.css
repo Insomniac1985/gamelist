@@ -1670,8 +1670,12 @@ textarea {
 }
 
 .condition-editor legend {
-  margin-bottom: 7px;
+  margin: 0 0 7px;
   color: var(--muted);
+  font-size: 12px;
+  font-weight: 850;
+  line-height: 1.15;
+  text-transform: uppercase;
 }
 .condition-editor input {
   accent-color: var(--accent);
@@ -2424,6 +2428,10 @@ textarea {
   .shelf-dialog .detail-trophy-list,
   .collection-price-grid {
     grid-template-columns: 1fr 1fr;
+  }
+  .collection-price-grid > :only-child,
+  .collection-price-grid > :nth-child(3):last-child {
+    grid-column: 1 / -1;
   }
   .detail-store-prices {
     --price-columns: 2;

@@ -1980,6 +1980,13 @@ html.theme-gradient .goty-section .column-head h2 .trophy-icon {
   padding: 0 5px 0 3px;
 }
 
+.playing-finished-tags .coop-pill,
+.playing-finished-tags .multiplayer-pill {
+  width: 18px;
+  min-width: 18px;
+  padding: 0;
+}
+
 .playing-finished-tags .rating-score-pill {
   color: var(--rating-score-main);
 }
