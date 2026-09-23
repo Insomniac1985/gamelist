@@ -2460,7 +2460,8 @@ function playingCountText(count) {
 function visiblePlayingGames() {
   let games = activeGames().filter((game) => game.playing);
   if (!state.canEdit && state.settings.hideNonStreamPlaying) games = games.filter((game) => game.stream);
-  return games.filter((game) => streamFilterModeMatches(game, state.completedStreamMode));
+  const filteredGames = games.filter((game) => streamFilterModeMatches(game, state.completedStreamMode));
+  return filteredGames.length || normalizeStreamFilterMode(state.completedStreamMode) !== "nonstream" ? filteredGames : games;
 }
 
 function finishedStreamFilterMatches(game) {
@@ -2513,8 +2514,9 @@ function renderStreamFilterToggle(button, { hidden = false } = {}) {
   const mode = normalizeStreamFilterMode(state.completedStreamMode);
   button.hidden = hidden;
   button.classList.toggle("active", mode !== "all");
+  button.classList.toggle("is-all-games", mode === "all");
   button.classList.toggle("is-non-stream", mode === "nonstream");
-  button.innerHTML = mode === "nonstream" ? streamPlayOffIcon() : streamPlayIcon();
+  button.innerHTML = mode === "all" ? allGamesIcon() : mode === "stream" ? streamPlayIcon() : streamPlayOffIcon();
   button.title = mode === "all"
     ? tt("Show only stream games")
     : mode === "stream"
@@ -4409,13 +4411,14 @@ function slidePlaying(direction) {
 }
 
 function updatePlayingSliderControls() {
-  const state = horizontalCarouselState(el.playingList);
-  el.playingPrevButton.hidden = !state.overflow;
-  el.playingNextButton.hidden = !state.overflow;
-  el.playingPrevButton.disabled = state.atStart;
-  el.playingNextButton.disabled = state.atEnd;
-  el.playingSection.classList.toggle("playing-at-start", state.atStart);
-  el.playingSection.classList.toggle("playing-at-end", state.atEnd);
+  const carousel = horizontalCarouselState(el.playingList);
+  const keepFilteredControls = !carousel.overflow && normalizeStreamFilterMode(state.completedStreamMode) !== "all" && el.playingList.children.length > 0;
+  el.playingPrevButton.hidden = !carousel.overflow && !keepFilteredControls;
+  el.playingNextButton.hidden = !carousel.overflow && !keepFilteredControls;
+  el.playingPrevButton.disabled = carousel.atStart;
+  el.playingNextButton.disabled = carousel.atEnd;
+  el.playingSection.classList.toggle("playing-at-start", carousel.atStart);
+  el.playingSection.classList.toggle("playing-at-end", carousel.atEnd);
 }
 
 function schedulePlayingCardHeightSync() {
@@ -8709,7 +8712,11 @@ function streamPlayIcon() {
 }
 
 function streamPlayOffIcon() {
-  return `<span class="stream-play-off-icon" aria-hidden="true">${streamPlayIcon()}</span>`;
+  return `<svg class="stream-play-off-icon" viewBox="0 0 24 24" aria-hidden="true"><path class="stream-play-off-triangle" d="M8 5.5v13l11-6.5L8 5.5Z"></path><path class="stream-play-off-slash" d="M7.25 18.25 17.25 6.25"></path></svg>`;
+}
+
+function allGamesIcon() {
+  return `<span class="stream-all-icon gamelist-filter-icon" aria-hidden="true"></span>`;
 }
 
 function coopIcon() {
@@ -10673,7 +10680,7 @@ function lookupTagsLine(result) {
   const tags = unique([...(result.genres || []), ...(result.tags || [])])
     .filter(Boolean)
     .join(", ");
-  return [tags, lookupPlaytimeText(result)].filter(Boolean).join(" â€¢ ");
+  return [tags, lookupPlaytimeText(result)].filter(Boolean).join(" • ");
 }
 
 function lookupPlaytimeText(result) {
