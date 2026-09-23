@@ -1980,7 +1980,7 @@ html.theme-gradient .goty-section .column-head h2 .trophy-icon {
 }
 
 .playing-finished-tags .rating-score-pill {
-  color: #ffffff;
+  color: var(--rating-score-main);
 }
 
 .playing-finished-tags .stream-pill,
