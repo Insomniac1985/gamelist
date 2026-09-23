@@ -7265,6 +7265,7 @@ body:not(.can-edit) .game-card:focus-within .edit-action {
   margin: 12px auto 0;
   border-color: rgba(255, 255, 255, 0.18);
   background: rgba(255, 255, 255, 0.06);
+  font-size: 14px;
 }
 
 .completed-list.list-view {
@@ -12554,7 +12555,7 @@ body.theme-kash
   position: relative;
   display: flex;
   align-items: center;
-  justify-content: flex-start;
+  justify-content: space-between;
   gap: 12px;
   box-sizing: border-box;
   width: 100%;
@@ -14545,7 +14546,7 @@ html.theme-light .finish-trophy-check input[type="checkbox"]:checked {
 
   #completedCount {
     display: grid;
-    grid-column: 3 / -1;
+    grid-column: 4 / -1;
     grid-row: 1;
     grid-template-columns: max-content;
     justify-self: end;
