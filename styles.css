@@ -13838,7 +13838,8 @@ html.theme-light .finish-trophy-check input[type="checkbox"]:checked {
     gap: 4px;
   }
 
-  .game-row-identity strong {
+  .game-row-identity strong,
+  .completed-row strong {
     font-size: 13px;
     white-space: normal;
   }
@@ -13873,7 +13874,14 @@ html.theme-light .finish-trophy-check input[type="checkbox"]:checked {
   .game-row .platinum-pill,
   .game-row .psn-progress-pill,
   .game-row .playing-pill,
-  .game-row .history-pill {
+  .game-row .history-pill,
+  .completed-platform .digital-pill,
+  .completed-platform .emulator-pill,
+  .completed-platform .stream-pill,
+  .completed-platform .multiplayer-pill,
+  .completed-platform .rating-score-pill,
+  .completed-platform .platform-badge,
+  .completed-platform .psn-progress-pill {
     box-sizing: border-box;
     height: 22px;
     min-height: 22px;
