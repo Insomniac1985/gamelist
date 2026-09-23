@@ -13107,21 +13107,6 @@ html.theme-light .finish-trophy-check input[type="checkbox"]:checked {
 }
 
 @media (max-width: 760px) {
-  html,
-  body {
-    max-width: 100%;
-    overflow-x: hidden;
-  }
-
-  .shell,
-  .board,
-  .column,
-  .playing-section,
-  .completed {
-    max-width: 100%;
-    overflow-x: clip;
-  }
-
   .top-search-button {
     display: none;
   }
