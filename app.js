@@ -2,7 +2,7 @@ import { normalizeSearchText, createGameCardShell, bindActivityCardParallax, mou
 import { applySiteTheme, normalizeThemeSettings, openThemeEditor, ownerCardColorClass, ownerColorClass, themeSettingsButton } from "./theme-system.js";
 import { applyDocumentTranslations, languageOptions, normalizeLanguage, t } from "./i18n.js";
 
-mountActivitySlider(document.querySelector("#playingSection"), { title: "playingTitle", count: "playingCount", previous: "playingPrevButton", next: "playingNextButton", list: "playingList", dataSection: "playing", finished: "playingFinished", finishedList: "playingFinishedList" });
+mountActivitySlider(document.querySelector("#playingSection"), { title: "playingTitle", count: "playingCount", streamToggle: "playingStreamToggleButton", previous: "playingPrevButton", next: "playingNextButton", list: "playingList", dataSection: "playing", finished: "playingFinished", finishedList: "playingFinishedList" });
 
 const STORAGE_KEY = "gamelist:v1";
 const LEGACY_STORAGE_KEY = "buylist-tracker:v6";
@@ -98,6 +98,7 @@ const STATUS_OPTIONS = [
   "Scarce",
   "Waiting for Physical",
 ];
+const STREAM_FILTER_MODES = ["all", "stream", "nonstream"];
 const UI_ICON_URLS = [
   "/assets/Icon.png",
   "/assets/kh_icon.png",
@@ -211,7 +212,7 @@ const state = {
   mobileSection: "backlog",
   mobileSwipeStart: null,
   completedYear: "all",
-  completedStreamOnly: Boolean(initialSettings.prioritizeFinishedStream),
+  completedStreamMode: initialSettings.prioritizeFinishedStream ? "stream" : "all",
   completedVisiblePages: 1,
   gotyYear: String(new Date().getFullYear()),
   gotyPickerOrder: gotyOrderForDefault(initialSettings.defaultOrder),
@@ -223,7 +224,7 @@ const state = {
   platinumDirection: "desc",
   platinumViewMode: localStorage.getItem(PLATINUM_VIEW_MODE_KEY) === "list" ? "list" : "grid",
   releaseCalendarOffset: 0,
-  finishedStatsStreamOnly: false,
+  finishedStatsStreamMode: "all",
   detailTrophyRequest: "",
   detailReturnToHistory: false,
   detailGameId: "",
@@ -251,6 +252,7 @@ const el = {
   playingList: document.querySelector(".playing-list"),
   playingFinished: document.querySelector("#playingFinished"),
   playingFinishedList: document.querySelector(".playing-finished-list"),
+  playingStreamToggleButton: document.querySelector("#playingStreamToggleButton"),
   playingPrevButton: document.querySelector("#playingPrevButton"),
   playingNextButton: document.querySelector("#playingNextButton"),
   gotySection: document.querySelector("#gotySection"),
@@ -805,6 +807,7 @@ function bindEvents() {
   el.authCancelButton?.addEventListener("click", () => el.authDialog.close("cancel"));
   el.fetchDataButton?.addEventListener("click", refreshAllGameData);
   el.fetchPricesButton.addEventListener("click", refreshAllPrices);
+  el.playingStreamToggleButton?.addEventListener("click", cycleCompletedStreamMode);
   el.playingPrevButton.addEventListener("click", () => slidePlaying(-1));
   el.playingNextButton.addEventListener("click", () => slidePlaying(1));
   el.playingList.addEventListener("scroll", () => {
@@ -903,13 +906,8 @@ function bindEvents() {
     render();
   });
   el.completedYearFilter?.addEventListener("change", handleCompletedYearChange);
-  el.completedStreamToggleButton?.addEventListener("click", () => {
-    state.completedStreamOnly = !state.completedStreamOnly;
-    state.completedVisiblePages = 1;
-    renderCompleted();
-    renderPlayingFinished();
-  });
-  el.completedStatsButton?.addEventListener("click", () => openFinishedStatsDialog(state.completedYear || "all", { streamOnly: state.completedStreamOnly }));
+  el.completedStreamToggleButton?.addEventListener("click", cycleCompletedStreamMode);
+  el.completedStatsButton?.addEventListener("click", () => openFinishedStatsDialog(state.completedYear || "all", { streamMode: state.completedStreamMode }));
   el.achievementStatsButton?.addEventListener("click", () => openFinishedStatsDialog("all", { yearPicker: true }));
   el.finishedStatsYearSelect?.addEventListener("change", () => {
     renderFinishedStatsDialog(el.finishedStatsYearSelect.value || "all");
@@ -1335,7 +1333,7 @@ function initRenderSettling() {
 
 async function loadData() {
   state.settings = loadLocalSettings();
-  if (state.settings.prioritizeFinishedStream) state.completedStreamOnly = true;
+  if (state.settings.prioritizeFinishedStream) state.completedStreamMode = "stream";
   const saved = localStorage.getItem(STORAGE_KEY) || localStorage.getItem(LEGACY_STORAGE_KEY);
   if (saved) {
     state.games = normalizeGameRecords(JSON.parse(saved));
@@ -1356,7 +1354,7 @@ async function pullCloudData() {
       const nextSettings = normalizeSettings(data.settings);
       if (JSON.stringify(nextSettings) !== JSON.stringify(state.settings)) {
         state.settings = nextSettings;
-        if (nextSettings.prioritizeFinishedStream) state.completedStreamOnly = true;
+        if (nextSettings.prioritizeFinishedStream) state.completedStreamMode = "stream";
         if (!state.sortTouched) applyDefaultOrder(nextSettings.defaultOrder);
         persistLocalSettings();
         changed = true;
@@ -2391,7 +2389,7 @@ async function saveSettingsFromForm(event) {
     forceCacheOnLoad: document.querySelector("#settingsForceCacheOnLoad")?.checked === true,
     gotyAlwaysShow: document.querySelector("#settingsGotyAlwaysShow")?.checked === true,
   });
-  state.completedStreamOnly = state.settings.prioritizeFinishedStream;
+  state.completedStreamMode = state.settings.prioritizeFinishedStream ? "stream" : "all";
   persistLocalSettings();
   await persistCloud();
   el.settingsDialog.close();
@@ -2433,6 +2431,7 @@ function renderPlayingSection() {
   games.sort(comparePlayingGames);
   el.playingTitle.textContent = currentlyPlayingTitle(games);
   el.playingCount.textContent = playingCountText(games.length);
+  renderCompletedStreamToggle();
   el.playingList.innerHTML = "";
   games.forEach((game) => el.playingList.appendChild(cardFor(game, { staticCard: true, imagePriority: "eager" })));
   const twitchCard = mountTwitchPreview(el.playingList, state.settings.twitchUser, games.some((game) => game.stream));
@@ -2459,13 +2458,33 @@ function playingCountText(count) {
 }
 
 function visiblePlayingGames() {
-  const games = activeGames().filter((game) => game.playing);
-  if (state.canEdit || !state.settings.hideNonStreamPlaying) return games;
-  return games.filter((game) => game.stream);
+  let games = activeGames().filter((game) => game.playing);
+  if (!state.canEdit && state.settings.hideNonStreamPlaying) games = games.filter((game) => game.stream);
+  return games.filter((game) => streamFilterModeMatches(game, state.completedStreamMode));
 }
 
 function finishedStreamFilterMatches(game) {
-  return !state.completedStreamOnly || Boolean(game?.stream);
+  return streamFilterModeMatches(game, state.completedStreamMode);
+}
+
+function normalizeStreamFilterMode(value) {
+  return STREAM_FILTER_MODES.includes(value) ? value : "all";
+}
+
+function streamFilterModeMatches(game, mode = "all") {
+  const normalized = normalizeStreamFilterMode(mode);
+  if (normalized === "stream") return Boolean(game?.stream);
+  if (normalized === "nonstream") return !game?.stream;
+  return true;
+}
+
+function cycleCompletedStreamMode() {
+  const mode = normalizeStreamFilterMode(state.completedStreamMode);
+  state.completedStreamMode = mode === "all" ? "stream" : mode === "stream" ? "nonstream" : "all";
+  state.completedVisiblePages = 1;
+  renderPlayingSection();
+  renderCompleted();
+  renderPlayingFinished();
 }
 
 function finishedGamesForCurrentView() {
@@ -2475,18 +2494,34 @@ function finishedGamesForCurrentView() {
 function finishedStatsBaseGames() {
   return state.games.filter((game) => !game.deletedAt
     && game.completedAt
-    && (!state.finishedStatsStreamOnly || game.stream));
+    && streamFilterModeMatches(game, state.finishedStatsStreamMode));
 }
 
 function renderCompletedStreamToggle() {
+  renderStreamFilterToggle(el.playingStreamToggleButton, { hidden: !hasStreamGameInLog() });
   if (!el.completedStreamToggleButton) return;
   const hasStream = state.games.some((game) => !game.deletedAt && game.completedAt && game.stream);
-  el.completedStreamToggleButton.hidden = !hasStream;
-  el.completedStreamToggleButton.classList.toggle("active", state.completedStreamOnly);
-  el.completedStreamToggleButton.innerHTML = streamPlayIcon();
-  el.completedStreamToggleButton.title = state.completedStreamOnly ? tt("Show all finished games") : tt("Show stream games");
-  el.completedStreamToggleButton.setAttribute("aria-label", el.completedStreamToggleButton.title);
-  el.completedStreamToggleButton.setAttribute("aria-pressed", String(state.completedStreamOnly));
+  renderStreamFilterToggle(el.completedStreamToggleButton, { hidden: !hasStream });
+}
+
+function hasStreamGameInLog() {
+  return state.games.some((game) => !game.deletedAt && game.stream);
+}
+
+function renderStreamFilterToggle(button, { hidden = false } = {}) {
+  if (!button) return;
+  const mode = normalizeStreamFilterMode(state.completedStreamMode);
+  button.hidden = hidden;
+  button.classList.toggle("active", mode !== "all");
+  button.classList.toggle("is-non-stream", mode === "nonstream");
+  button.innerHTML = mode === "nonstream" ? streamPlayOffIcon() : streamPlayIcon();
+  button.title = mode === "all"
+    ? tt("Show only stream games")
+    : mode === "stream"
+      ? tt("Show only non-stream games")
+      : tt("Show all games");
+  button.setAttribute("aria-label", button.title);
+  button.setAttribute("aria-pressed", mode === "all" ? "false" : "true");
 }
 
 function renderPlayingFinished() {
@@ -5956,8 +5991,8 @@ function completedCountForSelectedYear() {
   };
 }
 
-function openFinishedStatsDialog(year = "all", { yearPicker = false, streamOnly = false } = {}) {
-  state.finishedStatsStreamOnly = Boolean(streamOnly);
+function openFinishedStatsDialog(year = "all", { yearPicker = false, streamMode = "all" } = {}) {
+  state.finishedStatsStreamMode = normalizeStreamFilterMode(streamMode);
   const years = yearPicker ? finishedStatsYears() : [];
   const singleYearStats = yearPicker && years.length === 1;
   const selectedYear = singleYearStats && String(year || "all") === "all" ? years[0] : String(year || "all");
@@ -5984,9 +6019,12 @@ function renderFinishedStatsDialog(year = "all", { preserveAll = true } = {}) {
   const games = finishedStatsGames(scope);
   const completed = finishedStatsCompleted(scope);
   el.finishedStatsBrow.textContent = scope === "all" ? tt("All-time statistics") : tt("YEARLY STATISTICS");
-  el.finishedStatsTitle.textContent = state.finishedStatsStreamOnly
+  const statsMode = normalizeStreamFilterMode(state.finishedStatsStreamMode);
+  el.finishedStatsTitle.textContent = statsMode === "stream"
     ? (scope === "all" ? tt("Streamed games") : tt("Streamed games {year}", { year: scope }))
-    : (scope === "all" ? tt("Finished games") : tt("Finished {year}", { year: scope }));
+    : statsMode === "nonstream"
+      ? (scope === "all" ? tt("Non-stream games") : tt("Non-stream games {year}", { year: scope }))
+      : (scope === "all" ? tt("Finished games") : tt("Finished {year}", { year: scope }));
   el.finishedStatsBody.innerHTML = finishedStatsMarkup(scope, games, completed);
   el.finishedStatsBody.querySelector("[data-stats-action='completed']")?.addEventListener("click", () => {
     openPlatinumDialog(scope);
@@ -6010,9 +6048,9 @@ function finishedStatsCompleted(year = "all") {
   return platinumItems()
     .filter((item) => {
       if (year !== "all" && completedStatsYearFor(item) !== String(year)) return false;
-      if (!state.finishedStatsStreamOnly) return true;
+      if (normalizeStreamFilterMode(state.finishedStatsStreamMode) === "all") return true;
       const localGame = item.gameId ? state.games.find((game) => game.id === item.gameId && !game.deletedAt) : null;
-      return Boolean(localGame?.stream);
+      return streamFilterModeMatches(localGame, state.finishedStatsStreamMode);
     });
 }
 
@@ -6154,7 +6192,7 @@ function statsReleaseYearInsights(year, games) {
     ? state.games
       .filter((game) => {
         if (game.deletedAt || game.dlc || !game.playing || game.completedAt || !game.startedAt) return false;
-        if (state.finishedStatsStreamOnly && !game.stream) return false;
+        if (!streamFilterModeMatches(game, state.finishedStatsStreamMode)) return false;
         const startYear = statsYearMonth(game.startedAt)?.year;
         return startYear && startYear <= Number(scopeYear) && Number(scopeYear) <= new Date().getFullYear();
       })
@@ -8670,6 +8708,10 @@ function streamPlayIcon() {
   return `<svg class="stream-play-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5.5v13l11-6.5L8 5.5Z"></path></svg>`;
 }
 
+function streamPlayOffIcon() {
+  return `<span class="stream-play-off-icon" aria-hidden="true">${streamPlayIcon()}</span>`;
+}
+
 function coopIcon() {
   return `<svg class="coop-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="8" cy="8" r="3"></circle><circle cx="16" cy="8" r="3"></circle><path d="M2.8 19c.4-4 2.1-6 5.2-6s4.8 2 5.2 6"></path><path d="M10.8 19c.4-4 2.1-6 5.2-6s4.8 2 5.2 6"></path></svg>`;
 }
@@ -9364,9 +9406,9 @@ function renderRatingInputs(container, namePrefix) {
         </span>
         <input type="radio" id="${escapeHtml(namePrefix)}Rating-${escapeHtml(key)}-0" name="${escapeHtml(namePrefix)}Rating-${escapeHtml(key)}" value="0">
         <span class="rating-step-controls">
+          <label class="star-clear" for="${escapeHtml(namePrefix)}Rating-${escapeHtml(key)}-0" title="${escapeHtml(tt("No rating"))}" aria-label="${escapeHtml(tt("No rating"))}" data-i18n-title="No rating" data-i18n-aria-label="No rating">${trashIcon()}</label>
           <button class="rating-step-button" type="button" data-rating-step="-0.5" title="-0.5" aria-label="-0.5">−</button>
           <button class="rating-step-button" type="button" data-rating-step="0.5" title="+0.5" aria-label="+0.5">+</button>
-          <label class="star-clear" for="${escapeHtml(namePrefix)}Rating-${escapeHtml(key)}-0" title="${escapeHtml(tt("No rating"))}" aria-label="${escapeHtml(tt("No rating"))}" data-i18n-title="No rating" data-i18n-aria-label="No rating">${trashIcon()}</label>
         </span>
       </div>
     </fieldset>
