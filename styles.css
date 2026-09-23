@@ -14282,6 +14282,7 @@ html.theme-light .finish-trophy-check input[type="checkbox"]:checked {
   .playing-card .complete-action .check-icon + .action-label,
   .playing-card .playing-completed-action .action-label {
     display: inline;
+    display: none;
   }
 
   .playing-card .backlog-action .action-label {
