@@ -8970,9 +8970,9 @@ body.theme-kash .finished-stats-kpi.is-completed:focus-visible strong {
 .completed-row > .completed-actions {
   display: inline-flex;
   align-items: center;
-  justify-content: flex-end;
-  flex-flow: row nowrap;
-  gap: 6px;
+  justify-content: space-between;
+  flex-flow: column;
+  height: 100%;
 }
 
 .completed-row:hover {
