@@ -23,6 +23,7 @@ const STORE_OPTIONS = ["Amazon", "eBay", "GAME.es", "Xtralife", "Retro Island NY
 const CURRENCY_OPTIONS = ["EUR", "USD", "GBP", "JPY"];
 const REGION_OPTIONS = ["ES", "IT", "IE", "FR", "PT", "JP", "MX", "US", "UK"];
 const MAX_PRICE_STORES = 5;
+const COOP_ACCENT = "#bdf279";
 const GAME_OF_YEAR_CATEGORIES = [
   ["fun", "MOST FUN"],
   ["singleplayer", "FAVORITE SINGLEPLAYER"],
@@ -1018,8 +1019,14 @@ function bindEvents() {
   el.fields.coop?.addEventListener("change", () => {
     if (el.fields.coop.checked && el.fields.multiplayer) el.fields.multiplayer.checked = true;
   });
+  el.fields.multiplayer?.addEventListener("change", () => {
+    if (!el.fields.multiplayer.checked && el.fields.coop) el.fields.coop.checked = false;
+  });
   el.finishCoopInput?.addEventListener("change", () => {
     if (el.finishCoopInput.checked && el.finishMultiplayerInput) el.finishMultiplayerInput.checked = true;
+  });
+  el.finishMultiplayerInput?.addEventListener("change", () => {
+    if (!el.finishMultiplayerInput.checked && el.finishCoopInput) el.finishCoopInput.checked = false;
   });
   el.fields.replayCount.addEventListener("input", syncReplaySection);
   el.form.addEventListener("submit", saveFromForm);
@@ -3364,6 +3371,7 @@ function gameOfTheYearExportCss({ theme, main, accent, gradient, bg, glowPrimary
   const bodyFont = canvasBodyFont();
   return `
     .goty-export-poster {
+      --coop-accent: ${COOP_ACCENT};
       position: relative;
       box-sizing: border-box;
       width: 1920px;
@@ -3486,7 +3494,7 @@ function gameOfTheYearExportCss({ theme, main, accent, gradient, bg, glowPrimary
       color: #ff9ed2;
     }
     .goty-export-coop-kpi strong {
-      color: #79f2ce;
+      color: var(--coop-accent);
     }
     .goty-export-coop-kpi .coop-icon {
       width: 24px;
@@ -3789,9 +3797,9 @@ function gameOfTheYearExportCss({ theme, main, accent, gradient, bg, glowPrimary
       border-color: rgba(255, 255, 255, 0.07);
     }
     .goty-export-coop {
-      color: #79f2ce;
-      border-color: rgba(121,242,206,.38);
-      background: rgba(121,242,206,.1);
+      color: var(--coop-accent);
+      border-color: color-mix(in srgb, var(--coop-accent) 38%, transparent);
+      background: color-mix(in srgb, var(--coop-accent) 10%, transparent);
     }
     .goty-export-stream {
       color: #bf94ff;
@@ -6886,8 +6894,6 @@ function platformStatsColor(platform, index = 0) {
 function sortedCompletedGames(games) {
   const direction = state.filters.direction === "asc" ? 1 : -1;
   return [...games].sort((a, b) => {
-    const streamSort = compareStreamFirst(a, b);
-    if (streamSort) return streamSort;
     if (state.filters.sort === "title") {
       return direction * (stringCompare(a.title, b.title) || String(b.completedAt).localeCompare(String(a.completedAt)));
     }
@@ -8720,11 +8726,11 @@ function calendarStateBadge(label, tone, icon = "") {
 }
 
 function coopBadge() {
-  return `<span class="coop-pill">${coopIcon()}<span>${escapeHtml(tt("CoOp"))}</span></span>`;
+  return `<span class="coop-pill" title="${escapeHtml(tt("CoOp"))}" aria-label="${escapeHtml(tt("CoOp"))}">${coopIcon()}</span>`;
 }
 
 function multiplayerBadge() {
-  return `<span class="multiplayer-pill" title="${escapeHtml(tt("Multiplayer"))}" aria-label="${escapeHtml(tt("Multiplayer"))}">${coopIcon()}</span>`;
+  return `<span class="multiplayer-pill" title="${escapeHtml(tt("Multiplayer"))}" aria-label="${escapeHtml(tt("Multiplayer"))}">${onlineGlobeIcon()}</span>`;
 }
 
 function streamBadge() {
@@ -8736,7 +8742,7 @@ function streamPlayIcon() {
 }
 
 function streamPlayOffIcon() {
-  return `<svg class="stream-play-off-icon twitch-filter-icon" viewBox="0 0 24 24" aria-hidden="true">${twitchLogoPath()}<path class="stream-play-off-slash" d="M4.75 19.25 19.25 4.75"></path></svg>`;
+  return `<svg class="stream-play-off-icon twitch-filter-icon" viewBox="0 0 24 24" aria-hidden="true">${twitchLogoPath()}<path class="stream-play-off-slash-cut" d="M2 22 22 2"></path><path class="stream-play-off-slash" d="M2 22 22 2"></path></svg>`;
 }
 
 function allGamesIcon() {
@@ -8749,6 +8755,10 @@ function twitchLogoPath() {
 
 function coopIcon() {
   return `<svg class="coop-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="8" cy="8" r="3"></circle><circle cx="16" cy="8" r="3"></circle><path d="M2.8 19c.4-4 2.1-6 5.2-6s4.8 2 5.2 6"></path><path d="M10.8 19c.4-4 2.1-6 5.2-6s4.8 2 5.2 6"></path></svg>`;
+}
+
+function onlineGlobeIcon() {
+  return `<svg class="online-globe-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8"></circle><path d="M4 12h16"></path><path d="M12 4c2.1 2.2 3.2 4.8 3.2 8s-1.1 5.8-3.2 8"></path><path d="M12 4c-2.1 2.2-3.2 4.8-3.2 8s1.1 5.8 3.2 8"></path></svg>`;
 }
 
 function alertTagIcon() {
