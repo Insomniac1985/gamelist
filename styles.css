@@ -7521,7 +7521,11 @@ body:not(.can-edit) .game-card:focus-within .edit-action {
 
 .finished-stats-kpi.is-finished:hover,
 .finished-stats-kpi.is-finished:focus-visible {
-  background: color-mix(in srgb, var(--finished-accent) 16%, rgba(255, 255, 255, 0.04));
+  background: color-mix(
+    in srgb,
+    var(--finished-accent) 16%,
+    rgba(255, 255, 255, 0.04)
+  );
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.08),
     0 0 0 3px color-mix(in srgb, var(--finished-accent) 14%, transparent),
@@ -12498,7 +12502,9 @@ body.theme-kash
 .finish-rating-grid {
   --rating-star-size: 31px;
   --rating-star-gap: 9px;
-  --rating-star-width: calc((var(--rating-star-size) * 5) + (var(--rating-star-gap) * 4));
+  --rating-star-width: calc(
+    (var(--rating-star-size) * 5) + (var(--rating-star-gap) * 4)
+  );
   --rating-hitbox-height: 40px;
   display: grid;
   gap: 14px 18px;
@@ -12552,7 +12558,7 @@ body.theme-kash
   box-sizing: border-box;
   width: 100%;
   min-width: 0;
-  min-height: 54px;
+  min-height: 46px;
   padding: 0 10px;
   background: rgba(255, 255, 255, 0.045);
   border: 1px solid rgba(255, 255, 255, 0.16);
@@ -12578,6 +12584,7 @@ body.theme-kash
   font-size: var(--rating-star-size, 25px);
   line-height: 1;
   white-space: nowrap;
+  top: -2px;
 }
 
 .detail-star-display {
@@ -12637,7 +12644,7 @@ body.theme-kash
   display: inline-flex;
   align-items: center;
   gap: 5px;
-  margin-left: 0;
+  margin-left: -50px;
   flex: 0 0 auto;
 }
 
@@ -14487,6 +14494,10 @@ html.theme-light .finish-trophy-check input[type="checkbox"]:checked {
 
   .stats {
     grid-template-columns: repeat(2, 1fr);
+  }
+
+  .rating-step-controls {
+    margin-left: 45px;
   }
 }
 
