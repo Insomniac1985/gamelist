@@ -6985,6 +6985,7 @@ function filteredGames(options = {}) {
 }
 
 function cardFor(game, options = {}) {
+  if (game.calendarMilestone) return calendarMilestoneCard(game);
   const releaseDialog = Boolean(options.releaseDialog);
   const displaySection = options.displaySection || game.section;
   const neutralReleaseCard = releaseDialog && Boolean(game.playing);
@@ -7168,6 +7169,38 @@ function cardFor(game, options = {}) {
     if (event.target.closest("button, a")) return;
     openDetail(game.id);
   });
+  return card;
+}
+
+function calendarMilestoneCard(game) {
+  const card = createGameCardShell(document);
+  card.dataset.id = game.id || "";
+  card.classList.add("calendar-milestone-card", "has-art");
+  card.draggable = false;
+  card.querySelector(".card-trailer")?.remove();
+  card.querySelector(".trailer-toggle")?.remove();
+  const cover = game.cover || "assets/Icon.png";
+  const image = card.querySelector(".cover-button img");
+  image.hidden = false;
+  image.src = coverDisplayUrl(cover);
+  image.alt = `${game.title} cover`;
+  image.loading = "lazy";
+  image.decoding = "async";
+  card.style.setProperty("--card-art", `url("${cssUrl(backgroundCoverUrl(cover))}")`);
+  card.querySelector(".cover-button").disabled = true;
+  card.querySelector("h3").textContent = game.title || "";
+  card.querySelector(".title-owners").hidden = true;
+  card.querySelector(".studio-line").hidden = true;
+  card.querySelector(".meta").innerHTML = calendarStateBadge("Created", "created");
+  const playDates = card.querySelector(".play-dates");
+  playDates.innerHTML = game.releaseDate ? `<span class="history-pill history-date-pill"><small>${escapeHtml(tt("Created"))}</small><strong>${escapeHtml(formatShortDate(game.releaseDate) || game.releaseDate)}</strong></span>` : "";
+  playDates.hidden = !playDates.innerHTML;
+  card.querySelector(".chips").innerHTML = "";
+  card.querySelector(".card-trophies").remove();
+  card.querySelector(".notes").hidden = true;
+  card.querySelector(".prices").remove();
+  card.querySelector(".card-actions").remove();
+  card.querySelector(".edit-action")?.remove();
   return card;
 }
 

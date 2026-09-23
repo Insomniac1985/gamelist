@@ -3369,12 +3369,14 @@ body.dialog-open .floating-edit-actions {
     0 0 20px color-mix(in srgb, var(--preorder-accent) 12%, transparent);
 }
 
-.release-day.today > span {
+.release-day.today > span,
+.release-day.has-milestone > span {
   position: relative;
   color: var(--accent-1, var(--accent));
 }
 
-.release-day.today > span::after {
+.release-day.today > span::after,
+.release-day.has-milestone > span::after {
   content: "";
   position: absolute;
   left: 50%;
@@ -6273,6 +6275,24 @@ body.theme-kash .game-card.stream-card.completed-trophy-card {
   width: 16px;
   height: 16px;
   flex: 0 0 16px;
+}
+
+.calendar-state-created {
+  color: var(--accent-1, var(--accent));
+  border-color: color-mix(in srgb, var(--accent-1, var(--accent)) 48%, transparent);
+  background: color-mix(in srgb, var(--accent-1, var(--accent)) 14%, transparent);
+}
+
+.calendar-milestone-card .cover-button {
+  cursor: default;
+}
+
+.calendar-milestone-card .cover-button img {
+  object-fit: contain;
+  padding: 12%;
+  background:
+    radial-gradient(circle at 50% 42%, rgba(255, 255, 255, 0.14), transparent 58%),
+    rgba(255, 255, 255, 0.055);
 }
 
 #releaseDialog .game-card.calendar-completed-card {
