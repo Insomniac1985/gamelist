@@ -1996,11 +1996,10 @@ html.theme-gradient .goty-section .column-head h2 .trophy-icon {
 }
 
 .playing-finished-tags .rating-score-star {
-  color: #ffe985;
+  color: var(--rating-score-main);
   font-size: 10px;
   line-height: 1;
   transform: none;
-  -webkit-text-fill-color: #ffe985;
   margin-top: -2px;
 }
 
@@ -9166,7 +9165,7 @@ body.theme-kash .playing-finished-game.completed-trophy-card:hover {
   align-items: center;
   justify-content: center;
   gap: 4px;
-  color: var(--text);
+  color: var(--rating-score-main);
   background:
     linear-gradient(135deg, var(--rating-score-start), var(--rating-score-end)),
     rgba(255, 255, 255, 0.06);
@@ -9177,6 +9176,7 @@ body.theme-kash .playing-finished-game.completed-trophy-card:hover {
   --rating-score-start: rgba(255, 71, 103, 0.18);
   --rating-score-end: rgba(255, 153, 79, 0.12);
   --rating-score-border: rgba(255, 111, 133, 0.34);
+  --rating-score-main: rgba(255, 111, 133, 1);
 }
 
 .rating-score-star {
@@ -9192,6 +9192,7 @@ body.theme-kash .playing-finished-game.completed-trophy-card:hover {
   --rating-score-start: rgba(255, 117, 56, 0.22);
   --rating-score-end: rgba(255, 148, 67, 0.13);
   --rating-score-border: rgba(255, 132, 64, 0.4);
+  --rating-score-main: rgba(255, 132, 64, 1);
 }
 
 .rating-score-high,
@@ -9199,6 +9200,7 @@ body.theme-kash .playing-finished-game.completed-trophy-card:hover {
   --rating-score-start: rgba(49, 220, 141, 0.18);
   --rating-score-end: rgba(126, 255, 224, 0.12);
   --rating-score-border: rgba(126, 255, 224, 0.34);
+  --rating-score-main: rgba(126, 255, 224, 1);
 }
 
 .rating-score-gold,
@@ -9207,6 +9209,7 @@ body.theme-kash .playing-finished-game.completed-trophy-card:hover {
   --rating-score-start: rgba(255, 233, 133, 0.24);
   --rating-score-end: rgba(255, 180, 83, 0.16);
   --rating-score-border: rgba(255, 233, 133, 0.5);
+  --rating-score-main: rgba(255, 233, 133, 1);
 }
 
 .completed-platform .media-format-pill {
