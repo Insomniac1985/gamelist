@@ -2460,7 +2460,8 @@ function playingCountText(count) {
 function visiblePlayingGames() {
   let games = activeGames().filter((game) => game.playing);
   if (!state.canEdit && state.settings.hideNonStreamPlaying) games = games.filter((game) => game.stream);
-  return games.filter((game) => streamFilterModeMatches(game, state.completedStreamMode));
+  const filteredGames = games.filter((game) => streamFilterModeMatches(game, state.completedStreamMode));
+  return filteredGames.length || normalizeStreamFilterMode(state.completedStreamMode) !== "nonstream" ? filteredGames : games;
 }
 
 function finishedStreamFilterMatches(game) {
@@ -2514,7 +2515,7 @@ function renderStreamFilterToggle(button, { hidden = false } = {}) {
   button.hidden = hidden;
   button.classList.toggle("active", mode !== "all");
   button.classList.toggle("is-non-stream", mode === "nonstream");
-  button.innerHTML = mode === "nonstream" ? streamPlayOffIcon() : streamPlayIcon();
+  button.innerHTML = mode === "all" ? allGamesIcon() : mode === "stream" ? streamPlayIcon() : streamPlayOffIcon();
   button.title = mode === "all"
     ? tt("Show only stream games")
     : mode === "stream"
@@ -8709,7 +8710,11 @@ function streamPlayIcon() {
 }
 
 function streamPlayOffIcon() {
-  return `<span class="stream-play-off-icon" aria-hidden="true">${streamPlayIcon()}</span>`;
+  return `<svg class="stream-play-off-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5.5v13l11-6.5L8 5.5Z"></path><path d="M5 19 19 5"></path></svg>`;
+}
+
+function allGamesIcon() {
+  return `<svg class="stream-all-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 6.5h9.5"></path><path d="M5 12h14"></path><path d="M5 17.5h14"></path><path d="M17 4.8 21 7l-4 2.2V4.8Z"></path></svg>`;
 }
 
 function coopIcon() {
@@ -10673,7 +10678,7 @@ function lookupTagsLine(result) {
   const tags = unique([...(result.genres || []), ...(result.tags || [])])
     .filter(Boolean)
     .join(", ");
-  return [tags, lookupPlaytimeText(result)].filter(Boolean).join(" â€¢ ");
+  return [tags, lookupPlaytimeText(result)].filter(Boolean).join(" • ");
 }
 
 function lookupPlaytimeText(result) {

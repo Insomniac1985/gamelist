@@ -7360,9 +7360,15 @@ body:not(.can-edit) .game-card:focus-within .edit-action {
 }
 
 .completed-stream-toggle .stream-play-icon,
-.playing-stream-toggle .stream-play-icon {
-  width: 17px;
-  height: 17px;
+.playing-stream-toggle .stream-play-icon,
+.completed-stream-toggle .stream-play-off-icon,
+.playing-stream-toggle .stream-play-off-icon,
+.completed-stream-toggle .stream-all-icon,
+.playing-stream-toggle .stream-all-icon {
+  display: block;
+  width: 18px;
+  height: 18px;
+  overflow: visible;
 }
 
 .completed-stream-toggle.active,
@@ -7379,24 +7385,21 @@ body:not(.can-edit) .game-card:focus-within .edit-action {
   background: rgba(225, 230, 240, 0.08);
 }
 
-.stream-play-off-icon {
-  position: relative;
-  display: grid;
-  place-items: center;
-  width: 18px;
-  height: 18px;
+.completed-stream-toggle .stream-play-off-icon path:last-child,
+.playing-stream-toggle .stream-play-off-icon path:last-child,
+.completed-stream-toggle .stream-all-icon path,
+.playing-stream-toggle .stream-all-icon path {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2.2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
 }
 
-.stream-play-off-icon::after {
-  content: "";
-  position: absolute;
-  left: 2px;
-  right: 2px;
-  top: 50%;
-  height: 2px;
-  background: currentColor;
-  border-radius: 999px;
-  transform: translateY(-50%) rotate(-42deg);
+.completed-stream-toggle .stream-all-icon path:last-child,
+.playing-stream-toggle .stream-all-icon path:last-child {
+  fill: currentColor;
+  stroke: none;
 }
 
 .finished-stats-dialog {
