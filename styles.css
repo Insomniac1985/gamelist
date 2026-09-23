@@ -13537,14 +13537,20 @@ html.theme-light .finish-trophy-check input[type="checkbox"]:checked {
     align-items: end;
   }
 
+  .playing-section .column-head > div:first-child,
+  .completed > .column-head > div:first-child {
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+
   .playing-head-actions {
     display: flex;
     flex-wrap: wrap;
     justify-content: flex-end;
     align-items: end;
     gap: 5px 10px;
-    width: max-content;
-    max-width: none;
+    width: auto;
+    min-width: max-content;
     flex: 0 0 auto;
     margin-left: auto;
   }
@@ -14635,8 +14641,8 @@ html.theme-light .finish-trophy-check input[type="checkbox"]:checked {
     justify-content: flex-end;
     align-items: end;
     gap: 5px 10px;
-    width: max-content;
-    max-width: none;
+    width: auto;
+    min-width: max-content;
     flex: 0 0 auto;
     margin-left: auto;
     height: auto;
