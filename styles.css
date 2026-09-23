@@ -12943,8 +12943,7 @@ html.theme-light .finish-trophy-check input[type="checkbox"]:checked {
   flex: 0 0 auto;
 }
 
-.playing-card .complete-action .check-icon + .action-label,
-.playing-card .playing-completed-action .action-label {
+.backlog-action .action-label {
   display: none;
 }
 
