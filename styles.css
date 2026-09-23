@@ -7408,7 +7408,7 @@ body:not(.can-edit) .game-card:focus-within .edit-action {
 .playing-stream-toggle .stream-play-off-slash {
   fill: none;
   stroke: currentColor;
-  stroke-width: 0.9;
+  stroke-width: 1.2;
   stroke-linecap: round;
   stroke-miterlimit: 10;
 }
@@ -13450,6 +13450,26 @@ html.theme-light .finish-trophy-check input[type="checkbox"]:checked {
     grid-template-columns: repeat(2, 1fr);
   }
 
+  .playing-section .column-head {
+    align-items: end;
+  }
+
+  .playing-head-actions {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    justify-items: end;
+    align-items: end;
+    gap: 7px;
+  }
+
+  .playing-section .playing-head-actions > span {
+    grid-column: 2 / -1;
+    justify-self: unset;
+    margin: 0;
+    line-height: 1;
+    text-align: right;
+  }
+
   .release-months {
     grid-template-columns: 1fr;
   }
@@ -13684,6 +13704,10 @@ html.theme-light .finish-trophy-check input[type="checkbox"]:checked {
     margin-bottom: 3px;
     font-size: 10px;
     white-space: nowrap;
+  }
+
+  .playing-section .card-achievement-head {
+    font-size: 9px;
   }
 
   .playing-section .card-trophy-head > span {
@@ -14502,9 +14526,20 @@ html.theme-light .finish-trophy-check input[type="checkbox"]:checked {
 }
 
 @media (width <= 760px) {
+  .completed-head-actions {
+    display: grid;
+    grid-template-columns: repeat(3, max-content);
+    justify-items: end;
+    align-items: end;
+    gap: 7px;
+    height: auto;
+  }
+
   #completedCount {
     display: grid;
+    grid-column: 1 / -1;
     grid-template-columns: max-content;
+    justify-self: end;
     justify-items: end;
     align-content: center;
     gap: 2px;

@@ -75,6 +75,7 @@ const DEFAULT_SETTINGS = {
   defaultOwner: "User",
   shelfSync: true,
   hidePageSwitch: false,
+  streamFilterPriority: "all",
   prioritizeFinishedStream: false,
   hideNonStreamPlaying: false,
   forceCacheOnLoad: false,
@@ -212,7 +213,7 @@ const state = {
   mobileSection: "backlog",
   mobileSwipeStart: null,
   completedYear: "all",
-  completedStreamMode: initialSettings.prioritizeFinishedStream ? "stream" : "all",
+  completedStreamMode: streamFilterPriorityForSettings(initialSettings),
   completedVisiblePages: 1,
   gotyYear: String(new Date().getFullYear()),
   gotyPickerOrder: gotyOrderForDefault(initialSettings.defaultOrder),
@@ -842,6 +843,7 @@ function bindEvents() {
     requestAnimationFrame(updateAllRowTitleOverflow);
     scheduleFocusedPlayingTrailerUpdate();
     requestAnimationFrame(renderMobileTabs);
+    requestAnimationFrame(updatePlayingCountText);
   }, { passive: true });
   document.addEventListener("visibilitychange", () => {
     if (document.hidden) pauseAllPlayingTrailers();
@@ -1333,7 +1335,7 @@ function initRenderSettling() {
 
 async function loadData() {
   state.settings = loadLocalSettings();
-  if (state.settings.prioritizeFinishedStream) state.completedStreamMode = "stream";
+  state.completedStreamMode = streamFilterPriorityForSettings(state.settings);
   const saved = localStorage.getItem(STORAGE_KEY) || localStorage.getItem(LEGACY_STORAGE_KEY);
   if (saved) {
     state.games = normalizeGameRecords(JSON.parse(saved));
@@ -1354,7 +1356,7 @@ async function pullCloudData() {
       const nextSettings = normalizeSettings(data.settings);
       if (JSON.stringify(nextSettings) !== JSON.stringify(state.settings)) {
         state.settings = nextSettings;
-        if (nextSettings.prioritizeFinishedStream) state.completedStreamMode = "stream";
+        state.completedStreamMode = streamFilterPriorityForSettings(nextSettings);
         if (!state.sortTouched) applyDefaultOrder(nextSettings.defaultOrder);
         persistLocalSettings();
         changed = true;
@@ -1451,7 +1453,8 @@ function normalizeSettings(settings = {}) {
     defaultOwner: cleanOwnerLabel(settings.defaultOwner) || DEFAULT_SETTINGS.defaultOwner,
     shelfSync: settings.shelfSync !== false,
     hidePageSwitch: settings.hidePageSwitch === true,
-    prioritizeFinishedStream: settings.prioritizeFinishedStream === true,
+    streamFilterPriority: streamFilterPriorityForSettings(settings),
+    prioritizeFinishedStream: streamFilterPriorityForSettings(settings) === "stream",
     hideNonStreamPlaying: settings.hideNonStreamPlaying === true,
     forceCacheOnLoad: settings.forceCacheOnLoad === true,
     syncPreorders: settings.syncPreorders === true,
@@ -1831,16 +1834,18 @@ function settingsPageSwitchItem() {
 }
 
 function settingsPrioritizeFinishedStreamItem() {
+  const priority = streamFilterPriorityForSettings(state.settings);
   return `
     <article class="settings-layout-card settings-sync-card" data-layout-key="prioritize-finished-stream">
       <div class="settings-wire wire-finished" aria-hidden="true"><span></span><span></span><span></span></div>
       <div class="settings-theme-select">
-        <span>${escapeHtml(tt("Prioratizes Finished Stream"))}</span>
+        <span>${escapeHtml(tt("Stream Filter priority"))}</span>
         <div class="settings-check-field">
-          <label class="check-filter toggle-check settings-visible-check" title="${escapeHtml(tt("Prioratizes Finished Stream"))}">
-            <input type="checkbox" data-prioritize-finished-stream ${state.settings.prioritizeFinishedStream ? "checked" : ""}>
-            <span>${escapeHtml(tt("Enable"))}</span>
-          </label>
+          <select class="settings-stream-priority-select" data-stream-filter-priority aria-label="${escapeHtml(tt("Stream Filter priority"))}">
+            <option value="stream" ${priority === "stream" ? "selected" : ""}>${escapeHtml(tt("Stream games"))}</option>
+            <option value="nonstream" ${priority === "nonstream" ? "selected" : ""}>${escapeHtml(tt("Non-stream games"))}</option>
+            <option value="all" ${priority === "all" ? "selected" : ""}>${escapeHtml(tt("All games"))}</option>
+          </select>
         </div>
       </div>
     </article>
@@ -2383,13 +2388,14 @@ async function saveSettingsFromForm(event) {
     defaultOwner: el.settingsDefaultOwner.value,
     shelfSync: Boolean(el.settingsLayoutList.querySelector("[data-shelf-sync]")?.checked),
     hidePageSwitch: el.settingsLayoutList.querySelector("[data-hide-page-switch]")?.checked === true,
-    prioritizeFinishedStream: el.settingsLayoutList.querySelector("[data-prioritize-finished-stream]")?.checked === true,
+    streamFilterPriority: normalizeStreamFilterMode(el.settingsLayoutList.querySelector("[data-stream-filter-priority]")?.value),
+    prioritizeFinishedStream: normalizeStreamFilterMode(el.settingsLayoutList.querySelector("[data-stream-filter-priority]")?.value) === "stream",
     hideNonStreamPlaying: el.settingsLayoutList.querySelector("[data-hide-non-stream-playing]")?.checked === true,
     weekStart: normalizeWeekStart(el.settingsLayoutList.querySelector("[data-week-start]")?.value || state.settings.weekStart),
     forceCacheOnLoad: document.querySelector("#settingsForceCacheOnLoad")?.checked === true,
     gotyAlwaysShow: document.querySelector("#settingsGotyAlwaysShow")?.checked === true,
   });
-  state.completedStreamMode = state.settings.prioritizeFinishedStream ? "stream" : "all";
+  state.completedStreamMode = streamFilterPriorityForSettings(state.settings);
   persistLocalSettings();
   await persistCloud();
   el.settingsDialog.close();
@@ -2430,7 +2436,7 @@ function renderPlayingSection() {
   const games = visiblePlayingGames();
   games.sort(comparePlayingGames);
   el.playingTitle.textContent = currentlyPlayingTitle(games);
-  el.playingCount.textContent = playingCountText(games.length);
+  updatePlayingCountText(games.length);
   renderCompletedStreamToggle();
   el.playingList.innerHTML = "";
   games.forEach((game) => el.playingList.appendChild(cardFor(game, { staticCard: true, imagePriority: "eager" })));
@@ -2457,6 +2463,17 @@ function playingCountText(count) {
   return tt("Playing {count} {item}", { count, item: tt(count === 1 ? "game" : "games") });
 }
 
+function mobilePlayingCountText(count) {
+  return tt("{count} {item}", { count, item: tt(count === 1 ? "game" : "games") });
+}
+
+function updatePlayingCountText(count = visiblePlayingGames().length) {
+  if (!el.playingCount) return;
+  el.playingCount.textContent = window.matchMedia("(max-width: 760px)").matches
+    ? mobilePlayingCountText(count)
+    : playingCountText(count);
+}
+
 function visiblePlayingGames() {
   let games = activeGames().filter((game) => game.playing);
   if (!state.canEdit && state.settings.hideNonStreamPlaying) games = games.filter((game) => game.stream);
@@ -2470,6 +2487,12 @@ function finishedStreamFilterMatches(game) {
 
 function normalizeStreamFilterMode(value) {
   return STREAM_FILTER_MODES.includes(value) ? value : "all";
+}
+
+function streamFilterPriorityForSettings(settings = {}) {
+  const explicit = normalizeStreamFilterMode(settings.streamFilterPriority);
+  if (settings.streamFilterPriority != null) return explicit;
+  return settings.prioritizeFinishedStream === true ? "stream" : explicit;
 }
 
 function streamFilterModeMatches(game, mode = "all") {
@@ -2517,11 +2540,7 @@ function renderStreamFilterToggle(button, { hidden = false } = {}) {
   button.classList.toggle("is-all-games", mode === "all");
   button.classList.toggle("is-non-stream", mode === "nonstream");
   button.innerHTML = mode === "all" ? allGamesIcon() : mode === "stream" ? streamPlayIcon() : streamPlayOffIcon();
-  button.title = mode === "all"
-    ? tt("Show only stream games")
-    : mode === "stream"
-      ? tt("Show only non-stream games")
-      : tt("Show all games");
+  button.title = tt("Filter between stream and non-stream games");
   button.setAttribute("aria-label", button.title);
   button.setAttribute("aria-pressed", mode === "all" ? "false" : "true");
 }
@@ -8299,7 +8318,7 @@ function cardSteamAchievementsFor(game) {
   const guideLinks = guideLinksFor(game);
   const guideRow = guideLinks.length ? `<div class="guide-links card-guide-row">${guideLinks.join("")}</div>` : "";
   if (cached?.loading) {
-    return `${guideRow}<div class="card-trophy-head">${trophyIcon()}<span>Loading achievements...</span></div>`;
+    return `${guideRow}<div class="card-trophy-head card-achievement-head">${trophyIcon()}<span>Loading achievements...</span></div>`;
   }
   const achievements = (cached?.achievements || [])
     .filter((achievement) => achievement.earned && achievement.earnedAt)
@@ -8307,12 +8326,12 @@ function cardSteamAchievementsFor(game) {
     .slice(0, 3);
   const progress = steamProgressForGame(game);
   if (!achievements.length) {
-    const heading = progress ? `<div class="card-trophy-head">${trophyIcon()}<span>${escapeHtml(tt("ACHIEVEMENTS"))}</span>${psnProgressBadge(progress, { includeIcon: false, className: "card-trophy-progress" })}</div>` : "";
+    const heading = progress ? `<div class="card-trophy-head card-achievement-head">${trophyIcon()}<span>${escapeHtml(tt("ACHIEVEMENTS"))}</span>${psnProgressBadge(progress, { includeIcon: false, className: "card-trophy-progress" })}</div>` : "";
     return `${guideRow}${heading}`;
   }
   return `
     ${guideRow}
-    <div class="card-trophy-head">${trophyIcon()}<span>${escapeHtml(tt("ACHIEVEMENTS"))}</span>${progress ? psnProgressBadge(progress, { includeIcon: false, className: "card-trophy-progress" }) : ""}</div>
+    <div class="card-trophy-head card-achievement-head">${trophyIcon()}<span>${escapeHtml(tt("ACHIEVEMENTS"))}</span>${progress ? psnProgressBadge(progress, { includeIcon: false, className: "card-trophy-progress" }) : ""}</div>
     <div class="card-trophy-list">
       ${achievements.map((achievement) => `
         <a class="card-trophy trophy-steam" href="${escapeHtml(game.storeLinks?.steam || hltbUrlFor(game) || "#")}" target="_blank" rel="noreferrer" title="${escapeHtml([achievement.title, achievement.earnedAt].filter(Boolean).join(" · "))}">
@@ -8339,7 +8358,7 @@ function cardXboxAchievementsFor(game) {
     .slice(0, 3);
   const progress = xboxProgressForGame(game);
   const heading = progress
-    ? `<div class="card-trophy-head">${trophyIcon()}<span>${escapeHtml(tt("ACHIEVEMENTS"))}</span>${psnProgressBadge(progress, { includeIcon: false, className: "card-trophy-progress" })}</div>`
+    ? `<div class="card-trophy-head card-achievement-head">${trophyIcon()}<span>${escapeHtml(tt("ACHIEVEMENTS"))}</span>${psnProgressBadge(progress, { includeIcon: false, className: "card-trophy-progress" })}</div>`
     : "";
   if (!achievements.length) return `${guideRow}${heading}`;
   return `
