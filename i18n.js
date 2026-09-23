@@ -443,6 +443,7 @@ const STRINGS = {
     "Interested in games": "Juegos que interesaban",
     "Played new games": "Juegos nuevos jugados",
     "Played games not from that year": "Juegos jugados que no eran de ese año",
+    "{count} hrs": "{count} h",
     "new expansion": "expansión nueva",
     "new expansions": "expansiones nuevas",
     "played expansion not from that year": "expansión jugada que no era de ese año",

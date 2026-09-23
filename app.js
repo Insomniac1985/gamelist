@@ -10628,9 +10628,19 @@ function lookupPublisherDateLine(result) {
 }
 
 function lookupTagsLine(result) {
-  return unique([...(result.genres || []), ...(result.tags || [])])
+  return [
+    ...unique([...(result.genres || []), ...(result.tags || [])]).filter(Boolean),
+    lookupPlaytimeText(result),
+  ]
     .filter(Boolean)
-    .join(", ");
+    .join(" â€¢ ");
+}
+
+function lookupPlaytimeText(result) {
+  const hours = Number(result?.lengthHours);
+  if (!Number.isFinite(hours) || hours <= 0) return "";
+  const display = Number.isInteger(hours) ? String(hours) : String(Math.round(hours * 10) / 10);
+  return tt("{count} hrs", { count: display });
 }
 
 function igdbRatingBadge(result) {
