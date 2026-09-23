@@ -8712,7 +8712,7 @@ function streamPlayIcon() {
 }
 
 function streamPlayOffIcon() {
-  return `<svg class="stream-play-off-icon" viewBox="0 0 13 13" aria-hidden="true"><path class="stream-play-off-triangle" d="M4.6 3.5v5.9l5-3-5-3Z"></path><line class="stream-play-off-slash" x1="8.8" y1="4" x2="11.6" y2="1.4"></line><line class="stream-play-off-slash" x1=".8" y1="11.9" x2="2.9" y2="9.9"></line></svg>`;
+  return `<svg class="stream-play-off-icon" viewBox="0 0 13 13" aria-hidden="true"><path class="stream-play-off-triangle" d="M4.6 2.9v7l6-3.5-6-3.5Z"></path><line class="stream-play-off-slash" x1="9.9" y1="4.1" x2="12.3" y2="2.6"></line><line class="stream-play-off-slash" x1=".7" y1="9.5" x2="2.9" y2="8.2"></line></svg>`;
 }
 
 function allGamesIcon() {
