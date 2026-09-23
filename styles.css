@@ -12578,7 +12578,6 @@ body.theme-kash
   flex: 0 0 auto;
   align-items: center;
   gap: var(--rating-star-gap, 7px);
-  min-width: var(--rating-star-width, 161px);
   color: rgba(255, 255, 255, 0.22);
   font-size: var(--rating-star-size, 25px);
   line-height: 1;
@@ -12643,7 +12642,6 @@ body.theme-kash
   display: inline-flex;
   align-items: center;
   gap: 5px;
-  margin-left: -50px;
   flex: 0 0 auto;
 }
 
@@ -13032,7 +13030,9 @@ html.theme-light .finish-trophy-check input[type="checkbox"]:checked {
   }
 
   .game-row .media-format-pill img,
-  .game-row .media-format-pill .download-badge-icon {
+  .game-row .media-format-pill .download-badge-icon,
+  .completed-platform .media-format-pill img,
+  .completed-platform .media-format-pill .download-badge-icon {
     transform: scale(1.7);
   }
 
@@ -13881,7 +13881,8 @@ html.theme-light .finish-trophy-check input[type="checkbox"]:checked {
   .completed-platform .multiplayer-pill,
   .completed-platform .rating-score-pill,
   .completed-platform .platform-badge,
-  .completed-platform .psn-progress-pill {
+  .completed-platform .psn-progress-pill,
+  .completed-platform .coop-pill {
     box-sizing: border-box;
     height: 22px;
     min-height: 22px;
@@ -14526,10 +14527,6 @@ html.theme-light .finish-trophy-check input[type="checkbox"]:checked {
 
   .stats {
     grid-template-columns: repeat(2, 1fr);
-  }
-
-  .rating-step-controls {
-    margin-left: 30px;
   }
 }
 
