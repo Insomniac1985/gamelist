@@ -842,6 +842,7 @@ function bindEvents() {
     requestAnimationFrame(updateAllRowTitleOverflow);
     scheduleFocusedPlayingTrailerUpdate();
     requestAnimationFrame(renderMobileTabs);
+    requestAnimationFrame(updatePlayingCountText);
   }, { passive: true });
   document.addEventListener("visibilitychange", () => {
     if (document.hidden) pauseAllPlayingTrailers();
@@ -2430,7 +2431,7 @@ function renderPlayingSection() {
   const games = visiblePlayingGames();
   games.sort(comparePlayingGames);
   el.playingTitle.textContent = currentlyPlayingTitle(games);
-  el.playingCount.textContent = playingCountText(games.length);
+  updatePlayingCountText(games.length);
   renderCompletedStreamToggle();
   el.playingList.innerHTML = "";
   games.forEach((game) => el.playingList.appendChild(cardFor(game, { staticCard: true, imagePriority: "eager" })));
@@ -2455,6 +2456,17 @@ function currentlyPlayingTitle(games) {
 
 function playingCountText(count) {
   return tt("Playing {count} {item}", { count, item: tt(count === 1 ? "game" : "games") });
+}
+
+function mobilePlayingCountText(count) {
+  return tt("{count} {item}", { count, item: tt(count === 1 ? "game" : "games") });
+}
+
+function updatePlayingCountText(count = visiblePlayingGames().length) {
+  if (!el.playingCount) return;
+  el.playingCount.textContent = window.matchMedia("(max-width: 760px)").matches
+    ? mobilePlayingCountText(count)
+    : playingCountText(count);
 }
 
 function visiblePlayingGames() {
@@ -8299,7 +8311,7 @@ function cardSteamAchievementsFor(game) {
   const guideLinks = guideLinksFor(game);
   const guideRow = guideLinks.length ? `<div class="guide-links card-guide-row">${guideLinks.join("")}</div>` : "";
   if (cached?.loading) {
-    return `${guideRow}<div class="card-trophy-head">${trophyIcon()}<span>Loading achievements...</span></div>`;
+    return `${guideRow}<div class="card-trophy-head card-achievement-head">${trophyIcon()}<span>Loading achievements...</span></div>`;
   }
   const achievements = (cached?.achievements || [])
     .filter((achievement) => achievement.earned && achievement.earnedAt)
@@ -8307,12 +8319,12 @@ function cardSteamAchievementsFor(game) {
     .slice(0, 3);
   const progress = steamProgressForGame(game);
   if (!achievements.length) {
-    const heading = progress ? `<div class="card-trophy-head">${trophyIcon()}<span>${escapeHtml(tt("ACHIEVEMENTS"))}</span>${psnProgressBadge(progress, { includeIcon: false, className: "card-trophy-progress" })}</div>` : "";
+    const heading = progress ? `<div class="card-trophy-head card-achievement-head">${trophyIcon()}<span>${escapeHtml(tt("ACHIEVEMENTS"))}</span>${psnProgressBadge(progress, { includeIcon: false, className: "card-trophy-progress" })}</div>` : "";
     return `${guideRow}${heading}`;
   }
   return `
     ${guideRow}
-    <div class="card-trophy-head">${trophyIcon()}<span>${escapeHtml(tt("ACHIEVEMENTS"))}</span>${progress ? psnProgressBadge(progress, { includeIcon: false, className: "card-trophy-progress" }) : ""}</div>
+    <div class="card-trophy-head card-achievement-head">${trophyIcon()}<span>${escapeHtml(tt("ACHIEVEMENTS"))}</span>${progress ? psnProgressBadge(progress, { includeIcon: false, className: "card-trophy-progress" }) : ""}</div>
     <div class="card-trophy-list">
       ${achievements.map((achievement) => `
         <a class="card-trophy trophy-steam" href="${escapeHtml(game.storeLinks?.steam || hltbUrlFor(game) || "#")}" target="_blank" rel="noreferrer" title="${escapeHtml([achievement.title, achievement.earnedAt].filter(Boolean).join(" · "))}">
@@ -8339,7 +8351,7 @@ function cardXboxAchievementsFor(game) {
     .slice(0, 3);
   const progress = xboxProgressForGame(game);
   const heading = progress
-    ? `<div class="card-trophy-head">${trophyIcon()}<span>${escapeHtml(tt("ACHIEVEMENTS"))}</span>${psnProgressBadge(progress, { includeIcon: false, className: "card-trophy-progress" })}</div>`
+    ? `<div class="card-trophy-head card-achievement-head">${trophyIcon()}<span>${escapeHtml(tt("ACHIEVEMENTS"))}</span>${psnProgressBadge(progress, { includeIcon: false, className: "card-trophy-progress" })}</div>`
     : "";
   if (!achievements.length) return `${guideRow}${heading}`;
   return `
