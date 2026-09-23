@@ -2001,7 +2001,7 @@ html.theme-gradient .goty-section .column-head h2 .trophy-icon {
   line-height: 1;
   transform: none;
   -webkit-text-fill-color: #ffe985;
-  margin-top: 0;
+  margin-top: -2px;
 }
 
 .playing-finished-tags .platform-icon {
@@ -7265,6 +7265,7 @@ body:not(.can-edit) .game-card:focus-within .edit-action {
   margin: 12px auto 0;
   border-color: rgba(255, 255, 255, 0.18);
   background: rgba(255, 255, 255, 0.06);
+  font-size: 14px;
 }
 
 .completed-list.list-view {
@@ -9919,6 +9920,7 @@ body.dialog-open .mobile-section-tabs {
   padding-inline: 12px;
   color: #ffffff;
   text-decoration: none;
+  font-size: 14px;
 }
 
 .settings-dev-links .settings-dev-toggle {
@@ -12553,7 +12555,7 @@ body.theme-kash
   position: relative;
   display: flex;
   align-items: center;
-  justify-content: flex-start;
+  justify-content: space-between;
   gap: 12px;
   box-sizing: border-box;
   width: 100%;
@@ -14524,14 +14526,14 @@ html.theme-light .finish-trophy-check input[type="checkbox"]:checked {
   }
 
   .rating-step-controls {
-    margin-left: 45px;
+    margin-left: 30px;
   }
 }
 
 @media (width <= 760px) {
   .completed-head-actions {
     display: grid;
-    grid-template-columns: repeat(3, max-content);
+
     justify-items: end;
     align-items: end;
     gap: 7px;
@@ -14544,7 +14546,7 @@ html.theme-light .finish-trophy-check input[type="checkbox"]:checked {
 
   #completedCount {
     display: grid;
-    grid-column: 1 / -1;
+    grid-column: 4 / -1;
     grid-row: 1;
     grid-template-columns: max-content;
     justify-self: end;
