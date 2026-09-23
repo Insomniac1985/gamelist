@@ -13538,55 +13538,22 @@ html.theme-light .finish-trophy-check input[type="checkbox"]:checked {
   }
 
   .playing-head-actions {
-    display: grid;
-    grid-template-columns: repeat(3, max-content);
-    justify-items: end;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
     align-items: end;
-    gap: 7px;
+    gap: 5px 10px;
+    width: max-content;
+    max-width: 48%;
+    margin-left: auto;
   }
 
   .playing-section .playing-head-actions > span {
-    grid-row: 1;
-    grid-column: 2 / -1;
-    justify-self: unset;
+    flex: 0 0 100%;
     margin: 0;
     line-height: 1;
     text-align: right;
     margin-bottom: 3px;
-  }
-
-  .playing-stream-toggle {
-    grid-column: 1;
-    grid-row: 2;
-  }
-
-  #playingPrevButton {
-    grid-column: 2;
-    grid-row: 2;
-  }
-
-  #playingNextButton {
-    grid-column: 3;
-    grid-row: 2;
-  }
-
-  .playing-head-actions:not(:has(.playing-stream-toggle:not([hidden]))) {
-    grid-template-columns: repeat(2, max-content);
-  }
-
-  .playing-head-actions:not(:has(.playing-stream-toggle:not([hidden]))) > span {
-    grid-column: 1 / -1;
-    margin-right: 8px !important;
-  }
-
-  .playing-head-actions:not(:has(.playing-stream-toggle:not([hidden])))
-    #playingPrevButton {
-    grid-column: 1;
-  }
-
-  .playing-head-actions:not(:has(.playing-stream-toggle:not([hidden])))
-    #playingNextButton {
-    grid-column: 2;
   }
 
   .release-months {
@@ -14662,40 +14629,31 @@ html.theme-light .finish-trophy-check input[type="checkbox"]:checked {
 
 @media (width <= 760px) {
   .completed-head-actions {
-    display: grid;
-    grid-template-columns: repeat(4, max-content);
-    justify-items: end;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
     align-items: end;
-    gap: 7px;
+    gap: 5px 10px;
+    width: max-content;
+    max-width: 54%;
+    margin-left: auto;
     height: auto;
   }
 
   .completed-head-actions > :not(#completedCount) {
-    grid-row: 2;
-  }
-
-  #completedYearControl {
-    grid-column: 1;
-  }
-
-  .completed-stream-toggle {
-    grid-column: 2;
-  }
-
-  .completed-stats-button {
-    grid-column: 3;
+    flex: 0 0 auto;
   }
 
   #completedCount {
     display: grid;
-    grid-column: 4 / -1;
-    grid-row: 1;
+    order: -1;
+    flex: 0 0 100%;
     grid-template-columns: max-content;
-    justify-self: end;
+    justify-content: end;
     justify-items: end;
     align-content: center;
     gap: 2px;
-    width: auto;
+    width: 100%;
     min-width: max-content;
     margin-bottom: 0;
     line-height: 1;
@@ -14704,59 +14662,6 @@ html.theme-light .finish-trophy-check input[type="checkbox"]:checked {
     line-height: 9px !important;
     margin-bottom: 1px !important;
     font-size: 13px !important;
-  }
-
-  .completed-head-actions:not(:has(#completedYearControl:not([hidden]))) {
-    grid-template-columns: repeat(3, max-content);
-  }
-
-  .completed-head-actions:not(:has(#completedYearControl:not([hidden])))
-    .completed-stream-toggle {
-    grid-column: 1;
-  }
-
-  .completed-head-actions:not(:has(#completedYearControl:not([hidden])))
-    .completed-stats-button {
-    grid-column: 2;
-  }
-
-  .completed-head-actions:not(:has(#completedYearControl:not([hidden])))
-    #completedCount {
-    grid-column: 3 / -1;
-  }
-
-  .completed-head-actions:not(:has(.completed-stream-toggle:not([hidden]))) {
-    grid-template-columns: repeat(3, max-content);
-  }
-
-  .completed-head-actions:not(:has(.completed-stream-toggle:not([hidden])))
-    .completed-stats-button {
-    grid-column: 2;
-  }
-
-  .completed-head-actions:not(:has(.completed-stream-toggle:not([hidden])))
-    #completedCount {
-    grid-column: 3 / -1;
-  }
-
-  .completed-head-actions:not(:has(#completedYearControl:not([hidden]))):not(
-      :has(.completed-stream-toggle:not([hidden]))
-    ) {
-    grid-template-columns: repeat(2, max-content);
-  }
-
-  .completed-head-actions:not(:has(#completedYearControl:not([hidden]))):not(
-      :has(.completed-stream-toggle:not([hidden]))
-    )
-    .completed-stats-button {
-    grid-column: 1;
-  }
-
-  .completed-head-actions:not(:has(#completedYearControl:not([hidden]))):not(
-      :has(.completed-stream-toggle:not([hidden]))
-    )
-    #completedCount {
-    grid-column: 2 / -1;
   }
 
   #completedCount > span {
