@@ -13163,9 +13163,7 @@ html.theme-light .finish-trophy-check input[type="checkbox"]:checked {
   }
 
   .brand span:last-child {
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
+    display: none;
   }
 
   .top-actions {
@@ -14818,10 +14816,6 @@ html.theme-light .finish-trophy-check input[type="checkbox"]:checked {
 
   .shell {
     padding: 14px;
-  }
-
-  .brand span:last-child {
-    display: none;
   }
 
   h1 {
