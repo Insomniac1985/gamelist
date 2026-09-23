@@ -12,6 +12,27 @@ const WEEKDAYS = [
   ["saturday", "S"],
 ];
 
+const CALENDAR_MILESTONES = [
+  {
+    id: "milestone-gamelist-created",
+    title: "Gamelist was created",
+    releaseDate: "2026-06-10",
+    cover: "assets/Icon.png",
+    platform: "Gamelist",
+    description: "A personal game tracker for backlog, releases, preorders, play history, and completion stats.",
+    calendarMilestone: true,
+  },
+  {
+    id: "milestone-shelf-created",
+    title: "Shelf was created",
+    releaseDate: "2026-06-22",
+    cover: "assets/Icon_shelf.png",
+    platform: "Shelf",
+    description: "A collection hub for physical and digital games, ownership details, prices, and library stats.",
+    calendarMilestone: true,
+  },
+];
+
 export function createGameCardShell(doc = document) {
   const template = doc.createElement("template");
   template.innerHTML = `<article class="game-card glass" draggable="false"><div class="card-trailer" aria-hidden="true"></div><button class="icon-button trailer-toggle" type="button" title="Pause trailer" aria-label="Pause trailer" hidden></button><button class="cover-button" type="button"><img alt=""></button><div class="game-main"><div class="title-line"><div class="title-wrap"><h3></h3><div class="title-owners"></div></div><button class="icon-button edit-action" type="button" title="Edit" aria-label="Edit"><svg class="pencil-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h4l11-11a2.8 2.8 0 0 0-4-4L4 16v4Z"></path><path d="M13.5 6.5l4 4"></path></svg></button></div><div class="studio-line"></div><div class="meta"></div><div class="play-dates"></div><div class="chips"></div><div class="card-trophies"></div><div class="card-actions"><button class="primary-button bought-action" type="button">Backlog</button><button class="primary-button complete-action" type="button">Finished</button><button class="ghost-button backlog-action" type="button" title="Backlog" aria-label="Move back to backlog"><svg class="back-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M10 6 4 12l6 6"></path><path d="M4 12h10a6 6 0 0 1 6 6"></path></svg><span class="action-label">Backlog</span></button><button class="ghost-button trophy-action" type="button" title="Completed" aria-label="Completed"><svg class="trophy-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 4h8v4a4 4 0 0 1-8 0V4Z"></path><path d="M8 6H5a3 3 0 0 0 3 3"></path><path d="M16 6h3a3 3 0 0 1-3 3"></path><path d="M12 12v4"></path><path d="M9 20h6"></path><path d="M10 16h4v4h-4z"></path></svg></button><button class="ghost-button icon-only-button price-refresh-action" type="button" title="Prices" aria-label="Prices"></button><button class="danger-button icon-only-button delete-action" type="button" title="Delete" aria-label="Delete"><svg class="trash-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6h18"></path><path d="M8 6V4h8v2"></path><path d="M19 6l-1 14H6L5 6"></path><path d="M10 11v5"></path><path d="M14 11v5"></path></svg></button></div></div><p class="notes"></p><div class="prices"></div></article>`;
@@ -297,6 +318,15 @@ export function releaseGamesByDate(games = []) {
       if (!groups.has(key)) groups.set(key, []);
       groups.get(key).push(game);
     });
+  CALENDAR_MILESTONES.forEach((milestone) => {
+    const key = dateOnly(milestone.releaseDate);
+    if (!key) return;
+    const identity = `${key}:${milestone.id}`;
+    if (seen.has(identity)) return;
+    seen.add(identity);
+    if (!groups.has(key)) groups.set(key, []);
+    groups.get(key).push({ ...milestone });
+  });
   groups.forEach((items) => items.sort((a, b) => String(a.title || "").localeCompare(String(b.title || ""), undefined, { sensitivity: "base" })));
   return groups;
 }
@@ -339,13 +369,14 @@ function releaseMonthMarkup(monthDate, releases, today, weekStart, options = {})
     const date = localDateKey(dayDate);
     const games = releases.get(date) || [];
     const preordered = games.some((game) => game.preorderStore);
+    const milestone = games.some((game) => game.calendarMilestone);
     const platformTone = releasePlatformTone(games);
     const titles = games.map((game) => game.title).join("\n");
     const weekend = dayDate.getDay() === 0 || dayDate.getDay() === 6;
     const gridColumn = day === 1 && leading ? ` style="grid-column: ${leading + 1}"` : "";
     cells.push(`
       <button
-        class="release-day ${weekend ? "weekend" : ""} ${games.length ? "has-release" : ""} ${platformTone} ${preordered ? "has-preorder" : ""} ${date === today ? "today" : ""}"
+        class="release-day ${weekend ? "weekend" : ""} ${games.length ? "has-release" : ""} ${platformTone} ${preordered ? "has-preorder" : ""} ${milestone ? "has-milestone" : ""} ${date === today ? "today" : ""}"
         type="button"
         data-date="${escapeHtml(date)}"
         data-games="${escapeHtml(games.map((game) => game.title).join(" · "))}"

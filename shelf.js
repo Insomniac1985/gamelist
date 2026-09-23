@@ -3179,6 +3179,7 @@ function schedulePlayingCardHeightSync() { cancelAnimationFrame(state.playingHei
 function equalizeMobilePlayingCards() { state.playingHeightFrame = 0; el.playingCarousel.style.removeProperty("--mobile-playing-card-height"); if (!window.matchMedia("(max-width: 760px)").matches) return; const cards = [...el.playingCarousel.querySelectorAll(".game-card.playing-card")]; if (!cards.length) return; const height = Math.ceil(Math.max(...cards.map((card) => card.scrollHeight), 252)); el.playingCarousel.style.setProperty("--mobile-playing-card-height", `${height}px`); }
 function scheduleShelfTrailerUpdate() { if (state.playingTrailerFrame) return; state.playingTrailerFrame = requestAnimationFrame(() => { state.playingTrailerFrame = 0; if (document.hidden || document.body.classList.contains("dialog-open")) return; syncFocusedActivityTrailer(el.playingCarousel, escapeHtml); }); }
 function gamelistProjectionCard(game, options = {}) {
+  if (game.calendarMilestone) return calendarMilestoneProjectionCard(game);
   const isReleaseDialog = Boolean(options.releaseDialog);
   const neutralReleaseCard = isReleaseDialog && Boolean(game.playing);
   const cover = coverUrl(game.cover || "") || platformFallback(game.platform);
@@ -3222,6 +3223,40 @@ function gamelistProjectionCard(game, options = {}) {
   } else prices.remove();
   if (isReleaseDialog) card.querySelector(".edit-action")?.remove();
   const note = card.querySelector(".notes"); note.textContent = shortDescription(game.description || ""); note.hidden = !note.textContent;
+  return card.outerHTML;
+}
+
+function calendarMilestoneProjectionCard(game) {
+  const cover = coverUrl(game.cover || "") || "assets/Icon_shelf.png";
+  const card = createGameCardShell(document);
+  card.dataset.gamelistId = game.id || "";
+  card.className += " calendar-milestone-card shelf-release-card";
+  card.querySelector(".card-trailer")?.remove();
+  card.querySelector(".trailer-toggle")?.remove();
+  const image = card.querySelector(".cover-button img");
+  image.src = cover;
+  image.alt = `${game.title} cover`;
+  image.loading = "eager";
+  image.fetchPriority = "high";
+  image.decoding = "async";
+  bindCoverFrame(image);
+  card.querySelector(".cover-button").disabled = true;
+  card.querySelector("h3").textContent = game.title || "";
+  card.querySelector(".title-owners").hidden = true;
+  card.querySelector(".edit-action")?.remove();
+  const studioLine = card.querySelector(".studio-line");
+  studioLine.hidden = true;
+  card.querySelector(".meta").innerHTML = "";
+  const dates = card.querySelector(".play-dates");
+  dates.innerHTML = game.releaseDate ? `<span class="history-pill history-date-pill"><small>${escapeHtml(tt("Created"))}</small><strong>${escapeHtml(formatShortDate(game.releaseDate) || game.releaseDate)}</strong></span>` : "";
+  dates.hidden = !dates.innerHTML;
+  card.querySelector(".chips").innerHTML = "";
+  card.querySelector(".card-trophies").remove();
+  card.querySelector(".card-actions").remove();
+  card.querySelector(".prices").remove();
+  const note = card.querySelector(".notes");
+  note.textContent = game.description || "";
+  note.hidden = !note.textContent;
   return card.outerHTML;
 }
 
