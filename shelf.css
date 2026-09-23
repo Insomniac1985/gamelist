@@ -111,30 +111,26 @@ body:not(.can-edit) .showcase-edit-button {
 
 body.mobile-app-mode.shelf-page {
   --custom-backdrop-image: none;
-  --theme-control-bg:
-    linear-gradient(
-      135deg,
-      color-mix(in srgb, var(--accent) 12%, rgba(24, 25, 31, 0.84)),
-      color-mix(in srgb, var(--accent-2) 7%, rgba(18, 19, 24, 0.8))
-    );
-  --theme-control-bg-hover:
-    linear-gradient(
-      135deg,
-      color-mix(in srgb, var(--accent) 24%, rgba(24, 25, 31, 0.86)),
-      color-mix(in srgb, var(--accent-2) 12%, rgba(18, 19, 24, 0.84))
-    );
-  --theme-control-bg-active:
-    linear-gradient(
-      135deg,
-      color-mix(in srgb, var(--accent) 42%, rgba(24, 25, 31, 0.9)),
-      color-mix(in srgb, var(--accent-2) 18%, rgba(18, 19, 24, 0.88))
-    );
-  --theme-menu-bg:
-    linear-gradient(
-      135deg,
-      rgba(18, 19, 24, 0.96),
-      color-mix(in srgb, var(--accent) 10%, rgba(18, 19, 24, 0.94))
-    );
+  --theme-control-bg: linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--accent) 12%, rgba(24, 25, 31, 0.84)),
+    color-mix(in srgb, var(--accent-2) 7%, rgba(18, 19, 24, 0.8))
+  );
+  --theme-control-bg-hover: linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--accent) 24%, rgba(24, 25, 31, 0.86)),
+    color-mix(in srgb, var(--accent-2) 12%, rgba(18, 19, 24, 0.84))
+  );
+  --theme-control-bg-active: linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--accent) 42%, rgba(24, 25, 31, 0.9)),
+    color-mix(in srgb, var(--accent-2) 18%, rgba(18, 19, 24, 0.88))
+  );
+  --theme-menu-bg: linear-gradient(
+    135deg,
+    rgba(18, 19, 24, 0.96),
+    color-mix(in srgb, var(--accent) 10%, rgba(18, 19, 24, 0.94))
+  );
 }
 
 body.mobile-app-mode.shelf-page .backdrop {
@@ -187,7 +183,10 @@ body.mobile-app-mode.shelf-page .backdrop {
 }
 
 .shelf-toolbar {
-  grid-template-columns: minmax(180px, 1.25fr) 220px 142px 142px 170px 150px 42px;
+  grid-template-columns: minmax(
+      180px,
+      1.25fr
+    ) 220px 142px 142px 170px 150px 42px;
 }
 
 .shelf-page .detail-cover {
@@ -290,7 +289,10 @@ html.theme-font-mata .shelf-page .playing-section .column-head h2 {
   border-radius: 14px;
   cursor: pointer;
   box-shadow: none;
-  transition: transform 170ms ease, filter 170ms ease, z-index 170ms ease;
+  transition:
+    transform 170ms ease,
+    filter 170ms ease,
+    z-index 170ms ease;
 }
 
 .favorite-cover-card img {
@@ -311,7 +313,8 @@ html.theme-font-mata .shelf-page .playing-section .column-head h2 {
 .favorite-cover-card:not(.favorite-cover-empty):focus-visible {
   z-index: 8;
   transform: scale(1.07);
-  box-shadow: 0 22px 55px color-mix(in srgb, var(--accent) 20%, rgba(0, 0, 0, 0.34));
+  box-shadow: 0 22px 55px
+    color-mix(in srgb, var(--accent) 20%, rgba(0, 0, 0, 0.34));
 }
 
 .favorite-cover-card:not(.favorite-cover-empty):hover img,
@@ -324,7 +327,11 @@ html.theme-font-mata .shelf-page .playing-section .column-head h2 {
   place-items: center;
   color: var(--muted);
   background:
-    linear-gradient(135deg, rgba(255, 255, 255, 0.075), rgba(255, 255, 255, 0.025)),
+    linear-gradient(
+      135deg,
+      rgba(255, 255, 255, 0.075),
+      rgba(255, 255, 255, 0.025)
+    ),
     rgba(0, 0, 0, 0.14);
   border-style: dashed;
 }
@@ -392,7 +399,11 @@ html.theme-font-mata .shelf-page .playing-section .column-head h2 {
   place-items: center;
   color: var(--accent);
   background:
-    linear-gradient(135deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.02)),
+    linear-gradient(
+      135deg,
+      rgba(255, 255, 255, 0.06),
+      rgba(255, 255, 255, 0.02)
+    ),
     rgba(0, 0, 0, 0.12);
   border-style: dashed;
   border: 1px dashed var(--line);
@@ -451,11 +462,17 @@ html.theme-font-mata .shelf-page .playing-section .column-head h2 {
 }
 
 .showcase-toolbar {
-  grid-template-columns: minmax(220px, 1.8fr) repeat(3, minmax(130px, 1fr)) var(--toolbar-control-height);
+  grid-template-columns: minmax(220px, 1.8fr) repeat(3, minmax(130px, 1fr)) var(
+      --toolbar-control-height
+    );
   margin-bottom: 8px;
   padding: 10px;
   background:
-    linear-gradient(135deg, rgba(255, 255, 255, 0.055), rgba(255, 255, 255, 0.018)),
+    linear-gradient(
+      135deg,
+      rgba(255, 255, 255, 0.055),
+      rgba(255, 255, 255, 0.018)
+    ),
     rgba(8, 9, 14, 0.88);
   border: 1px solid var(--line);
   box-shadow:
@@ -547,7 +564,10 @@ html.theme-font-mata .shelf-page .playing-section .column-head h2 {
   border: 0;
   border-radius: 8px;
   cursor: pointer;
-  transition: transform 170ms ease, filter 170ms ease, z-index 170ms ease;
+  transition:
+    transform 170ms ease,
+    filter 170ms ease,
+    z-index 170ms ease;
 }
 
 .showcase-picker-card:hover,
@@ -590,12 +610,19 @@ html.theme-font-mata .shelf-page .playing-section .column-head h2 {
   text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8);
   white-space: normal;
   overflow-wrap: anywhere;
-  background: linear-gradient(0deg, rgba(0, 0, 0, 0.88), rgba(0, 0, 0, 0.56) 68%, rgba(0, 0, 0, 0));
+  background: linear-gradient(
+    0deg,
+    rgba(0, 0, 0, 0.88),
+    rgba(0, 0, 0, 0.56) 68%,
+    rgba(0, 0, 0, 0)
+  );
   border-radius: 0 0 8px 8px;
   opacity: 0;
   pointer-events: none;
   transform: translateY(6px);
-  transition: opacity 160ms ease, transform 160ms ease;
+  transition:
+    opacity 160ms ease,
+    transform 160ms ease;
 }
 
 .showcase-picker-title strong {
@@ -621,9 +648,21 @@ html.theme-font-mata .shelf-page .playing-section .column-head h2 {
   padding: 9px;
   color: var(--text);
   background:
-    linear-gradient(135deg, color-mix(in srgb, var(--accent) 18%, transparent), transparent 62%),
-    repeating-linear-gradient(0deg, rgba(255, 255, 255, 0.045) 0 1px, transparent 1px 12px),
-    repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.035) 0 1px, transparent 1px 12px),
+    linear-gradient(
+      135deg,
+      color-mix(in srgb, var(--accent) 18%, transparent),
+      transparent 62%
+    ),
+    repeating-linear-gradient(
+      0deg,
+      rgba(255, 255, 255, 0.045) 0 1px,
+      transparent 1px 12px
+    ),
+    repeating-linear-gradient(
+      90deg,
+      rgba(255, 255, 255, 0.035) 0 1px,
+      transparent 1px 12px
+    ),
     color-mix(in srgb, var(--panel) 78%, rgba(0, 0, 0, 0.82));
   border: 1px solid var(--line);
   border-radius: 8px;
@@ -633,11 +672,14 @@ html.theme-font-mata .shelf-page .playing-section .column-head h2 {
   opacity: 0;
   pointer-events: none;
   transform: translateY(-6px);
-  transition: opacity 160ms ease, transform 160ms ease;
+  transition:
+    opacity 160ms ease,
+    transform 160ms ease;
 }
 
 .favorite-cover-card:not(.favorite-cover-empty):hover .showcase-hover-info,
-.favorite-cover-card:not(.favorite-cover-empty):focus-visible .showcase-hover-info {
+.favorite-cover-card:not(.favorite-cover-empty):focus-visible
+  .showcase-hover-info {
   opacity: 1;
   transform: translateY(0);
 }
@@ -749,7 +791,8 @@ html.theme-font-mata .shelf-page .playing-section .column-head h2 {
   background: color-mix(in srgb, var(--accent) 92%, rgba(0, 0, 0, 0.2));
   border: 1px solid rgba(255, 255, 255, 0.36);
   border-radius: 6px;
-  box-shadow: 0 8px 20px color-mix(in srgb, var(--accent) 26%, rgba(0, 0, 0, 0.34));
+  box-shadow: 0 8px 20px
+    color-mix(in srgb, var(--accent) 26%, rgba(0, 0, 0, 0.34));
 }
 
 .showcase-picker-check .check-icon {
@@ -947,7 +990,9 @@ body.mobile-app-mode.shelf-page .shelf-grid.list-view .game-row-cover-preview {
 }
 
 @media (min-width: 761px) {
-  .shelf-grid.preorders-view.list-view .preorder-projection-row .game-row-description {
+  .shelf-grid.preorders-view.list-view
+    .preorder-projection-row
+    .game-row-description {
     display: none;
   }
 }
@@ -1523,7 +1568,11 @@ body.mobile-app-mode .shelf-tabs button.active:hover {
   overflow: hidden;
   border: 1px solid #f6d66a;
   border-radius: 7px;
-  background: linear-gradient(145deg, rgba(255, 226, 113, 0.38), rgba(201, 148, 32, 0.24));
+  background: linear-gradient(
+    145deg,
+    rgba(255, 226, 113, 0.38),
+    rgba(201, 148, 32, 0.24)
+  );
   box-shadow: 0 3px 14px rgba(218, 166, 39, 0.26);
 }
 
@@ -1557,7 +1606,6 @@ body.mobile-app-mode .shelf-tabs button.active:hover {
   padding: 0 12px;
   margin: 0;
 }
-
 
 .shelf-editor-grid > .shelf-release-field,
 .shelf-editor-grid > .shelf-value-field {
@@ -2114,6 +2162,11 @@ textarea {
     width: auto;
     flex: none;
   }
+  .shelf-page .stats .stat:nth-child(3):last-child {
+    grid-column: 1 / -1;
+    justify-self: center;
+    width: 100%;
+  }
   .shelf-page .stats .stat {
     padding: 10px 6px;
   }
@@ -2141,7 +2194,8 @@ textarea {
     mask-image: none;
   }
   .favorite-cover-card:not(.favorite-cover-empty):hover .favorite-cover-info,
-  .favorite-cover-card:not(.favorite-cover-empty):focus-visible .favorite-cover-info {
+  .favorite-cover-card:not(.favorite-cover-empty):focus-visible
+    .favorite-cover-info {
     opacity: 1;
     transform: none;
   }
@@ -2173,7 +2227,10 @@ textarea {
   }
 
   .shelf-tabs.sync-preorders-enabled:has(button[data-shelf-tab="new"]) {
-    grid-template-columns: minmax(34px, 42px) repeat(var(--compact-tab-count), minmax(0, 1fr));
+    grid-template-columns: minmax(34px, 42px) repeat(
+        var(--compact-tab-count),
+        minmax(0, 1fr)
+      );
   }
 
   .shelf-tabs.sync-preorders-enabled button[data-shelf-tab="new"] {
@@ -2225,7 +2282,9 @@ textarea {
     color: var(--muted);
   }
 
-  .shelf-tabs.four-tabs button.active[data-shelf-tab="preorders"] .preorder-tab-icon {
+  .shelf-tabs.four-tabs
+    button.active[data-shelf-tab="preorders"]
+    .preorder-tab-icon {
     color: #fff;
   }
   .shelf-grid {
@@ -2294,10 +2353,14 @@ textarea {
     display: grid;
     justify-content: end;
   }
-  .shelf-grid.list-view .game-row-actions:has(.add-collection-action) .game-row-actions-bottom {
+  .shelf-grid.list-view
+    .game-row-actions:has(.add-collection-action)
+    .game-row-actions-bottom {
     order: 1;
   }
-  .shelf-grid.list-view .game-row-actions:has(.add-collection-action) .game-row-actions-top {
+  .shelf-grid.list-view
+    .game-row-actions:has(.add-collection-action)
+    .game-row-actions-top {
     order: 2;
   }
   .shelf-grid.list-view .game-row-actions .icon-button {
@@ -2414,7 +2477,9 @@ textarea {
   border: 1px solid var(--line);
 }
 
-#detailDialog[data-projection="true"] .detail-cover#detailCoverWrap img#detailCover {
+#detailDialog[data-projection="true"]
+  .detail-cover#detailCoverWrap
+  img#detailCover {
   object-fit: cover;
 }
 
