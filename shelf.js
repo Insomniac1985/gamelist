@@ -3230,8 +3230,7 @@ function calendarMilestoneProjectionCard(game) {
   const cover = coverUrl(game.cover || "") || "assets/Icon_shelf.png";
   const card = createGameCardShell(document);
   card.dataset.gamelistId = game.id || "";
-  card.className += " has-art calendar-milestone-card shelf-release-card";
-  card.style.setProperty("--card-art", `url('${escapeCss(cover)}')`);
+  card.className += " calendar-milestone-card shelf-release-card";
   card.querySelector(".card-trailer")?.remove();
   card.querySelector(".trailer-toggle")?.remove();
   const image = card.querySelector(".cover-button img");

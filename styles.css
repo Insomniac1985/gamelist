@@ -6285,14 +6285,16 @@ body.theme-kash .game-card.stream-card.completed-trophy-card {
 
 .calendar-milestone-card .cover-button {
   cursor: default;
+  background: color-mix(in srgb, var(--accent) 16%, rgba(9, 11, 16, 0.92));
+  border-color: var(--accent);
 }
 
 .calendar-milestone-card .cover-button img {
   object-fit: contain;
   padding: 12%;
   background:
-    radial-gradient(circle at 50% 42%, rgba(255, 255, 255, 0.14), transparent 58%),
-    rgba(255, 255, 255, 0.055);
+    radial-gradient(circle at 50% 42%, color-mix(in srgb, var(--accent) 22%, transparent), transparent 58%),
+    color-mix(in srgb, var(--accent) 16%, rgba(9, 11, 16, 0.92));
 }
 
 #releaseDialog .game-card.calendar-completed-card {

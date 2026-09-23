@@ -15,7 +15,7 @@ const WEEKDAYS = [
 const CALENDAR_MILESTONES = [
   {
     id: "milestone-gamelist-created",
-    title: "Gamelist was created.",
+    title: "Gamelist was created",
     releaseDate: "2026-06-10",
     cover: "assets/Icon.png",
     platform: "Gamelist",
@@ -23,7 +23,7 @@ const CALENDAR_MILESTONES = [
   },
   {
     id: "milestone-shelf-created",
-    title: "Shelf was created.",
+    title: "Shelf was created",
     releaseDate: "2026-06-22",
     cover: "assets/Icon_shelf.png",
     platform: "Shelf",

@@ -7175,7 +7175,7 @@ function cardFor(game, options = {}) {
 function calendarMilestoneCard(game) {
   const card = createGameCardShell(document);
   card.dataset.id = game.id || "";
-  card.classList.add("calendar-milestone-card", "has-art");
+  card.classList.add("calendar-milestone-card");
   card.draggable = false;
   card.querySelector(".card-trailer")?.remove();
   card.querySelector(".trailer-toggle")?.remove();
@@ -7186,7 +7186,6 @@ function calendarMilestoneCard(game) {
   image.alt = `${game.title} cover`;
   image.loading = "lazy";
   image.decoding = "async";
-  card.style.setProperty("--card-art", `url("${cssUrl(backgroundCoverUrl(cover))}")`);
   card.querySelector(".cover-button").disabled = true;
   card.querySelector("h3").textContent = game.title || "";
   card.querySelector(".title-owners").hidden = true;
