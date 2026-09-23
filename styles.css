@@ -9086,6 +9086,7 @@ body.theme-kash .playing-finished-game.completed-trophy-card:hover {
 .completed-duration {
   color: #ffffff;
   font-size: 12px;
+  margin-left: 2px;
 }
 
 .completed-duration-gold {
@@ -13892,6 +13893,11 @@ html.theme-light .finish-trophy-check input[type="checkbox"]:checked {
     line-height: 1;
   }
 
+  .game-row .multiplayer-pil,
+  .completed-platform .multiplayer-pill {
+    min-width: 22px;
+  }
+
   .completed-platform .media-format-pill {
     width: 22px;
     min-width: 22px;
@@ -14527,6 +14533,10 @@ html.theme-light .finish-trophy-check input[type="checkbox"]:checked {
 
   .stats {
     grid-template-columns: repeat(2, 1fr);
+  }
+
+  .completed-duration {
+    font-size: 11px;
   }
 }
 
