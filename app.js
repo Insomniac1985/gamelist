@@ -10628,12 +10628,10 @@ function lookupPublisherDateLine(result) {
 }
 
 function lookupTagsLine(result) {
-  return [
-    ...unique([...(result.genres || []), ...(result.tags || [])]).filter(Boolean),
-    lookupPlaytimeText(result),
-  ]
+  const tags = unique([...(result.genres || []), ...(result.tags || [])])
     .filter(Boolean)
-    .join(" â€¢ ");
+    .join(", ");
+  return [tags, lookupPlaytimeText(result)].filter(Boolean).join(" â€¢ ");
 }
 
 function lookupPlaytimeText(result) {
