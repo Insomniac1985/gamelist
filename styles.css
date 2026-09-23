@@ -7349,12 +7349,24 @@ body:not(.can-edit) .game-card:focus-within .edit-action {
 }
 
 .completed-stats-button,
+.completed-stream-toggle,
 .goty-stats-button {
   width: 34px;
   height: 34px;
   min-width: 34px;
   padding: 0;
   border-radius: 7px;
+}
+
+.completed-stream-toggle .stream-play-icon {
+  width: 17px;
+  height: 17px;
+}
+
+.completed-stream-toggle.active {
+  color: #d7b8ff;
+  border-color: rgba(170, 120, 255, 0.52);
+  background: rgba(126, 71, 204, 0.18);
 }
 
 .finished-stats-dialog {
@@ -12259,7 +12271,7 @@ body.theme-kash
 }
 
 .collection-form-grid > .platform-field {
-  grid-column: span 3;
+  grid-column: span 5;
 }
 
 .collection-form-grid > .dlc-check {
@@ -12293,7 +12305,7 @@ body.theme-kash
 }
 
 .collection-form-grid > .list-field {
-  grid-column: span 4;
+  grid-column: span 3;
 }
 
 .collection-form-grid > .collection-check {
@@ -12305,7 +12317,10 @@ body.theme-kash
   grid-column: span 2;
 }
 
-.collection-form-grid > .release-date-field,
+.collection-form-grid > .release-date-field {
+  grid-column: span 3;
+}
+
 .collection-form-grid > .release-text-field {
   grid-column: span 4;
 }

@@ -472,7 +472,7 @@ async function getHltbClient() {
 }
 
 async function createHltbClient() {
-  const response = await fetchWithTimeout(`${HLTB_BASE}/api/bleed/init?t=${Date.now()}`, {
+  const response = await fetchWithTimeout(`${HLTB_BASE}/api/search/site/init?t=${Date.now()}`, {
     headers: hltbHeaders(),
   });
   if (!response.ok) throw new Error("HLTB init failed");
@@ -514,7 +514,7 @@ async function hltbSearch(query, hltb, language = "en") {
   };
   if (hltb.hpKey) body[hltb.hpKey] = hltb.hpVal;
 
-  const response = await fetchWithTimeout(`${HLTB_BASE}/api/bleed`, {
+  const response = await fetchWithTimeout(`${HLTB_BASE}/api/search/site`, {
     method: "POST",
     headers: {
       ...hltbHeaders(),

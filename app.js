@@ -75,6 +75,8 @@ const DEFAULT_SETTINGS = {
   defaultOwner: "User",
   shelfSync: true,
   hidePageSwitch: false,
+  prioritizeFinishedStream: false,
+  hideNonStreamPlaying: false,
   forceCacheOnLoad: false,
   syncPreorders: false,
   gotyAlwaysShow: false,
@@ -209,6 +211,7 @@ const state = {
   mobileSection: "backlog",
   mobileSwipeStart: null,
   completedYear: "all",
+  completedStreamOnly: Boolean(initialSettings.prioritizeFinishedStream),
   completedVisiblePages: 1,
   gotyYear: String(new Date().getFullYear()),
   gotyPickerOrder: gotyOrderForDefault(initialSettings.defaultOrder),
@@ -220,6 +223,7 @@ const state = {
   platinumDirection: "desc",
   platinumViewMode: localStorage.getItem(PLATINUM_VIEW_MODE_KEY) === "list" ? "list" : "grid",
   releaseCalendarOffset: 0,
+  finishedStatsStreamOnly: false,
   detailTrophyRequest: "",
   detailReturnToHistory: false,
   detailGameId: "",
@@ -281,6 +285,7 @@ const el = {
   completedCount: document.querySelector("#completedCount"),
   completedYearControl: document.querySelector("#completedYearControl"),
   completedYearFilter: document.querySelector("#completedYearFilter"),
+  completedStreamToggleButton: document.querySelector("#completedStreamToggleButton"),
   completedStatsButton: document.querySelector("#completedStatsButton"),
   completedMoreButton: document.querySelector("#completedMoreButton"),
   footerDataUpdate: document.querySelector("#footerDataUpdate"),
@@ -898,7 +903,13 @@ function bindEvents() {
     render();
   });
   el.completedYearFilter?.addEventListener("change", handleCompletedYearChange);
-  el.completedStatsButton?.addEventListener("click", () => openFinishedStatsDialog(state.completedYear || "all"));
+  el.completedStreamToggleButton?.addEventListener("click", () => {
+    state.completedStreamOnly = !state.completedStreamOnly;
+    state.completedVisiblePages = 1;
+    renderCompleted();
+    renderPlayingFinished();
+  });
+  el.completedStatsButton?.addEventListener("click", () => openFinishedStatsDialog(state.completedYear || "all", { streamOnly: state.completedStreamOnly }));
   el.achievementStatsButton?.addEventListener("click", () => openFinishedStatsDialog("all", { yearPicker: true }));
   el.finishedStatsYearSelect?.addEventListener("change", () => {
     renderFinishedStatsDialog(el.finishedStatsYearSelect.value || "all");
@@ -1324,6 +1335,7 @@ function initRenderSettling() {
 
 async function loadData() {
   state.settings = loadLocalSettings();
+  if (state.settings.prioritizeFinishedStream) state.completedStreamOnly = true;
   const saved = localStorage.getItem(STORAGE_KEY) || localStorage.getItem(LEGACY_STORAGE_KEY);
   if (saved) {
     state.games = normalizeGameRecords(JSON.parse(saved));
@@ -1344,6 +1356,7 @@ async function pullCloudData() {
       const nextSettings = normalizeSettings(data.settings);
       if (JSON.stringify(nextSettings) !== JSON.stringify(state.settings)) {
         state.settings = nextSettings;
+        if (nextSettings.prioritizeFinishedStream) state.completedStreamOnly = true;
         if (!state.sortTouched) applyDefaultOrder(nextSettings.defaultOrder);
         persistLocalSettings();
         changed = true;
@@ -1440,6 +1453,8 @@ function normalizeSettings(settings = {}) {
     defaultOwner: cleanOwnerLabel(settings.defaultOwner) || DEFAULT_SETTINGS.defaultOwner,
     shelfSync: settings.shelfSync !== false,
     hidePageSwitch: settings.hidePageSwitch === true,
+    prioritizeFinishedStream: settings.prioritizeFinishedStream === true,
+    hideNonStreamPlaying: settings.hideNonStreamPlaying === true,
     forceCacheOnLoad: settings.forceCacheOnLoad === true,
     syncPreorders: settings.syncPreorders === true,
     gotyAlwaysShow: settings.gotyAlwaysShow === true,
@@ -1584,8 +1599,8 @@ function applyPageOrder() {
   const order = settings.pageOrder;
   const hidden = new Set(settings.hiddenSections);
   const orderMap = new Map(order.map((key, index) => [key, index + 1]));
-  const hasPlayingGames = activeGames().some((game) => game.playing);
-  const hasFinishedGames = state.games.some((game) => !game.deletedAt && game.completedAt);
+  const hasPlayingGames = visiblePlayingGames().length > 0;
+  const hasFinishedGames = finishedGamesForCurrentView().length > 0;
   el.playingSection.style.order = "1";
   if (el.gotySection) el.gotySection.style.order = "0";
   el.achievementSection.style.order = String(orderMap.get("trophies") || 1);
@@ -1630,7 +1645,7 @@ function renderSettingsDialog() {
     settingsLayoutItem("playing", -1, { fixed: true }),
     settingsLayoutItem("latestFinished", -1, { fixed: true }),
     ...state.settings.pageOrder.map((key) => settingsLayoutItem(key, pageIndex.get(key) ?? 0)),
-    `<div class="settings-preference-separator" role="presentation"></div><div class="settings-preference-row">${settingsThemeItem()}${settingsDefaultOrderItem()}${settingsWeekStartItem()}${settingsShelfSyncItem()}${settingsPageSwitchItem()}</div>`,
+    `<div class="settings-preference-separator" role="presentation"></div><div class="settings-preference-row">${settingsThemeItem()}${settingsDefaultOrderItem()}${settingsWeekStartItem()}${settingsShelfSyncItem()}${settingsPageSwitchItem()}${settingsPrioritizeFinishedStreamItem()}${settingsHideNonStreamPlayingItem()}</div>`,
   ].join("");
   document.querySelector("#settingsCsvData").innerHTML = settingsCsvDataItem();
   if (el.settingsDevFeatures) el.settingsDevFeatures.innerHTML = settingsDevFeaturesItem("gamelist");
@@ -1810,6 +1825,40 @@ function settingsPageSwitchItem() {
           <label class="check-filter toggle-check settings-visible-check" title="${escapeHtml(tt("Hide switch"))}">
             <input type="checkbox" data-hide-page-switch ${state.settings.hidePageSwitch ? "checked" : ""}>
             <span>${escapeHtml(tt("Hide switch"))}</span>
+          </label>
+        </div>
+      </div>
+    </article>
+  `;
+}
+
+function settingsPrioritizeFinishedStreamItem() {
+  return `
+    <article class="settings-layout-card settings-sync-card" data-layout-key="prioritize-finished-stream">
+      <div class="settings-wire wire-finished" aria-hidden="true"><span></span><span></span><span></span></div>
+      <div class="settings-theme-select">
+        <span>${escapeHtml(tt("Prioratizes Finished Stream"))}</span>
+        <div class="settings-check-field">
+          <label class="check-filter toggle-check settings-visible-check" title="${escapeHtml(tt("Prioratizes Finished Stream"))}">
+            <input type="checkbox" data-prioritize-finished-stream ${state.settings.prioritizeFinishedStream ? "checked" : ""}>
+            <span>${escapeHtml(tt("Enable"))}</span>
+          </label>
+        </div>
+      </div>
+    </article>
+  `;
+}
+
+function settingsHideNonStreamPlayingItem() {
+  return `
+    <article class="settings-layout-card settings-sync-card" data-layout-key="hide-non-stream-playing">
+      <div class="settings-wire wire-playing" aria-hidden="true"><span></span><span></span><span></span></div>
+      <div class="settings-theme-select">
+        <span>${escapeHtml(tt("Hide non stream playing"))}</span>
+        <div class="settings-check-field">
+          <label class="check-filter toggle-check settings-visible-check" title="${escapeHtml(tt("Hide non stream playing"))}">
+            <input type="checkbox" data-hide-non-stream-playing ${state.settings.hideNonStreamPlaying ? "checked" : ""}>
+            <span>${escapeHtml(tt("Enable"))}</span>
           </label>
         </div>
       </div>
@@ -2336,10 +2385,13 @@ async function saveSettingsFromForm(event) {
     defaultOwner: el.settingsDefaultOwner.value,
     shelfSync: Boolean(el.settingsLayoutList.querySelector("[data-shelf-sync]")?.checked),
     hidePageSwitch: el.settingsLayoutList.querySelector("[data-hide-page-switch]")?.checked === true,
+    prioritizeFinishedStream: el.settingsLayoutList.querySelector("[data-prioritize-finished-stream]")?.checked === true,
+    hideNonStreamPlaying: el.settingsLayoutList.querySelector("[data-hide-non-stream-playing]")?.checked === true,
     weekStart: normalizeWeekStart(el.settingsLayoutList.querySelector("[data-week-start]")?.value || state.settings.weekStart),
     forceCacheOnLoad: document.querySelector("#settingsForceCacheOnLoad")?.checked === true,
     gotyAlwaysShow: document.querySelector("#settingsGotyAlwaysShow")?.checked === true,
   });
+  state.completedStreamOnly = state.settings.prioritizeFinishedStream;
   persistLocalSettings();
   await persistCloud();
   el.settingsDialog.close();
@@ -2377,7 +2429,7 @@ function handleDetailClose() {
 }
 
 function renderPlayingSection() {
-  const games = activeGames().filter((game) => game.playing);
+  const games = visiblePlayingGames();
   games.sort(comparePlayingGames);
   el.playingTitle.textContent = currentlyPlayingTitle(games);
   el.playingCount.textContent = playingCountText(games.length);
@@ -2406,9 +2458,39 @@ function playingCountText(count) {
   return tt("Playing {count} {item}", { count, item: tt(count === 1 ? "game" : "games") });
 }
 
+function visiblePlayingGames() {
+  const games = activeGames().filter((game) => game.playing);
+  if (state.canEdit || !state.settings.hideNonStreamPlaying) return games;
+  return games.filter((game) => game.stream);
+}
+
+function finishedStreamFilterMatches(game) {
+  return !state.completedStreamOnly || Boolean(game?.stream);
+}
+
+function finishedGamesForCurrentView() {
+  return state.games.filter((game) => !game.deletedAt && game.completedAt && finishedStreamFilterMatches(game));
+}
+
+function finishedStatsBaseGames() {
+  return state.games.filter((game) => !game.deletedAt
+    && game.completedAt
+    && (!state.finishedStatsStreamOnly || game.stream));
+}
+
+function renderCompletedStreamToggle() {
+  if (!el.completedStreamToggleButton) return;
+  const hasStream = state.games.some((game) => !game.deletedAt && game.completedAt && game.stream);
+  el.completedStreamToggleButton.hidden = !hasStream;
+  el.completedStreamToggleButton.classList.toggle("active", state.completedStreamOnly);
+  el.completedStreamToggleButton.innerHTML = streamPlayIcon();
+  el.completedStreamToggleButton.title = state.completedStreamOnly ? tt("Show all finished games") : tt("Show stream games");
+  el.completedStreamToggleButton.setAttribute("aria-label", el.completedStreamToggleButton.title);
+  el.completedStreamToggleButton.setAttribute("aria-pressed", String(state.completedStreamOnly));
+}
+
 function renderPlayingFinished() {
-  const games = state.games
-    .filter((game) => !game.deletedAt && game.completedAt)
+  const games = finishedGamesForCurrentView()
     .sort((a, b) => String(b.completedAt).localeCompare(String(a.completedAt)) || stringCompare(a.title, b.title))
     .slice(0, 10);
   el.playingFinished.hidden = (state.settings.hiddenSections || []).includes("latestFinished") || !games.length;
@@ -5739,16 +5821,17 @@ function renderCompleted() {
   const list = document.querySelector(".completed-list");
   if (!list) return;
   list.classList.toggle("list-view", state.viewMode === "list");
-  const years = completedYears();
+  const years = completedYears(finishedGamesForCurrentView());
   const selectedYear = el.completedYearFilter?.value || state.completedYear || "all";
   state.completedYear = selectedYear;
   if (state.completedYear !== "all" && !years.includes(state.completedYear)) state.completedYear = "all";
   renderCompletedYearFilter(years);
   if (el.completedStatsButton) {
-    el.completedStatsButton.hidden = !filteredGames({ applyPreorder: false }).some((game) => game.completedAt);
+    el.completedStatsButton.hidden = !finishedGamesForCurrentView().length;
     el.completedStatsButton.innerHTML = graphIcon();
   }
-  const filteredFinishedGames = filteredGames({ applyPreorder: false }).filter((game) => game.completedAt);
+  renderCompletedStreamToggle();
+  const filteredFinishedGames = filteredGames({ applyPreorder: false }).filter((game) => game.completedAt && finishedStreamFilterMatches(game));
   const visibleFinishedGames = filteredFinishedGames.filter((game) => state.completedYear === "all" || completionYear(game) === state.completedYear);
   const games = sortedCompletedGames(visibleFinishedGames);
   const pageSize = completedPageSize();
@@ -5865,6 +5948,7 @@ function updateCompletedCount(count) {
 function completedCountForSelectedYear() {
   const finished = state.games.filter((game) => !game.deletedAt
     && game.completedAt
+    && finishedStreamFilterMatches(game)
     && (state.completedYear === "all" || completionYear(game) === state.completedYear));
   return {
     games: finished.filter((game) => !game.dlc).length,
@@ -5872,7 +5956,8 @@ function completedCountForSelectedYear() {
   };
 }
 
-function openFinishedStatsDialog(year = "all", { yearPicker = false } = {}) {
+function openFinishedStatsDialog(year = "all", { yearPicker = false, streamOnly = false } = {}) {
+  state.finishedStatsStreamOnly = Boolean(streamOnly);
   const years = yearPicker ? finishedStatsYears() : [];
   const singleYearStats = yearPicker && years.length === 1;
   const selectedYear = singleYearStats && String(year || "all") === "all" ? years[0] : String(year || "all");
@@ -5891,7 +5976,7 @@ function openFinishedStatsDialog(year = "all", { yearPicker = false } = {}) {
 }
 
 function finishedStatsYears() {
-  return completedYears();
+  return completedYears(finishedStatsBaseGames());
 }
 
 function renderFinishedStatsDialog(year = "all", { preserveAll = true } = {}) {
@@ -5899,7 +5984,9 @@ function renderFinishedStatsDialog(year = "all", { preserveAll = true } = {}) {
   const games = finishedStatsGames(scope);
   const completed = finishedStatsCompleted(scope);
   el.finishedStatsBrow.textContent = scope === "all" ? tt("All-time statistics") : tt("YEARLY STATISTICS");
-  el.finishedStatsTitle.textContent = scope === "all" ? tt("Finished games") : tt("Finished {year}", { year: scope });
+  el.finishedStatsTitle.textContent = state.finishedStatsStreamOnly
+    ? (scope === "all" ? tt("Streamed games") : tt("Streamed games {year}", { year: scope }))
+    : (scope === "all" ? tt("Finished games") : tt("Finished {year}", { year: scope }));
   el.finishedStatsBody.innerHTML = finishedStatsMarkup(scope, games, completed);
   el.finishedStatsBody.querySelector("[data-stats-action='completed']")?.addEventListener("click", () => {
     openPlatinumDialog(scope);
@@ -5915,13 +6002,18 @@ function finishedStatsScope(year = "all") {
 }
 
 function finishedStatsGames(year = "all") {
-  return state.games
-    .filter((game) => !game.deletedAt && game.completedAt && (year === "all" || completionYear(game) === String(year)));
+  return finishedStatsBaseGames()
+    .filter((game) => year === "all" || completionYear(game) === String(year));
 }
 
 function finishedStatsCompleted(year = "all") {
   return platinumItems()
-    .filter((item) => year === "all" || completedStatsYearFor(item) === String(year));
+    .filter((item) => {
+      if (year !== "all" && completedStatsYearFor(item) !== String(year)) return false;
+      if (!state.finishedStatsStreamOnly) return true;
+      const localGame = item.gameId ? state.games.find((game) => game.id === item.gameId && !game.deletedAt) : null;
+      return Boolean(localGame?.stream);
+    });
 }
 
 function completedStatsYearFor(item) {
@@ -6062,6 +6154,7 @@ function statsReleaseYearInsights(year, games) {
     ? state.games
       .filter((game) => {
         if (game.deletedAt || game.dlc || !game.playing || game.completedAt || !game.startedAt) return false;
+        if (state.finishedStatsStreamOnly && !game.stream) return false;
         const startYear = statsYearMonth(game.startedAt)?.year;
         return startYear && startYear <= Number(scopeYear) && Number(scopeYear) <= new Date().getFullYear();
       })
@@ -10535,9 +10628,17 @@ function lookupPublisherDateLine(result) {
 }
 
 function lookupTagsLine(result) {
-  return unique([...(result.genres || []), ...(result.tags || [])])
+  const tags = unique([...(result.genres || []), ...(result.tags || [])])
     .filter(Boolean)
     .join(", ");
+  return [tags, lookupPlaytimeText(result)].filter(Boolean).join(" â€¢ ");
+}
+
+function lookupPlaytimeText(result) {
+  const hours = Number(result?.lengthHours);
+  if (!Number.isFinite(hours) || hours <= 0) return "";
+  const display = Number.isInteger(hours) ? String(hours) : String(Math.round(hours * 10) / 10);
+  return tt("{count} hrs", { count: display });
 }
 
 function igdbRatingBadge(result) {
