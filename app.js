@@ -7190,13 +7190,15 @@ function calendarMilestoneCard(game) {
   card.querySelector("h3").textContent = game.title || "";
   card.querySelector(".title-owners").hidden = true;
   card.querySelector(".studio-line").hidden = true;
-  card.querySelector(".meta").innerHTML = calendarStateBadge("Created", "created");
+  card.querySelector(".meta").innerHTML = "";
   const playDates = card.querySelector(".play-dates");
   playDates.innerHTML = game.releaseDate ? `<span class="history-pill history-date-pill"><small>${escapeHtml(tt("Created"))}</small><strong>${escapeHtml(formatShortDate(game.releaseDate) || game.releaseDate)}</strong></span>` : "";
   playDates.hidden = !playDates.innerHTML;
   card.querySelector(".chips").innerHTML = "";
   card.querySelector(".card-trophies").remove();
-  card.querySelector(".notes").hidden = true;
+  const description = card.querySelector(".notes");
+  description.textContent = game.description || "";
+  description.hidden = !description.textContent;
   card.querySelector(".prices").remove();
   card.querySelector(".card-actions").remove();
   card.querySelector(".edit-action")?.remove();

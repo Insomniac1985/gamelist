@@ -19,6 +19,7 @@ const CALENDAR_MILESTONES = [
     releaseDate: "2026-06-10",
     cover: "assets/Icon.png",
     platform: "Gamelist",
+    description: "A personal game tracker for backlog, releases, preorders, play history, and completion stats.",
     calendarMilestone: true,
   },
   {
@@ -27,6 +28,7 @@ const CALENDAR_MILESTONES = [
     releaseDate: "2026-06-22",
     cover: "assets/Icon_shelf.png",
     platform: "Shelf",
+    description: "A collection hub for physical and digital games, ownership details, prices, and library stats.",
     calendarMilestone: true,
   },
 ];

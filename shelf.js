@@ -3246,7 +3246,7 @@ function calendarMilestoneProjectionCard(game) {
   card.querySelector(".edit-action")?.remove();
   const studioLine = card.querySelector(".studio-line");
   studioLine.hidden = true;
-  card.querySelector(".meta").innerHTML = `<span class="calendar-state-pill calendar-state-created">${escapeHtml(tt("Created"))}</span>`;
+  card.querySelector(".meta").innerHTML = "";
   const dates = card.querySelector(".play-dates");
   dates.innerHTML = game.releaseDate ? `<span class="history-pill history-date-pill"><small>${escapeHtml(tt("Created"))}</small><strong>${escapeHtml(formatShortDate(game.releaseDate) || game.releaseDate)}</strong></span>` : "";
   dates.hidden = !dates.innerHTML;
@@ -3255,7 +3255,8 @@ function calendarMilestoneProjectionCard(game) {
   card.querySelector(".card-actions").remove();
   card.querySelector(".prices").remove();
   const note = card.querySelector(".notes");
-  note.hidden = true;
+  note.textContent = game.description || "";
+  note.hidden = !note.textContent;
   return card.outerHTML;
 }
 
