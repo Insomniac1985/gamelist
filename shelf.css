@@ -2114,6 +2114,11 @@ textarea {
     width: auto;
     flex: none;
   }
+  .shelf-page .stats .stat:nth-child(3):last-child {
+    grid-column: 1 / -1;
+    justify-self: center;
+    width: calc((100% - 8px) / 2);
+  }
   .shelf-page .stats .stat {
     padding: 10px 6px;
   }
