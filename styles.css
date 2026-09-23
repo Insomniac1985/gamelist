@@ -14535,9 +14535,14 @@ html.theme-light .finish-trophy-check input[type="checkbox"]:checked {
     height: auto;
   }
 
+  .completed-head-actions > :not(#completedCount) {
+    grid-row: 2;
+  }
+
   #completedCount {
     display: grid;
     grid-column: 1 / -1;
+    grid-row: 1;
     grid-template-columns: max-content;
     justify-self: end;
     justify-items: end;
@@ -14549,6 +14554,7 @@ html.theme-light .finish-trophy-check input[type="checkbox"]:checked {
     line-height: 1;
     text-align: right;
     white-space: normal;
+    font-size: 10px;
   }
 
   #completedCount > span {
