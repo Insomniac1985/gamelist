@@ -2001,7 +2001,7 @@ html.theme-gradient .goty-section .column-head h2 .trophy-icon {
   line-height: 1;
   transform: none;
   -webkit-text-fill-color: #ffe985;
-  margin-top: 0;
+  margin-top: -2px;
 }
 
 .playing-finished-tags .platform-icon {
