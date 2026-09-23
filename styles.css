@@ -7242,6 +7242,8 @@ body:not(.can-edit) .game-card:focus-within .edit-action {
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 8px;
   align-items: stretch;
+  min-width: 0;
+  max-width: 100%;
   -webkit-mask-image: linear-gradient(
     180deg,
     #000 0,
@@ -9027,6 +9029,9 @@ body.theme-kash .finished-stats-kpi.is-completed:focus-visible strong {
   justify-content: space-between;
   align-items: center;
   gap: 10px;
+  min-width: 0;
+  max-width: 100%;
+  overflow: hidden;
   min-height: 102px;
   height: 100%;
   padding: 11px;
@@ -9134,6 +9139,8 @@ body.theme-kash .playing-finished-game.completed-trophy-card:hover {
 .completed-main {
   display: grid;
   gap: 4px;
+  min-width: 0;
+  max-width: 100%;
 }
 
 .completed-dates {
@@ -9167,6 +9174,8 @@ body.theme-kash .playing-finished-game.completed-trophy-card:hover {
   display: flex;
   flex-wrap: wrap;
   gap: 4px;
+  min-width: 0;
+  max-width: 100%;
   margin-top: 2px;
 }
 
@@ -13098,6 +13107,21 @@ html.theme-light .finish-trophy-check input[type="checkbox"]:checked {
 }
 
 @media (max-width: 760px) {
+  html,
+  body {
+    max-width: 100%;
+    overflow-x: hidden;
+  }
+
+  .shell,
+  .board,
+  .column,
+  .playing-section,
+  .completed {
+    max-width: 100%;
+    overflow-x: clip;
+  }
+
   .top-search-button {
     display: none;
   }
@@ -13550,9 +13574,11 @@ html.theme-light .finish-trophy-check input[type="checkbox"]:checked {
     align-items: end;
     gap: 5px 10px;
     width: auto;
-    min-width: max-content;
+    min-width: 0;
+    max-width: 100%;
     flex: 0 0 auto;
     margin-left: auto;
+    white-space: normal;
   }
 
   .playing-section .playing-head-actions > span {
@@ -13585,7 +13611,8 @@ html.theme-light .finish-trophy-check input[type="checkbox"]:checked {
   .playing-section .game-card {
     grid-template-columns: minmax(0, 190px) 82px minmax(0, 1fr);
     grid-template-rows: auto auto auto auto auto auto minmax(0, 1fr) auto;
-    flex-basis: calc(100vw - 42px);
+    flex-basis: 100%;
+    max-width: 100%;
     height: var(--mobile-playing-card-height, auto);
     min-height: var(--mobile-playing-card-height, 0);
     align-items: start;
@@ -13618,7 +13645,8 @@ html.theme-light .finish-trophy-check input[type="checkbox"]:checked {
   }
 
   .twitch-preview-card {
-    flex-basis: min(320px, calc(100vw - 54px));
+    flex-basis: min(320px, 100%);
+    max-width: 100%;
     min-height: 214px;
     align-content: start;
     padding: 10px;
@@ -14125,7 +14153,8 @@ html.theme-light .finish-trophy-check input[type="checkbox"]:checked {
 
   .playing-finished-game {
     grid-template-columns: 58px minmax(0, 1fr);
-    flex-basis: calc(100vw - 54px);
+    flex-basis: 100%;
+    max-width: 100%;
   }
 
   .playing-finished-game.achievement-game {
@@ -14642,10 +14671,12 @@ html.theme-light .finish-trophy-check input[type="checkbox"]:checked {
     align-items: end;
     gap: 5px 10px;
     width: auto;
-    min-width: max-content;
+    min-width: 0;
+    max-width: 100%;
     flex: 0 0 auto;
     margin-left: auto;
     height: auto;
+    white-space: normal;
   }
 
   .completed-head-actions > :not(#completedCount) {
@@ -14727,7 +14758,8 @@ html.theme-light .finish-trophy-check input[type="checkbox"]:checked {
 
 @media (max-width: 460px) {
   .twitch-preview-card {
-    flex-basis: min(300px, calc(100vw - 54px));
+    flex-basis: min(300px, 100%);
+    max-width: 100%;
   }
 
   .twitch-preview-player {
