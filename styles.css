@@ -12947,6 +12947,10 @@ html.theme-light .finish-trophy-check input[type="checkbox"]:checked {
 .restore-action span {
   display: none;
 }
+.backlog-action .action-label {
+  width: 36px;
+  padding: 8px;
+}
 
 @media (max-width: 1180px) {
   .toolbar {
