@@ -6894,8 +6894,6 @@ function platformStatsColor(platform, index = 0) {
 function sortedCompletedGames(games) {
   const direction = state.filters.direction === "asc" ? 1 : -1;
   return [...games].sort((a, b) => {
-    const streamSort = compareStreamFirst(a, b);
-    if (streamSort) return streamSort;
     if (state.filters.sort === "title") {
       return direction * (stringCompare(a.title, b.title) || String(b.completedAt).localeCompare(String(a.completedAt)));
     }
@@ -8744,7 +8742,7 @@ function streamPlayIcon() {
 }
 
 function streamPlayOffIcon() {
-  return `<svg class="stream-play-off-icon twitch-filter-icon" viewBox="0 0 24 24" aria-hidden="true">${twitchLogoPath()}<path class="stream-play-off-slash-cut" d="M3.5 20.5 20.5 3.5"></path><path class="stream-play-off-slash" d="M3.5 20.5 20.5 3.5"></path></svg>`;
+  return `<svg class="stream-play-off-icon twitch-filter-icon" viewBox="0 0 24 24" aria-hidden="true">${twitchLogoPath()}<path class="stream-play-off-slash-cut" d="M2 22 22 2"></path><path class="stream-play-off-slash" d="M2 22 22 2"></path></svg>`;
 }
 
 function allGamesIcon() {

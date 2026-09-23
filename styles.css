@@ -6269,9 +6269,9 @@ body.theme-kash .game-card.stream-card.completed-trophy-card {
 }
 
 .calendar-state-backlog {
-  color: #ff9ed2;
-  border-color: rgba(255, 158, 210, 0.38);
-  background: rgba(255, 158, 210, 0.1);
+  color: var(--finished-accent);
+  border-color: color-mix(in srgb, var(--finished-accent) 48%, transparent);
+  background: color-mix(in srgb, var(--finished-accent) 14%, transparent);
 }
 
 .calendar-state-finished {
@@ -7414,7 +7414,9 @@ body:not(.can-edit) .game-card:focus-within .edit-action {
   opacity: 0;
   pointer-events: none;
   transform: translate(50%, 3px);
-  transition: opacity 70ms ease, transform 70ms ease;
+  transition:
+    opacity 70ms ease,
+    transform 70ms ease;
 }
 
 .completed-stream-toggle[data-tooltip]:hover::after,
@@ -7470,7 +7472,7 @@ body:not(.can-edit) .game-card:focus-within .edit-action {
 .playing-stream-toggle .stream-play-off-slash-cut {
   fill: none;
   stroke: rgba(18, 19, 24, 0.96);
-  stroke-width: 5.2;
+  stroke-width: 5.8;
   stroke-linecap: round;
   stroke-linejoin: round;
 }
@@ -10495,8 +10497,16 @@ html.theme-light .chip.genre {
 html.theme-light .coop-pill,
 html.theme-light .multiplayer-pill {
   color: color-mix(in srgb, var(--coop-accent) 72%, #142033) !important;
-  border-color: color-mix(in srgb, var(--coop-accent) 46%, rgba(31, 42, 61, 0.3));
-  background: color-mix(in srgb, var(--coop-accent) 24%, rgba(255, 255, 255, 0.78));
+  border-color: color-mix(
+    in srgb,
+    var(--coop-accent) 46%,
+    rgba(31, 42, 61, 0.3)
+  );
+  background: color-mix(
+    in srgb,
+    var(--coop-accent) 24%,
+    rgba(255, 255, 255, 0.78)
+  );
 }
 
 html.theme-light .platform-count,
@@ -13529,13 +13539,14 @@ html.theme-light .finish-trophy-check input[type="checkbox"]:checked {
 
   .playing-head-actions {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(3, max-content);
     justify-items: end;
     align-items: end;
     gap: 7px;
   }
 
   .playing-section .playing-head-actions > span {
+    grid-row: 1;
     grid-column: 2 / -1;
     justify-self: unset;
     margin: 0;
@@ -13544,9 +13555,38 @@ html.theme-light .finish-trophy-check input[type="checkbox"]:checked {
     margin-bottom: 3px;
   }
 
+  .playing-stream-toggle {
+    grid-column: 1;
+    grid-row: 2;
+  }
+
+  #playingPrevButton {
+    grid-column: 2;
+    grid-row: 2;
+  }
+
+  #playingNextButton {
+    grid-column: 3;
+    grid-row: 2;
+  }
+
+  .playing-head-actions:not(:has(.playing-stream-toggle:not([hidden]))) {
+    grid-template-columns: repeat(2, max-content);
+  }
+
   .playing-head-actions:not(:has(.playing-stream-toggle:not([hidden]))) > span {
     grid-column: 1 / -1;
     margin-right: 8px !important;
+  }
+
+  .playing-head-actions:not(:has(.playing-stream-toggle:not([hidden])))
+    #playingPrevButton {
+    grid-column: 1;
+  }
+
+  .playing-head-actions:not(:has(.playing-stream-toggle:not([hidden])))
+    #playingNextButton {
+    grid-column: 2;
   }
 
   .release-months {
@@ -13755,7 +13795,7 @@ html.theme-light .finish-trophy-check input[type="checkbox"]:checked {
     grid-column: 1 / -1;
     grid-row: 4;
     margin-top: 1px;
-    gap: 2px;
+    gap: 4px;
   }
 
   .playing-section .game-card.playing-card .play-dates {
@@ -14624,7 +14664,6 @@ html.theme-light .finish-trophy-check input[type="checkbox"]:checked {
   .completed-head-actions {
     display: grid;
     grid-template-columns: repeat(4, max-content);
-
     justify-items: end;
     align-items: end;
     gap: 7px;
@@ -14633,6 +14672,18 @@ html.theme-light .finish-trophy-check input[type="checkbox"]:checked {
 
   .completed-head-actions > :not(#completedCount) {
     grid-row: 2;
+  }
+
+  #completedYearControl {
+    grid-column: 1;
+  }
+
+  .completed-stream-toggle {
+    grid-column: 2;
+  }
+
+  .completed-stats-button {
+    grid-column: 3;
   }
 
   #completedCount {
@@ -14655,16 +14706,57 @@ html.theme-light .finish-trophy-check input[type="checkbox"]:checked {
     font-size: 13px !important;
   }
 
+  .completed-head-actions:not(:has(#completedYearControl:not([hidden]))) {
+    grid-template-columns: repeat(3, max-content);
+  }
+
+  .completed-head-actions:not(:has(#completedYearControl:not([hidden])))
+    .completed-stream-toggle {
+    grid-column: 1;
+  }
+
+  .completed-head-actions:not(:has(#completedYearControl:not([hidden])))
+    .completed-stats-button {
+    grid-column: 2;
+  }
+
+  .completed-head-actions:not(:has(#completedYearControl:not([hidden])))
+    #completedCount {
+    grid-column: 3 / -1;
+  }
+
   .completed-head-actions:not(:has(.completed-stream-toggle:not([hidden]))) {
     grid-template-columns: repeat(3, max-content);
   }
 
-  .completed-head-actions:not(:has(.completed-stream-toggle:not([hidden]))) #completedCount {
+  .completed-head-actions:not(:has(.completed-stream-toggle:not([hidden])))
+    .completed-stats-button {
+    grid-column: 2;
+  }
+
+  .completed-head-actions:not(:has(.completed-stream-toggle:not([hidden])))
+    #completedCount {
     grid-column: 3 / -1;
   }
 
-  .completed-head-actions:not(:has(#completedYearControl:not([hidden]))):not(:has(.completed-stream-toggle:not([hidden]))) > :not(#completedCount) {
-    grid-column: 3;
+  .completed-head-actions:not(:has(#completedYearControl:not([hidden]))):not(
+      :has(.completed-stream-toggle:not([hidden]))
+    ) {
+    grid-template-columns: repeat(2, max-content);
+  }
+
+  .completed-head-actions:not(:has(#completedYearControl:not([hidden]))):not(
+      :has(.completed-stream-toggle:not([hidden]))
+    )
+    .completed-stats-button {
+    grid-column: 1;
+  }
+
+  .completed-head-actions:not(:has(#completedYearControl:not([hidden]))):not(
+      :has(.completed-stream-toggle:not([hidden]))
+    )
+    #completedCount {
+    grid-column: 2 / -1;
   }
 
   #completedCount > span {
