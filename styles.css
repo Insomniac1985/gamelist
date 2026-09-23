@@ -13896,9 +13896,14 @@ html.theme-light .finish-trophy-check input[type="checkbox"]:checked {
     min-width: 22px;
   }
 
-  .game-row .platform-badge {
+  .game-row .platform-badge,
+  .completed-platform .platform-badge {
     gap: 4px;
     padding-left: 3px;
+  }
+
+  .completed-platform {
+    gap: 3px;
   }
 
   .game-row .platform-icon {
