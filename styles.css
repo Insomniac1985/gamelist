@@ -13544,7 +13544,8 @@ html.theme-light .finish-trophy-check input[type="checkbox"]:checked {
     align-items: end;
     gap: 5px 10px;
     width: max-content;
-    max-width: 48%;
+    max-width: none;
+    flex: 0 0 auto;
     margin-left: auto;
   }
 
@@ -14635,7 +14636,8 @@ html.theme-light .finish-trophy-check input[type="checkbox"]:checked {
     align-items: end;
     gap: 5px 10px;
     width: max-content;
-    max-width: 54%;
+    max-width: none;
+    flex: 0 0 auto;
     margin-left: auto;
     height: auto;
   }
