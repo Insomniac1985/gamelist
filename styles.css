@@ -1999,10 +1999,10 @@ html.theme-gradient .goty-section .column-head h2 .trophy-icon {
 
 .playing-finished-tags .rating-score-star {
   color: var(--rating-score-main);
-  font-size: 10px;
+  font-size: 12px;
   line-height: 1;
   transform: none;
-  margin-top: -1.5px;
+  margin-top: -2px;
 }
 
 .playing-finished-tags .platform-icon {
@@ -9226,7 +9226,7 @@ body.theme-kash .playing-finished-game.completed-trophy-card:hover {
 }
 
 .completed-platform .rating-score-star {
-  font-size: 11px;
+  font-size: 16px;
   line-height: 1;
 }
 
@@ -9253,7 +9253,7 @@ body.theme-kash .playing-finished-game.completed-trophy-card:hover {
   font-size: 1.5em;
   line-height: 0;
   text-shadow: 0 0 9px rgba(255, 233, 133, 0.38);
-  transform: translateY(-0.5px);
+  transform: translateY(-1.4px);
 }
 
 .rating-score-mid,
