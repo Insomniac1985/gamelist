@@ -13134,6 +13134,7 @@ html.theme-light .finish-trophy-check input[type="checkbox"]:checked {
     max-width: 58%;
     margin-left: auto;
     text-align: right;
+    font-size: 13px;
   }
 
   .completed-head-actions {
@@ -13468,6 +13469,7 @@ html.theme-light .finish-trophy-check input[type="checkbox"]:checked {
     margin: 0;
     line-height: 1;
     text-align: right;
+    margin-bottom: 3px;
   }
 
   .release-months {
@@ -14554,7 +14556,8 @@ html.theme-light .finish-trophy-check input[type="checkbox"]:checked {
     line-height: 1;
     text-align: right;
     white-space: normal;
-    font-size: 10px;
+    line-height: 9px !important;
+    margin-bottom: 1px !important;
   }
 
   #completedCount > span {
