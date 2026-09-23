@@ -2514,6 +2514,7 @@ function renderStreamFilterToggle(button, { hidden = false } = {}) {
   const mode = normalizeStreamFilterMode(state.completedStreamMode);
   button.hidden = hidden;
   button.classList.toggle("active", mode !== "all");
+  button.classList.toggle("is-all-games", mode === "all");
   button.classList.toggle("is-non-stream", mode === "nonstream");
   button.innerHTML = mode === "all" ? allGamesIcon() : mode === "stream" ? streamPlayIcon() : streamPlayOffIcon();
   button.title = mode === "all"
@@ -4410,13 +4411,14 @@ function slidePlaying(direction) {
 }
 
 function updatePlayingSliderControls() {
-  const state = horizontalCarouselState(el.playingList);
-  el.playingPrevButton.hidden = !state.overflow;
-  el.playingNextButton.hidden = !state.overflow;
-  el.playingPrevButton.disabled = state.atStart;
-  el.playingNextButton.disabled = state.atEnd;
-  el.playingSection.classList.toggle("playing-at-start", state.atStart);
-  el.playingSection.classList.toggle("playing-at-end", state.atEnd);
+  const carousel = horizontalCarouselState(el.playingList);
+  const keepFilteredControls = !carousel.overflow && normalizeStreamFilterMode(state.completedStreamMode) !== "all" && el.playingList.children.length > 0;
+  el.playingPrevButton.hidden = !carousel.overflow && !keepFilteredControls;
+  el.playingNextButton.hidden = !carousel.overflow && !keepFilteredControls;
+  el.playingPrevButton.disabled = carousel.atStart;
+  el.playingNextButton.disabled = carousel.atEnd;
+  el.playingSection.classList.toggle("playing-at-start", carousel.atStart);
+  el.playingSection.classList.toggle("playing-at-end", carousel.atEnd);
 }
 
 function schedulePlayingCardHeightSync() {
@@ -8710,11 +8712,11 @@ function streamPlayIcon() {
 }
 
 function streamPlayOffIcon() {
-  return `<svg class="stream-play-off-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5.5v13l11-6.5L8 5.5Z"></path><path d="M5 19 19 5"></path></svg>`;
+  return `<svg class="stream-play-off-icon" viewBox="0 0 24 24" aria-hidden="true"><path class="stream-play-off-triangle" d="M8 5.5v13l11-6.5L8 5.5Z"></path><path class="stream-play-off-slash" d="M4.75 19.25 19.25 4.75"></path></svg>`;
 }
 
 function allGamesIcon() {
-  return `<svg class="stream-all-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 6.5h9.5"></path><path d="M5 12h14"></path><path d="M5 17.5h14"></path><path d="M17 4.8 21 7l-4 2.2V4.8Z"></path></svg>`;
+  return `<span class="stream-all-icon gamelist-filter-icon" aria-hidden="true">G</span>`;
 }
 
 function coopIcon() {
