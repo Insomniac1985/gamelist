@@ -7349,12 +7349,24 @@ body:not(.can-edit) .game-card:focus-within .edit-action {
 }
 
 .completed-stats-button,
+.completed-stream-toggle,
 .goty-stats-button {
   width: 34px;
   height: 34px;
   min-width: 34px;
   padding: 0;
   border-radius: 7px;
+}
+
+.completed-stream-toggle .stream-play-icon {
+  width: 17px;
+  height: 17px;
+}
+
+.completed-stream-toggle.active {
+  color: #d7b8ff;
+  border-color: rgba(170, 120, 255, 0.52);
+  background: rgba(126, 71, 204, 0.18);
 }
 
 .finished-stats-dialog {
