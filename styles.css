@@ -14526,9 +14526,20 @@ html.theme-light .finish-trophy-check input[type="checkbox"]:checked {
 }
 
 @media (width <= 760px) {
+  .completed-head-actions {
+    display: grid;
+    grid-template-columns: repeat(3, max-content);
+    justify-items: end;
+    align-items: end;
+    gap: 7px;
+    height: auto;
+  }
+
   #completedCount {
     display: grid;
+    grid-column: 1 / -1;
     grid-template-columns: max-content;
+    justify-self: end;
     justify-items: end;
     align-content: center;
     gap: 2px;
