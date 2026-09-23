@@ -7415,9 +7415,8 @@ body:not(.can-edit) .game-card:focus-within .edit-action {
 
 .completed-stream-toggle .gamelist-filter-icon,
 .playing-stream-toggle .gamelist-filter-icon {
-  background: #ffffff;
-  -webkit-mask: url("assets/Icon.png") center / contain no-repeat;
-  mask: url("assets/Icon.png") center / contain no-repeat;
+  object-fit: contain;
+  filter: saturate(0) brightness(1.9);
 }
 
 .finished-stats-dialog {

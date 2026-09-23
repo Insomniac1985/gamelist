@@ -8716,7 +8716,7 @@ function streamPlayOffIcon() {
 }
 
 function allGamesIcon() {
-  return `<span class="stream-all-icon gamelist-filter-icon" aria-hidden="true"></span>`;
+  return `<img class="stream-all-icon gamelist-filter-icon" src="assets/Icon.png" alt="" aria-hidden="true" decoding="async">`;
 }
 
 function coopIcon() {
