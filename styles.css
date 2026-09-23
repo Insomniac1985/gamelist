@@ -9919,6 +9919,7 @@ body.dialog-open .mobile-section-tabs {
   padding-inline: 12px;
   color: #ffffff;
   text-decoration: none;
+  font-size: 14px;
 }
 
 .settings-dev-links .settings-dev-toggle {
@@ -14524,7 +14525,7 @@ html.theme-light .finish-trophy-check input[type="checkbox"]:checked {
   }
 
   .rating-step-controls {
-    margin-left: 45px;
+    margin-left: 30px;
   }
 }
 
