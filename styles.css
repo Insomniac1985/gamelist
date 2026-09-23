@@ -81,6 +81,7 @@
   --accent-2: #79f2ce;
   --accent-3: #ee32b3;
   --finished-accent: color-mix(in srgb, var(--accent) 55%, #000000);
+  --coop-accent: #bdf279;
   --preorder-accent: #ffb666;
   --preorder-accent-text: #1b1000;
   --scrollbar-track: color-mix(
@@ -1991,8 +1992,9 @@ html.theme-gradient .goty-section .column-head h2 .trophy-icon {
 
 .playing-finished-tags .coop-pill span,
 .playing-finished-tags .coop-pill .coop-icon,
-.playing-finished-tags .multiplayer-pill .coop-icon {
-  color: #79f2ce !important;
+.playing-finished-tags .multiplayer-pill .coop-icon,
+.playing-finished-tags .multiplayer-pill .online-globe-icon {
+  color: var(--coop-accent) !important;
 }
 
 .playing-finished-tags .rating-score-star {
@@ -6204,9 +6206,9 @@ body.theme-kash .game-card.stream-card.completed-trophy-card {
 
 .coop-pill,
 .multiplayer-pill {
-  color: #79f2ce !important;
-  border-color: rgba(121, 242, 206, 0.32);
-  background: rgba(121, 242, 206, 0.1);
+  color: var(--coop-accent) !important;
+  border-color: color-mix(in srgb, var(--coop-accent) 34%, transparent);
+  background: color-mix(in srgb, var(--coop-accent) 11%, transparent);
   font-weight: 820;
 }
 
@@ -6218,12 +6220,15 @@ body.theme-kash .game-card.stream-card.completed-trophy-card {
   gap: 4px;
 }
 
+.coop-pill,
 .multiplayer-pill {
   justify-content: center;
+  min-width: 31px;
   padding-inline: 7px;
 }
 
 .coop-icon,
+.online-globe-icon,
 .alert-tag-icon {
   width: 14px;
   height: 14px;
@@ -6236,6 +6241,10 @@ body.theme-kash .game-card.stream-card.completed-trophy-card {
 
 .coop-icon {
   stroke-width: 2.5;
+}
+
+.online-globe-icon {
+  stroke-width: 2;
 }
 
 .alert-tag-icon {
@@ -7369,6 +7378,14 @@ body:not(.can-edit) .game-card:focus-within .edit-action {
   overflow: visible;
 }
 
+.completed-stream-toggle .stream-play-icon,
+.playing-stream-toggle .stream-play-icon,
+.completed-stream-toggle .stream-play-off-icon,
+.playing-stream-toggle .stream-play-off-icon {
+  width: 16px;
+  height: 16px;
+}
+
 .completed-stream-toggle[data-tooltip],
 .playing-stream-toggle[data-tooltip] {
   position: relative;
@@ -7444,7 +7461,16 @@ body:not(.can-edit) .game-card:focus-within .edit-action {
 .playing-stream-toggle .stream-play-off-slash {
   fill: none;
   stroke: currentColor;
-  stroke-width: 2.6;
+  stroke-width: 2.4;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.completed-stream-toggle .stream-play-off-slash-cut,
+.playing-stream-toggle .stream-play-off-slash-cut {
+  fill: none;
+  stroke: rgba(18, 19, 24, 0.96);
+  stroke-width: 5.2;
   stroke-linecap: round;
   stroke-linejoin: round;
 }
@@ -7579,7 +7605,7 @@ body:not(.can-edit) .game-card:focus-within .edit-action {
 }
 
 .finished-stats-kpi.is-coop strong {
-  color: #79f2ce;
+  color: var(--coop-accent);
 }
 
 .finished-stats-kpi.is-owners strong {
@@ -10464,6 +10490,13 @@ html.theme-light .chip.genre {
   color: rgba(38, 52, 74, 0.62);
   background: rgba(172, 184, 203, 0.34);
   border-color: rgba(31, 42, 61, 0.16);
+}
+
+html.theme-light .coop-pill,
+html.theme-light .multiplayer-pill {
+  color: color-mix(in srgb, var(--coop-accent) 72%, #142033) !important;
+  border-color: color-mix(in srgb, var(--coop-accent) 46%, rgba(31, 42, 61, 0.3));
+  background: color-mix(in srgb, var(--coop-accent) 24%, rgba(255, 255, 255, 0.78));
 }
 
 html.theme-light .platform-count,
@@ -13511,6 +13544,11 @@ html.theme-light .finish-trophy-check input[type="checkbox"]:checked {
     margin-bottom: 3px;
   }
 
+  .playing-head-actions:not(:has(.playing-stream-toggle:not([hidden]))) > span {
+    grid-column: 1 / -1;
+    margin-right: 8px !important;
+  }
+
   .release-months {
     grid-template-columns: 1fr;
   }
@@ -13935,7 +13973,7 @@ html.theme-light .finish-trophy-check input[type="checkbox"]:checked {
     line-height: 1;
   }
 
-  .game-row .multiplayer-pil,
+  .game-row .multiplayer-pill,
   .completed-platform .multiplayer-pill {
     min-width: 22px;
   }
@@ -14585,6 +14623,7 @@ html.theme-light .finish-trophy-check input[type="checkbox"]:checked {
 @media (width <= 760px) {
   .completed-head-actions {
     display: grid;
+    grid-template-columns: repeat(4, max-content);
 
     justify-items: end;
     align-items: end;
@@ -14614,6 +14653,18 @@ html.theme-light .finish-trophy-check input[type="checkbox"]:checked {
     line-height: 9px !important;
     margin-bottom: 1px !important;
     font-size: 13px !important;
+  }
+
+  .completed-head-actions:not(:has(.completed-stream-toggle:not([hidden]))) {
+    grid-template-columns: repeat(3, max-content);
+  }
+
+  .completed-head-actions:not(:has(.completed-stream-toggle:not([hidden]))) #completedCount {
+    grid-column: 3 / -1;
+  }
+
+  .completed-head-actions:not(:has(#completedYearControl:not([hidden]))):not(:has(.completed-stream-toggle:not([hidden]))) > :not(#completedCount) {
+    grid-column: 3;
   }
 
   #completedCount > span {
