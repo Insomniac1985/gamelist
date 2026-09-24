@@ -2135,14 +2135,12 @@ html.stats-embed #finishedStatsDialog::backdrop {
   padding: 11px;
   color: var(--text);
   text-decoration: none;
-  background:
-    linear-gradient(135deg, rgba(255, 255, 255, 0.065), rgba(255, 255, 255, 0.025)),
-    var(--panel);
   border: 1px solid rgba(255, 255, 255, 0.13);
   border-radius: 8px;
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.055),
     0 12px 28px rgba(0, 0, 0, 0.14);
+  background: rgba(255, 255, 255, 0.06);
 }
 
 .achievement-kpi {
@@ -2184,13 +2182,13 @@ button.achievement-kpi {
   inset: 0;
   z-index: 3;
   display: grid;
-  place-content: center;
+  align-content: start;
   justify-items: stretch;
   gap: 6px;
   width: auto;
   max-width: none;
   margin: 0;
-  padding: 9px;
+  padding: 6px 9px;
   color: var(--text);
   background:
     radial-gradient(
@@ -2198,7 +2196,11 @@ button.achievement-kpi {
       var(--kpi-glow, rgba(255, 255, 255, 0.13)),
       transparent 72%
     ),
-    linear-gradient(135deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.025)),
+    linear-gradient(
+      135deg,
+      rgba(255, 255, 255, 0.08),
+      rgba(255, 255, 255, 0.025)
+    ),
     rgba(10, 12, 16, 0.96);
   border: 1px solid rgba(255, 255, 255, 0.18);
   border-radius: inherit;
@@ -2247,13 +2249,21 @@ button.achievement-kpi {
 
 .achievement-kpi .kpi-breakdown-playstation {
   color: #ffffff;
-  background: linear-gradient(135deg, rgba(72, 124, 232, 0.96), rgba(38, 91, 198, 0.92));
+  background: linear-gradient(
+    135deg,
+    rgba(72, 124, 232, 0.96),
+    rgba(38, 91, 198, 0.92)
+  );
   border-color: rgba(126, 166, 255, 0.26);
 }
 
 .achievement-kpi .kpi-breakdown-xbox {
   color: #ffffff;
-  background: linear-gradient(135deg, rgba(45, 184, 84, 0.96), rgba(24, 128, 52, 0.92));
+  background: linear-gradient(
+    135deg,
+    rgba(45, 184, 84, 0.96),
+    rgba(24, 128, 52, 0.92)
+  );
   border-color: rgba(112, 235, 140, 0.22);
 }
 
@@ -2280,14 +2290,22 @@ button.achievement-kpi {
   --kpi-color: #f7df69;
   --kpi-glow: rgba(247, 223, 105, 0.26);
   background:
-    radial-gradient(circle at 14% 18%, rgba(247, 223, 105, 0.18), transparent 44%),
-    linear-gradient(135deg, rgba(247, 223, 105, 0.09), rgba(255, 255, 255, 0.025)),
+    radial-gradient(
+      circle at 14% 18%,
+      rgba(247, 223, 105, 0.18),
+      transparent 44%
+    ),
+    linear-gradient(
+      135deg,
+      rgba(247, 223, 105, 0.09),
+      rgba(255, 255, 255, 0.025)
+    ),
     var(--panel);
   border-color: rgba(247, 223, 105, 0.28);
 }
 
 .trophy-kpi {
-  --kpi-glow: rgba(67, 136, 255, 0.24);
+  --kpi-glow: color-mix(in srgb, var(--accent) 26%, transparent);
 }
 
 .platinum-highlight strong,
@@ -2304,7 +2322,11 @@ button.achievement-kpi {
       rgba(247, 223, 105, 0.28),
       transparent 54%
     ),
-    linear-gradient(135deg, rgba(247, 223, 105, 0.14), rgba(255, 255, 255, 0.04)),
+    linear-gradient(
+      135deg,
+      rgba(247, 223, 105, 0.14),
+      rgba(255, 255, 255, 0.04)
+    ),
     var(--panel);
   border-color: rgba(247, 223, 105, 0.54);
   box-shadow:
@@ -2542,8 +2564,8 @@ button.achievement-kpi {
 
 .trophy-subtitle {
   grid-column: 1 / -1;
-  margin: 2px 0 -2px;
-  font-size: 11px;
+  margin: 5px 0px 0px 6px;
+  font-size: 13px;
 }
 
 .achievement-game-list {
@@ -10637,7 +10659,11 @@ html.theme-light .stat {
 html.theme-light .achievement-kpi,
 html.theme-light .rarity-graph {
   background:
-    linear-gradient(135deg, rgba(255, 255, 255, 0.34), rgba(255, 255, 255, 0.08)),
+    linear-gradient(
+      135deg,
+      rgba(255, 255, 255, 0.34),
+      rgba(255, 255, 255, 0.08)
+    ),
     var(--panel);
 }
 
@@ -10655,8 +10681,16 @@ html.theme-light .release-month {
 
 html.theme-light .platinum-highlight {
   background:
-    radial-gradient(circle at 14% 18%, rgba(174, 124, 0, 0.18), transparent 44%),
-    linear-gradient(135deg, rgba(255, 226, 105, 0.28), rgba(255, 255, 255, 0.1)),
+    radial-gradient(
+      circle at 14% 18%,
+      rgba(174, 124, 0, 0.18),
+      transparent 44%
+    ),
+    linear-gradient(
+      135deg,
+      rgba(255, 226, 105, 0.28),
+      rgba(255, 255, 255, 0.1)
+    ),
     var(--panel);
   border-color: rgba(154, 106, 0, 0.42);
 }
@@ -10665,8 +10699,16 @@ html.theme-light .platinum-highlight:hover,
 html.theme-light .platinum-highlight:focus-visible,
 html.theme-light .platinum-highlight:active {
   background:
-    radial-gradient(circle at 16% 18%, rgba(174, 124, 0, 0.24), transparent 54%),
-    linear-gradient(135deg, rgba(255, 226, 105, 0.34), rgba(255, 255, 255, 0.14)),
+    radial-gradient(
+      circle at 16% 18%,
+      rgba(174, 124, 0, 0.24),
+      transparent 54%
+    ),
+    linear-gradient(
+      135deg,
+      rgba(255, 226, 105, 0.34),
+      rgba(255, 255, 255, 0.14)
+    ),
     var(--panel);
   border-color: rgba(154, 106, 0, 0.62);
   box-shadow:
@@ -10993,7 +11035,11 @@ html.theme-light .achievement-kpi .kpi-breakdown {
       var(--kpi-glow, rgba(31, 42, 61, 0.16)),
       transparent 72%
     ),
-    linear-gradient(135deg, rgba(255, 255, 255, 0.5), rgba(255, 255, 255, 0.16)),
+    linear-gradient(
+      135deg,
+      rgba(255, 255, 255, 0.5),
+      rgba(255, 255, 255, 0.16)
+    ),
     rgba(224, 232, 243, 0.98);
   border-color: rgba(31, 42, 61, 0.38);
   box-shadow:

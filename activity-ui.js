@@ -269,7 +269,10 @@ export function achievementPanelMarkup({ psn = {}, steam = {}, xbox = {}, setupN
   const psnTotal = counts.reduce((sum, [, count]) => sum + count, 0);
   const showPsnRarityGraph = psnSummaryLoaded && psnTotal > 0 && !psn.authError && !psn.needsSetup && !psn.blocked;
   const total = psnTotal + Number(steam.totalEarned || 0) + Number(xbox.totalEarned || 0);
-  const breakdown = (rows) => `<span class="kpi-breakdown" aria-hidden="true">${rows.map(([value, totalValue, platform]) => `<small class="kpi-breakdown-pill kpi-breakdown-${escape(normalizeTitle(platform))}"><strong>${escape(String(value))}</strong> out of ${escape(String(totalValue))} on ${escape(platform)}</small>`).join("")}</span>`;
+  const breakdown = (rows) => {
+    const visibleRows = rows.filter(([value]) => Number(value) > 0);
+    return visibleRows.length ? `<span class="kpi-breakdown" aria-hidden="true">${visibleRows.map(([value, totalValue, platform]) => `<small class="kpi-breakdown-pill kpi-breakdown-${escape(normalizeTitle(platform))}"><strong>${escape(String(value))}</strong> out of ${escape(String(totalValue))} on ${escape(platform)}</small>`).join("")}</span>` : "";
+  };
   const psnLevel = psn.summary?.level || "";
   const dashboard = achievementDashboardMarkup({
     completedCount: completed,
