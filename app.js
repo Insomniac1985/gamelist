@@ -3355,7 +3355,7 @@ function gameOfTheYearExportCard({ label, game, coverSrc, index, gridColumn = ""
             ${tags.map((tag) => `<span class="goty-export-pill goty-export-tag">${escapeHtml(tt(tag))}</span>`).join("")}
           </div>
         </div>
-        ${playtime ? `<span class="goty-export-playtime">${escapeHtml(playtime)}</span>` : ""}
+        ${playtime ? `<span class="goty-export-playtime"><small>${escapeHtml(tt("Play Time"))}</small><strong>${escapeHtml(playtime)}</strong></span>` : ""}
       </article>
     </div>`;
 }
@@ -3831,13 +3831,32 @@ function gameOfTheYearExportCss({ theme, main, accent, gradient, bg, glowPrimary
       bottom: 13px;
       z-index: 2;
       box-sizing: border-box;
-      min-height: 25px;
-      padding: 5px 9px;
-      color: ${accent};
-      font: 900 13px/1 ${bodyFont};
-      background: ${theme.mode === "light" ? "rgba(255,255,255,.76)" : "rgba(10,12,16,.46)"};
-      border: 1px solid ${line};
-      border-radius: 7px;
+      display: grid;
+      gap: 3px;
+      min-width: 94px;
+      min-height: 49px;
+      padding: 7px 12px;
+      color: ${COOP_ACCENT};
+      background: color-mix(in srgb, ${COOP_ACCENT} 15%, ${theme.mode === "light" ? "rgba(255,255,255,.78)" : "rgba(12,24,18,.82)"});
+      border: 1px solid color-mix(in srgb, ${COOP_ACCENT} 68%, transparent);
+      border-radius: 10px;
+      box-shadow:
+        inset 0 1px 0 color-mix(in srgb, ${COOP_ACCENT} 26%, transparent),
+        0 0 18px color-mix(in srgb, ${COOP_ACCENT} 16%, transparent);
+    }
+    .goty-export-playtime small,
+    .goty-export-playtime strong {
+      display: block;
+      color: currentColor;
+      line-height: 1;
+      white-space: nowrap;
+    }
+    .goty-export-playtime small {
+      font: 900 12px/1 ${bodyFont};
+      text-transform: uppercase;
+    }
+    .goty-export-playtime strong {
+      font: 900 21px/1 ${bodyFont};
     }
     .goty-export-poster .platform-badge {
       position: relative;

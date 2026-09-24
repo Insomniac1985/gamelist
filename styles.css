@@ -2234,31 +2234,19 @@ button.achievement-kpi {
   white-space: nowrap;
   text-align: center;
   background: rgba(104, 108, 118, 0.82);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  border: 0;
   border-radius: 5px;
   box-shadow: none;
-}
-
-.achievement-kpi.platinum-highlight .kpi-breakdown {
-  background: rgba(117, 86, 30, 0.97);
-  border-color: rgba(244, 202, 92, 0.36);
-}
-
-.achievement-kpi.trophy-kpi .kpi-breakdown {
-  background: rgba(25, 29, 39, 0.97);
-  border-color: rgba(255, 255, 255, 0.2);
 }
 
 .achievement-kpi .kpi-breakdown-playstation {
   color: #ffffff;
   background: rgba(38, 91, 198, 0.96);
-  border-color: rgba(126, 166, 255, 0.26);
 }
 
 .achievement-kpi .kpi-breakdown-xbox {
   color: #ffffff;
   background: rgba(24, 128, 52, 0.96);
-  border-color: rgba(112, 235, 140, 0.22);
 }
 
 .achievement-kpi .kpi-breakdown-pill strong {
@@ -11028,20 +11016,9 @@ html.theme-light .achievement-kpi .kpi-breakdown {
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.52);
 }
 
-html.theme-light .achievement-kpi.platinum-highlight .kpi-breakdown {
-  background: rgba(248, 224, 154, 0.98);
-  border-color: rgba(153, 104, 22, 0.4);
-}
-
-html.theme-light .achievement-kpi.trophy-kpi .kpi-breakdown {
-  background: rgba(234, 239, 248, 0.98);
-  border-color: rgba(31, 42, 61, 0.32);
-}
-
 html.theme-light .achievement-kpi .kpi-breakdown-pill {
   color: #ffffff;
   background: rgba(53, 66, 88, 0.88);
-  border-color: rgba(31, 42, 61, 0.16);
 }
 
 html.theme-light .achievement-kpi .kpi-breakdown-pill strong {
