@@ -9256,7 +9256,7 @@ body.theme-kash .playing-finished-game.completed-trophy-card:hover {
 }
 
 .completed-platform .psn-progress-pill strong {
-  color: #ffe985;
+  color: #ffe985 !important;
   font-size: 10px;
 }
 
@@ -9473,7 +9473,10 @@ body.theme-kash .playing-finished-game.completed-trophy-card:hover {
     gap: 4px;
   }
 
-  .completed-list.list-view .completed-platform .psn-progress-pill .trophy-icon {
+  .completed-list.list-view
+    .completed-platform
+    .psn-progress-pill
+    .trophy-icon {
     width: 13px;
     height: 13px;
   }
