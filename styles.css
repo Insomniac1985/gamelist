@@ -2111,7 +2111,7 @@ html.stats-embed #finishedStatsDialog::backdrop {
   display: grid;
   grid-template-columns: repeat(6, minmax(0, 1fr));
   gap: 10px;
-  padding: 12px;
+  /*padding: 12px;*/
   border-radius: 8px;
 }
 
@@ -3522,8 +3522,7 @@ body.dialog-open .floating-edit-actions {
     center;
 }
 
-.stats .glass,
-.achievement-panel.glass {
+.stats .glass {
   background: var(--grid-fade), var(--grid-texture), var(--panel);
   background-size:
     auto,
@@ -10874,8 +10873,7 @@ html.theme-light .restore-action:hover {
   box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 16%, transparent);
 }
 
-html.theme-light .release-months-frame.glass,
-html.theme-light .achievement-panel.glass {
+html.theme-light .release-months-frame.glass {
   background:
     linear-gradient(
       135deg,
@@ -11026,7 +11024,6 @@ html.theme-light .toolbar,
 html.theme-light .settings-toolbar,
 html.theme-light .search-panel,
 html.theme-light .release-months-frame.glass,
-html.theme-light .achievement-panel.glass,
 html.theme-light .stats .glass,
 html.theme-light .theme-editor-preview {
   background:
@@ -14445,7 +14442,6 @@ html.theme-light .finish-trophy-check input[type="checkbox"]:checked {
   }
 
   body.mobile-app-mode .stats .glass,
-  body.mobile-app-mode .achievement-panel.glass,
   body.mobile-app-mode .game-card.glass {
     backdrop-filter: none;
     -webkit-backdrop-filter: none;
