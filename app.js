@@ -9693,12 +9693,21 @@ function renderDetailRatings(game) {
 }
 
 function ratingStarsMarkup() {
-  return [1, 2, 3, 4, 5].map((star) => `<span class="rating-star" style="--star-fill:var(--star-${star}-fill, 0%);">★</span>`).join("");
+  return [1, 2, 3, 4, 5].map((star) => `
+    <span class="rating-star" style="--star-fill:var(--star-${star}-fill, 0%);">
+      ${roundedStarSvg("rating-star-svg")}
+      <span class="rating-star-fill">${roundedStarSvg("rating-star-svg")}</span>
+    </span>
+  `).join("");
+}
+
+function roundedStarSvg(className = "rounded-star-icon") {
+  return `<svg class="${escapeHtml(className)}" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M12 2.75c.3 0 .58.17.71.44l2.48 5.02 5.54.8c.3.04.55.25.65.54.09.29.02.6-.2.81l-4.01 3.91.95 5.52a.8.8 0 0 1-1.16.84L12 18.02l-4.95 2.6a.8.8 0 0 1-1.16-.84l.95-5.52-4.01-3.91a.8.8 0 0 1 .44-1.35l5.54-.8 2.48-5.02c.13-.27.41-.44.71-.44Z"></path></svg>`;
 }
 
 function ownerRatingTitle() {
   const owner = cleanOwnerLabel(state.settings.defaultOwner) || DEFAULT_SETTINGS.defaultOwner;
-  return `<span class="detail-rating-title-star" aria-hidden="true">★</span>${escapeHtml(tt("{owner}'s Rating", { owner }))}`;
+  return `<span class="detail-rating-title-star" aria-hidden="true">${roundedStarSvg()}</span>${escapeHtml(tt("{owner}'s Rating", { owner }))}`;
 }
 
 function ratingStarFillStyle(value) {
@@ -9736,7 +9745,7 @@ function ratingScoreBadge(game) {
   const score = ratingScoreText(game);
   if (!score) return "";
   const tone = ratingScoreTone(scoreValue);
-  return `<span class="rating-score-pill rating-score-${tone}" title="${escapeHtml(`${tt("Rating")}: ${score}/10`)}" aria-label="${escapeHtml(`${tt("Rating")}: ${score}/10`)}"><span class="rating-score-star" aria-hidden="true">★</span>${escapeHtml(score)}</span>`;
+  return `<span class="rating-score-pill rating-score-${tone}" title="${escapeHtml(`${tt("Rating")}: ${score}/10`)}" aria-label="${escapeHtml(`${tt("Rating")}: ${score}/10`)}"><span class="rating-score-star" aria-hidden="true">${roundedStarSvg()}</span>${escapeHtml(score)}</span>`;
 }
 
 function ratingScoreTone(gameOrScore) {
@@ -10745,7 +10754,7 @@ function igdbRatingBadge(result) {
   const displayRating = (Math.round(rating) / 10).toFixed(1);
   const ratingText = `${displayRating}/10`;
   const countText = count > 0 ? ` (${count.toLocaleString()} votes)` : "";
-  return `<span class="lookup-igdb-rating rating-score-${ratingScoreTone(Number(displayRating))}" title="${escapeHtml(`IGDB rating: ${ratingText}${countText}`)}" aria-label="${escapeHtml(`IGDB rating: ${ratingText}${countText}`)}"><span class="lookup-igdb-rating-star" aria-hidden="true">★</span>${escapeHtml(displayRating)}</span>`;
+  return `<span class="lookup-igdb-rating rating-score-${ratingScoreTone(Number(displayRating))}" title="${escapeHtml(`IGDB rating: ${ratingText}${countText}`)}" aria-label="${escapeHtml(`IGDB rating: ${ratingText}${countText}`)}"><span class="lookup-igdb-rating-star" aria-hidden="true">${roundedStarSvg()}</span>${escapeHtml(displayRating)}</span>`;
 }
 
 function applyLookup(result) {
