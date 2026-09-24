@@ -12883,7 +12883,6 @@ body.theme-kash
   font-size: var(--rating-star-size, 25px);
   line-height: 1;
   white-space: nowrap;
-  top: -2px;
 }
 
 .detail-star-display {
