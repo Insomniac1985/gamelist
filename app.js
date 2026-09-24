@@ -3337,7 +3337,7 @@ function gameOfTheYearExportCard({ label, game, coverSrc, index, gridColumn = ""
   const cover = coverSrc || "";
   const progress = achievementProgressForGame(game);
   const progressCount = progress && progress.provider !== "steam" ? canvasProgressCount(progress.label) : "";
-  const playtime = gameOfTheYearPlaytimeText(game);
+  const playtime = gameOfTheYearPlaytime(game);
   const developer = game.developer || "";
   const publisher = game.publisher || "";
   const studioLine = [developer, publisher && publisher !== developer ? publisher : ""].filter(Boolean).join(" / ") || tt("Finished game");
@@ -3358,23 +3358,23 @@ function gameOfTheYearExportCard({ label, game, coverSrc, index, gridColumn = ""
           <div class="goty-export-pills">
             ${game.platform ? platformBadge(game.platform, null, { title: game.title }) : ""}
             ${progress ? psnProgressBadge(progress, { className: "goty-export-progress", label: progressCount, separator: Boolean(progressCount) }) : ""}
-            ${game.coop ? `<span class="goty-export-pill goty-export-coop">${escapeHtml(tt("Coop"))}</span>` : ""}
+            ${game.coop ? coopBadge() : game.multiplayer ? multiplayerBadge() : ""}
             ${game.stream ? `<span class="goty-export-pill goty-export-stream">${escapeHtml(tt("Stream"))}</span>` : ""}
             ${tags.map((tag) => `<span class="goty-export-pill goty-export-tag">${escapeHtml(tt(tag))}</span>`).join("")}
           </div>
         </div>
-        ${playtime ? `<span class="goty-export-playtime"><small>${escapeHtml(tt("Play Time"))}</small><strong>${escapeHtml(playtime)}</strong></span>` : ""}
+        ${playtime ? `<span class="goty-export-playtime" style="${escapeHtml(timePillStyle(playtime.hours))}"><small>${escapeHtml(tt("Play Time"))}</small><strong>${escapeHtml(playtime.text)}</strong></span>` : ""}
       </article>
     </div>`;
 }
 
-function gameOfTheYearPlaytimeText(game) {
+function gameOfTheYearPlaytime(game) {
   const finishedHours = finishHoursValue(game?.finishHours);
-  if (finishedHours) return `${finishedHours} ${finishedHours === 1 ? "hr" : "hrs"}`;
+  if (finishedHours) return { text: `${finishedHours} ${finishedHours === 1 ? "hr" : "hrs"}`, hours: finishedHours };
   const estimatedHours = Number(game?.lengthHours);
-  if (!Number.isFinite(estimatedHours) || estimatedHours <= 0) return "";
+  if (!Number.isFinite(estimatedHours) || estimatedHours <= 0) return null;
   const value = Number.isInteger(estimatedHours) ? String(estimatedHours) : estimatedHours.toFixed(1).replace(/\.0$/, "");
-  return `${value} ${Number(value) === 1 ? "hr" : "hrs"}`;
+  return { text: `${value} ${Number(value) === 1 ? "hr" : "hrs"}`, hours: estimatedHours };
 }
 
 function gameOfTheYearExportCss({ theme, main, accent, gradient, bg, glowPrimary, glowSecondary }) {
@@ -3517,20 +3517,30 @@ function gameOfTheYearExportCss({ theme, main, accent, gradient, bg, glowPrimary
     }
     .goty-export-new-kpi strong,
     .goty-export-older-kpi strong {
-      color: color-mix(in srgb, ${main} 55%, #000000);
+      color: ${muted};
     }
     .goty-export-coop-kpi strong {
       color: var(--coop-accent);
     }
     .goty-export-coop-kpi .coop-icon {
-      width: 24px;
-      height: 24px;
+      width: 34px;
+      height: 34px;
       flex: 0 0 auto;
+      fill: none;
+      stroke: currentColor;
+      stroke-width: 2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
     }
     .goty-export-completed-kpi .trophy-icon {
-      width: 24px;
-      height: 24px;
+      width: 34px;
+      height: 34px;
       flex: 0 0 auto;
+      fill: none;
+      stroke: currentColor;
+      stroke-width: 2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
     }
     .goty-export-small-kpi span {
       margin-top: 9px;
@@ -3823,10 +3833,30 @@ function gameOfTheYearExportCss({ theme, main, accent, gradient, bg, glowPrimary
       background: rgba(14, 16, 22, 0.3);
       border-color: rgba(255, 255, 255, 0.07);
     }
-    .goty-export-coop {
+    .goty-export-pills .coop-pill,
+    .goty-export-pills .multiplayer-pill {
+      position: relative;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 26px;
+      min-height: 26px;
+      box-sizing: border-box;
+      padding: 5px;
       color: var(--coop-accent);
-      border-color: color-mix(in srgb, var(--coop-accent) 38%, transparent);
+      border: 1px solid color-mix(in srgb, var(--coop-accent) 38%, transparent);
+      border-radius: 7px;
       background: color-mix(in srgb, var(--coop-accent) 10%, transparent);
+    }
+    .goty-export-pills .coop-icon,
+    .goty-export-pills .online-globe-icon {
+      width: 16px;
+      height: 16px;
+      fill: none;
+      stroke: currentColor;
+      stroke-width: 2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
     }
     .goty-export-stream {
       color: #bf94ff;
@@ -3847,10 +3877,6 @@ function gameOfTheYearExportCss({ theme, main, accent, gradient, bg, glowPrimary
       overflow: hidden;
       color: ${text};
       line-height: 1.05;
-      --time-color: ${accent};
-      --time-light: color-mix(in srgb, var(--time-color) 78%, #ffffff);
-      --time-dark: color-mix(in srgb, var(--time-color) 72%, #000000);
-      --time-glow: color-mix(in srgb, var(--time-color) 34%, transparent);
       background:
         linear-gradient(
           135deg,
