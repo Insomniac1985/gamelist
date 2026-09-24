@@ -5915,10 +5915,14 @@ function renderCompleted() {
     <div class="completed-row ${game.stream ? "stream-card" : ""} ${game.platinum ? "completed-trophy-card" : ""} ${ownerCardClass(game)}" data-id="${escapeHtml(game.id)}" role="button" tabindex="0" aria-label="${escapeHtml(`Open ${game.title}`)}">
       <img class="completed-cover" src="${escapeHtml(game.cover || "")}" alt="" loading="lazy" decoding="async" ${game.cover ? "" : "hidden"}>
       <div class="completed-main">
-        <strong class="${game.platinum ? "completed-achievements-title" : ""}">${escapeHtml(game.title)}</strong>
-        <span class="completed-platform">${completedOwnerBadges(game)}${completedBadges(game)}</span>
-        ${completedDurationLine(game)}
-        ${completedDateLine(game)}
+        <div class="completed-identity">
+          <strong class="${game.platinum ? "completed-achievements-title" : ""}">${escapeHtml(game.title)}</strong>
+          ${completedDurationLine(game)}
+        </div>
+        <div class="completed-meta">
+          <span class="completed-platform">${completedOwnerBadges(game)}${completedBadges(game)}</span>
+          ${completedDateLine(game)}
+        </div>
       </div>
       <div class="completed-actions">
         <button class="icon-button completed-edit-action" type="button" title="Edit" aria-label="Edit">${pencilIcon()}</button>
