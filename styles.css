@@ -2532,7 +2532,6 @@ button.achievement-kpi {
 .trophy-subtitle {
   grid-column: 1 / -1;
   margin: 2px 0 -2px;
-  color: #ffe985;
   font-size: 11px;
 }
 
