@@ -2566,7 +2566,7 @@ function renderPlayingFinished() {
   el.playingFinished.hidden = (state.settings.hiddenSections || []).includes("latestFinished") || !games.length;
   el.playingFinishedList.innerHTML = games.map((game) => {
     const achievementProgress = achievementProgressForGame(game);
-    const progress = achievementProgress ? progressValue(achievementProgress.game) : 0;
+    const progress = achievementProgress ? achievementProgressPercent(achievementProgress) : 0;
     const badges = `${completedOwnerBadges(game)}${completedBadges(game, { includePsn: false })}`;
     return finishedGameMarkup({ id: game.id, title: game.title, cover: game.cover || platformLogo(game.platform || "PS5"), completedClass: game.platinum ? "completed-trophy-card" : "", itemClass: ownerCardClass(game), badges, dateText: finishedDateText(game), progress: achievementProgress ? progress : null, escape: escapeHtml });
   }).join("");
@@ -4153,7 +4153,7 @@ async function drawGameOfTheYearImage(ctx, { owner, year, rows, logo, theme, bac
     const y = topRow ? topY : bottomY;
     const game = rows[index].game;
     const progress = achievementProgressForGame(game);
-    const progressValueNumber = progress ? Math.round(Number(progress.progress ?? progressValue(progress.game)) || 0) : 0;
+    const progressValueNumber = progress ? achievementProgressPercent(progress) : 0;
     const progressCount = progress ? canvasProgressCount(progress.label) : "";
     const details = [game.platform || "", game.developer || game.publisher || ""].filter(Boolean).join(" · ");
     const tags = [
@@ -5162,7 +5162,7 @@ function platinumCard(item) {
 }
 
 function achievementGameCard(game, sourceUrl) {
-  const progress = progressValue(game.game);
+  const progress = achievementProgressPercent(game);
   return `
     <a class="achievement-game" href="${escapeHtml(game.url || sourceUrl)}" target="_blank" rel="noreferrer">
       <img src="${escapeHtml(game.icon || platformLogo("PS5"))}" alt="">
@@ -5179,6 +5179,12 @@ function progressValue(text) {
   const match = String(text || "").match(/(\d+(?:\.\d+)?)%/);
   if (!match) return 0;
   return Math.max(0, Math.min(100, Number(match[1])));
+}
+
+function achievementProgressPercent(value) {
+  const explicitProgress = Number(value?.progress);
+  if (Number.isFinite(explicitProgress)) return Math.max(0, Math.min(100, Math.round(explicitProgress)));
+  return Math.round(progressValue(value?.game));
 }
 
 function trophyTone(value) {
@@ -6551,7 +6557,7 @@ function statsGameList(games) {
   const firstCarryIndex = orderedGames.findIndex((game) => game.statsMonthCarry);
   return orderedGames.map((game, index) => {
     const progress = achievementProgressForGame(game);
-    const progressNumber = progress ? Math.round(Number(progress.progress ?? progressValue(progress.game)) || 0) : 0;
+    const progressNumber = progress ? achievementProgressPercent(progress) : 0;
     const forceCompleted = game.statsCompleted === true;
     const completed = forceCompleted || game.platinum || progressNumber >= 100;
     const ownerTitleClass = ownerTitleClasses(visibleOwnerTags(game));
@@ -8541,8 +8547,7 @@ function normalizeTitleForMatch(value) {
 }
 
 function psnProgressBadge(game, options = {}) {
-  const explicitProgress = Number(game?.progress ?? options.progress);
-  const progress = Number.isFinite(explicitProgress) ? Math.max(0, Math.min(100, Math.round(explicitProgress))) : progressValue(game.game);
+  const progress = options.progress != null ? achievementProgressPercent({ progress: options.progress }) : achievementProgressPercent(game);
   const label = options.label ?? "";
   const className = ["psn-progress-pill", options.className || ""].filter(Boolean).join(" ");
   return `
