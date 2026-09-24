@@ -2182,31 +2182,20 @@ button.achievement-kpi {
   inset: 0;
   z-index: 3;
   display: grid;
-  align-content: start;
+  align-content: center;
+  justify-content: center;
   justify-items: stretch;
-  gap: 6px;
+  grid-template-columns: max-content;
+  gap: 2px;
   width: auto;
   max-width: none;
   margin: 0;
-  padding: 6px 9px;
+  padding: 5px 6px;
   color: var(--text);
-  background:
-    radial-gradient(
-      circle at 20% 0%,
-      var(--kpi-glow, rgba(255, 255, 255, 0.13)),
-      transparent 72%
-    ),
-    linear-gradient(
-      135deg,
-      rgba(255, 255, 255, 0.08),
-      rgba(255, 255, 255, 0.025)
-    ),
-    rgba(10, 12, 16, 0.96);
+  background: rgba(10, 12, 16, 0.96);
   border: 1px solid rgba(255, 255, 255, 0.18);
   border-radius: inherit;
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.08),
-    inset 0 0 24px rgba(255, 255, 255, 0.035);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
   opacity: 0;
   visibility: hidden;
   pointer-events: none;
@@ -2234,36 +2223,29 @@ button.achievement-kpi {
 .achievement-kpi .kpi-breakdown-pill {
   display: block;
   margin: 0;
-  padding: 5px 8px;
+  max-width: 100%;
+  padding: 3px 7px;
   color: #f4f5f7;
   font-size: 10px;
-  line-height: 1.15;
+  line-height: 1.1;
   font-weight: 760;
   white-space: nowrap;
   text-align: center;
   background: rgba(104, 108, 118, 0.82);
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 5px;
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  box-shadow: none;
 }
 
 .achievement-kpi .kpi-breakdown-playstation {
   color: #ffffff;
-  background: linear-gradient(
-    135deg,
-    rgba(72, 124, 232, 0.96),
-    rgba(38, 91, 198, 0.92)
-  );
+  background: rgba(38, 91, 198, 0.96);
   border-color: rgba(126, 166, 255, 0.26);
 }
 
 .achievement-kpi .kpi-breakdown-xbox {
   color: #ffffff;
-  background: linear-gradient(
-    135deg,
-    rgba(45, 184, 84, 0.96),
-    rgba(24, 128, 52, 0.92)
-  );
+  background: rgba(24, 128, 52, 0.96);
   border-color: rgba(112, 235, 140, 0.22);
 }
 
@@ -11029,22 +11011,9 @@ html.theme-light .achievement-section {
 
 html.theme-light .achievement-kpi .kpi-breakdown {
   color: #111827;
-  background:
-    radial-gradient(
-      circle at 20% 0%,
-      var(--kpi-glow, rgba(31, 42, 61, 0.16)),
-      transparent 72%
-    ),
-    linear-gradient(
-      135deg,
-      rgba(255, 255, 255, 0.5),
-      rgba(255, 255, 255, 0.16)
-    ),
-    rgba(224, 232, 243, 0.98);
+  background: rgba(224, 232, 243, 0.98);
   border-color: rgba(31, 42, 61, 0.38);
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.52),
-    inset 0 0 24px rgba(31, 42, 61, 0.035);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.52);
 }
 
 html.theme-light .achievement-kpi .kpi-breakdown-pill {
