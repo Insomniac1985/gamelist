@@ -1989,6 +1989,7 @@ html.theme-gradient .goty-section .column-head h2 .trophy-icon {
 
 .playing-finished-tags .rating-score-pill {
   color: var(--rating-score-main);
+  padding-top: 1px;
 }
 
 .playing-finished-tags .stream-pill,
