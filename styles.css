@@ -12916,6 +12916,12 @@ body.theme-kash
   color: var(--rating-active-color);
 }
 
+.rating-star-fill .rating-star-svg {
+  width: var(--rating-star-size, 25px);
+  min-width: var(--rating-star-size, 25px);
+  height: var(--rating-star-size, 25px);
+}
+
 .rating-row[data-rating-value="5"] .rating-star-fill,
 .detail-rating-row[data-rating-value="5"] .rating-star-fill {
   color: #ffe985;
