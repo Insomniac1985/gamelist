@@ -343,10 +343,8 @@ function releaseCalendarMarkup(months, releases, today, weekStart, options = {})
         <button class="icon-button" type="button" data-calendar-shift="1" title="${escapeHtml(translate("Next month"))}" aria-label="${escapeHtml(translate("Next month"))}">→</button>
       </div>
     </div>
-    <div class="release-months-frame glass">
-      <div class="release-months">
-        ${months.map((month) => releaseMonthMarkup(month, releases, today, weekStart, options)).join("")}
-      </div>
+    <div class="release-months">
+      ${months.map((month) => releaseMonthMarkup(month, releases, today, weekStart, options)).join("")}
     </div>
   `;
 }

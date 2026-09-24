@@ -2111,7 +2111,7 @@ html.stats-embed #finishedStatsDialog::backdrop {
   display: grid;
   grid-template-columns: repeat(6, minmax(0, 1fr));
   gap: 10px;
-  /*padding: 12px;*/
+  padding: 0;
   border-radius: 8px;
 }
 
@@ -2135,7 +2135,17 @@ html.stats-embed #finishedStatsDialog::backdrop {
   padding: 11px;
   color: var(--text);
   text-decoration: none;
-  background: rgba(255, 255, 255, 0.05);
+  background: var(--grid-fade), var(--grid-texture), rgba(255, 255, 255, 0.05);
+  background-size:
+    auto,
+    22px 22px,
+    22px 22px,
+    auto;
+  background-position:
+    center,
+    var(--grid-x) var(--grid-y),
+    var(--grid-x) var(--grid-y),
+    center;
   border: 1px solid rgba(255, 255, 255, 0.11);
   border-radius: 8px;
 }
@@ -3229,7 +3239,17 @@ body.dialog-open .floating-edit-actions {
   display: grid;
   grid-template-rows: auto auto 1fr;
   padding: 10px;
-  background: rgba(255, 255, 255, 0.045);
+  background: var(--grid-fade), var(--grid-texture), rgba(255, 255, 255, 0.045);
+  background-size:
+    auto,
+    22px 22px,
+    22px 22px,
+    auto;
+  background-position:
+    center,
+    var(--grid-x) var(--grid-y),
+    var(--grid-x) var(--grid-y),
+    center;
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 8px;
 }
@@ -3503,22 +3523,6 @@ body.dialog-open .floating-edit-actions {
   border: 1px solid var(--line);
   box-shadow: var(--shadow);
   backdrop-filter: blur(20px) saturate(1.15);
-}
-
-.release-months-frame.glass {
-  padding: 12px;
-  border-radius: 8px;
-  background: var(--grid-fade), var(--grid-texture), var(--panel);
-  background-size:
-    auto,
-    22px 22px,
-    22px 22px,
-    auto;
-  background-position:
-    center,
-    var(--grid-x) var(--grid-y),
-    var(--grid-x) var(--grid-y),
-    center;
 }
 
 .stats .glass {
@@ -9255,7 +9259,7 @@ body.theme-kash .playing-finished-game.completed-trophy-card:hover {
 }
 
 .completed-platform .psn-progress-pill strong {
-  color: #ffe985;
+  color: #ffe985 !important;
   font-size: 10px;
 }
 
@@ -9472,7 +9476,10 @@ body.theme-kash .playing-finished-game.completed-trophy-card:hover {
     gap: 4px;
   }
 
-  .completed-list.list-view .completed-platform .psn-progress-pill .trophy-icon {
+  .completed-list.list-view
+    .completed-platform
+    .psn-progress-pill
+    .trophy-icon {
     width: 13px;
     height: 13px;
   }
@@ -10518,9 +10525,7 @@ html.theme-light .search-panel {
     inset 0 1px 0 rgba(255, 255, 255, 0.46);
 }
 
-html.theme-light .achievement-panel,
-html.theme-light .stats .glass,
-html.theme-light .release-months-frame.glass {
+html.theme-light .stats .glass {
   background:
     linear-gradient(
       135deg,
@@ -10889,17 +10894,6 @@ html.theme-light .restore-action:hover {
   box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 16%, transparent);
 }
 
-html.theme-light .release-months-frame.glass {
-  background:
-    linear-gradient(
-      135deg,
-      rgba(221, 229, 240, 0.98),
-      rgba(184, 198, 218, 0.95)
-    ),
-    var(--grid-texture);
-  border-color: rgba(24, 35, 54, 0.48);
-}
-
 html.theme-light .achievement-section {
   border-bottom-color: rgba(24, 35, 54, 0.28);
 }
@@ -11039,7 +11033,6 @@ html.theme-light .playing-finished-game.completed-trophy-card:hover {
 html.theme-light .toolbar,
 html.theme-light .settings-toolbar,
 html.theme-light .search-panel,
-html.theme-light .release-months-frame.glass,
 html.theme-light .stats .glass,
 html.theme-light .theme-editor-preview {
   background:
@@ -12809,9 +12802,9 @@ body.theme-kash
 
 @media (min-width: 761px) {
   .finish-rating-grid {
-    --rating-star-size: 25px;
-    --rating-star-gap: 5px;
-    --rating-hitbox-height: 34px;
+    --rating-star-size: 23px;
+    --rating-star-gap: 4px;
+    --rating-hitbox-height: 32px;
   }
 }
 
@@ -12877,7 +12870,6 @@ body.theme-kash
   font-size: var(--rating-star-size, 25px);
   line-height: 1;
   white-space: nowrap;
-  top: -2px;
 }
 
 .detail-star-display {
@@ -12908,6 +12900,12 @@ body.theme-kash
   width: var(--star-fill, 0%);
   overflow: hidden;
   color: var(--rating-active-color);
+}
+
+.rating-star-fill .rating-star-svg {
+  width: var(--rating-star-size, 25px);
+  min-width: var(--rating-star-size, 25px);
+  height: var(--rating-star-size, 25px);
 }
 
 .rating-row[data-rating-value="5"] .rating-star-fill,
@@ -12969,6 +12967,23 @@ body.theme-kash
   color: #ffffff;
   background: rgba(255, 255, 255, 0.11);
   border-color: rgba(255, 255, 255, 0.24);
+}
+
+.finish-rating-grid .star-rating {
+  gap: 8px;
+  min-height: 44px;
+  padding: 0 8px;
+}
+
+.finish-rating-grid .rating-step-controls {
+  gap: 4px;
+}
+
+.finish-rating-grid .rating-step-button,
+.finish-rating-grid .star-rating .star-clear {
+  width: 26px;
+  height: 26px;
+  border-radius: 7px;
 }
 
 .star-rating .star-clear {
