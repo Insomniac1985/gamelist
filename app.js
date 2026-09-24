@@ -3355,11 +3355,14 @@ function gameOfTheYearExportCard({ label, game, coverSrc, index, gridColumn = ""
         <div class="goty-export-info">
           <h2>${escapeHtml(game.title || "")}</h2>
           <p>${escapeHtml(studioLine)}</p>
-          <div class="goty-export-pills">
+          <div class="goty-export-pills goty-export-main-pills">
             ${game.platform ? platformBadge(game.platform, null, { title: game.title }) : ""}
+            ${mediaFormatBadge(game)}
             ${progress ? psnProgressBadge(progress, { className: "goty-export-progress", label: progressCount, separator: Boolean(progressCount) }) : ""}
             ${game.coop ? coopBadge() : game.multiplayer ? multiplayerBadge() : ""}
             ${game.stream ? `<span class="goty-export-pill goty-export-stream">${escapeHtml(tt("Stream"))}</span>` : ""}
+          </div>
+          <div class="goty-export-pills goty-export-tag-pills">
             ${tags.map((tag) => `<span class="goty-export-pill goty-export-tag">${escapeHtml(tt(tag))}</span>`).join("")}
           </div>
         </div>
@@ -3812,6 +3815,9 @@ function gameOfTheYearExportCss({ theme, main, accent, gradient, bg, glowPrimary
       gap: 5px;
       margin-top: 12px;
     }
+    .goty-export-tag-pills {
+      margin-top: 6px;
+    }
     .goty-export-pill,
     .goty-export-progress {
       position: relative;
@@ -3834,12 +3840,15 @@ function gameOfTheYearExportCss({ theme, main, accent, gradient, bg, glowPrimary
       border-color: rgba(255, 255, 255, 0.07);
     }
     .goty-export-pills .coop-pill,
-    .goty-export-pills .multiplayer-pill {
+    .goty-export-pills .multiplayer-pill,
+    .goty-export-pills .media-format-pill {
       position: relative;
       display: inline-flex;
       align-items: center;
       justify-content: center;
+      width: 26px;
       min-width: 26px;
+      height: 26px;
       min-height: 26px;
       box-sizing: border-box;
       padding: 5px;
@@ -3847,6 +3856,11 @@ function gameOfTheYearExportCss({ theme, main, accent, gradient, bg, glowPrimary
       border: 1px solid color-mix(in srgb, var(--coop-accent) 38%, transparent);
       border-radius: 7px;
       background: color-mix(in srgb, var(--coop-accent) 10%, transparent);
+    }
+    .goty-export-pills .media-format-pill {
+      color: ${text};
+      border-color: ${line};
+      background: ${theme.mode === "light" ? "rgba(255,255,255,.76)" : "rgba(255,255,255,.11)"};
     }
     .goty-export-pills .coop-icon,
     .goty-export-pills .online-globe-icon {
@@ -3857,6 +3871,12 @@ function gameOfTheYearExportCss({ theme, main, accent, gradient, bg, glowPrimary
       stroke-width: 2;
       stroke-linecap: round;
       stroke-linejoin: round;
+    }
+    .goty-export-pills .media-format-pill img,
+    .goty-export-pills .media-format-pill .download-badge-icon {
+      width: 16px;
+      height: 16px;
+      object-fit: contain;
     }
     .goty-export-stream {
       color: #bf94ff;
