@@ -2135,19 +2135,14 @@ html.stats-embed #finishedStatsDialog::backdrop {
   padding: 11px;
   color: var(--text);
   text-decoration: none;
-  background: var(--grid-fade), var(--grid-texture), rgba(255, 255, 255, 0.05);
-  background-size:
-    auto,
-    22px 22px,
-    22px 22px,
-    auto;
-  background-position:
-    center,
-    var(--grid-x) var(--grid-y),
-    var(--grid-x) var(--grid-y),
-    center;
-  border: 1px solid rgba(255, 255, 255, 0.11);
+  background:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.065), rgba(255, 255, 255, 0.025)),
+    var(--panel);
+  border: 1px solid rgba(255, 255, 255, 0.13);
   border-radius: 8px;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.055),
+    0 12px 28px rgba(0, 0, 0, 0.14);
 }
 
 .achievement-kpi {
@@ -2199,13 +2194,17 @@ button.achievement-kpi {
   color: var(--text);
   background:
     radial-gradient(
-      circle at 50% 0%,
+      circle at 20% 0%,
       var(--kpi-glow, rgba(255, 255, 255, 0.13)),
-      transparent 76%
+      transparent 72%
     ),
-    rgba(10, 12, 16, 0.94);
-  border: 1px solid rgba(255, 255, 255, 0.14);
+    linear-gradient(135deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.025)),
+    rgba(10, 12, 16, 0.96);
+  border: 1px solid rgba(255, 255, 255, 0.18);
   border-radius: inherit;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.08),
+    inset 0 0 24px rgba(255, 255, 255, 0.035);
   opacity: 0;
   visibility: hidden;
   pointer-events: none;
@@ -2240,20 +2239,22 @@ button.achievement-kpi {
   font-weight: 760;
   white-space: nowrap;
   text-align: center;
-  background: rgba(104, 108, 118, 0.88);
-  border: 0;
+  background: rgba(104, 108, 118, 0.82);
+  border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 5px;
-  box-shadow: none;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
 }
 
 .achievement-kpi .kpi-breakdown-playstation {
   color: #ffffff;
-  background: rgba(38, 91, 198, 0.9);
+  background: linear-gradient(135deg, rgba(72, 124, 232, 0.96), rgba(38, 91, 198, 0.92));
+  border-color: rgba(126, 166, 255, 0.26);
 }
 
 .achievement-kpi .kpi-breakdown-xbox {
   color: #ffffff;
-  background: rgba(34, 145, 64, 0.92);
+  background: linear-gradient(135deg, rgba(45, 184, 84, 0.96), rgba(24, 128, 52, 0.92));
+  border-color: rgba(112, 235, 140, 0.22);
 }
 
 .achievement-kpi .kpi-breakdown-pill strong {
@@ -2278,6 +2279,11 @@ button.achievement-kpi {
 .platinum-highlight {
   --kpi-color: #f7df69;
   --kpi-glow: rgba(247, 223, 105, 0.26);
+  background:
+    radial-gradient(circle at 14% 18%, rgba(247, 223, 105, 0.18), transparent 44%),
+    linear-gradient(135deg, rgba(247, 223, 105, 0.09), rgba(255, 255, 255, 0.025)),
+    var(--panel);
+  border-color: rgba(247, 223, 105, 0.28);
 }
 
 .trophy-kpi {
@@ -2294,15 +2300,19 @@ button.achievement-kpi {
 .platinum-highlight:active {
   background:
     radial-gradient(
-      circle at 50% 28%,
-      rgba(247, 223, 105, 0.2),
-      transparent 66%
+      circle at 16% 18%,
+      rgba(247, 223, 105, 0.28),
+      transparent 54%
     ),
-    rgba(255, 255, 255, 0.05);
+    linear-gradient(135deg, rgba(247, 223, 105, 0.14), rgba(255, 255, 255, 0.04)),
+    var(--panel);
+  border-color: rgba(247, 223, 105, 0.54);
   box-shadow:
     inset 0 0 28px rgba(247, 223, 105, 0.16),
-    0 0 0 3px rgba(247, 223, 105, 0.09),
-    0 14px 34px rgba(247, 223, 105, 0.12);
+    inset 0 1px 0 rgba(255, 255, 255, 0.08),
+    0 0 0 1px rgba(247, 223, 105, 0.18),
+    0 0 0 4px rgba(247, 223, 105, 0.1),
+    0 16px 36px rgba(247, 223, 105, 0.16);
 }
 
 .rarity-graph {
@@ -2396,15 +2406,6 @@ button.achievement-kpi {
   border: 1px solid rgba(255, 255, 255, 0.12);
   border-radius: 8px;
   text-decoration: none;
-}
-
-.achievement-card.latest {
-  border-color: color-mix(in srgb, var(--accent) 38%, transparent);
-  background: linear-gradient(
-    135deg,
-    color-mix(in srgb, var(--accent) 16%, transparent),
-    rgba(255, 255, 255, 0.055)
-  );
 }
 
 .achievement-card.trophy-platinum {
@@ -3239,19 +3240,41 @@ body.dialog-open .floating-edit-actions {
   display: grid;
   grid-template-rows: auto auto 1fr;
   padding: 10px;
-  background: var(--grid-fade), var(--grid-texture), rgba(255, 255, 255, 0.045);
+  background: var(--grid-texture), var(--panel);
   background-size:
-    auto,
     22px 22px,
     22px 22px,
     auto;
   background-position:
-    center,
     var(--grid-x) var(--grid-y),
     var(--grid-x) var(--grid-y),
     center;
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 8px;
+}
+
+@media (min-width: 761px) {
+  .release-months {
+    background: var(--grid-fade), var(--grid-texture), var(--panel);
+    background-size:
+      auto,
+      22px 22px,
+      22px 22px,
+      auto;
+    background-position:
+      center,
+      var(--grid-x) var(--grid-y),
+      var(--grid-x) var(--grid-y),
+      center;
+    padding: 12px;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    box-shadow: var(--shadow);
+  }
+
+  .release-month {
+    background: rgba(255, 255, 255, 0.045);
+  }
 }
 
 .release-month header {
@@ -10611,6 +10634,70 @@ html.theme-light .stat {
     inset 0 1px 0 rgba(255, 255, 255, 0.55);
 }
 
+html.theme-light .achievement-kpi,
+html.theme-light .rarity-graph {
+  background:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.34), rgba(255, 255, 255, 0.08)),
+    var(--panel);
+}
+
+html.theme-light .release-month {
+  background: var(--grid-texture), var(--panel);
+  background-size:
+    18px 18px,
+    18px 18px,
+    auto;
+  background-position:
+    var(--grid-x) var(--grid-y),
+    var(--grid-x) var(--grid-y),
+    center;
+}
+
+html.theme-light .platinum-highlight {
+  background:
+    radial-gradient(circle at 14% 18%, rgba(174, 124, 0, 0.18), transparent 44%),
+    linear-gradient(135deg, rgba(255, 226, 105, 0.28), rgba(255, 255, 255, 0.1)),
+    var(--panel);
+  border-color: rgba(154, 106, 0, 0.42);
+}
+
+html.theme-light .platinum-highlight:hover,
+html.theme-light .platinum-highlight:focus-visible,
+html.theme-light .platinum-highlight:active {
+  background:
+    radial-gradient(circle at 16% 18%, rgba(174, 124, 0, 0.24), transparent 54%),
+    linear-gradient(135deg, rgba(255, 226, 105, 0.34), rgba(255, 255, 255, 0.14)),
+    var(--panel);
+  border-color: rgba(154, 106, 0, 0.62);
+  box-shadow:
+    inset 0 0 28px rgba(174, 124, 0, 0.11),
+    inset 0 1px 0 rgba(255, 255, 255, 0.42),
+    0 0 0 1px rgba(154, 106, 0, 0.16),
+    0 0 0 4px rgba(154, 106, 0, 0.09),
+    0 16px 34px rgba(31, 42, 61, 0.2);
+}
+
+@media (min-width: 761px) {
+  html.theme-light .release-months {
+    background: var(--grid-fade), var(--grid-texture), var(--panel);
+    background-size:
+      auto,
+      18px 18px,
+      18px 18px,
+      auto;
+    background-position:
+      center,
+      var(--grid-x) var(--grid-y),
+      var(--grid-x) var(--grid-y),
+      center;
+    border-color: rgba(20, 30, 48, 0.56);
+  }
+
+  html.theme-light .release-month {
+    background: rgba(226, 233, 243, 0.72);
+  }
+}
+
 html.theme-light .game-card:hover,
 html.theme-light .game-row:hover,
 html.theme-light .completed-row:hover,
@@ -10902,17 +10989,22 @@ html.theme-light .achievement-kpi .kpi-breakdown {
   color: #111827;
   background:
     radial-gradient(
-      circle at 50% 0%,
+      circle at 20% 0%,
       var(--kpi-glow, rgba(31, 42, 61, 0.16)),
       transparent 72%
     ),
+    linear-gradient(135deg, rgba(255, 255, 255, 0.5), rgba(255, 255, 255, 0.16)),
     rgba(224, 232, 243, 0.98);
   border-color: rgba(31, 42, 61, 0.38);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.52),
+    inset 0 0 24px rgba(31, 42, 61, 0.035);
 }
 
 html.theme-light .achievement-kpi .kpi-breakdown-pill {
   color: #ffffff;
   background: rgba(53, 66, 88, 0.88);
+  border-color: rgba(31, 42, 61, 0.16);
 }
 
 html.theme-light .achievement-kpi .kpi-breakdown-pill strong {
@@ -10948,17 +11040,6 @@ html.theme-light .card-trophy-meta,
 html.theme-light .detail-trophy-card span,
 html.theme-light .detail-trophy-card p {
   color: #384a64;
-}
-
-html.theme-light .achievement-card.latest {
-  background:
-    linear-gradient(
-      135deg,
-      color-mix(in srgb, var(--accent) 20%, rgba(226, 233, 243, 0.98)),
-      rgba(190, 202, 220, 0.92)
-    ),
-    var(--grid-texture);
-  border-color: color-mix(in srgb, var(--accent) 54%, rgba(24, 35, 54, 0.42));
 }
 
 html.theme-light .release-month header strong,
@@ -13805,6 +13886,20 @@ html.theme-light .finish-trophy-check input[type="checkbox"]:checked {
 
   .release-months {
     grid-template-columns: 1fr;
+  }
+
+  .release-month:first-child {
+    background: var(--grid-fade), var(--grid-texture), var(--panel);
+    background-size:
+      auto,
+      22px 22px,
+      22px 22px,
+      auto;
+    background-position:
+      center,
+      var(--grid-x) var(--grid-y),
+      var(--grid-x) var(--grid-y),
+      center;
   }
 
   .release-month:nth-child(n + 2) {
