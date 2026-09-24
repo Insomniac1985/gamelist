@@ -2182,13 +2182,14 @@ button.achievement-kpi {
   inset: 0;
   z-index: 3;
   display: grid;
-  align-content: start;
+  align-content: center;
   justify-items: stretch;
   gap: 6px;
   width: auto;
   max-width: none;
   margin: 0;
-  padding: 6px 9px;
+  min-height: 100%;
+  padding: 5px 4px;
   color: var(--text);
   background:
     radial-gradient(
@@ -2234,10 +2235,10 @@ button.achievement-kpi {
 .achievement-kpi .kpi-breakdown-pill {
   display: block;
   margin: 0;
-  padding: 5px 8px;
+  padding: 3px 4px;
   color: #f4f5f7;
-  font-size: 10px;
-  line-height: 1.15;
+  font-size: 9px;
+  line-height: 1.1;
   font-weight: 760;
   white-space: nowrap;
   text-align: center;
