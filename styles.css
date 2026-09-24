@@ -1972,7 +1972,7 @@ html.theme-gradient .goty-section .column-head h2 .trophy-icon {
   padding: 0 5px;
   border-radius: 5px;
   font-size: 9px;
-  line-height: 1;
+  line-height: 18px;
 }
 
 .playing-finished-tags .platform-badge {
@@ -9266,9 +9266,11 @@ body.theme-kash .playing-finished-game.completed-trophy-card:hover {
 .completed-platform .stream-pill,
 .completed-platform .multiplayer-pill,
 .completed-platform .rating-score-pill {
+  height: 21px;
   min-height: 21px;
-  padding: 2px 6px;
+  padding: 0 6px;
   font-size: 10px;
+  line-height: 21px;
 }
 
 .completed-platform .coop-pill,
@@ -9281,8 +9283,14 @@ body.theme-kash .playing-finished-game.completed-trophy-card:hover {
 }
 
 .completed-platform .rating-score-star {
-  font-size: 16px;
+  display: inline-grid;
+  place-items: center;
   line-height: 1;
+}
+
+.completed-platform .rating-score-star .rounded-star-icon {
+  width: 11px;
+  height: 11px;
 }
 
 .rating-score-pill {
