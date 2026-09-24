@@ -2135,14 +2135,12 @@ html.stats-embed #finishedStatsDialog::backdrop {
   padding: 11px;
   color: var(--text);
   text-decoration: none;
-  background: var(--grid-fade), var(--grid-texture), rgba(255, 255, 255, 0.05);
+  background: var(--grid-texture), var(--panel);
   background-size:
-    auto,
     22px 22px,
     22px 22px,
     auto;
   background-position:
-    center,
     var(--grid-x) var(--grid-y),
     var(--grid-x) var(--grid-y),
     center;
@@ -2278,6 +2276,17 @@ button.achievement-kpi {
 .platinum-highlight {
   --kpi-color: #f7df69;
   --kpi-glow: rgba(247, 223, 105, 0.26);
+  background: var(--grid-fade), var(--grid-texture), var(--panel);
+  background-size:
+    auto,
+    22px 22px,
+    22px 22px,
+    auto;
+  background-position:
+    center,
+    var(--grid-x) var(--grid-y),
+    var(--grid-x) var(--grid-y),
+    center;
 }
 
 .trophy-kpi {
@@ -3239,19 +3248,33 @@ body.dialog-open .floating-edit-actions {
   display: grid;
   grid-template-rows: auto auto 1fr;
   padding: 10px;
-  background: var(--grid-fade), var(--grid-texture), rgba(255, 255, 255, 0.045);
+  background: var(--grid-texture), var(--panel);
   background-size:
-    auto,
     22px 22px,
     22px 22px,
     auto;
   background-position:
-    center,
     var(--grid-x) var(--grid-y),
     var(--grid-x) var(--grid-y),
     center;
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 8px;
+}
+
+@media (min-width: 761px) {
+  .release-month:last-child {
+    background: var(--grid-fade), var(--grid-texture), var(--panel);
+    background-size:
+      auto,
+      22px 22px,
+      22px 22px,
+      auto;
+    background-position:
+      center,
+      var(--grid-x) var(--grid-y),
+      var(--grid-x) var(--grid-y),
+      center;
+  }
 }
 
 .release-month header {
@@ -10611,6 +10634,50 @@ html.theme-light .stat {
     inset 0 1px 0 rgba(255, 255, 255, 0.55);
 }
 
+html.theme-light .achievement-kpi,
+html.theme-light .rarity-graph,
+html.theme-light .release-month {
+  background: var(--grid-texture), var(--panel);
+  background-size:
+    18px 18px,
+    18px 18px,
+    auto;
+  background-position:
+    var(--grid-x) var(--grid-y),
+    var(--grid-x) var(--grid-y),
+    center;
+}
+
+html.theme-light .platinum-highlight {
+  background: var(--grid-fade), var(--grid-texture), var(--panel);
+  background-size:
+    auto,
+    18px 18px,
+    18px 18px,
+    auto;
+  background-position:
+    center,
+    var(--grid-x) var(--grid-y),
+    var(--grid-x) var(--grid-y),
+    center;
+}
+
+@media (min-width: 761px) {
+  html.theme-light .release-month:last-child {
+    background: var(--grid-fade), var(--grid-texture), var(--panel);
+    background-size:
+      auto,
+      18px 18px,
+      18px 18px,
+      auto;
+    background-position:
+      center,
+      var(--grid-x) var(--grid-y),
+      var(--grid-x) var(--grid-y),
+      center;
+  }
+}
+
 html.theme-light .game-card:hover,
 html.theme-light .game-row:hover,
 html.theme-light .completed-row:hover,
@@ -13805,6 +13872,20 @@ html.theme-light .finish-trophy-check input[type="checkbox"]:checked {
 
   .release-months {
     grid-template-columns: 1fr;
+  }
+
+  .release-month:first-child {
+    background: var(--grid-fade), var(--grid-texture), var(--panel);
+    background-size:
+      auto,
+      22px 22px,
+      22px 22px,
+      auto;
+    background-position:
+      center,
+      var(--grid-x) var(--grid-y),
+      var(--grid-x) var(--grid-y),
+      center;
   }
 
   .release-month:nth-child(n + 2) {
