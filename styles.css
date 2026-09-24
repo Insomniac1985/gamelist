@@ -666,6 +666,12 @@ html.theme-font-mata {
   opacity: 0.35;
 }
 
+.playing-slider-button:disabled:hover {
+  color: #ffffff;
+  border-color: color-mix(in srgb, var(--accent) 28%, transparent);
+  background: rgba(255, 255, 255, 0.09);
+}
+
 .playing-panel {
   position: relative;
   padding: 6px 0 10px;
@@ -1415,10 +1421,6 @@ html.theme-gradient .goty-section .column-head h2 .trophy-icon {
 
 .goty-choice-nav {
   align-self: center;
-}
-
-.goty-choice-nav[hidden] {
-  display: none;
 }
 
 .goty-choice-strip.no-overflow {
@@ -2186,7 +2188,7 @@ button.achievement-kpi {
   justify-content: center;
   justify-items: stretch;
   grid-template-columns: max-content;
-  gap: 2px;
+  gap: 4px;
   width: auto;
   max-width: none;
   margin: 0;
@@ -2232,7 +2234,7 @@ button.achievement-kpi {
   white-space: nowrap;
   text-align: center;
   background: rgba(104, 108, 118, 0.82);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  border: 0;
   border-radius: 5px;
   box-shadow: none;
 }
@@ -2240,13 +2242,11 @@ button.achievement-kpi {
 .achievement-kpi .kpi-breakdown-playstation {
   color: #ffffff;
   background: rgba(38, 91, 198, 0.96);
-  border-color: rgba(126, 166, 255, 0.26);
 }
 
 .achievement-kpi .kpi-breakdown-xbox {
   color: #ffffff;
   background: rgba(24, 128, 52, 0.96);
-  border-color: rgba(112, 235, 140, 0.22);
 }
 
 .achievement-kpi .kpi-breakdown-pill strong {
@@ -2509,6 +2509,7 @@ button.achievement-kpi {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
+  margin-left: 6px;
 }
 
 .achievement-auth-notice {
@@ -11019,7 +11020,6 @@ html.theme-light .achievement-kpi .kpi-breakdown {
 html.theme-light .achievement-kpi .kpi-breakdown-pill {
   color: #ffffff;
   background: rgba(53, 66, 88, 0.88);
-  border-color: rgba(31, 42, 61, 0.16);
 }
 
 html.theme-light .achievement-kpi .kpi-breakdown-pill strong {

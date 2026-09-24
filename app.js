@@ -2861,10 +2861,8 @@ function updateGameOfTheYearPickerNav(field) {
   field.querySelector(".goty-choice-strip")?.classList.toggle("has-selected", Boolean(field.querySelector(".goty-choice-selected")));
   field.querySelector(".goty-choice-strip")?.classList.toggle("at-start", !hasOverflow || list.scrollLeft <= 2);
   field.querySelector(".goty-choice-strip")?.classList.toggle("at-end", !hasOverflow || list.scrollLeft >= maxScroll);
-  prev.hidden = !hasOverflow;
-  next.hidden = !hasOverflow;
-  prev.disabled = list.scrollLeft <= 2;
-  next.disabled = list.scrollLeft >= maxScroll;
+  prev.disabled = !hasOverflow || list.scrollLeft <= 2;
+  next.disabled = !hasOverflow || list.scrollLeft >= maxScroll;
 }
 
 async function saveGameOfTheYearFromForm(event) {
@@ -3269,6 +3267,7 @@ function gameOfTheYearExportPlatformSegment(item, index, startDeg, endDeg, color
   const start = polarPoint(110, 110, 96, startDeg - 90);
   const end = polarPoint(110, 110, 96, endDeg - 90);
   const label = polarPoint(50, 50, 50, startDeg + sweep / 2 - 90);
+  const labelShift = gameOfTheYearExportPlatformLabelShift(item.label);
   const shape = sweep >= 359.99
     ? `<circle class="goty-export-platform-slice" cx="110" cy="110" r="96" fill="${escapeHtml(color)}"></circle>`
     : `<path class="goty-export-platform-slice" d="M 110 110 L ${start.x.toFixed(3)} ${start.y.toFixed(3)} A 96 96 0 ${sweep > 180 ? 1 : 0} 1 ${end.x.toFixed(3)} ${end.y.toFixed(3)} Z" fill="${escapeHtml(color)}"></path>`;
@@ -3276,9 +3275,16 @@ function gameOfTheYearExportPlatformSegment(item, index, startDeg, endDeg, color
     shape,
     item,
     index,
-    left: clampNumber(label.x, 9, 91),
-    top: clampNumber(label.y, 7, 93),
+    left: clampNumber(label.x + labelShift.x, 9, 91),
+    top: clampNumber(label.y + labelShift.y, 7, 93),
   };
+}
+
+function gameOfTheYearExportPlatformLabelShift(platform) {
+  const value = canonicalPlatform(platform);
+  if (value === "Switch 2") return { x: 0, y: -7 };
+  if (value === "PS2") return { x: 0, y: -6 };
+  return { x: 0, y: 0 };
 }
 
 function gameOfTheYearExportPlatformLabels(segments) {
@@ -3330,7 +3336,8 @@ function gameOfTheYearExportMonthCounts(games, year = "") {
 function gameOfTheYearExportCard({ label, game, coverSrc, index, gridColumn = "", gridRow = "" }) {
   const cover = coverSrc || "";
   const progress = achievementProgressForGame(game);
-  const progressCount = progress ? canvasProgressCount(progress.label) : "";
+  const progressCount = progress && progress.provider !== "steam" ? canvasProgressCount(progress.label) : "";
+  const playtime = gameOfTheYearPlaytimeText(game);
   const developer = game.developer || "";
   const publisher = game.publisher || "";
   const studioLine = [developer, publisher && publisher !== developer ? publisher : ""].filter(Boolean).join(" / ") || tt("Finished game");
@@ -3356,8 +3363,18 @@ function gameOfTheYearExportCard({ label, game, coverSrc, index, gridColumn = ""
             ${tags.map((tag) => `<span class="goty-export-pill goty-export-tag">${escapeHtml(tt(tag))}</span>`).join("")}
           </div>
         </div>
+        ${playtime ? `<span class="goty-export-playtime"><small>${escapeHtml(tt("Play Time"))}</small><strong>${escapeHtml(playtime)}</strong></span>` : ""}
       </article>
     </div>`;
+}
+
+function gameOfTheYearPlaytimeText(game) {
+  const finishedHours = finishHoursValue(game?.finishHours);
+  if (finishedHours) return `${finishedHours} ${finishedHours === 1 ? "hr" : "hrs"}`;
+  const estimatedHours = Number(game?.lengthHours);
+  if (!Number.isFinite(estimatedHours) || estimatedHours <= 0) return "";
+  const value = Number.isInteger(estimatedHours) ? String(estimatedHours) : estimatedHours.toFixed(1).replace(/\.0$/, "");
+  return `${value} ${Number(value) === 1 ? "hr" : "hrs"}`;
 }
 
 function gameOfTheYearExportCss({ theme, main, accent, gradient, bg, glowPrimary, glowSecondary }) {
@@ -3491,13 +3508,16 @@ function gameOfTheYearExportCss({ theme, main, accent, gradient, bg, glowPrimary
       color: ${text};
       font: 900 40px/1 ${bodyFont};
     }
+    .goty-export-total-kpi strong {
+      color: ${main};
+    }
     .goty-export-completed-kpi strong,
     .goty-export-completed-kpi .trophy-icon {
       color: #ffe985;
     }
     .goty-export-new-kpi strong,
     .goty-export-older-kpi strong {
-      color: #ff9ed2;
+      color: color-mix(in srgb, ${main} 55%, #000000);
     }
     .goty-export-coop-kpi strong {
       color: var(--coop-accent);
@@ -3757,6 +3777,7 @@ function gameOfTheYearExportCss({ theme, main, accent, gradient, bg, glowPrimary
       flex-direction: column;
       align-items: flex-start;
       min-width: 0;
+      padding-bottom: 30px;
       text-align: left;
     }
     .goty-export-info h2 {
@@ -3811,6 +3832,65 @@ function gameOfTheYearExportCss({ theme, main, accent, gradient, bg, glowPrimary
       color: #bf94ff;
       border-color: rgba(145,70,255,.42);
       background: rgba(145,70,255,.13);
+    }
+    .goty-export-playtime {
+      position: absolute;
+      right: 14px;
+      bottom: 13px;
+      z-index: 2;
+      box-sizing: border-box;
+      display: grid;
+      gap: 1px;
+      min-width: 66px;
+      min-height: 31px;
+      padding: 4px 8px 4px 13px;
+      overflow: hidden;
+      color: ${text};
+      line-height: 1.05;
+      --time-color: ${accent};
+      --time-light: color-mix(in srgb, var(--time-color) 78%, #ffffff);
+      --time-dark: color-mix(in srgb, var(--time-color) 72%, #000000);
+      --time-glow: color-mix(in srgb, var(--time-color) 34%, transparent);
+      background:
+        linear-gradient(
+          135deg,
+          color-mix(in srgb, var(--time-color) 22%, rgba(255,255,255,.08)),
+          rgba(255,255,255,.07)
+        ),
+        rgba(255,255,255,.055);
+      border: 1px solid color-mix(in srgb, var(--time-color) 46%, rgba(255,255,255,.16));
+      border-radius: 7px;
+      box-shadow:
+        inset 0 1px 0 rgba(255,255,255,.12),
+        0 0 16px color-mix(in srgb, var(--time-glow) 62%, transparent);
+    }
+    .goty-export-playtime::before {
+      content: "";
+      position: absolute;
+      top: 4px;
+      bottom: 4px;
+      left: 4px;
+      width: 5px;
+      min-height: 18px;
+      border-radius: 999px;
+      background: linear-gradient(180deg, var(--time-light), var(--time-dark));
+      box-shadow: 0 0 12px var(--time-glow);
+    }
+    .goty-export-playtime small,
+    .goty-export-playtime strong {
+      display: block;
+      position: relative;
+      z-index: 1;
+      color: var(--time-color);
+      line-height: 1;
+      white-space: nowrap;
+    }
+    .goty-export-playtime small {
+      font: 820 9px/1 ${bodyFont};
+      text-transform: uppercase;
+    }
+    .goty-export-playtime strong {
+      font: 820 11px/1 ${bodyFont};
     }
     .goty-export-poster .platform-badge {
       position: relative;
