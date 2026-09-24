@@ -2005,11 +2005,17 @@ html.theme-gradient .goty-section .column-head h2 .trophy-icon {
 }
 
 .playing-finished-tags .rating-score-star {
+  display: inline-grid;
+  place-items: center;
   color: var(--rating-score-main);
-  font-size: 12px;
   line-height: 1;
   transform: none;
-  margin-top: -2px;
+  margin-top: 0;
+}
+
+.playing-finished-tags .rating-score-star .rounded-star-icon {
+  width: 10px;
+  height: 10px;
 }
 
 .playing-finished-tags .platform-icon {
