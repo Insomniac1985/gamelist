@@ -9262,8 +9262,7 @@ body.theme-kash .playing-finished-game.completed-trophy-card:hover {
 .completed-platform .digital-pill,
 .completed-platform .emulator-pill,
 .completed-platform .stream-pill,
-.completed-platform .multiplayer-pill,
-.completed-platform .rating-score-pill {
+.completed-platform .multiplayer-pill {
   height: 21px;
   min-height: 21px;
   padding: 0 6px;
@@ -9467,6 +9466,24 @@ body.theme-kash .playing-finished-game.completed-trophy-card:hover {
     width: 16px;
     height: 16px;
     border-radius: 4px;
+  }
+
+  .completed-list.list-view .completed-platform .psn-progress-pill {
+    gap: 4px;
+  }
+
+  .completed-list.list-view .completed-platform .psn-progress-pill .trophy-icon {
+    width: 13px;
+    height: 13px;
+  }
+
+  .completed-list.list-view .completed-platform .psn-progress-pill em {
+    width: 24px;
+    height: 4px;
+  }
+
+  .completed-list.list-view .completed-platform .psn-progress-pill strong {
+    font-size: 10px;
   }
 
   .completed-list.list-view .completed-platform .coop-pill,
