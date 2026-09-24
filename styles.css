@@ -4374,6 +4374,14 @@ body[data-mobile-section="upcoming"] .column:not(#upcoming) {
   z-index: 0;
 }
 
+@media (min-width: 761px) {
+  .card-list.list-view .game-row {
+    grid-template-columns:
+      42px minmax(145px, 230px) minmax(0, 2.2fr) minmax(120px, 0.8fr)
+      minmax(140px, auto) auto;
+  }
+}
+
 .game-row:hover {
   border-color: color-mix(in srgb, var(--accent) 32%, transparent);
   background: rgba(255, 255, 255, 0.07);
@@ -9159,6 +9167,13 @@ body.theme-kash .playing-finished-game.completed-trophy-card:hover {
   max-width: 100%;
 }
 
+.completed-identity,
+.completed-meta {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+}
+
 .completed-dates {
   display: inline-flex;
   align-items: center;
@@ -9283,11 +9298,20 @@ body.theme-kash .playing-finished-game.completed-trophy-card:hover {
   --rating-score-main: rgba(255, 111, 133, 1);
 }
 
+.rounded-star-icon {
+  display: block;
+  width: 1em;
+  height: 1em;
+  fill: currentColor;
+}
+
 .rating-score-star {
-  font-size: 1.5em;
+  display: inline-grid;
+  place-items: center;
+  font-size: 1.18em;
   line-height: 0;
   text-shadow: 0 0 9px rgba(255, 233, 133, 0.38);
-  transform: translateY(-1.4px);
+  transform: translateY(-0.5px);
 }
 
 .rating-score-mid,
@@ -9335,6 +9359,115 @@ body.theme-kash .playing-finished-game.completed-trophy-card:hover {
   width: 100%;
   height: 100%;
   margin: 0;
+}
+
+@media (min-width: 761px) {
+  .completed-list.list-view .completed-row {
+    grid-template-columns: 42px minmax(145px, 230px) minmax(0, 1fr) auto;
+    min-height: 64px;
+    height: auto;
+    padding: 7px 9px;
+    column-gap: 9px;
+  }
+
+  .completed-list.list-view .completed-cover {
+    width: 42px;
+    height: 57px;
+    border-radius: 5px;
+  }
+
+  .completed-list.list-view .completed-main {
+    display: contents;
+  }
+
+  .completed-list.list-view .completed-identity {
+    grid-column: 2 / 3;
+    align-self: center;
+    gap: 3px;
+  }
+
+  .completed-list.list-view .completed-meta {
+    grid-column: 3 / 4;
+    align-self: center;
+    align-content: center;
+    gap: 4px;
+  }
+
+  .completed-list.list-view .completed-actions {
+    grid-column: 4 / 5;
+    flex-flow: row;
+    gap: 6px;
+    justify-content: flex-end;
+    height: auto;
+  }
+
+  .completed-list.list-view .completed-row strong {
+    min-width: 0;
+    overflow: hidden;
+    color: var(--text);
+    font-size: 14px;
+    line-height: 1.2;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .completed-list.list-view .completed-duration {
+    margin-left: 0;
+    color: var(--dim);
+    font-size: 11px;
+    line-height: 1.2;
+  }
+
+  .completed-list.list-view .completed-platform {
+    margin-top: 0;
+  }
+
+  .completed-list.list-view .completed-dates {
+    font-size: 11px;
+    line-height: 1.2;
+  }
+
+  .completed-list.list-view .completed-platform .platform-badge,
+  .completed-list.list-view .completed-platform .coop-pill,
+  .completed-list.list-view .completed-platform .dlc-pill,
+  .completed-list.list-view .completed-platform .digital-pill,
+  .completed-list.list-view .completed-platform .emulator-pill,
+  .completed-list.list-view .completed-platform .stream-pill,
+  .completed-list.list-view .completed-platform .multiplayer-pill,
+  .completed-list.list-view .completed-platform .replay-pill,
+  .completed-list.list-view .completed-platform .platinum-pill,
+  .completed-list.list-view .completed-platform .psn-progress-pill,
+  .completed-list.list-view .completed-platform .rating-score-pill {
+    box-sizing: border-box;
+    min-height: 22px;
+    height: 22px;
+    padding: 3px 6px;
+    border-radius: 5px;
+    font-size: 10px;
+    line-height: 1;
+  }
+
+  .completed-list.list-view .completed-platform .platform-badge {
+    gap: 4px;
+    padding-left: 3px;
+  }
+
+  .completed-list.list-view .completed-platform .platform-icon {
+    width: 16px;
+    height: 16px;
+    border-radius: 4px;
+  }
+
+  .completed-list.list-view .completed-platform .coop-pill,
+  .completed-list.list-view .completed-platform .multiplayer-pill,
+  .completed-list.list-view .completed-platform .media-format-pill {
+    width: 22px;
+    min-width: 22px;
+    max-width: 22px;
+    height: 22px;
+    min-height: 22px;
+    padding: 0;
+  }
 }
 
 .completed-row .restore-action {
@@ -12238,9 +12371,10 @@ body.theme-kash
 }
 
 .detail-rating-title-star {
-  display: inline-block;
+  display: inline-grid;
+  place-items: center;
   margin-right: 5px;
-  font-size: 1.45em;
+  font-size: 1.16em;
   line-height: 0;
   transform: translateY(1px);
 }
@@ -12633,11 +12767,27 @@ body.theme-kash
   grid-template-columns: repeat(3, minmax(0, 1fr));
 }
 
+@media (min-width: 761px) {
+  .game-rating-grid {
+    --rating-star-size: 25px;
+    --rating-star-gap: 5px;
+    --rating-hitbox-height: 34px;
+  }
+}
+
 .finish-rating-grid {
   --rating-star-size: 29px;
   --rating-star-gap: 8px;
   --rating-hitbox-height: 38px;
   grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+@media (min-width: 761px) {
+  .finish-rating-grid {
+    --rating-star-size: 25px;
+    --rating-star-gap: 5px;
+    --rating-hitbox-height: 34px;
+  }
 }
 
 .rating-row {
@@ -12714,12 +12864,20 @@ body.theme-kash
 .rating-star {
   position: relative;
   display: inline-block;
+  width: 1em;
+  height: 1em;
   color: rgba(255, 255, 255, 0.22);
   line-height: 1;
 }
 
-.rating-star::after {
-  content: "★";
+.rating-star-svg {
+  display: block;
+  width: 1em;
+  height: 1em;
+  fill: currentColor;
+}
+
+.rating-star-fill {
   position: absolute;
   inset: 0;
   width: var(--star-fill, 0%);
@@ -12727,8 +12885,8 @@ body.theme-kash
   color: var(--rating-active-color);
 }
 
-.rating-row[data-rating-value="5"] .rating-star::after,
-.detail-rating-row[data-rating-value="5"] .rating-star::after {
+.rating-row[data-rating-value="5"] .rating-star-fill,
+.detail-rating-row[data-rating-value="5"] .rating-star-fill {
   color: #ffe985;
 }
 
@@ -13032,8 +13190,10 @@ html.theme-light .finish-trophy-check input[type="checkbox"]:checked {
 }
 
 .lookup-igdb-rating-star {
+  display: inline-grid;
+  place-items: center;
   color: #ffe985;
-  font-size: 10px;
+  font-size: 11px;
   letter-spacing: 0;
   text-shadow: 0 0 9px rgba(255, 233, 133, 0.38);
 }
