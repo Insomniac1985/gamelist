@@ -989,6 +989,12 @@ body.mobile-app-mode.shelf-page .shelf-grid.list-view .game-row-cover-preview {
 }
 
 @media (min-width: 761px) {
+  .shelf-grid.preorders-view.list-view .game-row {
+    grid-template-columns:
+      42px minmax(145px, 230px) minmax(0, 2.2fr) minmax(120px, 0.8fr)
+      minmax(140px, auto) auto;
+  }
+
   .shelf-grid.preorders-view.list-view
     .preorder-projection-row
     .game-row-description {
