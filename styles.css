@@ -2509,6 +2509,7 @@ button.achievement-kpi {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
+  margin-left: 6px;
 }
 
 .achievement-auth-notice {

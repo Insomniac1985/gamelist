@@ -3267,6 +3267,7 @@ function gameOfTheYearExportPlatformSegment(item, index, startDeg, endDeg, color
   const start = polarPoint(110, 110, 96, startDeg - 90);
   const end = polarPoint(110, 110, 96, endDeg - 90);
   const label = polarPoint(50, 50, 50, startDeg + sweep / 2 - 90);
+  const labelShift = gameOfTheYearExportPlatformLabelShift(item.label);
   const shape = sweep >= 359.99
     ? `<circle class="goty-export-platform-slice" cx="110" cy="110" r="96" fill="${escapeHtml(color)}"></circle>`
     : `<path class="goty-export-platform-slice" d="M 110 110 L ${start.x.toFixed(3)} ${start.y.toFixed(3)} A 96 96 0 ${sweep > 180 ? 1 : 0} 1 ${end.x.toFixed(3)} ${end.y.toFixed(3)} Z" fill="${escapeHtml(color)}"></path>`;
@@ -3274,9 +3275,16 @@ function gameOfTheYearExportPlatformSegment(item, index, startDeg, endDeg, color
     shape,
     item,
     index,
-    left: clampNumber(label.x, 9, 91),
-    top: clampNumber(label.y, 7, 93),
+    left: clampNumber(label.x + labelShift.x, 9, 91),
+    top: clampNumber(label.y + labelShift.y, 7, 93),
   };
+}
+
+function gameOfTheYearExportPlatformLabelShift(platform) {
+  const value = canonicalPlatform(platform);
+  if (value === "Switch 2") return { x: 0, y: -7 };
+  if (value === "PS2") return { x: 0, y: -6 };
+  return { x: 0, y: 0 };
 }
 
 function gameOfTheYearExportPlatformLabels(segments) {
@@ -3832,31 +3840,57 @@ function gameOfTheYearExportCss({ theme, main, accent, gradient, bg, glowPrimary
       z-index: 2;
       box-sizing: border-box;
       display: grid;
-      gap: 3px;
-      min-width: 94px;
-      min-height: 49px;
-      padding: 7px 12px;
-      color: ${COOP_ACCENT};
-      background: color-mix(in srgb, ${COOP_ACCENT} 15%, ${theme.mode === "light" ? "rgba(255,255,255,.78)" : "rgba(12,24,18,.82)"});
-      border: 1px solid color-mix(in srgb, ${COOP_ACCENT} 68%, transparent);
-      border-radius: 10px;
+      gap: 1px;
+      min-width: 66px;
+      min-height: 31px;
+      padding: 4px 8px 4px 13px;
+      overflow: hidden;
+      color: ${text};
+      line-height: 1.05;
+      --time-color: ${accent};
+      --time-light: color-mix(in srgb, var(--time-color) 78%, #ffffff);
+      --time-dark: color-mix(in srgb, var(--time-color) 72%, #000000);
+      --time-glow: color-mix(in srgb, var(--time-color) 34%, transparent);
+      background:
+        linear-gradient(
+          135deg,
+          color-mix(in srgb, var(--time-color) 22%, rgba(255,255,255,.08)),
+          rgba(255,255,255,.07)
+        ),
+        rgba(255,255,255,.055);
+      border: 1px solid color-mix(in srgb, var(--time-color) 46%, rgba(255,255,255,.16));
+      border-radius: 7px;
       box-shadow:
-        inset 0 1px 0 color-mix(in srgb, ${COOP_ACCENT} 26%, transparent),
-        0 0 18px color-mix(in srgb, ${COOP_ACCENT} 16%, transparent);
+        inset 0 1px 0 rgba(255,255,255,.12),
+        0 0 16px color-mix(in srgb, var(--time-glow) 62%, transparent);
+    }
+    .goty-export-playtime::before {
+      content: "";
+      position: absolute;
+      top: 4px;
+      bottom: 4px;
+      left: 4px;
+      width: 5px;
+      min-height: 18px;
+      border-radius: 999px;
+      background: linear-gradient(180deg, var(--time-light), var(--time-dark));
+      box-shadow: 0 0 12px var(--time-glow);
     }
     .goty-export-playtime small,
     .goty-export-playtime strong {
       display: block;
-      color: currentColor;
+      position: relative;
+      z-index: 1;
+      color: var(--time-color);
       line-height: 1;
       white-space: nowrap;
     }
     .goty-export-playtime small {
-      font: 900 12px/1 ${bodyFont};
+      font: 820 9px/1 ${bodyFont};
       text-transform: uppercase;
     }
     .goty-export-playtime strong {
-      font: 900 21px/1 ${bodyFont};
+      font: 820 11px/1 ${bodyFont};
     }
     .goty-export-poster .platform-badge {
       position: relative;
