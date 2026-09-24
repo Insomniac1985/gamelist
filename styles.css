@@ -2184,13 +2184,13 @@ button.achievement-kpi {
   inset: 0;
   z-index: 3;
   display: grid;
-  place-content: center;
+  align-content: start;
   justify-items: stretch;
   gap: 6px;
   width: auto;
   max-width: none;
   margin: 0;
-  padding: 9px;
+  padding: 6px 9px;
   color: var(--text);
   background:
     radial-gradient(
@@ -2287,7 +2287,7 @@ button.achievement-kpi {
 }
 
 .trophy-kpi {
-  --kpi-glow: rgba(67, 136, 255, 0.24);
+  --kpi-glow: color-mix(in srgb, var(--accent) 26%, transparent);
 }
 
 .platinum-highlight strong,
