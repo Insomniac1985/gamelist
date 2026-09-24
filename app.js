@@ -3517,7 +3517,7 @@ function gameOfTheYearExportCss({ theme, main, accent, gradient, bg, glowPrimary
     }
     .goty-export-new-kpi strong,
     .goty-export-older-kpi strong {
-      color: #ffe985;
+      color: color-mix(in srgb, ${main} 55%, #000000);
     }
     .goty-export-coop-kpi strong {
       color: var(--coop-accent);
