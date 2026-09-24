@@ -2861,10 +2861,8 @@ function updateGameOfTheYearPickerNav(field) {
   field.querySelector(".goty-choice-strip")?.classList.toggle("has-selected", Boolean(field.querySelector(".goty-choice-selected")));
   field.querySelector(".goty-choice-strip")?.classList.toggle("at-start", !hasOverflow || list.scrollLeft <= 2);
   field.querySelector(".goty-choice-strip")?.classList.toggle("at-end", !hasOverflow || list.scrollLeft >= maxScroll);
-  prev.hidden = !hasOverflow;
-  next.hidden = !hasOverflow;
-  prev.disabled = list.scrollLeft <= 2;
-  next.disabled = list.scrollLeft >= maxScroll;
+  prev.disabled = !hasOverflow || list.scrollLeft <= 2;
+  next.disabled = !hasOverflow || list.scrollLeft >= maxScroll;
 }
 
 async function saveGameOfTheYearFromForm(event) {
@@ -3330,7 +3328,8 @@ function gameOfTheYearExportMonthCounts(games, year = "") {
 function gameOfTheYearExportCard({ label, game, coverSrc, index, gridColumn = "", gridRow = "" }) {
   const cover = coverSrc || "";
   const progress = achievementProgressForGame(game);
-  const progressCount = progress ? canvasProgressCount(progress.label) : "";
+  const progressCount = progress && progress.provider !== "steam" ? canvasProgressCount(progress.label) : "";
+  const playtime = gameOfTheYearPlaytimeText(game);
   const developer = game.developer || "";
   const publisher = game.publisher || "";
   const studioLine = [developer, publisher && publisher !== developer ? publisher : ""].filter(Boolean).join(" / ") || tt("Finished game");
@@ -3356,8 +3355,18 @@ function gameOfTheYearExportCard({ label, game, coverSrc, index, gridColumn = ""
             ${tags.map((tag) => `<span class="goty-export-pill goty-export-tag">${escapeHtml(tt(tag))}</span>`).join("")}
           </div>
         </div>
+        ${playtime ? `<span class="goty-export-playtime">${escapeHtml(playtime)}</span>` : ""}
       </article>
     </div>`;
+}
+
+function gameOfTheYearPlaytimeText(game) {
+  const finishedHours = finishHoursValue(game?.finishHours);
+  if (finishedHours) return `${finishedHours} ${finishedHours === 1 ? "hr" : "hrs"}`;
+  const estimatedHours = Number(game?.lengthHours);
+  if (!Number.isFinite(estimatedHours) || estimatedHours <= 0) return "";
+  const value = Number.isInteger(estimatedHours) ? String(estimatedHours) : estimatedHours.toFixed(1).replace(/\.0$/, "");
+  return `${value} ${Number(value) === 1 ? "hr" : "hrs"}`;
 }
 
 function gameOfTheYearExportCss({ theme, main, accent, gradient, bg, glowPrimary, glowSecondary }) {
@@ -3491,13 +3500,16 @@ function gameOfTheYearExportCss({ theme, main, accent, gradient, bg, glowPrimary
       color: ${text};
       font: 900 40px/1 ${bodyFont};
     }
+    .goty-export-total-kpi strong {
+      color: ${main};
+    }
     .goty-export-completed-kpi strong,
     .goty-export-completed-kpi .trophy-icon {
       color: #ffe985;
     }
     .goty-export-new-kpi strong,
     .goty-export-older-kpi strong {
-      color: #ff9ed2;
+      color: #ffe985;
     }
     .goty-export-coop-kpi strong {
       color: var(--coop-accent);
@@ -3757,6 +3769,7 @@ function gameOfTheYearExportCss({ theme, main, accent, gradient, bg, glowPrimary
       flex-direction: column;
       align-items: flex-start;
       min-width: 0;
+      padding-bottom: 30px;
       text-align: left;
     }
     .goty-export-info h2 {
@@ -3811,6 +3824,20 @@ function gameOfTheYearExportCss({ theme, main, accent, gradient, bg, glowPrimary
       color: #bf94ff;
       border-color: rgba(145,70,255,.42);
       background: rgba(145,70,255,.13);
+    }
+    .goty-export-playtime {
+      position: absolute;
+      right: 14px;
+      bottom: 13px;
+      z-index: 2;
+      box-sizing: border-box;
+      min-height: 25px;
+      padding: 5px 9px;
+      color: ${accent};
+      font: 900 13px/1 ${bodyFont};
+      background: ${theme.mode === "light" ? "rgba(255,255,255,.76)" : "rgba(10,12,16,.46)"};
+      border: 1px solid ${line};
+      border-radius: 7px;
     }
     .goty-export-poster .platform-badge {
       position: relative;
