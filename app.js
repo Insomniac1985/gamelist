@@ -3849,10 +3849,10 @@ function gameOfTheYearExportCss({ theme, main, accent, gradient, bg, glowPrimary
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      width: 26px;
-      min-width: 26px;
-      height: 26px;
-      min-height: 26px;
+      width: 28px;
+      min-width: 28px;
+      height: 28px;
+      min-height: 28px;
       box-sizing: border-box;
       padding: 3px;
       color: var(--coop-accent);
@@ -3861,6 +3861,10 @@ function gameOfTheYearExportCss({ theme, main, accent, gradient, bg, glowPrimary
       background: color-mix(in srgb, var(--coop-accent) 10%, transparent);
     }
     .goty-export-pills .media-format-pill {
+      display: inline-grid;
+      place-items: center;
+      justify-content: center;
+      padding: 0;
       color: ${text};
       border-color: ${line};
       background: ${theme.mode === "light" ? "rgba(255,255,255,.76)" : "rgba(255,255,255,.11)"};
@@ -3877,9 +3881,15 @@ function gameOfTheYearExportCss({ theme, main, accent, gradient, bg, glowPrimary
     }
     .goty-export-pills .media-format-pill img,
     .goty-export-pills .media-format-pill .download-badge-icon {
-      width: 19px;
-      height: 19px;
+      display: block;
+      width: 100%;
+      height: 100%;
+      flex: 0 0 auto;
+      margin: auto;
       object-fit: contain;
+      object-position: center;
+      transform: scale(0.76);
+      transform-origin: center;
     }
     .goty-export-stream {
       color: #bf94ff;
