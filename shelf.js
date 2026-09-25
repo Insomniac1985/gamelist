@@ -9,7 +9,8 @@ const SESSION_KEY = "gamelist-editor";
 const VERSION_STORAGE_KEY = "gamelist:site-version";
 const CACHE_HOUR_STORAGE_KEY = "gamelist:cache-hour";
 const PULL_NAVIGATION_KEY = "gamelist:pull-navigation";
-const VIEW_KEY = "shelf:view-mode:v2";
+const VIEW_KEY = "gamelist:view-mode";
+const LEGACY_VIEW_KEY = "shelf:view-mode:v2";
 const LAYOUT_KEY = "shelf:layout:v2";
 const LOCAL_DRAFT_KEY = "shelf:draft-data:v2";
 const MODULE_CACHE_KEY = "shelf:module-cache:v1";
@@ -60,6 +61,33 @@ const GAME_OF_YEAR_CATEGORIES = [
   ["character", "Best character"],
 ];
 
+function defaultViewModeForDevice() {
+  return window.matchMedia?.("(max-width: 760px)")?.matches ? "list" : "grid";
+}
+
+function loadSharedViewMode() {
+  const saved = localStorage.getItem(VIEW_KEY);
+  if (saved === "grid" || saved === "list") return saved;
+  const legacy = localStorage.getItem(LEGACY_VIEW_KEY);
+  if (legacy === "grid" || legacy === "list") {
+    saveSharedViewMode(legacy);
+    return legacy;
+  }
+  return defaultViewModeForDevice();
+}
+
+function saveSharedViewMode(mode) {
+  localStorage.setItem(VIEW_KEY, mode === "list" ? "list" : "grid");
+}
+
+function syncSharedViewModeFromStorage() {
+  const next = loadSharedViewMode();
+  if (next === state.viewMode) return;
+  state.viewMode = next;
+  renderChrome();
+  renderLibrary();
+}
+
 const state = {
   sourceGames: [],
   additions: [],
@@ -78,7 +106,7 @@ const state = {
   editingId: "",
   lookupResults: [],
   filters: { query: "", platform: "all", region: "all", condition: "all", category: "all", tab: "all", sort: "platform", direction: "asc" },
-  viewMode: localStorage.getItem(VIEW_KEY) === "list" ? "list" : "grid",
+  viewMode: loadSharedViewMode(),
   completedYear: "all", completedPlatform: "all", completedSort: "time", completedDirection: "desc", completedView: "grid",
   gamelistDetailGame: null, gamelistDetailTrophyData: [], gamelistDetailTrophyEarned: 0, gamelistDetailTrophyTotal: 0, gamelistDetailTrophyKind: "TROPHIES", gamelistDetailTrophyDirection: "asc",
   completedCoverCache: {},
@@ -303,7 +331,10 @@ function bindEvents() {
   el.footerVersion.addEventListener("click", clearSiteCachesAndReload);
   el.brandVersion?.addEventListener("click", clearSiteCachesAndReload);
   window.addEventListener("scroll", updateFloatingActions, { passive: true });
-  window.addEventListener("storage", (event) => { if (event.key === "gamelist-editor-signal") refreshSharedAuth(); });
+  window.addEventListener("storage", (event) => {
+    if (event.key === "gamelist-editor-signal") refreshSharedAuth();
+    if (event.key === VIEW_KEY || event.key === LEGACY_VIEW_KEY) syncSharedViewModeFromStorage();
+  });
   window.addEventListener("focus", refreshSharedAuth);
   window.addEventListener("resize", () => { syncDisplayMode(); updatePlayingControls(); updateFinishedControls(); schedulePlayingCardHeightSync(); syncShelfTabIndicator(); }, { passive: true });
   window.matchMedia("(display-mode: standalone)").addEventListener?.("change", syncDisplayMode);
@@ -3026,7 +3057,7 @@ function syncShelfActivityVisibility() {
 
 function toggleView() {
   state.viewMode = state.viewMode === "grid" ? "list" : "grid";
-  localStorage.setItem(VIEW_KEY, state.viewMode);
+  saveSharedViewMode(state.viewMode);
   renderChrome();
   renderLibrary();
 }

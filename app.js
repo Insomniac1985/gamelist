@@ -192,6 +192,27 @@ const searchInflight = new Map();
 const platinumMetaCache = loadPlatinumMetaCache();
 const initialSettings = loadLocalSettings();
 
+function defaultViewModeForDevice() {
+  return window.matchMedia?.("(max-width: 760px)")?.matches ? "list" : "grid";
+}
+
+function loadSharedViewMode() {
+  const saved = localStorage.getItem(VIEW_MODE_KEY);
+  return saved === "grid" || saved === "list" ? saved : defaultViewModeForDevice();
+}
+
+function saveSharedViewMode(mode) {
+  localStorage.setItem(VIEW_MODE_KEY, mode === "list" ? "list" : "grid");
+}
+
+function syncSharedViewModeFromStorage() {
+  const next = loadSharedViewMode();
+  if (next === state.viewMode) return;
+  state.viewMode = next;
+  state.completedVisiblePages = 1;
+  render();
+}
+
 const state = {
   games: [],
   psnActivity: { achievements: [], games: [], platinums: [], sourceUrl: "" },
@@ -205,7 +226,7 @@ const state = {
   settings: initialSettings,
   filters: { query: "", platform: "all", tag: "all", sort: mainSortForDefault(initialSettings.defaultOrder), direction: "asc", preordered: false },
   sortTouched: false,
-  viewMode: localStorage.getItem(VIEW_MODE_KEY) === "list" ? "list" : "grid",
+  viewMode: loadSharedViewMode(),
   editingId: "",
   finishSetupId: "",
   pendingDescription: "",
@@ -856,6 +877,7 @@ function bindEvents() {
   });
   window.addEventListener("storage", (event) => {
     if (event.key === "gamelist-editor-signal") syncSharedEditorSession();
+    if (event.key === VIEW_MODE_KEY) syncSharedViewModeFromStorage();
   });
   document.addEventListener("pointerover", handleSelectOverflowTitle);
   document.addEventListener("focusin", handleSelectOverflowTitle);
@@ -896,7 +918,7 @@ function bindEvents() {
   });
   el.viewToggleButton.addEventListener("click", () => {
     state.viewMode = state.viewMode === "grid" ? "list" : "grid";
-    localStorage.setItem(VIEW_MODE_KEY, state.viewMode);
+    saveSharedViewMode(state.viewMode);
     render();
   });
   el.platinumViewToggleButton?.addEventListener("click", () => {
@@ -5925,8 +5947,15 @@ function updateRowTitleOverflow(list) {
   });
 }
 
+function updateCompletedTitleOverflow(list) {
+  list.querySelectorAll(".completed-identity strong").forEach((title) => {
+    title.classList.toggle("is-overflowing", title.scrollWidth > title.clientWidth + 1);
+  });
+}
+
 function updateAllRowTitleOverflow() {
   document.querySelectorAll(".card-list.list-view").forEach(updateRowTitleOverflow);
+  document.querySelectorAll(".completed-list.list-view").forEach(updateCompletedTitleOverflow);
 }
 
 function rowFor(game, section, options = {}) {
@@ -5947,7 +5976,7 @@ function rowFor(game, section, options = {}) {
   row.classList.toggle("stream-card", Boolean(game.stream));
   row.innerHTML = `
     <span class="game-row-cover-wrap" ${game.cover ? "" : "hidden"}>
-      <img class="game-row-cover" src="${escapeHtml(game.cover ? coverDisplayUrl(game.cover, "tiny") : "")}" alt="" loading="${escapeHtml(options.imagePriority || "lazy")}" decoding="async">
+      <img class="game-row-cover" src="${escapeHtml(game.cover ? coverDisplayUrl(game.cover, "card") : "")}" alt="" loading="${escapeHtml(options.imagePriority || "lazy")}" decoding="async">
       <img class="game-row-cover-preview" src="${escapeHtml(game.cover ? coverDisplayUrl(game.cover, "card") : "")}" alt="" loading="lazy" decoding="async" aria-hidden="true">
     </span>
     <div class="game-row-identity">
@@ -6061,7 +6090,7 @@ function renderCompleted() {
       <img class="completed-cover" src="${escapeHtml(game.cover || "")}" alt="" loading="lazy" decoding="async" ${game.cover ? "" : "hidden"}>
       <div class="completed-main">
         <div class="completed-identity">
-          <strong class="${game.platinum ? "completed-achievements-title" : ""}">${escapeHtml(game.title)}</strong>
+          <strong class="${game.platinum ? "completed-achievements-title" : ""}" tabindex="0">${escapeHtml(game.title)}</strong>
           ${completedDurationLine(game)}
         </div>
         <div class="completed-meta">
@@ -6097,6 +6126,7 @@ function renderCompleted() {
       openDetail(row.dataset.id);
     });
   });
+  if (state.viewMode === "list") requestAnimationFrame(() => updateCompletedTitleOverflow(list));
 }
 
 function renderCompletedYearFilter(years) {
@@ -10231,6 +10261,7 @@ async function openEditor(id = "") {
   state.pendingDescription = "";
   const game = state.games.find((item) => item.id === id) || blankGame();
   el.dialogTitle.textContent = id ? tt("Edit Game") : tt("Add Game");
+  el.dialog.classList.toggle("is-new-game", !id);
   el.deleteButton.hidden = !id;
   el.lookupResults.innerHTML = "";
   el.lookupInput.value = game.title || "";

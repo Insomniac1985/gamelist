@@ -4493,7 +4493,7 @@ body.theme-kash .game-row.stream-card:hover {
 .game-row-cover {
   width: 100%;
   height: 100%;
-  object-fit: cover;
+  object-fit: contain;
   border: 1px solid var(--line);
   border-radius: 5px;
   background: rgba(255, 255, 255, 0.06);
@@ -4506,7 +4506,7 @@ body.theme-kash .game-row.stream-card:hover {
   width: 116px;
   height: 158px;
   aspect-ratio: 104 / 142;
-  object-fit: cover;
+  object-fit: contain;
   background: rgba(8, 9, 12, 0.92);
   border: 1px solid rgba(255, 225, 101, 0.26);
   border-radius: 7px;
@@ -4550,7 +4550,11 @@ body.theme-kash .game-row.stream-card:hover {
 }
 
 .game-row-identity strong.is-overflowing:hover,
-.game-row-identity strong.is-overflowing:focus-visible {
+.game-row-identity strong.is-overflowing:focus-visible,
+.completed-list.list-view .completed-identity strong.is-overflowing:hover,
+.completed-list.list-view
+  .completed-identity
+  strong.is-overflowing:focus-visible {
   overflow: visible;
   width: max-content;
   max-width: min(58vw, 520px);
@@ -9423,9 +9427,11 @@ body.theme-kash .playing-finished-game.completed-trophy-card:hover {
   }
 
   .completed-list.list-view .completed-identity {
+    position: relative;
     grid-column: 2 / 3;
     align-self: center;
     gap: 3px;
+    z-index: 1;
   }
 
   .completed-list.list-view .completed-meta {
@@ -9444,6 +9450,7 @@ body.theme-kash .playing-finished-game.completed-trophy-card:hover {
   }
 
   .completed-list.list-view .completed-row strong {
+    position: relative;
     min-width: 0;
     overflow: hidden;
     color: var(--text);
@@ -9451,6 +9458,14 @@ body.theme-kash .playing-finished-game.completed-trophy-card:hover {
     line-height: 1.2;
     text-overflow: ellipsis;
     white-space: nowrap;
+    z-index: 1;
+  }
+
+  .completed-list.list-view .completed-row:has(.completed-identity strong.is-overflowing:hover),
+  .completed-list.list-view
+    .completed-row:has(.completed-identity strong.is-overflowing:focus-visible) {
+    overflow: visible;
+    z-index: 30;
   }
 
   .completed-list.list-view .completed-duration {
@@ -12783,6 +12798,26 @@ body.theme-kash
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+#gameDialog.is-new-game .collection-form-grid > .title-field input,
+#gameDialog.is-new-game .collection-form-grid > .list-field select {
+  border-color: color-mix(in srgb, var(--accent) 76%, #ff4d62);
+  background:
+    linear-gradient(
+      135deg,
+      color-mix(in srgb, var(--accent) 18%, transparent),
+      rgba(255, 255, 255, 0.07)
+    ),
+    rgba(255, 0, 57, 0.08);
+  box-shadow:
+    inset 0 0 0 1px color-mix(in srgb, var(--accent) 24%, transparent),
+    0 0 0 3px color-mix(in srgb, var(--accent) 10%, transparent);
+}
+
+#gameDialog.is-new-game .collection-form-grid > .title-field span,
+#gameDialog.is-new-game .collection-form-grid > .list-field span {
+  color: color-mix(in srgb, var(--accent) 82%, #ffffff);
 }
 
 .game-data-grid > .store-link-field {
