@@ -12800,6 +12800,26 @@ body.theme-kash
   white-space: nowrap;
 }
 
+#gameDialog.is-new-game .collection-form-grid > .title-field input,
+#gameDialog.is-new-game .collection-form-grid > .list-field select {
+  border-color: color-mix(in srgb, var(--accent) 76%, #ff4d62);
+  background:
+    linear-gradient(
+      135deg,
+      color-mix(in srgb, var(--accent) 18%, transparent),
+      rgba(255, 255, 255, 0.07)
+    ),
+    rgba(255, 0, 57, 0.08);
+  box-shadow:
+    inset 0 0 0 1px color-mix(in srgb, var(--accent) 24%, transparent),
+    0 0 0 3px color-mix(in srgb, var(--accent) 10%, transparent);
+}
+
+#gameDialog.is-new-game .collection-form-grid > .title-field span,
+#gameDialog.is-new-game .collection-form-grid > .list-field span {
+  color: color-mix(in srgb, var(--accent) 82%, #ffffff);
+}
+
 .game-data-grid > .store-link-field {
   grid-column: span 1;
 }
