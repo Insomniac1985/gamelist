@@ -2642,11 +2642,11 @@ function renderGameOfTheYear() {
   syncStyledSelect(el.gotyYearSelect, { activeValue: null });
   if (el.gotyYearCount) {
     const count = candidates.length;
-    const playtime = formatPlaytimeTotal(totalPlaytimeHours(candidates));
+    const playtime = formatPlaytimeTotal(totalPlaytimeHours(candidates)).toLowerCase();
     el.gotyYearCount.textContent = [
       tt("{count} games played", { count }),
       playtime ? tt("{playtime} total year playtime", { playtime }) : "",
-    ].filter(Boolean).join("  ");
+    ].filter(Boolean).join(" · ");
   }
   const canEditCurrent = state.canEdit && year === currentGameOfTheYear();
   el.gotyEditButton.hidden = !canEditCurrent;
