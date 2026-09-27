@@ -1325,6 +1325,205 @@ html.theme-gradient .goty-section .column-head h2 .trophy-icon {
   overflow-x: hidden;
 }
 
+.goty-stats-preview-dialog {
+  width: min(960px, calc(100vw - 24px));
+  max-height: calc(100vh - 24px);
+  overflow: visible;
+  border: 0;
+  padding: 0;
+  background: transparent;
+}
+
+.goty-stats-preview-dialog::backdrop {
+  background: rgba(0, 0, 0, 0.62);
+  backdrop-filter: blur(8px);
+}
+
+.goty-stats-preview-modal {
+  width: min(960px, calc(100vw - 24px));
+  grid-template-rows: auto minmax(0, 1fr) auto;
+}
+
+.goty-stats-preview-modal .modal-head {
+  margin-bottom: 4px;
+}
+
+#gotyStatsPreviewTitle {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: #ffe985;
+}
+
+#gotyStatsPreviewTitle .trophy-icon {
+  width: 1.02em;
+  height: 1.02em;
+  min-width: 1.02em;
+  color: #ffe985;
+  stroke: currentColor;
+}
+
+.goty-stats-preview-body {
+  max-height: calc(100vh - 188px);
+}
+
+.goty-stats-preview-playtime {
+  display: grid;
+  gap: 10px;
+  min-width: 0;
+  padding: 14px;
+  background:
+    linear-gradient(
+      135deg,
+      rgba(255, 255, 255, 0.075),
+      rgba(255, 255, 255, 0.035)
+    ),
+    rgba(8, 9, 12, 0.42);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 8px;
+}
+
+.goty-stats-preview-section-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.goty-stats-preview-section-head h3 {
+  margin: 0;
+  color: var(--accent-1);
+  font-size: 14px;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.goty-stats-preview-navs {
+  display: inline-flex;
+  gap: 6px;
+}
+
+.goty-stats-preview-strip {
+  position: relative;
+  min-width: 0;
+}
+
+.goty-stats-preview-list {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: 112px;
+  gap: 10px;
+  min-width: 0;
+  overflow-x: hidden;
+  padding: 2px;
+  scroll-snap-type: x proximity;
+  scrollbar-width: none;
+  -webkit-mask-image: linear-gradient(
+    90deg,
+    transparent 0,
+    #000 36px,
+    #000 calc(100% - 36px),
+    transparent 100%
+  );
+  mask-image: linear-gradient(
+    90deg,
+    transparent 0,
+    #000 36px,
+    #000 calc(100% - 36px),
+    transparent 100%
+  );
+}
+
+.goty-stats-preview-list::-webkit-scrollbar {
+  display: none;
+}
+
+.goty-stats-preview-strip.at-start .goty-stats-preview-list {
+  -webkit-mask-image: linear-gradient(
+    90deg,
+    #000 0,
+    #000 calc(100% - 36px),
+    transparent 100%
+  );
+  mask-image: linear-gradient(
+    90deg,
+    #000 0,
+    #000 calc(100% - 36px),
+    transparent 100%
+  );
+}
+
+.goty-stats-preview-strip.at-end .goty-stats-preview-list {
+  -webkit-mask-image: linear-gradient(
+    90deg,
+    transparent 0,
+    #000 36px,
+    #000 100%
+  );
+  mask-image: linear-gradient(90deg, transparent 0, #000 36px, #000 100%);
+}
+
+.goty-stats-preview-strip.no-overflow .goty-stats-preview-list {
+  -webkit-mask-image: none;
+  mask-image: none;
+}
+
+.goty-stats-preview-card {
+  display: grid;
+  gap: 7px;
+  min-width: 0;
+  padding: 6px;
+  color: var(--text);
+  background: rgba(255, 255, 255, 0.035);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  scroll-snap-align: start;
+}
+
+.goty-stats-preview-card .goty-choice-title {
+  min-height: 72px;
+}
+
+.goty-stats-preview-time {
+  display: inline-flex;
+  align-items: center;
+  justify-self: start;
+  gap: 4px;
+  min-height: 18px;
+  padding: 3px 6px;
+  color: var(--accent-2);
+  background: color-mix(in srgb, var(--accent-2) 12%, transparent);
+  border: 1px solid color-mix(in srgb, var(--accent-2) 34%, transparent);
+  border-radius: 5px;
+  font-size: 9px;
+  font-weight: 820;
+  line-height: 1;
+}
+
+.goty-stats-preview-time .clock-icon {
+  width: 11px;
+  height: 11px;
+  flex: 0 0 11px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.goty-stats-preview-actions {
+  display: grid;
+  padding-top: 12px;
+}
+
+.goty-stats-preview-continue {
+  justify-self: stretch;
+  min-height: 48px;
+  font-size: 15px;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
 .goty-dialog-copy {
   min-width: 0;
   margin: 0 0 10px 0;
