@@ -8756,9 +8756,20 @@ body.theme-kash .finished-stats-kpi.is-completed:focus-visible strong {
 
 .finished-stats-playtime-row em {
   flex: 0 0 auto;
+  margin-left: 6px;
   color: var(--accent-2);
   font-size: 11px;
   font-weight: 900;
+}
+
+.finished-stats-breakdown > .finished-stats-playtime-row,
+.finished-stats-mini-list > .finished-stats-playtime-row {
+  gap: 9px;
+}
+
+.finished-stats-playtime-row .platform-badge {
+  margin-left: 4px;
+  margin-right: 4px;
 }
 
 .finished-stats-category-row b i {
