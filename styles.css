@@ -7695,7 +7695,7 @@ body:not(.can-edit) .game-card:focus-within .edit-action {
 }
 
 .finished-stats-kpi.is-playtime strong {
-  gap: 2px;
+  gap: 4px;
   color: var(--accent-2);
 }
 

@@ -237,6 +237,7 @@ const STRINGS = {
     "Move {title} down": "Bajar {title}",
     Time: "Tiempo",
     Playtime: "Tiempo jugado",
+    "Total year playtime": "Tiempo total del año",
     Name: "Nombre",
     Value: "Valor",
     "Last added": "Último añadido",

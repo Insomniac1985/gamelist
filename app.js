@@ -2645,7 +2645,7 @@ function renderGameOfTheYear() {
     const playtime = formatPlaytimeTotal(totalPlaytimeHours(candidates));
     el.gotyYearCount.innerHTML = `
       <span class="goty-year-kpi"><strong>${escapeHtml(String(count))}</strong><span>${escapeHtml(tt("Games played"))}</span></span>
-      ${playtime ? `<span class="goty-year-kpi"><strong>${escapeHtml(playtime)}</strong><span>${escapeHtml(tt("Playtime"))}</span></span>` : ""}
+      ${playtime ? `<span class="goty-year-kpi"><strong>${escapeHtml(playtime)}</strong><span>${escapeHtml(tt("Total year playtime"))}</span></span>` : ""}
     `;
   }
   const canEditCurrent = state.canEdit && year === currentGameOfTheYear();
@@ -6314,7 +6314,7 @@ function finishedStatsMarkup(year, games, completed) {
   const playtimeTotal = formatPlaytimeTotal(playtimeHours);
   const kpiCards = [
     statsKpiCard(tt("Finished games"), finishedGames.length, showYearlyDetail ? statsGameList(finishedGames) : "", { tone: "finished" }),
-    playtimeTotal ? statsKpiCard(tt("Playtime"), playtimeTotal, showYearlyDetail ? statsGameList(playtimeGames) : "", { tone: "playtime", valueHtml: playtimeKpiValue(playtimeHours) }) : "",
+    playtimeTotal ? statsKpiCard(tt("Total year playtime"), playtimeTotal, showYearlyDetail ? statsGameList(playtimeGames) : "", { tone: "playtime", valueHtml: playtimeKpiValue(playtimeHours) }) : "",
     expansions.length ? statsKpiCard(tt("Expansions finished"), expansions.length, statsGameList(expansions), { tone: "finished" }) : "",
     statsKpiCard(tt("Completed games"), completed.length, showYearlyDetail ? statsCompletedGameList(completed) : "", { action: "completed", tone: "completed", icon: trophyIcon() }),
     streamed.length ? statsKpiCard(tt("Streamed games"), streamed.length, showYearlyDetail ? statsGameList(streamed) : "", { tone: "streamed" }) : "",
@@ -7042,7 +7042,7 @@ function formatPlaytimeTotal(hours) {
   if (!Number.isFinite(hours) || hours <= 0) return "";
   const rounded = Math.round(hours * 10) / 10;
   const display = Number.isInteger(rounded) ? String(rounded) : rounded.toFixed(1);
-  return `${display}${rounded === 1 ? "hr" : "hrs"}`;
+  return `${display} ${rounded === 1 ? "hr" : "hrs"}`;
 }
 
 function playtimeKpiValue(hours) {
