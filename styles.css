@@ -984,7 +984,6 @@ html.theme-gradient .goty-section .column-head h2 .trophy-icon {
 .goty-year-count {
   display: inline-flex;
   align-items: center;
-  margin-left: calc(var(--display-title-size, clamp(28px, 2.5vw, 38px)) + 8px);
   color: var(--muted);
   font-family: var(--font-body, inherit);
   font-size: 13px;
