@@ -249,7 +249,7 @@ const state = {
   platinumViewMode: localStorage.getItem(PLATINUM_VIEW_MODE_KEY) === "list" ? "list" : "grid",
   releaseCalendarOffset: 0,
   finishedStatsStreamMode: "all",
-  finishedStatsTopMode: "time",
+  topGamesCarouselMode: "time",
   detailTrophyRequest: "",
   detailReturnToHistory: false,
   detailGameId: "",
@@ -2780,9 +2780,9 @@ function openGameOfTheYearStatsPreview(year = currentGameOfTheYear(), options = 
   el.gotyStatsPreviewDialog.dataset.gotyYear = String(year);
   el.gotyStatsPreviewBrow.textContent = tt("Before your picks");
   el.gotyStatsPreviewTitle.innerHTML = `${trophyIcon()} <span>${escapeHtml(tt("Your {year} games", { year }))}</span>`;
-  el.gotyStatsPreviewBody.innerHTML = gameOfTheYearStatsPreviewMarkup(year, games, playtimeGames);
+  el.gotyStatsPreviewBody.innerHTML = gameOfTheYearStatsPreviewMarkup(year, games, playtimeGames, state.topGamesCarouselMode);
   el.gotyStatsPreviewContinueButton.textContent = tt("See your games of the year");
-  bindGameOfTheYearStatsPreviewCarousel();
+  bindGameOfTheYearStatsPreviewCarousel(year, options);
   try {
     if (!el.gotyStatsPreviewDialog.open) el.gotyStatsPreviewDialog.showModal();
   } catch (error) {
@@ -2797,12 +2797,14 @@ function openGameOfTheYearStatsPreview(year = currentGameOfTheYear(), options = 
   return true;
 }
 
-function gameOfTheYearStatsPreviewMarkup(year, games = [], playtimeGames = gameOfTheYearPlaytimeGames(games)) {
+function gameOfTheYearStatsPreviewMarkup(year, games = [], playtimeGames = gameOfTheYearPlaytimeGames(games), mode = "time") {
   const platforms = countBy(games, statsPlatformLabel);
   const tags = countTags(games);
   const totalPlaytime = totalPlaytimeHours(games);
   const completed = finishedStatsCompleted(String(year));
   const coopGames = games.filter((game) => game.coop);
+  const normalizedMode = normalizeTopGamesCarouselMode(mode);
+  const topGames = finishedStatsTopGames(games, normalizedMode);
   const kpis = [
     statsKpiCard(tt("Games played"), games.length, statsGameList(games), { tone: "finished" }),
     totalPlaytime ? statsKpiCard(tt("Total year playtime"), formatPlaytimeTotal(totalPlaytime), statsPlaytimeGameList(playtimeGames), { tone: "playtime", valueHtml: playtimeKpiValue(totalPlaytime) }) : "",
@@ -2811,15 +2813,9 @@ function gameOfTheYearStatsPreviewMarkup(year, games = [], playtimeGames = gameO
   ].filter(Boolean);
   return `
     <section class="goty-stats-preview-playtime">
-      <div class="goty-stats-preview-section-head">
-        <h3>${escapeHtml(tt("Games by playtime"))}</h3>
-        <div class="goty-stats-preview-navs">
-          <button class="icon-button playing-slider-button goty-stats-preview-nav" type="button" data-goty-preview-scroll="-1" title="${escapeHtml(tt("Previous games"))}" aria-label="${escapeHtml(tt("Previous games"))}">${gotyPickerArrowIcon("left")}</button>
-          <button class="icon-button playing-slider-button goty-stats-preview-nav" type="button" data-goty-preview-scroll="1" title="${escapeHtml(tt("Next games"))}" aria-label="${escapeHtml(tt("Next games"))}">${gotyPickerArrowIcon("right")}</button>
-        </div>
-      </div>
+      ${topGamesCarouselHeaderMarkup(normalizedMode, "goty")}
       <div class="goty-stats-preview-strip">
-        <div class="goty-stats-preview-list">${playtimeGames.map(gameOfTheYearStatsPreviewCard).join("")}</div>
+        <div class="goty-stats-preview-list">${topGames.map((game) => gameOfTheYearStatsPreviewCard(game, normalizedMode)).join("")}</div>
       </div>
     </section>
     <section class="finished-stats-kpis ${kpis.length === 3 ? "is-grid-3" : ""}">${kpis.join("")}</section>
@@ -2834,17 +2830,19 @@ function gameOfTheYearStatsPreviewMarkup(year, games = [], playtimeGames = gameO
   `;
 }
 
-function gameOfTheYearStatsPreviewCard(game) {
+function gameOfTheYearStatsPreviewCard(game, mode = "time") {
   const cover = coverDisplayUrl(game.cover || "") || platformLogo(game.platform || "PS5");
   const hours = statsPlaytimeHours(game);
+  const normalizedMode = normalizeTopGamesCarouselMode(mode);
+  const lowerPill = normalizedMode === "grade" ? ratingScoreBadge(game) : `<span class="goty-stats-preview-time" style="${escapeHtml(timePillStyle(hours))}">${clockIcon()}<span>${escapeHtml(formatPlaytimeTotal(hours))}</span></span>`;
   const playModeBadge = game.coop ? coopBadge() : (game.multiplayer ? multiplayerBadge() : "");
   return `
     <article class="goty-stats-preview-card">
       <span class="goty-choice-cover"><img src="${escapeHtml(cover)}" alt="" loading="lazy" decoding="async"></span>
       <span class="goty-choice-title">
         <strong data-full-title="${escapeHtml(game.title)}">${escapeHtml(game.title)}</strong>
-        <span class="goty-stats-preview-badges">${platformBadge(game.platform)}${ratingScoreBadge(game)}</span>
-        <span class="goty-stats-preview-time-row"><span class="goty-stats-preview-time" style="${escapeHtml(timePillStyle(hours))}">${clockIcon()}<span>${escapeHtml(formatPlaytimeTotal(hours))}</span></span>${playModeBadge}</span>
+        <span class="goty-stats-preview-badges">${platformBadge(game.platform)}</span>
+        <span class="goty-stats-preview-time-row">${lowerPill}${playModeBadge}</span>
       </span>
     </article>
   `;
@@ -2870,7 +2868,12 @@ function gameOfTheYearStatsPreviewMonthBars(games = [], year = "") {
   }).join("");
 }
 
-function bindGameOfTheYearStatsPreviewCarousel() {
+function bindGameOfTheYearStatsPreviewCarousel(year = currentGameOfTheYear(), options = {}) {
+  const select = el.gotyStatsPreviewBody.querySelector("[data-top-games-mode]");
+  select?.addEventListener("change", () => {
+    state.topGamesCarouselMode = normalizeTopGamesCarouselMode(select.value);
+    openGameOfTheYearStatsPreview(year, options);
+  });
   const list = el.gotyStatsPreviewBody.querySelector(".goty-stats-preview-list");
   const strip = el.gotyStatsPreviewBody.querySelector(".goty-stats-preview-strip");
   const update = () => {
@@ -6565,7 +6568,7 @@ function finishedStatsMarkup(year, games, completed) {
   const kpiLayoutClass = kpiCards.length > 5 ? " is-grid-3" : "";
   return `
     <div class="finished-stats-kpis${kpiLayoutClass}">${cards}</div>
-    ${showPlaytimeKpi ? finishedStatsTopGamesCarouselMarkup(finishedGames, state.finishedStatsTopMode) : ""}
+    ${showPlaytimeKpi ? finishedStatsTopGamesCarouselMarkup(finishedGames, state.topGamesCarouselMode) : ""}
     <div class="finished-stats-charts ${allYears ? "is-all" : ""}">
       ${statsDonutCard(tt("Platforms"), platforms, "platform", 5, finishedGames)}
       ${statsDonutCard(tt("Categories"), tags, "category", 5, finishedGames)}
@@ -6583,35 +6586,48 @@ function finishedStatsMarkup(year, games, completed) {
 
 
 function finishedStatsTopGamesCarouselMarkup(games = [], mode = "time") {
-  const normalizedMode = mode === "grade" ? "grade" : "time";
-  const topGames = finishedStatsTopGames(games, normalizedMode).slice(0, 5);
+  const normalizedMode = normalizeTopGamesCarouselMode(mode);
+  const topGames = finishedStatsTopGames(games, normalizedMode).slice(0, 10);
   if (!topGames.length) return "";
   return `
     <section class="goty-stats-preview-playtime finished-stats-top-games" data-stats-top-games>
-      <div class="goty-stats-preview-section-head finished-stats-top-games-head">
-        <h3>${escapeHtml(tt("Top games of the year"))}</h3>
-        <div class="finished-stats-top-controls">
-          <label class="finished-stats-top-select">
-            <select data-stats-top-mode aria-label="${escapeHtml(tt("Top games order"))}">
-              <option value="time" ${normalizedMode === "time" ? "selected" : ""}>${escapeHtml(tt("Time"))}</option>
-              <option value="grade" ${normalizedMode === "grade" ? "selected" : ""}>${escapeHtml(tt("Grade"))}</option>
-            </select>
-          </label>
-          <div class="goty-stats-preview-navs">
-            <button class="icon-button playing-slider-button finished-stats-playtime-nav" type="button" data-finished-playtime-scroll="-1" title="${escapeHtml(tt("Previous games"))}" aria-label="${escapeHtml(tt("Previous games"))}">${gotyPickerArrowIcon("left")}</button>
-            <button class="icon-button playing-slider-button finished-stats-playtime-nav" type="button" data-finished-playtime-scroll="1" title="${escapeHtml(tt("Next games"))}" aria-label="${escapeHtml(tt("Next games"))}">${gotyPickerArrowIcon("right")}</button>
-          </div>
-        </div>
-      </div>
+      ${topGamesCarouselHeaderMarkup(normalizedMode, "finished")}
       <div class="goty-stats-preview-strip finished-stats-playtime-strip">
-        <div class="goty-stats-preview-list finished-stats-playtime-list">${topGames.map(gameOfTheYearStatsPreviewCard).join("")}</div>
+        <div class="goty-stats-preview-list finished-stats-playtime-list">${topGames.map((game) => gameOfTheYearStatsPreviewCard(game, normalizedMode)).join("")}</div>
       </div>
     </section>
   `;
 }
 
+function topGamesCarouselHeaderMarkup(mode = "time", context = "goty") {
+  const normalizedMode = normalizeTopGamesCarouselMode(mode);
+  const navClass = context === "finished" ? "finished-stats-playtime-nav" : "goty-stats-preview-nav";
+  const scrollAttribute = context === "finished" ? "data-finished-playtime-scroll" : "data-goty-preview-scroll";
+  return `
+    <div class="goty-stats-preview-section-head finished-stats-top-games-head">
+      <h3>${escapeHtml(tt("Top games of the year"))}</h3>
+      <div class="finished-stats-top-controls">
+        <label class="finished-stats-top-select">
+          <select data-top-games-mode aria-label="${escapeHtml(tt("Top games order"))}">
+            <option value="time" ${normalizedMode === "time" ? "selected" : ""}>${escapeHtml(tt("Time"))}</option>
+            <option value="grade" ${normalizedMode === "grade" ? "selected" : ""}>${escapeHtml(tt("Grade"))}</option>
+          </select>
+        </label>
+        <div class="goty-stats-preview-navs">
+          <button class="icon-button playing-slider-button ${navClass}" type="button" ${scrollAttribute}="-1" title="${escapeHtml(tt("Previous games"))}" aria-label="${escapeHtml(tt("Previous games"))}">${gotyPickerArrowIcon("left")}</button>
+          <button class="icon-button playing-slider-button ${navClass}" type="button" ${scrollAttribute}="1" title="${escapeHtml(tt("Next games"))}" aria-label="${escapeHtml(tt("Next games"))}">${gotyPickerArrowIcon("right")}</button>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function normalizeTopGamesCarouselMode(mode = "time") {
+  return mode === "grade" ? "grade" : "time";
+}
+
 function finishedStatsTopGames(games = [], mode = "time") {
-  if (mode === "grade") {
+  if (normalizeTopGamesCarouselMode(mode) === "grade") {
     return [...games]
       .filter((game) => ratingScoreValue(game) != null)
       .sort((a, b) => (ratingScoreValue(b) || 0) - (ratingScoreValue(a) || 0) || statsPlaytimeHours(b) - statsPlaytimeHours(a) || stringCompare(a.title, b.title));
@@ -7114,9 +7130,9 @@ function statsPlatformLabel(game) {
 }
 
 function bindFinishedStatsTopGamesCarousel(scope = "all") {
-  const select = el.finishedStatsBody.querySelector("[data-stats-top-mode]");
+  const select = el.finishedStatsBody.querySelector("[data-top-games-mode]");
   select?.addEventListener("change", () => {
-    state.finishedStatsTopMode = select.value === "grade" ? "grade" : "time";
+    state.topGamesCarouselMode = normalizeTopGamesCarouselMode(select.value);
     renderFinishedStatsDialog(scope);
   });
   const list = el.finishedStatsBody.querySelector(".finished-stats-playtime-list");
