@@ -3263,9 +3263,12 @@ function gameOfTheYearExportTopStatsMarkup(year, games = []) {
   const otherYearGames = games.filter((game) => releaseYear(game) !== String(year));
   const coopGames = games.filter((game) => game.coop);
   const completed = finishedStatsCompleted(String(year));
+  const playtimeHours = totalPlaytimeHours(games);
+  const playtime = playtimeKpiValue(playtimeHours) || `${clockIcon()}<span class="playtime-kpi-value">0</span><span class="playtime-kpi-unit">HRS</span>`;
   return `
-    <section class="goty-export-top-kpis ${completed.length ? "has-completed" : ""} ${coopGames.length ? "has-coop" : ""}">
+    <section class="goty-export-top-kpis has-playtime ${completed.length ? "has-completed" : ""} ${coopGames.length ? "has-coop" : ""}">
       <article class="goty-export-small-kpi goty-export-total-kpi"><strong>${games.length}</strong><span>${escapeHtml(tt("Games played"))}</span></article>
+      <article class="goty-export-small-kpi goty-export-playtime-kpi"><strong>${playtime}</strong><span>${escapeHtml(tt("Total year playtime"))}</span></article>
       ${completed.length ? `<article class="goty-export-small-kpi goty-export-completed-kpi"><strong>${trophyIcon()}${completed.length}</strong><span>${escapeHtml(tt("Completed games"))}</span></article>` : ""}
       <span class="goty-export-kpi-separator" aria-hidden="true"></span>
       <article class="goty-export-small-kpi goty-export-new-kpi"><strong>${yearGames.length}</strong><span>${escapeHtml(tt("New releases"))}</span></article>
@@ -3498,21 +3501,21 @@ function gameOfTheYearExportCss({ theme, main, accent, gradient, bg, glowPrimary
       top: 50px;
       right: 78px;
       display: grid;
-      grid-template-columns: 142px 24px repeat(2, 120px);
-      gap: 10px;
-      width: 436px;
-    }
-    .goty-export-top-kpis.has-coop:not(.has-completed) {
-      grid-template-columns: 142px 24px repeat(3, 120px);
-      width: 566px;
-    }
-    .goty-export-top-kpis.has-completed {
       grid-template-columns: 142px 168px 24px repeat(2, 120px);
+      gap: 10px;
       width: 614px;
     }
-    .goty-export-top-kpis.has-completed.has-coop {
+    .goty-export-top-kpis.has-coop:not(.has-completed) {
       grid-template-columns: 142px 168px 24px repeat(3, 120px);
       width: 744px;
+    }
+    .goty-export-top-kpis.has-completed {
+      grid-template-columns: 142px 168px 168px 24px repeat(2, 120px);
+      width: 792px;
+    }
+    .goty-export-top-kpis.has-completed.has-coop {
+      grid-template-columns: 142px 168px 168px 24px repeat(3, 120px);
+      width: 922px;
     }
     .goty-export-small-kpi,
     .goty-export-stat {
@@ -3523,7 +3526,7 @@ function gameOfTheYearExportCss({ theme, main, accent, gradient, bg, glowPrimary
       backdrop-filter: blur(18px);
       -webkit-backdrop-filter: blur(18px);
     }
-    .goty-export-small-kpi span,
+    .goty-export-small-kpi > span,
     .goty-export-stat > span {
       display: block;
       color: ${muted};
@@ -3559,6 +3562,35 @@ function gameOfTheYearExportCss({ theme, main, accent, gradient, bg, glowPrimary
     .goty-export-completed-kpi .trophy-icon {
       color: #ffe985;
     }
+    .goty-export-playtime-kpi strong {
+      color: ${accent};
+      gap: 4px;
+    }
+    .goty-export-playtime-kpi .clock-icon {
+      width: 30px;
+      height: 30px;
+      flex: 0 0 auto;
+      margin-right: 3px;
+      fill: none;
+      stroke: currentColor;
+      stroke-width: 2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+    .goty-export-playtime-kpi .playtime-kpi-value {
+      display: inline;
+      color: ${accent};
+      font: 900 40px/1 ${bodyFont};
+    }
+    .goty-export-playtime-kpi .playtime-kpi-unit {
+      align-self: flex-end;
+      margin-bottom: 3px;
+      display: inline;
+      color: ${accent};
+      font-size: 27px;
+      font-weight: 900;
+      line-height: 1;
+    }
     .goty-export-new-kpi strong,
     .goty-export-older-kpi strong {
       color: ${muted};
@@ -3586,7 +3618,7 @@ function gameOfTheYearExportCss({ theme, main, accent, gradient, bg, glowPrimary
       stroke-linecap: round;
       stroke-linejoin: round;
     }
-    .goty-export-small-kpi span {
+    .goty-export-small-kpi > span {
       margin-top: 9px;
       line-height: 1.05;
     }
@@ -6110,10 +6142,11 @@ function renderCompleted() {
       <div class="completed-main">
         <div class="completed-identity">
           <strong class="${game.platinum ? "completed-achievements-title" : ""}" tabindex="0">${escapeHtml(game.title)}</strong>
-          ${completedDurationLine(game)}
+          ${completedDurationLine(game, " completed-duration-list")}
         </div>
         <div class="completed-meta">
           <span class="completed-platform">${completedOwnerBadges(game)}${completedBadges(game)}</span>
+          ${completedDurationLine(game)}
           ${completedDateLine(game)}
         </div>
       </div>
@@ -6369,7 +6402,7 @@ function statsDonutCard(title, counts, tone, visibleLimit = counts.length, games
 function statsReleaseKpisCard(insights) {
   const currentYear = String(new Date().getFullYear());
   const outsideYearLabel = String(insights.scopeYear || "") === currentYear
-    ? tt("Played games not from this")
+    ? tt("Played games not from this year")
     : tt("Played games not from that year");
   return `
     <section class="finished-stats-release-strip">
@@ -6745,11 +6778,11 @@ function statsGroupedBreakdown(heading, count, games) {
 }
 
 function statsGameListSort(a, b) {
-  return String(a.completedAt || "").localeCompare(String(b.completedAt || "")) || stringCompare(a.title, b.title);
+  return String(b.completedAt || "").localeCompare(String(a.completedAt || "")) || stringCompare(a.title, b.title);
 }
 
 function statsGameList(games) {
-  const orderedGames = [...games].sort((a, b) => Number(Boolean(a.statsMonthCarry)) - Number(Boolean(b.statsMonthCarry)));
+  const orderedGames = [...games].sort((a, b) => Number(Boolean(a.statsMonthCarry)) - Number(Boolean(b.statsMonthCarry)) || statsGameListSort(a, b));
   const firstCarryIndex = orderedGames.findIndex((game) => game.statsMonthCarry);
   return orderedGames.map((game, index) => {
     const progress = achievementProgressForGame(game);
@@ -6959,6 +6992,7 @@ function statsCompletedGameList(items) {
     platform: item.platform || platinumPlatformFor(item),
     platinum: true,
     statsCompleted: true,
+    completedAt: dateOnly(item.rawEarnedAt || item.earnedAt),
   })));
 }
 
@@ -6966,8 +7000,7 @@ function statsOwnerBreakdown(games) {
   const owners = countBy(games.flatMap((game) => visibleOwnerTags(game).map((owner) => ({ owner }))), (item) => item.owner);
   return owners.map(({ label, count }) => {
     const ownerGames = games
-      .filter((game) => visibleOwnerTags(game).includes(label))
-      .sort((a, b) => String(a.completedAt || "").localeCompare(String(b.completedAt || "")) || stringCompare(a.title, b.title));
+      .filter((game) => visibleOwnerTags(game).includes(label));
     return `
       <div class="finished-stats-owner-group">
         <div class="finished-stats-owner-heading"><b>${ownerBadge(label)}</b><em>${count}</em></div>
@@ -7053,14 +7086,14 @@ function formatPlaytimeTotal(hours) {
   if (!Number.isFinite(hours) || hours <= 0) return "";
   const rounded = Math.round(hours * 10) / 10;
   const display = Number.isInteger(rounded) ? String(rounded) : rounded.toFixed(1);
-  return `${display} ${rounded === 1 ? "hr" : "hrs"}`;
+  return `${display} ${rounded === 1 ? "HR" : "HRS"}`;
 }
 
 function playtimeKpiValue(hours) {
   if (!Number.isFinite(hours) || hours <= 0) return "";
   const rounded = Math.round(hours * 10) / 10;
   const display = Number.isInteger(rounded) ? String(rounded) : rounded.toFixed(1);
-  return `${clockIcon()}<span class="playtime-kpi-value">${escapeHtml(display)}</span><span class="playtime-kpi-unit">${escapeHtml(rounded === 1 ? "hr" : "hrs")}</span>`;
+  return `${clockIcon()}<span class="playtime-kpi-value">${escapeHtml(display)}</span><span class="playtime-kpi-unit">${escapeHtml(rounded === 1 ? "HR" : "HRS")}</span>`;
 }
 
 function gameStatsTags(game) {
@@ -7292,12 +7325,12 @@ function finishedDateText(game) {
   return [finishHoursText(game), formatLongDate(game.completedAt)].filter(Boolean).join(" · ");
 }
 
-function completedDurationLine(game) {
+function completedDurationLine(game, extraClass = "") {
   const duration = finishHoursText(game);
   if (!duration) return "";
-  const label = game?.platinum ? "Completed in {duration}" : "Finished in {duration}";
-  const className = `completed-duration${game?.platinum ? " completed-duration-gold" : ""}`;
-  return `<span class="${className}">${escapeHtml(tt(label, { duration }))}</span>`;
+  const className = `completed-duration${game?.platinum ? " completed-duration-gold" : ""}${extraClass}`;
+  const style = timePillStyle(finishHoursValue(game?.finishHours));
+  return `<span class="${className}" style="${escapeHtml(style)}">${clockIcon()}<span>${escapeHtml(duration)}</span></span>`;
 }
 
 function finishHoursValue(value) {
@@ -9083,20 +9116,17 @@ function downloadBadgeIcon() {
 function calendarMiniIcon() {
   return `
     <svg class="calendar-mini-icon" viewBox="0 0 24 24" aria-hidden="true">
-      <rect x="4.5" y="5.5" width="15" height="14" rx="2.5"></rect>
-      <path d="M8 3.8v4"></path>
-      <path d="M16 3.8v4"></path>
-      <path d="M4.5 10h15"></path>
-      <path d="M8.2 13.5h.1"></path>
-      <path d="M12 13.5h.1"></path>
-      <path d="M15.8 13.5h.1"></path>
+      <rect x="4" y="5.5" width="16" height="15" rx="3"></rect>
+      <path d="M8 3.5v4"></path>
+      <path d="M16 3.5v4"></path>
+      <path d="M4 10h16"></path>
     </svg>
   `;
 }
 
 function clockIcon() {
   return `
-    <svg class="clock-icon" viewBox="0 0 24 24" aria-hidden="true">
+    <svg class="clock-icon" viewBox="0 0 24 24" aria-hidden="true" stroke-linecap="round" stroke-linejoin="round">
       <circle cx="12" cy="12" r="8.5"></circle>
       <path d="M12 7.5V12l3.2 2"></path>
     </svg>

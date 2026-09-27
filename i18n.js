@@ -443,7 +443,7 @@ const STRINGS = {
     "CoOp games": "Juegos coop",
     "Games interested in": "Juegos que interesaban",
     "Played new games": "Juegos nuevos jugados",
-    "Played games not from this": "Juegos jugados que no son de este",
+    "Played games not from this year": "Juegos jugados que no son de este año",
     "Played games not from that year": "Juegos jugados que no eran de ese año",
     "{count} hrs": "{count} h",
     "new expansion": "expansión nueva",
