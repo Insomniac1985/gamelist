@@ -3747,6 +3747,7 @@ function gameOfTheYearExportCss({ theme, main, accent, gradient, bg, glowPrimary
     }
     .goty-export-playtime-kpi strong {
       min-width: 0;
+      margin-top: 5px;
       overflow: hidden;
       color: ${accent};
       gap: 3px;
