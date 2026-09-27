@@ -9311,6 +9311,10 @@ body.theme-kash .playing-finished-game.completed-trophy-card:hover {
   opacity: 0.9;
 }
 
+.completed-duration-list {
+  display: none;
+}
+
 .completed-platform {
   display: flex;
   flex-wrap: wrap;
@@ -9540,9 +9544,17 @@ body.theme-kash .playing-finished-game.completed-trophy-card:hover {
 
   .completed-list.list-view .completed-duration {
     margin-left: 0;
-    color: var(--dim);
     font-size: 11px;
     line-height: 1.2;
+  }
+
+  .completed-list.list-view .completed-meta > .completed-duration {
+    display: none;
+  }
+
+  .completed-list.list-view .completed-duration-list {
+    display: inline-flex;
+    margin-top: 2px;
   }
 
   .completed-list.list-view .completed-platform {

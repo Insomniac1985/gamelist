@@ -6142,6 +6142,7 @@ function renderCompleted() {
       <div class="completed-main">
         <div class="completed-identity">
           <strong class="${game.platinum ? "completed-achievements-title" : ""}" tabindex="0">${escapeHtml(game.title)}</strong>
+          ${completedDurationLine(game, " completed-duration-list")}
         </div>
         <div class="completed-meta">
           <span class="completed-platform">${completedOwnerBadges(game)}${completedBadges(game)}</span>
@@ -7324,10 +7325,10 @@ function finishedDateText(game) {
   return [finishHoursText(game), formatLongDate(game.completedAt)].filter(Boolean).join(" · ");
 }
 
-function completedDurationLine(game) {
+function completedDurationLine(game, extraClass = "") {
   const duration = finishHoursText(game);
   if (!duration) return "";
-  const className = `completed-duration${game?.platinum ? " completed-duration-gold" : ""}`;
+  const className = `completed-duration${game?.platinum ? " completed-duration-gold" : ""}${extraClass}`;
   const style = timePillStyle(finishHoursValue(game?.finishHours));
   return `<span class="${className}" style="${escapeHtml(style)}">${clockIcon()}<span>${escapeHtml(duration)}</span></span>`;
 }
