@@ -1710,8 +1710,16 @@ html.theme-gradient .goty-section .column-head h2 .trophy-icon {
 }
 
 .goty-stats-preview-actions {
+  position: sticky;
+  bottom: 8px;
+  z-index: 18;
   display: grid;
-  padding-top: 12px;
+  justify-self: center;
+  width: min(760px, calc(100% - 32px));
+  box-sizing: border-box;
+  margin: -50px auto 0;
+  padding: 0;
+  background: none;
 }
 
 .goty-stats-preview-continue {
@@ -8092,7 +8100,8 @@ body:not(.can-edit) .game-card:focus-within .edit-action {
   align-content: start;
   width: min(920px, calc(100vw - 24px));
   max-height: calc(100dvh - 24px);
-  overflow: hidden !important;
+  overflow-x: hidden !important;
+  overflow-y: auto !important;
   overscroll-behavior: contain;
   box-shadow:
     0 24px 80px rgba(0, 0, 0, 0.48),
@@ -8116,10 +8125,9 @@ body:not(.can-edit) .game-card:focus-within .edit-action {
   display: grid;
   gap: 14px;
   min-height: 0;
-  max-height: calc(100dvh - 118px);
+  max-height: none;
   padding: 0 2px 6px;
-  overflow-x: hidden;
-  overflow-y: auto;
+  overflow: visible;
   overscroll-behavior: contain;
 }
 
@@ -15797,6 +15805,12 @@ html.theme-light .finish-trophy-check input[type="checkbox"]:checked {
   .finished-stats-body {
     padding: 0 1px 18px;
     overflow: visible;
+  }
+
+  .goty-stats-preview-actions {
+    bottom: 7px;
+    width: calc(100% - 18px);
+    margin-top: -44px;
   }
 
   .finished-stats-charts {

@@ -2740,12 +2740,13 @@ function openGameOfTheYearDialog(year = currentGameOfTheYear(), options = {}) {
   state.gotyYear = String(year);
   el.gotyForm.dataset.gotyYear = String(year);
   const entry = state.settings.gameOfTheYear?.[year] || {};
-  const picks = options.autoPick ? gameOfTheYearAutoPicks(year, games, entry.picks || {}) : { ...(entry.picks || {}) };
+  const shouldAutofillPicks = options.autoPick && gameOfTheYearAutofillUsesRatings(games);
+  const picks = shouldAutofillPicks ? gameOfTheYearAutoPicks(year, games, entry.picks || {}) : { ...(entry.picks || {}) };
   const dialogTitle = window.matchMedia("(max-width: 520px)").matches ? tt("GOTYs {year}", { year }) : tt("Games of the year {year}", { year });
   el.gotyDialogTitle.innerHTML = `${trophyIcon()} <span>${escapeHtml(dialogTitle)}</span>`;
   const copy = el.gotyForm.querySelector(".goty-dialog-copy");
   if (copy) {
-    copy.textContent = options.autoPick && gameOfTheYearAutofillUsesRatings(games)
+    copy.textContent = shouldAutofillPicks
       ? tt("We guessed your picks. Review each category and change anything you want.")
       : tt("Choose one finished game for every category.");
   }
@@ -2800,7 +2801,8 @@ function openGameOfTheYearStatsPreview(year = currentGameOfTheYear(), options = 
   el.gotyStatsPreviewBrow.textContent = tt("Before your picks");
   el.gotyStatsPreviewTitle.innerHTML = `${trophyIcon()} <span>${escapeHtml(tt("Your {year} games", { year }))}</span>`;
   el.gotyStatsPreviewBody.innerHTML = gameOfTheYearStatsPreviewMarkup(year, games, playtimeGames, state.topGamesCarouselMode);
-  el.gotyStatsPreviewContinueButton.textContent = tt("See your games of the year");
+  const willAutofillPicks = options.autoPick && gameOfTheYearAutofillUsesRatings(sortedGameOfTheYearChoices(gameOfTheYearCandidateGames(year)));
+  el.gotyStatsPreviewContinueButton.textContent = tt(willAutofillPicks ? "See your games of the year" : "Choose your games of the year");
   bindGameOfTheYearStatsPreviewCarousel(year, options);
   bindFinishedStatsDesktopOverlays(el.gotyStatsPreviewDialog, el.gotyStatsPreviewBody);
   try {
