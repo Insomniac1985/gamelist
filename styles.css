@@ -1485,10 +1485,17 @@ html.theme-gradient .goty-section .column-head h2 .trophy-icon {
   min-height: 72px;
 }
 
-.goty-stats-preview-time {
+.goty-stats-preview-time-row {
   display: inline-flex;
   align-items: center;
   justify-self: start;
+  gap: 5px;
+  min-width: 0;
+}
+
+.goty-stats-preview-time {
+  display: inline-flex;
+  align-items: center;
   gap: 4px;
   min-height: 18px;
   padding: 3px 6px;
@@ -1512,17 +1519,84 @@ html.theme-gradient .goty-section .column-head h2 .trophy-icon {
   stroke-linejoin: round;
 }
 
+.goty-stats-preview-time-row .coop-pill,
+.goty-stats-preview-time-row .multiplayer-pill {
+  width: 24px;
+  min-width: 24px;
+  height: 24px;
+  min-height: 24px;
+  padding: 0;
+  border-radius: 6px;
+}
+
+.goty-stats-preview-time-row .coop-icon,
+.goty-stats-preview-time-row .online-globe-icon {
+  width: 13px;
+  height: 13px;
+  flex-basis: 13px;
+}
+
 .goty-stats-preview-actions {
   display: grid;
   padding-top: 12px;
 }
 
 .goty-stats-preview-continue {
+  position: relative;
+  overflow: hidden;
   justify-self: stretch;
-  min-height: 48px;
+  min-height: 58px;
   font-size: 15px;
   font-weight: 900;
   text-transform: uppercase;
+  box-shadow:
+    0 0 0 1px color-mix(in srgb, var(--accent) 24%, transparent),
+    0 14px 34px color-mix(in srgb, var(--accent) 22%, transparent);
+  animation: gotyPreviewButtonGlow 2200ms ease-in-out infinite;
+}
+
+.goty-stats-preview-continue::after {
+  content: "";
+  position: absolute;
+  inset: -40% auto -40% -55%;
+  width: 42%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.34),
+    transparent
+  );
+  opacity: 0.55;
+  transform: skewX(-18deg);
+  animation: gotyPreviewButtonShine 2600ms ease-in-out infinite;
+  pointer-events: none;
+}
+
+@keyframes gotyPreviewButtonGlow {
+  0%,
+  100% {
+    filter: brightness(1);
+    box-shadow:
+      0 0 0 1px color-mix(in srgb, var(--accent) 24%, transparent),
+      0 14px 34px color-mix(in srgb, var(--accent) 18%, transparent);
+  }
+  50% {
+    filter: brightness(1.08);
+    box-shadow:
+      0 0 0 1px color-mix(in srgb, var(--accent) 44%, transparent),
+      0 18px 42px color-mix(in srgb, var(--accent) 32%, transparent);
+  }
+}
+
+@keyframes gotyPreviewButtonShine {
+  0%,
+  42% {
+    left: -55%;
+  }
+  72%,
+  100% {
+    left: 115%;
+  }
 }
 
 .goty-dialog-copy {
