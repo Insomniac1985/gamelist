@@ -6314,7 +6314,7 @@ function finishedStatsMarkup(year, games, completed) {
   const playtimeTotal = formatPlaytimeTotal(playtimeHours);
   const kpiCards = [
     statsKpiCard(tt("Finished games"), finishedGames.length, showYearlyDetail ? statsGameList(finishedGames) : "", { tone: "finished" }),
-    playtimeTotal ? statsKpiCard(tt("Total year playtime"), playtimeTotal, showYearlyDetail ? statsGameList(playtimeGames) : "", { tone: "playtime", valueHtml: playtimeKpiValue(playtimeHours) }) : "",
+    playtimeTotal ? statsKpiCard(tt("Total year playtime"), playtimeTotal, showYearlyDetail ? statsPlaytimeGameList(playtimeGames) : "", { tone: "playtime", valueHtml: playtimeKpiValue(playtimeHours) }) : "",
     expansions.length ? statsKpiCard(tt("Expansions finished"), expansions.length, statsGameList(expansions), { tone: "finished" }) : "",
     statsKpiCard(tt("Completed games"), completed.length, showYearlyDetail ? statsCompletedGameList(completed) : "", { action: "completed", tone: "completed", icon: trophyIcon() }),
     streamed.length ? statsKpiCard(tt("Streamed games"), streamed.length, showYearlyDetail ? statsGameList(streamed) : "", { tone: "streamed" }) : "",
@@ -6767,6 +6767,17 @@ function statsGameList(games) {
       : "";
     return `${separator}<span class="finished-stats-game-row ${completed ? "is-complete" : ""}"><b class="${escapeHtml(ownerTitleClass)}">${escapeHtml(game.title)}</b>${game.platform ? platformBadge(game.platform) : ""}${game.dlc ? dlcBadge(game) : ""}${entitlementBadge(game)}${progressPill}${game.statsMonthCarry ? `<span class="finished-stats-month-carry" title="Played during this month without being counted">…</span>` : ""}</span>`;
   }).join("");
+}
+
+function statsPlaytimeGameList(games) {
+  return [...games]
+    .filter((game) => statsPlaytimeHours(game) > 0)
+    .sort((a, b) => statsPlaytimeHours(b) - statsPlaytimeHours(a) || stringCompare(a.title, b.title))
+    .map((game) => {
+      const ownerTitleClass = ownerTitleClasses(visibleOwnerTags(game));
+      return `<span class="finished-stats-game-row finished-stats-playtime-row"><b class="${escapeHtml(ownerTitleClass)}">${escapeHtml(game.title)}</b><em>${escapeHtml(formatPlaytimeTotal(statsPlaytimeHours(game)))}</em></span>`;
+    })
+    .join("");
 }
 
 function statsPlatformBar(games) {
