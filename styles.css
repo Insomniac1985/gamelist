@@ -841,6 +841,7 @@ html.theme-font-mata {
   align-items: center;
   gap: 4px;
   margin-left: 2px;
+  line-height: 1;
 }
 
 .playing-finished-game .playing-finished-date b {
@@ -861,6 +862,7 @@ html.theme-font-mata {
   stroke-linecap: round;
   stroke-linejoin: round;
   opacity: 0.86;
+  transform: translateY(-1px);
 }
 
 .playing-finished-progress {
