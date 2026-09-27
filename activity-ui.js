@@ -196,15 +196,15 @@ function finishedDateLineMarkup(value, escape) {
   const parts = String(value || "").split(/\s+[·•]\s+/).filter(Boolean);
   if (parts.length < 2) return `<span class="playing-finished-date">${finishedCalendarIcon()}<span>${escape(value)}</span></span>`;
   const date = parts.pop();
-  return `<span class="playing-finished-date">${finishedWatchIcon()}<span>${escape(parts.join(" · "))}</span><b aria-hidden="true">·</b>${finishedCalendarIcon()}<span>${escape(date)}</span></span>`;
+  return `<span class="playing-finished-date">${finishedClockIcon()}<span>${escape(parts.join(" · "))}</span><b aria-hidden="true">·</b>${finishedCalendarIcon()}<span>${escape(date)}</span></span>`;
 }
 
 function finishedCalendarIcon() {
   return `<svg class="playing-finished-date-icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="5.5" width="16" height="15" rx="3"></rect><path d="M8 3.5v4"></path><path d="M16 3.5v4"></path><path d="M4 10h16"></path></svg>`;
 }
 
-function finishedWatchIcon() {
-  return `<svg class="playing-finished-watch-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="6.5"></circle><path d="M9 2.8h6"></path><path d="M9 21.2h6"></path><path d="M12 8.5V12l2.4 1.6"></path></svg>`;
+function finishedClockIcon() {
+  return `<svg class="playing-finished-clock-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8.5"></circle><path d="M12 7.5V12l3.2 2"></path></svg>`;
 }
 
 function finishedTrophyIcon() {

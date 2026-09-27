@@ -3264,7 +3264,7 @@ function gameOfTheYearExportTopStatsMarkup(year, games = []) {
   const coopGames = games.filter((game) => game.coop);
   const completed = finishedStatsCompleted(String(year));
   const playtimeHours = totalPlaytimeHours(games);
-  const playtime = playtimeKpiValue(playtimeHours) || `${clockIcon()}<span class="playtime-kpi-value">0</span><span class="playtime-kpi-unit">hrs</span>`;
+  const playtime = playtimeKpiValue(playtimeHours) || `${clockIcon()}<span class="playtime-kpi-value">0</span><span class="playtime-kpi-unit">HRS</span>`;
   return `
     <section class="goty-export-top-kpis has-playtime ${completed.length ? "has-completed" : ""} ${coopGames.length ? "has-coop" : ""}">
       <article class="goty-export-small-kpi goty-export-total-kpi"><strong>${games.length}</strong><span>${escapeHtml(tt("Games played"))}</span></article>
@@ -3526,7 +3526,7 @@ function gameOfTheYearExportCss({ theme, main, accent, gradient, bg, glowPrimary
       backdrop-filter: blur(18px);
       -webkit-backdrop-filter: blur(18px);
     }
-    .goty-export-small-kpi span,
+    .goty-export-small-kpi > span,
     .goty-export-stat > span {
       display: block;
       color: ${muted};
@@ -3577,10 +3577,18 @@ function gameOfTheYearExportCss({ theme, main, accent, gradient, bg, glowPrimary
       stroke-linecap: round;
       stroke-linejoin: round;
     }
+    .goty-export-playtime-kpi .playtime-kpi-value {
+      display: inline;
+      color: ${accent};
+      font: 900 40px/1 ${bodyFont};
+    }
     .goty-export-playtime-kpi .playtime-kpi-unit {
       align-self: flex-end;
       margin-bottom: 3px;
+      display: inline;
+      color: ${accent};
       font-size: 27px;
+      font-weight: 900;
       line-height: 1;
     }
     .goty-export-new-kpi strong,
@@ -3610,7 +3618,7 @@ function gameOfTheYearExportCss({ theme, main, accent, gradient, bg, glowPrimary
       stroke-linecap: round;
       stroke-linejoin: round;
     }
-    .goty-export-small-kpi span {
+    .goty-export-small-kpi > span {
       margin-top: 9px;
       line-height: 1.05;
     }
@@ -7077,14 +7085,14 @@ function formatPlaytimeTotal(hours) {
   if (!Number.isFinite(hours) || hours <= 0) return "";
   const rounded = Math.round(hours * 10) / 10;
   const display = Number.isInteger(rounded) ? String(rounded) : rounded.toFixed(1);
-  return `${display} ${rounded === 1 ? "hr" : "hrs"}`;
+  return `${display} ${rounded === 1 ? "HR" : "HRS"}`;
 }
 
 function playtimeKpiValue(hours) {
   if (!Number.isFinite(hours) || hours <= 0) return "";
   const rounded = Math.round(hours * 10) / 10;
   const display = Number.isInteger(rounded) ? String(rounded) : rounded.toFixed(1);
-  return `${clockIcon()}<span class="playtime-kpi-value">${escapeHtml(display)}</span><span class="playtime-kpi-unit">${escapeHtml(rounded === 1 ? "hr" : "hrs")}</span>`;
+  return `${clockIcon()}<span class="playtime-kpi-value">${escapeHtml(display)}</span><span class="playtime-kpi-unit">${escapeHtml(rounded === 1 ? "HR" : "HRS")}</span>`;
 }
 
 function gameStatsTags(game) {
@@ -7320,7 +7328,8 @@ function completedDurationLine(game) {
   const duration = finishHoursText(game);
   if (!duration) return "";
   const className = `completed-duration${game?.platinum ? " completed-duration-gold" : ""}`;
-  return `<span class="${className}">${watchIcon()}<span>${escapeHtml(duration)}</span></span>`;
+  const style = timePillStyle(finishHoursValue(game?.finishHours));
+  return `<span class="${className}" style="${escapeHtml(style)}">${clockIcon()}<span>${escapeHtml(duration)}</span></span>`;
 }
 
 function finishHoursValue(value) {
@@ -9122,17 +9131,6 @@ function clockIcon() {
     <svg class="clock-icon" viewBox="0 0 24 24" aria-hidden="true">
       <circle cx="12" cy="12" r="8.5"></circle>
       <path d="M12 7.5V12l3.2 2"></path>
-    </svg>
-  `;
-}
-
-function watchIcon() {
-  return `
-    <svg class="watch-icon" viewBox="0 0 24 24" aria-hidden="true">
-      <circle cx="12" cy="12" r="6.5"></circle>
-      <path d="M9 2.8h6"></path>
-      <path d="M9 21.2h6"></path>
-      <path d="M12 8.5V12l2.4 1.6"></path>
     </svg>
   `;
 }
