@@ -6628,7 +6628,7 @@ function topGamesCarouselHeaderMarkup(mode = "time", context = "goty") {
         <label class="finished-stats-top-select">
           <select data-top-games-mode aria-label="${escapeHtml(tt("Top games order"))}">
             <option value="time" ${normalizedMode === "time" ? "selected" : ""}>${escapeHtml(tt("Time"))}</option>
-            <option value="grade" ${normalizedMode === "grade" ? "selected" : ""}>${escapeHtml(tt("Grade"))}</option>
+            <option value="grade" ${normalizedMode === "grade" ? "selected" : ""}>${escapeHtml(tt("Rating"))}</option>
           </select>
         </label>
         <div class="goty-stats-preview-navs">
