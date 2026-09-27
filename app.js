@@ -2688,9 +2688,16 @@ function renderGameOfTheYear() {
   el.gotyGrid.innerHTML = categories.map(([key, label], index) => {
     const labelText = tt(label);
     const game = gameById(picks[key]);
-    if (!game || !candidateIds.has(game.id) || !gameOfTheYearGameAllowedForCategory(game, key)) return "";
-    const cover = coverDisplayUrl(game.cover || "") || platformLogo(game.platform || "PS5");
     const edgeClass = index >= categories.length - 2 ? "goty-card-edge-right" : index === 0 ? "goty-card-edge-left" : "";
+    if (!game || !candidateIds.has(game.id) || !gameOfTheYearGameAllowedForCategory(game, key)) {
+      return `
+        <span class="goty-card goty-card-empty ${edgeClass}" aria-label="${escapeHtml(labelText)}">
+          <span class="goty-category">${escapeHtml(labelText)}</span>
+          <span class="goty-cover goty-empty-cover" aria-hidden="true"></span>
+        </span>
+      `;
+    }
+    const cover = coverDisplayUrl(game.cover || "") || platformLogo(game.platform || "PS5");
     return `
       <button class="goty-card ${edgeClass}" type="button" data-id="${escapeHtml(game.id)}" aria-label="${escapeHtml(`${labelText}: ${game.title}`)}">
         <span class="goty-category">${escapeHtml(labelText)}</span>
@@ -2699,7 +2706,7 @@ function renderGameOfTheYear() {
       </button>
     `;
   }).join("");
-  el.gotyGrid.querySelectorAll(".goty-card").forEach((button) => {
+  el.gotyGrid.querySelectorAll(".goty-card[data-id]").forEach((button) => {
     button.addEventListener("click", () => openDetail(button.dataset.id));
   });
 }

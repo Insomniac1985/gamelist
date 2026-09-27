@@ -1130,6 +1130,18 @@ html.theme-gradient .goty-section .column-head h2 .trophy-icon {
   filter: saturate(1.08);
 }
 
+.goty-card-empty {
+  cursor: default;
+  filter: none;
+}
+
+.goty-card-empty:hover,
+.goty-card-empty:focus-visible {
+  z-index: auto;
+  transform: none;
+  filter: none;
+}
+
 .goty-cover {
   display: block;
   width: 100%;
@@ -1160,6 +1172,16 @@ html.theme-gradient .goty-section .column-head h2 .trophy-icon {
   object-position: center;
   border-radius: 7px;
   clip-path: inset(0 round 7px);
+}
+
+.goty-empty-cover {
+  min-height: 174px;
+  background:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.16), rgba(255, 255, 255, 0.055)),
+    color-mix(in srgb, var(--panel-strong) 72%, transparent);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  opacity: 0.72;
 }
 
 .goty-category {
