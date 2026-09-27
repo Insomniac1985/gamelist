@@ -6745,11 +6745,11 @@ function statsGroupedBreakdown(heading, count, games) {
 }
 
 function statsGameListSort(a, b) {
-  return String(a.completedAt || "").localeCompare(String(b.completedAt || "")) || stringCompare(a.title, b.title);
+  return String(b.completedAt || "").localeCompare(String(a.completedAt || "")) || stringCompare(a.title, b.title);
 }
 
 function statsGameList(games) {
-  const orderedGames = [...games].sort((a, b) => Number(Boolean(a.statsMonthCarry)) - Number(Boolean(b.statsMonthCarry)));
+  const orderedGames = [...games].sort((a, b) => Number(Boolean(a.statsMonthCarry)) - Number(Boolean(b.statsMonthCarry)) || statsGameListSort(a, b));
   const firstCarryIndex = orderedGames.findIndex((game) => game.statsMonthCarry);
   return orderedGames.map((game, index) => {
     const progress = achievementProgressForGame(game);
@@ -6959,6 +6959,7 @@ function statsCompletedGameList(items) {
     platform: item.platform || platinumPlatformFor(item),
     platinum: true,
     statsCompleted: true,
+    completedAt: dateOnly(item.rawEarnedAt || item.earnedAt),
   })));
 }
 
@@ -6966,8 +6967,7 @@ function statsOwnerBreakdown(games) {
   const owners = countBy(games.flatMap((game) => visibleOwnerTags(game).map((owner) => ({ owner }))), (item) => item.owner);
   return owners.map(({ label, count }) => {
     const ownerGames = games
-      .filter((game) => visibleOwnerTags(game).includes(label))
-      .sort((a, b) => String(a.completedAt || "").localeCompare(String(b.completedAt || "")) || stringCompare(a.title, b.title));
+      .filter((game) => visibleOwnerTags(game).includes(label));
     return `
       <div class="finished-stats-owner-group">
         <div class="finished-stats-owner-heading"><b>${ownerBadge(label)}</b><em>${count}</em></div>
