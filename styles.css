@@ -12880,6 +12880,10 @@ body.theme-kash
   grid-column: 1 / -1;
 }
 
+#gameDialog.is-new-game .playing-form-grid > .rating-section {
+  display: none;
+}
+
 .rating-section {
   display: grid;
   gap: 8px;
