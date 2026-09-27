@@ -1321,6 +1321,15 @@ html.theme-gradient .goty-section .column-head h2 .trophy-icon {
   gap: 3px;
 }
 
+.goty-meta .coop-pill,
+.goty-meta .multiplayer-pill {
+  width: 20px;
+  min-width: 20px;
+  height: 20px;
+  min-height: 20px;
+  padding: 0;
+}
+
 .goty-meta .rating-score-star .rounded-star-icon,
 .goty-meta .coop-icon,
 .goty-meta .online-globe-icon {
