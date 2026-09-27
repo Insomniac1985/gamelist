@@ -2874,6 +2874,7 @@ function bindGameOfTheYearStatsPreviewCarousel(year = currentGameOfTheYear(), op
     state.topGamesCarouselMode = normalizeTopGamesCarouselMode(select.value);
     openGameOfTheYearStatsPreview(year, options);
   });
+  syncStyledSelect(select);
   const list = el.gotyStatsPreviewBody.querySelector(".goty-stats-preview-list");
   const strip = el.gotyStatsPreviewBody.querySelector(".goty-stats-preview-strip");
   const update = () => {
@@ -7135,6 +7136,7 @@ function bindFinishedStatsTopGamesCarousel(scope = "all") {
     state.topGamesCarouselMode = normalizeTopGamesCarouselMode(select.value);
     renderFinishedStatsDialog(scope);
   });
+  syncStyledSelect(select);
   const list = el.finishedStatsBody.querySelector(".finished-stats-playtime-list");
   const strip = el.finishedStatsBody.querySelector(".finished-stats-playtime-strip");
   if (!list || !strip) return;
