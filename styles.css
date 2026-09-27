@@ -7903,6 +7903,19 @@ body:not(.can-edit) .game-card:focus-within .edit-action {
     inset 0 0 0 1px rgba(255, 255, 255, 0.08);
 }
 
+
+.finished-stats-modal.goty-stats-preview-modal {
+  grid-template-rows: auto auto auto;
+  align-content: start;
+  overflow-y: auto !important;
+}
+
+.finished-stats-body.goty-stats-preview-body {
+  max-height: none;
+  padding-bottom: 0;
+  overflow: visible;
+}
+
 .finished-stats-body {
   display: grid;
   gap: 14px;
