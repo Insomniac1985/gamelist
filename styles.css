@@ -1710,21 +1710,15 @@ html.theme-gradient .goty-section .column-head h2 .trophy-icon {
 }
 
 .goty-stats-preview-actions {
-  position: fixed;
-  left: 50%;
-  bottom: 10px;
+  position: relative;
   z-index: 18;
   display: grid;
-  width: min(960px, calc(100vw - 24px));
+  justify-self: center;
+  width: min(760px, 100%);
   box-sizing: border-box;
   margin: 0;
-  padding: 8px 18px 10px;
-  transform: translateX(-50%);
-  background:
-    linear-gradient(180deg, transparent, rgba(11, 12, 16, 0.82) 32%, rgba(11, 12, 16, 0.96)),
-    var(--custom-backdrop-image);
-  background-size: auto, cover;
-  background-position: center, center;
+  padding: 6px 0 0;
+  background: none;
 }
 
 .goty-stats-preview-continue {
@@ -8114,15 +8108,16 @@ body:not(.can-edit) .game-card:focus-within .edit-action {
 
 
 .finished-stats-modal.goty-stats-preview-modal {
-  grid-template-rows: auto auto auto;
-  align-content: start;
-  overflow-y: auto !important;
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  align-content: stretch;
+  overflow: hidden !important;
 }
 
 .finished-stats-body.goty-stats-preview-body {
   max-height: none;
-  padding-bottom: 0;
-  overflow: visible;
+  padding-bottom: 6px;
+  overflow-x: hidden;
+  overflow-y: auto;
 }
 
 .finished-stats-body {
@@ -15813,9 +15808,8 @@ html.theme-light .finish-trophy-check input[type="checkbox"]:checked {
   }
 
   .goty-stats-preview-actions {
-    bottom: 7px;
-    width: calc(100vw - 14px);
-    padding: 7px 14px 9px;
+    width: 100%;
+    padding: 6px 0 0;
   }
 
   .finished-stats-charts {
