@@ -2773,7 +2773,7 @@ function openGameOfTheYearDialog(year = currentGameOfTheYear(), options = {}) {
 
 async function openGameOfTheYearDialogWithAutofillLoading(year = currentGameOfTheYear(), options = {}) {
   const candidates = gameOfTheYearCandidateGames(year);
-  if (options.autoPick && gameOfTheYearAutofillUsesRatings(candidates)) {
+  if (options.autoPick) {
     await showGameOfTheYearAutofillLoading(candidates);
   }
   if (!options.skipStatsPreview && shouldShowGameOfTheYearStatsPreview(candidates)) {
