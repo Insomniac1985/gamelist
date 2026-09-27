@@ -7989,6 +7989,7 @@ body:not(.can-edit) .game-card:focus-within .edit-action {
     line-height: 1.2;
     text-align: center;
     white-space: normal;
+    display: none;
     opacity: 0;
     pointer-events: none;
     transform: translate(50%, 3px);
@@ -8001,6 +8002,7 @@ body:not(.can-edit) .game-card:focus-within .edit-action {
   .completed-stream-toggle[data-tooltip]:focus-visible::after,
   .playing-stream-toggle[data-tooltip]:hover::after,
   .playing-stream-toggle[data-tooltip]:focus-visible::after {
+    display: block;
     opacity: 1;
     transform: translate(50%, 0);
   }
