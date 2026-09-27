@@ -1553,13 +1553,18 @@ function gameOfTheYearComplete(picks = {}) {
   return gameOfTheYearCategoriesComplete(picks, GAME_OF_YEAR_CATEGORIES);
 }
 
+function gameOfTheYearCategoryOptional(key) {
+  return key === "disappointment";
+}
+
 function gameOfTheYearCategoriesComplete(picks = {}, categories = GAME_OF_YEAR_CATEGORIES) {
-  return categories.every(([key]) => Boolean(picks[key]));
+  return categories.every(([key]) => gameOfTheYearCategoryOptional(key) || Boolean(picks[key]));
 }
 
 function gameOfTheYearCategoriesValid(picks = {}, categories = GAME_OF_YEAR_CATEGORIES, games = []) {
   const gameMap = new Map((Array.isArray(games) ? games : []).map((game) => [game.id, game]));
   return categories.every(([key]) => {
+    if (gameOfTheYearCategoryOptional(key) && !picks[key]) return true;
     const game = gameMap.get(picks[key]);
     return Boolean(game) && gameOfTheYearGameAllowedForCategory(game, key);
   });
@@ -2654,7 +2659,8 @@ function renderGameOfTheYear() {
   const picks = entry.picks || {};
   const candidates = gameOfTheYearCandidateGames(year);
   const statsGames = gameOfTheYearFinishedStatsGames(year);
-  const categories = gameOfTheYearCategoriesForYear(year, candidates);
+  const activeCategories = gameOfTheYearCategoriesForYear(year, candidates);
+  const categories = GAME_OF_YEAR_CATEGORIES;
   const candidateIds = new Set(candidates.map((game) => game.id));
   el.gotySection.hidden = false;
   const sectionTitle = window.matchMedia("(max-width: 520px)").matches ? tt("My GOTYs {year}", { year }) : tt("My Games of the year {year}", { year });
@@ -2675,7 +2681,7 @@ function renderGameOfTheYear() {
   el.gotyEditButton.innerHTML = pencilIcon();
   el.gotyEditButton.title = tt("Edit");
   el.gotyEditButton.setAttribute("aria-label", tt("Edit"));
-  el.gotySaveButton.hidden = !gameOfTheYearCategoriesValid(picks, categories, candidates);
+  el.gotySaveButton.hidden = !gameOfTheYearCategoriesValid(picks, activeCategories, candidates);
   el.gotySaveButton.innerHTML = downloadIcon();
   el.gotySaveButton.title = tt("Download");
   el.gotySaveButton.setAttribute("aria-label", tt("Download"));
@@ -2764,10 +2770,9 @@ function openGameOfTheYearDialog(year = currentGameOfTheYear(), options = {}) {
 
 async function openGameOfTheYearDialogWithAutofillLoading(year = currentGameOfTheYear(), options = {}) {
   const candidates = gameOfTheYearCandidateGames(year);
-  if (!options.autoPick || !gameOfTheYearAutofillUsesRatings(candidates)) {
-    return openGameOfTheYearDialog(year, options);
+  if (options.autoPick && gameOfTheYearAutofillUsesRatings(candidates)) {
+    await showGameOfTheYearAutofillLoading(candidates);
   }
-  await showGameOfTheYearAutofillLoading(candidates);
   if (!options.skipStatsPreview && shouldShowGameOfTheYearStatsPreview(candidates)) {
     return openGameOfTheYearStatsPreview(year, options);
   }
