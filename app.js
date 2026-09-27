@@ -2746,7 +2746,9 @@ function openGameOfTheYearDialog(year = currentGameOfTheYear(), options = {}) {
   el.gotyDialogTitle.innerHTML = `${trophyIcon()} <span>${escapeHtml(dialogTitle)}</span>`;
   const copy = el.gotyForm.querySelector(".goty-dialog-copy");
   if (copy) {
-    copy.textContent = tt("Choose one finished game for every category.");
+    copy.textContent = shouldAutofillPicks
+      ? tt("We guessed your picks. Review each category and change anything you want.")
+      : tt("Choose one finished game for every category.");
   }
   if (el.gotyPickerOrder) {
     state.gotyPickerOrder = normalizeGameOfTheYearPickerOrder(state.gotyPickerOrder || gotyOrderForDefault(state.settings.defaultOrder));
