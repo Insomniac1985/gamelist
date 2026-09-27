@@ -2835,6 +2835,7 @@ function gameOfTheYearStatsPreviewMarkup(year, games = [], playtimeGames = gameO
 
 function gameOfTheYearStatsPreviewCard(game) {
   const cover = coverDisplayUrl(game.cover || "") || platformLogo(game.platform || "PS5");
+  const hours = statsPlaytimeHours(game);
   const playModeBadge = game.coop ? coopBadge() : (game.multiplayer ? multiplayerBadge() : "");
   return `
     <article class="goty-stats-preview-card">
@@ -2842,7 +2843,7 @@ function gameOfTheYearStatsPreviewCard(game) {
       <span class="goty-choice-title">
         <strong data-full-title="${escapeHtml(game.title)}">${escapeHtml(game.title)}</strong>
         ${platformBadge(game.platform)}
-        <span class="goty-stats-preview-time-row"><span class="goty-stats-preview-time">${clockIcon()}<span>${escapeHtml(formatPlaytimeTotal(statsPlaytimeHours(game)))}</span></span>${playModeBadge}</span>
+        <span class="goty-stats-preview-time-row"><span class="goty-stats-preview-time" style="${escapeHtml(timePillStyle(hours))}">${clockIcon()}<span>${escapeHtml(formatPlaytimeTotal(hours))}</span></span>${playModeBadge}</span>
       </span>
     </article>
   `;
