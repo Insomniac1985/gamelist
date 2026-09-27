@@ -1286,7 +1286,8 @@ html.theme-gradient .goty-section .column-head h2 .trophy-icon {
 
 .goty-meta .chip.genre,
 .goty-meta .platform-badge,
-.goty-meta .goty-progress-pill {
+.goty-meta .goty-progress-pill,
+.goty-meta .rating-score-pill {
   min-height: 18px;
   padding: 3px 5px;
   font-size: 8px;
@@ -1314,6 +1315,18 @@ html.theme-gradient .goty-section .column-head h2 .trophy-icon {
 
 .goty-meta .goty-progress-pill strong {
   font-size: 9px;
+}
+
+.goty-meta .rating-score-pill {
+  gap: 3px;
+}
+
+.goty-meta .rating-score-star .rounded-star-icon,
+.goty-meta .coop-icon,
+.goty-meta .online-globe-icon {
+  width: 11px;
+  height: 11px;
+  flex-basis: 11px;
 }
 
 .goty-dialog .goty-modal {

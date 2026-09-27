@@ -3211,12 +3211,13 @@ function gameOfTheYearHoverInfo(game, className) {
     ...String(game.genres || "").split(","),
     ...(Array.isArray(game.tags) ? game.tags : []),
   ].map((tag) => tag.trim()).filter(Boolean).slice(0, 4);
+  const playModeBadge = game.coop ? coopBadge() : (game.multiplayer ? multiplayerBadge() : "");
   return `
     <span class="${className}">
       <strong>${escapeHtml(game.title)}</strong>
       ${details.length ? `<small>${escapeHtml(details.join(" · "))}</small>` : ""}
       <span class="goty-meta">
-        <span class="goty-main-pills">${platformBadge(game.platform)}${progress ? psnProgressBadge(progress, { className: "goty-progress-pill" }) : ""}</span>
+        <span class="goty-main-pills">${platformBadge(game.platform)}${progress ? psnProgressBadge(progress, { className: "goty-progress-pill" }) : ""}${ratingScoreBadge(game)}${playModeBadge}</span>
         ${tags.map((tag) => `<span class="chip genre">${escapeHtml(tag)}</span>`).join("")}
       </span>
     </span>
