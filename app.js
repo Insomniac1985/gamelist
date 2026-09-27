@@ -2691,14 +2691,17 @@ function renderGameOfTheYear() {
     el.gotyStatsButton.title = tt("Stats");
     el.gotyStatsButton.setAttribute("aria-label", tt("Stats for {year}", { year }));
   }
-  el.gotyGrid.innerHTML = categories.map(([key, label], index) => {
+  const gotyCards = categories.map(([key, label]) => {
     const labelText = tt(label);
     const game = gameById(picks[key]);
-    const edgeClass = index >= categories.length - 2 ? "goty-card-edge-right" : index === 0 ? "goty-card-edge-left" : "";
-    if (!game || !candidateIds.has(game.id) || !gameOfTheYearGameAllowedForCategory(game, key)) {
+    const isFilled = Boolean(game && candidateIds.has(game.id) && gameOfTheYearGameAllowedForCategory(game, key));
+    return { key, labelText, game, isFilled };
+  }).sort((a, b) => Number(b.isFilled) - Number(a.isFilled));
+  el.gotyGrid.innerHTML = gotyCards.map(({ labelText, game, isFilled }, index) => {
+    const edgeClass = index >= gotyCards.length - 2 ? "goty-card-edge-right" : index === 0 ? "goty-card-edge-left" : "";
+    if (!isFilled) {
       return `
         <span class="goty-card goty-card-empty ${edgeClass}" aria-label="${escapeHtml(labelText)}">
-          <span class="goty-category">${escapeHtml(labelText)}</span>
           <span class="goty-cover goty-empty-cover" aria-hidden="true"></span>
         </span>
       `;
