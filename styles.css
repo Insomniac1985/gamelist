@@ -7695,7 +7695,25 @@ body:not(.can-edit) .game-card:focus-within .edit-action {
 }
 
 .finished-stats-kpi.is-playtime strong {
+  gap: 2px;
   color: var(--accent-2);
+}
+
+.finished-stats-kpi.is-playtime .clock-icon {
+  width: 0.72em;
+  height: 0.72em;
+  min-width: 0.72em;
+  margin-right: 6px;
+  stroke: currentColor;
+  stroke-width: 2;
+  fill: none;
+}
+
+.finished-stats-kpi.is-playtime .playtime-kpi-unit {
+  align-self: flex-end;
+  margin-bottom: 0.12em;
+  font-size: 0.68em;
+  line-height: 1;
 }
 
 .finished-stats-kpi.is-coop strong {

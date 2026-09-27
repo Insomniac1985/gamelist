@@ -6310,10 +6310,11 @@ function finishedStatsMarkup(year, games, completed) {
   const releaseInsights = statsReleaseYearInsights(year, games);
   const showYearlyDetail = !allYears;
   const playtimeGames = finishedGames.filter((game) => statsPlaytimeHours(game) > 0);
-  const playtimeTotal = formatPlaytimeTotal(totalPlaytimeHours(finishedGames));
+  const playtimeHours = totalPlaytimeHours(finishedGames);
+  const playtimeTotal = formatPlaytimeTotal(playtimeHours);
   const kpiCards = [
     statsKpiCard(tt("Finished games"), finishedGames.length, showYearlyDetail ? statsGameList(finishedGames) : "", { tone: "finished" }),
-    playtimeTotal ? statsKpiCard(tt("Playtime"), playtimeTotal, showYearlyDetail ? statsGameList(playtimeGames) : "", { tone: "playtime" }) : "",
+    playtimeTotal ? statsKpiCard(tt("Playtime"), playtimeTotal, showYearlyDetail ? statsGameList(playtimeGames) : "", { tone: "playtime", valueHtml: playtimeKpiValue(playtimeHours) }) : "",
     expansions.length ? statsKpiCard(tt("Expansions finished"), expansions.length, statsGameList(expansions), { tone: "finished" }) : "",
     statsKpiCard(tt("Completed games"), completed.length, showYearlyDetail ? statsCompletedGameList(completed) : "", { action: "completed", tone: "completed", icon: trophyIcon() }),
     streamed.length ? statsKpiCard(tt("Streamed games"), streamed.length, showYearlyDetail ? statsGameList(streamed) : "", { tone: "streamed" }) : "",
@@ -6342,7 +6343,7 @@ function finishedStatsMarkup(year, games, completed) {
 function statsKpiCard(label, value, detail = "", options = {}) {
   return `
     <button class="finished-stats-kpi ${options.action ? "is-clickable" : ""} ${options.tone ? `is-${escapeHtml(options.tone)}` : ""}" type="button" ${options.action ? `data-stats-action="${escapeHtml(options.action)}"` : ""} ${detail && !options.action ? `data-stats-overlay-title="${escapeHtml(label)}"` : ""}>
-      <strong class="${options.valueClass ? escapeHtml(options.valueClass) : ""}">${options.icon || ""}${escapeHtml(String(value))}</strong>
+      <strong class="${options.valueClass ? escapeHtml(options.valueClass) : ""}">${options.valueHtml || `${options.icon || ""}${escapeHtml(String(value))}`}</strong>
       <span>${escapeHtml(label)}</span>
       ${detail ? `<span class="finished-stats-breakdown">${detail}</span>` : ""}
     </button>
@@ -6366,6 +6367,10 @@ function statsDonutCard(title, counts, tone, visibleLimit = counts.length, games
 }
 
 function statsReleaseKpisCard(insights) {
+  const currentYear = String(new Date().getFullYear());
+  const outsideYearLabel = String(insights.scopeYear || "") === currentYear
+    ? tt("Played games not from this")
+    : tt("Played games not from that year");
   return `
     <section class="finished-stats-release-strip">
       <div class="finished-stats-release-kpis">
@@ -6382,7 +6387,7 @@ function statsReleaseKpisCard(insights) {
         })}
         ${statsReleaseMiniKpi({
           value: insights.playedOutsideYear.length,
-          label: tt("Played games not from that year"),
+          label: outsideYearLabel,
           subline: releaseExpansionLine(insights.playedOutsideYearExpansions, "played expansion not from that year", "played expansions not from that year"),
           detail: insights.hoverable ? statsGameList(insights.playedOutsideYearDisplay) : "",
           tone: "finished",
@@ -7037,7 +7042,14 @@ function formatPlaytimeTotal(hours) {
   if (!Number.isFinite(hours) || hours <= 0) return "";
   const rounded = Math.round(hours * 10) / 10;
   const display = Number.isInteger(rounded) ? String(rounded) : rounded.toFixed(1);
-  return `${display} ${rounded === 1 ? "hr" : "hrs"}`;
+  return `${display}${rounded === 1 ? "hr" : "hrs"}`;
+}
+
+function playtimeKpiValue(hours) {
+  if (!Number.isFinite(hours) || hours <= 0) return "";
+  const rounded = Math.round(hours * 10) / 10;
+  const display = Number.isInteger(rounded) ? String(rounded) : rounded.toFixed(1);
+  return `${clockIcon()}<span class="playtime-kpi-value">${escapeHtml(display)}</span><span class="playtime-kpi-unit">${escapeHtml(rounded === 1 ? "hr" : "hrs")}</span>`;
 }
 
 function gameStatsTags(game) {
@@ -9067,6 +9079,15 @@ function calendarMiniIcon() {
       <path d="M8.2 13.5h.1"></path>
       <path d="M12 13.5h.1"></path>
       <path d="M15.8 13.5h.1"></path>
+    </svg>
+  `;
+}
+
+function clockIcon() {
+  return `
+    <svg class="clock-icon" viewBox="0 0 24 24" aria-hidden="true">
+      <circle cx="12" cy="12" r="8.5"></circle>
+      <path d="M12 7.5V12l3.2 2"></path>
     </svg>
   `;
 }
