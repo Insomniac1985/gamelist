@@ -1321,6 +1321,15 @@ html.theme-gradient .goty-section .column-head h2 .trophy-icon {
   gap: 3px;
 }
 
+.goty-meta .coop-pill,
+.goty-meta .multiplayer-pill {
+  width: 20px;
+  min-width: 20px;
+  height: 20px;
+  min-height: 20px;
+  padding: 0;
+}
+
 .goty-meta .rating-score-star .rounded-star-icon,
 .goty-meta .coop-icon,
 .goty-meta .online-globe-icon {
@@ -8040,8 +8049,8 @@ body:not(.can-edit) .game-card:focus-within .edit-action {
 
 .finished-stats-dialog {
   width: min(920px, calc(100vw - 24px));
-  max-height: calc(100vh - 24px);
-  overflow: visible;
+  max-height: calc(100dvh - 24px);
+  overflow: hidden;
   border: 0;
   padding: 0;
   background: transparent;
@@ -8058,8 +8067,8 @@ body:not(.can-edit) .game-card:focus-within .edit-action {
   grid-template-rows: auto minmax(0, auto);
   align-content: start;
   width: min(920px, calc(100vw - 24px));
-  max-height: calc(100vh - 24px);
-  overflow: visible !important;
+  max-height: calc(100dvh - 24px);
+  overflow: hidden !important;
   overscroll-behavior: contain;
   box-shadow:
     0 24px 80px rgba(0, 0, 0, 0.48),
@@ -8083,7 +8092,7 @@ body:not(.can-edit) .game-card:focus-within .edit-action {
   display: grid;
   gap: 14px;
   min-height: 0;
-  max-height: calc(100vh - 118px);
+  max-height: calc(100dvh - 118px);
   padding: 0 2px 6px;
   overflow-x: hidden;
   overflow-y: auto;
@@ -10336,7 +10345,8 @@ body.dialog-open .mobile-section-tabs {
 .finished-stats-modal {
   grid-template-rows: auto minmax(0, auto);
   align-content: start;
-  overflow: visible !important;
+  max-height: calc(100dvh - 24px);
+  overflow: hidden !important;
 }
 
 .settings-modal {
