@@ -3399,7 +3399,7 @@ function multiplayerBadge() {
 }
 
 function streamBadge() {
-  return `<span class="stream-pill">${streamPlayIcon()}<span>${escapeHtml(tt("Stream"))}</span></span>`;
+  return `<span class="stream-pill" title="${escapeHtml(tt("Stream"))}" aria-label="${escapeHtml(tt("Stream"))}">${streamPlayIcon()}</span>`;
 }
 
 function streamPlayIcon() {
@@ -3736,8 +3736,8 @@ async function fetchShelfSteamActivity(forceRefresh = state.gamelistSettings.for
 async function fetchShelfXboxActivity(forceRefresh = state.gamelistSettings.forceCacheOnLoad === true) {
   const params = achievementParams({ schema: "2" }, forceRefresh); if (state.gamelistSettings.microsoftUser) params.set("user", state.gamelistSettings.microsoftUser);
   const response = await fetch(`/api/xbox-achievements?${params}`); const data = await response.json();
-  if (data.needsSetup) return { achievements: [], games: [], completed: [], totalEarned: 0, sourceUrl: data.sourceUrl || "https://www.xbox.com/", needsSetup: true, error: data.error || "" };
-  if (!response.ok || data.error || data.authError) return { achievements: [], games: [], completed: [], totalEarned: 0, sourceUrl: data.sourceUrl || "https://www.xbox.com/", authError: Boolean(data.authError || data.error || !response.ok), error: data.error || "" };
+  if (data.needsSetup) return { achievements: [], games: [], completed: [], totalEarned: 0, sourceUrl: data.sourceUrl || "https://xbl.io/", needsSetup: true, error: data.error || "" };
+  if (!response.ok || data.error || data.authError) return { achievements: [], games: [], completed: [], totalEarned: 0, sourceUrl: data.sourceUrl || "https://xbl.io/", authError: Boolean(data.authError || data.error || !response.ok), error: data.error || "" };
   return { achievements: data.achievements || [], games: data.games || [], completed: data.completed || [], totalEarned: Number(data.totalEarned || 0), sourceUrl: data.sourceUrl || "" };
 }
 function achievementParams(values = {}, forceRefresh = state.gamelistSettings.forceCacheOnLoad === true) { const params = new URLSearchParams(values); params.set("lang", currentLanguage()); if (forceRefresh) params.set("fresh", String(Date.now())); return params; }
