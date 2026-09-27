@@ -3232,7 +3232,7 @@ function gamelistProjectionCard(game, options = {}) {
   titleOwners.hidden = !titleOwners.innerHTML;
   card.querySelector(".edit-action").classList.remove("editor-only");
   const studioLine = card.querySelector(".studio-line"); studioLine.textContent = studio; studioLine.hidden = !studio;
-  card.querySelector(".meta").innerHTML = projectionMeta(game, { includePast: isReleaseDialog, includeProgress: neutralReleaseCard, includeRelease: !isReleaseDialog });
+  card.querySelector(".meta").innerHTML = projectionMeta(game, { includePast: isReleaseDialog, includeProgress: neutralReleaseCard, includeRelease: !isReleaseDialog, includeCalendarState: isReleaseDialog });
   const dates = card.querySelector(".play-dates");
   dates.innerHTML = [
     game.startedAt && !neutralReleaseCard ? `<span class="history-pill history-date-pill"><small>Started</small><strong>${escapeHtml(formatShortDate(game.startedAt))}</strong></span>` : "",
@@ -3298,7 +3298,11 @@ function currentlyPlayingTitle(games) {
 function playingCountText(count) {
   return tt("Playing {count} {item}", { count, item: tt(count === 1 ? "game" : "games") });
 }
-function projectionMeta(game, options = {}) { const release = options.includeRelease === false ? "" : activityReleaseStatus(game, { includePast: Boolean(options.includePast) }); return `${platformBadge(game.platform, { title: game.title })}${options.includeProgress ? shelfProgressPill(game) : ""}${mediaFormatBadge(game)}${dlcBadge(game)}${entitlementBadge(game)}${game.emulator ? `<span class="emulator-pill">${escapeHtml(tt("Emulator"))}</span>` : ""}${game.lengthHours ? timeBadgeMarkup(game.lengthHours, game.hltbUrl || game.howLongToBeatUrl || `https://howlongtobeat.com/?q=${encodeURIComponent(game.title)}`, escapeHtml) : ""}${game.stream ? `<span class="stream-pill">${escapeHtml(tt("Stream"))}</span>` : ""}${release ? releaseStatusPill(release) : ""}${game.coop ? `<span class="coop-pill">${escapeHtml(tt("CoOp"))}</span>` : ""}${game.multiplayer && !game.coop ? `<span class="multiplayer-pill" title="${escapeHtml(tt("Multiplayer"))}" aria-label="${escapeHtml(tt("Multiplayer"))}">${coopIcon()}</span>` : ""}${game.replayCount ? `<span class="replay-pill">Replay ${escapeHtml(game.replayCount)}</span>` : ""}`; }
+function projectionMeta(game, options = {}) {
+  const release = options.includeRelease === false ? "" : activityReleaseStatus(game, { includePast: Boolean(options.includePast) });
+  const calendarState = options.includeCalendarState ? shelfCalendarStateBadge(game) : "";
+  return `${platformBadge(game.platform, { title: game.title })}${options.includeProgress ? shelfProgressPill(game) : ""}${mediaFormatBadge(game)}${dlcBadge(game)}${entitlementBadge(game)}${calendarState}${game.emulator ? `<span class="emulator-pill">${escapeHtml(tt("Emulator"))}</span>` : ""}${game.lengthHours ? timeBadgeMarkup(game.lengthHours, game.hltbUrl || game.howLongToBeatUrl || `https://howlongtobeat.com/?q=${encodeURIComponent(game.title)}`, escapeHtml) : ""}${game.stream ? streamBadge() : ""}${release ? releaseStatusPill(release) : ""}${game.coop ? coopBadge() : ""}${game.multiplayer && !game.coop ? multiplayerBadge() : ""}${game.replayCount ? `<span class="replay-pill">Replay ${escapeHtml(game.replayCount)}</span>` : ""}`;
+}
 
 function mediaFormatBadge(game) {
   if (!game) return "";
@@ -3366,16 +3370,50 @@ function shelfReleaseDatePill(game, label) {
 function calendarMiniIcon() {
   return `
     <svg class="calendar-mini-icon" viewBox="0 0 24 24" aria-hidden="true">
-      <rect x="4.5" y="5.5" width="15" height="14" rx="2.5"></rect>
-      <path d="M8 3.8v4"></path>
-      <path d="M16 3.8v4"></path>
-      <path d="M4.5 10h15"></path>
-      <path d="M8.2 13.5h.1"></path>
-      <path d="M12 13.5h.1"></path>
-      <path d="M15.8 13.5h.1"></path>
+      <rect x="4" y="5.5" width="16" height="15" rx="3"></rect>
+      <path d="M8 3.5v4"></path>
+      <path d="M16 3.5v4"></path>
+      <path d="M4 10h16"></path>
     </svg>
   `;
 }
+
+function shelfCalendarStateBadge(game) {
+  if (game.playing) return shelfCalendarStatePill("Playing", "finished");
+  if (game.platinum) return shelfCalendarStatePill("Completed", "completed", trophyIcon());
+  if (game.completedAt) return shelfCalendarStatePill("Finished", "finished");
+  if (game.section === "backlog") return shelfCalendarStatePill("Backlog", "backlog");
+  return "";
+}
+
+function shelfCalendarStatePill(label, tone, icon = "") {
+  return `<span class="calendar-state-pill calendar-state-${escapeHtml(tone)}">${icon}${escapeHtml(tt(label))}</span>`;
+}
+
+function coopBadge() {
+  return `<span class="coop-pill" title="${escapeHtml(tt("CoOp"))}" aria-label="${escapeHtml(tt("CoOp"))}">${coopIcon()}</span>`;
+}
+
+function multiplayerBadge() {
+  return `<span class="multiplayer-pill" title="${escapeHtml(tt("Multiplayer"))}" aria-label="${escapeHtml(tt("Multiplayer"))}">${onlineGlobeIcon()}</span>`;
+}
+
+function streamBadge() {
+  return `<span class="stream-pill">${streamPlayIcon()}<span>${escapeHtml(tt("Stream"))}</span></span>`;
+}
+
+function streamPlayIcon() {
+  return `<svg class="stream-play-icon twitch-filter-icon" viewBox="0 0 24 24" aria-hidden="true">${twitchLogoPath()}</svg>`;
+}
+
+function twitchLogoPath() {
+  return `<path class="twitch-filter-logo-path" d="M6 0 1.7 4.3v15.4h5.1V24l4.3-4.3h3.4l7.8-7.7V0H6Zm14.6 11.1-3.4 3.4h-3.5l-3 3v-3H6.9V1.7h13.7v9.4ZM18 4.7v5.1h-1.7V4.7H18Zm-4.7 0v5.1h-1.7V4.7h1.7Z"></path>`;
+}
+
+function onlineGlobeIcon() {
+  return `<svg class="online-globe-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8"></circle><path d="M4 12h16"></path><path d="M12 4c2.1 2.2 3.2 4.8 3.2 8s-1.1 5.8-3.2 8"></path><path d="M12 4c-2.1 2.2-3.2 4.8-3.2 8s1.1 5.8 3.2 8"></path></svg>`;
+}
+
 function activityGameFor(game) {
   if (!shelfAllowsTrophyActivity(game.platform)) return null;
   if (!/(^|\s)ps[1-5](\s|$)|playstation/i.test(shortPlatform(game.platform || ""))) return null;
@@ -3635,7 +3673,7 @@ function updateShelfPhysicalProgressPills() {
 function finishedProjectionCard(game) {
   const cover = coverUrl(game.cover || "") || platformFallback(game.platform);
   const progress = activityProgressFor(game);
-  const badges = `${visibleProjectionOwners(game).map(ownerBadge).join("")}${platformBadge(game.platform, { title: game.title })}${mediaFormatBadge(game)}${game.emulator ? `<span class="emulator-pill">${escapeHtml(tt("Emulator"))}</span>` : ""}${game.coop ? `<span class="coop-pill">${escapeHtml(tt("CoOp"))}</span>` : ""}${game.multiplayer && !game.coop ? `<span class="multiplayer-pill" title="${escapeHtml(tt("Multiplayer"))}" aria-label="${escapeHtml(tt("Multiplayer"))}">${coopIcon()}</span>` : ""}${game.stream ? `<span class="stream-pill">${escapeHtml(tt("Stream"))}</span>` : ""}${game.replayCount ? `<span class="replay-pill">Replay ${escapeHtml(game.replayCount)}</span>` : ""}`;
+  const badges = `${visibleProjectionOwners(game).map(ownerBadge).join("")}${platformBadge(game.platform, { title: game.title })}${mediaFormatBadge(game)}${game.emulator ? `<span class="emulator-pill">${escapeHtml(tt("Emulator"))}</span>` : ""}${game.coop ? coopBadge() : ""}${game.multiplayer && !game.coop ? multiplayerBadge() : ""}${game.stream ? streamBadge() : ""}${game.replayCount ? `<span class="replay-pill">Replay ${escapeHtml(game.replayCount)}</span>` : ""}`;
   return finishedGameMarkup({ id: game.id, title: game.title, cover, completedClass: shelfShowsCompletedTrophyStyle(game) ? "completed-trophy-card" : "", itemClass: projectionOwnerCardClass(game), badges, dateText: finishedProjectionDateText(game), progress, dataName: "gamelist-id", escape: escapeHtml });
 }
 async function loadTrophyActivity() {
