@@ -1341,11 +1341,13 @@ html.theme-gradient .goty-section .column-head h2 .trophy-icon {
 
 .goty-stats-preview-modal {
   width: min(960px, calc(100vw - 24px));
-  grid-template-rows: auto minmax(0, 1fr) auto;
+  grid-template-rows: auto auto auto;
+  align-content: start;
+  overflow-y: auto !important;
 }
 
 .goty-stats-preview-modal .modal-head {
-  margin-bottom: 4px;
+  margin-bottom: 22px;
 }
 
 #gotyStatsPreviewTitle {
@@ -1364,30 +1366,23 @@ html.theme-gradient .goty-section .column-head h2 .trophy-icon {
 }
 
 .goty-stats-preview-body {
-  max-height: calc(100vh - 188px);
+  max-height: none;
+  padding-bottom: 0;
+  overflow: visible;
 }
 
 .goty-stats-preview-playtime {
   display: grid;
-  gap: 10px;
+  gap: 8px;
   min-width: 0;
-  padding: 14px;
-  background:
-    linear-gradient(
-      135deg,
-      rgba(255, 255, 255, 0.075),
-      rgba(255, 255, 255, 0.035)
-    ),
-    rgba(8, 9, 12, 0.42);
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  border-radius: 8px;
 }
 
 .goty-stats-preview-section-head {
   display: flex;
-  align-items: center;
+  align-items: end;
   justify-content: space-between;
   gap: 12px;
+  padding: 0 4px;
 }
 
 .goty-stats-preview-section-head h3 {
@@ -1403,9 +1398,60 @@ html.theme-gradient .goty-section .column-head h2 .trophy-icon {
   gap: 6px;
 }
 
+.finished-stats-top-games {
+  margin-top: 4px;
+}
+
+.finished-stats-top-games-head {
+  align-items: center;
+}
+
+.finished-stats-top-controls {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-left: auto;
+}
+
+.finished-stats-top-select {
+  display: inline-grid;
+}
+
+.finished-stats-top-select select {
+  width: 98px;
+  min-height: 34px;
+  height: 34px;
+  padding: 5px 28px 5px 10px;
+  color: var(--accent-2);
+  font-family: inherit;
+  font-size: 11px;
+  font-weight: 900;
+  text-transform: uppercase;
+  background:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.11), rgba(255, 255, 255, 0.04)),
+    rgba(15, 16, 20, 0.82);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 8px;
+}
+
+.finished-stats-top-select select:focus-visible {
+  outline: 2px solid color-mix(in srgb, var(--accent-2) 68%, transparent);
+  outline-offset: 2px;
+}
+
 .goty-stats-preview-strip {
   position: relative;
   min-width: 0;
+  padding: 14px;
+  background:
+    linear-gradient(
+      135deg,
+      rgba(255, 255, 255, 0.075),
+      rgba(255, 255, 255, 0.035)
+    ),
+    rgba(8, 9, 12, 0.42);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 8px;
 }
 
 .goty-stats-preview-list {
@@ -1484,17 +1530,70 @@ html.theme-gradient .goty-section .column-head h2 .trophy-icon {
   min-height: 72px;
 }
 
-.goty-stats-preview-time {
+.goty-stats-preview-badges {
   display: inline-flex;
   align-items: center;
   justify-self: start;
+  gap: 5px;
+  min-width: 0;
+  max-width: 100%;
+}
+
+.goty-stats-preview-badges .platform-badge,
+.goty-stats-preview-badges .rating-score-pill {
+  box-sizing: border-box;
+  height: 24px;
+  min-height: 24px;
+  border-radius: 6px;
+  font-size: 9px;
+  line-height: 1;
+}
+
+.goty-stats-preview-badges .platform-badge {
+  max-width: 74px;
   gap: 4px;
-  min-height: 18px;
-  padding: 3px 6px;
-  color: var(--accent-2);
-  background: color-mix(in srgb, var(--accent-2) 12%, transparent);
-  border: 1px solid color-mix(in srgb, var(--accent-2) 34%, transparent);
+  padding: 2px 6px 2px 3px;
+}
+
+.goty-stats-preview-badges .platform-icon {
+  width: 17px;
+  height: 17px;
+  min-width: 17px;
   border-radius: 5px;
+}
+
+.goty-stats-preview-badges .rating-score-pill {
+  gap: 3px;
+  padding: 0 6px;
+}
+
+.goty-stats-preview-badges .rounded-star-icon {
+  width: 11px;
+  height: 11px;
+}
+
+.goty-stats-preview-time-row {
+  display: inline-flex;
+  align-items: center;
+  justify-self: start;
+  gap: 5px;
+  min-width: 0;
+}
+
+.goty-stats-preview-time {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  height: 24px;
+  min-height: 24px;
+  padding: 0 7px;
+  color: var(--time-light, var(--accent-2));
+  background: color-mix(in srgb, var(--time-color, var(--accent-2)) 13%, transparent);
+  border: 1px solid color-mix(in srgb, var(--time-color, var(--accent-2)) 50%, transparent);
+  border-radius: 6px;
+  box-shadow:
+    inset 0 1px 0 color-mix(in srgb, var(--time-light, var(--accent-2)) 20%, transparent),
+    0 0 16px color-mix(in srgb, var(--time-glow, transparent) 42%, transparent);
   font-size: 9px;
   font-weight: 820;
   line-height: 1;
@@ -1511,17 +1610,84 @@ html.theme-gradient .goty-section .column-head h2 .trophy-icon {
   stroke-linejoin: round;
 }
 
+.goty-stats-preview-time-row .coop-pill,
+.goty-stats-preview-time-row .multiplayer-pill {
+  width: 24px;
+  min-width: 24px;
+  height: 24px;
+  min-height: 24px;
+  padding: 0;
+  border-radius: 6px;
+}
+
+.goty-stats-preview-time-row .coop-icon,
+.goty-stats-preview-time-row .online-globe-icon {
+  width: 13px;
+  height: 13px;
+  flex-basis: 13px;
+}
+
 .goty-stats-preview-actions {
   display: grid;
   padding-top: 12px;
 }
 
 .goty-stats-preview-continue {
+  position: relative;
+  overflow: hidden;
   justify-self: stretch;
-  min-height: 48px;
+  min-height: 58px;
   font-size: 15px;
   font-weight: 900;
   text-transform: uppercase;
+  box-shadow:
+    0 0 0 1px color-mix(in srgb, var(--accent) 24%, transparent),
+    0 14px 34px color-mix(in srgb, var(--accent) 22%, transparent);
+  animation: gotyPreviewButtonGlow 2200ms ease-in-out infinite;
+}
+
+.goty-stats-preview-continue::after {
+  content: "";
+  position: absolute;
+  inset: -40% auto -40% -55%;
+  width: 42%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.34),
+    transparent
+  );
+  opacity: 0.55;
+  transform: skewX(-18deg);
+  animation: gotyPreviewButtonShine 2600ms ease-in-out infinite;
+  pointer-events: none;
+}
+
+@keyframes gotyPreviewButtonGlow {
+  0%,
+  100% {
+    filter: brightness(1);
+    box-shadow:
+      0 0 0 1px color-mix(in srgb, var(--accent) 24%, transparent),
+      0 14px 34px color-mix(in srgb, var(--accent) 18%, transparent);
+  }
+  50% {
+    filter: brightness(1.08);
+    box-shadow:
+      0 0 0 1px color-mix(in srgb, var(--accent) 44%, transparent),
+      0 18px 42px color-mix(in srgb, var(--accent) 32%, transparent);
+  }
+}
+
+@keyframes gotyPreviewButtonShine {
+  0%,
+  42% {
+    left: -55%;
+  }
+  72%,
+  100% {
+    left: 115%;
+  }
 }
 
 .goty-dialog-copy {
@@ -7818,6 +7984,19 @@ body:not(.can-edit) .game-card:focus-within .edit-action {
   box-shadow:
     0 24px 80px rgba(0, 0, 0, 0.48),
     inset 0 0 0 1px rgba(255, 255, 255, 0.08);
+}
+
+
+.finished-stats-modal.goty-stats-preview-modal {
+  grid-template-rows: auto auto auto;
+  align-content: start;
+  overflow-y: auto !important;
+}
+
+.finished-stats-body.goty-stats-preview-body {
+  max-height: none;
+  padding-bottom: 0;
+  overflow: visible;
 }
 
 .finished-stats-body {
