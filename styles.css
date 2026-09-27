@@ -923,9 +923,9 @@ html.theme-font-mata {
   display: flex;
   align-items: flex-start;
   flex-direction: column;
-  gap: 6px;
+  gap: 2px;
   min-width: 0;
-  transform: translateY(8px);
+  transform: none;
 }
 
 .goty-section .column-head h2,
@@ -984,14 +984,13 @@ html.theme-gradient .goty-section .column-head h2 .trophy-icon {
 .goty-year-count {
   display: inline-flex;
   align-items: center;
-  color: var(--accent-2);
+  color: var(--muted);
   font-family: var(--font-body, inherit);
   font-size: 13px;
   font-weight: 500;
   line-height: 1;
   white-space: nowrap;
   text-transform: uppercase;
-  transform: translateY(3px);
 }
 
 .goty-year-select {
