@@ -6134,10 +6134,10 @@ function renderCompleted() {
       <div class="completed-main">
         <div class="completed-identity">
           <strong class="${game.platinum ? "completed-achievements-title" : ""}" tabindex="0">${escapeHtml(game.title)}</strong>
-          ${completedDurationLine(game)}
         </div>
         <div class="completed-meta">
           <span class="completed-platform">${completedOwnerBadges(game)}${completedBadges(game)}</span>
+          ${completedDurationLine(game)}
           ${completedDateLine(game)}
         </div>
       </div>
@@ -7319,9 +7319,8 @@ function finishedDateText(game) {
 function completedDurationLine(game) {
   const duration = finishHoursText(game);
   if (!duration) return "";
-  const label = game?.platinum ? "Completed in {duration}" : "Finished in {duration}";
   const className = `completed-duration${game?.platinum ? " completed-duration-gold" : ""}`;
-  return `<span class="${className}">${escapeHtml(tt(label, { duration }))}</span>`;
+  return `<span class="${className}">${watchIcon()}<span>${escapeHtml(duration)}</span></span>`;
 }
 
 function finishHoursValue(value) {
@@ -9123,6 +9122,17 @@ function clockIcon() {
     <svg class="clock-icon" viewBox="0 0 24 24" aria-hidden="true">
       <circle cx="12" cy="12" r="8.5"></circle>
       <path d="M12 7.5V12l3.2 2"></path>
+    </svg>
+  `;
+}
+
+function watchIcon() {
+  return `
+    <svg class="watch-icon" viewBox="0 0 24 24" aria-hidden="true">
+      <circle cx="12" cy="12" r="6.5"></circle>
+      <path d="M9 2.8h6"></path>
+      <path d="M9 21.2h6"></path>
+      <path d="M12 8.5V12l2.4 1.6"></path>
     </svg>
   `;
 }
