@@ -2643,10 +2643,10 @@ function renderGameOfTheYear() {
   if (el.gotyYearCount) {
     const count = candidates.length;
     const playtime = formatPlaytimeTotal(totalPlaytimeHours(candidates));
-    el.gotyYearCount.innerHTML = `
-      <span class="goty-year-kpi"><strong>${escapeHtml(String(count))}</strong><span>${escapeHtml(tt("Games played"))}</span></span>
-      ${playtime ? `<span class="goty-year-kpi"><strong>${escapeHtml(playtime)}</strong><span>${escapeHtml(tt("Total year playtime"))}</span></span>` : ""}
-    `;
+    el.gotyYearCount.textContent = [
+      tt("{count} games played", { count }),
+      playtime ? tt("{playtime} total year playtime", { playtime }) : "",
+    ].filter(Boolean).join("  ");
   }
   const canEditCurrent = state.canEdit && year === currentGameOfTheYear();
   el.gotyEditButton.hidden = !canEditCurrent;
