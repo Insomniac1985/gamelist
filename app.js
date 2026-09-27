@@ -2801,7 +2801,8 @@ function openGameOfTheYearStatsPreview(year = currentGameOfTheYear(), options = 
   el.gotyStatsPreviewBrow.textContent = tt("Before your picks");
   el.gotyStatsPreviewTitle.innerHTML = `${trophyIcon()} <span>${escapeHtml(tt("Your {year} games", { year }))}</span>`;
   el.gotyStatsPreviewBody.innerHTML = gameOfTheYearStatsPreviewMarkup(year, games, playtimeGames, state.topGamesCarouselMode);
-  el.gotyStatsPreviewContinueButton.textContent = tt("See your games of the year");
+  const willAutofillPicks = options.autoPick && gameOfTheYearAutofillUsesRatings(sortedGameOfTheYearChoices(gameOfTheYearCandidateGames(year)));
+  el.gotyStatsPreviewContinueButton.textContent = tt(willAutofillPicks ? "See your games of the year" : "Choose your games of the year");
   bindGameOfTheYearStatsPreviewCarousel(year, options);
   bindFinishedStatsDesktopOverlays(el.gotyStatsPreviewDialog, el.gotyStatsPreviewBody);
   try {
