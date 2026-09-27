@@ -2842,7 +2842,7 @@ function gameOfTheYearStatsPreviewCard(game) {
       <span class="goty-choice-cover"><img src="${escapeHtml(cover)}" alt="" loading="lazy" decoding="async"></span>
       <span class="goty-choice-title">
         <strong data-full-title="${escapeHtml(game.title)}">${escapeHtml(game.title)}</strong>
-        ${platformBadge(game.platform)}
+        <span class="goty-stats-preview-badges">${platformBadge(game.platform)}${ratingScoreBadge(game)}</span>
         <span class="goty-stats-preview-time-row"><span class="goty-stats-preview-time" style="${escapeHtml(timePillStyle(hours))}">${clockIcon()}<span>${escapeHtml(formatPlaytimeTotal(hours))}</span></span>${playModeBadge}</span>
       </span>
     </article>
@@ -6500,9 +6500,10 @@ function finishedStatsMarkup(year, games, completed) {
   const playtimeGames = finishedGames.filter((game) => statsPlaytimeHours(game) > 0);
   const playtimeHours = totalPlaytimeHours(finishedGames);
   const playtimeTotal = formatPlaytimeTotal(playtimeHours);
+  const showPlaytimeKpi = shouldShowFinishedStatsPlaytimeKpi(year) && playtimeTotal;
   const kpiCards = [
     statsKpiCard(tt("Finished games"), finishedGames.length, showYearlyDetail ? statsGameList(finishedGames) : "", { tone: "finished" }),
-    !allYears && playtimeTotal ? statsKpiCard(tt("Total year playtime"), playtimeTotal, statsPlaytimeGameList(playtimeGames), { tone: "playtime", valueHtml: playtimeKpiValue(playtimeHours) }) : "",
+    showPlaytimeKpi ? statsKpiCard(tt("Total year playtime"), playtimeTotal, statsPlaytimeGameList(playtimeGames, 5), { tone: "playtime", valueHtml: playtimeKpiValue(playtimeHours) }) : "",
     expansions.length ? statsKpiCard(tt("Expansions finished"), expansions.length, statsGameList(expansions), { tone: "finished" }) : "",
     statsKpiCard(tt("Completed games"), completed.length, showYearlyDetail ? statsCompletedGameList(completed) : "", { action: "completed", tone: "completed", icon: trophyIcon() }),
     streamed.length ? statsKpiCard(tt("Streamed games"), streamed.length, showYearlyDetail ? statsGameList(streamed) : "", { tone: "streamed" }) : "",
@@ -6526,6 +6527,16 @@ function finishedStatsMarkup(year, games, completed) {
     </section>
     ${games.length ? "" : `<div class="empty">${escapeHtml(tt("No finished games{year}.", { year: year === "all" ? "" : ` ${tt("in {year}", { year })}` }))}</div>`}
   `;
+}
+
+
+function shouldShowFinishedStatsPlaytimeKpi(year) {
+  const value = String(year || "all");
+  if (value === "all") return false;
+  const selectedYear = Number.parseInt(value, 10);
+  const currentYear = new Date().getFullYear();
+  if (Number.isFinite(selectedYear) && selectedYear < currentYear) return true;
+  return state.settings.gotyAlwaysShow || isGameOfTheYearSeason();
 }
 
 function statsKpiCard(label, value, detail = "", options = {}) {
@@ -6957,10 +6968,11 @@ function statsGameList(games) {
   }).join("");
 }
 
-function statsPlaytimeGameList(games) {
+function statsPlaytimeGameList(games, limit = Infinity) {
   return [...games]
     .filter((game) => statsPlaytimeHours(game) > 0)
     .sort((a, b) => statsPlaytimeHours(b) - statsPlaytimeHours(a) || stringCompare(a.title, b.title))
+    .slice(0, Number.isFinite(limit) ? limit : undefined)
     .map((game) => {
       const ownerTitleClass = ownerTitleClasses(visibleOwnerTags(game));
       return `<span class="finished-stats-game-row finished-stats-playtime-row"><b class="${escapeHtml(ownerTitleClass)}">${escapeHtml(game.title)}</b>${game.platform ? platformBadge(game.platform) : ""}<em>${escapeHtml(formatPlaytimeTotal(statsPlaytimeHours(game)))}</em></span>`;

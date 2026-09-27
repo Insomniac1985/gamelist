@@ -1489,6 +1489,48 @@ html.theme-gradient .goty-section .column-head h2 .trophy-icon {
   min-height: 72px;
 }
 
+.goty-stats-preview-badges {
+  display: inline-flex;
+  align-items: center;
+  justify-self: start;
+  gap: 5px;
+  min-width: 0;
+  max-width: 100%;
+}
+
+.goty-stats-preview-badges .platform-badge,
+.goty-stats-preview-badges .rating-score-pill {
+  box-sizing: border-box;
+  height: 24px;
+  min-height: 24px;
+  border-radius: 6px;
+  font-size: 9px;
+  line-height: 1;
+}
+
+.goty-stats-preview-badges .platform-badge {
+  max-width: 74px;
+  gap: 4px;
+  padding: 2px 6px 2px 3px;
+}
+
+.goty-stats-preview-badges .platform-icon {
+  width: 17px;
+  height: 17px;
+  min-width: 17px;
+  border-radius: 5px;
+}
+
+.goty-stats-preview-badges .rating-score-pill {
+  gap: 3px;
+  padding: 0 6px;
+}
+
+.goty-stats-preview-badges .rounded-star-icon {
+  width: 11px;
+  height: 11px;
+}
+
 .goty-stats-preview-time-row {
   display: inline-flex;
   align-items: center;
