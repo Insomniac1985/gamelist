@@ -2724,7 +2724,7 @@ function openGameOfTheYearDialog(year = currentGameOfTheYear(), options = {}) {
   const copy = el.gotyForm.querySelector(".goty-dialog-copy");
   if (copy) {
     copy.textContent = options.autoPick && gameOfTheYearAutofillUsesRatings(games)
-      ? tt("This is your guessed games, feel free to modify them for every category to make it your own.")
+      ? tt("We guessed your picks. Review each category and change anything you want.")
       : tt("Choose one finished game for every category.");
   }
   if (el.gotyPickerOrder) {
