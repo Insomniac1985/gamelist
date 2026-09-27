@@ -12800,8 +12800,12 @@ body.theme-kash
   white-space: nowrap;
 }
 
-#gameDialog.is-new-game .collection-form-grid > .title-field input,
-#gameDialog.is-new-game .collection-form-grid > .list-field select {
+#gameDialog.is-new-game.needs-title-field .collection-form-grid > .title-field input,
+#gameDialog.is-new-game.needs-platform-field .collection-form-grid > .platform-field input,
+#gameDialog.is-new-game.needs-list-field .collection-form-grid > .list-field select,
+#gameDialog.is-new-game.needs-list-field .collection-form-grid > .list-field .platform-logo-button,
+#gameDialog.is-new-game.needs-release-date-field .collection-form-grid > .release-date-field input {
+  border: 1px solid color-mix(in srgb, var(--accent) 76%, #ff4d62);
   border-color: color-mix(in srgb, var(--accent) 76%, #ff4d62);
   background:
     linear-gradient(
@@ -12815,8 +12819,10 @@ body.theme-kash
     0 0 0 3px color-mix(in srgb, var(--accent) 10%, transparent);
 }
 
-#gameDialog.is-new-game .collection-form-grid > .title-field span,
-#gameDialog.is-new-game .collection-form-grid > .list-field span {
+#gameDialog.is-new-game.needs-title-field .collection-form-grid > .title-field > span,
+#gameDialog.is-new-game.needs-platform-field .collection-form-grid > .platform-field > span:first-child,
+#gameDialog.is-new-game.needs-list-field .collection-form-grid > .list-field > span,
+#gameDialog.is-new-game.needs-release-date-field .collection-form-grid > .release-date-field > span {
   color: color-mix(in srgb, var(--accent) 82%, #ffffff);
 }
 

@@ -183,6 +183,7 @@ const MANUAL_PSN_TITLE_OVERRIDES = [
 ];
 const SEARCH_CACHE_TTL = 1000 * 60 * 60;
 let titleLookupTimer = 0;
+let newGameListTouched = false;
 let selectMeasureContext = null;
 let selectOverflowPopover = null;
 let platformLogoOverlay = null;
@@ -1018,15 +1019,29 @@ function bindEvents() {
   el.board.addEventListener("touchstart", handleBoardSwipeStart, { passive: true });
   el.board.addEventListener("touchend", handleBoardSwipeEnd, { passive: true });
   window.addEventListener("touchend", handleBoardSwipeEnd, { passive: true });
-  el.fields.section.addEventListener("change", syncDialogPriceVisibility);
+  el.fields.title.addEventListener("input", syncNewGameRequiredHighlights);
+  el.fields.section.addEventListener("change", () => {
+    markNewGameListTouched();
+    syncDialogPriceVisibility();
+  });
+  el.form.addEventListener("pointerdown", (event) => {
+    if (event.target?.closest?.(".list-field")) markNewGameListTouched();
+  });
   el.fields.platform.addEventListener("input", () => {
     syncDialogPriceVisibility();
     syncPlatformInputIcon();
     syncGamelistEntitlementEditor();
+    syncNewGameRequiredHighlights();
   });
-  el.fields.platform.addEventListener("change", () => { syncPlatformInputIcon(); syncGamelistEntitlementEditor(); });
-  el.fields.releaseDate.addEventListener("input", syncNewGameUpcomingSection);
-  el.fields.releaseDate.addEventListener("change", syncNewGameUpcomingSection);
+  el.fields.platform.addEventListener("change", () => { syncPlatformInputIcon(); syncGamelistEntitlementEditor(); syncNewGameRequiredHighlights(); });
+  el.fields.releaseDate.addEventListener("input", () => {
+    syncNewGameUpcomingSection();
+    syncNewGameRequiredHighlights();
+  });
+  el.fields.releaseDate.addEventListener("change", () => {
+    syncNewGameUpcomingSection();
+    syncNewGameRequiredHighlights();
+  });
   el.fields.preorderStore.addEventListener("input", () => {
     syncStoreInputIcon(el.fields.preorderStore, el.preorderStoreFieldIcon);
     syncNewGameUpcomingSection();
@@ -10196,11 +10211,26 @@ function newGameShouldBeUpcoming() {
   return futureRelease || Boolean(el.fields.preorderStore.value.trim());
 }
 
+function markNewGameListTouched() {
+  if (state.editingId) return;
+  newGameListTouched = true;
+  syncNewGameRequiredHighlights();
+}
+
+function syncNewGameRequiredHighlights() {
+  const isNewGame = !state.editingId && el.dialog.classList.contains("is-new-game");
+  el.dialog.classList.toggle("needs-title-field", isNewGame && !el.fields.title.value.trim());
+  el.dialog.classList.toggle("needs-platform-field", isNewGame && !el.fields.platform.value.trim());
+  el.dialog.classList.toggle("needs-release-date-field", isNewGame && !el.fields.releaseDate.value);
+  el.dialog.classList.toggle("needs-list-field", isNewGame && !newGameListTouched);
+}
+
 function syncNewGameUpcomingSection() {
   if (state.editingId || !newGameShouldBeUpcoming()) return;
   el.fields.section.value = "upcoming";
   syncStyledSelect(el.fields.section, { activeValue: null });
   syncDialogPriceVisibility();
+  syncNewGameRequiredHighlights();
 }
 
 function shouldCreatePreorderCalendarEvent(existing, game) {
@@ -10260,6 +10290,7 @@ async function openEditor(id = "") {
   state.editingId = id;
   state.pendingDescription = "";
   const game = state.games.find((item) => item.id === id) || blankGame();
+  newGameListTouched = Boolean(id);
   el.dialogTitle.textContent = id ? tt("Edit Game") : tt("Add Game");
   el.dialog.classList.toggle("is-new-game", !id);
   el.deleteButton.hidden = !id;
@@ -10311,6 +10342,7 @@ async function openEditor(id = "") {
   syncGamelistEntitlementEditor();
   syncDialogPriceVisibility();
   syncStyledSelect(el.fields.section, { activeValue: null });
+  syncNewGameRequiredHighlights();
   pauseAllPlayingTrailers();
   el.dialog.showModal();
   syncScrollLock();
@@ -10324,6 +10356,7 @@ async function addGameFromSearch(query, section = "wanted") {
   el.fields.title.value = title;
   if (["wanted", "released", "backlog"].includes(section)) el.fields.section.value = section;
   syncDialogPriceVisibility();
+  syncNewGameRequiredHighlights();
   queueTitleLookup();
 }
 
@@ -10956,6 +10989,7 @@ function applyLookup(result) {
   if (result.publisher) el.fields.publisher.value = result.publisher;
   if (result.platform && !el.fields.platform.value) el.fields.platform.value = platformDisplayName(result.platform);
   syncEditFieldIcons();
+  syncNewGameRequiredHighlights();
   if (!el.fields.id.value && !el.fields.replayCount.value) {
     const replayCount = nextReplayCountForTitle(el.fields.title.value);
     if (replayCount) {
