@@ -6557,8 +6557,8 @@ function finishedStatsMarkup(year, games, completed) {
   const showPlaytimeKpi = shouldShowFinishedStatsPlaytimeKpi(year) && playtimeTotal;
   const kpiCards = [
     statsKpiCard(tt("Finished games"), finishedGames.length, showYearlyDetail ? statsGameList(finishedGames) : "", { tone: "finished" }),
-    showPlaytimeKpi ? statsKpiCard(tt("Total year playtime"), playtimeTotal, statsPlaytimeGameList(playtimeGames), { tone: "playtime", valueHtml: playtimeKpiValue(playtimeHours) }) : "",
     expansions.length ? statsKpiCard(tt("Expansions finished"), expansions.length, statsGameList(expansions), { tone: "finished" }) : "",
+    showPlaytimeKpi ? statsKpiCard(tt("Total year playtime"), playtimeTotal, statsPlaytimeGameList(playtimeGames), { tone: "playtime", valueHtml: playtimeKpiValue(playtimeHours) }) : "",
     statsKpiCard(tt("Completed games"), completed.length, showYearlyDetail ? statsCompletedGameList(completed) : "", { action: "completed", tone: "completed", icon: trophyIcon() }),
     streamed.length ? statsKpiCard(tt("Streamed games"), streamed.length, showYearlyDetail ? statsGameList(streamed) : "", { tone: "streamed" }) : "",
     coopGames.length ? statsKpiCard(tt("CoOp games"), coopGames.length, statsGameList(coopGames), { tone: "coop", icon: coopIcon() }) : "",
