@@ -3359,10 +3359,20 @@ async function gameOfTheYearExportHtml(year = state.gotyYear) {
     ...row,
     coverSrc: await exportImageDataUrl(coverDisplayUrl(row.game.cover || ""), platformLogo(row.game.platform || "PS5")),
   })));
-  const logo = await exportImageDataUrl(document.querySelector(".brand-mark")?.src || THEMES.shabii.icon, THEMES.shabii.icon);
+  const logo = await gameOfTheYearExportLogoDataUrl(theme);
   const background = await exportImageDataUrl(theme.backgroundImage || "", theme.mode === "light" ? "assets/backdrop_light.png" : "assets/backdrop.png");
   const twitchUrl = twitchChannelUrl(state.settings.twitchUser);
   return gameOfTheYearExportMarkup({ owner, year, rows: assetRows, statsGames, theme, logo, background, twitchUrl });
+}
+
+async function gameOfTheYearExportLogoDataUrl(theme) {
+  const defaultLogo = THEMES.shabii.icon;
+  if (theme.gamelistIcon) return await exportImageDataUrl(theme.gamelistIcon, defaultLogo);
+  if (theme.mainColorReset === false) {
+    return await tintExportImageDataUrl(defaultLogo, theme.gradientColor || theme.mainColor || THEMES.shabii.themeColor)
+      || await exportImageDataUrl(defaultLogo, defaultLogo);
+  }
+  return await exportImageDataUrl(defaultLogo, defaultLogo);
 }
 
 function gameOfTheYearExportMarkup({ owner, year, rows, statsGames, theme, logo, background, twitchUrl = "" }) {
@@ -3718,14 +3728,17 @@ function gameOfTheYearExportCss({ theme, main, accent, gradient, bg, glowPrimary
       color: #ffe985;
     }
     .goty-export-playtime-kpi strong {
+      min-width: 0;
+      overflow: hidden;
       color: ${accent};
-      gap: 4px;
+      gap: 3px;
+      white-space: nowrap;
     }
     .goty-export-playtime-kpi .clock-icon {
-      width: 30px;
-      height: 30px;
-      flex: 0 0 auto;
-      margin-right: 3px;
+      width: 24px;
+      height: 24px;
+      flex: 0 0 24px;
+      margin-right: 2px;
       fill: none;
       stroke: currentColor;
       stroke-width: 2;
@@ -3734,15 +3747,18 @@ function gameOfTheYearExportCss({ theme, main, accent, gradient, bg, glowPrimary
     }
     .goty-export-playtime-kpi .playtime-kpi-value {
       display: inline;
+      flex: 0 1 auto;
+      min-width: 0;
       color: ${accent};
-      font: 900 40px/1 ${bodyFont};
+      font: 900 34px/1 ${bodyFont};
     }
     .goty-export-playtime-kpi .playtime-kpi-unit {
       align-self: flex-end;
+      flex: 0 0 auto;
       margin-bottom: 3px;
       display: inline;
       color: ${accent};
-      font-size: 27px;
+      font-size: 22px;
       font-weight: 900;
       line-height: 1;
     }
@@ -4456,6 +4472,39 @@ async function imageToDataUrl(src) {
   } catch {
     return "";
   }
+}
+
+async function tintExportImageDataUrl(src, color) {
+  const fill = normalizeHexColor(color);
+  if (!fill) return "";
+  const dataUrl = await exportImageDataUrl(src, src);
+  if (!dataUrl) return "";
+  return await new Promise((resolve) => {
+    const image = new Image();
+    image.onload = () => {
+      try {
+        const canvas = document.createElement("canvas");
+        canvas.width = image.naturalWidth || image.width;
+        canvas.height = image.naturalHeight || image.height;
+        const context = canvas.getContext("2d");
+        context.drawImage(image, 0, 0, canvas.width, canvas.height);
+        context.globalCompositeOperation = "source-in";
+        context.fillStyle = fill;
+        context.fillRect(0, 0, canvas.width, canvas.height);
+        resolve(canvas.toDataURL("image/png"));
+      } catch {
+        resolve("");
+      }
+    };
+    image.onerror = () => resolve("");
+    image.src = dataUrl;
+  });
+}
+
+function normalizeHexColor(value) {
+  const raw = String(value || "").trim();
+  const match = raw.match(/^#?([0-9a-fA-F]{6})$/);
+  return match ? `#${match[1]}` : "";
 }
 
 async function drawGameOfTheYearImage(ctx, { owner, year, rows, logo, theme, background, withCovers }) {
