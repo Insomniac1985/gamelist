@@ -440,7 +440,7 @@ const STRINGS = {
     "Show stream games": "Mostrar juegos en stream",
     "Show all finished games": "Mostrar todos los juegos terminados",
     "CoOp games": "Juegos coop",
-    "Interested in games": "Juegos que interesaban",
+    "Games interested in": "Juegos que interesaban",
     "Played new games": "Juegos nuevos jugados",
     "Played games not from that year": "Juegos jugados que no eran de ese año",
     "{count} hrs": "{count} h",

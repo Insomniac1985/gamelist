@@ -6371,7 +6371,7 @@ function statsReleaseKpisCard(insights) {
       <div class="finished-stats-release-kpis">
         ${statsReleaseMiniKpi({
           value: insights.interested.length,
-          label: tt("Interested in games"),
+          label: tt("Games interested in"),
         })}
         ${statsReleaseMiniKpi({
           value: insights.playedFromYear.length,
