@@ -2768,7 +2768,7 @@ async function openGameOfTheYearDialogWithAutofillLoading(year = currentGameOfTh
 }
 
 function shouldShowGameOfTheYearStatsPreview(games = []) {
-  return gameOfTheYearPlaytimeGames(games).length >= 5;
+  return Array.isArray(games) && games.some((game) => !game?.dlc);
 }
 
 function gameOfTheYearPlaytimeGames(games = []) {
@@ -2780,7 +2780,6 @@ function gameOfTheYearPlaytimeGames(games = []) {
 function openGameOfTheYearStatsPreview(year = currentGameOfTheYear(), options = {}) {
   const games = gameOfTheYearFinishedStatsGames(year);
   const playtimeGames = gameOfTheYearPlaytimeGames(games);
-  if (playtimeGames.length < 5) return openGameOfTheYearDialog(year, options);
   state.gotyYear = String(year);
   el.gotyStatsPreviewDialog.dataset.gotyYear = String(year);
   el.gotyStatsPreviewBrow.textContent = tt("Before your picks");
@@ -2810,7 +2809,8 @@ function gameOfTheYearStatsPreviewMarkup(year, games = [], playtimeGames = gameO
   const completed = finishedStatsCompleted(String(year));
   const coopGames = games.filter((game) => game.coop);
   const normalizedMode = normalizeTopGamesCarouselMode(mode);
-  const topGames = finishedStatsTopGames(games, normalizedMode);
+  const showTopGamesCarousel = playtimeGames.length >= 5;
+  const topGames = showTopGamesCarousel ? finishedStatsTopGames(games, normalizedMode) : [];
   const kpis = [
     statsKpiCard(tt("Games played"), games.length, statsGameList(games), { tone: "finished" }),
     totalPlaytime ? statsKpiCard(tt("Total year playtime"), formatPlaytimeTotal(totalPlaytime), statsPlaytimeGameList(playtimeGames), { tone: "playtime", valueHtml: playtimeKpiValue(totalPlaytime) }) : "",
@@ -2818,12 +2818,14 @@ function gameOfTheYearStatsPreviewMarkup(year, games = [], playtimeGames = gameO
     coopGames.length ? statsKpiCard(tt("CoOp games"), coopGames.length, statsGameList(coopGames), { tone: "coop", icon: coopIcon() }) : "",
   ].filter(Boolean);
   return `
-    <section class="goty-stats-preview-playtime">
-      ${topGamesCarouselHeaderMarkup(normalizedMode, "goty")}
-      <div class="goty-stats-preview-strip">
-        <div class="goty-stats-preview-list">${topGames.map((game) => gameOfTheYearStatsPreviewCard(game, normalizedMode)).join("")}</div>
-      </div>
-    </section>
+    ${showTopGamesCarousel ? `
+      <section class="goty-stats-preview-playtime">
+        ${topGamesCarouselHeaderMarkup(normalizedMode, "goty")}
+        <div class="goty-stats-preview-strip">
+          <div class="goty-stats-preview-list">${topGames.map((game) => gameOfTheYearStatsPreviewCard(game, normalizedMode)).join("")}</div>
+        </div>
+      </section>
+    ` : ""}
     <section class="finished-stats-kpis ${kpis.length === 3 ? "is-grid-3" : ""}">${kpis.join("")}</section>
     <section class="finished-stats-charts goty-stats-preview-charts">
       ${statsDonutCard(tt("Platform breakdown"), platforms, "platform", platforms.length, games)}
