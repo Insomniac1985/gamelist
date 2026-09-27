@@ -3263,9 +3263,12 @@ function gameOfTheYearExportTopStatsMarkup(year, games = []) {
   const otherYearGames = games.filter((game) => releaseYear(game) !== String(year));
   const coopGames = games.filter((game) => game.coop);
   const completed = finishedStatsCompleted(String(year));
+  const playtimeHours = totalPlaytimeHours(games);
+  const playtime = playtimeKpiValue(playtimeHours) || `${clockIcon()}<span class="playtime-kpi-value">0</span><span class="playtime-kpi-unit">hrs</span>`;
   return `
-    <section class="goty-export-top-kpis ${completed.length ? "has-completed" : ""} ${coopGames.length ? "has-coop" : ""}">
+    <section class="goty-export-top-kpis has-playtime ${completed.length ? "has-completed" : ""} ${coopGames.length ? "has-coop" : ""}">
       <article class="goty-export-small-kpi goty-export-total-kpi"><strong>${games.length}</strong><span>${escapeHtml(tt("Games played"))}</span></article>
+      <article class="goty-export-small-kpi goty-export-playtime-kpi"><strong>${playtime}</strong><span>${escapeHtml(tt("Total year playtime"))}</span></article>
       ${completed.length ? `<article class="goty-export-small-kpi goty-export-completed-kpi"><strong>${trophyIcon()}${completed.length}</strong><span>${escapeHtml(tt("Completed games"))}</span></article>` : ""}
       <span class="goty-export-kpi-separator" aria-hidden="true"></span>
       <article class="goty-export-small-kpi goty-export-new-kpi"><strong>${yearGames.length}</strong><span>${escapeHtml(tt("New releases"))}</span></article>
@@ -3498,21 +3501,21 @@ function gameOfTheYearExportCss({ theme, main, accent, gradient, bg, glowPrimary
       top: 50px;
       right: 78px;
       display: grid;
-      grid-template-columns: 142px 24px repeat(2, 120px);
-      gap: 10px;
-      width: 436px;
-    }
-    .goty-export-top-kpis.has-coop:not(.has-completed) {
-      grid-template-columns: 142px 24px repeat(3, 120px);
-      width: 566px;
-    }
-    .goty-export-top-kpis.has-completed {
       grid-template-columns: 142px 168px 24px repeat(2, 120px);
+      gap: 10px;
       width: 614px;
     }
-    .goty-export-top-kpis.has-completed.has-coop {
+    .goty-export-top-kpis.has-coop:not(.has-completed) {
       grid-template-columns: 142px 168px 24px repeat(3, 120px);
       width: 744px;
+    }
+    .goty-export-top-kpis.has-completed {
+      grid-template-columns: 142px 168px 168px 24px repeat(2, 120px);
+      width: 792px;
+    }
+    .goty-export-top-kpis.has-completed.has-coop {
+      grid-template-columns: 142px 168px 168px 24px repeat(3, 120px);
+      width: 922px;
     }
     .goty-export-small-kpi,
     .goty-export-stat {
@@ -3558,6 +3561,27 @@ function gameOfTheYearExportCss({ theme, main, accent, gradient, bg, glowPrimary
     .goty-export-completed-kpi strong,
     .goty-export-completed-kpi .trophy-icon {
       color: #ffe985;
+    }
+    .goty-export-playtime-kpi strong {
+      color: ${accent};
+      gap: 4px;
+    }
+    .goty-export-playtime-kpi .clock-icon {
+      width: 30px;
+      height: 30px;
+      flex: 0 0 auto;
+      margin-right: 3px;
+      fill: none;
+      stroke: currentColor;
+      stroke-width: 2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+    .goty-export-playtime-kpi .playtime-kpi-unit {
+      align-self: flex-end;
+      margin-bottom: 3px;
+      font-size: 27px;
+      line-height: 1;
     }
     .goty-export-new-kpi strong,
     .goty-export-older-kpi strong {
