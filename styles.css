@@ -969,12 +969,34 @@ html.theme-gradient .goty-section .column-head h2 .trophy-icon {
 }
 
 .goty-year-count {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
   color: var(--muted);
   font-size: 13px;
   font-weight: 820;
   line-height: 1;
   white-space: nowrap;
   transform: translateY(3px);
+}
+
+.goty-year-kpi {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 5px;
+}
+
+.goty-year-kpi strong {
+  color: var(--accent-2);
+  font-size: 14px;
+  line-height: 1;
+}
+
+.goty-year-kpi span {
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 820;
+  text-transform: uppercase;
 }
 
 .goty-year-select {
@@ -7672,6 +7694,28 @@ body:not(.can-edit) .game-card:focus-within .edit-action {
   color: #9146ff;
 }
 
+.finished-stats-kpi.is-playtime strong {
+  gap: 4px;
+  color: var(--accent-2);
+}
+
+.finished-stats-kpi.is-playtime .clock-icon {
+  width: 0.72em;
+  height: 0.72em;
+  min-width: 0.72em;
+  margin-right: 6px;
+  stroke: currentColor;
+  stroke-width: 2;
+  fill: none;
+}
+
+.finished-stats-kpi.is-playtime .playtime-kpi-unit {
+  align-self: flex-end;
+  margin-bottom: 0.12em;
+  font-size: 0.68em;
+  line-height: 1;
+}
+
 .finished-stats-kpi.is-coop strong {
   color: var(--coop-accent);
 }
@@ -8670,6 +8714,13 @@ body.theme-kash .finished-stats-kpi.is-completed:focus-visible strong {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+.finished-stats-playtime-row em {
+  flex: 0 0 auto;
+  color: var(--accent-2);
+  font-size: 11px;
+  font-weight: 900;
 }
 
 .finished-stats-category-row b i {
@@ -12800,8 +12851,12 @@ body.theme-kash
   white-space: nowrap;
 }
 
-#gameDialog.is-new-game .collection-form-grid > .title-field input,
-#gameDialog.is-new-game .collection-form-grid > .list-field select {
+#gameDialog.is-new-game.needs-title-field .collection-form-grid > .title-field input,
+#gameDialog.is-new-game.needs-platform-field .collection-form-grid > .platform-field input,
+#gameDialog.is-new-game.needs-list-field .collection-form-grid > .list-field select,
+#gameDialog.is-new-game.needs-list-field .collection-form-grid > .list-field .platform-logo-button,
+#gameDialog.is-new-game.needs-release-date-field .collection-form-grid > .release-date-field input {
+  border: 1px solid color-mix(in srgb, var(--accent) 76%, #ff4d62);
   border-color: color-mix(in srgb, var(--accent) 76%, #ff4d62);
   background:
     linear-gradient(
@@ -12815,8 +12870,10 @@ body.theme-kash
     0 0 0 3px color-mix(in srgb, var(--accent) 10%, transparent);
 }
 
-#gameDialog.is-new-game .collection-form-grid > .title-field span,
-#gameDialog.is-new-game .collection-form-grid > .list-field span {
+#gameDialog.is-new-game.needs-title-field .collection-form-grid > .title-field > span,
+#gameDialog.is-new-game.needs-platform-field .collection-form-grid > .platform-field > span:first-child,
+#gameDialog.is-new-game.needs-list-field .collection-form-grid > .list-field > span,
+#gameDialog.is-new-game.needs-release-date-field .collection-form-grid > .release-date-field > span {
   color: color-mix(in srgb, var(--accent) 82%, #ffffff);
 }
 
@@ -12872,6 +12929,10 @@ body.theme-kash
 
 .playing-form-grid > .rating-section {
   grid-column: 1 / -1;
+}
+
+#gameDialog.is-new-game .playing-form-grid > .rating-section {
+  display: none;
 }
 
 .rating-section {
@@ -15266,9 +15327,11 @@ html.theme-light .finish-trophy-check input[type="checkbox"]:checked {
   }
 
   .goty-year-count {
+    flex-wrap: wrap;
+    gap: 5px 8px;
     margin-left: 0;
     font-size: 12px;
-    transform: translateY(11px);
+    transform: none;
   }
 
   .goty-head-actions {
