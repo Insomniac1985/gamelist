@@ -1328,7 +1328,7 @@ html.theme-gradient .goty-section .column-head h2 .trophy-icon {
 .goty-dialog-copy {
   min-width: 0;
   margin: 0 0 10px 0;
-  color: var(--accent-2);
+  color: var(--muted);
   font-family: var(--font-body, inherit);
   font-size: 13px;
   font-weight: 500;
