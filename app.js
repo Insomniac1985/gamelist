@@ -6347,7 +6347,7 @@ function finishedStatsMarkup(year, games, completed) {
   const playtimeTotal = formatPlaytimeTotal(playtimeHours);
   const kpiCards = [
     statsKpiCard(tt("Finished games"), finishedGames.length, showYearlyDetail ? statsGameList(finishedGames) : "", { tone: "finished" }),
-    playtimeTotal ? statsKpiCard(tt("Total year playtime"), playtimeTotal, showYearlyDetail ? statsPlaytimeGameList(playtimeGames) : "", { tone: "playtime", valueHtml: playtimeKpiValue(playtimeHours) }) : "",
+    !allYears && playtimeTotal ? statsKpiCard(tt("Total year playtime"), playtimeTotal, statsPlaytimeGameList(playtimeGames), { tone: "playtime", valueHtml: playtimeKpiValue(playtimeHours) }) : "",
     expansions.length ? statsKpiCard(tt("Expansions finished"), expansions.length, statsGameList(expansions), { tone: "finished" }) : "",
     statsKpiCard(tt("Completed games"), completed.length, showYearlyDetail ? statsCompletedGameList(completed) : "", { action: "completed", tone: "completed", icon: trophyIcon() }),
     streamed.length ? statsKpiCard(tt("Streamed games"), streamed.length, showYearlyDetail ? statsGameList(streamed) : "", { tone: "streamed" }) : "",
@@ -6808,7 +6808,7 @@ function statsPlaytimeGameList(games) {
     .sort((a, b) => statsPlaytimeHours(b) - statsPlaytimeHours(a) || stringCompare(a.title, b.title))
     .map((game) => {
       const ownerTitleClass = ownerTitleClasses(visibleOwnerTags(game));
-      return `<span class="finished-stats-game-row finished-stats-playtime-row"><b class="${escapeHtml(ownerTitleClass)}">${escapeHtml(game.title)}</b><em>${escapeHtml(formatPlaytimeTotal(statsPlaytimeHours(game)))}</em></span>`;
+      return `<span class="finished-stats-game-row finished-stats-playtime-row"><b class="${escapeHtml(ownerTitleClass)}">${escapeHtml(game.title)}</b>${game.platform ? platformBadge(game.platform) : ""}<em>${escapeHtml(formatPlaytimeTotal(statsPlaytimeHours(game)))}</em></span>`;
     })
     .join("");
 }
@@ -7329,8 +7329,7 @@ function completedDurationLine(game, extraClass = "") {
   const duration = finishHoursText(game);
   if (!duration) return "";
   const className = `completed-duration${game?.platinum ? " completed-duration-gold" : ""}${extraClass}`;
-  const style = timePillStyle(finishHoursValue(game?.finishHours));
-  return `<span class="${className}" style="${escapeHtml(style)}">${clockIcon()}<span>${escapeHtml(duration)}</span></span>`;
+  return `<span class="${className}">${clockIcon()}<span>${escapeHtml(duration)}</span></span>`;
 }
 
 function finishHoursValue(value) {
@@ -7798,7 +7797,9 @@ function openDetail(id, options = {}) {
   el.detailStudio.hidden = !el.detailStudio.innerHTML;
   el.detailMeta.innerHTML = metaFor(game, { includePsn: false, includeOwners: false }).join("");
   bindDetailShelfSearch(game);
-  el.detailDates.innerHTML = playDatesFor(game, { includePastRelease: true, includePreorder: true }).join("");
+  const detailDates = playDatesFor(game, { includePastRelease: true, includePreorder: true });
+  if (game.playing) detailDates.push(calendarStateForGame(game));
+  el.detailDates.innerHTML = detailDates.join("");
   el.detailDates.hidden = !el.detailDates.innerHTML;
   el.detailChips.innerHTML = chipsFor(game).join("");
   el.detailStoreLinks.innerHTML = storeLinksFor(game);
