@@ -860,7 +860,7 @@ function bindEvents() {
   });
   el.finishedStatsDialog?.addEventListener("close", () => {
     el.finishedStatsDialog.classList.remove("has-mini-overlay");
-    el.finishedStatsDialog.querySelector(".finished-stats-hover-float")?.remove();
+    document.querySelector(".finished-stats-hover-float")?.remove();
     el.finishedStatsBody?.querySelector(".finished-stats-floating-source")?.classList.remove("finished-stats-floating-source");
     syncScrollLock();
   });
@@ -959,7 +959,7 @@ function bindEvents() {
   el.gotyStatsButton?.addEventListener("click", () => openFinishedStatsDialog(state.gotyYear || currentGameOfTheYear()));
   el.gotyResetButton?.addEventListener("click", resetGameOfTheYearFromForm);
   el.gotyPickerOrder?.addEventListener("change", () => {
-    state.gotyPickerOrder = el.gotyPickerOrder.value || gotyOrderForDefault(state.settings.defaultOrder);
+    state.gotyPickerOrder = normalizeGameOfTheYearPickerOrder(el.gotyPickerOrder.value || gotyOrderForDefault(state.settings.defaultOrder));
     const year = el.gotyForm.dataset.gotyYear || currentGameOfTheYear();
     renderGameOfTheYearPicker(sortedGameOfTheYearChoices(gameOfTheYearCandidateGames(year)), currentGameOfTheYearDraftPicks());
   });
@@ -973,7 +973,11 @@ function bindEvents() {
   el.gotyStatsPreviewDialog?.addEventListener("click", (event) => {
     if (event.target === el.gotyStatsPreviewDialog) el.gotyStatsPreviewDialog.close();
   });
-  el.gotyStatsPreviewDialog?.addEventListener("close", syncScrollLock);
+  el.gotyStatsPreviewDialog?.addEventListener("close", () => {
+    document.querySelector(".finished-stats-hover-float")?.remove();
+    el.gotyStatsPreviewBody?.querySelector(".finished-stats-floating-source")?.classList.remove("finished-stats-floating-source");
+    syncScrollLock();
+  });
   el.gotyStatsPreviewContinueButton?.addEventListener("click", () => {
     const year = el.gotyStatsPreviewDialog?.dataset.gotyYear || currentGameOfTheYear();
     el.gotyStatsPreviewDialog?.close();
@@ -2729,7 +2733,7 @@ function openGameOfTheYearDialog(year = currentGameOfTheYear(), options = {}) {
       : tt("Choose one finished game for every category.");
   }
   if (el.gotyPickerOrder) {
-    state.gotyPickerOrder = state.gotyPickerOrder || gotyOrderForDefault(state.settings.defaultOrder);
+    state.gotyPickerOrder = normalizeGameOfTheYearPickerOrder(state.gotyPickerOrder || gotyOrderForDefault(state.settings.defaultOrder));
     el.gotyPickerOrder.value = state.gotyPickerOrder;
     syncStyledSelect(el.gotyPickerOrder, { activeValue: null });
   }
@@ -2783,6 +2787,7 @@ function openGameOfTheYearStatsPreview(year = currentGameOfTheYear(), options = 
   el.gotyStatsPreviewBody.innerHTML = gameOfTheYearStatsPreviewMarkup(year, games, playtimeGames, state.topGamesCarouselMode);
   el.gotyStatsPreviewContinueButton.textContent = tt("See your games of the year");
   bindGameOfTheYearStatsPreviewCarousel(year, options);
+  bindFinishedStatsDesktopOverlays(el.gotyStatsPreviewDialog, el.gotyStatsPreviewBody);
   try {
     if (!el.gotyStatsPreviewDialog.open) el.gotyStatsPreviewDialog.showModal();
   } catch (error) {
@@ -2908,8 +2913,10 @@ function gameOfTheYearAutofillUsesRatings(games = []) {
 
 function showGameOfTheYearAutofillLoading(games = []) {
   document.querySelector(".goty-loading-overlay")?.remove();
+  document.body.classList.remove("goty-loading-active");
   const overlay = document.createElement("div");
   overlay.className = "goty-loading-overlay";
+  document.body.classList.add("goty-loading-active");
   overlay.setAttribute("role", "status");
   overlay.setAttribute("aria-live", "polite");
   const messages = [
@@ -2957,6 +2964,7 @@ function showGameOfTheYearAutofillLoading(games = []) {
       overlay.classList.remove("visible");
       window.setTimeout(() => {
         overlay.remove();
+        document.body.classList.remove("goty-loading-active");
         resolve();
       }, 240);
     }, 3800);
@@ -3037,12 +3045,17 @@ function renderGameOfTheYearPicker(games, picks) {
 }
 
 function sortedGameOfTheYearChoices(games) {
-  const order = state.gotyPickerOrder || gotyOrderForDefault(state.settings.defaultOrder);
+  const order = normalizeGameOfTheYearPickerOrder(state.gotyPickerOrder || gotyOrderForDefault(state.settings.defaultOrder));
   return [...games].sort((a, b) => {
     if (order === "name") return stringCompare(a.title, b.title) || gameOfTheYearTimeValue(b) - gameOfTheYearTimeValue(a);
     if (order === "platform") return stringCompare(canonicalPlatform(a.platform), canonicalPlatform(b.platform)) || stringCompare(a.title, b.title);
+    if (order === "rating") return (ratingScoreValue(b) || 0) - (ratingScoreValue(a) || 0) || gameOfTheYearTimeValue(b) - gameOfTheYearTimeValue(a) || stringCompare(a.title, b.title);
     return gameOfTheYearTimeValue(b) - gameOfTheYearTimeValue(a) || stringCompare(a.title, b.title);
   });
+}
+
+function normalizeGameOfTheYearPickerOrder(order = "time") {
+  return ["time", "rating", "name", "platform"].includes(order) ? order : "time";
 }
 
 function currentGameOfTheYearDraftPicks() {
@@ -4955,7 +4968,7 @@ function achievementSetupNotices(psnData = {}, steamData = {}, xboxData = {}) {
   const status = state.integrationStatus || {};
   return [
     achievementPanelNotice(psnData, state.settings.psnUser, status.PSN_NPSSO, "Set up PSN", "Refresh PSN token", "https://ca.account.sony.com/api/v1/ssocookie"),
-    achievementPanelNotice(xboxData, state.settings.microsoftUser, status.OPENXBL_API_KEY, "Set up Xbox", "Check Xbox setup", xboxData.sourceUrl || "https://www.xbox.com/"),
+    achievementPanelNotice(xboxData, state.settings.microsoftUser, status.OPENXBL_API_KEY, "Set up Xbox", "Check Xbox setup", "https://xbl.io/"),
     achievementPanelNotice(steamData, state.settings.steamUser, status.STEAM_API_KEY, "Set up Steam", "Check Steam setup", steamData.sourceUrl || "https://steamcommunity.com/"),
   ].filter(Boolean);
 }
@@ -4977,10 +4990,10 @@ async function fetchXboxActivity(forceRefresh = state.settings.forceCacheOnLoad 
   if (state.settings.microsoftUser) params.set("user", state.settings.microsoftUser);
   const response = await fetch(`/api/xbox-achievements?${params}`, { cache: "no-store" });
   const data = await response.json().catch(() => emptyXboxActivity());
-  if (data.needsSetup) return { ...emptyXboxActivity(), source: "xbox", sourceUrl: data.sourceUrl || "https://www.xbox.com/", needsSetup: true, error: data.error || "" };
+  if (data.needsSetup) return { ...emptyXboxActivity(), source: "xbox", sourceUrl: data.sourceUrl || "https://xbl.io/", needsSetup: true, error: data.error || "" };
   if (!response.ok || data.authError || data.error) {
     if (!data.needsSetup) console.warn("[trophies] Xbox activity unavailable", data.error || response.status);
-    return { ...emptyXboxActivity(), source: "xbox", sourceUrl: data.sourceUrl || "https://www.xbox.com/", authError: Boolean(data.authError || data.error || !response.ok), error: data.error || "" };
+    return { ...emptyXboxActivity(), source: "xbox", sourceUrl: data.sourceUrl || "https://xbl.io/", authError: Boolean(data.authError || data.error || !response.ok), error: data.error || "" };
   }
   return data;
 }
@@ -7178,12 +7191,12 @@ function bindFinishedStatsMobileOverlays() {
   });
 }
 
-function bindFinishedStatsDesktopOverlays() {
+function bindFinishedStatsDesktopOverlays(dialog = el.finishedStatsDialog, body = el.finishedStatsBody) {
   let closeTimer = null;
   const closeFloatingOverlay = () => {
     closeTimer = null;
-    el.finishedStatsDialog.querySelector(".finished-stats-hover-float")?.remove();
-    el.finishedStatsBody.querySelectorAll(".finished-stats-floating-source").forEach((node) => {
+    document.querySelector(".finished-stats-hover-float")?.remove();
+    body.querySelectorAll(".finished-stats-floating-source").forEach((node) => {
       node.classList.remove("finished-stats-floating-source");
     });
   };
@@ -7194,8 +7207,8 @@ function bindFinishedStatsDesktopOverlays() {
   const openFloatingContent = (sourceNode, content, className = "") => {
     if (window.matchMedia("(max-width: 760px)").matches || !content.trim()) return;
     clearTimeout(closeTimer);
-    el.finishedStatsDialog.querySelector(".finished-stats-hover-float")?.remove();
-    el.finishedStatsBody.querySelectorAll(".finished-stats-floating-source").forEach((node) => {
+    document.querySelector(".finished-stats-hover-float")?.remove();
+    body.querySelectorAll(".finished-stats-floating-source").forEach((node) => {
       node.classList.remove("finished-stats-floating-source");
     });
     sourceNode.classList.add("finished-stats-floating-source");
@@ -7203,25 +7216,24 @@ function bindFinishedStatsDesktopOverlays() {
     const floating = document.createElement("div");
     floating.className = `finished-stats-breakdown finished-stats-hover-float ${className}`.trim();
     floating.innerHTML = content;
-    el.finishedStatsDialog.appendChild(floating);
+    dialog.appendChild(floating);
 
-    const dialogRect = el.finishedStatsDialog.getBoundingClientRect();
     const sourceRect = sourceNode.getBoundingClientRect();
-    const width = Math.min(340, Math.max(220, dialogRect.width - 32));
+    const width = Math.min(340, Math.max(220, window.innerWidth - 32));
     floating.style.width = `${width}px`;
-    floating.style.maxWidth = `${Math.max(180, dialogRect.width - 32)}px`;
-    floating.style.maxHeight = `${Math.max(140, Math.min(250, dialogRect.height - 44))}px`;
+    floating.style.maxWidth = `${Math.max(180, window.innerWidth - 32)}px`;
+    floating.style.maxHeight = `${Math.max(140, Math.min(300, window.innerHeight - 32))}px`;
 
     const floatRect = floating.getBoundingClientRect();
     const gap = 8;
     const minLeft = 12;
-    const maxLeft = Math.max(minLeft, dialogRect.width - floatRect.width - 12);
-    const centeredLeft = sourceRect.left - dialogRect.left + (sourceRect.width / 2) - (floatRect.width / 2);
+    const maxLeft = Math.max(minLeft, window.innerWidth - floatRect.width - 12);
+    const centeredLeft = sourceRect.left + (sourceRect.width / 2) - (floatRect.width / 2);
     const left = clampNumber(centeredLeft, minLeft, maxLeft);
-    const belowTop = sourceRect.bottom - dialogRect.top + gap;
-    const aboveTop = sourceRect.top - dialogRect.top - floatRect.height - gap;
-    const canFitBelow = belowTop + floatRect.height <= dialogRect.height - 12;
-    const top = clampNumber(canFitBelow ? belowTop : aboveTop, 12, Math.max(12, dialogRect.height - floatRect.height - 12));
+    const belowTop = sourceRect.bottom + gap;
+    const aboveTop = sourceRect.top - floatRect.height - gap;
+    const canFitBelow = belowTop + floatRect.height <= window.innerHeight - 12;
+    const top = clampNumber(canFitBelow ? belowTop : aboveTop, 12, Math.max(12, window.innerHeight - floatRect.height - 12));
     floating.style.left = `${left}px`;
     floating.style.top = `${top}px`;
 
@@ -7234,13 +7246,13 @@ function bindFinishedStatsDesktopOverlays() {
     openFloatingContent(node, breakdown.innerHTML);
   };
 
-  el.finishedStatsBody.querySelectorAll("[data-stats-overlay-title]").forEach((node) => {
+  body.querySelectorAll("[data-stats-overlay-title]").forEach((node) => {
     node.addEventListener("mouseenter", () => openFloatingOverlay(node));
     node.addEventListener("mouseleave", scheduleClose);
     node.addEventListener("focusin", () => openFloatingOverlay(node));
     node.addEventListener("focusout", scheduleClose);
   });
-  el.finishedStatsBody.querySelectorAll(".finished-stats-donut").forEach((donut) => {
+  body.querySelectorAll(".finished-stats-donut").forEach((donut) => {
     donut.querySelectorAll(".finished-stats-pie-segment").forEach((segment) => {
       const indexClass = [...segment.classList].find((name) => name.startsWith("finished-stats-pie-segment-"));
       const index = indexClass?.replace("finished-stats-pie-segment-", "");
@@ -9318,7 +9330,7 @@ function multiplayerBadge() {
 }
 
 function streamBadge() {
-  return `<span class="stream-pill">${streamPlayIcon()}<span>${escapeHtml(tt("Stream"))}</span></span>`;
+  return `<span class="stream-pill" title="${escapeHtml(tt("Stream"))}" aria-label="${escapeHtml(tt("Stream"))}">${streamPlayIcon()}</span>`;
 }
 
 function streamPlayIcon() {

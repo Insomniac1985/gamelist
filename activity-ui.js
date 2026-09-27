@@ -230,7 +230,7 @@ export function achievementPanelMarkup({ psn = {}, steam = {}, xbox = {}, setupN
   const fallbackUrl = psn.authError ? authErrorUrl : sourceUrl;
   const providerNotices = Array.isArray(setupNotices) ? setupNotices : [
     psn.authError ? ["Refresh PSN token", authErrorUrl] : psn.needsSetup ? ["Set up PSN", authErrorUrl] : null,
-    xbox.authError ? ["Check Xbox setup", xbox.sourceUrl || "https://www.xbox.com/"] : xbox.needsSetup ? ["Set up Xbox", xbox.sourceUrl || "https://www.xbox.com/"] : null,
+    xbox.authError ? ["Check Xbox setup", xbox.sourceUrl || "https://xbl.io/"] : xbox.needsSetup ? ["Set up Xbox", xbox.sourceUrl || "https://xbl.io/"] : null,
     steam.authError ? ["Check Steam setup", steam.sourceUrl || "https://steamcommunity.com/"] : steam.needsSetup ? ["Set up Steam", steam.sourceUrl || "https://steamcommunity.com/"] : null,
   ].filter(Boolean);
   const authNotice = providerNotices.length

@@ -2146,19 +2146,23 @@ html.theme-gradient .goty-section .column-head h2 .trophy-icon {
 .goty-loading-overlay {
   position: fixed;
   inset: 0;
-  z-index: 120;
+  z-index: 2147483647;
   display: grid;
   place-items: center;
   padding: 18px;
-  pointer-events: none;
+  pointer-events: auto;
   opacity: 0;
-  background: rgba(0, 0, 0, 0.12);
+  background: rgba(0, 0, 0, 0.24);
   backdrop-filter: blur(5px) saturate(1.04);
   transition: opacity 240ms ease;
 }
 
 .goty-loading-overlay.visible {
   opacity: 1;
+}
+
+body.goty-loading-active {
+  cursor: wait;
 }
 
 .goty-loading-window {
@@ -2425,6 +2429,18 @@ html.theme-gradient .goty-section .column-head h2 .trophy-icon {
 .playing-finished-tags .stream-pill span,
 .playing-finished-tags .stream-pill .stream-play-icon {
   color: #d7b8ff !important;
+}
+
+.playing-finished-tags .stream-pill {
+  width: 18px;
+  min-width: 18px;
+  padding: 0;
+}
+
+.playing-finished-tags .stream-pill .stream-play-icon {
+  width: 11px;
+  height: 11px;
+  flex-basis: 11px;
 }
 
 .playing-finished-tags .coop-pill span,
@@ -6749,6 +6765,18 @@ body.theme-kash .game-card.stream-card.completed-trophy-card {
   stroke: none;
 }
 
+.stream-pill {
+  justify-content: center;
+  width: 31px;
+  min-width: 31px;
+  padding-inline: 0;
+}
+
+.stream-pill .twitch-filter-logo-path {
+  fill: currentColor;
+  stroke: none;
+}
+
 .calendar-state-pill {
   gap: 5px;
   padding: 6px 10px;
@@ -8042,7 +8070,7 @@ body:not(.can-edit) .game-card:focus-within .edit-action {
   gap: 14px;
   min-height: 0;
   max-height: calc(100vh - 118px);
-  padding: 0 2px 18px;
+  padding: 0 2px 6px;
   overflow-x: hidden;
   overflow-y: auto;
   overscroll-behavior: contain;
@@ -9007,7 +9035,7 @@ body.theme-kash .finished-stats-kpi.is-completed:focus-visible strong {
 }
 
 .finished-stats-hover-float {
-  position: absolute;
+  position: fixed;
   right: auto;
   bottom: auto;
   z-index: 180;
@@ -9818,6 +9846,24 @@ body.theme-kash .playing-finished-game.completed-trophy-card:hover {
   padding: 0 6px;
   font-size: 10px;
   line-height: 21px;
+}
+
+.completed-platform .stream-pill {
+  width: 21px;
+  min-width: 21px;
+  padding: 0;
+}
+
+.completed-platform .stream-pill .stream-play-icon {
+  width: 12px;
+  height: 12px;
+  flex-basis: 12px;
+}
+
+.game-row .stream-pill {
+  width: 22px;
+  min-width: 22px;
+  padding: 0;
 }
 
 .completed-platform .coop-pill,
