@@ -933,17 +933,19 @@ html.theme-font-mata {
   gap: 8px;
 }
 
-.goty-section .column-head h2,
 .goty-section .column-head h2 > span {
-  color: #ffe985;
-  background: none;
+  color: transparent;
+  background: var(--accent);
   -webkit-background-clip: text;
   background-clip: text;
 }
 
-html.theme-gradient .goty-section .column-head h2,
 html.theme-gradient .goty-section .column-head h2 > span {
-  background: none;
+  background: linear-gradient(
+    135deg,
+    var(--title-gradient-start, var(--accent)) 0%,
+    var(--title-gradient-end, var(--accent)) 100%
+  );
   -webkit-background-clip: text;
   background-clip: text;
 }
@@ -957,32 +959,36 @@ html.theme-gradient .goty-section .column-head h2 > span {
 }
 
 .goty-section .column-head h2 .trophy-icon {
-  color: #ffe985;
+  color: var(--accent);
   transform: translateY(-0.08em);
 }
 
 html.theme-gradient .goty-section .column-head h2 .trophy-icon {
-  color: #ffe985;
+  color: var(--title-gradient-start, var(--accent));
 }
 
 #gotyDialogTitle {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  color: #ffffff;
+  color: #ffe985;
+  background: none;
+  -webkit-background-clip: text;
+  background-clip: text;
 }
 
 #gotyDialogTitle .trophy-icon {
-  color: currentColor;
+  color: #ffe985;
 }
 
 .goty-year-count {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  color: var(--muted);
+  color: var(--accent-2);
+  font-family: var(--font-body, inherit);
   font-size: 13px;
-  font-weight: 820;
+  font-weight: 500;
   line-height: 1;
   white-space: nowrap;
   transform: translateY(3px);
@@ -995,15 +1001,16 @@ html.theme-gradient .goty-section .column-head h2 .trophy-icon {
 }
 
 .goty-year-kpi strong {
-  color: var(--muted);
+  color: var(--accent-2);
   font-size: 14px;
+  font-weight: 500;
   line-height: 1;
 }
 
 .goty-year-kpi span {
-  color: var(--muted);
+  color: var(--accent-2);
   font-size: 11px;
-  font-weight: 820;
+  font-weight: 500;
   text-transform: uppercase;
 }
 
@@ -1343,8 +1350,18 @@ html.theme-gradient .goty-section .column-head h2 .trophy-icon {
 .goty-dialog-copy {
   min-width: 0;
   margin: 0 0 10px 0;
-  color: var(--muted);
+  color: var(--accent-2);
+  font-family: var(--font-body, inherit);
   font-size: 13px;
+  font-weight: 500;
+}
+
+.goty-dialog .modal-head .eyebrow {
+  color: var(--accent-2);
+  font-family: var(--font-body, inherit);
+  font-size: 13px;
+  font-weight: 500;
+  text-transform: none;
 }
 
 .goty-picker-toolbar {
