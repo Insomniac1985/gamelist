@@ -2653,6 +2653,7 @@ function renderGameOfTheYear() {
   const entry = state.settings.gameOfTheYear?.[year] || {};
   const picks = entry.picks || {};
   const candidates = gameOfTheYearCandidateGames(year);
+  const statsGames = gameOfTheYearFinishedStatsGames(year);
   const categories = gameOfTheYearCategoriesForYear(year, candidates);
   const candidateIds = new Set(candidates.map((game) => game.id));
   el.gotySection.hidden = false;
@@ -2662,8 +2663,8 @@ function renderGameOfTheYear() {
   el.gotyYearSelect.value = year;
   syncStyledSelect(el.gotyYearSelect, { activeValue: null });
   if (el.gotyYearCount) {
-    const count = candidates.length;
-    const playtime = formatPlaytimeTotal(totalPlaytimeHours(candidates)).toLowerCase();
+    const count = statsGames.length;
+    const playtime = formatPlaytimeTotal(totalPlaytimeHours(statsGames)).toLowerCase();
     el.gotyYearCount.textContent = [
       tt("{count} games played", { count }),
       playtime ? tt("{playtime} total year playtime", { playtime }) : "",
@@ -2777,7 +2778,7 @@ function gameOfTheYearPlaytimeGames(games = []) {
 }
 
 function openGameOfTheYearStatsPreview(year = currentGameOfTheYear(), options = {}) {
-  const games = gameOfTheYearCandidateGames(year);
+  const games = gameOfTheYearFinishedStatsGames(year);
   const playtimeGames = gameOfTheYearPlaytimeGames(games);
   if (playtimeGames.length < 5) return openGameOfTheYearDialog(year, options);
   state.gotyYear = String(year);
@@ -3368,9 +3369,10 @@ async function maybeRenderGameOfTheYearExportPreview() {
 
 async function gameOfTheYearExportHtml(year = state.gotyYear) {
   const picks = state.settings.gameOfTheYear?.[year]?.picks || {};
-  const statsGames = gameOfTheYearCandidateGames(year);
-  const categories = gameOfTheYearCategoriesForYear(year, statsGames);
-  if (!gameOfTheYearCategoriesValid(picks, categories, statsGames)) return "";
+  const candidates = gameOfTheYearCandidateGames(year);
+  const statsGames = gameOfTheYearFinishedStatsGames(year);
+  const categories = gameOfTheYearCategoriesForYear(year, candidates);
+  if (!gameOfTheYearCategoriesValid(picks, categories, candidates)) return "";
   const owner = cleanOwnerLabel(state.settings.defaultOwner) || DEFAULT_SETTINGS.defaultOwner;
   const rows = categories.map(([key, label]) => ({ label: tt(label), game: gameById(picks[key]), key })).filter((item) => item.game && gameOfTheYearGameAllowedForCategory(item.game, item.key));
   const theme = normalizeThemeSettings(state.settings);
@@ -7593,6 +7595,10 @@ function gameOfTheYearCandidateGames(year) {
     .filter((game) => game.playing && !game.dlc)
     .forEach((game) => games.set(game.id, game));
   return [...games.values()];
+}
+
+function gameOfTheYearFinishedStatsGames(year) {
+  return completedGamesForYear(year).filter((game) => !game.dlc);
 }
 
 function gameOfTheYearTimeValue(game) {

@@ -10333,6 +10333,12 @@ body.dialog-open .mobile-section-tabs {
   backdrop-filter: blur(8px) saturate(1.08);
 }
 
+.finished-stats-modal {
+  grid-template-rows: auto minmax(0, auto);
+  align-content: start;
+  overflow: visible !important;
+}
+
 .settings-modal {
   width: min(780px, calc(100vw - 28px));
   display: grid;
