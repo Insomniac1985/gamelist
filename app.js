@@ -9115,20 +9115,17 @@ function downloadBadgeIcon() {
 function calendarMiniIcon() {
   return `
     <svg class="calendar-mini-icon" viewBox="0 0 24 24" aria-hidden="true">
-      <rect x="4.5" y="5.5" width="15" height="14" rx="2.5"></rect>
-      <path d="M8 3.8v4"></path>
-      <path d="M16 3.8v4"></path>
-      <path d="M4.5 10h15"></path>
-      <path d="M8.2 13.5h.1"></path>
-      <path d="M12 13.5h.1"></path>
-      <path d="M15.8 13.5h.1"></path>
+      <rect x="4" y="5.5" width="16" height="15" rx="3"></rect>
+      <path d="M8 3.5v4"></path>
+      <path d="M16 3.5v4"></path>
+      <path d="M4 10h16"></path>
     </svg>
   `;
 }
 
 function clockIcon() {
   return `
-    <svg class="clock-icon" viewBox="0 0 24 24" aria-hidden="true">
+    <svg class="clock-icon" viewBox="0 0 24 24" aria-hidden="true" stroke-linecap="round" stroke-linejoin="round">
       <circle cx="12" cy="12" r="8.5"></circle>
       <path d="M12 7.5V12l3.2 2"></path>
     </svg>
