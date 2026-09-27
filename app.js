@@ -6393,7 +6393,7 @@ function statsDonutCard(title, counts, tone, visibleLimit = counts.length, games
 function statsReleaseKpisCard(insights) {
   const currentYear = String(new Date().getFullYear());
   const outsideYearLabel = String(insights.scopeYear || "") === currentYear
-    ? tt("Played games not from this")
+    ? tt("Played games not from this year")
     : tt("Played games not from that year");
   return `
     <section class="finished-stats-release-strip">
