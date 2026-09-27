@@ -2642,7 +2642,11 @@ function renderGameOfTheYear() {
   syncStyledSelect(el.gotyYearSelect, { activeValue: null });
   if (el.gotyYearCount) {
     const count = candidates.length;
-    el.gotyYearCount.textContent = tt("{count} {item} played", { count, item: tt(count === 1 ? "game" : "games") });
+    const playtime = formatPlaytimeTotal(totalPlaytimeHours(candidates));
+    el.gotyYearCount.innerHTML = `
+      <span class="goty-year-kpi"><strong>${escapeHtml(String(count))}</strong><span>${escapeHtml(tt("Games played"))}</span></span>
+      ${playtime ? `<span class="goty-year-kpi"><strong>${escapeHtml(playtime)}</strong><span>${escapeHtml(tt("Playtime"))}</span></span>` : ""}
+    `;
   }
   const canEditCurrent = state.canEdit && year === currentGameOfTheYear();
   el.gotyEditButton.hidden = !canEditCurrent;
@@ -6305,8 +6309,11 @@ function finishedStatsMarkup(year, games, completed) {
   const allYears = year === "all";
   const releaseInsights = statsReleaseYearInsights(year, games);
   const showYearlyDetail = !allYears;
+  const playtimeGames = finishedGames.filter((game) => statsPlaytimeHours(game) > 0);
+  const playtimeTotal = formatPlaytimeTotal(totalPlaytimeHours(finishedGames));
   const kpiCards = [
     statsKpiCard(tt("Finished games"), finishedGames.length, showYearlyDetail ? statsGameList(finishedGames) : "", { tone: "finished" }),
+    playtimeTotal ? statsKpiCard(tt("Playtime"), playtimeTotal, showYearlyDetail ? statsGameList(playtimeGames) : "", { tone: "playtime" }) : "",
     expansions.length ? statsKpiCard(tt("Expansions finished"), expansions.length, statsGameList(expansions), { tone: "finished" }) : "",
     statsKpiCard(tt("Completed games"), completed.length, showYearlyDetail ? statsCompletedGameList(completed) : "", { action: "completed", tone: "completed", icon: trophyIcon() }),
     streamed.length ? statsKpiCard(tt("Streamed games"), streamed.length, showYearlyDetail ? statsGameList(streamed) : "", { tone: "streamed" }) : "",
@@ -7017,6 +7024,20 @@ function playtimeBucketOrder(label) {
 function statsPlaytimeHours(game) {
   const finishHours = finishHoursValue(game?.finishHours);
   return finishHours || Number(game?.lengthHours);
+}
+
+function totalPlaytimeHours(games = []) {
+  return games.reduce((total, game) => {
+    const hours = statsPlaytimeHours(game);
+    return total + (Number.isFinite(hours) && hours > 0 ? hours : 0);
+  }, 0);
+}
+
+function formatPlaytimeTotal(hours) {
+  if (!Number.isFinite(hours) || hours <= 0) return "";
+  const rounded = Math.round(hours * 10) / 10;
+  const display = Number.isInteger(rounded) ? String(rounded) : rounded.toFixed(1);
+  return `${display} ${rounded === 1 ? "hr" : "hrs"}`;
 }
 
 function gameStatsTags(game) {
