@@ -1716,10 +1716,12 @@ html.theme-gradient .goty-section .column-head h2 .trophy-icon {
   bottom: 10px;
   z-index: 80;
   display: grid;
-  width: min(760px, calc(100% - 56px));
+  justify-self: center;
+  width: min(760px, calc(100% - 72px));
   box-sizing: border-box;
   margin: 28px auto 18px;
   padding: 0;
+  transform: translateX(-12px);
   background: none;
 }
 
@@ -8083,8 +8085,7 @@ body:not(.can-edit) .game-card:focus-within .edit-action {
 .finished-stats-dialog {
   width: min(920px, calc(100vw - 24px));
   max-height: calc(100dvh - 24px);
-  overflow-x: visible;
-  overflow-y: auto;
+  overflow: visible;
   border: 0;
   padding: 0;
   background: transparent;
@@ -8127,9 +8128,11 @@ body:not(.can-edit) .game-card:focus-within .edit-action {
   display: grid;
   grid-template-rows: auto minmax(0, auto);
   align-content: start;
-  width: min(920px, calc(100vw - 24px));
-  max-height: none;
-  overflow: visible !important;
+  width: 100%;
+  max-height: calc(100dvh - 24px);
+  box-sizing: border-box;
+  overflow-x: visible !important;
+  overflow-y: auto !important;
   overscroll-behavior: contain;
   box-shadow:
     0 24px 80px rgba(0, 0, 0, 0.48),
@@ -10407,8 +10410,9 @@ body.dialog-open .mobile-section-tabs {
 .finished-stats-modal {
   grid-template-rows: auto minmax(0, auto);
   align-content: start;
-  max-height: none;
-  overflow: visible !important;
+  max-height: calc(100dvh - 24px);
+  overflow-x: visible !important;
+  overflow-y: auto !important;
 }
 
 .goty-stats-preview-modal.finished-stats-modal {
@@ -15850,6 +15854,7 @@ html.theme-light .finish-trophy-check input[type="checkbox"]:checked {
     width: calc(100% - 18px);
     margin-top: 22px;
     margin-bottom: 14px;
+    transform: none;
   }
 
   .finished-stats-charts {

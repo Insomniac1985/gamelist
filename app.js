@@ -7248,15 +7248,18 @@ function bindFinishedStatsDesktopOverlays(dialog = el.finishedStatsDialog, body 
     floating.style.maxHeight = `${Math.max(140, Math.min(300, window.innerHeight - 32))}px`;
 
     const floatRect = floating.getBoundingClientRect();
+    const dialogRect = dialog.getBoundingClientRect();
     const gap = 8;
-    const minLeft = 12;
-    const maxLeft = Math.max(minLeft, window.innerWidth - floatRect.width - 12);
+    const minLeft = Math.max(12, dialogRect.left + 12);
+    const maxLeft = Math.max(minLeft, Math.min(window.innerWidth - 12, dialogRect.right - 12) - floatRect.width);
     const centeredLeft = sourceRect.left + (sourceRect.width / 2) - (floatRect.width / 2);
     const left = clampNumber(centeredLeft, minLeft, maxLeft);
+    const minTop = Math.max(12, dialogRect.top + 12);
+    const maxTop = Math.max(minTop, Math.min(window.innerHeight - 12, dialogRect.bottom - 12) - floatRect.height);
     const belowTop = sourceRect.bottom + gap;
     const aboveTop = sourceRect.top - floatRect.height - gap;
-    const canFitBelow = belowTop + floatRect.height <= window.innerHeight - 12;
-    const top = clampNumber(canFitBelow ? belowTop : aboveTop, 12, Math.max(12, window.innerHeight - floatRect.height - 12));
+    const canFitBelow = belowTop + floatRect.height <= Math.min(window.innerHeight - 12, dialogRect.bottom - 12);
+    const top = clampNumber(canFitBelow ? belowTop : aboveTop, minTop, maxTop);
     floating.style.left = `${left}px`;
     floating.style.top = `${top}px`;
 
