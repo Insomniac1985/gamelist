@@ -1385,9 +1385,11 @@ html.theme-gradient .goty-section .column-head h2 .trophy-icon {
 }
 
 .goty-stats-preview-modal {
-  width: min(960px, calc(100vw - 24px));
+  width: 100%;
+  box-sizing: border-box;
   grid-template-rows: auto auto auto;
   align-content: start;
+  max-height: none !important;
   overflow: visible !important;
 }
 
@@ -1713,7 +1715,7 @@ html.theme-gradient .goty-section .column-head h2 .trophy-icon {
 .goty-stats-preview-actions {
   position: fixed !important;
   inset-block-start: auto;
-  inset-block-end: 14px;
+  inset-block-end: 6px;
   left: 50%;
   z-index: 80;
   display: grid;
@@ -8142,7 +8144,8 @@ body:not(.can-edit) .game-card:focus-within .edit-action {
 .finished-stats-modal.goty-stats-preview-modal {
   grid-template-rows: auto auto auto;
   align-content: start;
-  overflow-y: auto !important;
+  max-height: none;
+  overflow: visible !important;
 }
 
 .finished-stats-body.goty-stats-preview-body {
@@ -10408,6 +10411,11 @@ body.dialog-open .mobile-section-tabs {
   grid-template-rows: auto minmax(0, auto);
   align-content: start;
   max-height: none;
+  overflow: visible !important;
+}
+
+.goty-stats-preview-modal.finished-stats-modal {
+  max-height: none !important;
   overflow: visible !important;
 }
 
@@ -15838,7 +15846,7 @@ html.theme-light .finish-trophy-check input[type="checkbox"]:checked {
   }
 
   .goty-stats-preview-actions {
-    inset-block-end: 10px;
+    inset-block-end: 6px;
     width: calc(100vw - 28px);
   }
 
