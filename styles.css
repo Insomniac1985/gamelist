@@ -1710,15 +1710,16 @@ html.theme-gradient .goty-section .column-head h2 .trophy-icon {
 }
 
 .goty-stats-preview-actions {
-  position: sticky;
-  bottom: 8px;
+  position: fixed;
+  left: 50%;
+  bottom: 14px;
   z-index: 18;
   display: grid;
-  justify-self: center;
-  width: min(760px, calc(100% - 32px));
+  width: min(760px, calc(100vw - 56px));
   box-sizing: border-box;
-  margin: -50px auto 0;
+  margin: 0;
   padding: 0;
+  transform: translateX(-50%);
   background: none;
 }
 
@@ -15808,9 +15809,8 @@ html.theme-light .finish-trophy-check input[type="checkbox"]:checked {
   }
 
   .goty-stats-preview-actions {
-    bottom: 7px;
-    width: calc(100% - 18px);
-    margin-top: -44px;
+    bottom: 10px;
+    width: calc(100vw - 28px);
   }
 
   .finished-stats-charts {
