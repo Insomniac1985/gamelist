@@ -975,6 +975,8 @@ function bindEvents() {
   });
   el.gotyStatsPreviewDialog?.addEventListener("close", () => {
     document.querySelector(".finished-stats-hover-float")?.remove();
+    el.gotyStatsPreviewDialog.classList.remove("has-mini-overlay");
+    el.gotyStatsPreviewDialog.querySelector(".finished-stats-mini-overlay")?.remove();
     el.gotyStatsPreviewBody?.querySelector(".finished-stats-floating-source")?.classList.remove("finished-stats-floating-source");
     syncScrollLock();
   });
@@ -2804,6 +2806,7 @@ function openGameOfTheYearStatsPreview(year = currentGameOfTheYear(), options = 
   const willAutofillPicks = options.autoPick && gameOfTheYearAutofillUsesRatings(sortedGameOfTheYearChoices(gameOfTheYearCandidateGames(year)));
   el.gotyStatsPreviewContinueButton.textContent = tt(willAutofillPicks ? "See your games of the year" : "Choose your games of the year");
   bindGameOfTheYearStatsPreviewCarousel(year, options);
+  bindFinishedStatsMobileOverlays(el.gotyStatsPreviewBody, el.gotyStatsPreviewDialog);
   bindFinishedStatsDesktopOverlays(el.gotyStatsPreviewDialog, el.gotyStatsPreviewBody);
   try {
     if (!el.gotyStatsPreviewDialog.open) el.gotyStatsPreviewDialog.showModal();
@@ -7200,8 +7203,8 @@ function bindFinishedStatsTopGamesCarousel(scope = "all") {
   update();
 }
 
-function bindFinishedStatsMobileOverlays() {
-  el.finishedStatsBody.querySelectorAll("[data-stats-overlay-title]").forEach((node) => {
+function bindFinishedStatsMobileOverlays(body = el.finishedStatsBody, dialog = el.finishedStatsDialog) {
+  body?.querySelectorAll("[data-stats-overlay-title]").forEach((node) => {
     node.addEventListener("click", (event) => {
       if (!window.matchMedia("(max-width: 760px)").matches) return;
       if (event.target.closest(".finished-stats-breakdown")) return;
@@ -7209,7 +7212,7 @@ function bindFinishedStatsMobileOverlays() {
       if (!breakdown?.innerHTML.trim()) return;
       event.preventDefault();
       event.stopPropagation();
-      openFinishedStatsMiniOverlay(finishedStatsMiniTitle(node.dataset.statsOverlayTitle || "Stats"), breakdown.innerHTML);
+      openFinishedStatsMiniOverlay(finishedStatsMiniTitle(node.dataset.statsOverlayTitle || "Stats"), breakdown.innerHTML, dialog);
     });
   });
 }
@@ -7239,19 +7242,7 @@ function bindFinishedStatsDesktopOverlays(dialog = el.finishedStatsDialog, body 
     const floating = document.createElement("div");
     floating.className = `finished-stats-breakdown finished-stats-hover-float ${className}`.trim();
     floating.innerHTML = content;
-    const supportsPopover = typeof floating.showPopover === "function";
-    if (supportsPopover) {
-      floating.setAttribute("popover", "manual");
-      document.body.appendChild(floating);
-      try {
-        floating.showPopover();
-      } catch {
-        floating.removeAttribute("popover");
-        dialog.appendChild(floating);
-      }
-    } else {
-      dialog.appendChild(floating);
-    }
+    dialog.appendChild(floating);
 
     const sourceRect = sourceNode.getBoundingClientRect();
     const width = Math.min(340, Math.max(220, window.innerWidth - 32));
@@ -7260,15 +7251,18 @@ function bindFinishedStatsDesktopOverlays(dialog = el.finishedStatsDialog, body 
     floating.style.maxHeight = `${Math.max(140, Math.min(300, window.innerHeight - 32))}px`;
 
     const floatRect = floating.getBoundingClientRect();
+    const dialogRect = dialog.getBoundingClientRect();
     const gap = 8;
     const minLeft = 12;
-    const maxLeft = Math.max(minLeft, window.innerWidth - floatRect.width - 12);
-    const centeredLeft = sourceRect.left + (sourceRect.width / 2) - (floatRect.width / 2);
-    const left = clampNumber(centeredLeft, minLeft, maxLeft);
-    const belowTop = sourceRect.bottom + gap;
-    const aboveTop = sourceRect.top - floatRect.height - gap;
-    const canFitBelow = belowTop + floatRect.height <= window.innerHeight - 12;
-    const top = clampNumber(canFitBelow ? belowTop : aboveTop, 12, Math.max(12, window.innerHeight - floatRect.height - 12));
+    const maxLeft = Math.max(minLeft, dialogRect.width - floatRect.width - 12);
+    const preferredLeft = sourceRect.left - dialogRect.left;
+    const left = clampNumber(preferredLeft, minLeft, maxLeft);
+    const minTop = 12;
+    const maxTop = Math.max(minTop, dialogRect.height - floatRect.height - 12);
+    const belowTop = sourceRect.bottom - dialogRect.top + gap;
+    const aboveTop = sourceRect.top - dialogRect.top - floatRect.height - gap;
+    const canFitBelow = belowTop + floatRect.height <= dialogRect.height - 12;
+    const top = clampNumber(canFitBelow ? belowTop : aboveTop, minTop, maxTop);
     floating.style.left = `${left}px`;
     floating.style.top = `${top}px`;
 
@@ -7303,19 +7297,19 @@ function bindFinishedStatsDesktopOverlays(dialog = el.finishedStatsDialog, body 
       tip.addEventListener("mouseleave", scheduleClose);
     });
   });
-  el.finishedStatsBody.addEventListener("scroll", closeFloatingOverlay, { passive: true });
+  body?.addEventListener("scroll", closeFloatingOverlay, { passive: true });
 }
 
-function openFinishedStatsMiniOverlay(title, content) {
-  let overlay = el.finishedStatsDialog.querySelector(".finished-stats-mini-overlay");
+function openFinishedStatsMiniOverlay(title, content, dialog = el.finishedStatsDialog) {
+  let overlay = dialog.querySelector(".finished-stats-mini-overlay");
   if (!overlay) {
     overlay = document.createElement("div");
     overlay.className = "finished-stats-mini-overlay";
-    el.finishedStatsDialog.appendChild(overlay);
+    dialog.appendChild(overlay);
   }
   const closeMiniOverlay = () => {
     overlay.hidden = true;
-    el.finishedStatsDialog.classList.remove("has-mini-overlay");
+    dialog.classList.remove("has-mini-overlay");
   };
   overlay.innerHTML = `
     <div class="finished-stats-mini-panel">
@@ -7327,7 +7321,7 @@ function openFinishedStatsMiniOverlay(title, content) {
     </div>
   `;
   overlay.hidden = false;
-  el.finishedStatsDialog.classList.add("has-mini-overlay");
+  dialog.classList.add("has-mini-overlay");
   overlay.querySelector("[data-stats-mini-close]")?.addEventListener("click", closeMiniOverlay);
   overlay.onclick = (event) => {
     if (event.target === overlay) closeMiniOverlay();
