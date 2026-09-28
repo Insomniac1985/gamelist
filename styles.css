@@ -8097,6 +8097,33 @@ body:not(.can-edit) .game-card:focus-within .edit-action {
   backdrop-filter: blur(8px);
 }
 
+.finished-stats-dialog,
+.goty-stats-preview-dialog {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--grid-fade), var(--grid-texture), var(--panel-strong);
+  background-size:
+    auto,
+    22px 22px,
+    22px 22px,
+    auto;
+  background-position:
+    center,
+    var(--grid-x) var(--grid-y),
+    var(--grid-x) var(--grid-y),
+    center;
+  box-shadow: var(--shadow);
+  backdrop-filter: blur(8px) saturate(1.08);
+}
+
+.finished-stats-modal.glass,
+.goty-stats-preview-modal.glass {
+  background: transparent;
+  border: 0;
+  box-shadow: none;
+  backdrop-filter: none;
+}
+
 .finished-stats-modal {
   position: relative;
   display: grid;
