@@ -7239,19 +7239,7 @@ function bindFinishedStatsDesktopOverlays(dialog = el.finishedStatsDialog, body 
     const floating = document.createElement("div");
     floating.className = `finished-stats-breakdown finished-stats-hover-float ${className}`.trim();
     floating.innerHTML = content;
-    const supportsPopover = typeof floating.showPopover === "function";
-    if (supportsPopover) {
-      floating.setAttribute("popover", "manual");
-      document.body.appendChild(floating);
-      try {
-        floating.showPopover();
-      } catch {
-        floating.removeAttribute("popover");
-        dialog.appendChild(floating);
-      }
-    } else {
-      dialog.appendChild(floating);
-    }
+    dialog.appendChild(floating);
 
     const sourceRect = sourceNode.getBoundingClientRect();
     const width = Math.min(340, Math.max(220, window.innerWidth - 32));

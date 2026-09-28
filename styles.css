@@ -1372,8 +1372,7 @@ html.theme-gradient .goty-section .column-head h2 .trophy-icon {
 .goty-stats-preview-dialog {
   width: min(960px, calc(100vw - 24px));
   max-height: calc(100vh - 24px);
-  overflow-x: visible;
-  overflow-y: auto;
+  overflow: visible;
   border: 0;
   padding: 0;
   background: transparent;
@@ -1414,7 +1413,7 @@ html.theme-gradient .goty-section .column-head h2 .trophy-icon {
 
 .goty-stats-preview-body {
   max-height: none;
-  padding-bottom: 42px;
+  padding-bottom: 88px;
   overflow: visible;
 }
 
@@ -1719,7 +1718,7 @@ html.theme-gradient .goty-section .column-head h2 .trophy-icon {
   display: grid;
   width: min(760px, calc(100% - 56px));
   box-sizing: border-box;
-  margin: 14px auto 10px;
+  margin: 28px auto 18px;
   padding: 0;
   background: none;
 }
@@ -8141,8 +8140,9 @@ body:not(.can-edit) .game-card:focus-within .edit-action {
 .finished-stats-modal.goty-stats-preview-modal {
   grid-template-rows: auto auto auto;
   align-content: start;
-  max-height: none;
-  overflow: visible !important;
+  max-height: calc(100vh - 24px);
+  overflow-x: visible !important;
+  overflow-y: auto !important;
 }
 
 .finished-stats-body.goty-stats-preview-body {
@@ -9129,12 +9129,6 @@ body.theme-kash .finished-stats-kpi.is-completed:focus-visible strong {
   pointer-events: auto;
 }
 
-.finished-stats-hover-float:popover-open {
-  position: fixed;
-  inset: auto;
-  margin: 0;
-  border: 0;
-}
 .finished-stats-breakdown::before {
   content: "";
   position: absolute;
@@ -10419,9 +10413,10 @@ body.dialog-open .mobile-section-tabs {
 
 .goty-stats-preview-modal.finished-stats-modal {
   width: 100%;
-  max-height: none !important;
+  max-height: calc(100vh - 24px) !important;
   box-sizing: border-box;
-  overflow: visible !important;
+  overflow-x: visible !important;
+  overflow-y: auto !important;
 }
 
 .settings-modal {
@@ -15853,8 +15848,8 @@ html.theme-light .finish-trophy-check input[type="checkbox"]:checked {
   .goty-stats-preview-actions {
     bottom: 8px;
     width: calc(100% - 18px);
-    margin-top: 12px;
-    margin-bottom: 8px;
+    margin-top: 22px;
+    margin-bottom: 14px;
   }
 
   .finished-stats-charts {
