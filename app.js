@@ -7239,7 +7239,7 @@ function bindFinishedStatsDesktopOverlays(dialog = el.finishedStatsDialog, body 
     const floating = document.createElement("div");
     floating.className = `finished-stats-breakdown finished-stats-hover-float ${className}`.trim();
     floating.innerHTML = content;
-    document.body.appendChild(floating);
+    dialog.appendChild(floating);
 
     const sourceRect = sourceNode.getBoundingClientRect();
     const width = Math.min(340, Math.max(220, window.innerWidth - 32));
