@@ -975,6 +975,8 @@ function bindEvents() {
   });
   el.gotyStatsPreviewDialog?.addEventListener("close", () => {
     document.querySelector(".finished-stats-hover-float")?.remove();
+    el.gotyStatsPreviewDialog.classList.remove("has-mini-overlay");
+    el.gotyStatsPreviewDialog.querySelector(".finished-stats-mini-overlay")?.remove();
     el.gotyStatsPreviewBody?.querySelector(".finished-stats-floating-source")?.classList.remove("finished-stats-floating-source");
     syncScrollLock();
   });
@@ -2804,6 +2806,7 @@ function openGameOfTheYearStatsPreview(year = currentGameOfTheYear(), options = 
   const willAutofillPicks = options.autoPick && gameOfTheYearAutofillUsesRatings(sortedGameOfTheYearChoices(gameOfTheYearCandidateGames(year)));
   el.gotyStatsPreviewContinueButton.textContent = tt(willAutofillPicks ? "See your games of the year" : "Choose your games of the year");
   bindGameOfTheYearStatsPreviewCarousel(year, options);
+  bindFinishedStatsMobileOverlays(el.gotyStatsPreviewBody, el.gotyStatsPreviewDialog);
   bindFinishedStatsDesktopOverlays(el.gotyStatsPreviewDialog, el.gotyStatsPreviewBody);
   try {
     if (!el.gotyStatsPreviewDialog.open) el.gotyStatsPreviewDialog.showModal();
@@ -7200,8 +7203,8 @@ function bindFinishedStatsTopGamesCarousel(scope = "all") {
   update();
 }
 
-function bindFinishedStatsMobileOverlays() {
-  el.finishedStatsBody.querySelectorAll("[data-stats-overlay-title]").forEach((node) => {
+function bindFinishedStatsMobileOverlays(body = el.finishedStatsBody, dialog = el.finishedStatsDialog) {
+  body?.querySelectorAll("[data-stats-overlay-title]").forEach((node) => {
     node.addEventListener("click", (event) => {
       if (!window.matchMedia("(max-width: 760px)").matches) return;
       if (event.target.closest(".finished-stats-breakdown")) return;
@@ -7209,7 +7212,7 @@ function bindFinishedStatsMobileOverlays() {
       if (!breakdown?.innerHTML.trim()) return;
       event.preventDefault();
       event.stopPropagation();
-      openFinishedStatsMiniOverlay(finishedStatsMiniTitle(node.dataset.statsOverlayTitle || "Stats"), breakdown.innerHTML);
+      openFinishedStatsMiniOverlay(finishedStatsMiniTitle(node.dataset.statsOverlayTitle || "Stats"), breakdown.innerHTML, dialog);
     });
   });
 }
@@ -7294,19 +7297,19 @@ function bindFinishedStatsDesktopOverlays(dialog = el.finishedStatsDialog, body 
       tip.addEventListener("mouseleave", scheduleClose);
     });
   });
-  el.finishedStatsBody.addEventListener("scroll", closeFloatingOverlay, { passive: true });
+  body?.addEventListener("scroll", closeFloatingOverlay, { passive: true });
 }
 
-function openFinishedStatsMiniOverlay(title, content) {
-  let overlay = el.finishedStatsDialog.querySelector(".finished-stats-mini-overlay");
+function openFinishedStatsMiniOverlay(title, content, dialog = el.finishedStatsDialog) {
+  let overlay = dialog.querySelector(".finished-stats-mini-overlay");
   if (!overlay) {
     overlay = document.createElement("div");
     overlay.className = "finished-stats-mini-overlay";
-    el.finishedStatsDialog.appendChild(overlay);
+    dialog.appendChild(overlay);
   }
   const closeMiniOverlay = () => {
     overlay.hidden = true;
-    el.finishedStatsDialog.classList.remove("has-mini-overlay");
+    dialog.classList.remove("has-mini-overlay");
   };
   overlay.innerHTML = `
     <div class="finished-stats-mini-panel">
@@ -7318,7 +7321,7 @@ function openFinishedStatsMiniOverlay(title, content) {
     </div>
   `;
   overlay.hidden = false;
-  el.finishedStatsDialog.classList.add("has-mini-overlay");
+  dialog.classList.add("has-mini-overlay");
   overlay.querySelector("[data-stats-mini-close]")?.addEventListener("click", closeMiniOverlay);
   overlay.onclick = (event) => {
     if (event.target === overlay) closeMiniOverlay();
