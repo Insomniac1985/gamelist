@@ -1372,7 +1372,8 @@ html.theme-gradient .goty-section .column-head h2 .trophy-icon {
 .goty-stats-preview-dialog {
   width: min(960px, calc(100vw - 24px));
   max-height: calc(100vh - 24px);
-  overflow: visible;
+  overflow-x: hidden;
+  overflow-y: auto;
   border: 0;
   padding: 0;
   background: transparent;
@@ -1387,7 +1388,7 @@ html.theme-gradient .goty-section .column-head h2 .trophy-icon {
   width: min(960px, calc(100vw - 24px));
   grid-template-rows: auto auto auto;
   align-content: start;
-  overflow-y: auto !important;
+  overflow: visible !important;
 }
 
 .goty-stats-preview-modal .modal-head {
@@ -1710,10 +1711,11 @@ html.theme-gradient .goty-section .column-head h2 .trophy-icon {
 }
 
 .goty-stats-preview-actions {
-  position: fixed;
+  position: fixed !important;
+  inset-block-start: auto;
+  inset-block-end: 14px;
   left: 50%;
-  bottom: 14px;
-  z-index: 18;
+  z-index: 80;
   display: grid;
   width: min(760px, calc(100vw - 56px));
   box-sizing: border-box;
@@ -8083,7 +8085,8 @@ body:not(.can-edit) .game-card:focus-within .edit-action {
 .finished-stats-dialog {
   width: min(920px, calc(100vw - 24px));
   max-height: calc(100dvh - 24px);
-  overflow: hidden;
+  overflow-x: hidden;
+  overflow-y: auto;
   border: 0;
   padding: 0;
   background: transparent;
@@ -8100,9 +8103,8 @@ body:not(.can-edit) .game-card:focus-within .edit-action {
   grid-template-rows: auto minmax(0, auto);
   align-content: start;
   width: min(920px, calc(100vw - 24px));
-  max-height: calc(100dvh - 24px);
-  overflow-x: hidden !important;
-  overflow-y: auto !important;
+  max-height: none;
+  overflow: visible !important;
   overscroll-behavior: contain;
   box-shadow:
     0 24px 80px rgba(0, 0, 0, 0.48),
@@ -10378,8 +10380,8 @@ body.dialog-open .mobile-section-tabs {
 .finished-stats-modal {
   grid-template-rows: auto minmax(0, auto);
   align-content: start;
-  max-height: calc(100dvh - 24px);
-  overflow: hidden !important;
+  max-height: none;
+  overflow: visible !important;
 }
 
 .settings-modal {
@@ -15809,7 +15811,7 @@ html.theme-light .finish-trophy-check input[type="checkbox"]:checked {
   }
 
   .goty-stats-preview-actions {
-    bottom: 10px;
+    inset-block-end: 10px;
     width: calc(100vw - 28px);
   }
 
