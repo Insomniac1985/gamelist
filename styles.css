@@ -9130,7 +9130,7 @@ body.theme-kash .finished-stats-kpi.is-completed:focus-visible strong {
 }
 
 .finished-stats-hover-float {
-  position: fixed;
+  position: absolute;
   right: auto;
   bottom: auto;
   z-index: 180;
