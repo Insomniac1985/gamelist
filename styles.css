@@ -1372,7 +1372,8 @@ html.theme-gradient .goty-section .column-head h2 .trophy-icon {
 .goty-stats-preview-dialog {
   width: min(960px, calc(100vw - 24px));
   max-height: calc(100vh - 24px);
-  overflow: visible;
+  overflow-x: visible;
+  overflow-y: auto;
   border: 0;
   padding: 0;
   background: transparent;
@@ -1384,10 +1385,12 @@ html.theme-gradient .goty-section .column-head h2 .trophy-icon {
 }
 
 .goty-stats-preview-modal {
-  width: min(960px, calc(100vw - 24px));
+  width: 100%;
+  box-sizing: border-box;
   grid-template-rows: auto auto auto;
   align-content: start;
-  overflow-y: auto !important;
+  max-height: none !important;
+  overflow: visible !important;
 }
 
 .goty-stats-preview-modal .modal-head {
@@ -1411,7 +1414,7 @@ html.theme-gradient .goty-section .column-head h2 .trophy-icon {
 
 .goty-stats-preview-body {
   max-height: none;
-  padding-bottom: 0;
+  padding-bottom: 42px;
   overflow: visible;
 }
 
@@ -1710,16 +1713,14 @@ html.theme-gradient .goty-section .column-head h2 .trophy-icon {
 }
 
 .goty-stats-preview-actions {
-  position: fixed;
-  left: 50%;
-  bottom: 14px;
-  z-index: 18;
+  position: sticky !important;
+  bottom: 10px;
+  z-index: 80;
   display: grid;
-  width: min(760px, calc(100vw - 56px));
+  width: min(760px, calc(100% - 56px));
   box-sizing: border-box;
-  margin: 0;
+  margin: 14px auto 10px;
   padding: 0;
-  transform: translateX(-50%);
   background: none;
 }
 
@@ -8083,7 +8084,8 @@ body:not(.can-edit) .game-card:focus-within .edit-action {
 .finished-stats-dialog {
   width: min(920px, calc(100vw - 24px));
   max-height: calc(100dvh - 24px);
-  overflow: hidden;
+  overflow-x: visible;
+  overflow-y: auto;
   border: 0;
   padding: 0;
   background: transparent;
@@ -8094,15 +8096,41 @@ body:not(.can-edit) .game-card:focus-within .edit-action {
   backdrop-filter: blur(8px);
 }
 
+.finished-stats-dialog,
+.goty-stats-preview-dialog {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--grid-fade), var(--grid-texture), var(--panel-strong);
+  background-size:
+    auto,
+    22px 22px,
+    22px 22px,
+    auto;
+  background-position:
+    center,
+    var(--grid-x) var(--grid-y),
+    var(--grid-x) var(--grid-y),
+    center;
+  box-shadow: var(--shadow);
+  backdrop-filter: blur(8px) saturate(1.08);
+}
+
+.finished-stats-modal.glass,
+.goty-stats-preview-modal.glass {
+  background: transparent;
+  border: 0;
+  box-shadow: none;
+  backdrop-filter: none;
+}
+
 .finished-stats-modal {
   position: relative;
   display: grid;
   grid-template-rows: auto minmax(0, auto);
   align-content: start;
   width: min(920px, calc(100vw - 24px));
-  max-height: calc(100dvh - 24px);
-  overflow-x: hidden !important;
-  overflow-y: auto !important;
+  max-height: none;
+  overflow: visible !important;
   overscroll-behavior: contain;
   box-shadow:
     0 24px 80px rgba(0, 0, 0, 0.48),
@@ -8113,7 +8141,8 @@ body:not(.can-edit) .game-card:focus-within .edit-action {
 .finished-stats-modal.goty-stats-preview-modal {
   grid-template-rows: auto auto auto;
   align-content: start;
-  overflow-y: auto !important;
+  max-height: none;
+  overflow: visible !important;
 }
 
 .finished-stats-body.goty-stats-preview-body {
@@ -9100,6 +9129,12 @@ body.theme-kash .finished-stats-kpi.is-completed:focus-visible strong {
   pointer-events: auto;
 }
 
+.finished-stats-hover-float:popover-open {
+  position: fixed;
+  inset: auto;
+  margin: 0;
+  border: 0;
+}
 .finished-stats-breakdown::before {
   content: "";
   position: absolute;
@@ -10378,8 +10413,15 @@ body.dialog-open .mobile-section-tabs {
 .finished-stats-modal {
   grid-template-rows: auto minmax(0, auto);
   align-content: start;
-  max-height: calc(100dvh - 24px);
-  overflow: hidden !important;
+  max-height: none;
+  overflow: visible !important;
+}
+
+.goty-stats-preview-modal.finished-stats-modal {
+  width: 100%;
+  max-height: none !important;
+  box-sizing: border-box;
+  overflow: visible !important;
 }
 
 .settings-modal {
@@ -15809,8 +15851,10 @@ html.theme-light .finish-trophy-check input[type="checkbox"]:checked {
   }
 
   .goty-stats-preview-actions {
-    bottom: 10px;
-    width: calc(100vw - 28px);
+    bottom: 8px;
+    width: calc(100% - 18px);
+    margin-top: 12px;
+    margin-bottom: 8px;
   }
 
   .finished-stats-charts {
