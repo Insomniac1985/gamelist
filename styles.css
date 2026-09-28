@@ -1414,7 +1414,7 @@ html.theme-gradient .goty-section .column-head h2 .trophy-icon {
 
 .goty-stats-preview-body {
   max-height: none;
-  padding-bottom: 92px;
+  padding-bottom: 26px;
   overflow: visible;
 }
 
@@ -1713,17 +1713,14 @@ html.theme-gradient .goty-section .column-head h2 .trophy-icon {
 }
 
 .goty-stats-preview-actions {
-  position: fixed !important;
-  inset-block-start: auto;
-  inset-block-end: 2px;
-  left: 50%;
+  position: sticky !important;
+  bottom: 10px;
   z-index: 80;
   display: grid;
-  width: min(760px, calc(100vw - 56px));
+  width: min(760px, calc(100% - 56px));
   box-sizing: border-box;
-  margin: 0;
+  margin: 0 auto 10px;
   padding: 0;
-  transform: translateX(-50%);
   background: none;
 }
 
@@ -15848,8 +15845,9 @@ html.theme-light .finish-trophy-check input[type="checkbox"]:checked {
   }
 
   .goty-stats-preview-actions {
-    inset-block-end: 2px;
-    width: calc(100vw - 28px);
+    bottom: 8px;
+    width: calc(100% - 18px);
+    margin-bottom: 8px;
   }
 
   .finished-stats-charts {
