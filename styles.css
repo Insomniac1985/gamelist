@@ -1414,7 +1414,7 @@ html.theme-gradient .goty-section .column-head h2 .trophy-icon {
 
 .goty-stats-preview-body {
   max-height: none;
-  padding-bottom: 0;
+  padding-bottom: 92px;
   overflow: visible;
 }
 
@@ -1715,7 +1715,7 @@ html.theme-gradient .goty-section .column-head h2 .trophy-icon {
 .goty-stats-preview-actions {
   position: fixed !important;
   inset-block-start: auto;
-  inset-block-end: 6px;
+  inset-block-end: 2px;
   left: 50%;
   z-index: 80;
   display: grid;
@@ -10415,7 +10415,9 @@ body.dialog-open .mobile-section-tabs {
 }
 
 .goty-stats-preview-modal.finished-stats-modal {
+  width: 100%;
   max-height: none !important;
+  box-sizing: border-box;
   overflow: visible !important;
 }
 
@@ -15846,7 +15848,7 @@ html.theme-light .finish-trophy-check input[type="checkbox"]:checked {
   }
 
   .goty-stats-preview-actions {
-    inset-block-end: 6px;
+    inset-block-end: 2px;
     width: calc(100vw - 28px);
   }
 
