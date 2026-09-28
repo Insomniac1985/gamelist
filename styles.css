@@ -1719,7 +1719,7 @@ html.theme-gradient .goty-section .column-head h2 .trophy-icon {
   display: grid;
   width: min(760px, calc(100% - 56px));
   box-sizing: border-box;
-  margin: 0 auto 10px;
+  margin: 14px auto 10px;
   padding: 0;
   background: none;
 }
@@ -9129,6 +9129,12 @@ body.theme-kash .finished-stats-kpi.is-completed:focus-visible strong {
   pointer-events: auto;
 }
 
+.finished-stats-hover-float:popover-open {
+  position: fixed;
+  inset: auto;
+  margin: 0;
+  border: 0;
+}
 .finished-stats-breakdown::before {
   content: "";
   position: absolute;
@@ -15847,6 +15853,7 @@ html.theme-light .finish-trophy-check input[type="checkbox"]:checked {
   .goty-stats-preview-actions {
     bottom: 8px;
     width: calc(100% - 18px);
+    margin-top: 12px;
     margin-bottom: 8px;
   }
 
