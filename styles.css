@@ -1739,6 +1739,13 @@ html.theme-gradient .goty-section .column-head h2 .trophy-icon {
   animation: gotyPreviewButtonGlow 2200ms ease-in-out infinite;
 }
 
+.goty-stats-preview-continue:hover,
+.goty-stats-preview-continue:focus-visible {
+  color: #ffffff;
+  border-color: color-mix(in srgb, var(--accent) 82%, #ffffff);
+  background: var(--accent);
+}
+
 .goty-stats-preview-continue::after {
   content: "";
   position: absolute;

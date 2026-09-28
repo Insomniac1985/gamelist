@@ -7252,10 +7252,7 @@ function bindFinishedStatsDesktopOverlays(dialog = el.finishedStatsDialog, body 
     const gap = 8;
     const minLeft = Math.max(12, dialogRect.left + 12);
     const maxLeft = Math.max(minLeft, Math.min(window.innerWidth - 12, dialogRect.right - 12) - floatRect.width);
-    const anchorRight = className.includes("is-segment-float")
-      ? sourceRect.left + (sourceRect.width * 0.62)
-      : sourceRect.left + (sourceRect.width * 0.72);
-    const preferredLeft = anchorRight - floatRect.width;
+    const preferredLeft = sourceRect.left;
     const left = clampNumber(preferredLeft, minLeft, maxLeft);
     const minTop = Math.max(12, dialogRect.top + 12);
     const maxTop = Math.max(minTop, Math.min(window.innerHeight - 12, dialogRect.bottom - 12) - floatRect.height);
