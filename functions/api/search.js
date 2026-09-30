@@ -14,12 +14,25 @@ export async function onRequestGet({ request, env = {} }) {
   const language = normalizeMetadataLanguage(url.searchParams.get("lang") || url.searchParams.get("language") || "");
   if (!query) return json({ results: [] });
 
+  const cache = caches.default;
+  const cacheUrl = new URL("/api/search", url.origin);
+  cacheUrl.searchParams.set("q", normalize(query));
+  cacheUrl.searchParams.set("lang", language);
+  if (lookup.igdbSlug) cacheUrl.searchParams.set("slug", lookup.igdbSlug);
+  const cacheKey = new Request(cacheUrl.toString(), { method: "GET" });
+  const cached = await cache.match(cacheKey);
+  if (cached) return cached;
+
+  return searchUncached(query, language, env, lookup, cache, cacheKey);
+}
+
+async function searchUncached(query, language, env, lookup, cache, cacheKey) {
   const igdb = igdbCredentials(env);
   let igdbError = null;
   if (igdb) {
     try {
       const results = await igdbSearch(query, igdb, lookup, language);
-      if (results.length) return json({ results });
+      if (results.length) return cachedJson({ results }, cache, cacheKey);
     } catch (error) {
       igdbError = error;
       // Fall through to HowLongToBeat when IGDB credentials or API are unavailable.
@@ -29,6 +42,7 @@ export async function onRequestGet({ request, env = {} }) {
   try {
     const hltb = await getHltbClient();
     const results = await hltbSearch(query, hltb, language);
+    if (results.length) return cachedJson({ results }, cache, cacheKey);
     return json({ results });
   } catch (error) {
     const igdbWasTried = Boolean(igdb);
@@ -46,6 +60,21 @@ export async function onRequestGet({ request, env = {} }) {
       },
     }, igdbCompleted ? 200 : 503);
   }
+}
+
+async function cachedJson(data, cache, cacheKey) {
+  const response = json(data);
+  const body = await response.clone().text();
+  const cacheable = new Response(body, { status: 200, headers: {
+    "Content-Type": "application/json",
+    "Cache-Control": "public, max-age=86400",
+  } });
+  try {
+    await cache.put(cacheKey, cacheable.clone());
+  } catch {
+    // A cache write must not turn a successful metadata lookup into a failure.
+  }
+  return cacheable;
 }
 
 function parseLookup(value) {

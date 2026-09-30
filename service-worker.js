@@ -1,4 +1,4 @@
-const CACHE_VERSION = "gamelist-cache-v588";
+const CACHE_VERSION = "gamelist-cache-v592";
 const STATIC_CACHE = `${CACHE_VERSION}:static`;
 const MEDIA_CACHE = `${CACHE_VERSION}:media`;
 const STATIC_ASSETS = [
@@ -104,13 +104,8 @@ self.addEventListener("fetch", (event) => {
     return;
   }
 
-  if (url.origin === location.origin && isLocalScriptOrStyle(url)) {
-    event.respondWith(networkFirst(request, STATIC_CACHE));
-    return;
-  }
-
   if (url.origin === location.origin && shouldCacheStatic(url)) {
-    event.respondWith(staleWhileRevalidate(request, STATIC_CACHE));
+    event.respondWith(cacheFirst(request, STATIC_CACHE));
     return;
   }
 

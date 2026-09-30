@@ -13,7 +13,7 @@ const PLATINUM_META_CACHE_KEY = "gamelist:platinum-meta:v1";
 const PLATINUM_COVER_CACHE_KEY = "gamelist:platinum-covers:v1";
 const SETTINGS_KEY = "gamelist:settings:v1";
 const ACHIEVEMENT_CACHE_KEY = "gamelist:achievement-cache:v1";
-const ACHIEVEMENT_CACHE_TTL_MS = 30 * 60 * 1000;
+const ACHIEVEMENT_CACHE_TTL_MS = 12 * 60 * 60 * 1000;
 const DEFAULT_PAGE_ORDER = ["trophies", "calendar", "highlights", "search", "gamelist", "finished"];
 const LAYOUT_SECTION_KEYS = ["playing", ...DEFAULT_PAGE_ORDER, "latestFinished"];
 const VERSION_STORAGE_KEY = "gamelist:site-version";
@@ -482,10 +482,10 @@ init();
 async function init() {
   if (await checkSiteVersion()) return;
   const initialTheme = await window.__initialThemeReady?.catch(() => "shabii");
-  const consoleInfoPromise = logConsoleInfo(initialTheme);
   registerServiceWorker();
   syncDisplayMode();
-  state.canEdit = await hasSharedEditorSession();
+  const authPromise = fetch("/api/auth", { cache: "no-store" }).then((response) => response.json()).catch(() => ({}));
+  state.canEdit = Boolean((await authPromise).ok);
   if (!state.canEdit) {
     sessionStorage.removeItem(SESSION_KEY);
     sessionStorage.removeItem(`${SESSION_KEY}:password`);
@@ -522,28 +522,8 @@ async function init() {
     await openEditor(requestedEdit);
   }
   else if (requestedGame && state.games.some((game) => game.id === requestedGame && !game.deletedAt)) openDetail(requestedGame);
-  await consoleInfoPromise;
   refreshAchievements();
   scheduleBackgroundRefreshes();
-}
-
-async function logConsoleInfo(theme = "shabii") {
-  try {
-    const [response, authResponse] = await Promise.all([
-      fetch("/api/secret-status", { cache: "no-store" }),
-      fetch("/api/auth", { cache: "no-store" }).catch(() => null),
-    ]);
-    if (!response.ok) throw new Error(`HTTP ${response.status}`);
-    const status = await response.json();
-    state.integrationStatus = status;
-    const authStatus = await authResponse?.json().catch(() => ({}));
-    const repoCopies = authStatus?.ok && isShabiiMainOwner() ? await fetchRepoCopies() : [];
-    logPageVersion(status.CURRENT_REPO, repoCopies);
-    logStatusLines(status, theme, authStatus?.status || (authStatus?.ok ? "LOGGED IN" : "NOT LOGGED IN"));
-  } catch (error) {
-    logPageVersion();
-    console.warn("Could not check secret status", error);
-  }
 }
 
 function isShabiiMainOwner() {
@@ -1019,6 +999,9 @@ function bindEvents() {
     state.finishSetupId = "";
     syncScrollLock();
   });
+  el.dialog.addEventListener("click", (event) => {
+    if (event.target === el.dialog) event.preventDefault();
+  });
   el.settingsCloseButton?.addEventListener("click", () => el.settingsDialog.close());
   el.settingsDialog?.addEventListener("click", (event) => {
     if (event.target === el.settingsDialog) el.settingsDialog.close();
@@ -1095,6 +1078,12 @@ function bindEvents() {
   el.closeDialogButton.addEventListener("click", () => el.dialog.close());
   el.lookupButton.addEventListener("click", lookupGame);
   el.lookupInput.addEventListener("input", queueTitleLookup);
+  el.lookupInput.addEventListener("keydown", (event) => {
+    if (event.key !== "Enter") return;
+    event.preventDefault();
+    event.stopPropagation();
+    lookupGame();
+  });
   el.pricesButton?.addEventListener("click", refreshCurrentPrices);
   el.coverUpload?.addEventListener("change", handleCoverUpload);
   window.addEventListener("resize", syncDisplayMode, { passive: true });
@@ -1320,7 +1309,7 @@ function pullNavigationUrl(targetUrl) {
 }
 
 function warmUiIcons() {
-  UI_ICON_URLS.forEach((url) => {
+  UI_ICON_URLS.slice(0, 4).forEach((url) => {
     const image = new Image();
     image.decoding = "async";
     image.loading = "eager";
@@ -1331,7 +1320,12 @@ function warmUiIcons() {
 function scheduleBackgroundRefreshes() {
   const run = () => {
     refreshUnreleasedGamesOnOpen();
-    refreshMissingDescriptionsOnOpen();
+    if (!state.canEdit) return;
+    const marker = `gamelist:metadata-refresh:${new Date().toISOString().slice(0, 10)}`;
+    if (localStorage.getItem(marker)) return;
+    localStorage.setItem(marker, "running");
+    refreshMissingDescriptionsOnOpen().then(() => localStorage.setItem(marker, "done"))
+      .catch(() => localStorage.removeItem(marker));
   };
   if ("requestIdleCallback" in window) {
     window.requestIdleCallback(run, { timeout: 1200 });
@@ -1971,6 +1965,7 @@ function settingsDevFeaturesItem(kind) {
   const links = [
     { href: "/api/gamelist-mass-add", label: "Mass add" },
     { href: "/api/gamelist-metadata", label: "Fill metadata" },
+    { href: "/api/secret-status", label: "Integration health" },
   ].map((link) => `
     <a class="ghost-button settings-dev-link" href="${escapeHtml(link.href)}" target="_blank" rel="noreferrer" data-dev-feature="${escapeHtml(kind)}">
       ${escapeHtml(tt(link.label))}
@@ -8380,8 +8375,8 @@ async function refreshDetailPsnTrophiesInBackground(game, psn, trophyId) {
       user: state.settings.psnUser || "",
       debug: "1",
       schema: "3",
-    }, true);
-    const response = await fetch(`/api/trophies?${params}`, { cache: "no-store" });
+    });
+    const response = await fetch(`/api/trophies?${params}`);
     const data = await response.json().catch(() => ({ error: "Invalid trophy API JSON response" }));
     logTrophyLoadIssue("detail-background", game, psn, response, data);
     if (!response.ok) return;
@@ -8407,8 +8402,7 @@ async function refreshDetailPsnTrophiesInBackground(game, psn, trophyId) {
 async function refreshDetailSteamAchievementsInBackground(game, appId, steamUser) {
   try {
     const params = steamAchievementParams(appId, steamUser);
-    params.set("fresh", String(Date.now()));
-    const response = await fetch(`/api/steam-achievements?${params}`, { cache: "no-store" });
+    const response = await fetch(`/api/steam-achievements?${params}`);
     const data = await response.json().catch(() => ({ error: "Invalid Steam achievements API JSON response" }));
     logTrophyLoadIssue("steam-detail-background", game, { npCommunicationId: appId, npServiceName: "steam" }, response, { trophies: data.achievements, ...data });
     if (!response.ok) return;
@@ -11473,7 +11467,10 @@ async function refreshUnreleasedGamesOnOpen() {
     shouldMoveReleasedToAvailable(game)
     || shouldMoveUnreleasedToUpcoming(game)
   ));
-  const refreshGames = state.games.filter((game) => !game.deletedAt && !game.completedAt && shouldRefreshRelease(game) && !moveGames.includes(game)).slice(0, 25);
+  const refreshMarker = `gamelist:release-refresh:${new Date().toISOString().slice(0, 10)}`;
+  const shouldFetchMetadata = state.canEdit && !localStorage.getItem(refreshMarker);
+  const refreshGames = shouldFetchMetadata ? state.games.filter((game) => !game.deletedAt && !game.completedAt && shouldRefreshRelease(game) && !moveGames.includes(game)).slice(0, 5) : [];
+  if (refreshGames.length) localStorage.setItem(refreshMarker, "running");
   const games = [...moveGames, ...refreshGames];
   if (!games.length) return;
   let changed = false;
@@ -11528,6 +11525,7 @@ async function refreshUnreleasedGamesOnOpen() {
     persistLocal();
     persistCloud();
   }
+  if (refreshGames.length) localStorage.setItem(refreshMarker, "done");
 }
 
 function shouldMoveReleasedToAvailable(game) {
@@ -11551,7 +11549,8 @@ function shouldMoveUnreleasedToUpcoming(game) {
 }
 
 async function refreshMissingDescriptionsOnOpen() {
-  const games = activeGames().filter((game) => !game.description && game.title).slice(0, 20);
+  if (!state.canEdit) return;
+  const games = activeGames().filter((game) => !game.description && game.title).slice(0, 5);
   if (!games.length) return;
   let changed = false;
   for (const game of games) {

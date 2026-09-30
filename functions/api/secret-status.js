@@ -1,9 +1,10 @@
 import { getPsnAccessToken } from "./psn-auth.js";
+import { isEditorRequest } from "./editor-auth.js";
 
-const HEALTH_CACHE_MS = 5 * 60 * 1000;
-let healthCache;
+const HEALTH_CACHE_SECONDS = 45 * 60;
 
 export async function onRequestGet({ request, env = {} }) {
+  if (!await isEditorRequest(request, env)) return json({ error: "Unauthorized" }, 401);
   const isSet = (value) => Boolean(String(value || "").trim());
   const health = await integrationHealth(env, request);
   const { CURRENT_REPO, ...working } = health;
@@ -31,7 +32,10 @@ function siteUrl(request) {
 }
 
 async function integrationHealth(env, request) {
-  if (healthCache && Date.now() < healthCache.expiresAt) return healthCache.value;
+  const cache = caches.default;
+  const cacheKey = new Request(new URL("/api/secret-status/health-cache", siteUrl(request)).toString());
+  const cached = await cache.match(cacheKey);
+  if (cached) return cached.json();
   const checks = await Promise.allSettled([
     checkIgdb(env),
     checkPriceCharting(),
@@ -51,7 +55,9 @@ async function integrationHealth(env, request) {
     UPDATE: Boolean(update.ok),
     CURRENT_REPO: update.repoUrl || "",
   };
-  healthCache = { value, expiresAt: Date.now() + HEALTH_CACHE_MS };
+  await cache.put(cacheKey, new Response(JSON.stringify(value), {
+    headers: { "Content-Type": "application/json", "Cache-Control": `public, max-age=${HEALTH_CACHE_SECONDS}` },
+  }));
   return value;
 }
 
