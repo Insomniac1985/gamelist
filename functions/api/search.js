@@ -22,27 +22,16 @@ export async function onRequestGet({ request, env = {} }) {
   const cached = await cache.match(cacheKey);
   if (cached) return cached;
 
-  const response = await searchUncached(query, language, env);
-  if (response.ok) {
-    const body = await response.text();
-    const cacheable = new Response(body, { status: response.status, headers: {
-      "Content-Type": "application/json",
-      "Cache-Control": "public, max-age=86400",
-    } });
-    await cache.put(cacheKey, cacheable.clone());
-    return cacheable;
-  }
-  return response;
+  return searchUncached(query, language, env, lookup, cache, cacheKey);
 }
 
-async function searchUncached(query, language, env) {
-
+async function searchUncached(query, language, env, lookup, cache, cacheKey) {
   const igdb = igdbCredentials(env);
   let igdbError = null;
   if (igdb) {
     try {
       const results = await igdbSearch(query, igdb, lookup, language);
-      if (results.length) return json({ results });
+      if (results.length) return cachedJson({ results }, cache, cacheKey);
     } catch (error) {
       igdbError = error;
       // Fall through to HowLongToBeat when IGDB credentials or API are unavailable.
@@ -52,6 +41,7 @@ async function searchUncached(query, language, env) {
   try {
     const hltb = await getHltbClient();
     const results = await hltbSearch(query, hltb, language);
+    if (results.length) return cachedJson({ results }, cache, cacheKey);
     return json({ results });
   } catch (error) {
     const igdbWasTried = Boolean(igdb);
@@ -69,6 +59,17 @@ async function searchUncached(query, language, env) {
       },
     }, igdbCompleted ? 200 : 503);
   }
+}
+
+async function cachedJson(data, cache, cacheKey) {
+  const response = json(data);
+  const body = await response.clone().text();
+  const cacheable = new Response(body, { status: 200, headers: {
+    "Content-Type": "application/json",
+    "Cache-Control": "public, max-age=86400",
+  } });
+  await cache.put(cacheKey, cacheable.clone());
+  return cacheable;
 }
 
 function parseLookup(value) {

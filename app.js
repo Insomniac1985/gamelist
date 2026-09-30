@@ -999,6 +999,9 @@ function bindEvents() {
     state.finishSetupId = "";
     syncScrollLock();
   });
+  el.dialog.addEventListener("click", (event) => {
+    if (event.target === el.dialog) event.preventDefault();
+  });
   el.settingsCloseButton?.addEventListener("click", () => el.settingsDialog.close());
   el.settingsDialog?.addEventListener("click", (event) => {
     if (event.target === el.settingsDialog) el.settingsDialog.close();
@@ -1075,6 +1078,12 @@ function bindEvents() {
   el.closeDialogButton.addEventListener("click", () => el.dialog.close());
   el.lookupButton.addEventListener("click", lookupGame);
   el.lookupInput.addEventListener("input", queueTitleLookup);
+  el.lookupInput.addEventListener("keydown", (event) => {
+    if (event.key !== "Enter") return;
+    event.preventDefault();
+    event.stopPropagation();
+    lookupGame();
+  });
   el.pricesButton?.addEventListener("click", refreshCurrentPrices);
   el.coverUpload?.addEventListener("change", handleCoverUpload);
   window.addEventListener("resize", syncDisplayMode, { passive: true });
