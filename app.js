@@ -12,7 +12,7 @@ const PLATINUM_VIEW_MODE_KEY = "gamelist:platinum-view-mode";
 const PLATINUM_META_CACHE_KEY = "gamelist:platinum-meta:v1";
 const PLATINUM_COVER_CACHE_KEY = "gamelist:platinum-covers:v1";
 const SETTINGS_KEY = "gamelist:settings:v1";
-const ACHIEVEMENT_CACHE_KEY = "gamelist:achievement-cache:v1";
+const ACHIEVEMENT_CACHE_KEY = "gamelist:achievement-cache:v2";
 const ACHIEVEMENT_CACHE_TTL_MS = 12 * 60 * 60 * 1000;
 const DEFAULT_PAGE_ORDER = ["trophies", "calendar", "highlights", "search", "gamelist", "finished"];
 const LAYOUT_SECTION_KEYS = ["playing", ...DEFAULT_PAGE_ORDER, "latestFinished"];
@@ -5084,6 +5084,10 @@ async function fetchSteamActivity(forceRefresh = state.settings.forceCacheOnLoad
   return {
     achievements,
     games: results.map(({ game, earned, total }) => ({ title: game.title, game: `${total ? Math.round((earned / total) * 100) : 0}% · ${earned}/${total} achievements` })),
+    ownedAppIds: steamGames.map((game) => cleanSteamAppId(game.appId)).filter(Boolean),
+    cardGames: results
+      .filter(({ game }) => Boolean(game.playing))
+      .map(({ game, achievements, earned, total }) => ({ appId: game.steamAppId, achievements, earned, total })),
     completed,
     totalEarned,
     sourceUrl: steamProfileUrl(steamUser),
@@ -5198,7 +5202,7 @@ function steamProfileUrl(user) {
 }
 
 function emptySteamActivity() {
-  return { achievements: [], games: [], completed: [], totalEarned: 0, sourceUrl: "" };
+  return { achievements: [], games: [], cardGames: [], ownedAppIds: [], completed: [], totalEarned: 0, sourceUrl: "" };
 }
 
 function steamAchievementParams(appId, steamUser = state.settings.steamUser || "") {
@@ -5225,6 +5229,19 @@ function renderAchievements(data = {}, steamData = state.steamActivity || emptyS
     totalEarned: Number(steamData.totalEarned || 0),
     sourceUrl: steamData.sourceUrl || "",
   };
+  state.steamOwnedAppIds = new Set((steamData.ownedAppIds || []).map(cleanSteamAppId).filter(Boolean));
+  (steamData.cardGames || []).forEach((entry) => {
+    const appId = cleanSteamAppId(entry.appId);
+    if (!appId) return;
+    const achievements = Array.isArray(entry.achievements) ? entry.achievements : [];
+    state.cardTrophies[`steam:${appId}`] = {
+      loading: false,
+      achievements,
+      trophies: achievements,
+      earned: Number(entry.earned ?? achievements.filter((achievement) => achievement.earned).length),
+      total: Number(entry.total ?? achievements.length),
+    };
+  });
   state.xboxActivity = {
     achievements: Array.isArray(xboxData.achievements) ? xboxData.achievements : [],
     games: Array.isArray(xboxData.games) ? xboxData.games : [],
