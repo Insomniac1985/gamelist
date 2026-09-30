@@ -14,6 +14,29 @@ export async function onRequestGet({ request, env = {} }) {
   const language = normalizeMetadataLanguage(url.searchParams.get("lang") || url.searchParams.get("language") || "");
   if (!query) return json({ results: [] });
 
+  const cache = caches.default;
+  const cacheUrl = new URL("/api/search", url.origin);
+  cacheUrl.searchParams.set("q", normalize(query));
+  cacheUrl.searchParams.set("lang", language);
+  const cacheKey = new Request(cacheUrl.toString(), { method: "GET" });
+  const cached = await cache.match(cacheKey);
+  if (cached) return cached;
+
+  const response = await searchUncached(query, language, env);
+  if (response.ok) {
+    const body = await response.text();
+    const cacheable = new Response(body, { status: response.status, headers: {
+      "Content-Type": "application/json",
+      "Cache-Control": "public, max-age=86400",
+    } });
+    await cache.put(cacheKey, cacheable.clone());
+    return cacheable;
+  }
+  return response;
+}
+
+async function searchUncached(query, language, env) {
+
   const igdb = igdbCredentials(env);
   let igdbError = null;
   if (igdb) {

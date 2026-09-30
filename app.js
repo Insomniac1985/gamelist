@@ -482,10 +482,10 @@ init();
 async function init() {
   if (await checkSiteVersion()) return;
   const initialTheme = await window.__initialThemeReady?.catch(() => "shabii");
-  const consoleInfoPromise = logConsoleInfo(initialTheme);
   registerServiceWorker();
   syncDisplayMode();
-  state.canEdit = await hasSharedEditorSession();
+  const authPromise = fetch("/api/auth", { cache: "no-store" }).then((response) => response.json()).catch(() => ({}));
+  state.canEdit = Boolean((await authPromise).ok);
   if (!state.canEdit) {
     sessionStorage.removeItem(SESSION_KEY);
     sessionStorage.removeItem(`${SESSION_KEY}:password`);
@@ -522,28 +522,8 @@ async function init() {
     await openEditor(requestedEdit);
   }
   else if (requestedGame && state.games.some((game) => game.id === requestedGame && !game.deletedAt)) openDetail(requestedGame);
-  await consoleInfoPromise;
   refreshAchievements();
   scheduleBackgroundRefreshes();
-}
-
-async function logConsoleInfo(theme = "shabii") {
-  try {
-    const [response, authResponse] = await Promise.all([
-      fetch("/api/secret-status", { cache: "no-store" }),
-      fetch("/api/auth", { cache: "no-store" }).catch(() => null),
-    ]);
-    if (!response.ok) throw new Error(`HTTP ${response.status}`);
-    const status = await response.json();
-    state.integrationStatus = status;
-    const authStatus = await authResponse?.json().catch(() => ({}));
-    const repoCopies = authStatus?.ok && isShabiiMainOwner() ? await fetchRepoCopies() : [];
-    logPageVersion(status.CURRENT_REPO, repoCopies);
-    logStatusLines(status, theme, authStatus?.status || (authStatus?.ok ? "LOGGED IN" : "NOT LOGGED IN"));
-  } catch (error) {
-    logPageVersion();
-    console.warn("Could not check secret status", error);
-  }
 }
 
 function isShabiiMainOwner() {
@@ -1320,7 +1300,7 @@ function pullNavigationUrl(targetUrl) {
 }
 
 function warmUiIcons() {
-  UI_ICON_URLS.forEach((url) => {
+  UI_ICON_URLS.slice(0, 4).forEach((url) => {
     const image = new Image();
     image.decoding = "async";
     image.loading = "eager";
@@ -1331,7 +1311,12 @@ function warmUiIcons() {
 function scheduleBackgroundRefreshes() {
   const run = () => {
     refreshUnreleasedGamesOnOpen();
-    refreshMissingDescriptionsOnOpen();
+    if (!state.canEdit) return;
+    const marker = `gamelist:metadata-refresh:${new Date().toISOString().slice(0, 10)}`;
+    if (localStorage.getItem(marker)) return;
+    localStorage.setItem(marker, "running");
+    refreshMissingDescriptionsOnOpen().then(() => localStorage.setItem(marker, "done"))
+      .catch(() => localStorage.removeItem(marker));
   };
   if ("requestIdleCallback" in window) {
     window.requestIdleCallback(run, { timeout: 1200 });
@@ -1971,6 +1956,7 @@ function settingsDevFeaturesItem(kind) {
   const links = [
     { href: "/api/gamelist-mass-add", label: "Mass add" },
     { href: "/api/gamelist-metadata", label: "Fill metadata" },
+    { href: "/api/secret-status", label: "Integration health" },
   ].map((link) => `
     <a class="ghost-button settings-dev-link" href="${escapeHtml(link.href)}" target="_blank" rel="noreferrer" data-dev-feature="${escapeHtml(kind)}">
       ${escapeHtml(tt(link.label))}
@@ -11473,7 +11459,10 @@ async function refreshUnreleasedGamesOnOpen() {
     shouldMoveReleasedToAvailable(game)
     || shouldMoveUnreleasedToUpcoming(game)
   ));
-  const refreshGames = state.games.filter((game) => !game.deletedAt && !game.completedAt && shouldRefreshRelease(game) && !moveGames.includes(game)).slice(0, 25);
+  const refreshMarker = `gamelist:release-refresh:${new Date().toISOString().slice(0, 10)}`;
+  const shouldFetchMetadata = state.canEdit && !localStorage.getItem(refreshMarker);
+  const refreshGames = shouldFetchMetadata ? state.games.filter((game) => !game.deletedAt && !game.completedAt && shouldRefreshRelease(game) && !moveGames.includes(game)).slice(0, 5) : [];
+  if (refreshGames.length) localStorage.setItem(refreshMarker, "running");
   const games = [...moveGames, ...refreshGames];
   if (!games.length) return;
   let changed = false;
@@ -11528,6 +11517,7 @@ async function refreshUnreleasedGamesOnOpen() {
     persistLocal();
     persistCloud();
   }
+  if (refreshGames.length) localStorage.setItem(refreshMarker, "done");
 }
 
 function shouldMoveReleasedToAvailable(game) {
@@ -11551,7 +11541,8 @@ function shouldMoveUnreleasedToUpcoming(game) {
 }
 
 async function refreshMissingDescriptionsOnOpen() {
-  const games = activeGames().filter((game) => !game.description && game.title).slice(0, 20);
+  if (!state.canEdit) return;
+  const games = activeGames().filter((game) => !game.description && game.title).slice(0, 5);
   if (!games.length) return;
   let changed = false;
   for (const game of games) {
