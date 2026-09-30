@@ -18,6 +18,7 @@ export async function onRequestGet({ request, env = {} }) {
   const cacheUrl = new URL("/api/search", url.origin);
   cacheUrl.searchParams.set("q", normalize(query));
   cacheUrl.searchParams.set("lang", language);
+  if (lookup.igdbSlug) cacheUrl.searchParams.set("slug", lookup.igdbSlug);
   const cacheKey = new Request(cacheUrl.toString(), { method: "GET" });
   const cached = await cache.match(cacheKey);
   if (cached) return cached;
@@ -68,7 +69,11 @@ async function cachedJson(data, cache, cacheKey) {
     "Content-Type": "application/json",
     "Cache-Control": "public, max-age=86400",
   } });
-  await cache.put(cacheKey, cacheable.clone());
+  try {
+    await cache.put(cacheKey, cacheable.clone());
+  } catch {
+    // A cache write must not turn a successful metadata lookup into a failure.
+  }
   return cacheable;
 }
 
