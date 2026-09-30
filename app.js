@@ -13,7 +13,7 @@ const PLATINUM_META_CACHE_KEY = "gamelist:platinum-meta:v1";
 const PLATINUM_COVER_CACHE_KEY = "gamelist:platinum-covers:v1";
 const SETTINGS_KEY = "gamelist:settings:v1";
 const ACHIEVEMENT_CACHE_KEY = "gamelist:achievement-cache:v1";
-const ACHIEVEMENT_CACHE_TTL_MS = 30 * 60 * 1000;
+const ACHIEVEMENT_CACHE_TTL_MS = 12 * 60 * 60 * 1000;
 const DEFAULT_PAGE_ORDER = ["trophies", "calendar", "highlights", "search", "gamelist", "finished"];
 const LAYOUT_SECTION_KEYS = ["playing", ...DEFAULT_PAGE_ORDER, "latestFinished"];
 const VERSION_STORAGE_KEY = "gamelist:site-version";
@@ -8375,8 +8375,8 @@ async function refreshDetailPsnTrophiesInBackground(game, psn, trophyId) {
       user: state.settings.psnUser || "",
       debug: "1",
       schema: "3",
-    }, true);
-    const response = await fetch(`/api/trophies?${params}`, { cache: "no-store" });
+    });
+    const response = await fetch(`/api/trophies?${params}`);
     const data = await response.json().catch(() => ({ error: "Invalid trophy API JSON response" }));
     logTrophyLoadIssue("detail-background", game, psn, response, data);
     if (!response.ok) return;
@@ -8402,8 +8402,7 @@ async function refreshDetailPsnTrophiesInBackground(game, psn, trophyId) {
 async function refreshDetailSteamAchievementsInBackground(game, appId, steamUser) {
   try {
     const params = steamAchievementParams(appId, steamUser);
-    params.set("fresh", String(Date.now()));
-    const response = await fetch(`/api/steam-achievements?${params}`, { cache: "no-store" });
+    const response = await fetch(`/api/steam-achievements?${params}`);
     const data = await response.json().catch(() => ({ error: "Invalid Steam achievements API JSON response" }));
     logTrophyLoadIssue("steam-detail-background", game, { npCommunicationId: appId, npServiceName: "steam" }, response, { trophies: data.achievements, ...data });
     if (!response.ok) return;
