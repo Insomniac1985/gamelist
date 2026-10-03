@@ -10327,7 +10327,7 @@ body.dialog-open .mobile-section-tabs {
 
 .finish-time-main-row {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 74px;
+  grid-template-columns: minmax(0, 1fr) 66px;
   gap: 10px;
   align-items: end;
 }
@@ -10340,13 +10340,24 @@ body.dialog-open .mobile-section-tabs {
   min-width: 0;
 }
 
+#finishTimeInput {
+  height: 44px;
+  box-sizing: border-box;
+}
+
 .playtime-refresh-button {
+  width: 44px;
+  height: 44px;
+  min-width: 44px;
+  min-height: 44px;
+  flex-basis: 44px;
+  border: 1px solid var(--line);
   color: var(--muted);
 }
 
 .playtime-refresh-button svg {
-  width: 17px;
-  height: 17px;
+  width: 20px;
+  height: 20px;
   fill: none;
   stroke: currentColor;
   stroke-width: 1.8;
@@ -10367,9 +10378,13 @@ body.dialog-open .mobile-section-tabs {
 }
 
 .finish-time-main-row .finish-trophy-check {
-  height: 47px;
-  min-height: 47px;
-  padding-inline: 10px;
+  width: 66px;
+  height: 44px;
+  min-height: 44px;
+  box-sizing: border-box;
+  justify-content: center;
+  gap: 6px;
+  padding-inline: 8px;
   border-color: rgba(255, 233, 133, 0.32);
 }
 
@@ -10999,6 +11014,14 @@ body.dialog-open .mobile-section-tabs {
   background-color: rgba(255, 255, 255, 0.07);
   border: 1px solid rgba(255, 255, 255, 0.14);
   border-radius: 7px;
+}
+
+.settings-theme-select .settings-stream-priority-select {
+  box-sizing: border-box;
+  height: var(--settings-control-height, 42px);
+  min-height: var(--settings-control-height, 42px);
+  padding: 0 34px 0 12px;
+  line-height: 1.2;
 }
 
 .settings-theme-edit-button {
@@ -12229,6 +12252,40 @@ html.theme-light .shelf-card-delete-action:hover {
 
 .settings-account-field {
   grid-column: span 2;
+}
+
+.settings-nintendo-field {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 8px;
+}
+
+.settings-nintendo-controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 40px;
+}
+
+.settings-nintendo-status {
+  flex: 1;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.settings-nintendo-callback {
+  display: grid;
+  gap: 8px;
+}
+
+.settings-nintendo-callback small {
+  color: var(--muted);
+  line-height: 1.45;
+}
+
+.settings-nintendo-callback code {
+  color: var(--text);
 }
 
 .settings-detail-compact {

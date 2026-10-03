@@ -927,6 +927,19 @@
             <span data-i18n="Steam account">Steam account</span>
             <input id="settingsSteamUser" autocomplete="off" placeholder="SteamID64, profile URL, or vanity name" data-i18n-placeholder="SteamID64, profile URL, or vanity name">
           </label>
+          <div class="settings-account-field settings-nintendo-field">
+            <span>Nintendo Account</span>
+            <div class="settings-nintendo-controls">
+              <span id="settingsNintendoStatus" class="settings-nintendo-status">Checking connection…</span>
+              <button class="ghost-button" id="settingsNintendoConnect" type="button">Connect</button>
+              <button class="ghost-button" id="settingsNintendoDisconnect" type="button" hidden>Disconnect</button>
+            </div>
+            <div class="settings-nintendo-callback" id="settingsNintendoCallback" hidden>
+              <small>After signing in, right-click Nintendo’s “Select this person” button and copy its link address (starts with <code>npf…://auth</code>). Paste it here to finish connecting automatically.</small>
+              <input id="settingsNintendoCallbackUrl" autocomplete="off" placeholder="Paste Nintendo sign-in link">
+              <button class="ghost-button" id="settingsNintendoFinish" type="button">Finish connection</button>
+            </div>
+          </div>
           <label class="settings-account-field">
             <span data-i18n="Twitch account">Twitch account</span>
             <input id="settingsTwitchUser" autocomplete="off" placeholder="Twitch username" data-i18n-placeholder="Twitch username">

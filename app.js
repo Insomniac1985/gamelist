@@ -393,6 +393,12 @@ const el = {
   settingsPsnUser: document.querySelector("#settingsPsnUser"),
   settingsMicrosoftUser: document.querySelector("#settingsMicrosoftUser"),
   settingsSteamUser: document.querySelector("#settingsSteamUser"),
+  settingsNintendoStatus: document.querySelector("#settingsNintendoStatus"),
+  settingsNintendoConnect: document.querySelector("#settingsNintendoConnect"),
+  settingsNintendoDisconnect: document.querySelector("#settingsNintendoDisconnect"),
+  settingsNintendoCallback: document.querySelector("#settingsNintendoCallback"),
+  settingsNintendoCallbackUrl: document.querySelector("#settingsNintendoCallbackUrl"),
+  settingsNintendoFinish: document.querySelector("#settingsNintendoFinish"),
   settingsTwitchUser: document.querySelector("#settingsTwitchUser"),
   settingsCurrency: document.querySelector("#settingsCurrency"),
   settingsRegion: document.querySelector("#settingsRegion"),
@@ -488,7 +494,8 @@ async function init() {
   registerServiceWorker();
   syncDisplayMode();
   const authPromise = fetch("/api/auth", { cache: "no-store" }).then((response) => response.json()).catch(() => ({}));
-  state.canEdit = Boolean((await authPromise).ok);
+  const authStatus = await authPromise;
+  state.canEdit = Boolean(authStatus.ok);
   if (!state.canEdit) {
     sessionStorage.removeItem(SESSION_KEY);
     sessionStorage.removeItem(`${SESSION_KEY}:password`);
@@ -499,6 +506,7 @@ async function init() {
   warmUiIcons();
   bindTextureParallax();
   await loadData();
+  void logConsoleInfo(initialTheme, authStatus);
   const cloudChanged = await pullCloudData();
   syncPagePullTransition();
   if (await maybeRenderGameOfTheYearExportPreview()) return;
@@ -531,6 +539,21 @@ async function init() {
 
 function isShabiiMainOwner() {
   return normalizeTag(state.settings.defaultOwner) === "shabii";
+}
+
+async function logConsoleInfo(theme = "shabii", authStatus = {}) {
+  try {
+    const response = await fetch("/api/secret-status", { cache: "no-store" });
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    const status = await response.json();
+    state.integrationStatus = status;
+    const repoCopies = authStatus.ok && isShabiiMainOwner() ? await fetchRepoCopies() : [];
+    logPageVersion(status.CURRENT_REPO, repoCopies);
+    logStatusLines(status, theme, authStatus.status || (authStatus.ok ? "LOGGED IN" : "NOT LOGGED IN"));
+  } catch (error) {
+    logPageVersion();
+    console.warn("Could not check secret status", error);
+  }
 }
 
 async function fetchRepoCopies() {
@@ -1010,6 +1033,10 @@ function bindEvents() {
     if (event.target === el.settingsDialog) el.settingsDialog.close();
   });
   el.settingsDialog?.addEventListener("close", syncScrollLock);
+  el.settingsNintendoConnect?.addEventListener("click", beginNintendoConnection);
+  el.settingsNintendoFinish?.addEventListener("click", finishNintendoConnection);
+  el.settingsNintendoDisconnect?.addEventListener("click", disconnectNintendoAccount);
+  el.settingsNintendoCallbackUrl?.addEventListener("paste", () => window.setTimeout(finishNintendoConnection, 0));
   el.authDialog?.addEventListener("click", (event) => {
     if (event.target === el.authDialog) el.authDialog.close("cancel");
   });
@@ -1706,7 +1733,85 @@ function openSettingsDialog() {
   if (!state.canEdit || window.matchMedia("(max-width: 760px)").matches) return;
   renderSettingsDialog();
   el.settingsDialog.showModal();
+  refreshNintendoConnectionStatus();
   syncScrollLock();
+}
+
+async function refreshNintendoConnectionStatus() {
+  try {
+    const response = await fetch("/api/nintendo-playtime?action=status", { cache: "no-store" });
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok) throw new Error(data.error || "Could not check Nintendo connection.");
+    setNintendoConnectionState(Boolean(data.connected));
+  } catch (error) {
+    el.settingsNintendoStatus.textContent = error.message;
+  }
+}
+
+function setNintendoConnectionState(connected) {
+  el.settingsNintendoStatus.textContent = connected ? "Connected" : "Not connected";
+  el.settingsNintendoConnect.hidden = connected;
+  el.settingsNintendoDisconnect.hidden = !connected;
+  el.settingsNintendoCallback.hidden = connected;
+}
+
+async function beginNintendoConnection() {
+  const loginTab = window.open("about:blank", "_blank");
+  el.settingsNintendoStatus.textContent = "Preparing Nintendo sign-in…";
+  try {
+    const response = await fetch("/api/nintendo-playtime", {
+      method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action: "begin" }),
+    });
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok || !data.url) throw new Error(data.error || "Could not start Nintendo sign-in.");
+    el.settingsNintendoStatus.textContent = "Sign in, then paste the redirect link below.";
+    el.settingsNintendoCallback.hidden = false;
+    el.settingsNintendoCallbackUrl.focus();
+    if (loginTab) loginTab.location.href = data.url;
+    else window.open(data.url, "_blank");
+  } catch (error) {
+    loginTab?.close();
+    el.settingsNintendoStatus.textContent = error.message;
+  }
+}
+
+async function finishNintendoConnection() {
+  const callbackUrl = el.settingsNintendoCallbackUrl.value.trim();
+  if (!callbackUrl) {
+    el.settingsNintendoStatus.textContent = "Paste the Nintendo redirect link first.";
+    return;
+  }
+  el.settingsNintendoFinish.disabled = true;
+  el.settingsNintendoStatus.textContent = "Connecting Nintendo Account…";
+  try {
+    const response = await fetch("/api/nintendo-playtime", {
+      method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action: "exchange", callbackUrl }),
+    });
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok) throw new Error(data.error || "Nintendo sign-in failed.");
+    el.settingsNintendoCallbackUrl.value = "";
+    setNintendoConnectionState(true);
+  } catch (error) {
+    el.settingsNintendoStatus.textContent = error.message;
+  } finally {
+    el.settingsNintendoFinish.disabled = false;
+  }
+}
+
+async function disconnectNintendoAccount() {
+  el.settingsNintendoDisconnect.disabled = true;
+  try {
+    const response = await fetch("/api/nintendo-playtime", {
+      method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action: "disconnect" }),
+    });
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok) throw new Error(data.error || "Could not disconnect Nintendo Account.");
+    setNintendoConnectionState(false);
+  } catch (error) {
+    el.settingsNintendoStatus.textContent = error.message;
+  } finally {
+    el.settingsNintendoDisconnect.disabled = false;
+  }
 }
 
 function renderSettingsDialog() {
@@ -8816,6 +8921,10 @@ function isMicrosoftAchievementGame(game) {
   return ["Xbox PC", "Xbox Series", "X360", "XOne"].includes(canonicalPlatform(game?.platform));
 }
 
+function isNintendoPlayActivityGame(game) {
+  return ["Switch", "Switch 2"].includes(canonicalPlatform(game?.platform));
+}
+
 function isXboxStoreGame(game) {
   return ["Xbox PC", "Xbox Series", "X360", "XOne"].includes(canonicalPlatform(game?.platform));
 }
@@ -11098,6 +11207,16 @@ async function completeGameWithTrophy(id) {
 
 async function linkedPlatformPlaytimeHours(game) {
   try {
+    if (isNintendoPlayActivityGame(game)) {
+      const params = new URLSearchParams({ title: game.title || "", platform: canonicalPlatform(game.platform) });
+      const lookupUrl = new URL(`/api/nintendo-playtime?${params}`, window.location.origin).href;
+      console.debug("[playtime] Nintendo lookup URL:", lookupUrl);
+      const response = await fetch(lookupUrl, { cache: "no-store" });
+      if (!response.ok) return null;
+      const data = await response.json();
+      const hours = Number(data.playtimeHours);
+      return Number.isFinite(hours) && hours > 0 ? Math.round(hours) : null;
+    }
     if (isPcGame(game) && state.settings.steamUser) {
       const appId = steamAppIdFor(game);
       if (!appId) return null;
