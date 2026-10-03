@@ -230,6 +230,7 @@ const state = {
   viewMode: loadSharedViewMode(),
   editingId: "",
   finishSetupId: "",
+  finishTimeGameId: "",
   pendingDescription: "",
   canEdit: sessionStorage.getItem(SESSION_KEY) === "true",
   draggingId: "",
@@ -376,6 +377,8 @@ const el = {
   finishTimeDialog: document.querySelector("#finishTimeDialog"),
   finishTimeForm: document.querySelector("#finishTimeForm"),
   finishTimeInput: document.querySelector("#finishTimeInput"),
+  finishTimeRefreshButton: document.querySelector("#finishTimeRefreshButton"),
+  editorPlaytimeRefreshButton: document.querySelector("#editorPlaytimeRefreshButton"),
   finishPlatinumInput: document.querySelector("#finishPlatinumInput"),
   finishCoopInput: document.querySelector("#finishCoopInput"),
   finishMultiplayerInput: document.querySelector("#finishMultiplayerInput"),
@@ -1012,6 +1015,12 @@ function bindEvents() {
   });
   el.authDialog?.addEventListener("close", syncScrollLock);
   el.finishTimeCloseButton?.addEventListener("click", () => el.finishTimeDialog.close("cancel"));
+  el.finishTimeRefreshButton?.addEventListener("click", () => refreshPlaytimeIntoInput(el.finishTimeRefreshButton, getGame(state.finishTimeGameId), el.finishTimeInput));
+  el.editorPlaytimeRefreshButton?.addEventListener("click", () => {
+    const game = getGame(state.editingId);
+    if (!game) return;
+    refreshPlaytimeIntoInput(el.editorPlaytimeRefreshButton, { ...game, title: el.fields.title.value, platform: el.fields.platform.value }, el.fields.finishHours);
+  });
   el.finishTimeSkipButton?.addEventListener("click", () => el.finishTimeDialog.close("skip"));
   el.finishTimeDialog?.addEventListener("click", (event) => {
     if (event.target === el.finishTimeDialog) el.finishTimeDialog.close("cancel");
@@ -11052,7 +11061,8 @@ function isShelfNewAddition(game) {
 async function completeGame(id) {
   const game = getGame(id);
   if (!game?.playing) return;
-  const finishHours = await requestFinishHours(game);
+  const linkedPlaytime = await linkedPlatformPlaytimeHours(game);
+  const finishHours = await requestFinishHours(game, { suggestedHours: linkedPlaytime });
   if (finishHours === undefined) return;
   game.startedAt = game.startedAt || todayDate();
   game.completedAt = todayDate();
@@ -11069,7 +11079,8 @@ async function completeGame(id) {
 async function completeGameWithTrophy(id) {
   const game = getGame(id);
   if (!game?.playing) return;
-  const finishHours = await requestFinishHours(game, { platinum: true });
+  const linkedPlaytime = await linkedPlatformPlaytimeHours(game);
+  const finishHours = await requestFinishHours(game, { platinum: true, suggestedHours: linkedPlaytime });
   if (finishHours === undefined) return;
   game.startedAt = game.startedAt || todayDate();
   game.completedAt = game.completedAt || todayDate();
@@ -11083,12 +11094,77 @@ async function completeGameWithTrophy(id) {
   upsertGame(game);
 }
 
+async function linkedPlatformPlaytimeHours(game) {
+  try {
+    if (isPcGame(game) && state.settings.steamUser) {
+      const appId = steamAppIdFor(game);
+      if (!appId) return null;
+      const params = achievementParams({ owned: "1" });
+      params.set("user", state.settings.steamUser);
+      const response = await fetch(`/api/steam-achievements?${params}`, { cache: "no-store" });
+      if (!response.ok) return null;
+      const data = await response.json();
+      const match = (data.ownedGames || []).find((item) => cleanSteamAppId(item.appId) === appId);
+      const minutes = Number(match?.playtimeForever);
+      return Number.isFinite(minutes) && minutes > 0 ? Math.round((minutes / 60) * 10) / 10 : null;
+    }
+    if (isPlayStationGame(game) && state.settings.psnUser) {
+      const params = achievementParams({ playtime: "1" });
+      params.set("user", state.settings.psnUser);
+      const response = await fetch(`/api/achievements?${params}`, { cache: "no-store" });
+      if (!response.ok) return null;
+      const data = await response.json();
+      const wantedTitle = trophySearchTitle(game);
+      const matches = (data.playedGames || []).map((played) => ({
+        played,
+        score: psnTitleMatchScore(wantedTitle, played.title)
+          + (psnPlatformMatchScore(game.platform, played.platform) || 0),
+        platformMatch: Boolean(played.platform) && psnPlatformMatchScore(game.platform, played.platform) !== null,
+      })).filter((item) => item.platformMatch && item.score >= 75).sort((a, b) => b.score - a.score);
+      const duration = psnIsoDurationHours(matches[0]?.played?.playDuration);
+      return duration > 0 ? Math.round(duration * 10) / 10 : null;
+    }
+    if (isMicrosoftAchievementGame(game) && state.settings.microsoftUser) {
+      let xboxGame = matchedXboxGame(game);
+      if (!xboxGame) {
+        const xboxData = await fetchXboxActivity();
+        const wantedTitle = trophySearchTitle(game);
+        xboxGame = (xboxData.games || [])
+          .map((candidate) => ({ candidate, titleScore: psnTitleMatchScore(wantedTitle, candidate.title), platformScore: xboxPlatformMatchScore(game.platform, candidate.platform) }))
+          .filter((item) => item.titleScore && item.platformScore !== null && item.titleScore + item.platformScore >= 75)
+          .sort((a, b) => (b.titleScore + b.platformScore) - (a.titleScore + a.platformScore))[0]?.candidate || null;
+      }
+      if (!xboxGame?.titleId) return null;
+      const params = achievementParams({ playtime: "1", titleId: xboxGame.titleId });
+      params.set("user", state.settings.microsoftUser);
+      const response = await fetch(`/api/xbox-achievements?${params}`, { cache: "no-store" });
+      if (!response.ok) return null;
+      const data = await response.json();
+      const hours = Number(data.playtimeHours);
+      return Number.isFinite(hours) && hours > 0 ? Math.round(hours * 10) / 10 : null;
+    }
+    return null;
+  } catch {
+    return null;
+  }
+}
+
+function psnIsoDurationHours(value) {
+  const match = String(value || "").match(/^P(?:(\d+(?:\.\d+)?)D)?(?:T(?:(\d+(?:\.\d+)?)H)?(?:(\d+(?:\.\d+)?)M)?(?:(\d+(?:\.\d+)?)S)?)?$/i);
+  if (!match) return 0;
+  return ((Number(match[1]) || 0) * 24 + (Number(match[2]) || 0))
+    + (Number(match[3]) || 0) / 60
+    + (Number(match[4]) || 0) / 3600;
+}
+
 function requestFinishHours(game, options = {}) {
   if (!el.finishTimeDialog || !el.finishTimeForm || !el.finishTimeInput) {
     return Promise.resolve({ finishHours: null, ratings: normalizeGameRatings(game?.ratings), coop: Boolean(game?.coop), multiplayer: Boolean(game?.multiplayer || game?.coop), platinum: Boolean(options.platinum || game?.platinum) });
   }
   const current = finishHoursValue(game?.finishHours);
-  el.finishTimeInput.value = current ? String(current) : "";
+  state.finishTimeGameId = game?.id || "";
+  const suggested = finishHoursValue(options.suggestedHours);
+  el.finishTimeInput.value = current ? String(current) : suggested ? String(suggested) : "";
   if (el.finishCoopInput) el.finishCoopInput.checked = Boolean(game?.coop);
   if (el.finishMultiplayerInput) el.finishMultiplayerInput.checked = Boolean(game?.multiplayer || game?.coop);
   if (el.finishPlatinumInput) el.finishPlatinumInput.checked = Boolean(options.platinum || game?.platinum);
@@ -11108,12 +11184,14 @@ function requestFinishHours(game, options = {}) {
         return;
       }
       cleanup();
+      state.finishTimeGameId = "";
       el.finishTimeDialog.close("submit");
       resolve(finishDialogValue(value ? hours : null));
     };
     const handleClose = () => {
       const action = el.finishTimeDialog.returnValue;
       cleanup();
+      state.finishTimeGameId = "";
       resolve(action === "skip" ? finishDialogValue(null) : undefined);
     };
     el.finishTimeForm.addEventListener("submit", handleSubmit);
@@ -11122,6 +11200,28 @@ function requestFinishHours(game, options = {}) {
     syncScrollLock();
     requestAnimationFrame(() => el.finishTimeInput.focus());
   });
+}
+
+async function refreshPlaytimeIntoInput(button, game, input) {
+  if (!game || !input || button?.disabled) return;
+  if (button) {
+    button.disabled = true;
+    button.classList.add("is-refreshing");
+  }
+  try {
+    const hours = await linkedPlatformPlaytimeHours(game);
+    if (hours !== null) {
+      input.value = String(hours);
+      input.dispatchEvent(new Event("input", { bubbles: true }));
+    } else {
+      showToast("No playtime was available for this game.", "error");
+    }
+  } finally {
+    if (button) {
+      button.disabled = false;
+      button.classList.remove("is-refreshing");
+    }
+  }
 }
 
 function finishDialogValue(finishHours) {
