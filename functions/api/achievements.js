@@ -50,16 +50,30 @@ export async function onRequestGet({ request, env = {} }) {
 }
 
 async function getPsnPlayedGames(accessToken, accountId) {
-  const limit = 300;
-  const url = `https://m.np.playstation.com/api/gamelist/v2/users/${encodeURIComponent(accountId)}/titles?${new URLSearchParams({ limit: String(limit), offset: "0" })}`;
-  const data = await psnGet(url, accessToken, { cache: false });
-  return (Array.isArray(data.titles) ? data.titles : []).map((game) => ({
-    titleId: String(game.titleId || game.id || ""),
-    title: String(game.name || game.localizedName || ""),
-    category: String(game.category || ""),
-    platform: psnGameListPlatform(game.category),
-    playDuration: String(game.playDuration || ""),
-  }));
+  const limit = 200;
+  const games = [];
+  let offset = 0;
+  for (let pageNumber = 0; pageNumber < 25; pageNumber += 1) {
+    const url = `https://m.np.playstation.com/api/gamelist/v2/users/${encodeURIComponent(accountId)}/titles?${new URLSearchParams({ limit: String(limit), offset: String(offset) })}`;
+    const data = await psnGet(url, accessToken, { cache: false });
+    const page = Array.isArray(data.titles) ? data.titles : [];
+    games.push(...page.map((game) => ({
+      titleId: String(game.titleId || game.id || ""),
+      title: String(game.name || game.localizedName || ""),
+      category: String(game.category || ""),
+      platform: psnGameListPlatform(game.category),
+      playDuration: String(game.playDuration || ""),
+    })));
+    const nextOffset = Number(data.nextOffset);
+    if (!page.length || page.length < limit) break;
+    if (Number.isFinite(nextOffset) && nextOffset > offset) {
+      offset = nextOffset;
+    } else {
+      offset += page.length;
+    }
+    if (Number(data.totalItemCount) > 0 && offset >= Number(data.totalItemCount)) break;
+  }
+  return games;
 }
 
 function psnGameListPlatform(category = "") {

@@ -10334,7 +10334,7 @@ body.dialog-open .mobile-section-tabs {
 
 .finish-time-input-control {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 36px;
+  grid-template-columns: minmax(0, 1fr) 44px;
   align-items: end;
   gap: 8px;
   min-width: 0;
@@ -13574,10 +13574,10 @@ body.theme-kash
 
 .playing-form-grid > .playing-finish-time-control {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 36px;
+  grid-template-columns: minmax(0, 1fr) 44px;
   align-items: end;
   gap: 6px;
-  grid-column: span 4;
+  grid-column: span 3;
   min-width: 0;
 }
 

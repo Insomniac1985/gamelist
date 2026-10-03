@@ -1081,6 +1081,9 @@ function bindEvents() {
   el.finishMultiplayerInput?.addEventListener("change", () => {
     if (!el.finishMultiplayerInput.checked && el.finishCoopInput) el.finishCoopInput.checked = false;
   });
+  [el.finishTimeInput, el.fields.finishHours].forEach((input) => input?.addEventListener("input", () => {
+    input.value = input.value.replace(/\D.*$/, "");
+  }));
   el.fields.replayCount.addEventListener("input", syncReplaySection);
   el.form.addEventListener("submit", saveFromForm);
   el.deleteButton.addEventListener("click", deleteCurrentGame);
@@ -7708,9 +7711,8 @@ function completedDurationLine(game, extraClass = "") {
 function finishHoursValue(value) {
   const raw = String(value ?? "").trim();
   if (!raw) return 0;
-  const match = raw.match(/^\d+/);
-  const count = Number(match ? match[0] : raw);
-  return Number.isInteger(count) ? Math.max(0, count) : 0;
+  const count = Number(raw);
+  return Number.isFinite(count) ? Math.max(0, Math.round(count)) : 0;
 }
 
 function finishHoursText(game) {
@@ -11101,17 +11103,21 @@ async function linkedPlatformPlaytimeHours(game) {
       if (!appId) return null;
       const params = achievementParams({ owned: "1" });
       params.set("user", state.settings.steamUser);
-      const response = await fetch(`/api/steam-achievements?${params}`, { cache: "no-store" });
+      const lookupUrl = new URL(`/api/steam-achievements?${params}`, window.location.origin).href;
+      console.debug("[playtime] Steam lookup URL:", lookupUrl);
+      const response = await fetch(lookupUrl, { cache: "no-store" });
       if (!response.ok) return null;
       const data = await response.json();
       const match = (data.ownedGames || []).find((item) => cleanSteamAppId(item.appId) === appId);
       const minutes = Number(match?.playtimeForever);
-      return Number.isFinite(minutes) && minutes > 0 ? Math.round((minutes / 60) * 10) / 10 : null;
+      return Number.isFinite(minutes) && minutes > 0 ? Math.round(minutes / 60) : null;
     }
     if (isPlayStationGame(game) && state.settings.psnUser) {
       const params = achievementParams({ playtime: "1" });
       params.set("user", state.settings.psnUser);
-      const response = await fetch(`/api/achievements?${params}`, { cache: "no-store" });
+      const lookupUrl = new URL(`/api/achievements?${params}`, window.location.origin).href;
+      console.debug("[playtime] PlayStation lookup URL:", lookupUrl);
+      const response = await fetch(lookupUrl, { cache: "no-store" });
       if (!response.ok) return null;
       const data = await response.json();
       const wantedTitle = trophySearchTitle(game);
@@ -11122,7 +11128,7 @@ async function linkedPlatformPlaytimeHours(game) {
         platformMatch: Boolean(played.platform) && psnPlatformMatchScore(game.platform, played.platform) !== null,
       })).filter((item) => item.platformMatch && item.score >= 75).sort((a, b) => b.score - a.score);
       const duration = psnIsoDurationHours(matches[0]?.played?.playDuration);
-      return duration > 0 ? Math.round(duration * 10) / 10 : null;
+      return duration > 0 ? Math.round(duration) : null;
     }
     if (isMicrosoftAchievementGame(game) && state.settings.microsoftUser) {
       let xboxGame = matchedXboxGame(game);
@@ -11137,11 +11143,13 @@ async function linkedPlatformPlaytimeHours(game) {
       if (!xboxGame?.titleId) return null;
       const params = achievementParams({ playtime: "1", titleId: xboxGame.titleId });
       params.set("user", state.settings.microsoftUser);
-      const response = await fetch(`/api/xbox-achievements?${params}`, { cache: "no-store" });
+      const lookupUrl = new URL(`/api/xbox-achievements?${params}`, window.location.origin).href;
+      console.debug("[playtime] Xbox lookup URL:", lookupUrl);
+      const response = await fetch(lookupUrl, { cache: "no-store" });
       if (!response.ok) return null;
       const data = await response.json();
       const hours = Number(data.playtimeHours);
-      return Number.isFinite(hours) && hours > 0 ? Math.round(hours * 10) / 10 : null;
+      return Number.isFinite(hours) && hours > 0 ? Math.round(hours) : null;
     }
     return null;
   } catch {
