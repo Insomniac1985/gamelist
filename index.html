@@ -472,10 +472,15 @@
               <span data-i18n="Finished">Finished</span>
               <input id="completedAtInput" type="date">
             </label>
-            <label class="playing-finish-time-field">
-              <span data-i18n="Time to finish">Time to finish</span>
-              <input id="finishHoursInput" type="text" inputmode="numeric" placeholder="Hours" data-i18n-placeholder="Hours">
-            </label>
+            <div class="playing-finish-time-control">
+              <label class="playing-finish-time-field">
+                <span data-i18n="Time to finish">Time to finish</span>
+                <input id="finishHoursInput" type="text" inputmode="numeric" placeholder="Hours" data-i18n-placeholder="Hours">
+              </label>
+              <button class="icon-button playtime-refresh-button" id="editorPlaytimeRefreshButton" type="button" title="Refresh playtime" aria-label="Refresh playtime" data-i18n-title="Refresh playtime" data-i18n-aria-label="Refresh playtime">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 11a8.1 8.1 0 0 0-14.9-4L3 10"></path><path d="M3 4v6h6"></path><path d="M4 13a8.1 8.1 0 0 0 14.9 4L21 14"></path><path d="M21 20v-6h-6"></path></svg>
+              </button>
+            </div>
             <label class="check-filter toggle-check form-check playing-achievements-check">
               <input id="platinumInput" type="checkbox">
               <span class="achievement-check-icon" title="Completed achievements" aria-label="Completed achievements">
@@ -1014,10 +1019,15 @@
           <button class="icon-button" id="finishTimeCloseButton" type="button" title="Close">×</button>
         </div>
         <div class="finish-time-main-row">
-          <label>
-            <span>Aproximate time</span>
-            <input id="finishTimeInput" type="text" inputmode="numeric" placeholder="Hours" autofocus>
-          </label>
+          <div class="finish-time-input-control">
+            <label>
+              <span>Aproximate time</span>
+              <input id="finishTimeInput" type="text" inputmode="numeric" placeholder="Hours" autofocus>
+            </label>
+            <button class="icon-button playtime-refresh-button" id="finishTimeRefreshButton" type="button" title="Refresh playtime" aria-label="Refresh playtime" data-i18n-title="Refresh playtime" data-i18n-aria-label="Refresh playtime">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 11a8.1 8.1 0 0 0-14.9-4L3 10"></path><path d="M3 4v6h6"></path><path d="M4 13a8.1 8.1 0 0 0 14.9 4L21 14"></path><path d="M21 20v-6h-6"></path></svg>
+            </button>
+          </div>
           <label class="check-filter toggle-check form-check finish-trophy-check">
             <input id="finishPlatinumInput" type="checkbox">
             <span class="achievement-check-icon" title="Completed achievements" aria-label="Completed achievements">

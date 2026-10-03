@@ -10332,6 +10332,36 @@ body.dialog-open .mobile-section-tabs {
   align-items: end;
 }
 
+.finish-time-input-control {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 44px;
+  align-items: end;
+  gap: 8px;
+  min-width: 0;
+}
+
+.playtime-refresh-button {
+  color: var(--muted);
+}
+
+.playtime-refresh-button svg {
+  width: 17px;
+  height: 17px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.playtime-refresh-button.is-refreshing svg {
+  animation: playtime-refresh-spin 0.8s linear infinite;
+}
+
+@keyframes playtime-refresh-spin {
+  to { transform: rotate(360deg); }
+}
+
 .finish-time-main-row > label:first-child {
   min-width: 0;
 }
@@ -13542,8 +13572,13 @@ body.theme-kash
   grid-column: span 3;
 }
 
-.playing-form-grid > label.playing-finish-time-field {
+.playing-form-grid > .playing-finish-time-control {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 44px;
+  align-items: end;
+  gap: 6px;
   grid-column: span 3;
+  min-width: 0;
 }
 
 .playing-form-grid > label.stream-check {
@@ -14500,6 +14535,10 @@ html.theme-light .finish-trophy-check input[type="checkbox"]:checked {
   .playing-form-grid > label,
   .playing-form-grid > label:nth-child(-n + 3),
   .playing-form-grid > label:nth-child(n + 4) {
+    grid-column: 1 / -1;
+  }
+
+  .playing-form-grid > .playing-finish-time-control {
     grid-column: 1 / -1;
   }
 

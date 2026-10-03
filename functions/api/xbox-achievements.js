@@ -9,12 +9,23 @@ export async function onRequestGet({ request, env = {} }) {
   const fallbackUser = cleanXboxUser(env.XBOX_GAMERTAG || globalThis.process?.env?.XBOX_GAMERTAG);
   const targetUser = requestedUser || fallbackUser;
   const titleId = String(requestUrl.searchParams.get("titleId") || "").replace(/\D/g, "").slice(0, 20);
+  const playtimeTitleId = requestUrl.searchParams.get("playtime") === "1" ? titleId : "";
   if (!apiKey) {
     return json({ achievements: [], games: [], completed: [], needsSetup: true, error: "Missing OPENXBL_API_KEY" }, 200, false);
   }
 
   try {
     const identity = await resolveXboxIdentity(targetUser, apiKey);
+    if (playtimeTitleId) {
+      if (!identity.xuid) return json({ source: "xbox", error: "Could not resolve Xbox account" }, 200, false);
+      const stats = await openXblPost("/v2/player/stats", apiKey, {
+        xuids: [identity.xuid],
+        groups: [],
+        stats: [{ name: "MinutesPlayed", titleId: playtimeTitleId }],
+      });
+      const minutes = findNamedNumber(contentOf(stats), "minutesPlayed");
+      return json({ source: "xbox", titleId: playtimeTitleId, playtimeHours: minutes === null ? null : minutes / 60 }, 200, false);
+    }
     if (titleId) return await xboxTitleAchievements(identity, titleId, apiKey);
     const titlePath = identity.xuid ? `/v2/titles/${encodeURIComponent(identity.xuid)}` : "/v2/titles";
     const titleData = await openXblGet(titlePath, apiKey);
@@ -178,6 +189,50 @@ async function openXblGet(path, apiKey) {
   } finally {
     clearTimeout(timeout);
   }
+}
+
+async function openXblPost(path, apiKey, body) {
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), OPENXBL_TIMEOUT_MS);
+  try {
+    const response = await fetch(`${OPENXBL_BASE}${path}`, {
+      method: "POST",
+      headers: {
+        "Accept": "application/json",
+        "Accept-Language": "en-US",
+        "Content-Type": "application/json",
+        "X-Authorization": apiKey,
+      },
+      body: JSON.stringify(body),
+      signal: controller.signal,
+    });
+    if (!response.ok) throw new Error(`OpenXBL request failed (${response.status})`);
+    return response.json();
+  } catch (error) {
+    if (error?.name === "AbortError") throw new Error("OpenXBL request timed out");
+    throw error;
+  } finally {
+    clearTimeout(timeout);
+  }
+}
+
+function findNamedNumber(value, target, depth = 0) {
+  if (!value || typeof value !== "object" || depth > 12) return null;
+  const statName = String(value.statName || value.name || "").toLowerCase();
+  if (statName === target) {
+    for (const key of ["value", "currentValue", "statValue"]) {
+      const number = Number(value[key]);
+      if (value[key] !== null && value[key] !== "" && Number.isFinite(number)) return number;
+    }
+  }
+  for (const [key, item] of Object.entries(value)) {
+    if (key.toLowerCase() === target && item !== null && item !== "" && Number.isFinite(Number(item))) return Number(item);
+    if (item && typeof item === "object") {
+      const result = findNamedNumber(item, target, depth + 1);
+      if (result !== null) return result;
+    }
+  }
+  return null;
 }
 
 function contentOf(data) {

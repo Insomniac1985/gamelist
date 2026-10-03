@@ -31,6 +31,10 @@ export async function onRequestGet({ request, env = {} }) {
   try {
     const accessToken = await getPsnAccessToken(npsso);
     const accountId = await resolvePsnAccountId(accessToken, user);
+    if (url.searchParams.get("playtime") === "1") {
+      const playedGames = await getPsnPlayedGames(accessToken, accountId);
+      return json({ user, accountId, playedGames, source: "psn" });
+    }
     const activity = await getRecentPsnActivity(accessToken, sourceUrl, accountId);
     return json({ user, accountId, sourceUrl, ...activity, source: "psn", blocked: false });
   } catch (error) {
@@ -43,6 +47,40 @@ export async function onRequestGet({ request, env = {} }) {
       ...(debug ? { debug: error?.message || "PSN authentication failed" } : {}),
     }, 200, { cache: false });
   }
+}
+
+async function getPsnPlayedGames(accessToken, accountId) {
+  const limit = 200;
+  const games = [];
+  let offset = 0;
+  for (let pageNumber = 0; pageNumber < 25; pageNumber += 1) {
+    const url = `https://m.np.playstation.com/api/gamelist/v2/users/${encodeURIComponent(accountId)}/titles?${new URLSearchParams({ limit: String(limit), offset: String(offset) })}`;
+    const data = await psnGet(url, accessToken, { cache: false });
+    const page = Array.isArray(data.titles) ? data.titles : [];
+    games.push(...page.map((game) => ({
+      titleId: String(game.titleId || game.id || ""),
+      title: String(game.name || game.localizedName || ""),
+      category: String(game.category || ""),
+      platform: psnGameListPlatform(game.category),
+      playDuration: String(game.playDuration || ""),
+    })));
+    const nextOffset = Number(data.nextOffset);
+    if (!page.length || page.length < limit) break;
+    if (Number.isFinite(nextOffset) && nextOffset > offset) {
+      offset = nextOffset;
+    } else {
+      offset += page.length;
+    }
+    if (Number(data.totalItemCount) > 0 && offset >= Number(data.totalItemCount)) break;
+  }
+  return games;
+}
+
+function psnGameListPlatform(category = "") {
+  const value = String(category || "").toLowerCase();
+  if (value.includes("ps5")) return "PS5";
+  if (value.includes("ps4")) return "PS4";
+  return "";
 }
 
 async function resolvePsnAccountId(accessToken, user) {
@@ -276,14 +314,14 @@ async function getPagedTrophies(accessToken, baseUrl, npServiceName) {
   return trophies;
 }
 
-async function psnGet(url, accessToken) {
+async function psnGet(url, accessToken, { cache = true } = {}) {
   const response = await fetch(url, {
     headers: {
       Authorization: `Bearer ${accessToken}`,
       "Content-Type": "application/json",
       "Accept-Language": "en-US",
     },
-    cf: { cacheTtl: PSN_CACHE_SECONDS, cacheEverything: true },
+    ...(cache ? { cf: { cacheTtl: PSN_CACHE_SECONDS, cacheEverything: true } } : {}),
   });
   if (!response.ok) throw new Error(`PSN request failed (${response.status})`);
   return response.json();
