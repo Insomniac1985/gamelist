@@ -1036,6 +1036,7 @@ function bindEvents() {
   el.settingsNintendoConnect?.addEventListener("click", beginNintendoConnection);
   el.settingsNintendoFinish?.addEventListener("click", finishNintendoConnection);
   el.settingsNintendoDisconnect?.addEventListener("click", disconnectNintendoAccount);
+  el.settingsNintendoCallbackUrl?.addEventListener("paste", () => window.setTimeout(finishNintendoConnection, 0));
   el.authDialog?.addEventListener("click", (event) => {
     if (event.target === el.authDialog) el.authDialog.close("cancel");
   });
@@ -1765,6 +1766,7 @@ async function beginNintendoConnection() {
     if (!response.ok || !data.url) throw new Error(data.error || "Could not start Nintendo sign-in.");
     el.settingsNintendoStatus.textContent = "Sign in, then paste the redirect link below.";
     el.settingsNintendoCallback.hidden = false;
+    el.settingsNintendoCallbackUrl.focus();
     if (loginTab) loginTab.location.href = data.url;
     else window.open(data.url, "_blank");
   } catch (error) {

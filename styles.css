@@ -10351,6 +10351,7 @@ body.dialog-open .mobile-section-tabs {
   min-width: 44px;
   min-height: 44px;
   flex-basis: 44px;
+  border: 1px solid var(--line);
   color: var(--muted);
 }
 
@@ -11013,6 +11014,14 @@ body.dialog-open .mobile-section-tabs {
   background-color: rgba(255, 255, 255, 0.07);
   border: 1px solid rgba(255, 255, 255, 0.14);
   border-radius: 7px;
+}
+
+.settings-theme-select .settings-stream-priority-select {
+  box-sizing: border-box;
+  height: var(--settings-control-height, 42px);
+  min-height: var(--settings-control-height, 42px);
+  padding: 0 34px 0 12px;
+  line-height: 1.2;
 }
 
 .settings-theme-edit-button {
