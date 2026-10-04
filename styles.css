@@ -10275,6 +10275,33 @@ dialog {
   width: min(560px, calc(100vw - 24px));
 }
 
+#updatesDialog {
+  width: min(680px, calc(100vw - 24px));
+}
+
+.updates-modal {
+  max-height: min(760px, calc(100vh - 24px));
+  overflow-y: auto;
+}
+
+.updates-modal > p {
+  margin: 0;
+  color: var(--muted);
+}
+
+.updates-list {
+  display: grid;
+  gap: 12px;
+  margin: 0;
+  padding-left: 22px;
+  color: var(--muted);
+  line-height: 1.5;
+}
+
+.updates-list strong {
+  color: var(--text);
+}
+
 #sharedDeleteConfirmDialog {
   width: min(420px, calc(100vw - 24px));
 }
@@ -12368,6 +12395,11 @@ html.theme-light .shelf-card-delete-action:hover {
 .settings-nintendo-callback {
   display: grid;
   gap: 8px;
+}
+
+.settings-nintendo-callback[hidden],
+.settings-provider-callback[hidden] {
+  display: none;
 }
 
 .settings-nintendo-callback label {

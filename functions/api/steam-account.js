@@ -6,9 +6,13 @@ const PLAYER_SUMMARIES_URL = "https://api.steampowered.com/ISteamUser/GetPlayerS
 export async function onRequestGet({ request, env = {} }) {
   if (!await isEditorRequest(request, env)) return json({ error: "Unauthorized" }, 401);
   const stored = await env.GAMELIST?.get(STEAM_API_KEY_KEY);
+  const apiKey = await getSteamApiKey(env);
+  const steamId = new URL(request.url).searchParams.get("steamId") || "";
+  const personaName = apiKey && /^\d{17}$/.test(steamId) ? await getPersonaName(apiKey, steamId) : "";
   return json({
-    apiKeyAvailable: Boolean(await getSteamApiKey(env)),
+    apiKeyAvailable: Boolean(apiKey),
     userApiKeyStored: Boolean(stored),
+    personaName,
   });
 }
 
@@ -69,6 +73,20 @@ async function decryptCredential(value, password) {
 async function credentialKey(password) {
   const material = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(`gamelist:steam:api-key:${password}`));
   return crypto.subtle.importKey("raw", material, { name: "AES-GCM" }, false, ["encrypt", "decrypt"]);
+}
+
+async function getPersonaName(apiKey, steamId) {
+  try {
+    const url = new URL(PLAYER_SUMMARIES_URL);
+    url.searchParams.set("key", apiKey);
+    url.searchParams.set("steamids", steamId);
+    const response = await fetch(url, { cache: "no-store" });
+    const data = await response.json().catch(() => ({}));
+    const player = data?.response?.players?.find?.((entry) => String(entry?.steamid || "") === steamId);
+    return response.ok ? String(player?.personaname || "") : "";
+  } catch {
+    return "";
+  }
 }
 
 function encodeBase64Url(bytes) {
