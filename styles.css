@@ -12452,12 +12452,13 @@ html.theme-light .shelf-card-delete-action:hover {
 .settings-provider-callback {
   display: grid;
   gap: 8px;
+  margin-top: 15px;
 }
 
 .settings-igdb-steps {
   display: grid;
   gap: 4px;
-  margin: 0;
+  margin: 10px 0 20px 14px;
   padding-left: 22px;
   color: var(--muted);
   font-size: 12px;
@@ -12472,6 +12473,10 @@ html.theme-light .shelf-card-delete-action:hover {
   justify-self: start;
   color: var(--text);
   text-decoration: none;
+}
+
+#settingsIgdbOpen {
+  text-decoration: none !important;
 }
 
 .settings-provider-page-button {

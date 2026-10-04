@@ -1868,11 +1868,10 @@ function setIgdbConnectionState() {
     : "";
   el.settingsIgdbStatus.hidden = !configured;
   el.settingsIgdbDisconnect.hidden = !configured;
+  el.settingsIgdbOpen.hidden = configured;
   el.settingsIgdbIntro.hidden = configured;
   el.settingsIgdbSteps.hidden = configured;
-  el.settingsIgdbOpen.textContent = configured
-    ? (igdbApiAccount.source === "settings" ? "Update IGDB credentials" : "Replace IGDB credentials")
-    : "Open Twitch Developer Console";
+  el.settingsIgdbOpen.textContent = "Open Twitch Developer Console";
 }
 
 async function refreshIgdbConnectionStatus() {
