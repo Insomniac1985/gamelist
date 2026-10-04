@@ -1094,7 +1094,16 @@ function bindEvents() {
   });
   el.fields.preferredStore.addEventListener("input", () => syncStoreInputIcon(el.fields.preferredStore, el.preferredStoreFieldIcon));
   el.fields.preferredStore.addEventListener("change", () => syncStoreInputIcon(el.fields.preferredStore, el.preferredStoreFieldIcon));
-  el.fields.digital.addEventListener("change", () => { syncDialogPriceVisibility(); syncGamelistEntitlementEditor(); });
+  el.fields.digital.addEventListener("change", () => {
+    if (!el.fields.digital.checked && el.fields.emulator) el.fields.emulator.checked = false;
+    syncDialogPriceVisibility();
+    syncGamelistEntitlementEditor();
+  });
+  el.fields.emulator?.addEventListener("change", () => {
+    if (el.fields.digital) el.fields.digital.checked = el.fields.emulator.checked;
+    syncDialogPriceVisibility();
+    syncGamelistEntitlementEditor();
+  });
   el.fields.dlc.addEventListener("change", syncDlcDigital);
   el.fields.coop?.addEventListener("change", () => {
     if (el.fields.coop.checked && el.fields.multiplayer) el.fields.multiplayer.checked = true;
@@ -1764,7 +1773,7 @@ async function beginNintendoConnection() {
     });
     const data = await response.json().catch(() => ({}));
     if (!response.ok || !data.url) throw new Error(data.error || "Could not start Nintendo sign-in.");
-    el.settingsNintendoStatus.textContent = "Sign in, then paste the redirect link below.";
+    el.settingsNintendoStatus.textContent = "Sign in and select your Nintendo account, then paste the copied link below.";
     el.settingsNintendoCallback.hidden = false;
     el.settingsNintendoCallbackUrl.focus();
     if (loginTab) loginTab.location.href = data.url;
@@ -7881,6 +7890,8 @@ function filteredGames(options = {}) {
       game.publisher,
       game.dlc ? "dlc expansion expansions downloadable content" : "",
       game.digital ? "digital" : "",
+      game.emulator ? "emulator" : "",
+      game.stream ? "twitch stream" : "",
       game.coop ? "coop" : "",
       game.platinum ? "completed trophy platinum" : "",
       game.replayCount ? `replay replayed ${game.replayCount}` : "",
@@ -8211,15 +8222,7 @@ function playCardTrailer(card) {
   if (!trailer?.dataset.src) return;
   card.classList.remove("trailer-paused");
   const iframe = trailer.querySelector("iframe");
-  if (iframe) {
-    commandTrailer(iframe, "playVideo");
-    iframe.addEventListener("load", (event) => {
-      if (!card.classList.contains("trailer-paused") && !card.classList.contains("trailer-user-paused")) {
-        commandTrailer(event.currentTarget, "playVideo");
-      }
-    }, { once: true });
-    return;
-  }
+  if (iframe) return;
   const video = trailer.querySelector("video");
   if (video) {
     video.play().catch(() => {});
@@ -8227,19 +8230,13 @@ function playCardTrailer(card) {
   }
   trailer.innerHTML = trailerFrame(trailer.dataset.src);
   trailer.querySelector("video")?.play().catch(() => {});
-  trailer.querySelector("iframe")?.addEventListener("load", (event) => {
-    if (!card.classList.contains("trailer-paused") && !card.classList.contains("trailer-user-paused")) {
-      commandTrailer(event.currentTarget, "playVideo");
-    }
-  }, { once: true });
 }
 
 function pauseCardTrailer(card) {
   const trailer = card.querySelector(".card-trailer");
   if (!trailer) return;
   card.classList.add("trailer-paused");
-  const iframe = trailer.querySelector("iframe");
-  if (iframe) commandTrailer(iframe, "pauseVideo");
+  trailer.querySelector("iframe")?.remove();
   const video = trailer.querySelector("video");
   if (video) video.pause();
 }
@@ -8249,20 +8246,12 @@ function pauseAllPlayingTrailers() {
   state.activeTrailerCard = null;
 }
 
-function commandTrailer(iframe, command) {
-  iframe.contentWindow?.postMessage(JSON.stringify({
-    event: "command",
-    func: command,
-    args: [],
-  }), "*");
-}
-
 function shouldShowCardTrailer(game) {
   return Boolean(game.playing && game.trailerUrl && window.matchMedia("(min-width: 900px)").matches);
 }
 
 function trailerEmbedUrl(value) {
-  return activityTrailerUrl(value, window.location.origin);
+  return activityTrailerUrl(value);
 }
 
 function openDetail(id, options = {}) {

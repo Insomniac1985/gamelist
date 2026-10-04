@@ -610,7 +610,7 @@ export function storeButtonsMarkup(stores = [], escape = escapeHtml) {
   return stores.filter((store) => store?.url).map((store) => `<a class="store-button ${store.cls || ""}" href="${escape(store.url)}" target="_blank" rel="noreferrer">${store.icon ? `<img src="${escape(store.icon)}" alt="" width="18" height="18" decoding="async">` : ""}${escape(store.label)}</a>`).join("");
 }
 
-export function activityTrailerUrl(value, origin = "") {
+export function activityTrailerUrl(value) {
   const url = String(value || "").trim();
   if (!url) return "";
   if (/^https?:\/\/.+\.(?:mp4|webm|ogg)(?:[?#].*)?$/i.test(url)) return url;
@@ -626,8 +626,7 @@ export function activityTrailerUrl(value, origin = "") {
     } catch { return url; }
   }
   if (!videoId) return url;
-  const params = new URLSearchParams({ autoplay: "1", mute: "1", cc_load_policy: "0", controls: "0", disablekb: "1", enablejsapi: "1", fs: "0", iv_load_policy: "3", loop: "1", playlist: videoId, playsinline: "1", modestbranding: "1", rel: "0" });
-  if (origin) params.set("origin", origin);
+  const params = new URLSearchParams({ autoplay: "1", mute: "1", cc_load_policy: "0", controls: "0", disablekb: "1", fs: "0", iv_load_policy: "3", loop: "1", playlist: videoId, playsinline: "1", modestbranding: "1", rel: "0" });
   return `https://www.youtube-nocookie.com/embed/${videoId}?${params}`;
 }
 
@@ -642,14 +641,6 @@ function trailerEmbedWithAutoplay(url, autoplay) {
   }
 }
 
-function commandActivityTrailer(iframe, command) {
-  iframe.contentWindow?.postMessage(JSON.stringify({
-    event: "command",
-    func: command,
-    args: [],
-  }), "*");
-}
-
 export function activityTrailerFrameMarkup(url, escape = escapeHtml, { autoplay = true } = {}) {
   const embedUrl = trailerEmbedWithAutoplay(url, autoplay);
   return /\.(?:mp4|webm|ogg)(?:[?#].*)?$/i.test(url)
@@ -662,14 +653,13 @@ export function preloadPausedActivityTrailers(list, escape = escapeHtml) {
     const trailer = card.querySelector(".card-trailer");
     if (!trailer?.dataset.src || trailer.firstElementChild) return;
     card.classList.add("trailer-paused");
+    if (!/\.(?:mp4|webm|ogg)(?:[?#].*)?$/i.test(trailer.dataset.src)) return;
     trailer.innerHTML = activityTrailerFrameMarkup(trailer.dataset.src, escape, { autoplay: true });
     const video = trailer.querySelector("video");
     if (video) {
       video.pause();
       video.load();
     }
-    const frame = trailer.querySelector("iframe");
-    if (frame) frame.addEventListener("load", () => commandActivityTrailer(frame, "pauseVideo"), { once: true });
   });
 }
 
@@ -686,14 +676,11 @@ export function syncFocusedActivityTrailer(list, escape = escapeHtml) {
       if (!trailer.firstElementChild && trailer.dataset.src) trailer.innerHTML = activityTrailerFrameMarkup(trailer.dataset.src, escape);
       card.classList.remove("trailer-paused");
       trailer.querySelector("video")?.play().catch(() => {});
-      const frame = trailer.querySelector("iframe");
-      if (frame) commandActivityTrailer(frame, "playVideo");
     } else {
       card.classList.add("trailer-paused");
       const video = trailer.querySelector("video");
       if (video) video.pause();
-      const frame = trailer.querySelector("iframe");
-      if (frame) commandActivityTrailer(frame, "pauseVideo");
+      trailer.querySelector("iframe")?.remove();
     }
   });
 }

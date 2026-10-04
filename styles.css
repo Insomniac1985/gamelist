@@ -9936,23 +9936,25 @@ body.theme-kash .playing-finished-game.completed-trophy-card:hover {
 .completed-platform .emulator-pill,
 .completed-platform .stream-pill,
 .completed-platform .multiplayer-pill {
-  height: 21px;
-  min-height: 21px;
+  box-sizing: border-box;
+  height: 25px;
+  min-height: 25px;
   padding: 0 6px;
   font-size: 10px;
-  line-height: 21px;
+  line-height: 1;
 }
 
 .completed-platform .stream-pill {
-  width: 21px;
-  min-width: 21px;
+  width: 25px;
+  min-width: 25px;
   padding: 0;
 }
 
 .completed-platform .stream-pill .stream-play-icon {
-  width: 12px;
-  height: 12px;
-  flex-basis: 12px;
+  display: block;
+  width: 16px;
+  height: 16px;
+  flex: 0 0 16px;
 }
 
 .game-row .stream-pill {
@@ -10176,6 +10178,18 @@ body.theme-kash .playing-finished-game.completed-trophy-card:hover {
     width: 16px;
     height: 16px;
     border-radius: 4px;
+  }
+
+  .completed-list.list-view .completed-platform .stream-pill {
+    width: 22px;
+    min-width: 22px;
+    padding: 0;
+  }
+
+  .completed-list.list-view .completed-platform .stream-pill .stream-play-icon {
+    width: 14px;
+    height: 14px;
+    flex-basis: 14px;
   }
 
   .completed-list.list-view .completed-platform .psn-progress-pill {
@@ -12274,18 +12288,20 @@ html.theme-light .shelf-card-delete-action:hover {
   font-size: 12px;
 }
 
+.settings-nintendo-intro {
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.5;
+}
+
 .settings-nintendo-callback {
   display: grid;
   gap: 8px;
 }
 
-.settings-nintendo-callback small {
+.settings-nintendo-callback label {
   color: var(--muted);
-  line-height: 1.45;
-}
-
-.settings-nintendo-callback code {
-  color: var(--text);
+  font-size: 12px;
 }
 
 .settings-detail-compact {
@@ -15162,6 +15178,18 @@ html.theme-light .finish-trophy-check input[type="checkbox"]:checked {
   .game-row .multiplayer-pill,
   .completed-platform .multiplayer-pill {
     min-width: 22px;
+  }
+
+  .completed-platform .stream-pill {
+    width: 22px;
+    min-width: 22px;
+    padding: 0;
+  }
+
+  .completed-platform .stream-pill .stream-play-icon {
+    width: 14px;
+    height: 14px;
+    flex-basis: 14px;
   }
 
   .game-row .coop-pill,
