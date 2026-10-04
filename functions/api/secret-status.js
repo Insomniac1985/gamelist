@@ -1,5 +1,6 @@
 import { getPsnAccessToken, getPsnNpsso } from "./psn-auth.js";
 import { getSteamApiKey } from "./steam-account.js";
+import { getXboxApiKey } from "./xbox-account.js";
 import { isEditorRequest } from "./editor-auth.js";
 
 const HEALTH_CACHE_SECONDS = 45 * 60;
@@ -11,7 +12,7 @@ export async function onRequestGet({ request, env = {} }) {
   const { CURRENT_REPO, ...working } = health;
   return json({
     PSN_NPSSO: isSet(await getPsnNpsso(env)),
-    OPENXBL_API_KEY: isSet(env.OPENXBL_API_KEY),
+    OPENXBL_API_KEY: isSet(await getXboxApiKey(env)),
     STEAM_API_KEY: isSet(await getSteamApiKey(env)),
     IGDB_CLIENT_ID: isSet(env.IGDB_CLIENT_ID),
     IGDB_CLIENT_SECRET: isSet(env.IGDB_CLIENT_SECRET),
@@ -103,7 +104,7 @@ async function checkPsn(env) {
 }
 
 async function checkXbox(env) {
-  const apiKey = String(env.OPENXBL_API_KEY || "").trim();
+  const apiKey = await getXboxApiKey(env);
   if (!apiKey) return false;
   const response = await safeFetch("https://xbl.io/api/v2/account", {
     headers: { "X-Authorization": apiKey },

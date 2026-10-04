@@ -32,10 +32,14 @@ Email: <a href="mailto:shabiimitjans@gmail.com">shabiimitjans@gmail.com</a>
 - Twitch stream preview in Currently Playing when a streamed game and Twitch username are configured.
 - Shelf Showcase block for featured games, plus shared Currently Playing, Last Finished, Highlights, and Search modules.
 - PSN, Steam, and Xbox trophy/achievement dashboards.
+- Automatic time-to-finish estimates from linked Steam or PlayStation accounts when marking a game completed or finished.
+- Nintendo account connection from Settings.
 - Google Calendar preorder events when configured.
 - Theme editor with dark/light mode, colors, logos, title styles, and module ordering.
 - CSV import/export for Gamelist and Shelf data.
 - Mobile-ready responsive layout for phone, tablet, and desktop use.
+
+Logged-in users see the in-app update notes once per notification counter. Edit the content in `updates-popup.html`; to announce a new set of notes, increment `notificationVersion` in `version.json`.
 
 ---
 
@@ -91,7 +95,7 @@ In the Worker project settings, add your secrets through the Cloudflare website:
 4. Open **Settings**.
 5. Open **Variables and Secrets**.
 6. Click **Add**.
-7. Choose **Secret** for passwords, API keys, and tokens.
+7. Choose **Secret** for integration app and service keys listed in this guide.
 8. Enter the variable name exactly as shown below.
 9. Paste the value.
 10. Deploy/Save.
@@ -104,7 +108,7 @@ EDIT_PASSWORD
 
 `EDIT_PASSWORD` is the password you will type in the app to unlock **Edit mode** and change your site settings and theme.
 
-Use **Secret** for all integration keys/tokens. Do not share them publicly or add them as plain text.
+Add personal platform accounts through **Settings** in Gamelist. Do not add personal PlayStation, Steam, or Nintendo account credentials as Cloudflare secrets. Use Cloudflare secrets for the integration app and service keys called out below.
 
 Now **continue** the setup until you reach **Recommended Integrations**. The next integrations are **required** to make it all work properly, but the recommended ones will help you improve your experience a bit more.
 
@@ -181,28 +185,24 @@ GITHUB_WORKFLOW_TOKEN
 
 ## Recommended integrations
 
+Platform accounts are connected in **Edit mode → Settings → Accounts**. The old per-account Cloudflare secret setup is retired; each platform now has its own connection steps in Settings. Site owners may still need Cloudflare secrets for platform service/API keys, as listed below.
+
 ### <img src="assets/platforms/playstation.png" alt="PlayStation" width="22" align="center"> PlayStation Trophies
 
-1. Log into your [PlayStation](https://www.playstation.com/) account.
-2. In the same browser, open the [Sony SSO cookie page](https://ca.account.sony.com/api/v1/ssocookie).
-3. Copy only the long `npsso` token value from the JSON response.
-4. Add it to Cloudflare **Variables and Secrets** as:
+1. Enter **Edit mode** and open **Settings**.
+2. Go to the **Accounts** section.
+3. Choose **Log in with PlayStation**, then open the token page from Settings and copy the `npsso` value.
+4. Paste the value in Settings, enter your PlayStation online ID, and confirm the connection.
 
-```text
-PSN_NPSSO
-```
-
-5. Set your **PlayStation profile name** inside the app: enter **Edit mode**, open **Settings**, and fill the PlayStation account field.
-
-The Playstation API access can expire after a while and will require adding the `npsso` token value again, if that is the case.
+The token is stored encrypted and expires after 60 days. Reconnect it from Settings when it expires.
 
 ### <img src="assets/platforms/steam.png" alt="Steam" width="22" align="center"> Steam Achievements
 
-1. Log in to Steam in the app's **Settings**. This fills in your Steam ID.
-2. Open the [Steam Web API key page](https://steamcommunity.com/dev/apikey), register your app's domain, and copy the key.
-3. Paste the key into Settings. Gamelist verifies it and stores it encrypted until you disconnect it. If you prefer, `STEAM_API_KEY` can still be set as a Cloudflare secret instead.
+1. Enter **Edit mode** and open **Settings**.
+2. Go to the **Accounts** section.
+3. Choose **Log in with Steam**, then, open the [Steam Web API key page](https://steamcommunity.com/dev/apikey) button, register your app's domain, copy the key and paste the key.
 
-Steam achievements are fetched only for app IDs owned by the configured Steam account. Make sure the account's game details and library visibility are set to **Public**.
+Make sure the account's game details and library visibility are set to **Public**.
 
 ### <img src="assets/platforms/xbox.png" alt="Xbox" width="22" align="center"> Xbox Achievements
 
@@ -220,6 +220,13 @@ OPENXBL_APP_KEY
 ```
 
 3. Set your **Xbox account** inside the app: enter **Edit mode**, open **Settings**, and fill the **Microsoft account** field with an Xbox gamertag, or use **Log in with Xbox** to fill it automatically. The existing `OPENXBL_API_KEY` is still used for achievements.
+
+### <img src="assets/sites/nintendo.png" alt="Nintendo" width="22" align="center"> Nintendo Account
+
+1. Enter **Edit mode** and open **Settings**.
+2. Go to the **Accounts** section.
+3. Choose **Log in with Nintendo**, select your account, then copy the link address from **Select this person**.
+4. Paste the copied link into Settings to finish connecting.
 
 ### <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/a/a5/Google_Calendar_icon_%282020%29.svg/960px-Google_Calendar_icon_%282020%29.svg.png" alt="Google Calendar" width="22" align="center"> Google Calendar Preorder Events (ADVANCED)
 
@@ -292,7 +299,7 @@ To enable it:
 
 1. Enter **Edit mode**.
 2. Open **Settings**.
-3. Add your Twitch username in the platform/account settings.
+3. Add your Twitch username in the **Accounts** section.
 4. Mark at least one currently-playing game as **Stream**.
 5. Save settings.
 

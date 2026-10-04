@@ -937,10 +937,18 @@
           </div>
           <div class="settings-account-field settings-provider-field settings-xbox-field">
             <span data-i18n="Xbox account">Xbox Account</span>
-            <input id="settingsMicrosoftUser" autocomplete="off" data-lpignore="true" data-1p-ignore="true" data-bwignore="true" placeholder="Xbox gamertag or XUID" data-i18n-placeholder="Xbox gamertag or XUID">
+            <small class="settings-provider-intro" id="settingsXboxIntro">Log in with Xbox to link your account. To enable achievements, create an OpenXBL API key and paste it here; the key is encrypted when saved.</small>
+            <input id="settingsMicrosoftUser" autocomplete="off" data-lpignore="true" data-1p-ignore="true" data-bwignore="true" hidden placeholder="Xbox gamertag or XUID" data-i18n-placeholder="Xbox gamertag or XUID">
             <div class="settings-provider-controls">
               <span id="settingsXboxStatus" class="settings-provider-status" hidden></span>
+              <span id="settingsXboxApiStatus" class="settings-provider-status" hidden></span>
               <button class="ghost-button" id="settingsXboxConnect" type="button">Log in with Xbox</button>
+              <button class="ghost-button" id="settingsXboxDisconnect" type="button" hidden>Disconnect</button>
+            </div>
+            <div class="settings-provider-callback" id="settingsXboxApiSetup" hidden>
+              <a class="ghost-button settings-provider-page-button" href="https://xbl.io/" target="_blank" rel="noreferrer">Open OpenXBL</a>
+              <label for="settingsXboxApiKey">OpenXBL API key</label>
+              <input id="settingsXboxApiKey" type="password" autocomplete="off" name="xbox-api-key-entry" data-lpignore="true" data-1p-ignore="true" data-bwignore="true" readonly placeholder="Paste the API key">
             </div>
           </div>
           <div class="settings-account-field settings-provider-field settings-steam-field">
@@ -961,7 +969,7 @@
           </div>
           <div class="settings-account-field settings-nintendo-field">
             <span>Nintendo Account</span>
-            <small class="settings-nintendo-intro" id="settingsNintendoIntro" hidden>Log in with Nintendo, select your account, then right click and Copy the Link address from Select this person. Paste the link below, it's the one-time sign-in code.</small>
+            <small class="settings-nintendo-intro" id="settingsNintendoIntro">Log in with Nintendo, select your account, then right click and Copy the Link address from Select this person. Paste the link below, it's the one-time sign-in code.</small>
             <div class="settings-nintendo-controls">
               <span id="settingsNintendoStatus" class="settings-nintendo-status" hidden></span>
               <button class="ghost-button" id="settingsNintendoConnect" type="button">Log in with Nintendo</button>

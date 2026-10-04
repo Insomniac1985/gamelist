@@ -1,9 +1,11 @@
+import { getXboxApiKey } from "./xbox-account.js";
+
 const OPENXBL_BASE = "https://api.xbl.io";
 const XBOX_CACHE_SECONDS = 12 * 60 * 60;
 const OPENXBL_TIMEOUT_MS = 6000;
 
 export async function onRequestGet({ request, env = {} }) {
-  const apiKey = String(env.OPENXBL_API_KEY || globalThis.process?.env?.OPENXBL_API_KEY || "").trim();
+  const apiKey = await getXboxApiKey(env);
   const requestUrl = new URL(request?.url || "https://local/api/xbox-achievements");
   const requestedUser = cleanXboxUser(requestUrl.searchParams.get("user"));
   const fallbackUser = cleanXboxUser(env.XBOX_GAMERTAG || globalThis.process?.env?.XBOX_GAMERTAG);
@@ -11,7 +13,7 @@ export async function onRequestGet({ request, env = {} }) {
   const titleId = String(requestUrl.searchParams.get("titleId") || "").replace(/\D/g, "").slice(0, 20);
   const playtimeTitleId = requestUrl.searchParams.get("playtime") === "1" ? titleId : "";
   if (!apiKey) {
-    return json({ achievements: [], games: [], completed: [], needsSetup: true, error: "Missing OPENXBL_API_KEY" }, 200, false);
+    return json({ achievements: [], games: [], completed: [], needsSetup: true, error: "OpenXBL API key is not connected in Settings" }, 200, false);
   }
 
   try {

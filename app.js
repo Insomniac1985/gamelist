@@ -17,6 +17,7 @@ const ACHIEVEMENT_CACHE_TTL_MS = 12 * 60 * 60 * 1000;
 const DEFAULT_PAGE_ORDER = ["trophies", "calendar", "highlights", "search", "gamelist", "finished"];
 const LAYOUT_SECTION_KEYS = ["playing", ...DEFAULT_PAGE_ORDER, "latestFinished"];
 const VERSION_STORAGE_KEY = "gamelist:site-version";
+const UPDATES_NOTIFICATION_STORAGE_KEY = "gamelist:updates-notification-version";
 const CACHE_HOUR_STORAGE_KEY = "gamelist:cache-hour";
 const PULL_NAVIGATION_KEY = "gamelist:pull-navigation";
 const STORE_OPTIONS = ["Amazon", "eBay", "GAME.es", "Xtralife", "Retro Island NY", "GameStop", "Walmart"];
@@ -58,8 +59,11 @@ const THEMES = {
     themeColor: "#005cff",
   },
 };
-const siteVersion = { version: "", updatedAt: "" };
-const steamApiAccount = { available: false };
+const siteVersion = { version: "", updatedAt: "", notificationVersion: 0 };
+let updatesPopupLoadPromise = null;
+let nintendoSetupStarted = false;
+const steamApiAccount = { available: false, personaName: "" };
+const xboxApiAccount = { available: false };
 const DEFAULT_SETTINGS = {
   pageOrder: DEFAULT_PAGE_ORDER,
   hiddenSections: [],
@@ -375,6 +379,8 @@ const el = {
   authCancelButton: document.querySelector("#authCancelButton"),
   authPasswordInput: document.querySelector("#authPasswordInput"),
   authError: document.querySelector("#authError"),
+  updatesDialog: document.querySelector("#updatesDialog"),
+  updatesCloseButton: document.querySelector("#updatesCloseButton"),
   finishTimeDialog: document.querySelector("#finishTimeDialog"),
   finishTimeForm: document.querySelector("#finishTimeForm"),
   finishTimeInput: document.querySelector("#finishTimeInput"),
@@ -402,7 +408,12 @@ const el = {
   settingsSteamConnect: document.querySelector("#settingsSteamConnect"),
   settingsSteamDisconnect: document.querySelector("#settingsSteamDisconnect"),
   settingsXboxStatus: document.querySelector("#settingsXboxStatus"),
+  settingsXboxApiStatus: document.querySelector("#settingsXboxApiStatus"),
+  settingsXboxIntro: document.querySelector("#settingsXboxIntro"),
+  settingsXboxApiSetup: document.querySelector("#settingsXboxApiSetup"),
+  settingsXboxApiKey: document.querySelector("#settingsXboxApiKey"),
   settingsXboxConnect: document.querySelector("#settingsXboxConnect"),
+  settingsXboxDisconnect: document.querySelector("#settingsXboxDisconnect"),
   settingsPsnStatus: document.querySelector("#settingsPsnStatus"),
   settingsPsnConnect: document.querySelector("#settingsPsnConnect"),
   settingsPsnDisconnect: document.querySelector("#settingsPsnDisconnect"),
@@ -557,6 +568,7 @@ async function init() {
   else if (requestedGame && state.games.some((game) => game.id === requestedGame && !game.deletedAt)) openDetail(requestedGame);
   refreshAchievements();
   scheduleBackgroundRefreshes();
+  maybeShowUpdatesPopup();
 }
 
 function isShabiiMainOwner() {
@@ -619,7 +631,7 @@ function logStatusLines(status, theme = "shabii", editorStatus = "NOT LOGGED IN"
     ["IGDB_CLIENT_ID", secretStatus(status.IGDB_CLIENT_ID)],
     ["IGDB_CLIENT_SECRET", secretStatus(status.IGDB_CLIENT_SECRET)],
     ["PSN_NPSSO", secretStatus(status.PSN_NPSSO)],
-    ["OPENXBL_API_KEY", secretStatus(status.OPENXBL_API_KEY)],
+    ["OpenXBL API key", secretStatus(status.OPENXBL_API_KEY)],
     ["STEAM_API_KEY", secretStatus(status.STEAM_API_KEY)],
     ["GOOGLE_PRIVATE_KEY", secretStatus(status.GOOGLE_PRIVATE_KEY)],
     ["PRICECHARTING_TOKEN", secretStatus(status.PRICECHARTING_TOKEN)],
@@ -739,6 +751,44 @@ function forceCacheOnLoadEnabled() {
 function applySiteVersion(value = {}) {
   siteVersion.version = String(value.version || "").trim();
   siteVersion.updatedAt = String(value.updatedAt || "").trim();
+  siteVersion.notificationVersion = Math.max(0, Math.floor(Number(value.notificationVersion) || 0));
+}
+
+async function maybeShowUpdatesPopup() {
+  if (!state.canEdit || !siteVersion.notificationVersion) return;
+  const previousVersion = localStorage.getItem(UPDATES_NOTIFICATION_STORAGE_KEY);
+  if (previousVersion === String(siteVersion.notificationVersion)) return;
+  if (!el.updatesDialog) await loadUpdatesPopup();
+  if (!state.canEdit || !el.updatesDialog || el.updatesDialog.open) return;
+  el.updatesDialog.showModal();
+  syncScrollLock();
+}
+
+async function loadUpdatesPopup() {
+  if (!updatesPopupLoadPromise) {
+    updatesPopupLoadPromise = fetch("/updates-popup.html", { cache: "no-store" })
+      .then((response) => {
+        if (!response.ok) throw new Error(`Update popup unavailable (${response.status})`);
+        return response.text();
+      })
+      .then((markup) => {
+        document.body.insertAdjacentHTML("beforeend", markup);
+        el.updatesDialog = document.querySelector("#updatesDialog");
+        el.updatesCloseButton = document.querySelector("#updatesCloseButton");
+        el.updatesCloseButton?.addEventListener("click", () => el.updatesDialog.close("acknowledged"));
+        el.updatesDialog?.addEventListener("close", () => {
+          if (state.canEdit && siteVersion.notificationVersion > 0) {
+            localStorage.setItem(UPDATES_NOTIFICATION_STORAGE_KEY, String(siteVersion.notificationVersion));
+          }
+          syncScrollLock();
+        });
+      })
+      .catch((error) => {
+        updatesPopupLoadPromise = null;
+        console.warn("[updates] Could not load update popup", error);
+      });
+  }
+  await updatesPopupLoadPromise;
 }
 
 function logPageVersion(currentRepo = "", repoCopies = []) {
@@ -1064,13 +1114,15 @@ function bindEvents() {
   el.settingsPsnDisconnect?.addEventListener("click", disconnectPsnAccount);
   el.settingsPsnNpsso?.addEventListener("paste", () => window.setTimeout(showPsnAccountIdEntry, 0));
   el.settingsPsnConfirm?.addEventListener("click", finishPsnConnection);
-  [el.settingsPsnNpsso, el.settingsSteamApiKey].forEach((input) => {
+  [el.settingsPsnNpsso, el.settingsSteamApiKey, el.settingsXboxApiKey].forEach((input) => {
     input?.addEventListener("focus", () => input.removeAttribute("readonly"), { once: true });
   });
   el.settingsSteamConnect?.addEventListener("click", beginSteamConnection);
   el.settingsSteamDisconnect?.addEventListener("click", disconnectSteamAccount);
   el.settingsSteamApiKey?.addEventListener("paste", () => window.setTimeout(finishSteamApiKeyConnection, 0));
   el.settingsXboxConnect?.addEventListener("click", beginXboxConnection);
+  el.settingsXboxDisconnect?.addEventListener("click", disconnectXboxAccount);
+  el.settingsXboxApiKey?.addEventListener("paste", () => window.setTimeout(finishXboxApiKeyConnection, 0));
   el.authDialog?.addEventListener("click", (event) => {
     if (event.target === el.authDialog) el.authDialog.close("cancel");
   });
@@ -1779,6 +1831,7 @@ function openSettingsDialog() {
   refreshNintendoConnectionStatus();
   refreshPsnConnectionStatus();
   refreshSteamApiStatus();
+  refreshXboxApiStatus();
   syncScrollLock();
 }
 
@@ -1787,23 +1840,25 @@ async function refreshNintendoConnectionStatus() {
     const response = await fetch("/api/nintendo-playtime?action=status", { cache: "no-store" });
     const data = await response.json().catch(() => ({}));
     if (!response.ok) throw new Error(data.error || "Could not check Nintendo connection.");
-    setNintendoConnectionState(Boolean(data.connected));
+    setNintendoConnectionState(Boolean(data.connected), data.accountName);
   } catch (error) {
     el.settingsNintendoStatus.textContent = error.message;
     el.settingsNintendoStatus.hidden = false;
   }
 }
 
-function setNintendoConnectionState(connected) {
-  el.settingsNintendoStatus.textContent = connected ? "Connected" : "";
+function setNintendoConnectionState(connected, accountName = "") {
+  if (connected) nintendoSetupStarted = false;
+  el.settingsNintendoStatus.textContent = connected ? (accountName ? `Connected to ${accountName}` : "Connected") : "";
   el.settingsNintendoStatus.hidden = !connected;
   el.settingsNintendoConnect.hidden = connected;
   el.settingsNintendoDisconnect.hidden = !connected;
-  el.settingsNintendoCallback.hidden = connected;
-  el.settingsNintendoIntro.hidden = true;
+  el.settingsNintendoCallback.hidden = connected || !nintendoSetupStarted;
+  el.settingsNintendoIntro.hidden = connected;
 }
 
 async function beginNintendoConnection() {
+  nintendoSetupStarted = true;
   const loginTab = window.open("about:blank", "_blank");
   el.settingsNintendoStatus.textContent = "Preparing Nintendo sign-in…";
   el.settingsNintendoStatus.hidden = false;
@@ -1820,6 +1875,8 @@ async function beginNintendoConnection() {
     if (loginTab) loginTab.location.href = data.url;
     else window.open(data.url, "_blank");
   } catch (error) {
+    nintendoSetupStarted = false;
+    el.settingsNintendoCallback.hidden = true;
     loginTab?.close();
     el.settingsNintendoStatus.textContent = error.message;
   }
@@ -1841,13 +1898,14 @@ async function finishNintendoConnection() {
     const data = await response.json().catch(() => ({}));
     if (!response.ok) throw new Error(data.error || "Nintendo sign-in failed.");
     el.settingsNintendoCallbackUrl.value = "";
-    setNintendoConnectionState(true);
+    setNintendoConnectionState(true, data.accountName);
   } catch (error) {
     el.settingsNintendoStatus.textContent = error.message;
   }
 }
 
 async function disconnectNintendoAccount() {
+  nintendoSetupStarted = false;
   el.settingsNintendoDisconnect.disabled = true;
   try {
     const response = await fetch("/api/nintendo-playtime", {
@@ -1877,7 +1935,8 @@ async function refreshPsnConnectionStatus() {
 }
 
 function setPsnConnectionState(connected) {
-  el.settingsPsnStatus.textContent = connected ? "Connected" : "";
+  const accountId = String(state.settings.psnUser || "").trim();
+  el.settingsPsnStatus.textContent = connected ? (accountId ? `Connected to ${accountId}` : "Connected") : "";
   el.settingsPsnStatus.hidden = !connected;
   el.settingsPsnConnect.hidden = connected;
   el.settingsPsnTokenPage.hidden = true;
@@ -2017,7 +2076,9 @@ async function beginSteamConnection() {
 }
 
 function setSteamConnectionState(connected) {
-  el.settingsSteamStatus.textContent = connected ? "Connected" : "";
+  const accountId = String(state.settings.steamUser || "").trim();
+  const identity = steamApiAccount.personaName || accountId;
+  el.settingsSteamStatus.textContent = connected ? (identity ? `Connected to ${identity}` : "Connected") : "";
   el.settingsSteamStatus.hidden = !connected;
   el.settingsSteamUser.hidden = true;
   el.settingsSteamConnect.hidden = connected;
@@ -2030,13 +2091,16 @@ function setSteamConnectionState(connected) {
 
 async function refreshSteamApiStatus() {
   try {
-    const response = await fetch("/api/steam-account?action=status", { cache: "no-store" });
+    const steamId = encodeURIComponent(state.settings.steamUser || "");
+    const response = await fetch(`/api/steam-account?action=status&steamId=${steamId}`, { cache: "no-store" });
     const data = await response.json().catch(() => ({}));
     if (!response.ok) throw new Error(data.error || "Could not check Steam API key.");
     steamApiAccount.available = Boolean(data.apiKeyAvailable);
+    steamApiAccount.personaName = String(data.personaName || "");
     setSteamConnectionState(Boolean(state.settings.steamUser));
   } catch (error) {
     steamApiAccount.available = false;
+    steamApiAccount.personaName = "";
     setSteamConnectionState(Boolean(state.settings.steamUser));
     if (state.settings.steamUser) {
       el.settingsSteamApiStatus.textContent = error?.message || "Could not check Steam API key.";
@@ -2065,7 +2129,7 @@ async function finishSteamApiKeyConnection() {
     if (!response.ok) throw new Error(data.error || "Could not connect Steam API key.");
     steamApiAccount.available = true;
     el.settingsSteamApiKey.value = "";
-    setSteamConnectionState(Boolean(state.settings.steamUser));
+    await refreshSteamApiStatus();
   } catch (error) {
     el.settingsSteamApiStatus.textContent = error?.message || "Could not connect Steam API key.";
     el.settingsSteamApiStatus.hidden = false;
@@ -2092,6 +2156,7 @@ async function disconnectSteamAccount() {
     return;
   }
   state.settings = normalizeSettings({ ...state.settings, steamUser: "" });
+  steamApiAccount.personaName = "";
   el.settingsSteamUser.value = "";
   persistLocalSettings();
   await persistCloud();
@@ -2107,7 +2172,7 @@ async function beginXboxConnection() {
     return;
   }
   el.settingsXboxConnect.disabled = true;
-  el.settingsXboxStatus.textContent = "Opening OpenXBL sign-in…";
+  el.settingsXboxStatus.textContent = "Opening Xbox sign-in…";
   el.settingsXboxStatus.hidden = false;
   try {
     const response = await fetch("/api/xbox-login?action=start", { cache: "no-store" });
@@ -2117,15 +2182,111 @@ async function beginXboxConnection() {
     loginTab.location.href = data.url;
     const result = await resultPromise;
     if (result.error) throw new Error(result.error);
-    el.settingsMicrosoftUser.value = result.gamertag || result.xuid;
-    el.settingsXboxStatus.textContent = "Xbox account found. Save Settings to apply it.";
-    el.settingsXboxStatus.hidden = false;
+    const microsoftUser = result.gamertag || result.xuid;
+    el.settingsMicrosoftUser.value = microsoftUser;
+    state.settings = normalizeSettings({ ...state.settings, microsoftUser });
+    persistLocalSettings();
+    await persistCloud();
+    setXboxConnectionState(true);
+    refreshAchievements();
   } catch (error) {
     loginTab.close();
     el.settingsXboxStatus.textContent = error?.message || "Xbox sign-in failed.";
     el.settingsXboxStatus.hidden = false;
   } finally {
     el.settingsXboxConnect.disabled = false;
+  }
+}
+
+function setXboxConnectionState(connected) {
+  el.settingsXboxStatus.textContent = connected ? "Connected" : "";
+  el.settingsXboxStatus.hidden = !connected;
+  el.settingsXboxApiStatus.textContent = xboxApiAccount.available ? "OpenXBL API ready" : "";
+  el.settingsXboxApiStatus.hidden = !connected || !xboxApiAccount.available;
+  el.settingsXboxIntro.hidden = connected && xboxApiAccount.available;
+  el.settingsMicrosoftUser.hidden = true;
+  el.settingsXboxConnect.hidden = connected;
+  el.settingsXboxDisconnect.hidden = !connected;
+  el.settingsXboxApiSetup.hidden = !connected || xboxApiAccount.available;
+}
+
+async function refreshXboxApiStatus() {
+  try {
+    const response = await fetch("/api/xbox-account?action=status", { cache: "no-store" });
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok) throw new Error(data.error || "Could not check Xbox API key.");
+    xboxApiAccount.available = Boolean(data.apiKeyAvailable);
+    setXboxConnectionState(Boolean(state.settings.microsoftUser));
+  } catch (error) {
+    xboxApiAccount.available = false;
+    setXboxConnectionState(Boolean(state.settings.microsoftUser));
+    if (state.settings.microsoftUser) {
+      el.settingsXboxApiStatus.textContent = error?.message || "Could not check Xbox API key.";
+      el.settingsXboxApiStatus.hidden = false;
+    }
+  }
+}
+
+async function finishXboxApiKeyConnection() {
+  const apiKey = el.settingsXboxApiKey.value.trim();
+  if (!apiKey) return;
+  el.settingsXboxApiKey.disabled = true;
+  el.settingsXboxApiStatus.textContent = "Checking OpenXBL API key…";
+  el.settingsXboxApiStatus.hidden = false;
+  try {
+    const response = await fetch("/api/xbox-account", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ action: "connect", apiKey }),
+    });
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok) throw new Error(data.error || "Could not connect OpenXBL API key.");
+    el.settingsXboxApiKey.value = "";
+    xboxApiAccount.available = true;
+    state.integrationStatus = {
+      ...(state.integrationStatus || {}),
+      OPENXBL_API_KEY: true,
+      working: { ...(state.integrationStatus?.working || {}), XBOX: true },
+    };
+    setXboxConnectionState(Boolean(state.settings.microsoftUser));
+    localStorage.removeItem(ACHIEVEMENT_CACHE_KEY);
+    refreshAchievements();
+  } catch (error) {
+    el.settingsXboxApiStatus.textContent = error?.message || "Could not connect OpenXBL API key.";
+    el.settingsXboxApiStatus.hidden = false;
+  } finally {
+    el.settingsXboxApiKey.disabled = false;
+  }
+}
+
+async function disconnectXboxAccount() {
+  el.settingsXboxDisconnect.disabled = true;
+  try {
+    const response = await fetch("/api/xbox-account", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ action: "disconnect" }),
+    });
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok) throw new Error(data.error || "Could not disconnect Xbox account.");
+    xboxApiAccount.available = false;
+    state.integrationStatus = {
+      ...(state.integrationStatus || {}),
+      OPENXBL_API_KEY: false,
+      working: { ...(state.integrationStatus?.working || {}), XBOX: false },
+    };
+    state.settings = normalizeSettings({ ...state.settings, microsoftUser: "" });
+    el.settingsMicrosoftUser.value = "";
+    el.settingsXboxApiKey.value = "";
+    persistLocalSettings();
+    await persistCloud();
+    setXboxConnectionState(false);
+    refreshAchievements();
+  } catch (error) {
+    el.settingsXboxApiStatus.textContent = error?.message || "Could not disconnect Xbox account.";
+    el.settingsXboxApiStatus.hidden = false;
+  } finally {
+    el.settingsXboxDisconnect.disabled = false;
   }
 }
 
@@ -2151,6 +2312,7 @@ function renderSettingsDialog() {
   state.settings = normalizeSettings(state.settings);
   el.settingsPsnUser.value = state.settings.psnUser;
   el.settingsMicrosoftUser.value = state.settings.microsoftUser;
+  setXboxConnectionState(Boolean(state.settings.microsoftUser));
   el.settingsSteamUser.value = state.settings.steamUser;
   setSteamConnectionState(Boolean(state.settings.steamUser));
   el.settingsTwitchUser.value = state.settings.twitchUser;
@@ -2934,7 +3096,7 @@ function renderModeToggle(button, mode) {
 }
 
 function syncScrollLock() {
-  document.body.classList.toggle("dialog-open", el.dialog.open || el.detailDialog.open || el.historyDialog.open || el.releaseDialog.open || el.platinumDialog.open || Boolean(el.finishedStatsDialog?.open) || Boolean(el.gotyDialog?.open) || Boolean(el.gotyStatsPreviewDialog?.open) || Boolean(el.settingsDialog?.open) || Boolean(el.authDialog?.open) || Boolean(el.finishTimeDialog?.open));
+  document.body.classList.toggle("dialog-open", el.dialog.open || el.detailDialog.open || el.historyDialog.open || el.releaseDialog.open || el.platinumDialog.open || Boolean(el.finishedStatsDialog?.open) || Boolean(el.gotyDialog?.open) || Boolean(el.gotyStatsPreviewDialog?.open) || Boolean(el.settingsDialog?.open) || Boolean(el.authDialog?.open) || Boolean(el.updatesDialog?.open) || Boolean(el.finishTimeDialog?.open));
   if (document.body.classList.contains("dialog-open")) pauseAllPlayingTrailers();
   else scheduleFocusedPlayingTrailerUpdate();
   updateScrollTopButton();
@@ -11800,6 +11962,7 @@ async function syncSharedEditorSession() {
     sessionStorage.removeItem(`${SESSION_KEY}:password`);
   }
   render();
+  if (active) maybeShowUpdatesPopup();
 }
 
 async function ensureEditMode() {
@@ -11818,6 +11981,7 @@ async function ensureEditMode() {
     sessionStorage.setItem(`${SESSION_KEY}:password`, password);
     localStorage.setItem("gamelist-editor-signal", String(Date.now()));
     render();
+    maybeShowUpdatesPopup();
     return true;
   }
   return false;

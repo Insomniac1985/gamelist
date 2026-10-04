@@ -8,13 +8,16 @@ const SESSION_TTL = 60 * 60 * 24 * 700;
 const PENDING_TTL = 60 * 10;
 const TOKEN_URL = "https://accounts.nintendo.com/connect/1.0.0/api/token";
 const SESSION_TOKEN_URL = "https://accounts.nintendo.com/connect/1.0.0/api/session_token";
+const ACCOUNT_URL = "https://api.accounts.nintendo.com/2.0.0/users/me";
 const HISTORY_URL = "https://app-api.znej.nintendo.com/api/v2.0/users/me/play_histories";
 
 export async function onRequestGet({ request, env = {} }) {
   if (!await isEditorRequest(request, env)) return json({ error: "Unauthorized" }, 401);
   const url = new URL(request.url);
   if (url.searchParams.get("action") === "status") {
-    return json({ connected: Boolean(await readSessionToken(env)) });
+    const sessionToken = await readSessionToken(env);
+    if (!sessionToken) return json({ connected: false, accountName: "" });
+    return json({ connected: true, accountName: await getNintendoAccountName(sessionToken) });
   }
 
   const title = String(url.searchParams.get("title") || "").trim();
@@ -90,7 +93,7 @@ export async function onRequestPost({ request, env = {} }) {
       if (!result.session_token) throw new Error("Nintendo did not return a session token.");
       await env.GAMELIST.put(SESSION_KEY, await encryptSession(result.session_token, env.EDIT_PASSWORD), { expirationTtl: SESSION_TTL });
       await env.GAMELIST.delete(PENDING_KEY);
-      return json({ connected: true });
+      return json({ connected: true, accountName: await getNintendoAccountName(result.session_token) });
     } catch (error) {
       return json({ error: error?.message || "Nintendo sign-in failed." }, 502);
     }
@@ -108,6 +111,27 @@ async function readSessionToken(env) {
   const stored = await env.GAMELIST?.get(SESSION_KEY);
   if (!stored) return "";
   try { return await decryptSession(stored, env.EDIT_PASSWORD || ""); } catch { return ""; }
+}
+
+async function getNintendoAccountName(sessionToken) {
+  try {
+    const access = await nintendoFetch(TOKEN_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json; charset=utf-8" },
+      body: JSON.stringify({
+        client_id: CLIENT_ID,
+        session_token: sessionToken,
+        grant_type: "urn:ietf:params:oauth:grant-type:jwt-bearer-session-token",
+      }),
+    });
+    if (!access.access_token) return "";
+    const account = await nintendoFetch(ACCOUNT_URL, {
+      headers: { Authorization: `Bearer ${access.access_token}` },
+    });
+    return String(account.nickname || account.name || account.displayName || "").trim();
+  } catch {
+    return "";
+  }
 }
 
 async function encryptSession(value, password) {

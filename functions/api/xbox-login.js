@@ -1,9 +1,12 @@
 import { isEditorRequest } from "./editor-auth.js";
 
-const APP_KEY_ENV = "OPENXBL_APP_KEY";
 const PENDING_PREFIX = "xbox:openxbl:pending:";
 const PENDING_TTL = 10 * 60;
 const STATE_COOKIE = "gamelist_xbl_state";
+
+function publicAppKey(env = {}) {
+  return String(env.OPENXBL_PUBLIC_KEY || "").trim();
+}
 
 export async function onRequestGet({ request, env = {} }) {
   if (!await isEditorRequest(request, env)) return popupResult({ error: "Sign in to Gamelist, then start Xbox sign-in again." });
@@ -13,8 +16,8 @@ export async function onRequestGet({ request, env = {} }) {
 }
 
 async function start(request, env) {
-  const appKey = String(env[APP_KEY_ENV] || "").trim();
-  if (!appKey) return json({ error: "OpenXBL app setup is required. Configure OPENXBL_APP_KEY and the matching OpenXBL callback URL first." }, 503);
+  const appKey = publicAppKey(env);
+  if (!appKey) return json({ error: "OpenXBL app setup is required. Configure OPENXBL_PUBLIC_KEY as a plain Worker variable and set the matching OpenXBL callback URL first." }, 503);
   if (!env.GAMELIST) return json({ error: "Missing GAMELIST KV binding" }, 503);
   if (!env.EDIT_PASSWORD) return json({ error: "EDIT_PASSWORD is required to protect the Xbox sign-in state." }, 503);
   const nonce = randomToken(24);
@@ -30,7 +33,7 @@ async function complete(request, env) {
   const code = String(url.searchParams.get("code") || "").trim();
   const nonce = await readStateCookie(request, env.EDIT_PASSWORD || "");
   const pending = nonce ? await env.GAMELIST?.get(`${PENDING_PREFIX}${nonce}`, "json") : null;
-  if (!code || !pending?.nonce || nonce !== pending.nonce || pending.appKey !== String(env[APP_KEY_ENV] || "").trim()) {
+  if (!code || !pending?.nonce || nonce !== pending.nonce || pending.appKey !== publicAppKey(env)) {
     return popupResult({ error: "Xbox sign-in expired or could not be verified. Start again from Settings." });
   }
   try {
