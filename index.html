@@ -919,7 +919,7 @@
           <div class="settings-account-field settings-psn-field">
             <span data-i18n="PlayStation account">PlayStation Account</span>
             <input id="settingsPsnUser" autocomplete="off" data-lpignore="true" data-1p-ignore="true" data-bwignore="true" placeholder="PlayStation online ID" data-i18n-placeholder="PlayStation online ID" hidden>
-            <small class="settings-provider-intro" id="settingsPsnIntro">Log in with PlayStation, open the token page, then copy and paste the full JSON response here. Gamelist reads the npsso token and uses expires_in to show how long it remains valid. Then enter your PlayStation online ID to confirm.</small>
+            <small class="settings-provider-intro" id="settingsPsnIntro">Log in with PlayStation, open the token page, then copy and paste the full text here. Gamelist reads the npsso token and uses expires_in to show how long it remains valid. Then enter your PlayStation ID to confirm.</small>
             <div class="settings-provider-controls">
               <span id="settingsPsnStatus" class="settings-provider-status" hidden></span>
               <button class="ghost-button settings-provider-page-button" id="settingsPsnConnect" type="button">Log in with PlayStation</button>
@@ -927,7 +927,7 @@
             </div>
             <div class="settings-provider-callback" id="settingsPsnCallback" hidden>
               <button class="ghost-button settings-provider-page-button" id="settingsPsnTokenPage" type="button" hidden>Open PSN token page</button>
-              <small class="settings-provider-intro" id="settingsPsnPasteInfo" hidden>Copy the full JSON response, including npsso and expires_in, and paste it below.</small>
+              <small class="settings-provider-intro" id="settingsPsnPasteInfo" hidden>Copy the full JSON code inside the brackets, including npsso and expires_in, and paste it below.</small>
               <label for="settingsPsnNpsso" id="settingsPsnTokenLabel" hidden>PlayStation token JSON</label>
               <input id="settingsPsnNpsso" type="password" autocomplete="off" name="psn-token-entry" data-lpignore="true" data-1p-ignore="true" data-bwignore="true" readonly placeholder="Paste the full token response">
               <small class="settings-provider-intro" id="settingsPsnConfirmInfo" hidden>Add your PlayStation ID, then confirm the connection.</small>
@@ -937,7 +937,7 @@
           </div>
           <div class="settings-account-field settings-provider-field settings-xbox-field">
             <span data-i18n="Xbox account">Xbox Account</span>
-            <small class="settings-provider-intro" id="settingsXboxIntro">Open OpenXBL API keys, sign in, then copy and paste your API key here.</small>
+            <small class="settings-provider-intro" id="settingsXboxIntro">Log in with Xbox, open the OpenXBL API keys page, then copy and paste your API key here.</small>
             <input id="settingsMicrosoftUser" autocomplete="off" data-lpignore="true" data-1p-ignore="true" data-bwignore="true" hidden placeholder="Xbox gamertag or XUID" data-i18n-placeholder="Xbox gamertag or XUID">
             <div class="settings-provider-controls">
               <span id="settingsXboxStatus" class="settings-provider-status" hidden></span>
