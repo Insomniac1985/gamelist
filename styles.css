@@ -10279,6 +10279,10 @@ dialog {
   width: min(680px, calc(100vw - 24px));
 }
 
+.updates-dialog:focus {
+  outline: none;
+}
+
 .updates-modal {
   max-height: min(760px, calc(100vh - 24px));
   overflow-y: auto;
@@ -10346,7 +10350,8 @@ dialog {
 
   .updates-modal > p,
   .updates-list li p {
-    font-size: 16px;
+    font-size: 13px;
+    line-height: 1.45;
   }
 
   .updates-list {

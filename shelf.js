@@ -7,7 +7,7 @@ splitShelfPlayingModules();
 
 const SESSION_KEY = "gamelist-editor";
 const VERSION_STORAGE_KEY = "gamelist:site-version";
-const UPDATES_NOTIFICATION_STORAGE_KEY = "gamelist:shelf-updates-notification-version";
+const UPDATES_NOTIFICATION_STORAGE_KEY = "gamelist:updates-notification-version";
 const CACHE_HOUR_STORAGE_KEY = "gamelist:cache-hour";
 const PULL_NAVIGATION_KEY = "gamelist:pull-navigation";
 const VIEW_KEY = "gamelist:view-mode";
