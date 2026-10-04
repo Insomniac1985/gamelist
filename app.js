@@ -409,6 +409,11 @@ const el = {
   settingsPsnIntro: document.querySelector("#settingsPsnIntro"),
   settingsPsnCallback: document.querySelector("#settingsPsnCallback"),
   settingsPsnNpsso: document.querySelector("#settingsPsnNpsso"),
+  settingsPsnTokenPage: document.querySelector("#settingsPsnTokenPage"),
+  settingsPsnPasteInfo: document.querySelector("#settingsPsnPasteInfo"),
+  settingsPsnTokenLabel: document.querySelector("#settingsPsnTokenLabel"),
+  settingsPsnUserLabel: document.querySelector("#settingsPsnUserLabel"),
+  settingsPsnConfirm: document.querySelector("#settingsPsnConfirm"),
   settingsNintendoStatus: document.querySelector("#settingsNintendoStatus"),
   settingsNintendoConnect: document.querySelector("#settingsNintendoConnect"),
   settingsNintendoDisconnect: document.querySelector("#settingsNintendoDisconnect"),
@@ -1053,8 +1058,14 @@ function bindEvents() {
   el.settingsNintendoDisconnect?.addEventListener("click", disconnectNintendoAccount);
   el.settingsNintendoCallbackUrl?.addEventListener("paste", () => window.setTimeout(finishNintendoConnection, 0));
   el.settingsPsnConnect?.addEventListener("click", beginPsnConnection);
+  el.settingsPsnTokenPage?.addEventListener("click", openPsnTokenPage);
+  el.settingsPsnUser?.addEventListener("input", () => { el.settingsPsnConfirm.disabled = !el.settingsPsnUser.value.trim(); });
   el.settingsPsnDisconnect?.addEventListener("click", disconnectPsnAccount);
-  el.settingsPsnNpsso?.addEventListener("paste", () => window.setTimeout(finishPsnConnection, 0));
+  el.settingsPsnNpsso?.addEventListener("paste", () => window.setTimeout(showPsnAccountIdEntry, 0));
+  el.settingsPsnConfirm?.addEventListener("click", finishPsnConnection);
+  [el.settingsPsnNpsso, el.settingsSteamApiKey].forEach((input) => {
+    input?.addEventListener("focus", () => input.removeAttribute("readonly"), { once: true });
+  });
   el.settingsSteamConnect?.addEventListener("click", beginSteamConnection);
   el.settingsSteamDisconnect?.addEventListener("click", disconnectSteamAccount);
   el.settingsSteamApiKey?.addEventListener("paste", () => window.setTimeout(finishSteamApiKeyConnection, 0));
@@ -1867,15 +1878,46 @@ function setPsnConnectionState(connected) {
   el.settingsPsnStatus.textContent = connected ? "Connected" : "";
   el.settingsPsnStatus.hidden = !connected;
   el.settingsPsnConnect.hidden = connected;
+  el.settingsPsnTokenPage.hidden = true;
   el.settingsPsnDisconnect.hidden = !connected;
   el.settingsPsnIntro.hidden = connected;
   el.settingsPsnCallback.hidden = connected;
+  el.settingsPsnPasteInfo.hidden = true;
+  el.settingsPsnTokenLabel.hidden = true;
+  el.settingsPsnNpsso.hidden = true;
+  el.settingsPsnUser.hidden = true;
+  el.settingsPsnUserLabel.hidden = true;
+  el.settingsPsnConfirm.hidden = true;
 }
 
 function beginPsnConnection() {
   window.open("https://www.playstation.com/", "_blank", "noopener");
+  el.settingsPsnConnect.hidden = true;
   el.settingsPsnCallback.hidden = false;
+  el.settingsPsnTokenPage.hidden = false;
+  el.settingsPsnNpsso.hidden = true;
+  el.settingsPsnPasteInfo.hidden = true;
+  el.settingsPsnTokenLabel.hidden = true;
+  el.settingsPsnUser.hidden = true;
+  el.settingsPsnUserLabel.hidden = true;
+  el.settingsPsnConfirm.hidden = true;
+}
+
+function openPsnTokenPage() {
+  window.open("https://ca.account.sony.com/api/v1/ssocookie", "_blank", "noopener");
+  el.settingsPsnPasteInfo.hidden = false;
+  el.settingsPsnTokenLabel.hidden = false;
+  el.settingsPsnNpsso.hidden = false;
   el.settingsPsnNpsso.focus();
+}
+
+function showPsnAccountIdEntry() {
+  if (!el.settingsPsnNpsso.value.trim()) return;
+  el.settingsPsnUser.hidden = false;
+  el.settingsPsnUserLabel.hidden = false;
+  el.settingsPsnConfirm.hidden = false;
+  el.settingsPsnConfirm.disabled = !el.settingsPsnUser.value.trim();
+  el.settingsPsnUser.focus();
 }
 
 async function finishPsnConnection() {
@@ -1885,6 +1927,13 @@ async function finishPsnConnection() {
     el.settingsPsnStatus.hidden = false;
     return;
   }
+  const onlineId = el.settingsPsnUser.value.trim();
+  if (!onlineId) {
+    el.settingsPsnStatus.textContent = "Enter your PlayStation online ID to continue.";
+    el.settingsPsnStatus.hidden = false;
+    return;
+  }
+  el.settingsPsnConfirm.disabled = true;
   el.settingsPsnNpsso.disabled = true;
   el.settingsPsnStatus.textContent = "Verifying PlayStation sign-in…";
   el.settingsPsnStatus.hidden = false;
@@ -1895,12 +1944,16 @@ async function finishPsnConnection() {
     const data = await response.json().catch(() => ({}));
     if (!response.ok) throw new Error(data.error || "Could not connect PlayStation.");
     el.settingsPsnNpsso.value = "";
+    state.settings.psnUser = onlineId;
+    persistLocalSettings();
+    await persistCloud();
     setPsnConnectionState(true);
   } catch (error) {
     el.settingsPsnStatus.textContent = error?.message || "Could not connect PlayStation.";
     el.settingsPsnStatus.hidden = false;
   } finally {
     el.settingsPsnNpsso.disabled = false;
+    el.settingsPsnConfirm.disabled = !el.settingsPsnUser.value.trim();
   }
 }
 
@@ -1957,12 +2010,12 @@ async function beginSteamConnection() {
 function setSteamConnectionState(connected) {
   el.settingsSteamStatus.textContent = connected ? "Connected" : "";
   el.settingsSteamStatus.hidden = !connected;
-  el.settingsSteamUser.hidden = connected;
+  el.settingsSteamUser.hidden = true;
   el.settingsSteamConnect.hidden = connected;
   el.settingsSteamDisconnect.hidden = !connected;
   el.settingsSteamApiStatus.textContent = steamApiAccount.available ? "Steam Web API ready" : "";
   el.settingsSteamApiStatus.hidden = !connected || !steamApiAccount.available;
-  el.settingsSteamApiIntro.hidden = !connected || steamApiAccount.available;
+  el.settingsSteamApiIntro.hidden = steamApiAccount.available;
   el.settingsSteamApiSetup.hidden = !connected || steamApiAccount.available;
 }
 
