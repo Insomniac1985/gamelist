@@ -12459,11 +12459,7 @@ html.theme-light .shelf-card-delete-action:hover {
 }
 
 .settings-provider-page-button {
-  font-size: 1.2em;
-}
-
-.settings-xbox-field .ghost-button {
-  font-size: 1.2em;
+  font-size: 15px;
 }
 
 .settings-nintendo-controls {
