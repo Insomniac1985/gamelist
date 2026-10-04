@@ -913,8 +913,9 @@
           <div class="settings-layout" id="settingsLayoutList" aria-label="Page order"></div>
         </section>
 
-        <p class="eyebrow settings-detail-title" data-i18n="Details">Details</p>
-        <section class="settings-grid settings-detail-grid">
+        <section class="settings-section settings-accounts-section">
+          <h3>Accounts</h3>
+          <div class="settings-grid settings-detail-grid">
           <label class="settings-account-field">
             <span data-i18n="PlayStation account">PlayStation account</span>
             <input id="settingsPsnUser" autocomplete="off" placeholder="PlayStation online ID" data-i18n-placeholder="PlayStation online ID">
@@ -929,14 +930,15 @@
           </label>
           <div class="settings-account-field settings-nintendo-field">
             <span>Nintendo Account</span>
+            <small class="settings-nintendo-intro">Log in with Nintendo, select your account, then copy the link address from <strong>Select this person</strong>. Paste the link below; it contains the one-time sign-in code.</small>
             <div class="settings-nintendo-controls">
               <span id="settingsNintendoStatus" class="settings-nintendo-status">Checking connection…</span>
-              <button class="ghost-button" id="settingsNintendoConnect" type="button">Connect</button>
+              <button class="ghost-button" id="settingsNintendoConnect" type="button">Log in with Nintendo</button>
               <button class="ghost-button" id="settingsNintendoDisconnect" type="button" hidden>Disconnect</button>
             </div>
             <div class="settings-nintendo-callback" id="settingsNintendoCallback" hidden>
-              <small>After signing in, right-click Nintendo’s “Select this person” button and copy its link address (starts with <code>npf…://auth</code>). Paste it here to finish connecting automatically.</small>
-              <input id="settingsNintendoCallbackUrl" autocomplete="off" placeholder="Paste Nintendo sign-in link">
+              <label for="settingsNintendoCallbackUrl">Nintendo sign-in link with code</label>
+              <input id="settingsNintendoCallbackUrl" autocomplete="off" placeholder="Paste the copied link here">
               <button class="ghost-button" id="settingsNintendoFinish" type="button">Finish connection</button>
             </div>
           </div>
@@ -944,6 +946,10 @@
             <span data-i18n="Twitch account">Twitch account</span>
             <input id="settingsTwitchUser" autocomplete="off" placeholder="Twitch username" data-i18n-placeholder="Twitch username">
           </label>
+          </div>
+        </section>
+        <p class="eyebrow settings-detail-title" data-i18n="Details">Details</p>
+        <section class="settings-grid settings-detail-grid">
           <label class="settings-detail-compact">
             <span data-i18n="Default owner">Default owner</span>
             <input id="settingsDefaultOwner" autocomplete="off">
