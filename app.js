@@ -1954,6 +1954,7 @@ async function beginSteamConnection() {
 function setSteamConnectionState(connected) {
   el.settingsSteamStatus.textContent = connected ? "Connected" : "";
   el.settingsSteamStatus.hidden = !connected;
+  el.settingsSteamUser.hidden = connected;
   el.settingsSteamConnect.hidden = connected;
   el.settingsSteamDisconnect.hidden = !connected;
 }
