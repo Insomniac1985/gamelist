@@ -12275,6 +12275,43 @@ html.theme-light .shelf-card-delete-action:hover {
   gap: 8px;
 }
 
+.settings-psn-field,
+.settings-provider-field {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 8px;
+}
+
+.settings-provider-controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.settings-provider-status {
+  flex: 1;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.settings-provider-intro,
+.settings-provider-callback {
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.settings-provider-callback {
+  display: grid;
+  gap: 8px;
+}
+
+.settings-provider-callback a {
+  color: var(--accent-2);
+}
+
 .settings-nintendo-controls {
   display: flex;
   align-items: center;

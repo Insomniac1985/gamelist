@@ -393,12 +393,23 @@ const el = {
   settingsPsnUser: document.querySelector("#settingsPsnUser"),
   settingsMicrosoftUser: document.querySelector("#settingsMicrosoftUser"),
   settingsSteamUser: document.querySelector("#settingsSteamUser"),
+  settingsSteamStatus: document.querySelector("#settingsSteamStatus"),
+  settingsSteamConnect: document.querySelector("#settingsSteamConnect"),
+  settingsXboxStatus: document.querySelector("#settingsXboxStatus"),
+  settingsXboxConnect: document.querySelector("#settingsXboxConnect"),
+  settingsPsnStatus: document.querySelector("#settingsPsnStatus"),
+  settingsPsnConnect: document.querySelector("#settingsPsnConnect"),
+  settingsPsnDisconnect: document.querySelector("#settingsPsnDisconnect"),
+  settingsPsnIntro: document.querySelector("#settingsPsnIntro"),
+  settingsPsnCallback: document.querySelector("#settingsPsnCallback"),
+  settingsPsnNpsso: document.querySelector("#settingsPsnNpsso"),
+  settingsPsnSave: document.querySelector("#settingsPsnSave"),
   settingsNintendoStatus: document.querySelector("#settingsNintendoStatus"),
   settingsNintendoConnect: document.querySelector("#settingsNintendoConnect"),
   settingsNintendoDisconnect: document.querySelector("#settingsNintendoDisconnect"),
   settingsNintendoCallback: document.querySelector("#settingsNintendoCallback"),
+  settingsNintendoIntro: document.querySelector("#settingsNintendoIntro"),
   settingsNintendoCallbackUrl: document.querySelector("#settingsNintendoCallbackUrl"),
-  settingsNintendoFinish: document.querySelector("#settingsNintendoFinish"),
   settingsTwitchUser: document.querySelector("#settingsTwitchUser"),
   settingsCurrency: document.querySelector("#settingsCurrency"),
   settingsRegion: document.querySelector("#settingsRegion"),
@@ -1034,9 +1045,14 @@ function bindEvents() {
   });
   el.settingsDialog?.addEventListener("close", syncScrollLock);
   el.settingsNintendoConnect?.addEventListener("click", beginNintendoConnection);
-  el.settingsNintendoFinish?.addEventListener("click", finishNintendoConnection);
   el.settingsNintendoDisconnect?.addEventListener("click", disconnectNintendoAccount);
   el.settingsNintendoCallbackUrl?.addEventListener("paste", () => window.setTimeout(finishNintendoConnection, 0));
+  el.settingsPsnConnect?.addEventListener("click", beginPsnConnection);
+  el.settingsPsnDisconnect?.addEventListener("click", disconnectPsnAccount);
+  el.settingsPsnSave?.addEventListener("click", finishPsnConnection);
+  el.settingsPsnNpsso?.addEventListener("paste", () => window.setTimeout(finishPsnConnection, 0));
+  el.settingsSteamConnect?.addEventListener("click", beginSteamConnection);
+  el.settingsXboxConnect?.addEventListener("click", beginXboxConnection);
   el.authDialog?.addEventListener("click", (event) => {
     if (event.target === el.authDialog) el.authDialog.close("cancel");
   });
@@ -1743,6 +1759,7 @@ function openSettingsDialog() {
   renderSettingsDialog();
   el.settingsDialog.showModal();
   refreshNintendoConnectionStatus();
+  refreshPsnConnectionStatus();
   syncScrollLock();
 }
 
@@ -1754,19 +1771,23 @@ async function refreshNintendoConnectionStatus() {
     setNintendoConnectionState(Boolean(data.connected));
   } catch (error) {
     el.settingsNintendoStatus.textContent = error.message;
+    el.settingsNintendoStatus.hidden = false;
   }
 }
 
 function setNintendoConnectionState(connected) {
-  el.settingsNintendoStatus.textContent = connected ? "Connected" : "Not connected";
+  el.settingsNintendoStatus.textContent = connected ? "Connected" : "";
+  el.settingsNintendoStatus.hidden = !connected;
   el.settingsNintendoConnect.hidden = connected;
   el.settingsNintendoDisconnect.hidden = !connected;
   el.settingsNintendoCallback.hidden = connected;
+  el.settingsNintendoIntro.hidden = connected;
 }
 
 async function beginNintendoConnection() {
   const loginTab = window.open("about:blank", "_blank");
   el.settingsNintendoStatus.textContent = "Preparing Nintendo sign-in…";
+  el.settingsNintendoStatus.hidden = false;
   try {
     const response = await fetch("/api/nintendo-playtime", {
       method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action: "begin" }),
@@ -1788,10 +1809,11 @@ async function finishNintendoConnection() {
   const callbackUrl = el.settingsNintendoCallbackUrl.value.trim();
   if (!callbackUrl) {
     el.settingsNintendoStatus.textContent = "Paste the Nintendo redirect link first.";
+    el.settingsNintendoStatus.hidden = false;
     return;
   }
-  el.settingsNintendoFinish.disabled = true;
   el.settingsNintendoStatus.textContent = "Connecting Nintendo Account…";
+  el.settingsNintendoStatus.hidden = false;
   try {
     const response = await fetch("/api/nintendo-playtime", {
       method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action: "exchange", callbackUrl }),
@@ -1802,8 +1824,6 @@ async function finishNintendoConnection() {
     setNintendoConnectionState(true);
   } catch (error) {
     el.settingsNintendoStatus.textContent = error.message;
-  } finally {
-    el.settingsNintendoFinish.disabled = false;
   }
 }
 
@@ -1818,9 +1838,161 @@ async function disconnectNintendoAccount() {
     setNintendoConnectionState(false);
   } catch (error) {
     el.settingsNintendoStatus.textContent = error.message;
+    el.settingsNintendoStatus.hidden = false;
   } finally {
     el.settingsNintendoDisconnect.disabled = false;
   }
+}
+
+async function refreshPsnConnectionStatus() {
+  try {
+    const response = await fetch("/api/psn-account?action=status", { cache: "no-store" });
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok) throw new Error(data.error || "Could not check PlayStation connection.");
+    setPsnConnectionState(Boolean(data.connected));
+  } catch (error) {
+    el.settingsPsnStatus.textContent = error.message;
+    el.settingsPsnStatus.hidden = false;
+  }
+}
+
+function setPsnConnectionState(connected) {
+  el.settingsPsnStatus.textContent = connected ? "Connected" : "";
+  el.settingsPsnStatus.hidden = !connected;
+  el.settingsPsnConnect.hidden = connected;
+  el.settingsPsnDisconnect.hidden = !connected;
+  el.settingsPsnIntro.hidden = connected;
+  el.settingsPsnCallback.hidden = connected;
+}
+
+function beginPsnConnection() {
+  window.open("https://www.playstation.com/", "_blank", "noopener");
+  el.settingsPsnStatus.textContent = "Sign in, then open the PSN token page and paste its npsso value below.";
+  el.settingsPsnStatus.hidden = false;
+  el.settingsPsnCallback.hidden = false;
+  el.settingsPsnNpsso.focus();
+  return loginTab;
+}
+
+async function finishPsnConnection() {
+  const npsso = el.settingsPsnNpsso.value.trim();
+  if (!npsso) {
+    el.settingsPsnStatus.textContent = "Paste the npsso value from the PSN token page.";
+    el.settingsPsnStatus.hidden = false;
+    return;
+  }
+  el.settingsPsnSave.disabled = true;
+  el.settingsPsnStatus.textContent = "Verifying PlayStation sign-in…";
+  el.settingsPsnStatus.hidden = false;
+  try {
+    const response = await fetch("/api/psn-account", {
+      method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action: "connect", npsso }),
+    });
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok) throw new Error(data.error || "Could not connect PlayStation.");
+    el.settingsPsnNpsso.value = "";
+    setPsnConnectionState(true);
+  } catch (error) {
+    el.settingsPsnStatus.textContent = error?.message || "Could not connect PlayStation.";
+    el.settingsPsnStatus.hidden = false;
+  } finally {
+    el.settingsPsnSave.disabled = false;
+  }
+}
+
+async function disconnectPsnAccount() {
+  el.settingsPsnDisconnect.disabled = true;
+  try {
+    const response = await fetch("/api/psn-account", {
+      method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action: "disconnect" }),
+    });
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok) throw new Error(data.error || "Could not disconnect PlayStation.");
+    setPsnConnectionState(false);
+  } catch (error) {
+    el.settingsPsnStatus.textContent = error?.message || "Could not disconnect PlayStation.";
+    el.settingsPsnStatus.hidden = false;
+  } finally {
+    el.settingsPsnDisconnect.disabled = false;
+  }
+}
+
+async function beginSteamConnection() {
+  const loginTab = window.open("about:blank", "_blank");
+  if (!loginTab) {
+    el.settingsSteamStatus.textContent = "Allow the sign-in popup, then try again.";
+    el.settingsSteamStatus.hidden = false;
+    return;
+  }
+  el.settingsSteamConnect.disabled = true;
+  el.settingsSteamStatus.textContent = "Opening Steam sign-in…";
+  el.settingsSteamStatus.hidden = false;
+  try {
+    const response = await fetch("/api/steam-login?action=start", { cache: "no-store" });
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok || !data.url || !data.state) throw new Error(data.error || "Could not start Steam sign-in.");
+    const resultPromise = waitForProviderPopup(loginTab, "gamelist-steam-login", data.state);
+    loginTab.location.href = data.url;
+    const result = await resultPromise;
+    if (result.error) throw new Error(result.error);
+    el.settingsSteamUser.value = result.steamId;
+    el.settingsSteamStatus.textContent = "Steam account found. Save Settings to apply it.";
+    el.settingsSteamStatus.hidden = false;
+  } catch (error) {
+    loginTab.close();
+    el.settingsSteamStatus.textContent = error?.message || "Steam sign-in failed.";
+    el.settingsSteamStatus.hidden = false;
+  } finally {
+    el.settingsSteamConnect.disabled = false;
+  }
+}
+
+async function beginXboxConnection() {
+  const loginTab = window.open("about:blank", "_blank");
+  if (!loginTab) {
+    el.settingsXboxStatus.textContent = "Allow the sign-in popup, then try again.";
+    el.settingsXboxStatus.hidden = false;
+    return;
+  }
+  el.settingsXboxConnect.disabled = true;
+  el.settingsXboxStatus.textContent = "Opening OpenXBL sign-in…";
+  el.settingsXboxStatus.hidden = false;
+  try {
+    const response = await fetch("/api/xbox-login?action=start", { cache: "no-store" });
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok || !data.url || !data.state) throw new Error(data.error || "Could not start Xbox sign-in.");
+    const resultPromise = waitForProviderPopup(loginTab, "gamelist-xbox-login", data.state);
+    loginTab.location.href = data.url;
+    const result = await resultPromise;
+    if (result.error) throw new Error(result.error);
+    el.settingsMicrosoftUser.value = result.gamertag || result.xuid;
+    el.settingsXboxStatus.textContent = "Xbox account found. Save Settings to apply it.";
+    el.settingsXboxStatus.hidden = false;
+  } catch (error) {
+    loginTab.close();
+    el.settingsXboxStatus.textContent = error?.message || "Xbox sign-in failed.";
+    el.settingsXboxStatus.hidden = false;
+  } finally {
+    el.settingsXboxConnect.disabled = false;
+  }
+}
+
+function waitForProviderPopup(popup, type, state) {
+  return new Promise((resolve, reject) => {
+    const timeout = window.setTimeout(() => finish(new Error("Sign-in timed out. Start again.")), 5 * 60 * 1000);
+    const onMessage = (event) => {
+      if (event.origin !== window.location.origin || event.source !== popup || event.data?.type !== type) return;
+      if (event.data?.state !== state && !(event.data?.error && !event.data?.state)) return;
+      finish(null, event.data);
+    };
+    const finish = (error, value) => {
+      window.clearTimeout(timeout);
+      window.removeEventListener("message", onMessage);
+      if (error) reject(error);
+      else resolve(value);
+    };
+    window.addEventListener("message", onMessage);
+  });
 }
 
 function renderSettingsDialog() {

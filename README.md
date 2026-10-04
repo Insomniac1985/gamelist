@@ -220,7 +220,13 @@ Xbox 360, Xbox One, Xbox Series and Xbox PC games can show achievements through 
 OPENXBL_API_KEY
 ```
 
-2.Set your **Xbox account** inside the app: enter **Edit mode**, open **Settings**, and fill the **Microsoft account** field with an Xbox gamertag.
+2. For the **Log in with Xbox** button in Settings, create an OpenXBL app and set its callback URL to `https://your-site.example/api/xbox-login`. Add its app key as a Cloudflare secret:
+
+```text
+OPENXBL_APP_KEY
+```
+
+3. Set your **Xbox account** inside the app: enter **Edit mode**, open **Settings**, and fill the **Microsoft account** field with an Xbox gamertag, or use **Log in with Xbox** to fill it automatically. The existing `OPENXBL_API_KEY` is still used for achievements.
 
 ### <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/a/a5/Google_Calendar_icon_%282020%29.svg/960px-Google_Calendar_icon_%282020%29.svg.png" alt="Google Calendar" width="22" align="center"> Google Calendar Preorder Events (ADVANCED)
 
