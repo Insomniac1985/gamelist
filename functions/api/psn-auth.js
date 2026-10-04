@@ -16,6 +16,17 @@ export async function getPsnNpsso(env = {}) {
   return String(env.PSN_NPSSO || "").trim();
 }
 
+export async function getPsnNpssoDaysLeft(env = {}) {
+  try {
+    const result = await env.GAMELIST?.list({ prefix: PSN_NPSSO_KEY, limit: 1 });
+    const expirySeconds = Number(result?.keys?.find((key) => key.name === PSN_NPSSO_KEY)?.expiration);
+    if (!Number.isFinite(expirySeconds) || expirySeconds <= 0) return null;
+    return Math.max(0, Math.ceil((expirySeconds * 1000 - Date.now()) / (24 * 60 * 60 * 1000)));
+  } catch {
+    return null;
+  }
+}
+
 export async function savePsnNpsso(npsso, env = {}) {
   if (!env.GAMELIST) throw new Error("Missing GAMELIST KV binding");
   if (!env.EDIT_PASSWORD) throw new Error("EDIT_PASSWORD is required to securely store the PlayStation connection.");
