@@ -412,6 +412,8 @@ const el = {
   settingsXboxApiStatus: document.querySelector("#settingsXboxApiStatus"),
   settingsXboxIntro: document.querySelector("#settingsXboxIntro"),
   settingsXboxApiSetup: document.querySelector("#settingsXboxApiSetup"),
+  settingsXboxApiOpen: document.querySelector("#settingsXboxApiOpen"),
+  settingsXboxApiEntry: document.querySelector("#settingsXboxApiEntry"),
   settingsXboxApiKey: document.querySelector("#settingsXboxApiKey"),
   settingsXboxDisconnect: document.querySelector("#settingsXboxDisconnect"),
   settingsPsnStatus: document.querySelector("#settingsPsnStatus"),
@@ -1122,6 +1124,10 @@ function bindEvents() {
   el.settingsSteamDisconnect?.addEventListener("click", disconnectSteamAccount);
   el.settingsSteamApiKey?.addEventListener("paste", () => window.setTimeout(finishSteamApiKeyConnection, 0));
   el.settingsXboxDisconnect?.addEventListener("click", disconnectXboxAccount);
+  el.settingsXboxApiOpen?.addEventListener("click", () => {
+    el.settingsXboxApiEntry.hidden = false;
+    el.settingsXboxApiKey.focus();
+  });
   el.settingsXboxApiKey?.addEventListener("paste", () => window.setTimeout(finishXboxApiKeyConnection, 0));
   el.authDialog?.addEventListener("click", (event) => {
     if (event.target === el.authDialog) el.authDialog.close("cancel");

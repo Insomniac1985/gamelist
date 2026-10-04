@@ -937,7 +937,7 @@
           </div>
           <div class="settings-account-field settings-provider-field settings-xbox-field">
             <span data-i18n="Xbox account">Xbox Account</span>
-            <small class="settings-provider-intro" id="settingsXboxIntro">Open OpenXBL API keys, sign in, then copy and paste your API key here. Gamelist will identify your Xbox account from the key and encrypt it when saved.</small>
+            <small class="settings-provider-intro" id="settingsXboxIntro">Open OpenXBL API keys, sign in, then copy and paste your API key here.</small>
             <input id="settingsMicrosoftUser" autocomplete="off" data-lpignore="true" data-1p-ignore="true" data-bwignore="true" hidden placeholder="Xbox gamertag or XUID" data-i18n-placeholder="Xbox gamertag or XUID">
             <div class="settings-provider-controls">
               <span id="settingsXboxStatus" class="settings-provider-status" hidden></span>
@@ -945,9 +945,11 @@
               <button class="ghost-button" id="settingsXboxDisconnect" type="button" hidden>Disconnect</button>
             </div>
             <div class="settings-provider-callback" id="settingsXboxApiSetup" hidden>
-              <a class="ghost-button settings-provider-page-button" href="https://xbl.io/dashboard/keys" target="_blank" rel="noopener noreferrer">Open OpenXBL API keys</a>
-              <label for="settingsXboxApiKey">OpenXBL API key</label>
-              <input id="settingsXboxApiKey" type="password" autocomplete="off" name="xbox-api-key-entry" data-lpignore="true" data-1p-ignore="true" data-bwignore="true" readonly placeholder="Paste the API key">
+              <a class="ghost-button settings-provider-page-button" id="settingsXboxApiOpen" href="https://xbl.io/dashboard/keys" target="_blank" rel="noopener noreferrer">Open OpenXBL API keys</a>
+              <div id="settingsXboxApiEntry" hidden>
+                <label for="settingsXboxApiKey">OpenXBL API key</label>
+                <input id="settingsXboxApiKey" type="password" autocomplete="off" name="xbox-api-key-entry" data-lpignore="true" data-1p-ignore="true" data-bwignore="true" readonly placeholder="Paste the API key">
+              </div>
             </div>
           </div>
           <div class="settings-account-field settings-provider-field settings-steam-field">
