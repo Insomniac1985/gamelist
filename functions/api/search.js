@@ -1,3 +1,5 @@
+import { igdbCredentials } from "./igdb-account.js";
+
 const HLTB_BASE = "https://howlongtobeat.com";
 const HLTB_RESULT_LIMIT = 8;
 const IGDB_BASE = "https://api.igdb.com/v4";
@@ -27,7 +29,7 @@ export async function onRequestGet({ request, env = {} }) {
 }
 
 async function searchUncached(query, language, env, lookup, cache, cacheKey) {
-  const igdb = igdbCredentials(env);
+  const igdb = await igdbCredentials(env);
   let igdbError = null;
   if (igdb) {
     try {
@@ -53,7 +55,7 @@ async function searchUncached(query, language, env, lookup, cache, cacheKey) {
         ? "No IGDB matches found. HowLongToBeat lookup unavailable."
         : igdbWasTried
           ? "IGDB lookup unavailable. HowLongToBeat lookup unavailable."
-          : "Game lookup unavailable. Missing IGDB credentials and HowLongToBeat lookup unavailable.",
+          : "Game lookup unavailable. Set up IGDB in Settings → Accounts; HowLongToBeat lookup is also unavailable.",
       providers: {
         IGDB: igdbWasTried ? (igdbError ? "error" : "empty") : "not configured",
         HowLongToBeat: "unavailable",
@@ -99,12 +101,6 @@ function parseLookup(value) {
     // Plain title search.
   }
   return { raw, query: raw, igdbSlug: "", igdbUrl: "" };
-}
-
-function igdbCredentials(env) {
-  const clientId = env.IGDB_CLIENT_ID || globalThis.process?.env?.IGDB_CLIENT_ID || "";
-  const clientSecret = env.IGDB_CLIENT_SECRET || globalThis.process?.env?.IGDB_CLIENT_SECRET || "";
-  return clientId && clientSecret ? { clientId, clientSecret } : null;
 }
 
 export { firstPlatform, igdbCredentials };
@@ -212,7 +208,7 @@ async function igdbLocalizedTitleGameIds(query, credentials, token) {
 }
 
 async function getIgdbToken({ clientId, clientSecret }) {
-  if (igdbTokenCache && Date.now() < igdbTokenCache.expiresAt) return igdbTokenCache.token;
+  if (igdbTokenCache?.clientId === clientId && igdbTokenCache?.clientSecret === clientSecret && Date.now() < igdbTokenCache.expiresAt) return igdbTokenCache.token;
   const tokenUrl = new URL(TWITCH_TOKEN_URL);
   tokenUrl.searchParams.set("client_id", clientId);
   tokenUrl.searchParams.set("client_secret", clientSecret);
@@ -221,6 +217,8 @@ async function getIgdbToken({ clientId, clientSecret }) {
   if (!response.ok) throw new Error("IGDB token failed");
   const data = await response.json();
   igdbTokenCache = {
+    clientId,
+    clientSecret,
     token: data.access_token,
     expiresAt: Date.now() + Math.max(60, Number(data.expires_in || 3600) - 300) * 1000,
   };

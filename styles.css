@@ -11138,6 +11138,8 @@ body.dialog-open .mobile-section-tabs {
   min-height: var(--settings-control-height, 42px);
   padding: 0 34px 0 12px;
   line-height: 1.2;
+  transform: none;
+  translate: none;
 }
 
 .settings-theme-edit-button {
@@ -12395,6 +12397,9 @@ html.theme-light .shelf-card-delete-action:hover {
 .settings-psn-field > span {
   color: #5b9bff !important;
 }
+.settings-igdb-field > span {
+  color: #a970ff !important;
+}
 .settings-xbox-field > span {
   color: #72d572 !important;
 }
@@ -12406,6 +12411,7 @@ html.theme-light .shelf-card-delete-action:hover {
 }
 .settings-twitch-field > span {
   color: #c79cff !important;
+  margin-bottom: 10px !important;
 }
 
 .settings-nintendo-field {
@@ -12446,6 +12452,16 @@ html.theme-light .shelf-card-delete-action:hover {
 .settings-provider-callback {
   display: grid;
   gap: 8px;
+}
+
+.settings-igdb-steps {
+  display: grid;
+  gap: 4px;
+  margin: 0;
+  padding-left: 22px;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.45;
 }
 
 .settings-provider-callback a {

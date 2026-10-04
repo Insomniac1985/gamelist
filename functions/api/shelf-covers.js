@@ -13,8 +13,8 @@ export async function onRequestGet({ request, env }) {
   if (!env.EDIT_PASSWORD) return json({ error: "Missing EDIT_PASSWORD secret" }, 503);
   if (!await isEditorRequest(request, env)) return wantsJson(url) ? json({ error: "Unauthorized" }, 401) : html(authHtml(settings), 401);
 
-  const igdb = igdbCredentials(env);
-  if (!igdb) return wantsJson(url) ? json({ error: "Missing IGDB credentials" }, 503) : html(errorHtml("Missing IGDB_CLIENT_ID or IGDB_CLIENT_SECRET.", settings), 503);
+  const igdb = await igdbCredentials(env);
+  if (!igdb) return wantsJson(url) ? json({ error: "Connect IGDB in Settings → Accounts first." }, 503) : html(errorHtml("Connect IGDB in Settings → Accounts first.", settings), 503);
 
   if (!wantsJson(url) && !url.searchParams.has("cursor")) {
     return html(runnerHtml({

@@ -65,6 +65,7 @@ let nintendoSetupStarted = false;
 let psnTokenDaysLeft = null;
 const steamApiAccount = { available: false, personaName: "" };
 const xboxApiAccount = { available: false };
+const igdbApiAccount = { configured: false, source: "" };
 const DEFAULT_SETTINGS = {
   pageOrder: DEFAULT_PAGE_ORDER,
   hiddenSections: [],
@@ -399,6 +400,16 @@ const el = {
   preferredStoreFieldIcon: document.querySelector(".preferred-store-field-icon"),
   settingsLayoutList: document.querySelector("#settingsLayoutList"),
   settingsPsnUser: document.querySelector("#settingsPsnUser"),
+  settingsIgdbIntro: document.querySelector("#settingsIgdbIntro"),
+  settingsIgdbSteps: document.querySelector("#settingsIgdbSteps"),
+  settingsIgdbStatus: document.querySelector("#settingsIgdbStatus"),
+  settingsIgdbApiStatus: document.querySelector("#settingsIgdbApiStatus"),
+  settingsIgdbOpen: document.querySelector("#settingsIgdbOpen"),
+  settingsIgdbCredentialSetup: document.querySelector("#settingsIgdbCredentialSetup"),
+  settingsIgdbClientId: document.querySelector("#settingsIgdbClientId"),
+  settingsIgdbClientSecret: document.querySelector("#settingsIgdbClientSecret"),
+  settingsIgdbConnect: document.querySelector("#settingsIgdbConnect"),
+  settingsIgdbDisconnect: document.querySelector("#settingsIgdbDisconnect"),
   settingsMicrosoftUser: document.querySelector("#settingsMicrosoftUser"),
   settingsSteamUser: document.querySelector("#settingsSteamUser"),
   settingsSteamStatus: document.querySelector("#settingsSteamStatus"),
@@ -1108,6 +1119,14 @@ function bindEvents() {
     if (event.target === el.settingsDialog) el.settingsDialog.close();
   });
   el.settingsDialog?.addEventListener("close", syncScrollLock);
+  el.settingsIgdbOpen?.addEventListener("click", () => {
+    el.settingsIgdbIntro.hidden = false;
+    el.settingsIgdbSteps.hidden = false;
+    el.settingsIgdbCredentialSetup.hidden = false;
+    el.settingsIgdbClientId.focus();
+  });
+  el.settingsIgdbConnect?.addEventListener("click", finishIgdbConnection);
+  el.settingsIgdbDisconnect?.addEventListener("click", disconnectIgdbAccount);
   el.settingsNintendoConnect?.addEventListener("click", beginNintendoConnection);
   el.settingsNintendoDisconnect?.addEventListener("click", disconnectNintendoAccount);
   el.settingsNintendoCallbackUrl?.addEventListener("paste", () => window.setTimeout(finishNintendoConnection, 0));
@@ -1117,7 +1136,7 @@ function bindEvents() {
   el.settingsPsnDisconnect?.addEventListener("click", disconnectPsnAccount);
   el.settingsPsnNpsso?.addEventListener("paste", () => window.setTimeout(showPsnAccountIdEntry, 0));
   el.settingsPsnConfirm?.addEventListener("click", finishPsnConnection);
-  [el.settingsPsnNpsso, el.settingsSteamApiKey, el.settingsXboxApiKey].forEach((input) => {
+  [el.settingsPsnNpsso, el.settingsSteamApiKey, el.settingsXboxApiKey, el.settingsIgdbClientId, el.settingsIgdbClientSecret].forEach((input) => {
     input?.addEventListener("focus", () => input.removeAttribute("readonly"), { once: true });
   });
   el.settingsSteamConnect?.addEventListener("click", beginSteamConnection);
@@ -1834,11 +1853,113 @@ function openSettingsDialog() {
   if (!state.canEdit || window.matchMedia("(max-width: 760px)").matches) return;
   renderSettingsDialog();
   el.settingsDialog.showModal();
+  refreshIgdbConnectionStatus();
   refreshNintendoConnectionStatus();
   refreshPsnConnectionStatus();
   refreshSteamApiStatus();
   refreshXboxApiStatus();
   syncScrollLock();
+}
+
+function setIgdbConnectionState() {
+  const configured = igdbApiAccount.configured;
+  el.settingsIgdbStatus.textContent = configured
+    ? (igdbApiAccount.source === "settings" ? "Connected" : "Connected with existing site credentials")
+    : "";
+  el.settingsIgdbStatus.hidden = !configured;
+  el.settingsIgdbDisconnect.hidden = !configured;
+  el.settingsIgdbIntro.hidden = configured;
+  el.settingsIgdbSteps.hidden = configured;
+  el.settingsIgdbOpen.textContent = configured
+    ? (igdbApiAccount.source === "settings" ? "Update IGDB credentials" : "Replace IGDB credentials")
+    : "Open Twitch Developer Console";
+}
+
+async function refreshIgdbConnectionStatus() {
+  try {
+    const response = await fetch("/api/igdb-account?action=status", { cache: "no-store" });
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok) throw new Error(data.error || "Could not check IGDB credentials.");
+    igdbApiAccount.configured = Boolean(data.configured);
+    igdbApiAccount.source = String(data.source || "");
+    setIgdbConnectionState();
+  } catch (error) {
+    el.settingsIgdbApiStatus.textContent = error?.message || "Could not check IGDB credentials.";
+    el.settingsIgdbApiStatus.hidden = false;
+  }
+}
+
+async function finishIgdbConnection() {
+  const clientId = el.settingsIgdbClientId.value.trim();
+  const clientSecret = el.settingsIgdbClientSecret.value.trim();
+  if (!clientId || !clientSecret) {
+    el.settingsIgdbApiStatus.textContent = "Enter both the Twitch Client ID and Client Secret.";
+    el.settingsIgdbApiStatus.hidden = false;
+    return;
+  }
+  el.settingsIgdbClientId.disabled = true;
+  el.settingsIgdbClientSecret.disabled = true;
+  el.settingsIgdbConnect.disabled = true;
+  el.settingsIgdbApiStatus.textContent = "Verifying Twitch app and IGDB access…";
+  el.settingsIgdbApiStatus.hidden = false;
+  try {
+    const response = await fetch("/api/igdb-account", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ action: "connect", clientId, clientSecret }),
+    });
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok) throw new Error(data.error || "Could not connect IGDB.");
+    el.settingsIgdbClientId.value = "";
+    el.settingsIgdbClientSecret.value = "";
+    el.settingsIgdbCredentialSetup.hidden = true;
+    igdbApiAccount.configured = true;
+    igdbApiAccount.source = "settings";
+    state.integrationStatus = {
+      ...(state.integrationStatus || {}),
+      IGDB_CLIENT_ID: true,
+      IGDB_CLIENT_SECRET: true,
+      working: { ...(state.integrationStatus?.working || {}), IGDB: true },
+    };
+    setIgdbConnectionState();
+  } catch (error) {
+    el.settingsIgdbApiStatus.textContent = error?.message || "Could not connect IGDB.";
+    el.settingsIgdbApiStatus.hidden = false;
+  } finally {
+    el.settingsIgdbClientId.disabled = false;
+    el.settingsIgdbClientSecret.disabled = false;
+    el.settingsIgdbConnect.disabled = false;
+  }
+}
+
+async function disconnectIgdbAccount() {
+  el.settingsIgdbDisconnect.disabled = true;
+  try {
+    const response = await fetch("/api/igdb-account", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ action: "disconnect" }),
+    });
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok) throw new Error(data.error || "Could not disconnect IGDB.");
+    igdbApiAccount.configured = false;
+    igdbApiAccount.source = "";
+    state.integrationStatus = {
+      ...(state.integrationStatus || {}),
+      IGDB_CLIENT_ID: false,
+      IGDB_CLIENT_SECRET: false,
+      working: { ...(state.integrationStatus?.working || {}), IGDB: false },
+    };
+    el.settingsIgdbCredentialSetup.hidden = true;
+    el.settingsIgdbApiStatus.textContent = "";
+    el.settingsIgdbApiStatus.hidden = true;
+    setIgdbConnectionState();
+  } catch (error) {
+    el.settingsIgdbApiStatus.textContent = error?.message || "Could not disconnect IGDB.";
+    el.settingsIgdbApiStatus.hidden = false;
+  } finally {
+    el.settingsIgdbDisconnect.disabled = false;
+  }
 }
 
 async function refreshNintendoConnectionStatus() {
@@ -1944,7 +2065,7 @@ async function refreshPsnConnectionStatus() {
 function setPsnConnectionState(connected) {
   const accountId = String(state.settings.psnUser || "").trim();
   const daysLeft = Number.isFinite(psnTokenDaysLeft)
-    ? ` · ${psnTokenDaysLeft === 0 ? "expires today" : `${psnTokenDaysLeft} ${psnTokenDaysLeft === 1 ? "day" : "days"} left`}`
+    ? ` · ${psnTokenDaysLeft === 0 ? "refresh needed today" : `${psnTokenDaysLeft} ${psnTokenDaysLeft === 1 ? "day" : "days"} until refresh is needed`}`
     : "";
   el.settingsPsnStatus.textContent = connected ? `${accountId ? `Connected to ${accountId}` : "Connected"}${daysLeft}` : "";
   el.settingsPsnStatus.hidden = !connected;
@@ -2079,7 +2200,7 @@ async function beginSteamConnection() {
     state.settings = normalizeSettings({ ...state.settings, steamUser: result.steamId });
     persistLocalSettings();
     await persistCloud();
-    setSteamConnectionState(true);
+    setSteamConnectionState();
     await refreshSteamApiStatus();
   } catch (error) {
     loginTab.close();
@@ -2090,18 +2211,20 @@ async function beginSteamConnection() {
   }
 }
 
-function setSteamConnectionState(connected) {
+function setSteamConnectionState() {
   const accountId = String(state.settings.steamUser || "").trim();
+  const hasSteamId = Boolean(accountId);
+  const connected = hasSteamId && steamApiAccount.available;
   const identity = steamApiAccount.personaName || accountId;
   el.settingsSteamStatus.textContent = connected ? (identity ? `Connected to ${identity}` : "Connected") : "";
   el.settingsSteamStatus.hidden = !connected;
   el.settingsSteamUser.hidden = true;
-  el.settingsSteamConnect.hidden = connected;
+  el.settingsSteamConnect.hidden = hasSteamId;
   el.settingsSteamDisconnect.hidden = !connected;
   el.settingsSteamApiStatus.textContent = "";
   el.settingsSteamApiStatus.hidden = true;
-  el.settingsSteamApiIntro.hidden = steamApiAccount.available;
-  el.settingsSteamApiSetup.hidden = !connected || steamApiAccount.available;
+  el.settingsSteamApiIntro.hidden = connected;
+  el.settingsSteamApiSetup.hidden = !hasSteamId || steamApiAccount.available;
 }
 
 async function refreshSteamApiStatus() {
@@ -2112,11 +2235,11 @@ async function refreshSteamApiStatus() {
     if (!response.ok) throw new Error(data.error || "Could not check Steam API key.");
     steamApiAccount.available = Boolean(data.apiKeyAvailable);
     steamApiAccount.personaName = String(data.personaName || "");
-    setSteamConnectionState(Boolean(state.settings.steamUser));
+    setSteamConnectionState();
   } catch (error) {
     steamApiAccount.available = false;
     steamApiAccount.personaName = "";
-    setSteamConnectionState(Boolean(state.settings.steamUser));
+    setSteamConnectionState();
     if (state.settings.steamUser) {
       el.settingsSteamApiStatus.textContent = error?.message || "Could not check Steam API key.";
       el.settingsSteamApiStatus.hidden = false;
@@ -2175,7 +2298,7 @@ async function disconnectSteamAccount() {
   el.settingsSteamUser.value = "";
   persistLocalSettings();
   await persistCloud();
-  setSteamConnectionState(false);
+  setSteamConnectionState();
   el.settingsSteamDisconnect.disabled = false;
 }
 
@@ -2300,7 +2423,7 @@ function renderSettingsDialog() {
   el.settingsMicrosoftUser.value = state.settings.microsoftUser;
   setXboxConnectionState();
   el.settingsSteamUser.value = state.settings.steamUser;
-  setSteamConnectionState(Boolean(state.settings.steamUser));
+  setSteamConnectionState();
   el.settingsTwitchUser.value = state.settings.twitchUser;
   el.settingsCurrency.value = state.settings.currency;
   el.settingsRegion.value = state.settings.region;

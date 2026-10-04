@@ -108,7 +108,7 @@ EDIT_PASSWORD
 
 `EDIT_PASSWORD` is the password you will type in the app to unlock **Edit mode** and change your site settings and theme.
 
-Add personal platform accounts through **Settings** in Gamelist. Do not add personal PlayStation, Steam, or Nintendo account credentials as Cloudflare secrets. Use Cloudflare secrets for the integration app and service keys called out below.
+Add personal platform accounts and IGDB credentials through **Settings** in Gamelist. Use Cloudflare secrets only for service keys that still require them, as listed below.
 
 Now **continue** the setup until you reach **Recommended Integrations**. The next integrations are **required** to make it all work properly, but the recommended ones will help you improve your experience a bit more.
 
@@ -128,17 +128,10 @@ IGDB authentication uses Twitch developer credentials:
 9. Set client type as **Confidential**.
 10. Create the app.
 11. Click the manage button on the Application you just created.
-12. Copy the **Client ID** and create a new **Cloudflare secret**:
-
-```text
-IGDB_CLIENT_ID
-```
-
-13. Click generate new secret and copy the **Client Secret** and create another **Cloudflare secret**:
-
-```text
-IGDB_CLIENT_SECRET
-```
+12. Copy the **Client ID**.
+13. Click **Generate New Secret** and copy the **Client Secret**.
+14. In Gamelist, enter **Edit mode**, open **Settings** scroll down to **Accounts**, and choose **Log in to Twitch Developer Console** to reveal the credential fields.
+15. Paste the **Client ID** and **Client Secret** into Settings, then choose **Verify and connect IGDB**. Gamelist verifies the credentials and stores them encrypted.
 
 ### 4. Set up the automatic website updates/patches
 
@@ -191,8 +184,8 @@ Platform accounts are connected in **Edit mode → Settings → Accounts**. The 
 
 1. Enter **Edit mode** and open **Settings**.
 2. Go to the **Accounts** section.
-3. Choose **Log in with PlayStation**, open the token page from Settings, and copy the full JSON response containing `npsso` and `expires_in`.
-4. Paste the response in Settings, enter your PlayStation online ID, and confirm the connection. Gamelist stores only `npsso` and uses `expires_in` to track the token's remaining time.
+3. Choose **Log in with PlayStation** then **Open PSN Token page**, and copy the full JSON response containing `npsso` and `expires_in`.
+4. Paste the response in Settings, enter your PlayStation online ID, and confirm the connection.
 
 The token is stored encrypted, and Settings shows the remaining time from the pasted `expires_in` value. Reconnect it when it expires.
 
@@ -212,8 +205,6 @@ Xbox 360, Xbox One, Xbox Series and Xbox PC games can show achievements through 
 2. Go to the **Accounts** section.
 3. Choose **Open OpenXBL API keys**, sign in to [OpenXBL](https://xbl.io/), create a personal API key, and copy it.
 4. Paste the key into the OpenXBL API key field, and wait for Gamelist to verify it and identify your Xbox account.
-
-The API key is stored encrypted. Gamelist uses it for Xbox achievements and playtime.
 
 ### <img src="assets/sites/nintendo.png" alt="Nintendo" width="22" align="center"> Nintendo Account
 

@@ -1,6 +1,7 @@
 import { getPsnAccessToken, getPsnNpsso } from "./psn-auth.js";
 import { getSteamApiKey } from "./steam-account.js";
 import { getXboxApiKey } from "./xbox-account.js";
+import { igdbCredentials, verifyIgdbCredentials } from "./igdb-account.js";
 import { isEditorRequest } from "./editor-auth.js";
 
 const HEALTH_CACHE_SECONDS = 45 * 60;
@@ -9,13 +10,14 @@ export async function onRequestGet({ request, env = {} }) {
   if (!await isEditorRequest(request, env)) return json({ error: "Unauthorized" }, 401);
   const isSet = (value) => Boolean(String(value || "").trim());
   const health = await integrationHealth(env, request);
+  const igdb = await igdbCredentials(env);
   const { CURRENT_REPO, ...working } = health;
   return json({
     PSN_NPSSO: isSet(await getPsnNpsso(env)),
     OPENXBL_API_KEY: isSet(await getXboxApiKey(env)),
     STEAM_API_KEY: isSet(await getSteamApiKey(env)),
-    IGDB_CLIENT_ID: isSet(env.IGDB_CLIENT_ID),
-    IGDB_CLIENT_SECRET: isSet(env.IGDB_CLIENT_SECRET),
+    IGDB_CLIENT_ID: Boolean(igdb?.clientId),
+    IGDB_CLIENT_SECRET: Boolean(igdb?.clientSecret),
     PRICECHARTING_TOKEN: isSet(env.PRICECHARTING_TOKEN),
     GOOGLE_PRIVATE_KEY: isSet(env.GOOGLE_PRIVATE_KEY),
     UPDATE: working.UPDATE,
@@ -64,26 +66,9 @@ async function integrationHealth(env, request) {
 }
 
 async function checkIgdb(env) {
-  const clientId = String(env.IGDB_CLIENT_ID || "").trim();
-  const clientSecret = String(env.IGDB_CLIENT_SECRET || "").trim();
-  if (!clientId || !clientSecret) return false;
-  const tokenUrl = new URL("https://id.twitch.tv/oauth2/token");
-  tokenUrl.searchParams.set("client_id", clientId);
-  tokenUrl.searchParams.set("client_secret", clientSecret);
-  tokenUrl.searchParams.set("grant_type", "client_credentials");
-  const tokenResponse = await safeFetch(tokenUrl, { method: "POST" });
-  if (!tokenResponse?.ok) return false;
-  const token = await tokenResponse.json().catch(() => ({}));
-  const response = await safeFetch("https://api.igdb.com/v4/games", {
-    method: "POST",
-    headers: {
-      "Client-ID": clientId,
-      Authorization: `Bearer ${token.access_token || ""}`,
-      "Content-Type": "text/plain",
-    },
-    body: "fields id; limit 1;",
-  });
-  return Boolean(response?.ok);
+  const credentials = await igdbCredentials(env);
+  if (!credentials) return false;
+  try { return await verifyIgdbCredentials(credentials); } catch { return false; }
 }
 
 async function checkPriceCharting() {

@@ -1,3 +1,5 @@
+import { igdbCredentials } from "./igdb-account.js";
+
 const TWITCH_TOKEN_URL = "https://id.twitch.tv/oauth2/token";
 const TWITCH_API_URL = "https://api.twitch.tv/helix";
 
@@ -6,7 +8,7 @@ let tokenCache;
 export async function onRequestGet({ request, env = {} }) {
   const username = cleanUsername(new URL(request.url).searchParams.get("user"));
   if (!username) return json({ error: "Twitch username required" }, 400);
-  const credentials = twitchCredentials(env);
+  const credentials = await igdbCredentials(env);
   if (!credentials) return json({ channel: username, type: "live", isLive: null });
   try {
     const token = await getToken(credentials);
@@ -32,14 +34,8 @@ export async function onRequestGet({ request, env = {} }) {
   }
 }
 
-function twitchCredentials(env) {
-  const clientId = env.IGDB_CLIENT_ID || globalThis.process?.env?.IGDB_CLIENT_ID || "";
-  const clientSecret = env.IGDB_CLIENT_SECRET || globalThis.process?.env?.IGDB_CLIENT_SECRET || "";
-  return clientId && clientSecret ? { clientId, clientSecret } : null;
-}
-
 async function getToken({ clientId, clientSecret }) {
-  if (tokenCache && Date.now() < tokenCache.expiresAt) return tokenCache.token;
+  if (tokenCache?.clientId === clientId && tokenCache?.clientSecret === clientSecret && Date.now() < tokenCache.expiresAt) return tokenCache.token;
   const url = new URL(TWITCH_TOKEN_URL);
   url.searchParams.set("client_id", clientId);
   url.searchParams.set("client_secret", clientSecret);
@@ -48,6 +44,8 @@ async function getToken({ clientId, clientSecret }) {
   if (!response.ok) throw new Error("Twitch authentication failed");
   const data = await response.json();
   tokenCache = {
+    clientId,
+    clientSecret,
     token: data.access_token,
     expiresAt: Date.now() + Math.max(60, Number(data.expires_in || 3600) - 300) * 1000,
   };
