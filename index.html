@@ -919,7 +919,7 @@
           <div class="settings-account-field settings-psn-field">
             <span data-i18n="PlayStation account">PlayStation Account</span>
             <input id="settingsPsnUser" autocomplete="off" placeholder="PlayStation online ID" data-i18n-placeholder="PlayStation online ID">
-            <small class="settings-provider-intro" id="settingsPsnIntro">Your PSN token is encrypted in storage and automatically removed after 60 days.</small>
+            <small class="settings-provider-intro" id="settingsPsnIntro">Log in with PlayStation, open the PSN token page, and copy the value next to “npsso” from its JSON. Paste it below to connect. The token is encrypted and removed after 60 days.</small>
             <div class="settings-provider-controls">
               <span id="settingsPsnStatus" class="settings-provider-status" hidden></span>
               <button class="ghost-button" id="settingsPsnConnect" type="button">Open PlayStation sign-in</button>
@@ -948,7 +948,7 @@
               <button class="ghost-button" id="settingsSteamConnect" type="button">Log in with Steam</button>
               <button class="ghost-button" id="settingsSteamDisconnect" type="button" hidden>Disconnect</button>
             </div>
-            <small class="settings-provider-intro" id="settingsSteamApiIntro" hidden>Log in with Steam to fill your ID, then paste your Web API key from the page below. It is encrypted in storage and removed when you disconnect Steam.</small>
+            <small class="settings-provider-intro" id="settingsSteamApiIntro" hidden>Log in with Steam to fill your ID, then open the Steam API key page, register this site's domain, and copy the key. Paste it below to enable achievements. The key is encrypted until you disconnect Steam.</small>
             <div class="settings-provider-callback" id="settingsSteamApiSetup" hidden>
               <a class="ghost-button settings-provider-page-button" href="https://steamcommunity.com/dev/apikey" target="_blank" rel="noreferrer">Open Steam API key page</a>
               <label for="settingsSteamApiKey">Steam Web API key</label>
