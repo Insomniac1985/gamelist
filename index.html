@@ -930,6 +930,7 @@
               <small class="settings-provider-intro" id="settingsPsnPasteInfo" hidden>Copy the value next to “npsso” from the token page and paste it below.</small>
               <label for="settingsPsnNpsso" id="settingsPsnTokenLabel" hidden>PSN NPSSO value</label>
               <input id="settingsPsnNpsso" type="password" autocomplete="off" name="psn-token-entry" data-lpignore="true" data-1p-ignore="true" data-bwignore="true" readonly placeholder="Paste the npsso value">
+              <small class="settings-provider-intro" id="settingsPsnConfirmInfo" hidden>Add your PlayStation ID, then confirm the connection.</small>
               <label for="settingsPsnUser" id="settingsPsnUserLabel" hidden>PlayStation online ID</label>
               <button class="ghost-button" id="settingsPsnConfirm" type="button" hidden disabled>Confirm connection</button>
             </div>
@@ -944,6 +945,7 @@
           </div>
           <div class="settings-account-field settings-provider-field settings-steam-field">
             <span data-i18n="Steam account">Steam Account</span>
+            <small class="settings-provider-intro" id="settingsSteamApiIntro">Log in with Steam to connect your account. To enable achievements, open the Steam API key page, register this site's domain, then paste the key below.</small>
             <input id="settingsSteamUser" autocomplete="off" data-lpignore="true" data-1p-ignore="true" data-bwignore="true" hidden placeholder="SteamID64, profile URL, or vanity name" data-i18n-placeholder="SteamID64, profile URL, or vanity name">
             <div class="settings-provider-controls">
               <span id="settingsSteamStatus" class="settings-provider-status" hidden></span>
@@ -951,7 +953,6 @@
               <button class="ghost-button" id="settingsSteamConnect" type="button">Log in with Steam</button>
               <button class="ghost-button" id="settingsSteamDisconnect" type="button" hidden>Disconnect</button>
             </div>
-            <small class="settings-provider-intro" id="settingsSteamApiIntro">Log in with Steam to connect your account. To enable achievements, open the Steam API key page, register this site's domain, then paste the key below.</small>
             <div class="settings-provider-callback" id="settingsSteamApiSetup" hidden>
               <a class="ghost-button settings-provider-page-button" href="https://steamcommunity.com/dev/apikey" target="_blank" rel="noreferrer">Open Steam API key page</a>
               <label for="settingsSteamApiKey">Steam Web API key</label>
@@ -960,7 +961,7 @@
           </div>
           <div class="settings-account-field settings-nintendo-field">
             <span>Nintendo Account</span>
-            <small class="settings-nintendo-intro" id="settingsNintendoIntro">Log in with Nintendo, select your account, then right click and Copy the Link address from Select this person. Paste the link below, it's the one-time sign-in code.</small>
+            <small class="settings-nintendo-intro" id="settingsNintendoIntro" hidden>Log in with Nintendo, select your account, then right click and Copy the Link address from Select this person. Paste the link below, it's the one-time sign-in code.</small>
             <div class="settings-nintendo-controls">
               <span id="settingsNintendoStatus" class="settings-nintendo-status" hidden></span>
               <button class="ghost-button" id="settingsNintendoConnect" type="button">Log in with Nintendo</button>
