@@ -12457,7 +12457,7 @@ html.theme-light .shelf-card-delete-action:hover {
 .settings-igdb-steps {
   display: grid;
   gap: 4px;
-  margin: 0 0 24px;
+  margin: 10px 0 20px 14px;
   padding-left: 22px;
   color: var(--muted);
   font-size: 12px;
