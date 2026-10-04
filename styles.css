@@ -12274,6 +12274,11 @@ html.theme-light .shelf-card-delete-action:hover {
 
 .settings-accounts-section .settings-account-field {
   grid-column: 1;
+  min-width: 0;
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.035);
 }
 
 .settings-nintendo-field {
