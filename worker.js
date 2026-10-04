@@ -3,6 +3,7 @@ import * as achievements from "./functions/api/achievements.js";
 import * as calendar from "./functions/api/calendar.js";
 import * as collectionPrice from "./functions/api/collection-price.js";
 import * as cover from "./functions/api/cover.js";
+import * as igdbAccount from "./functions/api/igdb-account.js";
 import * as gamelistMassAdd from "./functions/api/gamelist-mass-add.js";
 import * as gamelistMetadata from "./functions/api/gamelist-metadata.js";
 import * as achievementCompletionsByYear from "./functions/api/achievement-completions-by-year.js";
@@ -40,6 +41,7 @@ const routes = {
   "/api/calendar": calendar,
   "/api/collection-price": collectionPrice,
   "/api/cover": cover,
+  "/api/igdb-account": igdbAccount,
   "/api/completed-games-by-year": completedGamesByYear,
   "/api/gamelist-games-by-list": gamelistGamesByList,
   "/api/gamelist-mass-add": gamelistMassAdd,
