@@ -12264,8 +12264,16 @@ html.theme-light .shelf-card-delete-action:hover {
   grid-template-columns: repeat(8, minmax(0, 1fr));
 }
 
+.settings-accounts-section .settings-detail-grid {
+  grid-template-columns: minmax(0, 1fr);
+}
+
 .settings-account-field {
   grid-column: span 2;
+}
+
+.settings-accounts-section .settings-account-field {
+  grid-column: 1;
 }
 
 .settings-nintendo-field {
