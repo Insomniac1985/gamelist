@@ -19,11 +19,21 @@ export async function getPsnNpsso(env = {}) {
 export async function savePsnNpsso(npsso, env = {}) {
   if (!env.GAMELIST) throw new Error("Missing GAMELIST KV binding");
   if (!env.EDIT_PASSWORD) throw new Error("EDIT_PASSWORD is required to securely store the PlayStation connection.");
-  const value = String(npsso || "").trim();
+  const value = normalizeNpsso(npsso);
   if (!value || value.length > 2048) throw new Error("Paste the PlayStation NPSSO token value.");
   await getPsnAccessToken(value);
   await env.GAMELIST.put(PSN_ACCOUNT_MANAGED_KEY, "1");
   await env.GAMELIST.put(PSN_NPSSO_KEY, await encryptCredential(value, env.EDIT_PASSWORD), { expirationTtl: PSN_NPSSO_TTL_SECONDS });
+}
+
+function normalizeNpsso(value) {
+  const text = String(value || "").trim();
+  try {
+    const parsed = JSON.parse(text);
+    if (parsed?.npsso) return normalizeNpsso(parsed.npsso);
+  } catch {}
+  const cookie = text.match(/(?:^|;\s*)npsso=([^;\s]+)/i);
+  return (cookie?.[1] || text.replace(/^npsso=/i, "")).trim();
 }
 
 export async function disconnectPsnNpsso(env = {}) {

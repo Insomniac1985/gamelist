@@ -1,3 +1,5 @@
+import { getSteamApiKey } from "./steam-account.js";
+
 const STEAM_API_BASE = "https://api.steampowered.com";
 const STEAM_CACHE_SECONDS = 12 * 60 * 60;
 
@@ -9,7 +11,7 @@ export async function onRequestGet({ request, env = {} }) {
   const activityOnly = url.searchParams.get("activity") === "1";
   const language = apiLanguage(url.searchParams.get("lang"));
   const debug = url.searchParams.has("debug");
-  const apiKey = String(env.STEAM_API_KEY || globalThis.process?.env?.STEAM_API_KEY || "").trim();
+  const apiKey = await getSteamApiKey(env);
 
   if (!user) return json({ achievements: [], needsSetup: true, error: "Missing Steam profile" }, 200, { cache: false });
   if (!apiKey) return json({ achievements: [], needsSetup: true, error: "Missing STEAM_API_KEY" }, 200, { cache: false });

@@ -1,4 +1,5 @@
 import { getPsnAccessToken, getPsnNpsso } from "./psn-auth.js";
+import { getSteamApiKey } from "./steam-account.js";
 import { isEditorRequest } from "./editor-auth.js";
 
 const HEALTH_CACHE_SECONDS = 45 * 60;
@@ -11,7 +12,7 @@ export async function onRequestGet({ request, env = {} }) {
   return json({
     PSN_NPSSO: isSet(await getPsnNpsso(env)),
     OPENXBL_API_KEY: isSet(env.OPENXBL_API_KEY),
-    STEAM_API_KEY: isSet(env.STEAM_API_KEY),
+    STEAM_API_KEY: isSet(await getSteamApiKey(env)),
     IGDB_CLIENT_ID: isSet(env.IGDB_CLIENT_ID),
     IGDB_CLIENT_SECRET: isSet(env.IGDB_CLIENT_SECRET),
     PRICECHARTING_TOKEN: isSet(env.PRICECHARTING_TOKEN),
@@ -111,7 +112,7 @@ async function checkXbox(env) {
 }
 
 async function checkSteam(env) {
-  const apiKey = String(env.STEAM_API_KEY || "").trim();
+  const apiKey = await getSteamApiKey(env);
   if (!apiKey) return false;
   const url = new URL("https://api.steampowered.com/ISteamUser/GetPlayerSummaries/v2/");
   url.searchParams.set("key", apiKey);
