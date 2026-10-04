@@ -919,7 +919,7 @@
           <div class="settings-account-field settings-psn-field">
             <span data-i18n="PlayStation account">PlayStation Account</span>
             <input id="settingsPsnUser" autocomplete="off" data-lpignore="true" data-1p-ignore="true" data-bwignore="true" placeholder="PlayStation online ID" data-i18n-placeholder="PlayStation online ID" hidden>
-            <small class="settings-provider-intro" id="settingsPsnIntro">Log in with PlayStation, then open the token page and copy the value next to “npsso”. Paste it below and enter your PlayStation online ID to confirm. The token works for 60 days.</small>
+            <small class="settings-provider-intro" id="settingsPsnIntro">Log in with PlayStation, open the token page, then copy and paste the full JSON response here. Gamelist reads the npsso token and uses expires_in to show how long it remains valid. Then enter your PlayStation online ID to confirm.</small>
             <div class="settings-provider-controls">
               <span id="settingsPsnStatus" class="settings-provider-status" hidden></span>
               <button class="ghost-button settings-provider-page-button" id="settingsPsnConnect" type="button">Log in with PlayStation</button>
@@ -927,9 +927,9 @@
             </div>
             <div class="settings-provider-callback" id="settingsPsnCallback" hidden>
               <button class="ghost-button settings-provider-page-button" id="settingsPsnTokenPage" type="button" hidden>Open PSN token page</button>
-              <small class="settings-provider-intro" id="settingsPsnPasteInfo" hidden>Copy the value next to “npsso” from the token page and paste it below.</small>
-              <label for="settingsPsnNpsso" id="settingsPsnTokenLabel" hidden>PSN NPSSO value</label>
-              <input id="settingsPsnNpsso" type="password" autocomplete="off" name="psn-token-entry" data-lpignore="true" data-1p-ignore="true" data-bwignore="true" readonly placeholder="Paste the npsso value">
+              <small class="settings-provider-intro" id="settingsPsnPasteInfo" hidden>Copy the full JSON response, including npsso and expires_in, and paste it below.</small>
+              <label for="settingsPsnNpsso" id="settingsPsnTokenLabel" hidden>PlayStation token JSON</label>
+              <input id="settingsPsnNpsso" type="password" autocomplete="off" name="psn-token-entry" data-lpignore="true" data-1p-ignore="true" data-bwignore="true" readonly placeholder="Paste the full token response">
               <small class="settings-provider-intro" id="settingsPsnConfirmInfo" hidden>Add your PlayStation ID, then confirm the connection.</small>
               <label for="settingsPsnUser" id="settingsPsnUserLabel" hidden>PlayStation online ID</label>
               <button class="ghost-button" id="settingsPsnConfirm" type="button" hidden disabled>Confirm connection</button>
@@ -937,12 +937,11 @@
           </div>
           <div class="settings-account-field settings-provider-field settings-xbox-field">
             <span data-i18n="Xbox account">Xbox Account</span>
-            <small class="settings-provider-intro" id="settingsXboxIntro">Log in with Xbox to link your account. To enable achievements, create an OpenXBL API key and paste it here; the key is encrypted when saved.</small>
+            <small class="settings-provider-intro" id="settingsXboxIntro">Open OpenXBL API keys, sign in, then copy and paste your API key here. Gamelist will identify your Xbox account from the key and encrypt it when saved.</small>
             <input id="settingsMicrosoftUser" autocomplete="off" data-lpignore="true" data-1p-ignore="true" data-bwignore="true" hidden placeholder="Xbox gamertag or XUID" data-i18n-placeholder="Xbox gamertag or XUID">
             <div class="settings-provider-controls">
               <span id="settingsXboxStatus" class="settings-provider-status" hidden></span>
               <span id="settingsXboxApiStatus" class="settings-provider-status" hidden></span>
-              <button class="ghost-button" id="settingsXboxConnect" type="button">Log in with Xbox</button>
               <button class="ghost-button" id="settingsXboxDisconnect" type="button" hidden>Disconnect</button>
             </div>
             <div class="settings-provider-callback" id="settingsXboxApiSetup" hidden>

@@ -191,10 +191,10 @@ Platform accounts are connected in **Edit mode → Settings → Accounts**. The 
 
 1. Enter **Edit mode** and open **Settings**.
 2. Go to the **Accounts** section.
-3. Choose **Log in with PlayStation**, then open the token page from Settings and copy the `npsso` value.
-4. Paste the value in Settings, enter your PlayStation online ID, and confirm the connection.
+3. Choose **Log in with PlayStation**, open the token page from Settings, and copy the full JSON response containing `npsso` and `expires_in`.
+4. Paste the response in Settings, enter your PlayStation online ID, and confirm the connection. Gamelist stores only `npsso` and uses `expires_in` to track the token's remaining time.
 
-The token is stored encrypted and expires after 60 days. Reconnect it from Settings when it expires.
+The token is stored encrypted, and Settings shows the remaining time from the pasted `expires_in` value. Reconnect it when it expires.
 
 ### <img src="assets/platforms/steam.png" alt="Steam" width="22" align="center"> Steam Achievements
 

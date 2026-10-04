@@ -1,5 +1,5 @@
 import { isEditorRequest } from "./editor-auth.js";
-import { disconnectPsnNpsso, getPsnNpsso, getPsnNpssoDaysLeft, savePsnNpsso } from "./psn-auth.js";
+import { disconnectPsnNpsso, getPsnNpsso, getPsnNpssoDaysLeft, parsePsnTokenResponse, savePsnNpsso } from "./psn-auth.js";
 
 export async function onRequestGet({ request, env = {} }) {
   if (!await isEditorRequest(request, env)) return json({ error: "Unauthorized" }, 401);
@@ -14,8 +14,9 @@ export async function onRequestPost({ request, env = {} }) {
   const body = await request.json().catch(() => ({}));
   try {
     if (body.action === "connect") {
-      await savePsnNpsso(body.npsso, env);
-      return json({ connected: true, tokenDaysLeft: await getPsnNpssoDaysLeft(env) ?? 60 });
+      const { npsso, expiresInSeconds } = parsePsnTokenResponse(body.tokenResponse);
+      await savePsnNpsso(npsso, env, expiresInSeconds);
+      return json({ connected: true, tokenDaysLeft: await getPsnNpssoDaysLeft(env) ?? Math.ceil(expiresInSeconds / 86400) });
     }
     if (body.action === "disconnect") {
       await disconnectPsnNpsso(env);
