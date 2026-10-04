@@ -14,9 +14,9 @@ export async function onRequestPost({ request, env = {} }) {
   const body = await request.json().catch(() => ({}));
   try {
     if (body.action === "connect") {
-      const { npsso, expiresInSeconds } = parsePsnTokenResponse(body.tokenResponse);
-      await savePsnNpsso(npsso, env, expiresInSeconds);
-      return json({ connected: true, tokenDaysLeft: await getPsnNpssoDaysLeft(env) ?? Math.ceil(expiresInSeconds / 86400) });
+      const { npsso, expiresAt } = parsePsnTokenResponse(body.tokenResponse);
+      await savePsnNpsso(npsso, env, expiresAt);
+      return json({ connected: true, tokenDaysLeft: await getPsnNpssoDaysLeft(env) ?? Math.max(0, Math.ceil((expiresAt - Date.now()) / 86400000)) });
     }
     if (body.action === "disconnect") {
       await disconnectPsnNpsso(env);

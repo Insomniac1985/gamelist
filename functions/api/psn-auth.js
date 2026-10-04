@@ -3,10 +3,18 @@ const PSN_CLIENT_ID = "09515159-7237-4370-9b40-3806e67c0891";
 const PSN_REDIRECT_URI = "com.scee.psxandroid.scecompcall://redirect";
 const PSN_BASIC_AUTH = "Basic MDk1MTUxNTktNzIzNy00MzcwLTliNDAtMzgwNmU2N2MwODkxOnVjUGprYTV0bnRCMktxc1A=";
 const PSN_NPSSO_KEY = "psn:account:npsso";
+const PSN_NPSSO_EXPIRY_KEY = "psn:account:npsso:expires-at";
 const PSN_ACCOUNT_MANAGED_KEY = "psn:account:managed";
-const PSN_NPSSO_TTL_SECONDS = 60 * 24 * 60 * 60;
 
 export async function getPsnNpsso(env = {}) {
+  const expiresAt = Number(await env.GAMELIST?.get(PSN_NPSSO_EXPIRY_KEY));
+  if (Number.isFinite(expiresAt) && expiresAt > 0 && Date.now() >= expiresAt) {
+    await Promise.allSettled([
+      env.GAMELIST?.delete(PSN_NPSSO_KEY),
+      env.GAMELIST?.delete(PSN_NPSSO_EXPIRY_KEY),
+    ]);
+    return "";
+  }
   const stored = await env.GAMELIST?.get(PSN_NPSSO_KEY);
   if (stored === "disabled") return "";
   if (stored) {
@@ -18,6 +26,10 @@ export async function getPsnNpsso(env = {}) {
 
 export async function getPsnNpssoDaysLeft(env = {}) {
   try {
+    const storedExpiry = Number(await env.GAMELIST?.get(PSN_NPSSO_EXPIRY_KEY));
+    if (Number.isFinite(storedExpiry) && storedExpiry > 0) {
+      return Math.max(0, Math.ceil((storedExpiry - Date.now()) / (24 * 60 * 60 * 1000)));
+    }
     const result = await env.GAMELIST?.list({ prefix: PSN_NPSSO_KEY, limit: 1 });
     const expirySeconds = Number(result?.keys?.find((key) => key.name === PSN_NPSSO_KEY)?.expiration);
     if (!Number.isFinite(expirySeconds) || expirySeconds <= 0) return null;
@@ -37,18 +49,23 @@ export function parsePsnTokenResponse(value) {
   if (!Number.isSafeInteger(expiresInSeconds) || expiresInSeconds < 60 || expiresInSeconds > 365 * 24 * 60 * 60) {
     throw new Error('The token JSON must contain a valid "expires_in" value in seconds.');
   }
-  return { npsso, expiresInSeconds };
+  return { npsso, expiresInSeconds, expiresAt: Date.now() + expiresInSeconds * 1000 };
 }
 
-export async function savePsnNpsso(npsso, env = {}, expiresInSeconds = PSN_NPSSO_TTL_SECONDS) {
+export async function savePsnNpsso(npsso, env = {}, expiresAt) {
   if (!env.GAMELIST) throw new Error("Missing GAMELIST KV binding");
   if (!env.EDIT_PASSWORD) throw new Error("EDIT_PASSWORD is required to securely store the PlayStation connection.");
   const value = normalizeNpsso(npsso);
   if (!value || value.length > 2048) throw new Error("Paste the PlayStation NPSSO token value.");
-  if (!Number.isSafeInteger(expiresInSeconds) || expiresInSeconds < 60) throw new Error("Invalid PlayStation token expiry.");
+  const expiresInSeconds = Math.ceil((Number(expiresAt) - Date.now()) / 1000);
+  if (!Number.isSafeInteger(Number(expiresAt)) || expiresInSeconds < 1) throw new Error("The PlayStation token has expired. Paste a fresh token response.");
   await getPsnAccessToken(value);
+  const remainingTtl = Math.ceil((Number(expiresAt) - Date.now()) / 1000);
+  if (remainingTtl < 1) throw new Error("The PlayStation token expired while it was being verified. Paste a fresh token response.");
+  const storageTtl = Math.max(60, remainingTtl);
   await env.GAMELIST.put(PSN_ACCOUNT_MANAGED_KEY, "1");
-  await env.GAMELIST.put(PSN_NPSSO_KEY, await encryptCredential(value, env.EDIT_PASSWORD), { expirationTtl: expiresInSeconds });
+  await env.GAMELIST.put(PSN_NPSSO_KEY, await encryptCredential(value, env.EDIT_PASSWORD), { expirationTtl: storageTtl });
+  await env.GAMELIST.put(PSN_NPSSO_EXPIRY_KEY, String(expiresAt), { expirationTtl: storageTtl });
 }
 
 function normalizeNpsso(value) {
@@ -64,7 +81,10 @@ function normalizeNpsso(value) {
 export async function disconnectPsnNpsso(env = {}) {
   if (!env.GAMELIST) throw new Error("Missing GAMELIST KV binding");
   await env.GAMELIST.put(PSN_ACCOUNT_MANAGED_KEY, "1");
-  await env.GAMELIST.delete(PSN_NPSSO_KEY);
+  await Promise.all([
+    env.GAMELIST.delete(PSN_NPSSO_KEY),
+    env.GAMELIST.delete(PSN_NPSSO_EXPIRY_KEY),
+  ]);
 }
 
 let tokenCache;

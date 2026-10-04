@@ -918,7 +918,6 @@
           <div class="settings-grid settings-detail-grid">
           <div class="settings-account-field settings-psn-field">
             <span data-i18n="PlayStation account">PlayStation Account</span>
-            <input id="settingsPsnUser" autocomplete="off" data-lpignore="true" data-1p-ignore="true" data-bwignore="true" placeholder="PlayStation online ID" data-i18n-placeholder="PlayStation online ID" hidden>
             <small class="settings-provider-intro" id="settingsPsnIntro">Log in with PlayStation, open the token page, then copy and paste the full text here. Gamelist reads the npsso token and uses expires_in to show how long it remains valid. Then enter your PlayStation ID to confirm.</small>
             <div class="settings-provider-controls">
               <span id="settingsPsnStatus" class="settings-provider-status" hidden></span>
@@ -926,12 +925,13 @@
               <button class="ghost-button" id="settingsPsnDisconnect" type="button" hidden>Disconnect</button>
             </div>
             <div class="settings-provider-callback" id="settingsPsnCallback" hidden>
-              <button class="ghost-button settings-provider-page-button" id="settingsPsnTokenPage" type="button" hidden>Open PSN Token page</button>
+              <button class="ghost-button settings-provider-page-button" id="settingsPsnTokenPage" type="button" hidden>Log in with PlayStation</button>
               <small class="settings-provider-intro" id="settingsPsnPasteInfo" hidden>Copy the full JSON code inside the brackets, including npsso and expires_in, and paste it below.</small>
               <label for="settingsPsnNpsso" id="settingsPsnTokenLabel" hidden>PlayStation token JSON</label>
               <input id="settingsPsnNpsso" type="password" autocomplete="off" name="psn-token-entry" data-lpignore="true" data-1p-ignore="true" data-bwignore="true" readonly placeholder="Paste the full token response">
               <small class="settings-provider-intro" id="settingsPsnConfirmInfo" hidden>Add your PlayStation ID, then confirm the connection.</small>
               <label for="settingsPsnUser" id="settingsPsnUserLabel" hidden>PlayStation online ID</label>
+              <input id="settingsPsnUser" autocomplete="off" data-lpignore="true" data-1p-ignore="true" data-bwignore="true" placeholder="PlayStation online ID" data-i18n-placeholder="PlayStation online ID" hidden>
               <button class="ghost-button" id="settingsPsnConfirm" type="button" hidden disabled>Confirm connection</button>
             </div>
           </div>
@@ -945,7 +945,7 @@
               <button class="ghost-button" id="settingsXboxDisconnect" type="button" hidden>Disconnect</button>
             </div>
             <div class="settings-provider-callback" id="settingsXboxApiSetup" hidden>
-              <a class="ghost-button settings-provider-page-button" id="settingsXboxApiOpen" href="https://xbl.io/dashboard/keys" target="_blank" rel="noopener noreferrer">Open OpenXBL API keys</a>
+              <a class="ghost-button settings-provider-page-button" id="settingsXboxApiOpen" href="https://xbl.io/dashboard/keys" target="_blank" rel="noopener noreferrer">Log in with Xbox</a>
               <div id="settingsXboxApiEntry" hidden>
                 <label for="settingsXboxApiKey">OpenXBL API key</label>
                 <input id="settingsXboxApiKey" type="password" autocomplete="off" name="xbox-api-key-entry" data-lpignore="true" data-1p-ignore="true" data-bwignore="true" readonly placeholder="Paste the API key">
