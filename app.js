@@ -2084,8 +2084,8 @@ function setSteamConnectionState(connected) {
   el.settingsSteamUser.hidden = true;
   el.settingsSteamConnect.hidden = connected;
   el.settingsSteamDisconnect.hidden = !connected;
-  el.settingsSteamApiStatus.textContent = steamApiAccount.available ? "Steam Web API ready" : "";
-  el.settingsSteamApiStatus.hidden = !connected || !steamApiAccount.available;
+  el.settingsSteamApiStatus.textContent = "";
+  el.settingsSteamApiStatus.hidden = true;
   el.settingsSteamApiIntro.hidden = steamApiAccount.available;
   el.settingsSteamApiSetup.hidden = !connected || steamApiAccount.available;
 }
