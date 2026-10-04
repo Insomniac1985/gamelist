@@ -412,8 +412,9 @@ const el = {
   settingsXboxApiStatus: document.querySelector("#settingsXboxApiStatus"),
   settingsXboxIntro: document.querySelector("#settingsXboxIntro"),
   settingsXboxApiSetup: document.querySelector("#settingsXboxApiSetup"),
+  settingsXboxApiOpen: document.querySelector("#settingsXboxApiOpen"),
+  settingsXboxApiEntry: document.querySelector("#settingsXboxApiEntry"),
   settingsXboxApiKey: document.querySelector("#settingsXboxApiKey"),
-  settingsXboxConnect: document.querySelector("#settingsXboxConnect"),
   settingsXboxDisconnect: document.querySelector("#settingsXboxDisconnect"),
   settingsPsnStatus: document.querySelector("#settingsPsnStatus"),
   settingsPsnConnect: document.querySelector("#settingsPsnConnect"),
@@ -1122,8 +1123,11 @@ function bindEvents() {
   el.settingsSteamConnect?.addEventListener("click", beginSteamConnection);
   el.settingsSteamDisconnect?.addEventListener("click", disconnectSteamAccount);
   el.settingsSteamApiKey?.addEventListener("paste", () => window.setTimeout(finishSteamApiKeyConnection, 0));
-  el.settingsXboxConnect?.addEventListener("click", beginXboxConnection);
   el.settingsXboxDisconnect?.addEventListener("click", disconnectXboxAccount);
+  el.settingsXboxApiOpen?.addEventListener("click", () => {
+    el.settingsXboxApiEntry.hidden = false;
+    el.settingsXboxApiKey.focus();
+  });
   el.settingsXboxApiKey?.addEventListener("paste", () => window.setTimeout(finishXboxApiKeyConnection, 0));
   el.authDialog?.addEventListener("click", (event) => {
     if (event.target === el.authDialog) el.authDialog.close("cancel");
@@ -1995,9 +1999,9 @@ function showPsnAccountIdEntry() {
 }
 
 async function finishPsnConnection() {
-  const npsso = el.settingsPsnNpsso.value.trim();
-  if (!npsso) {
-    el.settingsPsnStatus.textContent = "No PSN code detected.";
+  const tokenResponse = el.settingsPsnNpsso.value.trim();
+  if (!tokenResponse) {
+    el.settingsPsnStatus.textContent = "Paste the full PlayStation token response first.";
     el.settingsPsnStatus.hidden = false;
     return;
   }
@@ -2013,13 +2017,13 @@ async function finishPsnConnection() {
   el.settingsPsnStatus.hidden = false;
   try {
     const response = await fetch("/api/psn-account", {
-      method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action: "connect", npsso }),
+      method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action: "connect", tokenResponse }),
     });
     const data = await response.json().catch(() => ({}));
     if (!response.ok) throw new Error(data.error || "Could not connect PlayStation.");
     el.settingsPsnNpsso.value = "";
     state.settings.psnUser = onlineId;
-    psnTokenDaysLeft = Number.isFinite(data.tokenDaysLeft) ? data.tokenDaysLeft : 60;
+    psnTokenDaysLeft = Number.isFinite(data.tokenDaysLeft) ? data.tokenDaysLeft : null;
     persistLocalSettings();
     await persistCloud();
     setPsnConnectionState(true);
@@ -2172,50 +2176,16 @@ async function disconnectSteamAccount() {
   el.settingsSteamDisconnect.disabled = false;
 }
 
-async function beginXboxConnection() {
-  const loginTab = window.open("about:blank", "_blank");
-  if (!loginTab) {
-    el.settingsXboxStatus.textContent = "Allow the sign-in popup, then try again.";
-    el.settingsXboxStatus.hidden = false;
-    return;
-  }
-  el.settingsXboxConnect.disabled = true;
-  el.settingsXboxStatus.textContent = "Opening Xbox sign-in…";
-  el.settingsXboxStatus.hidden = false;
-  try {
-    const response = await fetch("/api/xbox-login?action=start", { cache: "no-store" });
-    const data = await response.json().catch(() => ({}));
-    if (!response.ok || !data.url || !data.state) throw new Error(data.error || "Could not start Xbox sign-in.");
-    const resultPromise = waitForProviderPopup(loginTab, "gamelist-xbox-login", data.state);
-    loginTab.location.href = data.url;
-    const result = await resultPromise;
-    if (result.error) throw new Error(result.error);
-    const microsoftUser = result.gamertag || result.xuid;
-    el.settingsMicrosoftUser.value = microsoftUser;
-    state.settings = normalizeSettings({ ...state.settings, microsoftUser });
-    persistLocalSettings();
-    await persistCloud();
-    setXboxConnectionState(true);
-    refreshAchievements();
-  } catch (error) {
-    loginTab.close();
-    el.settingsXboxStatus.textContent = error?.message || "Xbox sign-in failed.";
-    el.settingsXboxStatus.hidden = false;
-  } finally {
-    el.settingsXboxConnect.disabled = false;
-  }
-}
-
-function setXboxConnectionState(connected) {
-  el.settingsXboxStatus.textContent = connected ? "Connected" : "";
+function setXboxConnectionState() {
+  const connected = xboxApiAccount.available;
+  el.settingsXboxStatus.textContent = connected ? `Connected to ${state.settings.microsoftUser || "Xbox account"}` : "";
   el.settingsXboxStatus.hidden = !connected;
   el.settingsXboxApiStatus.textContent = "";
   el.settingsXboxApiStatus.hidden = true;
   el.settingsXboxIntro.hidden = connected && xboxApiAccount.available;
   el.settingsMicrosoftUser.hidden = true;
-  el.settingsXboxConnect.hidden = connected;
   el.settingsXboxDisconnect.hidden = !connected;
-  el.settingsXboxApiSetup.hidden = !connected || xboxApiAccount.available;
+  el.settingsXboxApiSetup.hidden = connected;
 }
 
 async function refreshXboxApiStatus() {
@@ -2224,10 +2194,10 @@ async function refreshXboxApiStatus() {
     const data = await response.json().catch(() => ({}));
     if (!response.ok) throw new Error(data.error || "Could not check Xbox API key.");
     xboxApiAccount.available = Boolean(data.apiKeyAvailable);
-    setXboxConnectionState(Boolean(state.settings.microsoftUser));
+    setXboxConnectionState();
   } catch (error) {
     xboxApiAccount.available = false;
-    setXboxConnectionState(Boolean(state.settings.microsoftUser));
+    setXboxConnectionState();
     if (state.settings.microsoftUser) {
       el.settingsXboxApiStatus.textContent = error?.message || "Could not check Xbox API key.";
       el.settingsXboxApiStatus.hidden = false;
@@ -2251,12 +2221,17 @@ async function finishXboxApiKeyConnection() {
     if (!response.ok) throw new Error(data.error || "Could not connect OpenXBL API key.");
     el.settingsXboxApiKey.value = "";
     xboxApiAccount.available = true;
+    const microsoftUser = String(data.gamertag || data.xuid || "").trim();
+    state.settings = normalizeSettings({ ...state.settings, microsoftUser });
+    el.settingsMicrosoftUser.value = microsoftUser;
+    persistLocalSettings();
+    await persistCloud();
     state.integrationStatus = {
       ...(state.integrationStatus || {}),
       OPENXBL_API_KEY: true,
       working: { ...(state.integrationStatus?.working || {}), XBOX: true },
     };
-    setXboxConnectionState(Boolean(state.settings.microsoftUser));
+    setXboxConnectionState();
     localStorage.removeItem(ACHIEVEMENT_CACHE_KEY);
     refreshAchievements();
   } catch (error) {
@@ -2320,7 +2295,7 @@ function renderSettingsDialog() {
   state.settings = normalizeSettings(state.settings);
   el.settingsPsnUser.value = state.settings.psnUser;
   el.settingsMicrosoftUser.value = state.settings.microsoftUser;
-  setXboxConnectionState(Boolean(state.settings.microsoftUser));
+  setXboxConnectionState();
   el.settingsSteamUser.value = state.settings.steamUser;
   setSteamConnectionState(Boolean(state.settings.steamUser));
   el.settingsTwitchUser.value = state.settings.twitchUser;

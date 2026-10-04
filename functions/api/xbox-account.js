@@ -27,11 +27,25 @@ export async function onRequestPost({ request, env = {} }) {
       cache: "no-store",
     });
     if (!response.ok) throw new Error("OpenXBL could not verify that API key. Check it and try again.");
+    const profile = xboxIdentity(await response.json().catch(() => ({})));
+    if (!profile.gamertag && !profile.xuid) throw new Error("OpenXBL verified the key but did not return an Xbox account ID.");
     await env.GAMELIST.put(XBOX_API_KEY, await encryptCredential(apiKey, env.EDIT_PASSWORD));
-    return json({ apiKeyAvailable: true });
+    return json({ apiKeyAvailable: true, ...profile });
   } catch (error) {
     return json({ error: error?.message || "Could not connect the OpenXBL API key." }, 400);
   }
+}
+
+function xboxIdentity(data) {
+  const content = data?.content || data;
+  const account = content?.account || content;
+  const person = account?.profileUsers?.[0] || account?.people?.[0] || account;
+  const settings = person?.settings || account?.settings || [];
+  const setting = (name) => settings.find((item) => String(item?.id || "").toLowerCase() === name.toLowerCase())?.value || "";
+  return {
+    gamertag: String(person?.gamertag || person?.Gamertag || setting("Gamertag") || "").trim(),
+    xuid: String(person?.xuid || person?.XUID || person?.id || setting("XUID") || "").trim(),
+  };
 }
 
 export async function getXboxApiKey(env = {}) {

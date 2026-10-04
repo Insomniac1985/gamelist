@@ -919,17 +919,17 @@
           <div class="settings-account-field settings-psn-field">
             <span data-i18n="PlayStation account">PlayStation Account</span>
             <input id="settingsPsnUser" autocomplete="off" data-lpignore="true" data-1p-ignore="true" data-bwignore="true" placeholder="PlayStation online ID" data-i18n-placeholder="PlayStation online ID" hidden>
-            <small class="settings-provider-intro" id="settingsPsnIntro">Log in with PlayStation, then open the token page and copy the value next to “npsso”. Paste it below and enter your PlayStation online ID to confirm. The token works for 60 days.</small>
+            <small class="settings-provider-intro" id="settingsPsnIntro">Log in with PlayStation, open the token page, then copy and paste the full text here. Gamelist reads the npsso token and uses expires_in to show how long it remains valid. Then enter your PlayStation ID to confirm.</small>
             <div class="settings-provider-controls">
               <span id="settingsPsnStatus" class="settings-provider-status" hidden></span>
               <button class="ghost-button settings-provider-page-button" id="settingsPsnConnect" type="button">Log in with PlayStation</button>
               <button class="ghost-button" id="settingsPsnDisconnect" type="button" hidden>Disconnect</button>
             </div>
             <div class="settings-provider-callback" id="settingsPsnCallback" hidden>
-              <button class="ghost-button settings-provider-page-button" id="settingsPsnTokenPage" type="button" hidden>Open PSN token page</button>
-              <small class="settings-provider-intro" id="settingsPsnPasteInfo" hidden>Copy the value next to “npsso” from the token page and paste it below.</small>
-              <label for="settingsPsnNpsso" id="settingsPsnTokenLabel" hidden>PSN NPSSO value</label>
-              <input id="settingsPsnNpsso" type="password" autocomplete="off" name="psn-token-entry" data-lpignore="true" data-1p-ignore="true" data-bwignore="true" readonly placeholder="Paste the npsso value">
+              <button class="ghost-button settings-provider-page-button" id="settingsPsnTokenPage" type="button" hidden>Open PSN Token page</button>
+              <small class="settings-provider-intro" id="settingsPsnPasteInfo" hidden>Copy the full JSON code inside the brackets, including npsso and expires_in, and paste it below.</small>
+              <label for="settingsPsnNpsso" id="settingsPsnTokenLabel" hidden>PlayStation token JSON</label>
+              <input id="settingsPsnNpsso" type="password" autocomplete="off" name="psn-token-entry" data-lpignore="true" data-1p-ignore="true" data-bwignore="true" readonly placeholder="Paste the full token response">
               <small class="settings-provider-intro" id="settingsPsnConfirmInfo" hidden>Add your PlayStation ID, then confirm the connection.</small>
               <label for="settingsPsnUser" id="settingsPsnUserLabel" hidden>PlayStation online ID</label>
               <button class="ghost-button" id="settingsPsnConfirm" type="button" hidden disabled>Confirm connection</button>
@@ -937,23 +937,24 @@
           </div>
           <div class="settings-account-field settings-provider-field settings-xbox-field">
             <span data-i18n="Xbox account">Xbox Account</span>
-            <small class="settings-provider-intro" id="settingsXboxIntro">Log in with Xbox to link your account. To enable achievements, create an OpenXBL API key and paste it here; the key is encrypted when saved.</small>
+            <small class="settings-provider-intro" id="settingsXboxIntro">Log in with Xbox, open the OpenXBL API keys page, then copy and paste your API key here.</small>
             <input id="settingsMicrosoftUser" autocomplete="off" data-lpignore="true" data-1p-ignore="true" data-bwignore="true" hidden placeholder="Xbox gamertag or XUID" data-i18n-placeholder="Xbox gamertag or XUID">
             <div class="settings-provider-controls">
               <span id="settingsXboxStatus" class="settings-provider-status" hidden></span>
               <span id="settingsXboxApiStatus" class="settings-provider-status" hidden></span>
-              <button class="ghost-button" id="settingsXboxConnect" type="button">Log in with Xbox</button>
               <button class="ghost-button" id="settingsXboxDisconnect" type="button" hidden>Disconnect</button>
             </div>
             <div class="settings-provider-callback" id="settingsXboxApiSetup" hidden>
-              <a class="ghost-button settings-provider-page-button" href="https://xbl.io/dashboard/keys" target="_blank" rel="noopener noreferrer">Open OpenXBL API keys</a>
-              <label for="settingsXboxApiKey">OpenXBL API key</label>
-              <input id="settingsXboxApiKey" type="password" autocomplete="off" name="xbox-api-key-entry" data-lpignore="true" data-1p-ignore="true" data-bwignore="true" readonly placeholder="Paste the API key">
+              <a class="ghost-button settings-provider-page-button" id="settingsXboxApiOpen" href="https://xbl.io/dashboard/keys" target="_blank" rel="noopener noreferrer">Open OpenXBL API keys</a>
+              <div id="settingsXboxApiEntry" hidden>
+                <label for="settingsXboxApiKey">OpenXBL API key</label>
+                <input id="settingsXboxApiKey" type="password" autocomplete="off" name="xbox-api-key-entry" data-lpignore="true" data-1p-ignore="true" data-bwignore="true" readonly placeholder="Paste the API key">
+              </div>
             </div>
           </div>
           <div class="settings-account-field settings-provider-field settings-steam-field">
             <span data-i18n="Steam account">Steam Account</span>
-            <small class="settings-provider-intro" id="settingsSteamApiIntro">Log in with Steam to connect your account. To enable achievements, open the Steam API key page, register this site's domain, then paste the key below.</small>
+            <small class="settings-provider-intro" id="settingsSteamApiIntro">Log in with Steam, then open the Steam API key page, register this site's domain and paste the key below.</small>
             <input id="settingsSteamUser" autocomplete="off" data-lpignore="true" data-1p-ignore="true" data-bwignore="true" hidden placeholder="SteamID64, profile URL, or vanity name" data-i18n-placeholder="SteamID64, profile URL, or vanity name">
             <div class="settings-provider-controls">
               <span id="settingsSteamStatus" class="settings-provider-status" hidden></span>
@@ -969,7 +970,7 @@
           </div>
           <div class="settings-account-field settings-nintendo-field">
             <span>Nintendo Account</span>
-            <small class="settings-nintendo-intro" id="settingsNintendoIntro">Log in with Nintendo, select your account, then right click and Copy the Link address from Select this person. Paste the link below, it's the one-time sign-in code.</small>
+            <small class="settings-nintendo-intro" id="settingsNintendoIntro">Log in with Nintendo, select your account, then right click and Copy the Link address from Select this person. Paste the link below.</small>
             <div class="settings-nintendo-controls">
               <span id="settingsNintendoStatus" class="settings-nintendo-status" hidden></span>
               <button class="ghost-button" id="settingsNintendoConnect" type="button">Log in with Nintendo</button>

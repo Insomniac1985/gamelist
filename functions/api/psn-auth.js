@@ -27,14 +27,28 @@ export async function getPsnNpssoDaysLeft(env = {}) {
   }
 }
 
-export async function savePsnNpsso(npsso, env = {}) {
+export function parsePsnTokenResponse(value) {
+  let parsed;
+  try { parsed = JSON.parse(String(value || "")); }
+  catch { throw new Error('Paste the full PlayStation token JSON, including "npsso" and "expires_in".'); }
+  const npsso = normalizeNpsso(parsed?.npsso);
+  const expiresInSeconds = Number(parsed?.expires_in);
+  if (!npsso || npsso.length > 2048) throw new Error('The token JSON must contain a valid "npsso" value.');
+  if (!Number.isSafeInteger(expiresInSeconds) || expiresInSeconds < 60 || expiresInSeconds > 365 * 24 * 60 * 60) {
+    throw new Error('The token JSON must contain a valid "expires_in" value in seconds.');
+  }
+  return { npsso, expiresInSeconds };
+}
+
+export async function savePsnNpsso(npsso, env = {}, expiresInSeconds = PSN_NPSSO_TTL_SECONDS) {
   if (!env.GAMELIST) throw new Error("Missing GAMELIST KV binding");
   if (!env.EDIT_PASSWORD) throw new Error("EDIT_PASSWORD is required to securely store the PlayStation connection.");
   const value = normalizeNpsso(npsso);
   if (!value || value.length > 2048) throw new Error("Paste the PlayStation NPSSO token value.");
+  if (!Number.isSafeInteger(expiresInSeconds) || expiresInSeconds < 60) throw new Error("Invalid PlayStation token expiry.");
   await getPsnAccessToken(value);
   await env.GAMELIST.put(PSN_ACCOUNT_MANAGED_KEY, "1");
-  await env.GAMELIST.put(PSN_NPSSO_KEY, await encryptCredential(value, env.EDIT_PASSWORD), { expirationTtl: PSN_NPSSO_TTL_SECONDS });
+  await env.GAMELIST.put(PSN_NPSSO_KEY, await encryptCredential(value, env.EDIT_PASSWORD), { expirationTtl: expiresInSeconds });
 }
 
 function normalizeNpsso(value) {

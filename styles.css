@@ -1177,7 +1177,11 @@ html.theme-gradient .goty-section .column-head h2 .trophy-icon {
 .goty-empty-cover {
   min-height: 174px;
   background:
-    linear-gradient(135deg, rgba(255, 255, 255, 0.16), rgba(255, 255, 255, 0.055)),
+    linear-gradient(
+      135deg,
+      rgba(255, 255, 255, 0.16),
+      rgba(255, 255, 255, 0.055)
+    ),
     color-mix(in srgb, var(--panel-strong) 72%, transparent);
   border: 1px solid rgba(255, 255, 255, 0.12);
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
@@ -1656,11 +1660,17 @@ html.theme-gradient .goty-section .column-head h2 .trophy-icon {
   min-height: 24px;
   padding: 0 7px;
   color: var(--time-light, var(--accent-2));
-  background: color-mix(in srgb, var(--time-color, var(--accent-2)) 13%, transparent);
-  border: 1px solid color-mix(in srgb, var(--time-color, var(--accent-2)) 50%, transparent);
+  background: color-mix(
+    in srgb,
+    var(--time-color, var(--accent-2)) 13%,
+    transparent
+  );
+  border: 1px solid
+    color-mix(in srgb, var(--time-color, var(--accent-2)) 50%, transparent);
   border-radius: 6px;
   box-shadow:
-    inset 0 1px 0 color-mix(in srgb, var(--time-light, var(--accent-2)) 20%, transparent),
+    inset 0 1px 0
+      color-mix(in srgb, var(--time-light, var(--accent-2)) 20%, transparent),
     0 0 16px color-mix(in srgb, var(--time-glow, transparent) 42%, transparent);
   font-size: 9px;
   font-weight: 820;
@@ -8146,7 +8156,6 @@ body:not(.can-edit) .game-card:focus-within .edit-action {
     inset 0 0 0 1px rgba(255, 255, 255, 0.08);
 }
 
-
 .finished-stats-modal.goty-stats-preview-modal {
   grid-template-rows: auto auto auto;
   align-content: start;
@@ -10118,9 +10127,12 @@ body.theme-kash .playing-finished-game.completed-trophy-card:hover {
     z-index: 1;
   }
 
-  .completed-list.list-view .completed-row:has(.completed-identity strong.is-overflowing:hover),
   .completed-list.list-view
-    .completed-row:has(.completed-identity strong.is-overflowing:focus-visible) {
+    .completed-row:has(.completed-identity strong.is-overflowing:hover),
+  .completed-list.list-view
+    .completed-row:has(
+      .completed-identity strong.is-overflowing:focus-visible
+    ) {
     overflow: visible;
     z-index: 30;
   }
@@ -10313,13 +10325,9 @@ dialog {
 
 .updates-list h3 {
   margin: 0;
-  color: var(--text);
+  color: var(--accent);
   font-size: clamp(1.15rem, 2.1vw, 1.55rem);
   line-height: 1.2;
-}
-
-.updates-list li:first-child h3 {
-  color: var(--accent-2);
 }
 
 .updates-list li p {
@@ -10476,7 +10484,9 @@ body.dialog-open .mobile-section-tabs {
 }
 
 @keyframes playtime-refresh-spin {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .finish-time-main-row > label:first-child {
@@ -12382,11 +12392,21 @@ html.theme-light .shelf-card-delete-action:hover {
   text-transform: uppercase;
 }
 
-.settings-psn-field > span { color: #5b9bff !important; }
-.settings-xbox-field > span { color: #72d572 !important; }
-.settings-steam-field > span { color: #77bdfb !important; }
-.settings-nintendo-field > span { color: #ff6b73 !important; }
-.settings-twitch-field > span { color: #c79cff !important; }
+.settings-psn-field > span {
+  color: #5b9bff !important;
+}
+.settings-xbox-field > span {
+  color: #72d572 !important;
+}
+.settings-steam-field > span {
+  color: #77bdfb !important;
+}
+.settings-nintendo-field > span {
+  color: #ff6b73 !important;
+}
+.settings-twitch-field > span {
+  color: #c79cff !important;
+}
 
 .settings-nintendo-field {
   display: flex;
@@ -13750,11 +13770,26 @@ body.theme-kash
   white-space: nowrap;
 }
 
-#gameDialog.is-new-game.needs-title-field .collection-form-grid > .title-field input,
-#gameDialog.is-new-game.needs-platform-field .collection-form-grid > .platform-field input,
-#gameDialog.is-new-game.needs-list-field .collection-form-grid > .list-field select,
-#gameDialog.is-new-game.needs-list-field .collection-form-grid > .list-field .platform-logo-button,
-#gameDialog.is-new-game.needs-release-date-field .collection-form-grid > .release-date-field input {
+#gameDialog.is-new-game.needs-title-field
+  .collection-form-grid
+  > .title-field
+  input,
+#gameDialog.is-new-game.needs-platform-field
+  .collection-form-grid
+  > .platform-field
+  input,
+#gameDialog.is-new-game.needs-list-field
+  .collection-form-grid
+  > .list-field
+  select,
+#gameDialog.is-new-game.needs-list-field
+  .collection-form-grid
+  > .list-field
+  .platform-logo-button,
+#gameDialog.is-new-game.needs-release-date-field
+  .collection-form-grid
+  > .release-date-field
+  input {
   border: 1px solid color-mix(in srgb, var(--accent) 76%, #ff4d62);
   border-color: color-mix(in srgb, var(--accent) 76%, #ff4d62);
   background:
@@ -13769,10 +13804,22 @@ body.theme-kash
     0 0 0 3px color-mix(in srgb, var(--accent) 10%, transparent);
 }
 
-#gameDialog.is-new-game.needs-title-field .collection-form-grid > .title-field > span,
-#gameDialog.is-new-game.needs-platform-field .collection-form-grid > .platform-field > span:first-child,
-#gameDialog.is-new-game.needs-list-field .collection-form-grid > .list-field > span,
-#gameDialog.is-new-game.needs-release-date-field .collection-form-grid > .release-date-field > span {
+#gameDialog.is-new-game.needs-title-field
+  .collection-form-grid
+  > .title-field
+  > span,
+#gameDialog.is-new-game.needs-platform-field
+  .collection-form-grid
+  > .platform-field
+  > span:first-child,
+#gameDialog.is-new-game.needs-list-field
+  .collection-form-grid
+  > .list-field
+  > span,
+#gameDialog.is-new-game.needs-release-date-field
+  .collection-form-grid
+  > .release-date-field
+  > span {
   color: color-mix(in srgb, var(--accent) 82%, #ffffff);
 }
 
