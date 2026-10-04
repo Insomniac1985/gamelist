@@ -27,6 +27,9 @@ import * as trophies from "./functions/api/trophies.js";
 import * as twitchPreview from "./functions/api/twitch-preview.js";
 import * as xboxAchievements from "./functions/api/xbox-achievements.js";
 import * as nintendoPlaytime from "./functions/api/nintendo-playtime.js";
+import * as psnAccount from "./functions/api/psn-account.js";
+import * as steamLogin from "./functions/api/steam-login.js";
+import * as xboxLogin from "./functions/api/xbox-login.js";
 import * as xboxTrophiesByYear from "./functions/api/xbox-trophies-by-year.js";
 
 const routes = {
@@ -46,6 +49,9 @@ const routes = {
   "/api/search": search,
   "/api/secret-status": secretStatus,
   "/api/nintendo-playtime": nintendoPlaytime,
+  "/api/psn-account": psnAccount,
+  "/api/steam-login": steamLogin,
+  "/api/xbox-login": xboxLogin,
   "/api/shelf": shelf,
   "/api/shelf-covers": shelfCovers,
   "/api/shelf-games-platforms": shelfGamesPlatforms,

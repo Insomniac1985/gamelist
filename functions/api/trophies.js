@@ -1,4 +1,4 @@
-import { getPsnAccessToken } from "./psn-auth.js";
+import { getPsnAccessToken, getPsnNpsso } from "./psn-auth.js";
 
 const PSN_TROPHY_BASE = "https://m.np.playstation.com/api/trophy";
 const PSN_CACHE_SECONDS = 12 * 60 * 60;
@@ -17,7 +17,7 @@ export async function onRequestGet({ request, env = {} }) {
     return json({ trophies: [], error: "Missing PSN trophy title id" }, 400, { cache: false });
   }
 
-  const npsso = cleanNpsso(env.PSN_NPSSO);
+  const npsso = cleanNpsso(await getPsnNpsso(env));
   if (!npsso) {
     return json({ trophies: [], needsSetup: true }, 200, { cache: false });
   }

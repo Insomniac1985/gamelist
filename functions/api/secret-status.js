@@ -1,4 +1,4 @@
-import { getPsnAccessToken } from "./psn-auth.js";
+import { getPsnAccessToken, getPsnNpsso } from "./psn-auth.js";
 import { isEditorRequest } from "./editor-auth.js";
 
 const HEALTH_CACHE_SECONDS = 45 * 60;
@@ -9,7 +9,7 @@ export async function onRequestGet({ request, env = {} }) {
   const health = await integrationHealth(env, request);
   const { CURRENT_REPO, ...working } = health;
   return json({
-    PSN_NPSSO: isSet(env.PSN_NPSSO),
+    PSN_NPSSO: isSet(await getPsnNpsso(env)),
     OPENXBL_API_KEY: isSet(env.OPENXBL_API_KEY),
     STEAM_API_KEY: isSet(env.STEAM_API_KEY),
     IGDB_CLIENT_ID: isSet(env.IGDB_CLIENT_ID),
@@ -92,7 +92,7 @@ async function checkPriceCharting() {
 }
 
 async function checkPsn(env) {
-  const npsso = String(env.PSN_NPSSO || "").trim();
+  const npsso = await getPsnNpsso(env);
   if (!npsso) return false;
   try {
     return Boolean(await getPsnAccessToken(npsso));
