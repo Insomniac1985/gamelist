@@ -1986,6 +1986,9 @@ function openPsnTokenPage() {
 
 function showPsnAccountIdEntry() {
   if (!el.settingsPsnNpsso.value.trim()) return;
+  el.settingsPsnIntro.hidden = true;
+  el.settingsPsnStatus.textContent = "";
+  el.settingsPsnStatus.hidden = true;
   el.settingsPsnTokenPage.hidden = true;
   el.settingsPsnPasteInfo.hidden = true;
   el.settingsPsnTokenLabel.hidden = true;

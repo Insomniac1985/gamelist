@@ -12458,6 +12458,10 @@ html.theme-light .shelf-card-delete-action:hover {
   text-decoration: none;
 }
 
+.settings-provider-page-button {
+  font-size: 15px;
+}
+
 .settings-nintendo-controls {
   display: flex;
   align-items: center;
