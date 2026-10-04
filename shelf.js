@@ -7,6 +7,7 @@ splitShelfPlayingModules();
 
 const SESSION_KEY = "gamelist-editor";
 const VERSION_STORAGE_KEY = "gamelist:site-version";
+const UPDATES_NOTIFICATION_STORAGE_KEY = "gamelist:updates-notification-version";
 const CACHE_HOUR_STORAGE_KEY = "gamelist:cache-hour";
 const PULL_NAVIGATION_KEY = "gamelist:pull-navigation";
 const VIEW_KEY = "gamelist:view-mode";
@@ -28,7 +29,8 @@ const THEMES = {
   shabii: { title: "Shabii's Shelf", icon: "assets/Icon_shelf.png", color: "#ff0039" },
   kash: { title: "Kash's Shelf", icon: "assets/kh_icon.png", color: "#005cff" },
 };
-const siteVersion = { version: "", updatedAt: "" };
+const siteVersion = { version: "", updatedAt: "", notificationVersion: 0 };
+let updatesPopupLoadPromise = null;
 const MODULE_NAMES = { playing: "Currently playing", latestFinished: "Last finished", favorites: "Showcase", trophies: "Achievements", calendar: "Calendar", kpis: "Highlights", filters: "Search", library: "Shelf" };
 const PLATFORM_OPTIONS = [
   "Steam",
@@ -277,6 +279,7 @@ async function init() {
   rebuildGames();
   applyShelfSearchFromUrl();
   renderAll();
+  maybeShowUpdatesPopup();
 }
 
 function applyShelfSearchFromUrl() {
@@ -2211,6 +2214,7 @@ async function submitAuth(event) {
   signalAuthChange();
   closeDialog(el.authDialog);
   renderAll();
+  maybeShowUpdatesPopup();
 }
 
 async function refreshSharedAuth() {
@@ -2220,6 +2224,7 @@ async function refreshSharedAuth() {
   if (active) sessionStorage.setItem(SESSION_KEY, "true");
   else sessionStorage.removeItem(SESSION_KEY);
   renderAll();
+  if (active) maybeShowUpdatesPopup();
 }
 
 function signalAuthChange() { localStorage.setItem("gamelist-editor-signal", String(Date.now())); }
@@ -4406,7 +4411,33 @@ async function checkSiteVersion() { try { const fromPullNavigation = consumeRece
 async function clearSiteCachesForNewHour() { const currentHour = currentCacheHour(); const previousHour = localStorage.getItem(CACHE_HOUR_STORAGE_KEY); if (!previousHour) { localStorage.setItem(CACHE_HOUR_STORAGE_KEY, currentHour); return; } if (previousHour === currentHour) return; await clearSiteCaches(); localStorage.setItem(CACHE_HOUR_STORAGE_KEY, currentHour); }
 function currentCacheHour() { return new Date().toISOString().slice(0, 13); }
 function forceCacheOnLoadEnabled() { try { return JSON.parse(localStorage.getItem("gamelist:settings:v1") || "{}")?.forceCacheOnLoad === true; } catch { return false; } }
-function applySiteVersion(value = {}) { siteVersion.version = String(value.version || "").trim(); siteVersion.updatedAt = String(value.updatedAt || "").trim(); }
+function applySiteVersion(value = {}) { siteVersion.version = String(value.version || "").trim(); siteVersion.updatedAt = String(value.updatedAt || "").trim(); siteVersion.notificationVersion = Math.max(0, Math.floor(Number(value.notificationVersion) || 0)); }
+async function maybeShowUpdatesPopup() {
+  if (!state.canEdit || !siteVersion.notificationVersion) return;
+  if (localStorage.getItem(UPDATES_NOTIFICATION_STORAGE_KEY) === String(siteVersion.notificationVersion)) return;
+  if (!document.querySelector("#updatesDialog")) await loadUpdatesPopup();
+  const dialog = document.querySelector("#updatesDialog");
+  if (!state.canEdit || !dialog || dialog.open) return;
+  openDialog(dialog);
+  dialog.focus({ preventScroll: true });
+}
+async function loadUpdatesPopup() {
+  if (!updatesPopupLoadPromise) {
+    updatesPopupLoadPromise = fetch("/updates-popup.html", { cache: "no-store" })
+      .then((response) => { if (!response.ok) throw new Error(`Update popup unavailable (${response.status})`); return response.text(); })
+      .then((markup) => {
+        document.body.insertAdjacentHTML("beforeend", markup);
+        const dialog = document.querySelector("#updatesDialog");
+        document.querySelector("#updatesCloseButton")?.addEventListener("click", () => closeDialog(dialog));
+        dialog?.addEventListener("close", () => {
+          if (state.canEdit && siteVersion.notificationVersion > 0) localStorage.setItem(UPDATES_NOTIFICATION_STORAGE_KEY, String(siteVersion.notificationVersion));
+          document.body.classList.toggle("dialog-open", document.querySelector("dialog[open]") !== null);
+        });
+      })
+      .catch(() => { updatesPopupLoadPromise = null; });
+  }
+  await updatesPopupLoadPromise;
+}
 function consumeRecentPullNavigation() { try { const url = new URL(window.location.href); const fromPullUrl = url.searchParams.get("pull") === "1"; if (fromPullUrl) { url.searchParams.delete("pull"); url.searchParams.delete("v"); window.history.replaceState({}, "", `${url.pathname}${url.search}${url.hash}`); } const value = JSON.parse(sessionStorage.getItem(PULL_NAVIGATION_KEY) || "{}"); sessionStorage.removeItem(PULL_NAVIGATION_KEY); return fromPullUrl || Date.now() - Number(value.at || 0) < 8000; } catch { return false; } }
 async function clearSiteCaches() { if ("caches" in window) { const keys = await caches.keys(); await Promise.all(keys.filter((key) => key.startsWith("gamelist-cache-")).map((key) => caches.delete(key))); } if ("serviceWorker" in navigator) { const registrations = await navigator.serviceWorker.getRegistrations(); await Promise.all(registrations.map((registration) => registration.update().catch(() => {}))); } }
 async function clearSiteCachesAndReload() { await clearSiteCaches(); localStorage.removeItem(ACHIEVEMENT_CACHE_KEY); if (siteVersion.version) localStorage.setItem(VERSION_STORAGE_KEY, siteVersion.version); window.location.reload(); }

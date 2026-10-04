@@ -761,6 +761,7 @@ async function maybeShowUpdatesPopup() {
   if (!el.updatesDialog) await loadUpdatesPopup();
   if (!state.canEdit || !el.updatesDialog || el.updatesDialog.open) return;
   el.updatesDialog.showModal();
+  el.updatesDialog.focus({ preventScroll: true });
   syncScrollLock();
 }
 

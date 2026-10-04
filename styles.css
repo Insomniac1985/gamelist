@@ -10279,6 +10279,10 @@ dialog {
   width: min(680px, calc(100vw - 24px));
 }
 
+.updates-dialog:focus {
+  outline: none;
+}
+
 .updates-modal {
   max-height: min(760px, calc(100vh - 24px));
   overflow-y: auto;
@@ -10314,6 +10318,10 @@ dialog {
   line-height: 1.2;
 }
 
+.updates-list li:first-child h3 {
+  color: var(--accent-2);
+}
+
 .updates-list li p {
   margin: 0;
   color: var(--muted);
@@ -10323,6 +10331,40 @@ dialog {
 
 .updates-modal > p {
   margin-bottom: 16px;
+}
+
+@media (min-width: 761px) {
+  #updatesDialog {
+    width: min(760px, calc(100vw - 64px));
+  }
+
+  .updates-modal {
+    max-height: min(760px, calc(100vh - 64px));
+    padding: 22px;
+    gap: 12px;
+  }
+
+  .updates-modal .modal-head h2 {
+    font-size: clamp(28px, 2.4vw, 34px);
+  }
+
+  .updates-modal > p,
+  .updates-list li p {
+    font-size: 13px;
+    line-height: 1.45;
+  }
+
+  .updates-list {
+    gap: 12px;
+  }
+
+  .updates-list h3 {
+    font-size: 20px;
+  }
+
+  .updates-list li + li {
+    padding-top: 12px;
+  }
 }
 
 #sharedDeleteConfirmDialog {
