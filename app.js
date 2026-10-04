@@ -62,6 +62,7 @@ const THEMES = {
 const siteVersion = { version: "", updatedAt: "", notificationVersion: 0 };
 let updatesPopupLoadPromise = null;
 let nintendoSetupStarted = false;
+let psnTokenDaysLeft = null;
 const steamApiAccount = { available: false, personaName: "" };
 const xboxApiAccount = { available: false };
 const DEFAULT_SETTINGS = {
@@ -1928,6 +1929,7 @@ async function refreshPsnConnectionStatus() {
     const response = await fetch("/api/psn-account?action=status", { cache: "no-store" });
     const data = await response.json().catch(() => ({}));
     if (!response.ok) throw new Error(data.error || "Could not check PlayStation connection.");
+    psnTokenDaysLeft = Number.isFinite(data.tokenDaysLeft) ? data.tokenDaysLeft : null;
     setPsnConnectionState(Boolean(data.connected));
   } catch (error) {
     el.settingsPsnStatus.textContent = error.message;
@@ -1937,7 +1939,10 @@ async function refreshPsnConnectionStatus() {
 
 function setPsnConnectionState(connected) {
   const accountId = String(state.settings.psnUser || "").trim();
-  el.settingsPsnStatus.textContent = connected ? (accountId ? `Connected to ${accountId}` : "Connected") : "";
+  const daysLeft = Number.isFinite(psnTokenDaysLeft)
+    ? ` · ${psnTokenDaysLeft === 0 ? "expires today" : `${psnTokenDaysLeft} ${psnTokenDaysLeft === 1 ? "day" : "days"} left`}`
+    : "";
+  el.settingsPsnStatus.textContent = connected ? `${accountId ? `Connected to ${accountId}` : "Connected"}${daysLeft}` : "";
   el.settingsPsnStatus.hidden = !connected;
   el.settingsPsnConnect.hidden = connected;
   el.settingsPsnTokenPage.hidden = true;
@@ -2014,6 +2019,7 @@ async function finishPsnConnection() {
     if (!response.ok) throw new Error(data.error || "Could not connect PlayStation.");
     el.settingsPsnNpsso.value = "";
     state.settings.psnUser = onlineId;
+    psnTokenDaysLeft = Number.isFinite(data.tokenDaysLeft) ? data.tokenDaysLeft : 60;
     persistLocalSettings();
     await persistCloud();
     setPsnConnectionState(true);
@@ -2034,6 +2040,7 @@ async function disconnectPsnAccount() {
     });
     const data = await response.json().catch(() => ({}));
     if (!response.ok) throw new Error(data.error || "Could not disconnect PlayStation.");
+    psnTokenDaysLeft = null;
     setPsnConnectionState(false);
   } catch (error) {
     el.settingsPsnStatus.textContent = error?.message || "Could not disconnect PlayStation.";
@@ -2084,8 +2091,8 @@ function setSteamConnectionState(connected) {
   el.settingsSteamUser.hidden = true;
   el.settingsSteamConnect.hidden = connected;
   el.settingsSteamDisconnect.hidden = !connected;
-  el.settingsSteamApiStatus.textContent = steamApiAccount.available ? "Steam Web API ready" : "";
-  el.settingsSteamApiStatus.hidden = !connected || !steamApiAccount.available;
+  el.settingsSteamApiStatus.textContent = "";
+  el.settingsSteamApiStatus.hidden = true;
   el.settingsSteamApiIntro.hidden = steamApiAccount.available;
   el.settingsSteamApiSetup.hidden = !connected || steamApiAccount.available;
 }
@@ -2202,8 +2209,8 @@ async function beginXboxConnection() {
 function setXboxConnectionState(connected) {
   el.settingsXboxStatus.textContent = connected ? "Connected" : "";
   el.settingsXboxStatus.hidden = !connected;
-  el.settingsXboxApiStatus.textContent = xboxApiAccount.available ? "OpenXBL API ready" : "";
-  el.settingsXboxApiStatus.hidden = !connected || !xboxApiAccount.available;
+  el.settingsXboxApiStatus.textContent = "";
+  el.settingsXboxApiStatus.hidden = true;
   el.settingsXboxIntro.hidden = connected && xboxApiAccount.available;
   el.settingsMicrosoftUser.hidden = true;
   el.settingsXboxConnect.hidden = connected;

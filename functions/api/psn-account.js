@@ -1,10 +1,12 @@
 import { isEditorRequest } from "./editor-auth.js";
-import { disconnectPsnNpsso, getPsnNpsso, savePsnNpsso } from "./psn-auth.js";
+import { disconnectPsnNpsso, getPsnNpsso, getPsnNpssoDaysLeft, savePsnNpsso } from "./psn-auth.js";
 
 export async function onRequestGet({ request, env = {} }) {
   if (!await isEditorRequest(request, env)) return json({ error: "Unauthorized" }, 401);
   if (new URL(request.url).searchParams.get("action") !== "status") return json({ error: "Unknown action" }, 400);
-  return json({ connected: Boolean(await getPsnNpsso(env)), hasServerCredential: Boolean(String(env.PSN_NPSSO || "").trim()) });
+  const connected = Boolean(await getPsnNpsso(env));
+  const tokenDaysLeft = connected ? await getPsnNpssoDaysLeft(env) : null;
+  return json({ connected, tokenDaysLeft, hasServerCredential: Boolean(String(env.PSN_NPSSO || "").trim()) });
 }
 
 export async function onRequestPost({ request, env = {} }) {
@@ -13,7 +15,7 @@ export async function onRequestPost({ request, env = {} }) {
   try {
     if (body.action === "connect") {
       await savePsnNpsso(body.npsso, env);
-      return json({ connected: true });
+      return json({ connected: true, tokenDaysLeft: await getPsnNpssoDaysLeft(env) ?? 60 });
     }
     if (body.action === "disconnect") {
       await disconnectPsnNpsso(env);
