@@ -59,6 +59,7 @@ const THEMES = {
   },
 };
 const siteVersion = { version: "", updatedAt: "" };
+const steamApiAccount = { available: false };
 const DEFAULT_SETTINGS = {
   pageOrder: DEFAULT_PAGE_ORDER,
   hiddenSections: [],
@@ -394,6 +395,10 @@ const el = {
   settingsMicrosoftUser: document.querySelector("#settingsMicrosoftUser"),
   settingsSteamUser: document.querySelector("#settingsSteamUser"),
   settingsSteamStatus: document.querySelector("#settingsSteamStatus"),
+  settingsSteamApiStatus: document.querySelector("#settingsSteamApiStatus"),
+  settingsSteamApiIntro: document.querySelector("#settingsSteamApiIntro"),
+  settingsSteamApiSetup: document.querySelector("#settingsSteamApiSetup"),
+  settingsSteamApiKey: document.querySelector("#settingsSteamApiKey"),
   settingsSteamConnect: document.querySelector("#settingsSteamConnect"),
   settingsSteamDisconnect: document.querySelector("#settingsSteamDisconnect"),
   settingsXboxStatus: document.querySelector("#settingsXboxStatus"),
@@ -404,7 +409,6 @@ const el = {
   settingsPsnIntro: document.querySelector("#settingsPsnIntro"),
   settingsPsnCallback: document.querySelector("#settingsPsnCallback"),
   settingsPsnNpsso: document.querySelector("#settingsPsnNpsso"),
-  settingsPsnSave: document.querySelector("#settingsPsnSave"),
   settingsNintendoStatus: document.querySelector("#settingsNintendoStatus"),
   settingsNintendoConnect: document.querySelector("#settingsNintendoConnect"),
   settingsNintendoDisconnect: document.querySelector("#settingsNintendoDisconnect"),
@@ -1050,10 +1054,10 @@ function bindEvents() {
   el.settingsNintendoCallbackUrl?.addEventListener("paste", () => window.setTimeout(finishNintendoConnection, 0));
   el.settingsPsnConnect?.addEventListener("click", beginPsnConnection);
   el.settingsPsnDisconnect?.addEventListener("click", disconnectPsnAccount);
-  el.settingsPsnSave?.addEventListener("click", finishPsnConnection);
   el.settingsPsnNpsso?.addEventListener("paste", () => window.setTimeout(finishPsnConnection, 0));
   el.settingsSteamConnect?.addEventListener("click", beginSteamConnection);
   el.settingsSteamDisconnect?.addEventListener("click", disconnectSteamAccount);
+  el.settingsSteamApiKey?.addEventListener("paste", () => window.setTimeout(finishSteamApiKeyConnection, 0));
   el.settingsXboxConnect?.addEventListener("click", beginXboxConnection);
   el.authDialog?.addEventListener("click", (event) => {
     if (event.target === el.authDialog) el.authDialog.close("cancel");
@@ -1762,6 +1766,7 @@ function openSettingsDialog() {
   el.settingsDialog.showModal();
   refreshNintendoConnectionStatus();
   refreshPsnConnectionStatus();
+  refreshSteamApiStatus();
   syncScrollLock();
 }
 
@@ -1869,21 +1874,18 @@ function setPsnConnectionState(connected) {
 
 function beginPsnConnection() {
   window.open("https://www.playstation.com/", "_blank", "noopener");
-  el.settingsPsnStatus.textContent = "Sign in, then open the PSN token page and paste its npsso value below.";
-  el.settingsPsnStatus.hidden = false;
   el.settingsPsnCallback.hidden = false;
   el.settingsPsnNpsso.focus();
-  return loginTab;
 }
 
 async function finishPsnConnection() {
   const npsso = el.settingsPsnNpsso.value.trim();
   if (!npsso) {
-    el.settingsPsnStatus.textContent = "Paste the npsso value from the PSN token page.";
+    el.settingsPsnStatus.textContent = "No PSN code detected.";
     el.settingsPsnStatus.hidden = false;
     return;
   }
-  el.settingsPsnSave.disabled = true;
+  el.settingsPsnNpsso.disabled = true;
   el.settingsPsnStatus.textContent = "Verifying PlayStation sign-in…";
   el.settingsPsnStatus.hidden = false;
   try {
@@ -1898,7 +1900,7 @@ async function finishPsnConnection() {
     el.settingsPsnStatus.textContent = error?.message || "Could not connect PlayStation.";
     el.settingsPsnStatus.hidden = false;
   } finally {
-    el.settingsPsnSave.disabled = false;
+    el.settingsPsnNpsso.disabled = false;
   }
 }
 
@@ -1942,6 +1944,7 @@ async function beginSteamConnection() {
     persistLocalSettings();
     await persistCloud();
     setSteamConnectionState(true);
+    await refreshSteamApiStatus();
   } catch (error) {
     loginTab.close();
     el.settingsSteamStatus.textContent = error?.message || "Steam sign-in failed.";
@@ -1957,10 +1960,75 @@ function setSteamConnectionState(connected) {
   el.settingsSteamUser.hidden = connected;
   el.settingsSteamConnect.hidden = connected;
   el.settingsSteamDisconnect.hidden = !connected;
+  el.settingsSteamApiStatus.textContent = steamApiAccount.available ? "Steam Web API ready" : "";
+  el.settingsSteamApiStatus.hidden = !connected || !steamApiAccount.available;
+  el.settingsSteamApiIntro.hidden = !connected || steamApiAccount.available;
+  el.settingsSteamApiSetup.hidden = !connected || steamApiAccount.available;
+}
+
+async function refreshSteamApiStatus() {
+  try {
+    const response = await fetch("/api/steam-account?action=status", { cache: "no-store" });
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok) throw new Error(data.error || "Could not check Steam API key.");
+    steamApiAccount.available = Boolean(data.apiKeyAvailable);
+    setSteamConnectionState(Boolean(state.settings.steamUser));
+  } catch (error) {
+    steamApiAccount.available = false;
+    setSteamConnectionState(Boolean(state.settings.steamUser));
+    if (state.settings.steamUser) {
+      el.settingsSteamApiStatus.textContent = error?.message || "Could not check Steam API key.";
+      el.settingsSteamApiStatus.hidden = false;
+    }
+  }
+}
+
+async function finishSteamApiKeyConnection() {
+  const apiKey = el.settingsSteamApiKey.value.trim();
+  if (!apiKey) {
+    el.settingsSteamApiStatus.textContent = "No Steam API key detected.";
+    el.settingsSteamApiStatus.hidden = false;
+    return;
+  }
+  el.settingsSteamApiKey.disabled = true;
+  el.settingsSteamApiStatus.textContent = "Checking Steam API key…";
+  el.settingsSteamApiStatus.hidden = false;
+  try {
+    const response = await fetch("/api/steam-account", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ action: "connect", apiKey, steamId: state.settings.steamUser }),
+    });
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok) throw new Error(data.error || "Could not connect Steam API key.");
+    steamApiAccount.available = true;
+    el.settingsSteamApiKey.value = "";
+    setSteamConnectionState(Boolean(state.settings.steamUser));
+  } catch (error) {
+    el.settingsSteamApiStatus.textContent = error?.message || "Could not connect Steam API key.";
+    el.settingsSteamApiStatus.hidden = false;
+  } finally {
+    el.settingsSteamApiKey.disabled = false;
+  }
 }
 
 async function disconnectSteamAccount() {
   el.settingsSteamDisconnect.disabled = true;
+  try {
+    const response = await fetch("/api/steam-account", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ action: "disconnect" }),
+    });
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok) throw new Error(data.error || "Could not disconnect Steam account.");
+    steamApiAccount.available = Boolean(data.apiKeyAvailable);
+  } catch (error) {
+    el.settingsSteamApiStatus.textContent = error?.message || "Could not disconnect Steam account.";
+    el.settingsSteamApiStatus.hidden = false;
+    el.settingsSteamDisconnect.disabled = false;
+    return;
+  }
   state.settings = normalizeSettings({ ...state.settings, steamUser: "" });
   el.settingsSteamUser.value = "";
   persistLocalSettings();

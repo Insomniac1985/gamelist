@@ -198,16 +198,9 @@ The Playstation API access can expire after a while and will require adding the 
 
 ### <img src="assets/platforms/steam.png" alt="Steam" width="22" align="center"> Steam Achievements
 
-1. Enter [Steam Web API key page](https://steamcommunity.com/dev/apikey) and log into your account. You will need 2FA enabled.
-2. Add the domain name of your app, agree the terms and Register.
-3. Approve using the Steam App.
-4. Copy the **Key** and create a new Cloudflare **Variables and Secrets** entry:
-
-```text
-STEAM_API_KEY
-```
-
-3. Set your **Steam account** inside the app: enter **Edit mode**, open **Settings**, and fill the **Steam account** field with your Steam profile URL.
+1. Log in to Steam in the app's **Settings**. This fills in your Steam ID.
+2. Open the [Steam Web API key page](https://steamcommunity.com/dev/apikey), register your app's domain, and copy the key.
+3. Paste the key into Settings. Gamelist verifies it and stores it encrypted until you disconnect it. If you prefer, `STEAM_API_KEY` can still be set as a Cloudflare secret instead.
 
 Steam achievements are fetched only for app IDs owned by the configured Steam account. Make sure the account's game details and library visibility are set to **Public**.
 

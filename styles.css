@@ -12281,6 +12281,21 @@ html.theme-light .shelf-card-delete-action:hover {
   background: rgba(255, 255, 255, 0.035);
 }
 
+.settings-accounts-section .settings-account-field > span {
+  display: block;
+  margin-bottom: 6px;
+  color: var(--dim);
+  font-size: 11px;
+  font-weight: 740;
+  text-transform: uppercase;
+}
+
+.settings-psn-field > span { color: #5b9bff; }
+.settings-xbox-field > span { color: #72d572; }
+.settings-steam-field > span { color: #77bdfb; }
+.settings-nintendo-field > span { color: #ff6b73; }
+.settings-twitch-field > span { color: #c79cff; }
+
 .settings-nintendo-field {
   display: flex;
   flex-direction: column;
@@ -12323,6 +12338,12 @@ html.theme-light .shelf-card-delete-action:hover {
 
 .settings-provider-callback a {
   color: var(--accent-2);
+}
+
+.settings-provider-callback .settings-provider-page-button {
+  justify-self: start;
+  color: var(--text);
+  text-decoration: none;
 }
 
 .settings-nintendo-controls {

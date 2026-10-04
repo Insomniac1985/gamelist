@@ -14,6 +14,7 @@ const STRINGS = {
     Details: "Detalles",
     "PlayStation account": "Cuenta de PlayStation",
     "Microsoft account": "Cuenta de Microsoft",
+    "Xbox account": "Cuenta de Xbox",
     "Steam account": "Cuenta de Steam",
     Currency: "Moneda",
     Region: "Región",
