@@ -6,11 +6,20 @@
         <h2>Account updates</h2>
       </div>
     </div>
-    <p>Game tracking and account connections have been updated:</p>
+    <p>Here’s what changed in game tracking and account setup:</p>
     <ul class="updates-list">
-      <li><strong>Automatic playtime:</strong> when you mark a game completed or finished, Gamelist can fill its time from your linked Steam, PlayStation, or Xbox account. You can still edit the time or refetch it manually.</li>
-      <li><strong>Nintendo account:</strong> connect your Nintendo account from Settings using the new sign-in and link-paste flow.</li>
-      <li><strong>Reconnect your accounts:</strong> open Settings and connect PlayStation, Xbox, Steam, and Nintendo again. Each platform has its own steps. The old per-account Cloudflare secret setup is no longer used; use the account connection flow in Settings.</li>
+      <li>
+        <h3>Playtime fills in automatically</h3>
+        <p>When you mark a game Completed or Finished, Gamelist can get its playtime from your linked Steam, PlayStation, or Xbox account. You can change the number yourself or use the reload button to fetch it again.</p>
+      </li>
+      <li>
+        <h3>Connect Nintendo from Settings</h3>
+        <p>Choose <strong>Log in with Nintendo</strong>, select your account, then copy the link address from <strong>Select this person</strong> and paste it into Gamelist.</p>
+      </li>
+      <li>
+        <h3>Reconnect your platform accounts</h3>
+        <p>Connect PlayStation, Xbox, Steam, and Nintendo again from Settings. Follow the instructions shown for each platform. Personal account credentials are no longer added as Cloudflare secrets.</p>
+      </li>
     </ul>
     <div class="modal-actions">
       <button class="primary-button" id="updatesCloseButton" type="button">Got it</button>

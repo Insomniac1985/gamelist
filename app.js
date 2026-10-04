@@ -61,6 +61,7 @@ const THEMES = {
 };
 const siteVersion = { version: "", updatedAt: "", notificationVersion: 0 };
 let updatesPopupLoadPromise = null;
+let nintendoSetupStarted = false;
 const steamApiAccount = { available: false, personaName: "" };
 const xboxApiAccount = { available: false };
 const DEFAULT_SETTINGS = {
@@ -1847,15 +1848,17 @@ async function refreshNintendoConnectionStatus() {
 }
 
 function setNintendoConnectionState(connected, accountName = "") {
+  if (connected) nintendoSetupStarted = false;
   el.settingsNintendoStatus.textContent = connected ? (accountName ? `Connected to ${accountName}` : "Connected") : "";
   el.settingsNintendoStatus.hidden = !connected;
   el.settingsNintendoConnect.hidden = connected;
   el.settingsNintendoDisconnect.hidden = !connected;
-  el.settingsNintendoCallback.hidden = connected;
+  el.settingsNintendoCallback.hidden = connected || !nintendoSetupStarted;
   el.settingsNintendoIntro.hidden = connected;
 }
 
 async function beginNintendoConnection() {
+  nintendoSetupStarted = true;
   const loginTab = window.open("about:blank", "_blank");
   el.settingsNintendoStatus.textContent = "Preparing Nintendo sign-in…";
   el.settingsNintendoStatus.hidden = false;
@@ -1872,6 +1875,8 @@ async function beginNintendoConnection() {
     if (loginTab) loginTab.location.href = data.url;
     else window.open(data.url, "_blank");
   } catch (error) {
+    nintendoSetupStarted = false;
+    el.settingsNintendoCallback.hidden = true;
     loginTab?.close();
     el.settingsNintendoStatus.textContent = error.message;
   }
@@ -1900,6 +1905,7 @@ async function finishNintendoConnection() {
 }
 
 async function disconnectNintendoAccount() {
+  nintendoSetupStarted = false;
   el.settingsNintendoDisconnect.disabled = true;
   try {
     const response = await fetch("/api/nintendo-playtime", {
