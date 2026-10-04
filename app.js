@@ -411,6 +411,7 @@ const el = {
   settingsPsnNpsso: document.querySelector("#settingsPsnNpsso"),
   settingsPsnTokenPage: document.querySelector("#settingsPsnTokenPage"),
   settingsPsnPasteInfo: document.querySelector("#settingsPsnPasteInfo"),
+  settingsPsnConfirmInfo: document.querySelector("#settingsPsnConfirmInfo"),
   settingsPsnTokenLabel: document.querySelector("#settingsPsnTokenLabel"),
   settingsPsnUserLabel: document.querySelector("#settingsPsnUserLabel"),
   settingsPsnConfirm: document.querySelector("#settingsPsnConfirm"),
@@ -1799,7 +1800,7 @@ function setNintendoConnectionState(connected) {
   el.settingsNintendoConnect.hidden = connected;
   el.settingsNintendoDisconnect.hidden = !connected;
   el.settingsNintendoCallback.hidden = connected;
-  el.settingsNintendoIntro.hidden = connected;
+  el.settingsNintendoIntro.hidden = true;
 }
 
 async function beginNintendoConnection() {
@@ -1813,6 +1814,7 @@ async function beginNintendoConnection() {
     const data = await response.json().catch(() => ({}));
     if (!response.ok || !data.url) throw new Error(data.error || "Could not start Nintendo sign-in.");
     el.settingsNintendoStatus.textContent = "Sign in and select your Nintendo account, then paste the copied link below.";
+    el.settingsNintendoIntro.hidden = false;
     el.settingsNintendoCallback.hidden = false;
     el.settingsNintendoCallbackUrl.focus();
     if (loginTab) loginTab.location.href = data.url;
@@ -1883,6 +1885,7 @@ function setPsnConnectionState(connected) {
   el.settingsPsnIntro.hidden = connected;
   el.settingsPsnCallback.hidden = connected;
   el.settingsPsnPasteInfo.hidden = true;
+  el.settingsPsnConfirmInfo.hidden = true;
   el.settingsPsnTokenLabel.hidden = true;
   el.settingsPsnNpsso.hidden = true;
   el.settingsPsnUser.hidden = true;
@@ -1897,6 +1900,7 @@ function beginPsnConnection() {
   el.settingsPsnTokenPage.hidden = false;
   el.settingsPsnNpsso.hidden = true;
   el.settingsPsnPasteInfo.hidden = true;
+  el.settingsPsnConfirmInfo.hidden = true;
   el.settingsPsnTokenLabel.hidden = true;
   el.settingsPsnUser.hidden = true;
   el.settingsPsnUserLabel.hidden = true;
@@ -1913,6 +1917,11 @@ function openPsnTokenPage() {
 
 function showPsnAccountIdEntry() {
   if (!el.settingsPsnNpsso.value.trim()) return;
+  el.settingsPsnTokenPage.hidden = true;
+  el.settingsPsnPasteInfo.hidden = true;
+  el.settingsPsnTokenLabel.hidden = true;
+  el.settingsPsnNpsso.hidden = true;
+  el.settingsPsnConfirmInfo.hidden = false;
   el.settingsPsnUser.hidden = false;
   el.settingsPsnUserLabel.hidden = false;
   el.settingsPsnConfirm.hidden = false;
