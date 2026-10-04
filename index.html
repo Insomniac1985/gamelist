@@ -919,7 +919,7 @@
           <div class="settings-account-field settings-psn-field">
             <span data-i18n="PlayStation account">PlayStation account</span>
             <input id="settingsPsnUser" autocomplete="off" placeholder="PlayStation online ID" data-i18n-placeholder="PlayStation online ID">
-            <small class="settings-provider-intro" id="settingsPsnIntro">Sign in to PlayStation, open the PSN token page, then paste its NPSSO value here. The token is sent securely and stored encrypted.</small>
+            <small class="settings-provider-intro" id="settingsPsnIntro">Log in to PlayStation, open the PSN token page, and copy the value next to “npsso”. Paste it below to connect. The encrypted connection expires after 60 days.</small>
             <div class="settings-provider-controls">
               <span id="settingsPsnStatus" class="settings-provider-status" hidden></span>
               <button class="ghost-button" id="settingsPsnConnect" type="button">Open PlayStation sign-in</button>
@@ -946,6 +946,7 @@
             <div class="settings-provider-controls">
               <span id="settingsSteamStatus" class="settings-provider-status" hidden></span>
               <button class="ghost-button" id="settingsSteamConnect" type="button">Log in with Steam</button>
+              <button class="ghost-button" id="settingsSteamDisconnect" type="button" hidden>Disconnect</button>
             </div>
           </div>
           <div class="settings-account-field settings-nintendo-field">

@@ -395,6 +395,7 @@ const el = {
   settingsSteamUser: document.querySelector("#settingsSteamUser"),
   settingsSteamStatus: document.querySelector("#settingsSteamStatus"),
   settingsSteamConnect: document.querySelector("#settingsSteamConnect"),
+  settingsSteamDisconnect: document.querySelector("#settingsSteamDisconnect"),
   settingsXboxStatus: document.querySelector("#settingsXboxStatus"),
   settingsXboxConnect: document.querySelector("#settingsXboxConnect"),
   settingsPsnStatus: document.querySelector("#settingsPsnStatus"),
@@ -1052,6 +1053,7 @@ function bindEvents() {
   el.settingsPsnSave?.addEventListener("click", finishPsnConnection);
   el.settingsPsnNpsso?.addEventListener("paste", () => window.setTimeout(finishPsnConnection, 0));
   el.settingsSteamConnect?.addEventListener("click", beginSteamConnection);
+  el.settingsSteamDisconnect?.addEventListener("click", disconnectSteamAccount);
   el.settingsXboxConnect?.addEventListener("click", beginXboxConnection);
   el.authDialog?.addEventListener("click", (event) => {
     if (event.target === el.authDialog) el.authDialog.close("cancel");
@@ -1936,8 +1938,10 @@ async function beginSteamConnection() {
     const result = await resultPromise;
     if (result.error) throw new Error(result.error);
     el.settingsSteamUser.value = result.steamId;
-    el.settingsSteamStatus.textContent = "Steam account found. Save Settings to apply it.";
-    el.settingsSteamStatus.hidden = false;
+    state.settings = normalizeSettings({ ...state.settings, steamUser: result.steamId });
+    persistLocalSettings();
+    await persistCloud();
+    setSteamConnectionState(true);
   } catch (error) {
     loginTab.close();
     el.settingsSteamStatus.textContent = error?.message || "Steam sign-in failed.";
@@ -1945,6 +1949,23 @@ async function beginSteamConnection() {
   } finally {
     el.settingsSteamConnect.disabled = false;
   }
+}
+
+function setSteamConnectionState(connected) {
+  el.settingsSteamStatus.textContent = connected ? "Connected" : "";
+  el.settingsSteamStatus.hidden = !connected;
+  el.settingsSteamConnect.hidden = connected;
+  el.settingsSteamDisconnect.hidden = !connected;
+}
+
+async function disconnectSteamAccount() {
+  el.settingsSteamDisconnect.disabled = true;
+  state.settings = normalizeSettings({ ...state.settings, steamUser: "" });
+  el.settingsSteamUser.value = "";
+  persistLocalSettings();
+  await persistCloud();
+  setSteamConnectionState(false);
+  el.settingsSteamDisconnect.disabled = false;
 }
 
 async function beginXboxConnection() {
@@ -2000,6 +2021,7 @@ function renderSettingsDialog() {
   el.settingsPsnUser.value = state.settings.psnUser;
   el.settingsMicrosoftUser.value = state.settings.microsoftUser;
   el.settingsSteamUser.value = state.settings.steamUser;
+  setSteamConnectionState(Boolean(state.settings.steamUser));
   el.settingsTwitchUser.value = state.settings.twitchUser;
   el.settingsCurrency.value = state.settings.currency;
   el.settingsRegion.value = state.settings.region;
