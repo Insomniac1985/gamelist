@@ -114,6 +114,7 @@ const state = {
   filters: { query: "", platform: "all", region: "all", condition: "all", category: "all", tab: "all", sort: "platform", direction: "asc" },
   viewMode: loadSharedViewMode(),
   completedYear: "all", completedPlatform: "all", completedSort: "time", completedDirection: "desc", completedView: "grid",
+  shelfStatsYear: "",
   gamelistDetailGame: null, gamelistDetailTrophyData: [], gamelistDetailTrophyEarned: 0, gamelistDetailTrophyTotal: 0, gamelistDetailTrophyKind: "TROPHIES", gamelistDetailTrophyDirection: "asc",
   completedCoverCache: {},
   releaseCalendarOffset: 0,
@@ -135,8 +136,8 @@ const el = {
   brandLink: document.querySelector(".brand"),
   brandVersion: document.querySelector("#brandVersion"),
   stats: document.querySelector("#shelfStats"),
-  achievementStatsButton: document.querySelector("#shelfAchievementStatsButton"),
-  statsDialog: document.querySelector("#shelfStatsDialog"), statsFrame: document.querySelector("#shelfStatsFrame"),
+  shelfStatsButton: document.querySelector("#shelfStatsButton"),
+  statsDialog: document.querySelector("#shelfStatsDialog"), statsBrow: document.querySelector("#shelfStatsBrow"), statsTitle: document.querySelector("#shelfStatsTitle"), statsYearSelect: document.querySelector("#shelfStatsYearSelect"), statsBody: document.querySelector("#shelfStatsBody"), statsCloseButton: document.querySelector("#shelfStatsCloseButton"),
   count: document.querySelector("#resultCount"),
   libraryTitle: document.querySelector("#shelfLibraryTitle"),
   shelf: document.querySelector("#gameShelf"),
@@ -321,7 +322,7 @@ function bindEvents() {
   el.clear.addEventListener("click", clearFilters);
   el.stats.addEventListener("click", handleStatsAction);
   el.stats.addEventListener("keydown", handleStatsActionKeydown);
-  el.achievementStatsButton?.addEventListener("click", openShelfStatsDialog);
+  el.shelfStatsButton?.addEventListener("click", openShelfStatsDialog);
   document.addEventListener("click", closePlatformLogoSelects);
   el.login.addEventListener("click", toggleEditMode);
   el.addButton.addEventListener("click", () => openEditor(null, { digital: state.filters.tab === "drive" }));
@@ -397,7 +398,8 @@ function bindEvents() {
   el.completedClose.addEventListener("click", () => closeDialog(el.completedDialog));
   el.completedDialog.addEventListener("click", (event) => { if (event.target === el.completedDialog) closeDialog(el.completedDialog); });
   el.statsDialog?.addEventListener("click", (event) => { if (event.target === el.statsDialog) closeDialog(el.statsDialog); });
-  window.addEventListener("message", (event) => { if (event.origin === window.location.origin && event.data === "gamelist-stats-close") closeDialog(el.statsDialog); });
+  el.statsCloseButton?.addEventListener("click", () => closeDialog(el.statsDialog));
+  el.statsYearSelect?.addEventListener("change", () => { state.shelfStatsYear = el.statsYearSelect.value; renderShelfStatsDialog(); });
   el.releaseCloseButton.addEventListener("click", () => closeDialog(el.releaseDialog));
   el.releaseDialog.addEventListener("click", (event) => { if (event.target === el.releaseDialog) closeDialog(el.releaseDialog); });
   el.authClose.addEventListener("click", () => closeDialog(el.authDialog));
@@ -407,8 +409,59 @@ function bindEvents() {
 }
 
 function openShelfStatsDialog() {
-  el.statsFrame.src = `/?stats=all&statsSource=achievements&embed=1&t=${Date.now()}`;
+  const years = shelfStatsYears();
+  const currentYear = String(new Date().getFullYear());
+  const defaultYear = years.includes(currentYear) ? currentYear : years[0] || currentYear;
+  if (state.shelfStatsYear !== "all" && !years.includes(state.shelfStatsYear)) state.shelfStatsYear = defaultYear;
+  el.statsYearSelect.innerHTML = ["all", ...years].map((year) => `<option value="${year}">${escapeHtml(year === "all" ? tt("All time") : year)}</option>`).join("");
+  el.statsYearSelect.value = state.shelfStatsYear;
+  renderShelfStatsDialog();
   openDialog(el.statsDialog);
+}
+
+function shelfStatsYears() {
+  const years = [...new Set(state.games.filter((game) => !isPendingCollectionGame(game)).map((game) => shelfStatsDate(game)?.getFullYear()).filter(Number.isFinite).map(String))].sort((a, b) => Number(b) - Number(a));
+  return years.length ? years : [String(new Date().getFullYear())];
+}
+
+function shelfStatsDate(game) {
+  const time = Date.parse(game?.createdAt || "");
+  return Number.isFinite(time) ? new Date(time) : null;
+}
+
+function renderShelfStatsDialog() {
+  const year = state.shelfStatsYear || "all";
+  const allGames = state.games.filter((game) => !isPendingCollectionGame(game) && shelfStatsDate(game));
+  const games = allGames.filter((game) => year === "all" || shelfStatsDate(game)?.getFullYear() === Number(year));
+  const physical = games.filter((game) => !isDigitalShelfGame(game));
+  const digital = games.filter(isDigitalShelfGame);
+  const months = Array.from({ length: 12 }, () => 0);
+  const platforms = new Map();
+  for (const game of games) {
+    const date = shelfStatsDate(game);
+    if (date) months[date.getMonth()] += 1;
+    const platform = canonicalShelfPlatform(game.platform || "Other") || tt("Other");
+    platforms.set(platform, (platforms.get(platform) || 0) + 1);
+  }
+  const platformRows = [...platforms].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]));
+  const maxPlatform = Math.max(1, ...platformRows.map(([, count]) => count));
+  const maxMonth = Math.max(1, ...months);
+  const monthNames = Array.from({ length: 12 }, (_, month) => new Intl.DateTimeFormat(currentLanguage(), { month: "short" }).format(new Date(2020, month, 1)));
+  const shownYear = year === "all" ? tt("All time") : year;
+  el.statsBrow.textContent = year === "all" ? tt("All-time statistics") : tt("YEARLY STATISTICS");
+  el.statsTitle.textContent = tt("Shelf statistics {year}", { year: shownYear });
+  el.statsBody.innerHTML = `
+    <div class="shelf-stats-kpis">
+      <article class="shelf-stats-kpi"><strong>${games.length}</strong><span>${escapeHtml(tt("Games added"))}</span></article>
+      <article class="shelf-stats-kpi"><strong>${physical.length}</strong><span>${escapeHtml(tt("Physical games"))}</span></article>
+      <article class="shelf-stats-kpi"><strong>${digital.length}</strong><span>${escapeHtml(tt("Digital games"))}</span></article>
+    </div>
+    <div class="finished-stats-charts">
+      <section class="finished-stats-chart shelf-stats-platforms"><h3>${escapeHtml(tt("Platforms"))}</h3><div class="shelf-stats-platform-list">${platformRows.map(([platform, count]) => `<div class="shelf-stats-platform-row"><span>${escapeHtml(platform)}</span><i style="--platform-share:${Math.round(count / maxPlatform * 100)}%"></i><strong>${count}</strong></div>`).join("")}</div></section>
+    </div>
+    <section class="finished-stats-months"><h3>${escapeHtml(tt("Games added by month"))}</h3><div class="finished-stats-period-grid">${months.map((count, month) => `<div class="finished-stats-month" title="${escapeHtml(`${monthNames[month]}: ${count}`)}"><span>${escapeHtml(monthNames[month])}</span><em style="--month:${count / maxMonth}"></em><strong>${count}</strong></div>`).join("")}</div></section>
+    ${games.length ? "" : `<div class="empty">${escapeHtml(tt("No games added{year}.", { year: year === "all" ? "" : ` ${tt("in {year}", { year })}` }))}</div>`}
+  `;
 }
 
 function rebuildGames() {
@@ -1464,7 +1517,7 @@ function gameCard(game, options = {}) {
   card.querySelector(".meta").innerHTML = preorderProjection
     ? `${platformBadge(game.platform, { title: game.title })}${mediaFormatBadge(game)}${dlcBadge(game)}${entitlementBadge(game)}${preorderPlaytimePill(game)}`
     : digitalGame ? `${platformBadge(game.platform, { title: game.title })}${mediaFormatBadge(game)}${dlcBadge(game)}${entitlementBadge(game)}${shelfProgressPill(game)}`
-    : `<span class="region-flag" title="${escapeHtml(game.country)}">${flagIcon(game.country)}</span>${platformBadge(game.platform, { title: game.title })}${conditionBadge(condition)}${shelfProgressPill(game)}`;
+    : `<span class="region-flag" title="${escapeHtml(game.country)}">${flagIcon(game.country)}</span>${platformBadge(game.platform, { title: game.title })}${conditionBadge(condition)}${missingCollectionPriceBadge(game)}${shelfProgressPill(game)}`;
   const playDates = card.querySelector(".play-dates");
   if (preorderProjection) playDates.innerHTML = `${shelfReleaseDatePill(game, "Releases")}${game.preorderStore ? preorderProjectionChip(game.preorderStore) : ""}`;
   else playDates.remove();
@@ -1501,7 +1554,7 @@ function gameRow(game) {
   const core = preorderProjection
     ? `${platformBadge(game.platform, { title: game.title })}${mediaFormatBadge(game)}${dlcBadge(game)}${entitlementBadge(game)}${preorderPlaytimePill(game)}${shelfReleaseDatePill(game, "Releases")}${mobilePreorderTag}`
     : digitalGame ? `${platformBadge(game.platform, { title: game.title })}${mediaFormatBadge(game)}${dlcBadge(game)}${entitlementBadge(game)}${shelfProgressPill(game)}${mobilePreorderTag}`
-    : `<span class="region-flag" title="${escapeHtml(game.country)}">${flagIcon(game.country)}</span>${platformBadge(game.platform, { title: game.title })}${conditionBadge(conditionLabel(game))}${shelfProgressPill(game)}${mobilePreorderTag}`;
+    : `<span class="region-flag" title="${escapeHtml(game.country)}">${flagIcon(game.country)}</span>${platformBadge(game.platform, { title: game.title })}${conditionBadge(conditionLabel(game))}${missingCollectionPriceBadge(game)}${shelfProgressPill(game)}${mobilePreorderTag}`;
   const prices = preorderProjection ? gamelistPreorderPrices(game) : "";
   return `<article class="game-row${preorderProjection ? " preorder-projection-row" : ""}${ownerClasses}" data-id="${escapeHtml(game.id)}" role="button" tabindex="0" aria-label="${escapeHtml(`Open ${game.title}`)}"><span class="game-row-cover-wrap"><img class="game-row-cover" src="${escapeHtml(cover)}" alt="" loading="lazy" decoding="async"><img class="game-row-cover-preview" src="${escapeHtml(cover)}" alt="" loading="lazy" decoding="async" aria-hidden="true"></span><div class="game-row-identity"><strong class="${visibleOwners.map(ownerColorClass).join(" ")}">${escapeHtml(game.title)}</strong>${visibleOwners.length || studio ? `<span class="game-row-studio-line">${visibleOwners.map(ownerBadge).join("")}${studio ? `<span>${escapeHtml(studio)}</span>` : ""}</span>` : ""}</div><div class="game-row-core">${core}</div><div class="game-row-tags">${game.preorderStore ? preorderProjectionChip(game.preorderStore) : ""}${tags.map((tag) => `<span class="chip genre">${escapeHtml(tag)}</span>`).join("")}</div>${prices ? `<div class="game-row-prices">${prices}</div>` : ""}${description ? `<div class="game-row-description${preorderProjection ? "" : " shelf-row-description"}">${escapeHtml(description)}</div>` : ""}<div class="game-row-actions">${actions}</div></article>`;
 }
@@ -1563,6 +1616,12 @@ function projectionOwnerCardClass(game) {
 }
 
 function conditionBadge(condition) { const tone = condition === "Complete +" ? "complete-plus" : normalize(condition).replace(/ /g, "-"); return `<span class="condition-pill condition-${tone}"><img src="assets/platforms/disk.png" alt="" width="18" height="18"><span>${escapeHtml(tt(condition))}</span></span>`; }
+function missingCollectionPriceBadge(game) {
+  if (!state.canEdit || !shelfPricesVisible() || isDigitalShelfGame(game) || collectionValueFor(game) > 0) return "";
+  const currency = normalizePriceSettings(state.gamelistSettings).currency;
+  const label = tt("Missing {currency} price data", { currency });
+  return `<span class="missing-collection-price-tag" title="${escapeHtml(label)}" aria-label="${escapeHtml(label)}">${currencyIcon()}</span>`;
+}
 
 function handleShelfClick(event) {
   const card = event.target.closest("[data-id]");
