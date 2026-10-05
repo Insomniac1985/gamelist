@@ -153,8 +153,16 @@ body.mobile-app-mode.shelf-page .backdrop {
   border-radius: 8px;
   padding: 0;
   background: var(--grid-fade), var(--grid-texture), var(--panel-strong);
-  background-size: auto, 22px 22px, 22px 22px, auto;
-  background-position: center, var(--grid-x) var(--grid-y), var(--grid-x) var(--grid-y), center;
+  background-size:
+    auto,
+    22px 22px,
+    22px 22px,
+    auto;
+  background-position:
+    center,
+    var(--grid-x) var(--grid-y),
+    var(--grid-x) var(--grid-y),
+    center;
   box-shadow: var(--shadow);
   backdrop-filter: blur(8px) saturate(1.08);
 }
@@ -187,7 +195,38 @@ body.mobile-app-mode.shelf-page .backdrop {
 
 .shelf-stats-body .finished-stats-kpi.is-completed strong,
 .shelf-stats-body .finished-stats-kpi.is-streamed strong {
-  color: var(--accent);
+  color: var(--finished-accent);
+}
+
+.shelf-stats-body .finished-stats-kpi.is-completed:hover,
+.shelf-stats-body .finished-stats-kpi.is-completed:focus-visible,
+.shelf-stats-body .finished-stats-kpi.is-streamed:hover,
+.shelf-stats-body .finished-stats-kpi.is-streamed:focus-visible,
+body.theme-kash .shelf-stats-body .finished-stats-kpi.is-completed:hover,
+body.theme-kash
+  .shelf-stats-body
+  .finished-stats-kpi.is-completed:focus-visible {
+  background: color-mix(
+    in srgb,
+    var(--accent) 16%,
+    rgba(255, 255, 255, 0.04)
+  ) !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.08),
+    0 0 0 3px color-mix(in srgb, var(--accent) 14%, transparent),
+    0 14px 34px color-mix(in srgb, var(--accent) 18%, transparent) !important;
+}
+
+.shelf-stats-body .finished-stats-kpi.is-completed:hover strong,
+.shelf-stats-body .finished-stats-kpi.is-completed:focus-visible strong,
+.shelf-stats-body .finished-stats-kpi.is-streamed:hover strong,
+.shelf-stats-body .finished-stats-kpi.is-streamed:focus-visible strong,
+body.theme-kash .shelf-stats-body .finished-stats-kpi.is-completed:hover strong,
+body.theme-kash
+  .shelf-stats-body
+  .finished-stats-kpi.is-completed:focus-visible
+  strong {
+  color: var(--accent) !important;
 }
 
 .shelf-stats-controls {
@@ -230,7 +269,9 @@ body.mobile-app-mode.shelf-page .backdrop {
 .shelf-stats-controls .platform-logo-button,
 .shelf-stats-controls .platform-logo-select.is-active .platform-logo-button,
 .shelf-stats-controls .platform-logo-select.is-open .platform-logo-button {
-  background-position: right 8px center, right 8px center;
+  background-position:
+    right 8px center,
+    right 8px center;
 }
 
 .shelf-stats-controls .platform-logo-menu {
@@ -307,7 +348,9 @@ body.mobile-app-mode.shelf-page .backdrop {
   flex-basis: 18px;
 }
 
-.shelf-stats-hover-float > .finished-stats-game-row > .shelf-stats-game-trailing {
+.shelf-stats-hover-float
+  > .finished-stats-game-row
+  > .shelf-stats-game-trailing {
   grid-area: platform;
 }
 
@@ -2251,7 +2294,11 @@ textarea {
   width: 31px;
   height: 31px;
   color: var(--accent-1);
-  background: color-mix(in srgb, var(--accent-1) 12%, rgba(255, 255, 255, 0.045));
+  background: color-mix(
+    in srgb,
+    var(--accent-1) 12%,
+    rgba(255, 255, 255, 0.045)
+  );
   border: 1px solid color-mix(in srgb, var(--accent-1) 55%, transparent);
   border-radius: 7px;
 }
