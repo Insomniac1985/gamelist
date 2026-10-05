@@ -198,6 +198,10 @@ body.mobile-app-mode.shelf-page .backdrop {
   color: var(--finished-accent);
 }
 
+.shelf-stats-body .finished-stats-kpi.is-price strong {
+  color: var(--accent-2);
+}
+
 .shelf-stats-body .finished-stats-kpi.is-completed:hover,
 .shelf-stats-body .finished-stats-kpi.is-completed:focus-visible,
 .shelf-stats-body .finished-stats-kpi.is-streamed:hover,

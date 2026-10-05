@@ -453,8 +453,10 @@ function renderShelfStatsDialog() {
   const games = allGames.filter((game) => year === "all" || shelfStatsDate(game)?.getFullYear() === Number(year));
   const physical = games.filter((game) => !isDigitalShelfGame(game));
   const digital = games.filter(isDigitalShelfGame);
+  const physicalValue = physical.reduce((sum, game) => sum + collectionValueFor(game), 0);
   const platformCounts = shelfStatsCountBy(games, (game) => canonicalShelfPlatform(game.platform || "Unknown") || "Unknown");
   const categoryCounts = shelfStatsCountBy(games, shelfStatsCategories);
+  const regionCounts = shelfStatsCountBy(physical, shelfStatsRegion);
   const mediaCounts = [
     { label: "Physical", count: physical.length, color: "#2f343d" },
     { label: "Digital", count: digital.length, color: "#d8dde6" },
@@ -468,6 +470,7 @@ function renderShelfStatsDialog() {
   const chartMarkup = [
     shelfStatsDonutCard(tt("Platforms"), platformCounts, "platform", 5, { games }),
     shelfStatsDonutCard(tt("Categories"), categoryCounts, "category", 5, { games }),
+    ...(physical.length ? [shelfStatsDonutCard(tt("Region"), regionCounts, "region", 5, { games: physical })] : []),
     ...(digital.length ? [shelfStatsDonutCard(tt("Physical / digital"), mediaCounts, "media", mediaCounts.length, { staticLegend: true })] : []),
   ].join("");
   const activityChart = year === "all"
@@ -478,6 +481,7 @@ function renderShelfStatsDialog() {
       <article class="finished-stats-kpi is-finished"><strong>${games.length}</strong><span>${escapeHtml(tt("Games added"))}</span></article>
       <article class="finished-stats-kpi is-completed"><strong>${physical.length}</strong><span>${escapeHtml(tt("Physical games"))}</span></article>
       ${digital.length ? `<article class="finished-stats-kpi is-streamed"><strong>${digital.length}</strong><span>${escapeHtml(tt("Digital games"))}</span></article>` : ""}
+      ${shelfPricesVisible() ? `<article class="finished-stats-kpi is-price"><strong>${escapeHtml(formatMoney(physicalValue, normalizePriceSettings(state.gamelistSettings).currency))}</strong><span>${escapeHtml(tt("Estimated physical"))}</span></article>` : ""}
     </div>
     <div class="finished-stats-charts">${chartMarkup}</div>
     ${activityChart}
@@ -511,6 +515,13 @@ function shelfStatsCategories(game) {
   return uniqueLabels.length ? uniqueLabels : [tt("Uncategorized")];
 }
 
+function shelfStatsRegion(game) {
+  const region = String(game?.region || "").trim();
+  if (region) return region;
+  const country = String(game?.country || "").trim();
+  return country ? regionFor(country) : tt("Unknown");
+}
+
 function shelfStatsDonutCard(title, counts, tone, visibleLimit, options = {}) {
   const showAll = options.staticLegend;
   const visible = showAll ? counts : counts.slice(0, visibleLimit);
@@ -519,7 +530,7 @@ function shelfStatsDonutCard(title, counts, tone, visibleLimit, options = {}) {
   return `
     <article class="finished-stats-chart shelf-stats-radial-chart${options.staticLegend ? " is-static" : ""}${tone === "media" ? " is-media" : ""}"${options.staticLegend ? "" : ' tabindex="0"'}>
       <h3>${escapeHtml(title)}</h3>
-      <div class="finished-stats-donut ${tone === "platform" ? "is-platform" : tone === "category" ? "is-category" : "is-media"}">${shelfStatsPieMarkup(counts, tone, options.games || [])}</div>
+      <div class="finished-stats-donut ${tone === "platform" ? "is-platform" : tone === "media" ? "is-media" : tone === "region" ? "is-region" : "is-category"}">${shelfStatsPieMarkup(counts, tone, options.games || [])}</div>
       <div class="finished-stats-chart-copy">
         <div class="finished-stats-chart-list" data-stats-overlay-title="${escapeHtml(title)}">${showAll ? rows(counts) : `${rows(visible)}${expanded ? `<span class="finished-stats-more-row" aria-hidden="true">...</span>` : ""}<div class="finished-stats-breakdown">${rows(counts)}</div>`}</div>
       </div>
@@ -590,6 +601,7 @@ function shelfStatsPieMarkup(counts, tone, games = []) {
 function shelfStatsSegmentGames(label, tone, games) {
   if (tone === "platform") return games.filter((game) => (canonicalShelfPlatform(game.platform || "Unknown") || "Unknown") === label);
   if (tone === "category") return games.filter((game) => shelfStatsCategories(game).includes(label));
+  if (tone === "region") return games.filter((game) => shelfStatsRegion(game) === label);
   if (tone === "media") return games.filter((game) => (isDigitalShelfGame(game) ? "Digital" : "Physical") === label);
   return [];
 }
@@ -684,7 +696,7 @@ function bindShelfStatsHoverDetails() {
       const tip = index ? donut.querySelector(`.finished-stats-segment-tip-${index}`) : null;
       if (!tip) return;
       const itemLabel = segment.dataset.segmentLabel || "";
-      const tone = donut.classList.contains("is-platform") ? "platform" : donut.classList.contains("is-media") ? "media" : "category";
+      const tone = donut.classList.contains("is-platform") ? "platform" : donut.classList.contains("is-media") ? "media" : donut.classList.contains("is-region") ? "region" : "category";
       const games = state.games.filter((game) => !isPendingCollectionGame(game) && shelfStatsDate(game) && (state.shelfStatsYear === "all" || shelfStatsDate(game).getFullYear() === Number(state.shelfStatsYear)));
       const matchingGames = shelfStatsSegmentGames(itemLabel, tone, games);
       const gameRows = shelfStatsGameRows(matchingGames);
@@ -709,7 +721,7 @@ function bindShelfStatsHoverDetails() {
     if (segment && body.contains(segment)) {
       const donut = segment.closest(".finished-stats-donut");
       const label = segment.dataset.segmentLabel || "";
-      const tone = donut?.classList.contains("is-platform") ? "platform" : donut?.classList.contains("is-media") ? "media" : "category";
+      const tone = donut?.classList.contains("is-platform") ? "platform" : donut?.classList.contains("is-media") ? "media" : donut?.classList.contains("is-region") ? "region" : "category";
       const games = state.games.filter((game) => !isPendingCollectionGame(game) && shelfStatsDate(game) && (state.shelfStatsYear === "all" || shelfStatsDate(game).getFullYear() === Number(state.shelfStatsYear)));
       const matching = shelfStatsSegmentGames(label, tone, games);
       if (matching.length) {
@@ -751,7 +763,7 @@ function openShelfStatsMiniOverlay(title, content) {
 
 function shelfStatsSegmentColor(label, tone, index) {
   if (tone === "media") return normalizeSearchText(label) === "digital" ? "#d8dde6" : "#2f343d";
-  if (tone === "category") return `rgb(${Math.max(76, 202 - index * 22)} ${Math.max(76, 202 - index * 22)} ${Math.max(76, 202 - index * 22)})`;
+  if (tone === "category" || tone === "region") return `rgb(${Math.max(76, 202 - index * 22)} ${Math.max(76, 202 - index * 22)} ${Math.max(76, 202 - index * 22)})`;
   const value = normalizeSearchText(label);
   if (value.includes("switch") || value.includes("nintendo")) return "#ff3b45";
   if (value === "ps5") return "#ffffff";
