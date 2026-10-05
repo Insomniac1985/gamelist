@@ -383,9 +383,15 @@ body.theme-kash
   padding: 2px;
 }
 
+.shelf-stats-media-pill > span:not(.finished-stats-media-icon) {
+  display: none;
+}
+
 .shelf-stats-media-pill.platform-nintendo { color: #ff3b36 !important; }
+.shelf-stats-media-pill.platform-nintendo .download-badge-icon { stroke: #fff !important; }
 .shelf-stats-media-pill.platform-playstation { color: #5970ff !important; }
 .shelf-stats-media-pill.platform-playstation.platform-ps5 { color: #05070b !important; }
+.shelf-stats-media-pill.platform-playstation.platform-ps5 .download-badge-icon { stroke: #05070b !important; }
 .shelf-stats-media-pill.platform-xbox { color: #7ed732 !important; }
 .shelf-stats-media-pill.platform-pc { color: #dedede !important; }
 .shelf-stats-media-pill.platform-sega { color: #5aa7ff !important; }
