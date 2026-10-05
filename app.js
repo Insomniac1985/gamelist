@@ -2626,7 +2626,7 @@ function settingsPrioritizeFinishedStreamItem() {
   return `
     <article class="settings-layout-card settings-sync-card" data-layout-key="prioritize-finished-stream">
       <div class="settings-wire wire-finished" aria-hidden="true"><span></span><span></span><span></span></div>
-      <div class="settings-theme-select">
+      <div class="settings-theme-select settings-stream-filter-priority">
         <span>${escapeHtml(tt("Stream Filter priority"))}</span>
         <div class="settings-check-field">
           <select class="settings-stream-priority-select" data-stream-filter-priority aria-label="${escapeHtml(tt("Stream Filter priority"))}">

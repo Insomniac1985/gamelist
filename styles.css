@@ -11146,6 +11146,11 @@ body.dialog-open .mobile-section-tabs {
   translate: none;
 }
 
+.settings-stream-filter-priority .platform-logo-select,
+.settings-stream-filter-priority .platform-logo-button {
+  transform: none;
+  translate: none;
+}
 .settings-theme-edit-button {
   display: inline-flex;
   align-items: center;
@@ -11165,7 +11170,6 @@ body.dialog-open .mobile-section-tabs {
   text-shadow: 0 1px 8px rgba(0, 0, 0, 0.32);
   box-shadow: 0 12px 28px color-mix(in srgb, var(--accent) 22%, transparent);
 }
-
 .settings-theme-edit-button span {
   display: inline-flex;
   align-items: center;
@@ -11179,7 +11183,6 @@ body.dialog-open .mobile-section-tabs {
   line-height: 1;
   text-align: center;
 }
-
 .settings-theme-edit-button:hover {
   color: #ffffff;
   border-color: color-mix(in srgb, var(--accent) 62%, #ffffff);
