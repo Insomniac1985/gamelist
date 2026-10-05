@@ -2,6 +2,9 @@ import { normalizeSearchText, createGameCardShell, bindActivityCardParallax, mou
 import { applySiteTheme, normalizeThemeSettings, openThemeEditor, ownerCardColorClass, ownerColorClass, themeSettingsButton } from "./theme-system.js";
 import { applyDocumentTranslations, languageOptions, normalizeLanguage, t } from "./i18n.js";
 import { initShelfAccounts } from "./shelf-accounts.js";
+import { accountSettingsMarkup } from "./account-settings-ui.js";
+
+document.querySelector("#shelfAccountsMount").innerHTML = accountSettingsMarkup();
 
 mountActivitySlider(document.querySelector("[data-module='playing']"), { title: "shelfPlayingTitle", count: "shelfPlayingCount", previous: "shelfPlayingPrev", next: "shelfPlayingNext", list: "playingCarousel", finished: "shelfPlayingFinished", finishedList: "finishedCarousel" });
 splitShelfPlayingModules();
@@ -222,7 +225,7 @@ const el = {
   settingsCurrency: document.querySelector("#shelfSettingsCurrency"), settingsRegion: document.querySelector("#shelfSettingsRegion"),
   settingsLanguage: document.querySelector("#shelfSettingsLanguage"),
   settingsStores: document.querySelector("#shelfSettingsStores"),
-  settingsTwitchUser: document.querySelector("#shelfSettingsTwitchUser"), settingsDefaultOwner: document.querySelector("#shelfSettingsDefaultOwner"),
+  settingsTwitchUser: document.querySelector("#settingsTwitchUser"), settingsDefaultOwner: document.querySelector("#shelfSettingsDefaultOwner"),
   settingsDevFeatures: document.querySelector("#shelfSettingsDevFeatures"),
   showcaseDialog: document.querySelector("#showcaseDialog"), showcaseForm: document.querySelector("#showcaseForm"), showcaseClose: document.querySelector("#showcaseClose"),
   showcaseSelected: document.querySelector("#showcaseSelected"), showcaseSearch: document.querySelector("#showcaseSearch"), showcasePlatform: document.querySelector("#showcasePlatform"), showcaseRegion: document.querySelector("#showcaseRegion"), showcaseCategory: document.querySelector("#showcaseCategory"), showcaseDirection: document.querySelector("#showcaseSortDirection"), showcaseCount: document.querySelector("#showcaseCount"), showcaseList: document.querySelector("#showcaseList"),
@@ -1074,17 +1077,22 @@ function renderStats() {
   const digitalGames = state.gamelistSettings.shelfDigitalGames === true
     ? filteredShelfStatsGames({ drive: true }).filter((game) => !isPendingCollectionGame(game) && isDigitalShelfGame(game))
     : [];
+  const currentYear = new Date().getFullYear();
+  const addedThisYear = (games) => games.filter((game) => {
+    const addedAt = Date.parse(game.createdAt || "");
+    return Number.isFinite(addedAt) && new Date(addedAt).getFullYear() === currentYear;
+  }).length;
   const value = physicalGames.reduce((sum, game) => sum + (collectionValueFor(game) || 0), 0);
   const currency = normalizePriceSettings(state.gamelistSettings).currency;
   const symbol = ({ USD: "$", GBP: "\u00a3", JPY: "\u00a5", EUR: "\u20ac" })[currency] || "\u20ac";
   const valueText = currency === "EUR" ? `${Math.round(value).toLocaleString("en")}${symbol}` : `${symbol}${Math.round(value).toLocaleString("en")}`;
   const rows = [
-    [physicalGames.length, "Physical games", "stat-backlog", "shelf-start"],
-    ...(state.gamelistSettings.shelfDigitalGames === true ? [[digitalGames.length, "Digital games", "stat-digital"]] : []),
+    [physicalGames.length, "Physical games", "stat-backlog", "shelf-start", addedThisYear(physicalGames)],
+    ...(state.gamelistSettings.shelfDigitalGames === true ? [[digitalGames.length, "Digital games", "stat-digital", null, addedThisYear(digitalGames)]] : []),
     [new Set(physicalGames.map((game) => game.platform)).size, "Platforms", "stat-available"],
     ...(shelfPricesVisible() ? [[valueText, "Estimated physical", "stat-done"]] : []),
   ];
-  el.stats.innerHTML = rows.map(([valueText, label, className, action]) => `<div class="stat glass ${className}${action ? " stat-action" : ""}"${action ? ` data-stat-action="${escapeHtml(action)}" role="button" tabindex="0"` : ""}><strong>${escapeHtml(valueText)}</strong><span>${escapeHtml(tt(label))}</span></div>`).join("");
+  el.stats.innerHTML = rows.map(([valueText, label, className, action, yearCount]) => `<div class="stat glass ${className}${action ? " stat-action" : ""}"${action ? ` data-stat-action="${escapeHtml(action)}" role="button" tabindex="0"` : ""}${yearCount !== undefined ? ` title="${escapeHtml(`Added in ${currentYear}: ${yearCount}`)}"` : ""}><strong>${escapeHtml(valueText)}</strong><span>${escapeHtml(tt(label))}</span></div>`).join("");
 }
 
 function handleStatsAction(event) {
