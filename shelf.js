@@ -1,6 +1,7 @@
-import { normalizeSearchText, createGameCardShell, bindActivityCardParallax, mountActivitySlider, mountTwitchPreview, mountReleaseCalendar, finishedGameMarkup, achievementCardMarkup, achievementDashboardMarkup, achievementPanelMarkup, completedCardMarkup, horizontalCarouselState, syncViewModeButton, slideHorizontalCarousel, comparePlayingGames, finishedDurationText, timeBadgeMarkup, guideLinksMarkup, storeButtonsMarkup, activityTrailerUrl, preloadPausedActivityTrailers, syncFocusedActivityTrailer, activityReleaseStatus, activityCoverOverride, activityLocalGameForTitle, activityTitleMatchScore, activityAllowsPsnCardTrophies, formatFooterDate, formatFooterDateTime, formatFooterShortDate, confirmGameDelete } from "./activity-ui.js";
+import { normalizeSearchText, createGameCardShell, bindActivityCardParallax, mountActivitySlider, mountTwitchPreview, mountReleaseCalendar, finishedGameMarkup, achievementCardMarkup, achievementDashboardMarkup, achievementPanelMarkup, completedCardMarkup, horizontalCarouselState, syncViewModeButton, slideHorizontalCarousel, comparePlayingGames, timeBadgeMarkup, guideLinksMarkup, storeButtonsMarkup, activityTrailerUrl, preloadPausedActivityTrailers, syncFocusedActivityTrailer, activityReleaseStatus, activityCoverOverride, activityLocalGameForTitle, activityTitleMatchScore, activityAllowsPsnCardTrophies, formatFooterDate, formatFooterDateTime, formatFooterShortDate, confirmGameDelete } from "./activity-ui.js";
 import { applySiteTheme, normalizeThemeSettings, openThemeEditor, ownerCardColorClass, ownerColorClass, themeSettingsButton } from "./theme-system.js";
 import { applyDocumentTranslations, languageOptions, normalizeLanguage, t } from "./i18n.js";
+import { initShelfAccounts } from "./shelf-accounts.js";
 
 mountActivitySlider(document.querySelector("[data-module='playing']"), { title: "shelfPlayingTitle", count: "shelfPlayingCount", previous: "shelfPlayingPrev", next: "shelfPlayingNext", list: "playingCarousel", finished: "shelfPlayingFinished", finishedList: "finishedCarousel" });
 splitShelfPlayingModules();
@@ -221,8 +222,7 @@ const el = {
   settingsCurrency: document.querySelector("#shelfSettingsCurrency"), settingsRegion: document.querySelector("#shelfSettingsRegion"),
   settingsLanguage: document.querySelector("#shelfSettingsLanguage"),
   settingsStores: document.querySelector("#shelfSettingsStores"),
-  settingsPsnUser: document.querySelector("#shelfSettingsPsnUser"), settingsMicrosoftUser: document.querySelector("#shelfSettingsMicrosoftUser"),
-  settingsSteamUser: document.querySelector("#shelfSettingsSteamUser"), settingsTwitchUser: document.querySelector("#shelfSettingsTwitchUser"), settingsDefaultOwner: document.querySelector("#shelfSettingsDefaultOwner"),
+  settingsTwitchUser: document.querySelector("#shelfSettingsTwitchUser"), settingsDefaultOwner: document.querySelector("#shelfSettingsDefaultOwner"),
   settingsDevFeatures: document.querySelector("#shelfSettingsDevFeatures"),
   showcaseDialog: document.querySelector("#showcaseDialog"), showcaseForm: document.querySelector("#showcaseForm"), showcaseClose: document.querySelector("#showcaseClose"),
   showcaseSelected: document.querySelector("#showcaseSelected"), showcaseSearch: document.querySelector("#showcaseSearch"), showcasePlatform: document.querySelector("#showcasePlatform"), showcaseRegion: document.querySelector("#showcaseRegion"), showcaseCategory: document.querySelector("#showcaseCategory"), showcaseDirection: document.querySelector("#showcaseSortDirection"), showcaseCount: document.querySelector("#showcaseCount"), showcaseList: document.querySelector("#showcaseList"),
@@ -2242,6 +2242,19 @@ async function fetchEditorAuth(fallback = false) {
 function openLayout() {
   renderLayoutEditor();
   openDialog(el.layoutDialog);
+  initShelfAccounts(document.querySelector("[data-shelf-accounts]"), {
+    getSettings: () => state.gamelistSettings,
+    saveSettings: async (settings) => {
+      state.gamelistSettings = settings;
+      localStorage.setItem("gamelist:settings:v1", JSON.stringify(settings));
+      await persistGamelistSettings();
+      localStorage.removeItem(ACHIEVEMENT_CACHE_KEY);
+      state.trophyActivity = null;
+      loadTrophyActivity();
+      applyTheme();
+      renderAll();
+    },
+  })?.refresh();
 }
 
 function renderLayoutEditor() {
@@ -2262,9 +2275,6 @@ function renderLayoutEditor() {
   el.settingsRegion.value = settings.region;
   el.settingsLanguage.innerHTML = languageOptions(state.gamelistSettings.language, escapeHtml);
   el.settingsLanguage.value = currentLanguage();
-  el.settingsPsnUser.value = state.gamelistSettings.psnUser || "";
-  el.settingsMicrosoftUser.value = state.gamelistSettings.microsoftUser || "";
-  el.settingsSteamUser.value = state.gamelistSettings.steamUser || "";
   el.settingsTwitchUser.value = state.gamelistSettings.twitchUser || "";
   el.settingsDefaultOwner.value = state.gamelistSettings.defaultOwner || "";
   el.settingsStores.innerHTML = STORE_OPTIONS.map((store) => `<label class="check-filter toggle-check settings-store-check"><input type="checkbox" value="${escapeHtml(store)}" ${settings.stores.includes(store) ? "checked" : ""}><span>${escapeHtml(store)}</span></label>`).join("");
@@ -2622,8 +2632,10 @@ function dateOnly(value) {
 }
 
 function finishHoursValue(value) {
-  const count = Number(value);
-  return Number.isInteger(count) ? Math.max(0, count) : 0;
+  const raw = String(value ?? "").trim();
+  if (!raw) return 0;
+  const count = Number(raw);
+  return Number.isFinite(count) ? Math.max(0, Math.round(count)) : 0;
 }
 
 function finishHoursText(game) {
@@ -2633,7 +2645,7 @@ function finishHoursText(game) {
 }
 
 function finishedProjectionDateText(game) {
-  return [finishHoursText(game) || finishedDurationText(game.startedAt, game.completedAt), formatLongDate(game.completedAt)].filter(Boolean).join(" · ");
+  return [finishHoursText(game), formatLongDate(game.completedAt)].filter(Boolean).join(" · ");
 }
 
 function normalizeTag(value) {
@@ -3003,7 +3015,7 @@ async function saveLayout(event) {
   state.layout.hidden = LAYOUT_KEYS.filter((key) => !el.layoutList.querySelector(`[data-layout-visible][value="${key}"]`)?.checked);
   localStorage.setItem(LAYOUT_KEY, JSON.stringify(state.layout));
   const stores = [...el.settingsStores.querySelectorAll("input:checked")].map((input) => input.value).filter((store) => STORE_OPTIONS.includes(store)).slice(0, MAX_PRICE_STORES);
-  state.gamelistSettings = { ...state.gamelistSettings, shelfDefaultOrder: el.settingsDefaultOrder.value, weekStart: normalizeWeekStart(el.settingsWeekStart?.value || state.gamelistSettings.weekStart), currency: el.settingsCurrency.value, region: el.settingsRegion.value, language: normalizeLanguage(el.settingsLanguage.value), psnUser: el.settingsPsnUser.value.trim(), microsoftUser: el.settingsMicrosoftUser.value.trim(), steamUser: el.settingsSteamUser.value.trim(), twitchUser: el.settingsTwitchUser.value.trim(), defaultOwner: el.settingsDefaultOwner.value.trim(), stores, storeSettingsVersion: 2, shelfSync: document.querySelector("#shelfSettingsSync")?.checked !== false, shelfHidePrices: document.querySelector("#shelfSettingsShowPrices")?.checked === false, hidePageSwitch: document.querySelector("#shelfSettingsHidePageSwitch")?.checked === true, shelfDigitalGames: document.querySelector("#shelfSettingsDigitalGames")?.checked === true, forceCacheOnLoad: document.querySelector("#shelfSettingsForceCacheOnLoad")?.checked === true };
+  state.gamelistSettings = { ...state.gamelistSettings, shelfDefaultOrder: el.settingsDefaultOrder.value, weekStart: normalizeWeekStart(el.settingsWeekStart?.value || state.gamelistSettings.weekStart), currency: el.settingsCurrency.value, region: el.settingsRegion.value, language: normalizeLanguage(el.settingsLanguage.value), twitchUser: el.settingsTwitchUser.value.trim(), defaultOwner: el.settingsDefaultOwner.value.trim(), stores, storeSettingsVersion: 2, shelfSync: document.querySelector("#shelfSettingsSync")?.checked !== false, shelfHidePrices: document.querySelector("#shelfSettingsShowPrices")?.checked === false, hidePageSwitch: document.querySelector("#shelfSettingsHidePageSwitch")?.checked === true, shelfDigitalGames: document.querySelector("#shelfSettingsDigitalGames")?.checked === true, forceCacheOnLoad: document.querySelector("#shelfSettingsForceCacheOnLoad")?.checked === true };
   localStorage.setItem("gamelist:settings:v1", JSON.stringify(state.gamelistSettings));
   applyShelfDefaultOrder(state.gamelistSettings.shelfDefaultOrder);
   await Promise.all([persistShelf(), persistGamelistSettings()]);
