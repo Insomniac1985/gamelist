@@ -35,6 +35,8 @@ const THEMES = {
 };
 const siteVersion = { version: "", updatedAt: "", notificationVersion: 0 };
 let updatesPopupLoadPromise = null;
+let shelfStatsHoverCleanup = null;
+let shelfStatsMobileCleanup = null;
 const MODULE_NAMES = { playing: "Currently playing", latestFinished: "Last finished", favorites: "Showcase", trophies: "Achievements", calendar: "Calendar", kpis: "Highlights", filters: "Search", library: "Shelf" };
 const PLATFORM_OPTIONS = [
   "Steam",
@@ -208,7 +210,7 @@ const el = {
     dlc: document.querySelector("#dlcInput"),
     psPlus: document.querySelector("#psPlusInput"), gamesWithGold: document.querySelector("#gamesWithGoldInput"),
     owners: document.querySelector("#ownersInput"),
-    releaseDate: document.querySelector("#releaseDateInput"), trophyName: document.querySelector("#trophyNameInput"),
+    releaseDate: document.querySelector("#releaseDateInput"), additionDate: document.querySelector("#additionDateInput"), trophyName: document.querySelector("#trophyNameInput"),
     upc: document.querySelector("#upcInput"), sku: document.querySelector("#skuInput"), asin: document.querySelector("#asinInput"),
     epid: document.querySelector("#epidInput"), pricechartingId: document.querySelector("#pricechartingIdInput"),
     playstationUrl: document.querySelector("#playstationUrlInput"), nintendoUrl: document.querySelector("#nintendoUrlInput"),
@@ -413,8 +415,9 @@ function openShelfStatsDialog() {
   const currentYear = String(new Date().getFullYear());
   const defaultYear = years.includes(currentYear) ? currentYear : years[0] || currentYear;
   if (state.shelfStatsYear !== "all" && !years.includes(state.shelfStatsYear)) state.shelfStatsYear = defaultYear;
-  el.statsYearSelect.innerHTML = ["all", ...years].map((year) => `<option value="${year}">${escapeHtml(year === "all" ? tt("All time") : year)}</option>`).join("");
+  el.statsYearSelect.innerHTML = ["all", ...years].map((year) => `<option value="${year}">${escapeHtml(year === "all" ? tt("All") : year)}</option>`).join("");
   el.statsYearSelect.value = state.shelfStatsYear;
+  syncStyledSelect(el.statsYearSelect, { activeValue: "all" });
   renderShelfStatsDialog();
   openDialog(el.statsDialog);
 }
@@ -427,6 +430,21 @@ function shelfStatsYears() {
 function shelfStatsDate(game) {
   const time = Date.parse(game?.createdAt || "");
   return Number.isFinite(time) ? new Date(time) : null;
+}
+
+function shelfDateInputValue(value) {
+  if (!value) return "";
+  const isoDate = String(value).match(/^(\d{4}-\d{2}-\d{2})/);
+  if (isoDate) return isoDate[1];
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "";
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
+}
+
+function shelfCreatedAtForDate(dateValue, existing) {
+  if (!dateValue) return existing?.createdAt || new Date().toISOString();
+  if (shelfDateInputValue(existing?.createdAt) === dateValue) return existing.createdAt;
+  return `${dateValue}T12:00:00.000Z`;
 }
 
 function renderShelfStatsDialog() {
@@ -444,10 +462,12 @@ function renderShelfStatsDialog() {
   const monthNames = Array.from({ length: 12 }, (_, month) => new Intl.DateTimeFormat(currentLanguage(), { month: "short" }).format(new Date(2020, month, 1)));
   const shownYear = year === "all" ? tt("All time") : year;
   el.statsBrow.textContent = year === "all" ? tt("All-time statistics") : tt("YEARLY STATISTICS");
-  el.statsTitle.textContent = tt("Games added {year}", { year: shownYear });
+  el.statsTitle.textContent = year === "all"
+    ? tt("All your game collection")
+    : tt("Games added on {year}", { year: shownYear });
   const chartMarkup = [
-    shelfStatsDonutCard(tt("Platforms"), platformCounts, "platform", 5),
-    shelfStatsDonutCard(tt("Categories"), categoryCounts, "category", 5),
+    shelfStatsDonutCard(tt("Platforms"), platformCounts, "platform", 5, { games }),
+    shelfStatsDonutCard(tt("Categories"), categoryCounts, "category", 5, { games }),
     ...(digital.length ? [shelfStatsDonutCard(tt("Physical / digital"), mediaCounts, "media", mediaCounts.length, { staticLegend: true })] : []),
   ].join("");
   const activityChart = year === "all"
@@ -463,6 +483,7 @@ function renderShelfStatsDialog() {
     ${activityChart}
     ${games.length ? "" : `<div class="empty">${escapeHtml(tt("No games added{year}.", { year: year === "all" ? "" : ` ${tt("in {year}", { year })}` }))}</div>`}
   `;
+  bindShelfStatsHoverDetails();
 }
 
 function shelfStatsCountBy(games, getLabels) {
@@ -476,7 +497,14 @@ function shelfStatsCountBy(games, getLabels) {
 }
 
 function shelfStatsCategories(game) {
-  const labels = [...(game.genres || []), ...(game.tags || []), game.category || ""]
+  // Shelf entries store their selected categories in `genre` as a comma-separated
+  // string; `genres` is used by imported/preorder records. Read both formats.
+  const labels = [
+    ...String(game.genre || "").split(","),
+    ...(Array.isArray(game.genres) ? game.genres : []),
+    ...(Array.isArray(game.categories) ? game.categories : []),
+    game.category || "",
+  ]
     .map((value) => String(value || "").trim())
     .filter((value) => value && normalizeSearchText(value) !== "game");
   const uniqueLabels = [...new Map(labels.map((label) => [normalizeSearchText(label), label])).values()];
@@ -484,15 +512,16 @@ function shelfStatsCategories(game) {
 }
 
 function shelfStatsDonutCard(title, counts, tone, visibleLimit, options = {}) {
-  const visible = counts.slice(0, visibleLimit);
+  const showAll = options.staticLegend;
+  const visible = showAll ? counts : counts.slice(0, visibleLimit);
   const rows = (items) => items.length ? items.map((item, index) => shelfStatsLegendRow(item, tone, index)).join("") : `<span><b>${escapeHtml(tt("None"))}</b><em>0</em></span>`;
-  const expanded = !options.staticLegend && counts.length > visible.length;
+  const expanded = !showAll && counts.length > visible.length;
   return `
-    <article class="finished-stats-chart shelf-stats-radial-chart${options.staticLegend ? " is-static" : ""}"${options.staticLegend ? "" : ' tabindex="0"'}>
+    <article class="finished-stats-chart shelf-stats-radial-chart${options.staticLegend ? " is-static" : ""}${tone === "media" ? " is-media" : ""}"${options.staticLegend ? "" : ' tabindex="0"'}>
       <h3>${escapeHtml(title)}</h3>
-      <div class="finished-stats-donut ${tone === "platform" ? "is-platform" : tone === "category" ? "is-category" : "is-media"}">${shelfStatsPieMarkup(counts, tone)}</div>
+      <div class="finished-stats-donut ${tone === "platform" ? "is-platform" : tone === "category" ? "is-category" : "is-media"}">${shelfStatsPieMarkup(counts, tone, options.games || [])}</div>
       <div class="finished-stats-chart-copy">
-        <div class="finished-stats-chart-list">${options.staticLegend ? rows(counts) : `${rows(visible)}${expanded ? `<span class="finished-stats-more-row" aria-hidden="true">...</span>` : ""}<div class="finished-stats-breakdown">${rows(counts)}</div>`}</div>
+        <div class="finished-stats-chart-list" data-stats-overlay-title="${escapeHtml(title)}">${showAll ? rows(counts) : `${rows(visible)}${expanded ? `<span class="finished-stats-more-row" aria-hidden="true">...</span>` : ""}<div class="finished-stats-breakdown">${rows(counts)}</div>`}</div>
       </div>
     </article>
   `;
@@ -502,27 +531,211 @@ function shelfStatsLegendRow(item, tone, index) {
   if (tone === "platform") return `<span class="finished-stats-platform-row"><b>${platformBadge(item.label)}</b><em>${item.count}</em></span>`;
   const color = item.color || shelfStatsSegmentColor(item.label, tone, index);
   const label = tone === "media"
-    ? (item.label === "Digital" ? `${downloadBadgeIcon()}${escapeHtml(tt(item.label))}` : `${physicalDiskIcon()}${escapeHtml(tt(item.label))}`)
+    ? shelfStatsMediaLabel(item.label)
     : `<i></i>${escapeHtml(tt(item.label))}`;
   return `<span class="finished-stats-category-row" style="--category-stat-color:${escapeHtml(color)}"><b>${label}</b><em>${item.count}</em></span>`;
 }
 
-function shelfStatsPieMarkup(counts, tone) {
+function shelfStatsMediaLabel(label) {
+  const normalized = normalizeSearchText(label);
+  const icon = normalized === "digital" ? downloadBadgeIcon() : physicalDiskIcon();
+  return `<span class="finished-stats-media-label"><span class="finished-stats-media-icon" aria-hidden="true">${icon}</span>${escapeHtml(tt(label))}</span>`;
+}
+
+function shelfStatsPieMarkup(counts, tone, games = []) {
   const total = counts.reduce((sum, item) => sum + item.count, 0);
   if (!total) return `<svg viewBox="0 0 100 100" aria-hidden="true"><circle cx="50" cy="50" r="46" fill="rgba(255,255,255,.08)"></circle></svg>`;
   let cursor = 0;
-  const shapes = counts.map((item, index) => {
+  const segments = counts.map((item, index) => {
     const start = cursor;
     cursor += item.count / total * 360;
     const color = item.color || shelfStatsSegmentColor(item.label, tone, index);
-    if (cursor - start >= 359.99) return `<circle class="finished-stats-pie-shape" cx="50" cy="50" r="46" fill="${escapeHtml(color)}" stroke="rgba(255,255,255,.22)" stroke-width="0.9"></circle>`;
-    const point = (angle) => ({ x: 50 + 46 * Math.cos((angle - 90) * Math.PI / 180), y: 50 + 46 * Math.sin((angle - 90) * Math.PI / 180) });
-    const from = point(start);
-    const to = point(cursor);
-    const large = cursor - start > 180 ? 1 : 0;
-    return `<path class="finished-stats-pie-shape" d="M 50 50 L ${from.x.toFixed(3)} ${from.y.toFixed(3)} A 46 46 0 ${large} 1 ${to.x.toFixed(3)} ${to.y.toFixed(3)} Z" fill="${escapeHtml(color)}" stroke="rgba(255,255,255,.22)" stroke-width="0.9" style="--slice-opacity:${index % 2 ? 0.78 : 0.96}"></path>`;
-  }).join("");
-  return `<svg viewBox="0 0 100 100" role="img" aria-label="${escapeHtml(tt("Stats breakdown"))}">${shapes}</svg>`;
+    const point = (angle, radius = 46) => ({ x: 50 + radius * Math.cos((angle - 90) * Math.PI / 180), y: 50 + radius * Math.sin((angle - 90) * Math.PI / 180) });
+    const sweep = cursor - start;
+    const shape = sweep >= 359.99
+      ? `<circle class="finished-stats-pie-shape" cx="50" cy="50" r="46" fill="${escapeHtml(color)}" stroke="rgba(255,255,255,.22)" stroke-width="0.9"></circle>`
+      : (() => {
+        const from = point(start);
+        const to = point(cursor);
+        const large = sweep > 180 ? 1 : 0;
+        return `<path class="finished-stats-pie-shape" d="M 50 50 L ${from.x.toFixed(3)} ${from.y.toFixed(3)} A 46 46 0 ${large} 1 ${to.x.toFixed(3)} ${to.y.toFixed(3)} Z" fill="${escapeHtml(color)}" stroke="rgba(255,255,255,.22)" stroke-width="0.9"></path>`;
+      })();
+    const mid = point(start + sweep / 2, 34);
+    const tipX = Math.max(16, Math.min(84, mid.x));
+    const tipY = Math.max(14, Math.min(86, mid.y));
+    const segmentGames = shelfStatsSegmentGames(item.label, tone, games);
+    const percent = Math.round(item.count / total * 100);
+    return {
+      shape: `<g class="finished-stats-pie-segment finished-stats-pie-segment-${index}" data-segment-label="${escapeHtml(item.label)}" style="--slice-opacity:${index % 2 ? 0.78 : 0.96}" tabindex="0">${shape}</g>`,
+      tip: `<div class="finished-stats-segment-tip finished-stats-segment-tip-${index}" style="--tip-x:${tipX.toFixed(2)}%;--tip-y:${tipY.toFixed(2)}%"><span class="finished-stats-segment-percent">${percent}%</span>${tone === "platform" ? platformBadge(item.label) : `<b>${escapeHtml(item.label)}</b>`}<span class="finished-stats-segment-count">${item.count}</span></div>`,
+    };
+  });
+  const tipCss = segments.map((_, index) => `
+    .finished-stats-donut:has(.finished-stats-pie-segment-${index}:hover) .finished-stats-pie-shape,
+    .finished-stats-donut:has(.finished-stats-pie-segment-${index}:focus-visible) .finished-stats-pie-shape,
+    .finished-stats-donut:has(.finished-stats-segment-tip-${index}:hover) .finished-stats-pie-shape,
+    .finished-stats-donut:has(.finished-stats-segment-tip-${index}:focus-within) .finished-stats-pie-shape { filter: saturate(.42) brightness(.72); opacity: .5; }
+    .finished-stats-donut:has(.finished-stats-pie-segment-${index}:hover) .finished-stats-pie-segment-${index} .finished-stats-pie-shape,
+    .finished-stats-donut:has(.finished-stats-pie-segment-${index}:focus-visible) .finished-stats-pie-segment-${index} .finished-stats-pie-shape,
+    .finished-stats-donut:has(.finished-stats-segment-tip-${index}:hover) .finished-stats-pie-segment-${index} .finished-stats-pie-shape,
+    .finished-stats-donut:has(.finished-stats-segment-tip-${index}:focus-within) .finished-stats-pie-segment-${index} .finished-stats-pie-shape { filter: brightness(1.18) saturate(1.12); opacity: .98; transform: scale(1.025); }
+    .finished-stats-donut:has(.finished-stats-pie-segment-${index}:hover) .finished-stats-segment-tip-${index},
+    .finished-stats-donut:has(.finished-stats-pie-segment-${index}:focus-visible) .finished-stats-segment-tip-${index},
+    .finished-stats-donut:has(.finished-stats-segment-tip-${index}:hover) .finished-stats-segment-tip-${index},
+    .finished-stats-donut:has(.finished-stats-segment-tip-${index}:focus-within) .finished-stats-segment-tip-${index} { opacity: 1; transform: translate(-50%, -50%) scale(1); pointer-events: auto; }
+  `).join("");
+  return `<svg viewBox="0 0 100 100" role="img" aria-label="${escapeHtml(tt("Stats breakdown"))}">${segments.map((segment) => segment.shape).join("")}</svg><div class="finished-stats-pie-tips">${segments.map((segment) => segment.tip).join("")}</div><style>${tipCss}</style>`;
+}
+
+function shelfStatsSegmentGames(label, tone, games) {
+  if (tone === "platform") return games.filter((game) => (canonicalShelfPlatform(game.platform || "Unknown") || "Unknown") === label);
+  if (tone === "category") return games.filter((game) => shelfStatsCategories(game).includes(label));
+  if (tone === "media") return games.filter((game) => (isDigitalShelfGame(game) ? "Digital" : "Physical") === label);
+  return [];
+}
+
+function shelfStatsGameRows(games) {
+  const year = state.shelfStatsYear || "all";
+  const hasDigital = state.games.some((game) => !isPendingCollectionGame(game)
+    && shelfStatsDate(game)
+    && (year === "all" || shelfStatsDate(game).getFullYear() === Number(year))
+    && isDigitalShelfGame(game));
+  return [...games]
+    .sort((a, b) => (shelfStatsDate(b)?.getTime() || 0) - (shelfStatsDate(a)?.getTime() || 0))
+    .map((game) => {
+      const condition = String(game.condition || "").trim();
+      const platform = game.platform ? platformBadge(game.platform) : "";
+      const mediaIcon = hasDigital
+        ? `<span class="finished-stats-media-icon shelf-stats-game-media-icon" title="${escapeHtml(tt(isDigitalShelfGame(game) ? "Digital" : "Physical"))}" aria-label="${escapeHtml(tt(isDigitalShelfGame(game) ? "Digital" : "Physical"))}">${isDigitalShelfGame(game) ? downloadBadgeIcon() : physicalDiskIcon()}</span>`
+        : "";
+      const trailing = platform || mediaIcon ? `<span class="shelf-stats-game-trailing">${platform}${mediaIcon}</span>` : "";
+      return `<span class="finished-stats-game-row"><b>${escapeHtml(game.title || "Untitled")}</b>${condition ? `<span class="shelf-stats-game-detail">${escapeHtml(condition)}</span>` : ""}${trailing}</span>`;
+    })
+    .join("");
+}
+
+function bindShelfStatsHoverDetails() {
+  shelfStatsHoverCleanup?.();
+  shelfStatsMobileCleanup?.();
+  const dialog = el.statsDialog;
+  const body = el.statsBody;
+  let closeTimer = 0;
+  const removers = [];
+  const listen = (node, event, handler, options) => {
+    node.addEventListener(event, handler, options);
+    removers.push(() => node.removeEventListener(event, handler, options));
+  };
+  const close = () => {
+    closeTimer = 0;
+    document.querySelector(".shelf-stats-hover-float")?.remove();
+    body.querySelectorAll(".finished-stats-floating-source").forEach((node) => node.classList.remove("finished-stats-floating-source"));
+  };
+  const scheduleClose = () => {
+    window.clearTimeout(closeTimer);
+    closeTimer = window.setTimeout(close, 110);
+  };
+  const open = (anchor, content, title = "") => {
+    if (window.matchMedia("(max-width: 760px)").matches || !content.trim()) return;
+    window.clearTimeout(closeTimer);
+    close();
+    anchor.classList.add("finished-stats-floating-source");
+    const floating = document.createElement("div");
+    floating.className = "finished-stats-breakdown finished-stats-hover-float shelf-stats-hover-float";
+    floating.innerHTML = `${title ? `<strong class="finished-stats-breakdown-title">${escapeHtml(title)}</strong>` : ""}${content}`;
+    document.body.appendChild(floating);
+    floating.style.position = "fixed";
+    floating.style.width = `${Math.min(360, Math.max(240, window.innerWidth - 32))}px`;
+    floating.style.maxWidth = `${Math.max(180, window.innerWidth - 24)}px`;
+    floating.style.maxHeight = `${Math.max(140, Math.min(320, window.innerHeight - 32))}px`;
+    const anchorRect = anchor.getBoundingClientRect();
+    const rect = floating.getBoundingClientRect();
+    const margin = 12;
+    const left = Math.max(margin, Math.min(anchorRect.left, window.innerWidth - rect.width - margin));
+    const below = anchorRect.bottom + 8;
+    const top = below + rect.height <= window.innerHeight - margin ? below : Math.max(margin, anchorRect.top - rect.height - 8);
+    floating.style.left = `${left}px`;
+    floating.style.top = `${top}px`;
+    listen(floating, "mouseenter", () => window.clearTimeout(closeTimer));
+    listen(floating, "mouseleave", scheduleClose);
+  };
+  body.querySelectorAll("[data-stats-overlay-title]").forEach((node) => {
+    const breakdown = node.querySelector(".finished-stats-breakdown");
+    if (!breakdown?.innerHTML.trim()) return;
+    const show = () => open(node, breakdown.innerHTML, node.dataset.statsOverlayTitle || "");
+    listen(node, "mouseenter", show);
+    listen(node, "mouseleave", scheduleClose);
+    listen(node, "focusin", show);
+    listen(node, "focusout", scheduleClose);
+  });
+  body.querySelectorAll(".finished-stats-donut").forEach((donut) => {
+    donut.querySelectorAll(".finished-stats-pie-segment").forEach((segment) => {
+      const index = [...segment.classList].find((name) => name.startsWith("finished-stats-pie-segment-"))?.replace("finished-stats-pie-segment-", "");
+      const tip = index ? donut.querySelector(`.finished-stats-segment-tip-${index}`) : null;
+      if (!tip) return;
+      const itemLabel = segment.dataset.segmentLabel || "";
+      const tone = donut.classList.contains("is-platform") ? "platform" : donut.classList.contains("is-media") ? "media" : "category";
+      const games = state.games.filter((game) => !isPendingCollectionGame(game) && shelfStatsDate(game) && (state.shelfStatsYear === "all" || shelfStatsDate(game).getFullYear() === Number(state.shelfStatsYear)));
+      const matchingGames = shelfStatsSegmentGames(itemLabel, tone, games);
+      const gameRows = shelfStatsGameRows(matchingGames);
+      if (!gameRows) return;
+      const show = () => open(segment, gameRows, `${itemLabel} · ${matchingGames.length} ${tt("games")}`);
+      listen(segment, "mouseenter", show);
+      listen(segment, "mouseleave", scheduleClose);
+      listen(segment, "focusin", show);
+      listen(segment, "focusout", scheduleClose);
+    });
+  });
+  listen(dialog, "scroll", close, { passive: true });
+  listen(window, "resize", close);
+  shelfStatsHoverCleanup = () => {
+    window.clearTimeout(closeTimer);
+    close();
+    removers.forEach((remove) => remove());
+  };
+  const onMobileTap = (event) => {
+    if (!window.matchMedia("(max-width: 760px)").matches) return;
+    const segment = event.target.closest(".finished-stats-pie-segment");
+    if (segment && body.contains(segment)) {
+      const donut = segment.closest(".finished-stats-donut");
+      const label = segment.dataset.segmentLabel || "";
+      const tone = donut?.classList.contains("is-platform") ? "platform" : donut?.classList.contains("is-media") ? "media" : "category";
+      const games = state.games.filter((game) => !isPendingCollectionGame(game) && shelfStatsDate(game) && (state.shelfStatsYear === "all" || shelfStatsDate(game).getFullYear() === Number(state.shelfStatsYear)));
+      const matching = shelfStatsSegmentGames(label, tone, games);
+      if (matching.length) {
+        event.preventDefault();
+        event.stopPropagation();
+        openShelfStatsMiniOverlay(`${label} · ${matching.length} ${tt("games")}`, shelfStatsGameRows(matching));
+      }
+      return;
+    }
+    const node = event.target.closest("[data-stats-overlay-title]");
+    if (!node || !body.contains(node) || event.target.closest(".finished-stats-breakdown")) return;
+    const breakdown = node.querySelector(":scope > .finished-stats-breakdown");
+    if (!breakdown?.innerHTML.trim()) return;
+    event.preventDefault();
+    event.stopPropagation();
+    openShelfStatsMiniOverlay(node.dataset.statsOverlayTitle || tt("Stats"), breakdown.innerHTML);
+  };
+  body.addEventListener("click", onMobileTap);
+  shelfStatsMobileCleanup = () => body.removeEventListener("click", onMobileTap);
+}
+
+function openShelfStatsMiniOverlay(title, content) {
+  let overlay = el.statsDialog.querySelector(".finished-stats-mini-overlay");
+  if (!overlay) {
+    overlay = document.createElement("div");
+    overlay.className = "finished-stats-mini-overlay";
+    el.statsDialog.appendChild(overlay);
+  }
+  const close = () => {
+    overlay.hidden = true;
+    el.statsDialog.classList.remove("has-mini-overlay");
+  };
+  overlay.innerHTML = `<div class="finished-stats-mini-panel"><div class="finished-stats-mini-head"><strong>${escapeHtml(title)}</strong><button class="icon-button" type="button" data-stats-mini-close title="Close" aria-label="Close">×</button></div><div class="finished-stats-mini-list">${content}</div></div>`;
+  overlay.hidden = false;
+  el.statsDialog.classList.add("has-mini-overlay");
+  overlay.querySelector("[data-stats-mini-close]")?.addEventListener("click", close);
+  overlay.onclick = (event) => { if (event.target === overlay) close(); };
 }
 
 function shelfStatsSegmentColor(label, tone, index) {
@@ -563,7 +776,7 @@ function shelfStatsPlatformBar(games) {
 function shelfStatsMonthBars(games, monthNames) {
   const months = Array.from({ length: 12 }, (_, month) => games.filter((game) => shelfStatsDate(game)?.getMonth() === month));
   const max = Math.max(1, ...months.map((items) => items.length));
-  return `<section class="finished-stats-months"><h3>${escapeHtml(tt("By month"))}</h3><div class="finished-stats-period-grid">${months.map((items, month) => `<div class="finished-stats-month" title="${escapeHtml(`${monthNames[month]}: ${items.length}`)}"><span>${escapeHtml(monthNames[month])}</span><em style="--month:${items.length / max};--platform-bar:${escapeHtml(shelfStatsPlatformBar(items))}"></em><strong>${items.length}</strong></div>`).join("")}</div></section>`;
+  return `<section class="finished-stats-months"><h3>${escapeHtml(tt("By month"))}</h3><div class="finished-stats-period-grid">${months.map((items, month) => `<div class="finished-stats-month" title="${escapeHtml(`${monthNames[month]}: ${items.length}`)}" ${items.length ? `data-stats-overlay-title="${escapeHtml(monthNames[month])}"` : ""}><span>${escapeHtml(monthNames[month])}</span><em style="--month:${items.length / max};--platform-bar:${escapeHtml(shelfStatsPlatformBar(items))}"></em><strong>${items.length}</strong>${items.length ? `<span class="finished-stats-breakdown"><strong class="finished-stats-breakdown-title">${escapeHtml(monthNames[month])} · ${items.length} ${escapeHtml(tt("games added"))}</strong>${shelfStatsGameRows(items)}</span>` : ""}</div>`).join("")}</div></section>`;
 }
 
 function shelfStatsYearBars(games) {
@@ -571,7 +784,7 @@ function shelfStatsYearBars(games) {
   const max = Math.max(1, ...years.map((year) => games.filter((game) => shelfStatsDate(game).getFullYear() === Number(year)).length));
   return `<section class="finished-stats-months"><h3>${escapeHtml(tt("By year"))}</h3><div class="finished-stats-period-grid is-yearly shelf-stats-years-grid">${years.map((year) => {
     const yearGames = games.filter((game) => shelfStatsDate(game).getFullYear() === Number(year));
-    return `<div class="finished-stats-month" title="${escapeHtml(`${year}: ${yearGames.length}`)}"><span>${year}</span><em style="--month:${yearGames.length / max};--platform-bar:${escapeHtml(shelfStatsPlatformBar(yearGames))}"></em><strong>${yearGames.length}</strong></div>`;
+    return `<div class="finished-stats-month" title="${escapeHtml(`${year}: ${yearGames.length}`)}" data-stats-overlay-title="${year}"><span>${year}</span><em style="--month:${yearGames.length / max};--platform-bar:${escapeHtml(shelfStatsPlatformBar(yearGames))}"></em><strong>${yearGames.length}</strong><span class="finished-stats-breakdown"><strong class="finished-stats-breakdown-title">${escapeHtml(year)} · ${yearGames.length} ${escapeHtml(tt("games added"))}</strong>${shelfStatsGameRows(yearGames)}</span></div>`;
   }).join("")}</div></section>`;
 }
 
@@ -1826,6 +2039,7 @@ function openEditor(game = null, options = {}) {
   el.lookupInput.value = game?.title || "";
   const values = game || { platform: "", country: defaultShelfCountry(), owners: defaultShelfOwners(), game: true, box: true, manual: true };
   for (const [key, input] of Object.entries(el.fields)) if (!["dlc", "psPlus", "gamesWithGold"].includes(key)) input.value = values[key] ?? "";
+  el.fields.additionDate.value = shelfDateInputValue(values.createdAt) || (game ? "" : shelfDateInputValue(new Date().toISOString()));
   el.fields.platform.value = canonicalShelfPlatform(values.platform || "");
   el.fields.dlc.checked = Boolean(values.dlc);
   el.fields.psPlus.checked = Boolean(values.psPlus);
@@ -2202,6 +2416,7 @@ async function saveEditor(event) {
     genre: el.fields.genre.value.trim(), cover: rawCoverUrl(el.fields.cover.value.trim()), notes: el.fields.notes.value.trim(),
     owners: splitValues(el.fields.owners.value).map(canonicalOwner).filter(Boolean), category: existing?.category || "Game",
     releaseDate: el.fields.releaseDate.value, trophyName: el.fields.trophyName.value.trim(), websites: legacyWebsiteLinks(existing),
+    createdAt: shelfCreatedAtForDate(el.fields.additionDate.value, existing),
     storeLinks: editorStoreLinks(),
     hltbUrl: el.fields.hltbUrl.value.trim(),
     igdbUrl: cleanUrl(el.fields.igdbUrl.value),
@@ -2210,7 +2425,7 @@ async function saveEditor(event) {
     pricechartingId: digitalMode ? "" : el.fields.pricechartingId.value.trim(), description: el.fields.description.value.trim(),
     coverProject: existing?.coverProject || "",
     pendingCollection: false,
-    createdAt: existing?.createdAt || new Date().toISOString(), updatedAt: new Date().toISOString(), recordType: "Owned", releaseType: existing?.releaseType || "Official",
+    updatedAt: new Date().toISOString(), recordType: "Owned", releaseType: existing?.releaseType || "Official",
   };
   if (!game.title) return;
   if (!digitalMode) applyManualCollectionValue(game, el.fields.price.value, existing);

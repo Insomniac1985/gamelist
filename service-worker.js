@@ -1,4 +1,4 @@
-const CACHE_VERSION = "gamelist-cache-v599";
+const CACHE_VERSION = "gamelist-cache-v602";
 const STATIC_CACHE = `${CACHE_VERSION}:static`;
 const MEDIA_CACHE = `${CACHE_VERSION}:media`;
 const STATIC_ASSETS = [

@@ -153,6 +153,8 @@ body.mobile-app-mode.shelf-page .backdrop {
   border-radius: 8px;
   padding: 0;
   background: var(--grid-fade), var(--grid-texture), var(--panel-strong);
+  background-size: auto, 22px 22px, 22px 22px, auto;
+  background-position: center, var(--grid-x) var(--grid-y), var(--grid-x) var(--grid-y), center;
   box-shadow: var(--shadow);
   backdrop-filter: blur(8px) saturate(1.08);
 }
@@ -174,6 +176,20 @@ body.mobile-app-mode.shelf-page .backdrop {
   padding-bottom: 6px;
 }
 
+.shelf-stats-body .finished-stats-kpi.is-completed,
+.shelf-stats-body .finished-stats-kpi.is-streamed {
+  border-color: color-mix(in srgb, var(--accent) 48%, transparent);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.06),
+    0 0 0 1px color-mix(in srgb, var(--accent) 10%, transparent),
+    0 14px 34px color-mix(in srgb, var(--accent) 16%, transparent);
+}
+
+.shelf-stats-body .finished-stats-kpi.is-completed strong,
+.shelf-stats-body .finished-stats-kpi.is-streamed strong {
+  color: var(--accent);
+}
+
 .shelf-stats-controls {
   display: flex;
   justify-content: flex-end;
@@ -192,13 +208,119 @@ body.mobile-app-mode.shelf-page .backdrop {
 }
 
 .shelf-stats-controls .finished-stats-year-picker select {
-  min-width: 112px;
-  height: 34px;
-  min-height: 34px;
+  min-width: 82px;
+  width: 82px;
+  height: 30px;
+  min-height: 30px;
+}
+
+.shelf-stats-controls .platform-logo-select {
+  --dropdown-control-height: 30px;
+  width: 82px;
+}
+
+.shelf-stats-controls .platform-logo-button {
+  min-height: 30px;
+  height: 30px;
+  padding-right: 27px;
+  padding-left: 8px;
+  font-size: 12px;
+}
+
+.shelf-stats-controls .platform-logo-button,
+.shelf-stats-controls .platform-logo-select.is-active .platform-logo-button,
+.shelf-stats-controls .platform-logo-select.is-open .platform-logo-button {
+  background-position: right 8px center, right 8px center;
+}
+
+.shelf-stats-controls .platform-logo-menu {
+  min-width: 82px;
+}
+
+.shelf-stats-hover-float {
+  z-index: 10000;
+  right: auto;
+  bottom: auto;
+  opacity: 1;
+  transform: none;
+  pointer-events: auto;
+}
+
+.shelf-stats-hover-float > .finished-stats-breakdown-title {
+  display: block;
+  padding: 0 2px 5px;
+  color: var(--accent);
+  font-size: 11px;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.shelf-stats-hover-float > .finished-stats-game-row {
+  min-height: 38px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-areas: "title platform" "detail platform";
+  gap: 2px 8px;
+  padding: 5px 7px;
+}
+
+.shelf-stats-dialog .finished-stats-breakdown > .finished-stats-game-row,
+.shelf-stats-dialog .finished-stats-mini-list > .finished-stats-game-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-areas: "title trailing" "detail trailing";
+  gap: 2px 8px;
+  min-height: 38px;
+  padding: 5px 7px;
+}
+
+.shelf-stats-hover-float > .finished-stats-game-row > b {
+  grid-area: title;
+}
+
+.shelf-stats-dialog .finished-stats-game-row > b {
+  grid-area: title;
+}
+
+.shelf-stats-game-detail {
+  grid-area: detail;
+  min-width: 0;
+  overflow: hidden;
+  color: var(--muted);
+  font-size: 10px;
+  line-height: 1.15;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.shelf-stats-game-trailing {
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 5px;
+  flex: 0 0 auto;
+}
+
+.shelf-stats-game-media-icon {
+  width: 18px;
+  height: 18px;
+  flex-basis: 18px;
+}
+
+.shelf-stats-hover-float > .finished-stats-game-row > .shelf-stats-game-trailing {
+  grid-area: platform;
+}
+
+.shelf-stats-dialog .finished-stats-game-row > .shelf-stats-game-trailing {
+  grid-area: trailing;
 }
 
 .shelf-stats-radial-chart {
   min-height: 220px;
+}
+
+.shelf-stats-radial-chart.is-media {
+  grid-column: 1 / -1;
 }
 
 .shelf-stats-radial-chart .finished-stats-chart-list .finished-stats-breakdown {
@@ -207,15 +329,9 @@ body.mobile-app-mode.shelf-page .backdrop {
   max-height: min(250px, calc(100vh - 170px));
 }
 
-.shelf-stats-radial-chart:hover .finished-stats-breakdown,
-.shelf-stats-radial-chart:focus-within .finished-stats-breakdown {
-  opacity: 1;
-  transform: translateY(0);
-  pointer-events: auto;
-}
-
 .shelf-stats-radial-chart .finished-stats-donut {
   width: 150px;
+  z-index: 2;
 }
 
 .shelf-stats-radial-chart .finished-stats-donut svg {
@@ -224,6 +340,11 @@ body.mobile-app-mode.shelf-page .backdrop {
 
 .shelf-stats-radial-chart.is-static .finished-stats-chart-list > span {
   min-height: 30px;
+}
+
+.shelf-stats-dialog.has-mini-overlay,
+.shelf-stats-dialog.has-mini-overlay .shelf-stats-modal {
+  overflow: hidden !important;
 }
 
 .shelf-stats-years-grid {
@@ -1692,6 +1813,7 @@ body.mobile-app-mode .shelf-tabs button.active:hover {
 }
 
 .shelf-editor-grid > .shelf-release-field,
+.shelf-editor-grid > .shelf-addition-field,
 .shelf-editor-grid > .shelf-value-field {
   grid-column: span 6;
 }
@@ -2252,6 +2374,7 @@ textarea {
   .shelf-editor-grid > .shelf-console-field,
   .shelf-editor-grid > .shelf-region-field,
   .shelf-editor-grid > .shelf-release-field,
+  .shelf-editor-grid > .shelf-addition-field,
   .shelf-editor-grid > .shelf-value-field,
   .shelf-editor-grid > .shelf-owner-field,
   .shelf-editor-grid > .shelf-achievement-search-field,
