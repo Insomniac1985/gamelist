@@ -642,7 +642,7 @@ function bindShelfStatsHoverDetails() {
     const floating = document.createElement("div");
     floating.className = "finished-stats-breakdown finished-stats-hover-float shelf-stats-hover-float";
     floating.innerHTML = `${title ? `<strong class="finished-stats-breakdown-title">${escapeHtml(title)}</strong>` : ""}${content}`;
-    document.body.appendChild(floating);
+    dialog.appendChild(floating);
     floating.style.position = "fixed";
     floating.style.width = `${Math.min(360, Math.max(240, window.innerWidth - 32))}px`;
     floating.style.maxWidth = `${Math.max(180, window.innerWidth - 24)}px`;
@@ -1980,8 +1980,9 @@ function openPreorderInGamelistEditor(game) {
 function openDetails(game) {
   el.detailDialog.dataset.id = game.id;
   el.detailDialog.dataset.projection = game._gamelistProjection ? "true" : "false";
-  el.detailTitle.textContent = game.title;
-  el.detailTitle.className = `${el.detailTitle.className.replace(/\bowner-[\w-]+/g, "").trim()} ${(game.owners || []).map(ownerColorClass).join(" ")}`.trim();
+  const missingPriceTag = missingCollectionPriceBadge(game);
+  el.detailTitle.innerHTML = `<span>${escapeHtml(game.title)}</span>${missingPriceTag}`;
+  el.detailTitle.className = `${el.detailTitle.className.replace(/\bowner-[\w-]+/g, "").replace(/\bhas-missing-price\b/g, "").trim()} ${(game.owners || []).map(ownerColorClass).join(" ")} ${missingPriceTag ? "has-missing-price" : ""}`.trim();
   const detailStudio = [game.developer, game.publisher && game.publisher !== game.developer ? game.publisher : ""].filter(Boolean).join(" / ");
   el.detailStudio.innerHTML = `${visibleShelfCardOwners(game.owners || []).map(ownerBadge).join("")}${detailStudio ? `<span>${escapeHtml(detailStudio)}</span>` : ""}`;
   el.detailStudio.hidden = !el.detailStudio.innerHTML;

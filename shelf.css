@@ -2302,6 +2302,16 @@ textarea {
   border: 1px solid color-mix(in srgb, var(--accent-1) 55%, transparent);
   border-radius: 7px;
 }
+
+.detail-body h2.has-missing-price {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.detail-body h2.has-missing-price > span:first-child {
+  min-width: 0;
+}
 .missing-collection-price-tag .euro-icon,
 .missing-collection-price-tag .dollar-icon,
 .missing-collection-price-tag .pound-icon,
