@@ -435,33 +435,144 @@ function renderShelfStatsDialog() {
   const games = allGames.filter((game) => year === "all" || shelfStatsDate(game)?.getFullYear() === Number(year));
   const physical = games.filter((game) => !isDigitalShelfGame(game));
   const digital = games.filter(isDigitalShelfGame);
-  const months = Array.from({ length: 12 }, () => 0);
-  const platforms = new Map();
-  for (const game of games) {
-    const date = shelfStatsDate(game);
-    if (date) months[date.getMonth()] += 1;
-    const platform = canonicalShelfPlatform(game.platform || "Other") || tt("Other");
-    platforms.set(platform, (platforms.get(platform) || 0) + 1);
-  }
-  const platformRows = [...platforms].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]));
-  const maxPlatform = Math.max(1, ...platformRows.map(([, count]) => count));
-  const maxMonth = Math.max(1, ...months);
+  const platformCounts = shelfStatsCountBy(games, (game) => canonicalShelfPlatform(game.platform || "Unknown") || "Unknown");
+  const categoryCounts = shelfStatsCountBy(games, shelfStatsCategories);
+  const mediaCounts = [
+    { label: "Physical", count: physical.length, color: "#2f343d" },
+    { label: "Digital", count: digital.length, color: "#d8dde6" },
+  ].filter((item) => item.count);
   const monthNames = Array.from({ length: 12 }, (_, month) => new Intl.DateTimeFormat(currentLanguage(), { month: "short" }).format(new Date(2020, month, 1)));
   const shownYear = year === "all" ? tt("All time") : year;
   el.statsBrow.textContent = year === "all" ? tt("All-time statistics") : tt("YEARLY STATISTICS");
-  el.statsTitle.textContent = tt("Shelf statistics {year}", { year: shownYear });
+  el.statsTitle.textContent = tt("Games added {year}", { year: shownYear });
+  const chartMarkup = [
+    shelfStatsDonutCard(tt("Platforms"), platformCounts, "platform", 5),
+    shelfStatsDonutCard(tt("Categories"), categoryCounts, "category", 5),
+    ...(digital.length ? [shelfStatsDonutCard(tt("Physical / digital"), mediaCounts, "media", mediaCounts.length, { staticLegend: true })] : []),
+  ].join("");
+  const activityChart = year === "all"
+    ? shelfStatsYearBars(allGames)
+    : shelfStatsMonthBars(games, monthNames);
   el.statsBody.innerHTML = `
-    <div class="shelf-stats-kpis">
-      <article class="shelf-stats-kpi"><strong>${games.length}</strong><span>${escapeHtml(tt("Games added"))}</span></article>
-      <article class="shelf-stats-kpi"><strong>${physical.length}</strong><span>${escapeHtml(tt("Physical games"))}</span></article>
-      <article class="shelf-stats-kpi"><strong>${digital.length}</strong><span>${escapeHtml(tt("Digital games"))}</span></article>
+    <div class="finished-stats-kpis">
+      <article class="finished-stats-kpi is-finished"><strong>${games.length}</strong><span>${escapeHtml(tt("Games added"))}</span></article>
+      <article class="finished-stats-kpi is-completed"><strong>${physical.length}</strong><span>${escapeHtml(tt("Physical games"))}</span></article>
+      ${digital.length ? `<article class="finished-stats-kpi is-streamed"><strong>${digital.length}</strong><span>${escapeHtml(tt("Digital games"))}</span></article>` : ""}
     </div>
-    <div class="finished-stats-charts">
-      <section class="finished-stats-chart shelf-stats-platforms"><h3>${escapeHtml(tt("Platforms"))}</h3><div class="shelf-stats-platform-list">${platformRows.map(([platform, count]) => `<div class="shelf-stats-platform-row"><span>${escapeHtml(platform)}</span><i style="--platform-share:${Math.round(count / maxPlatform * 100)}%"></i><strong>${count}</strong></div>`).join("")}</div></section>
-    </div>
-    <section class="finished-stats-months"><h3>${escapeHtml(tt("Games added by month"))}</h3><div class="finished-stats-period-grid">${months.map((count, month) => `<div class="finished-stats-month" title="${escapeHtml(`${monthNames[month]}: ${count}`)}"><span>${escapeHtml(monthNames[month])}</span><em style="--month:${count / maxMonth}"></em><strong>${count}</strong></div>`).join("")}</div></section>
+    <div class="finished-stats-charts">${chartMarkup}</div>
+    ${activityChart}
     ${games.length ? "" : `<div class="empty">${escapeHtml(tt("No games added{year}.", { year: year === "all" ? "" : ` ${tt("in {year}", { year })}` }))}</div>`}
   `;
+}
+
+function shelfStatsCountBy(games, getLabels) {
+  const counts = new Map();
+  for (const game of games) {
+    const value = getLabels(game);
+    const labels = Array.isArray(value) ? value : [value];
+    for (const label of new Set(labels.map((value) => String(value || "").trim()).filter(Boolean))) counts.set(label, (counts.get(label) || 0) + 1);
+  }
+  return [...counts].map(([label, count]) => ({ label, count })).sort((a, b) => b.count - a.count || a.label.localeCompare(b.label));
+}
+
+function shelfStatsCategories(game) {
+  const labels = [...(game.genres || []), ...(game.tags || []), game.category || ""]
+    .map((value) => String(value || "").trim())
+    .filter((value) => value && normalizeSearchText(value) !== "game");
+  const uniqueLabels = [...new Map(labels.map((label) => [normalizeSearchText(label), label])).values()];
+  return uniqueLabels.length ? uniqueLabels : [tt("Uncategorized")];
+}
+
+function shelfStatsDonutCard(title, counts, tone, visibleLimit, options = {}) {
+  const visible = counts.slice(0, visibleLimit);
+  const rows = (items) => items.length ? items.map((item, index) => shelfStatsLegendRow(item, tone, index)).join("") : `<span><b>${escapeHtml(tt("None"))}</b><em>0</em></span>`;
+  const expanded = !options.staticLegend && counts.length > visible.length;
+  return `
+    <article class="finished-stats-chart shelf-stats-radial-chart${options.staticLegend ? " is-static" : ""}"${options.staticLegend ? "" : ' tabindex="0"'}>
+      <h3>${escapeHtml(title)}</h3>
+      <div class="finished-stats-donut ${tone === "platform" ? "is-platform" : tone === "category" ? "is-category" : "is-media"}">${shelfStatsPieMarkup(counts, tone)}</div>
+      <div class="finished-stats-chart-copy">
+        <div class="finished-stats-chart-list">${options.staticLegend ? rows(counts) : `${rows(visible)}${expanded ? `<span class="finished-stats-more-row" aria-hidden="true">...</span>` : ""}<div class="finished-stats-breakdown">${rows(counts)}</div>`}</div>
+      </div>
+    </article>
+  `;
+}
+
+function shelfStatsLegendRow(item, tone, index) {
+  if (tone === "platform") return `<span class="finished-stats-platform-row"><b>${platformBadge(item.label)}</b><em>${item.count}</em></span>`;
+  const color = item.color || shelfStatsSegmentColor(item.label, tone, index);
+  const label = tone === "media"
+    ? (item.label === "Digital" ? `${downloadBadgeIcon()}${escapeHtml(tt(item.label))}` : `${physicalDiskIcon()}${escapeHtml(tt(item.label))}`)
+    : `<i></i>${escapeHtml(tt(item.label))}`;
+  return `<span class="finished-stats-category-row" style="--category-stat-color:${escapeHtml(color)}"><b>${label}</b><em>${item.count}</em></span>`;
+}
+
+function shelfStatsPieMarkup(counts, tone) {
+  const total = counts.reduce((sum, item) => sum + item.count, 0);
+  if (!total) return `<svg viewBox="0 0 100 100" aria-hidden="true"><circle cx="50" cy="50" r="46" fill="rgba(255,255,255,.08)"></circle></svg>`;
+  let cursor = 0;
+  const shapes = counts.map((item, index) => {
+    const start = cursor;
+    cursor += item.count / total * 360;
+    const color = item.color || shelfStatsSegmentColor(item.label, tone, index);
+    if (cursor - start >= 359.99) return `<circle class="finished-stats-pie-shape" cx="50" cy="50" r="46" fill="${escapeHtml(color)}" stroke="rgba(255,255,255,.22)" stroke-width="0.9"></circle>`;
+    const point = (angle) => ({ x: 50 + 46 * Math.cos((angle - 90) * Math.PI / 180), y: 50 + 46 * Math.sin((angle - 90) * Math.PI / 180) });
+    const from = point(start);
+    const to = point(cursor);
+    const large = cursor - start > 180 ? 1 : 0;
+    return `<path class="finished-stats-pie-shape" d="M 50 50 L ${from.x.toFixed(3)} ${from.y.toFixed(3)} A 46 46 0 ${large} 1 ${to.x.toFixed(3)} ${to.y.toFixed(3)} Z" fill="${escapeHtml(color)}" stroke="rgba(255,255,255,.22)" stroke-width="0.9" style="--slice-opacity:${index % 2 ? 0.78 : 0.96}"></path>`;
+  }).join("");
+  return `<svg viewBox="0 0 100 100" role="img" aria-label="${escapeHtml(tt("Stats breakdown"))}">${shapes}</svg>`;
+}
+
+function shelfStatsSegmentColor(label, tone, index) {
+  if (tone === "media") return normalizeSearchText(label) === "digital" ? "#d8dde6" : "#2f343d";
+  if (tone === "category") return `rgb(${Math.max(76, 202 - index * 22)} ${Math.max(76, 202 - index * 22)} ${Math.max(76, 202 - index * 22)})`;
+  const value = normalizeSearchText(label);
+  if (value.includes("switch") || value.includes("nintendo")) return "#ff3b45";
+  if (value === "ps5") return "#ffffff";
+  if (value === "ps1") return "#8e94a0";
+  if (value === "ps3" || value === "psp") return "#05070b";
+  if (value.includes("playstation") || /\bps/.test(value)) return "#6f78ff";
+  if (value.includes("xbox 360") || value === "x360") return "#62d470";
+  if (value === "xbox") return "#05070b";
+  if (value.includes("xbox") || value.includes("microsoft") || value === "xone") return "#62d470";
+  if (value.includes("steam") || value.includes("pc")) return "#08111f";
+  if (value.includes("wiiu")) return "#9bd7ff";
+  if (value.includes("3ds") || value.includes("gbc")) return "#ff5a66";
+  if (value.includes("n64")) return "#349a4c";
+  if (value.includes("gamecube") || value.includes("snes") || value.includes("gba")) return "#9670ff";
+  if (value.includes("sega") || value.includes("game gear")) return "#2a70e0";
+  if (value.includes("dreamcast")) return "#ff842d";
+  if (value.includes("wii") || value.includes("nes") || value.includes("gb")) return "#d9dde6";
+  return ["#8b93a6", "#aa8bff", "#f2d06b", "#ff9ed2"][index % 4];
+}
+
+function shelfStatsPlatformBar(games) {
+  if (!games.length) return "color-mix(in srgb, var(--accent) 58%, rgba(255, 255, 255, 0.26))";
+  const counts = shelfStatsCountBy(games, (game) => canonicalShelfPlatform(game.platform || "Unknown") || "Unknown");
+  const total = counts.reduce((sum, item) => sum + item.count, 0);
+  let cursor = 0;
+  return `linear-gradient(to top, ${counts.map((item, index) => {
+    const start = cursor;
+    cursor += item.count / total * 100;
+    return `${shelfStatsSegmentColor(item.label, "platform", index)} ${start.toFixed(2)}% ${cursor.toFixed(2)}%`;
+  }).join(", ")})`;
+}
+
+function shelfStatsMonthBars(games, monthNames) {
+  const months = Array.from({ length: 12 }, (_, month) => games.filter((game) => shelfStatsDate(game)?.getMonth() === month));
+  const max = Math.max(1, ...months.map((items) => items.length));
+  return `<section class="finished-stats-months"><h3>${escapeHtml(tt("By month"))}</h3><div class="finished-stats-period-grid">${months.map((items, month) => `<div class="finished-stats-month" title="${escapeHtml(`${monthNames[month]}: ${items.length}`)}"><span>${escapeHtml(monthNames[month])}</span><em style="--month:${items.length / max};--platform-bar:${escapeHtml(shelfStatsPlatformBar(items))}"></em><strong>${items.length}</strong></div>`).join("")}</div></section>`;
+}
+
+function shelfStatsYearBars(games) {
+  const years = [...new Set(games.map((game) => String(shelfStatsDate(game).getFullYear())))].sort((a, b) => Number(a) - Number(b));
+  const max = Math.max(1, ...years.map((year) => games.filter((game) => shelfStatsDate(game).getFullYear() === Number(year)).length));
+  return `<section class="finished-stats-months"><h3>${escapeHtml(tt("By year"))}</h3><div class="finished-stats-period-grid is-yearly shelf-stats-years-grid">${years.map((year) => {
+    const yearGames = games.filter((game) => shelfStatsDate(game).getFullYear() === Number(year));
+    return `<div class="finished-stats-month" title="${escapeHtml(`${year}: ${yearGames.length}`)}"><span>${year}</span><em style="--month:${yearGames.length / max};--platform-bar:${escapeHtml(shelfStatsPlatformBar(yearGames))}"></em><strong>${yearGames.length}</strong></div>`;
+  }).join("")}</div></section>`;
 }
 
 function rebuildGames() {
