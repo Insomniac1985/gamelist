@@ -1092,21 +1092,28 @@ function renderStats() {
     [new Set(physicalGames.map((game) => game.platform)).size, "Platforms", "stat-available"],
     ...(shelfPricesVisible() ? [[valueText, "Estimated physical", "stat-done"]] : []),
   ];
-  el.stats.innerHTML = rows.map(([valueText, label, className, action, yearCount]) => `<div class="stat glass ${className}${action ? " stat-action" : ""}"${action ? ` data-stat-action="${escapeHtml(action)}" role="button" tabindex="0"` : ""}${yearCount !== undefined ? ` title="${escapeHtml(`Added in ${currentYear}: ${yearCount}`)}"` : ""}><strong>${escapeHtml(valueText)}</strong><span>${escapeHtml(tt(label))}</span></div>`).join("");
+  el.stats.innerHTML = rows.map(([valueText, label, className, action, yearCount]) => {
+    const hasDetail = yearCount !== undefined;
+    const item = yearCount === 1 ? tt("game") : tt("games");
+    const detail = hasDetail ? `<div class="stat-detail"><span>${escapeHtml(tt("{count} {item} in {year}", { count: yearCount, item, year: currentYear }))}</span><b>${escapeHtml(tt("Total {count}", { count: valueText }))}</b></div>` : "";
+    return `<div class="stat glass ${className}${action ? " stat-action" : ""}"${action ? ` data-stat-action="${escapeHtml(action)}"` : ""}${hasDetail ? " data-stat-detail" : ""}${action || hasDetail ? ' role="button" tabindex="0"' : ""}><strong>${escapeHtml(valueText)}</strong><span>${escapeHtml(tt(label))}</span>${detail}</div>`;
+  }).join("");
 }
 
 function handleStatsAction(event) {
-  const stat = event.target.closest("[data-stat-action]");
+  const stat = event.target.closest("[data-stat-action], [data-stat-detail]");
   if (!stat) return;
   if (stat.dataset.statAction === "shelf-start") scrollToShelfLibrary();
+  else stat.classList.toggle("detail-open");
 }
 
 function handleStatsActionKeydown(event) {
   if (event.key !== "Enter" && event.key !== " ") return;
-  const stat = event.target.closest("[data-stat-action]");
+  const stat = event.target.closest("[data-stat-action], [data-stat-detail]");
   if (!stat) return;
   event.preventDefault();
   if (stat.dataset.statAction === "shelf-start") scrollToShelfLibrary();
+  else stat.classList.toggle("detail-open");
 }
 
 function renderFilters() {
