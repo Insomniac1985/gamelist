@@ -605,13 +605,16 @@ function shelfStatsGameRows(games) {
     .map((game) => {
       const condition = String(game.condition || "").trim();
       const platform = game.platform ? platformBadge(game.platform) : "";
-      const mediaIcon = hasDigital
-        ? `<span class="finished-stats-media-icon shelf-stats-game-media-icon" title="${escapeHtml(tt(isDigitalShelfGame(game) ? "Digital" : "Physical"))}" aria-label="${escapeHtml(tt(isDigitalShelfGame(game) ? "Digital" : "Physical"))}">${isDigitalShelfGame(game) ? downloadBadgeIcon() : physicalDiskIcon()}</span>`
-        : "";
-      const trailing = platform || mediaIcon ? `<span class="shelf-stats-game-trailing">${platform}${mediaIcon}</span>` : "";
+      const mediaPill = hasDigital ? shelfStatsMediaPill(isDigitalShelfGame(game) ? "Digital" : "Physical") : "";
+      const trailing = platform || mediaPill ? `<span class="shelf-stats-game-trailing">${platform}${mediaPill}</span>` : "";
       return `<span class="finished-stats-game-row"><b>${escapeHtml(game.title || "Untitled")}</b>${condition ? `<span class="shelf-stats-game-detail">${escapeHtml(condition)}</span>` : ""}${trailing}</span>`;
     })
     .join("");
+}
+
+function shelfStatsMediaPill(label) {
+  const icon = label === "Digital" ? downloadBadgeIcon() : physicalDiskIcon();
+  return `<span class="shelf-stats-media-pill" title="${escapeHtml(tt(label))}"><span class="finished-stats-media-icon" aria-hidden="true">${icon}</span><span>${escapeHtml(tt(label))}</span></span>`;
 }
 
 function bindShelfStatsHoverDetails() {
@@ -627,7 +630,7 @@ function bindShelfStatsHoverDetails() {
   };
   const close = () => {
     closeTimer = 0;
-    document.querySelector(".shelf-stats-hover-float")?.remove();
+    dialog.querySelector(".shelf-stats-hover-float")?.remove();
     body.querySelectorAll(".finished-stats-floating-source").forEach((node) => node.classList.remove("finished-stats-floating-source"));
   };
   const scheduleClose = () => {
@@ -643,25 +646,33 @@ function bindShelfStatsHoverDetails() {
     floating.className = "finished-stats-breakdown finished-stats-hover-float shelf-stats-hover-float";
     floating.innerHTML = `${title ? `<strong class="finished-stats-breakdown-title">${escapeHtml(title)}</strong>` : ""}${content}`;
     dialog.appendChild(floating);
-    floating.style.position = "fixed";
-    floating.style.width = `${Math.min(360, Math.max(240, window.innerWidth - 32))}px`;
-    floating.style.maxWidth = `${Math.max(180, window.innerWidth - 24)}px`;
-    floating.style.maxHeight = `${Math.max(140, Math.min(320, window.innerHeight - 32))}px`;
+    const width = Math.min(340, Math.max(220, window.innerWidth - 32));
+    floating.style.width = `${width}px`;
+    floating.style.maxWidth = `${Math.max(180, window.innerWidth - 32)}px`;
+    floating.style.maxHeight = `${Math.max(140, Math.min(300, window.innerHeight - 32))}px`;
     const anchorRect = anchor.getBoundingClientRect();
     const rect = floating.getBoundingClientRect();
+    const dialogRect = dialog.getBoundingClientRect();
     const margin = 12;
-    const left = Math.max(margin, Math.min(anchorRect.left, window.innerWidth - rect.width - margin));
-    const below = anchorRect.bottom + 8;
-    const top = below + rect.height <= window.innerHeight - margin ? below : Math.max(margin, anchorRect.top - rect.height - 8);
+    const clamp = (value, min, max) => Math.max(min, Math.min(value, max));
+    const maxLeft = Math.max(margin, dialogRect.width - rect.width - margin);
+    const left = clamp(anchorRect.left - dialogRect.left, margin, maxLeft);
+    const maxTop = Math.max(margin, dialogRect.height - rect.height - margin);
+    const below = anchorRect.bottom - dialogRect.top + 8;
+    const above = anchorRect.top - dialogRect.top - rect.height - 8;
+    const top = clamp(below + rect.height <= dialogRect.height - margin ? below : above, margin, maxTop);
     floating.style.left = `${left}px`;
     floating.style.top = `${top}px`;
-    listen(floating, "mouseenter", () => window.clearTimeout(closeTimer));
-    listen(floating, "mouseleave", scheduleClose);
+    floating.addEventListener("mouseenter", () => window.clearTimeout(closeTimer));
+    floating.addEventListener("mouseleave", scheduleClose);
   };
   body.querySelectorAll("[data-stats-overlay-title]").forEach((node) => {
     const breakdown = node.querySelector(".finished-stats-breakdown");
     if (!breakdown?.innerHTML.trim()) return;
-    const show = () => open(node, breakdown.innerHTML, node.dataset.statsOverlayTitle || "");
+    const show = () => {
+      const hasTitle = Boolean(breakdown.querySelector(":scope > .finished-stats-breakdown-title"));
+      open(node, breakdown.innerHTML, hasTitle ? "" : (node.dataset.statsOverlayTitle || ""));
+    };
     listen(node, "mouseenter", show);
     listen(node, "mouseleave", scheduleClose);
     listen(node, "focusin", show);
@@ -1830,7 +1841,10 @@ function gameCard(game, options = {}) {
   card.querySelector(".card-trailer")?.remove(); card.querySelector(".trailer-toggle")?.remove();
   const image = card.querySelector(".cover-button img"); image.src = cover; image.dataset.coverFallback = fallbackCover; image.alt = `${game.title} cover`; image.loading = options.imagePriority || "lazy"; image.fetchPriority = options.imagePriority === "eager" ? "high" : "low"; image.decoding = "async"; bindCoverFrame(image);
   card.querySelector(".cover-button").dataset.action = "details";
-  const title = card.querySelector("h3"); title.textContent = game.title; title.className = `${title.className.replace(/\bowner-[\w-]+/g, "").trim()} ${visibleOwners.map(ownerColorClass).join(" ")}`.trim();
+  const title = card.querySelector("h3");
+  const namePriceTag = preorderProjection ? "" : missingCollectionPriceBadge(game, "is-title-price");
+  title.innerHTML = `<span class="shelf-game-title-text">${escapeHtml(game.title)}</span>${namePriceTag}`;
+  title.className = `${title.className.replace(/\bowner-[\w-]+/g, "").replace(/\bhas-missing-price\b/g, "").trim()} ${visibleOwners.map(ownerColorClass).join(" ")} ${namePriceTag ? "has-missing-price" : ""}`.trim();
   const titleOwners = card.querySelector(".title-owners");
   titleOwners.innerHTML = "";
   titleOwners.hidden = true;
@@ -1940,11 +1954,11 @@ function projectionOwnerCardClass(game) {
 }
 
 function conditionBadge(condition) { const tone = condition === "Complete +" ? "complete-plus" : normalize(condition).replace(/ /g, "-"); return `<span class="condition-pill condition-${tone}"><img src="assets/platforms/disk.png" alt="" width="18" height="18"><span>${escapeHtml(tt(condition))}</span></span>`; }
-function missingCollectionPriceBadge(game) {
+function missingCollectionPriceBadge(game, variant = "") {
   if (!state.canEdit || !shelfPricesVisible() || isDigitalShelfGame(game) || collectionValueFor(game) > 0) return "";
   const currency = normalizePriceSettings(state.gamelistSettings).currency;
   const label = tt("Missing {currency} price data", { currency });
-  return `<span class="missing-collection-price-tag" title="${escapeHtml(label)}" aria-label="${escapeHtml(label)}">${currencyIcon()}</span>`;
+  return `<span class="missing-collection-price-tag ${escapeHtml(variant)}" title="${escapeHtml(label)}" aria-label="${escapeHtml(label)}">${currencyIcon()}</span>`;
 }
 
 function handleShelfClick(event) {
@@ -1980,7 +1994,7 @@ function openPreorderInGamelistEditor(game) {
 function openDetails(game) {
   el.detailDialog.dataset.id = game.id;
   el.detailDialog.dataset.projection = game._gamelistProjection ? "true" : "false";
-  const missingPriceTag = missingCollectionPriceBadge(game);
+  const missingPriceTag = missingCollectionPriceBadge(game, "is-title-price");
   el.detailTitle.innerHTML = `<span>${escapeHtml(game.title)}</span>${missingPriceTag}`;
   el.detailTitle.className = `${el.detailTitle.className.replace(/\bowner-[\w-]+/g, "").replace(/\bhas-missing-price\b/g, "").trim()} ${(game.owners || []).map(ownerColorClass).join(" ")} ${missingPriceTag ? "has-missing-price" : ""}`.trim();
   const detailStudio = [game.developer, game.publisher && game.publisher !== game.developer ? game.publisher : ""].filter(Boolean).join(" / ");
@@ -2663,7 +2677,7 @@ function renderLayoutEditor() {
   el.layoutList.innerHTML = [
     ...state.layout.order.map((key, index) => settingsLayoutCard(key, index)),
     settingsPageFeatureToggles(),
-    `<div class="settings-preference-separator" role="presentation"></div><div class="settings-preference-row">${themeSettingsButton(state.gamelistSettings, escapeHtml, tt)}${settingsSelectCard("order", tt("Default order"), "shelfSettingsDefaultOrder", [{ value: "added", label: tt("Last added") }, { value: "title", label: tt("Name") }, { value: "platform", label: tt("Platform") }, { value: "region", label: tt("Region") }, { value: "value", label: tt("Value") }])}${settingsSelectCard("calendar", tt("Week starts"), "shelfSettingsWeekStart", WEEK_START_OPTIONS.map(([value, label]) => ({ value, label: tt(label) })))}${settingsShelfSyncCard()}${settingsPageSwitchCard()}</div>`,
+    `<div class="settings-preference-separator" role="presentation"></div><div class="settings-preference-row">${themeSettingsButton(state.gamelistSettings, escapeHtml, tt)}${settingsSelectCard("order", tt("Default order"), "shelfSettingsDefaultOrder", [{ value: "added", label: tt("Last added") }, { value: "title", label: tt("Name") }, { value: "platform", label: tt("Platform") }, { value: "region", label: tt("Region") }, ...(shelfPricesVisible() ? [{ value: "value", label: tt("Value") }] : [])])}${settingsSelectCard("calendar", tt("Week starts"), "shelfSettingsWeekStart", WEEK_START_OPTIONS.map(([value, label]) => ({ value, label: tt(label) })))}${settingsShelfSyncCard()}${settingsPageSwitchCard()}</div>`,
   ].join("");
   document.querySelector("#shelfSettingsCsvData").innerHTML = settingsCsvDataCard();
   if (el.settingsDevFeatures) el.settingsDevFeatures.innerHTML = settingsDevFeaturesCard("shelf");

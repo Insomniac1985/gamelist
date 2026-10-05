@@ -279,21 +279,12 @@ body.theme-kash
 }
 
 .shelf-stats-hover-float {
-  z-index: 10000;
+  z-index: 180;
   right: auto;
   bottom: auto;
   opacity: 1;
   transform: none;
   pointer-events: auto;
-}
-
-.shelf-stats-hover-float > .finished-stats-breakdown-title {
-  display: block;
-  padding: 0 2px 5px;
-  color: var(--accent);
-  font-size: 11px;
-  font-weight: 900;
-  text-transform: uppercase;
 }
 
 .shelf-stats-hover-float > .finished-stats-game-row {
@@ -317,10 +308,14 @@ body.theme-kash
 
 .shelf-stats-hover-float > .finished-stats-game-row > b {
   grid-area: title;
+  width: auto;
+  font-size: 11px;
+  line-height: 1.15;
 }
 
 .shelf-stats-dialog .finished-stats-game-row > b {
   grid-area: title;
+  width: auto;
 }
 
 .shelf-stats-game-detail {
@@ -342,10 +337,32 @@ body.theme-kash
   flex: 0 0 auto;
 }
 
-.shelf-stats-game-media-icon {
-  width: 18px;
-  height: 18px;
-  flex-basis: 18px;
+.shelf-stats-media-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  min-height: 22px;
+  padding: 2px 6px;
+  color: var(--text);
+  font-size: 9px;
+  font-weight: 800;
+  line-height: 1;
+  white-space: nowrap;
+  background: rgba(255, 255, 255, 0.07);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 6px;
+}
+
+.shelf-stats-media-pill .finished-stats-media-icon {
+  width: 14px;
+  height: 14px;
+  flex-basis: 14px;
+}
+
+.shelf-stats-media-pill .finished-stats-media-icon img,
+.shelf-stats-media-pill .finished-stats-media-icon .download-badge-icon {
+  width: 14px;
+  height: 14px;
 }
 
 .shelf-stats-hover-float
@@ -2311,6 +2328,38 @@ textarea {
 
 .detail-body h2.has-missing-price > span:first-child {
   min-width: 0;
+}
+
+.missing-collection-price-tag.is-title-price {
+  flex-basis: 23px;
+  width: 23px;
+  height: 23px;
+  flex-shrink: 0;
+  color: #ff3158;
+  background: rgba(255, 0, 57, 0.14);
+  border-color: rgba(255, 49, 88, 0.72);
+  border-radius: 5px;
+}
+
+.missing-collection-price-tag.is-title-price .euro-icon,
+.missing-collection-price-tag.is-title-price .dollar-icon,
+.missing-collection-price-tag.is-title-price .pound-icon,
+.missing-collection-price-tag.is-title-price .yen-icon {
+  width: 14px;
+  height: 14px;
+}
+
+.shelf-grid .game-card h3.has-missing-price {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.shelf-grid .game-card h3.has-missing-price > .shelf-game-title-text {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 .missing-collection-price-tag .euro-icon,
 .missing-collection-price-tag .dollar-icon,
