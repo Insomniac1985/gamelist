@@ -240,6 +240,17 @@ html {
   scroll-behavior: smooth;
 }
 
+@media (max-width: 760px) {
+  html {
+    overflow-x: clip;
+  }
+
+  *::-webkit-scrollbar:horizontal {
+    display: none;
+    height: 0;
+  }
+}
+
 @media (hover: none), (pointer: coarse) {
   *:not(input):not(textarea) {
     -webkit-touch-callout: none;
