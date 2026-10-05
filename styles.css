@@ -12488,6 +12488,7 @@ html.theme-light .shelf-card-delete-action:hover {
 
 .settings-provider-page-button {
   font-size: 15px;
+  text-decoration: none;
 }
 
 .settings-nintendo-controls {

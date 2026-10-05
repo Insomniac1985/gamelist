@@ -2,6 +2,9 @@ import { normalizeSearchText, createGameCardShell, bindActivityCardParallax, mou
 import { applySiteTheme, normalizeThemeSettings, openThemeEditor, ownerCardColorClass, ownerColorClass, themeSettingsButton } from "./theme-system.js";
 import { applyDocumentTranslations, languageOptions, normalizeLanguage, t } from "./i18n.js";
 import { initShelfAccounts } from "./shelf-accounts.js";
+import { accountSettingsMarkup } from "./account-settings-ui.js";
+
+document.querySelector("#shelfAccountsMount").innerHTML = accountSettingsMarkup();
 
 mountActivitySlider(document.querySelector("[data-module='playing']"), { title: "shelfPlayingTitle", count: "shelfPlayingCount", previous: "shelfPlayingPrev", next: "shelfPlayingNext", list: "playingCarousel", finished: "shelfPlayingFinished", finishedList: "finishedCarousel" });
 splitShelfPlayingModules();
@@ -222,7 +225,7 @@ const el = {
   settingsCurrency: document.querySelector("#shelfSettingsCurrency"), settingsRegion: document.querySelector("#shelfSettingsRegion"),
   settingsLanguage: document.querySelector("#shelfSettingsLanguage"),
   settingsStores: document.querySelector("#shelfSettingsStores"),
-  settingsTwitchUser: document.querySelector("#shelfSettingsTwitchUser"), settingsDefaultOwner: document.querySelector("#shelfSettingsDefaultOwner"),
+  settingsTwitchUser: document.querySelector("#settingsTwitchUser"), settingsDefaultOwner: document.querySelector("#shelfSettingsDefaultOwner"),
   settingsDevFeatures: document.querySelector("#shelfSettingsDevFeatures"),
   showcaseDialog: document.querySelector("#showcaseDialog"), showcaseForm: document.querySelector("#showcaseForm"), showcaseClose: document.querySelector("#showcaseClose"),
   showcaseSelected: document.querySelector("#showcaseSelected"), showcaseSearch: document.querySelector("#showcaseSearch"), showcasePlatform: document.querySelector("#showcasePlatform"), showcaseRegion: document.querySelector("#showcaseRegion"), showcaseCategory: document.querySelector("#showcaseCategory"), showcaseDirection: document.querySelector("#showcaseSortDirection"), showcaseCount: document.querySelector("#showcaseCount"), showcaseList: document.querySelector("#showcaseList"),
