@@ -461,7 +461,9 @@ function renderShelfStatsDialog() {
     { label: "Physical", count: physical.length, color: "#2f343d" },
     { label: "Digital", count: digital.length, color: "#d8dde6" },
   ].filter((item) => item.count);
-  const kpiCount = 2 + Number(Boolean(digital.length)) + Number(shelfPricesVisible());
+  const showPhysicalKpi = Boolean(physical.length && digital.length);
+  const showPriceKpi = Boolean(physical.length && shelfPricesVisible());
+  const kpiCount = 1 + Number(showPhysicalKpi) + Number(Boolean(digital.length)) + Number(showPriceKpi);
   const monthNames = Array.from({ length: 12 }, (_, month) => new Intl.DateTimeFormat(currentLanguage(), { month: "short" }).format(new Date(2020, month, 1)));
   const shownYear = year === "all" ? tt("All time") : year;
   el.statsBrow.textContent = year === "all" ? tt("All-time statistics") : tt("YEARLY STATISTICS");
@@ -478,11 +480,11 @@ function renderShelfStatsDialog() {
     ? shelfStatsYearBars(allGames)
     : shelfStatsMonthBars(games, monthNames);
   el.statsBody.innerHTML = `
-    <div class="finished-stats-kpis${kpiCount === 3 ? " is-shelf-three" : ""}">
+    <div class="finished-stats-kpis${kpiCount === 1 ? " is-shelf-one" : kpiCount === 2 ? " is-shelf-two" : ""}">
       <article class="finished-stats-kpi is-finished"><strong>${games.length}</strong><span>${escapeHtml(tt("Games added"))}</span></article>
-      <article class="finished-stats-kpi is-completed" tabindex="0" data-stats-overlay-title="${escapeHtml(`${tt("Physical games")} · ${physical.length} ${tt("games")}`)}"><strong>${physical.length}</strong><span>${escapeHtml(tt("Physical games"))}</span><div class="finished-stats-breakdown">${shelfStatsGameRows(physical)}</div></article>
+      ${showPhysicalKpi ? `<article class="finished-stats-kpi is-completed" tabindex="0" data-stats-overlay-title="${escapeHtml(`${tt("Physical games")} · ${physical.length} ${tt("games")}`)}"><strong>${physical.length}</strong><span>${escapeHtml(tt("Physical games"))}</span><div class="finished-stats-breakdown">${shelfStatsGameRows(physical)}</div></article>` : ""}
       ${digital.length ? `<article class="finished-stats-kpi is-streamed" tabindex="0" data-stats-overlay-title="${escapeHtml(`${tt("Digital games")} · ${digital.length} ${tt("games")}`)}"><strong>${digital.length}</strong><span>${escapeHtml(tt("Digital games"))}</span><div class="finished-stats-breakdown">${shelfStatsGameRows(digital)}</div></article>` : ""}
-      ${shelfPricesVisible() ? `<article class="finished-stats-kpi is-price"><strong>${escapeHtml(formatWholeMoney(physicalValue, normalizePriceSettings(state.gamelistSettings).currency))}</strong><span>${escapeHtml(tt("Estimated physical"))}</span></article>` : ""}
+      ${showPriceKpi ? `<article class="finished-stats-kpi is-price"><strong>${escapeHtml(formatWholeMoney(physicalValue, normalizePriceSettings(state.gamelistSettings).currency))}</strong><span>${escapeHtml(tt("Estimated physical"))}</span></article>` : ""}
     </div>
     <div class="finished-stats-charts">${chartMarkup}</div>
     ${activityChart}
