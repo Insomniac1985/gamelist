@@ -461,6 +461,7 @@ function renderShelfStatsDialog() {
     { label: "Physical", count: physical.length, color: "#2f343d" },
     { label: "Digital", count: digital.length, color: "#d8dde6" },
   ].filter((item) => item.count);
+  const kpiCount = 2 + Number(Boolean(digital.length)) + Number(shelfPricesVisible());
   const monthNames = Array.from({ length: 12 }, (_, month) => new Intl.DateTimeFormat(currentLanguage(), { month: "short" }).format(new Date(2020, month, 1)));
   const shownYear = year === "all" ? tt("All time") : year;
   el.statsBrow.textContent = year === "all" ? tt("All-time statistics") : tt("YEARLY STATISTICS");
@@ -470,18 +471,18 @@ function renderShelfStatsDialog() {
   const chartMarkup = [
     shelfStatsDonutCard(tt("Platforms"), platformCounts, "platform", 5, { games }),
     shelfStatsDonutCard(tt("Categories"), categoryCounts, "category", 5, { games }),
-    ...(physical.length ? [shelfStatsDonutCard(tt("Region"), regionCounts, "region", 5, { games: physical })] : []),
-    ...(digital.length ? [shelfStatsDonutCard(tt("Physical / digital"), mediaCounts, "media", mediaCounts.length, { staticLegend: true })] : []),
+    ...(physical.length ? [shelfStatsDonutCard(tt("Region"), regionCounts, "region", 5, { games: physical, fullWidth: !digital.length })] : []),
+    ...(digital.length ? [shelfStatsDonutCard(tt("Physical / digital"), mediaCounts, "media", mediaCounts.length, { staticLegend: true, fullWidth: !physical.length })] : []),
   ].join("");
   const activityChart = year === "all"
     ? shelfStatsYearBars(allGames)
     : shelfStatsMonthBars(games, monthNames);
   el.statsBody.innerHTML = `
-    <div class="finished-stats-kpis">
+    <div class="finished-stats-kpis${kpiCount === 3 ? " is-shelf-three" : ""}">
       <article class="finished-stats-kpi is-finished"><strong>${games.length}</strong><span>${escapeHtml(tt("Games added"))}</span></article>
-      <article class="finished-stats-kpi is-completed"><strong>${physical.length}</strong><span>${escapeHtml(tt("Physical games"))}</span></article>
-      ${digital.length ? `<article class="finished-stats-kpi is-streamed"><strong>${digital.length}</strong><span>${escapeHtml(tt("Digital games"))}</span></article>` : ""}
-      ${shelfPricesVisible() ? `<article class="finished-stats-kpi is-price"><strong>${escapeHtml(formatMoney(physicalValue, normalizePriceSettings(state.gamelistSettings).currency))}</strong><span>${escapeHtml(tt("Estimated physical"))}</span></article>` : ""}
+      <article class="finished-stats-kpi is-completed" tabindex="0" data-stats-overlay-title="${escapeHtml(`${tt("Physical games")} · ${physical.length} ${tt("games")}`)}"><strong>${physical.length}</strong><span>${escapeHtml(tt("Physical games"))}</span><div class="finished-stats-breakdown">${shelfStatsGameRows(physical)}</div></article>
+      ${digital.length ? `<article class="finished-stats-kpi is-streamed" tabindex="0" data-stats-overlay-title="${escapeHtml(`${tt("Digital games")} · ${digital.length} ${tt("games")}`)}"><strong>${digital.length}</strong><span>${escapeHtml(tt("Digital games"))}</span><div class="finished-stats-breakdown">${shelfStatsGameRows(digital)}</div></article>` : ""}
+      ${shelfPricesVisible() ? `<article class="finished-stats-kpi is-price"><strong>${escapeHtml(formatWholeMoney(physicalValue, normalizePriceSettings(state.gamelistSettings).currency))}</strong><span>${escapeHtml(tt("Estimated physical"))}</span></article>` : ""}
     </div>
     <div class="finished-stats-charts">${chartMarkup}</div>
     ${activityChart}
@@ -528,7 +529,7 @@ function shelfStatsDonutCard(title, counts, tone, visibleLimit, options = {}) {
   const rows = (items) => items.length ? items.map((item, index) => shelfStatsLegendRow(item, tone, index)).join("") : `<span><b>${escapeHtml(tt("None"))}</b><em>0</em></span>`;
   const expanded = !showAll && counts.length > visible.length;
   return `
-    <article class="finished-stats-chart shelf-stats-radial-chart${options.staticLegend ? " is-static" : ""}${tone === "media" ? " is-media" : ""}"${options.staticLegend ? "" : ' tabindex="0"'}>
+    <article class="finished-stats-chart shelf-stats-radial-chart${options.staticLegend ? " is-static" : ""}${tone === "media" ? " is-media" : ""}${options.fullWidth ? " is-full-width" : ""}"${options.staticLegend ? "" : ' tabindex="0"'}>
       <h3>${escapeHtml(title)}</h3>
       <div class="finished-stats-donut ${tone === "platform" ? "is-platform" : tone === "media" ? "is-media" : tone === "region" ? "is-region" : "is-category"}">${shelfStatsPieMarkup(counts, tone, options.games || [])}</div>
       <div class="finished-stats-chart-copy">
@@ -543,8 +544,16 @@ function shelfStatsLegendRow(item, tone, index) {
   const color = item.color || shelfStatsSegmentColor(item.label, tone, index);
   const label = tone === "media"
     ? shelfStatsMediaLabel(item.label)
-    : `<i></i>${escapeHtml(tt(item.label))}`;
+    : tone === "region"
+      ? shelfStatsRegionBadge(item.label)
+      : `<i></i>${escapeHtml(tt(item.label))}`;
   return `<span class="finished-stats-category-row" style="--category-stat-color:${escapeHtml(color)}"><b>${label}</b><em>${item.count}</em></span>`;
+}
+
+function shelfStatsRegionBadge(label) {
+  const normalized = normalizeSearchText(label);
+  const country = ({ usa: "United States of America", us: "United States of America", eu: "Europe", europe: "Europe", uk: "United Kingdom" })[normalized] || label;
+  return `<span class="shelf-stats-region-label"><img src="${escapeHtml(flagAsset(country))}" alt="" width="20" height="14" decoding="async">${escapeHtml(tt(label))}</span>`;
 }
 
 function shelfStatsMediaLabel(label) {
@@ -578,7 +587,7 @@ function shelfStatsPieMarkup(counts, tone, games = []) {
     const percent = Math.round(item.count / total * 100);
     return {
       shape: `<g class="finished-stats-pie-segment finished-stats-pie-segment-${index}" data-segment-label="${escapeHtml(item.label)}" style="--slice-opacity:${index % 2 ? 0.78 : 0.96}" tabindex="0">${shape}</g>`,
-      tip: `<div class="finished-stats-segment-tip finished-stats-segment-tip-${index}" style="--tip-x:${tipX.toFixed(2)}%;--tip-y:${tipY.toFixed(2)}%"><span class="finished-stats-segment-percent">${percent}%</span>${tone === "platform" ? platformBadge(item.label) : `<b>${escapeHtml(item.label)}</b>`}<span class="finished-stats-segment-count">${item.count}</span></div>`,
+      tip: `<div class="finished-stats-segment-tip finished-stats-segment-tip-${index}" style="--tip-x:${tipX.toFixed(2)}%;--tip-y:${tipY.toFixed(2)}%"><span class="finished-stats-segment-percent">${percent}%</span>${tone === "platform" ? platformBadge(item.label) : tone === "region" ? shelfStatsRegionBadge(item.label) : `<b>${escapeHtml(item.label)}</b>`}<span class="finished-stats-segment-count">${item.count}</span></div>`,
     };
   });
   const tipCss = segments.map((_, index) => `
@@ -615,18 +624,19 @@ function shelfStatsGameRows(games) {
   return [...games]
     .sort((a, b) => (shelfStatsDate(b)?.getTime() || 0) - (shelfStatsDate(a)?.getTime() || 0))
     .map((game) => {
-      const condition = String(game.condition || "").trim();
       const platform = game.platform ? platformBadge(game.platform) : "";
-      const mediaPill = hasDigital ? shelfStatsMediaPill(isDigitalShelfGame(game) ? "Digital" : "Physical") : "";
+      const mediaPill = hasDigital ? shelfStatsMediaPill(game) : "";
       const trailing = platform || mediaPill ? `<span class="shelf-stats-game-trailing">${platform}${mediaPill}</span>` : "";
-      return `<span class="finished-stats-game-row"><b>${escapeHtml(game.title || "Untitled")}</b>${condition ? `<span class="shelf-stats-game-detail">${escapeHtml(condition)}</span>` : ""}${trailing}</span>`;
+      return `<span class="finished-stats-game-row"><b>${escapeHtml(game.title || "Untitled")}</b>${trailing}</span>`;
     })
     .join("");
 }
 
-function shelfStatsMediaPill(label) {
-  const icon = label === "Digital" ? downloadBadgeIcon() : physicalDiskIcon();
-  return `<span class="shelf-stats-media-pill" title="${escapeHtml(tt(label))}"><span class="finished-stats-media-icon" aria-hidden="true">${icon}</span><span>${escapeHtml(tt(label))}</span></span>`;
+function shelfStatsMediaPill(game) {
+  const label = isDigitalShelfGame(game) ? "Digital" : "Physical";
+  const cls = platformClass(game.platform || "");
+  const icon = isDigitalShelfGame(game) ? downloadBadgeIcon() : physicalDiskIcon(cls);
+  return `<span class="shelf-stats-media-pill ${escapeHtml(cls)}" title="${escapeHtml(tt(label))}"><span class="finished-stats-media-icon" aria-hidden="true">${icon}</span><span>${escapeHtml(tt(label))}</span></span>`;
 }
 
 function bindShelfStatsHoverDetails() {
@@ -763,7 +773,11 @@ function openShelfStatsMiniOverlay(title, content) {
 
 function shelfStatsSegmentColor(label, tone, index) {
   if (tone === "media") return normalizeSearchText(label) === "digital" ? "#d8dde6" : "#2f343d";
-  if (tone === "category" || tone === "region") return `rgb(${Math.max(76, 202 - index * 22)} ${Math.max(76, 202 - index * 22)} ${Math.max(76, 202 - index * 22)})`;
+  if (tone === "region") {
+    const regionColors = { usa: "#c43d4d", europe: "#315caf", japan: "#c83246", taiwan: "#df3947", spain: "#c43d32", italy: "#26965b", france: "#315caf", germany: "#d14b3f", portugal: "#278451", ireland: "#239966", uk: "#3455a4", "united kingdom": "#3455a4", other: "#8b93a6", unknown: "#8b93a6" };
+    return regionColors[normalizeSearchText(label)] || ["#b34648", "#3c66ad", "#a88b3e", "#358668"][index % 4];
+  }
+  if (tone === "category") return `rgb(${Math.max(76, 202 - index * 22)} ${Math.max(76, 202 - index * 22)} ${Math.max(76, 202 - index * 22)})`;
   const value = normalizeSearchText(label);
   if (value.includes("switch") || value.includes("nintendo")) return "#ff3b45";
   if (value === "ps5") return "#ffffff";
@@ -799,7 +813,11 @@ function shelfStatsPlatformBar(games) {
 function shelfStatsMonthBars(games, monthNames) {
   const months = Array.from({ length: 12 }, (_, month) => games.filter((game) => shelfStatsDate(game)?.getMonth() === month));
   const max = Math.max(1, ...months.map((items) => items.length));
-  return `<section class="finished-stats-months"><h3>${escapeHtml(tt("By month"))}</h3><div class="finished-stats-period-grid">${months.map((items, month) => `<div class="finished-stats-month" title="${escapeHtml(`${monthNames[month]}: ${items.length}`)}" ${items.length ? `data-stats-overlay-title="${escapeHtml(monthNames[month])}"` : ""}><span>${escapeHtml(monthNames[month])}</span><em style="--month:${items.length / max};--platform-bar:${escapeHtml(shelfStatsPlatformBar(items))}"></em><strong>${items.length}</strong>${items.length ? `<span class="finished-stats-breakdown"><strong class="finished-stats-breakdown-title">${escapeHtml(monthNames[month])} · ${items.length} ${escapeHtml(tt("games added"))}</strong>${shelfStatsGameRows(items)}</span>` : ""}</div>`).join("")}</div></section>`;
+  return `<section class="finished-stats-months"><h3>${escapeHtml(tt("By month"))}</h3><div class="finished-stats-period-grid">${months.map((items, month) => {
+    const countLabel = `${items.length} ${tt(items.length === 1 ? "game" : "games")}`;
+    const breakdownTitle = `${monthNames[month]} · ${countLabel}`;
+    return `<div class="finished-stats-month" title="${escapeHtml(`${monthNames[month]}: ${items.length}`)}" ${items.length ? `data-stats-overlay-title="${escapeHtml(breakdownTitle)}"` : ""}><span>${escapeHtml(monthNames[month])}</span><em style="--month:${items.length / max};--platform-bar:${escapeHtml(shelfStatsPlatformBar(items))}"></em><strong>${items.length}</strong>${items.length ? `<span class="finished-stats-breakdown">${shelfStatsGameRows(items)}</span>` : ""}</div>`;
+  }).join("")}</div></section>`;
 }
 
 function shelfStatsYearBars(games) {
@@ -4283,6 +4301,16 @@ function formatMoney(value, currency = "USD") {
   if (currency === "GBP") return `£${amount}`;
   if (currency === "JPY") return `¥${Math.round(Number.isFinite(number) ? number : 0).toLocaleString("en")}`;
   return currency === "USD" ? `$${amount}` : `${amount}€`;
+}
+
+function formatWholeMoney(value, currency = "USD") {
+  const amount = Number.isFinite(Number(value)) ? Number(value) : 0;
+  return new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency: /^[A-Z]{3}$/.test(currency) ? currency : "USD",
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0,
+  }).format(amount);
 }
 
 function collectionPriceParams(game, settings = normalizePriceSettings(state.gamelistSettings)) {

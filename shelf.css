@@ -193,6 +193,10 @@ body.mobile-app-mode.shelf-page .backdrop {
     0 14px 34px color-mix(in srgb, var(--accent) 16%, transparent);
 }
 
+.shelf-stats-body .finished-stats-kpi[data-stats-overlay-title] {
+  cursor: pointer;
+}
+
 .shelf-stats-body .finished-stats-kpi.is-completed strong,
 .shelf-stats-body .finished-stats-kpi.is-streamed strong {
   color: var(--finished-accent);
@@ -235,7 +239,9 @@ body.theme-kash
 
 .shelf-stats-controls {
   display: flex;
+  align-items: center;
   justify-content: flex-end;
+  min-height: 30px;
   margin: -2px 0 12px;
 }
 
@@ -243,11 +249,19 @@ body.theme-kash
   display: inline-grid;
   grid-template-columns: auto auto;
   align-items: center;
+  min-height: 30px;
   gap: 8px;
   color: var(--muted);
   font-size: 11px;
   font-weight: 850;
   text-transform: uppercase;
+}
+
+.shelf-stats-controls .finished-stats-year-picker > span {
+  display: inline-flex;
+  align-items: center;
+  height: 30px;
+  line-height: 1;
 }
 
 .shelf-stats-controls .finished-stats-year-picker select {
@@ -282,6 +296,12 @@ body.theme-kash
   min-width: 82px;
 }
 
+@media (max-width: 760px) {
+  .shelf-stats-body .finished-stats-kpis.is-shelf-three > .finished-stats-kpi:nth-child(3) {
+    grid-column: 1 / -1;
+  }
+}
+
 .shelf-stats-hover-float {
   z-index: 180;
   right: auto;
@@ -292,33 +312,25 @@ body.theme-kash
 }
 
 .shelf-stats-hover-float > .finished-stats-game-row {
-  min-height: 38px;
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  grid-template-areas: "title platform" "detail platform";
-  gap: 2px 8px;
-  padding: 5px 7px;
+  min-height: 30px;
+  gap: 4px;
+  padding: 3px 5px;
 }
 
 .shelf-stats-dialog .finished-stats-breakdown > .finished-stats-game-row,
 .shelf-stats-dialog .finished-stats-mini-list > .finished-stats-game-row {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  grid-template-areas: "title trailing" "detail trailing";
-  gap: 2px 8px;
-  min-height: 38px;
-  padding: 5px 7px;
+  display: flex;
+  gap: 4px;
+  min-height: 30px;
+  padding: 3px 5px;
 }
 
 .shelf-stats-hover-float > .finished-stats-game-row > b {
-  grid-area: title;
   width: auto;
   font-size: 11px;
-  line-height: 1.15;
 }
 
 .shelf-stats-dialog .finished-stats-game-row > b {
-  grid-area: title;
   width: auto;
 }
 
@@ -345,17 +357,24 @@ body.theme-kash
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  min-height: 22px;
-  padding: 2px 6px;
-  color: var(--text);
+  min-height: 20px;
+  padding: 2px 5px;
+  color: #d9dde6;
   font-size: 9px;
   font-weight: 800;
   line-height: 1;
   white-space: nowrap;
-  background: rgba(255, 255, 255, 0.07);
-  border: 1px solid rgba(255, 255, 255, 0.16);
-  border-radius: 6px;
+  background: color-mix(in srgb, currentColor 10%, rgba(255, 255, 255, 0.07));
+  border: 1px solid color-mix(in srgb, currentColor 55%, transparent);
+  border-radius: 7px;
 }
+
+.shelf-stats-media-pill.platform-nintendo { color: #ff3b36; }
+.shelf-stats-media-pill.platform-playstation { color: #5970ff; }
+.shelf-stats-media-pill.platform-playstation.platform-ps5 { color: #f3f3f3; }
+.shelf-stats-media-pill.platform-xbox { color: #7ed732; }
+.shelf-stats-media-pill.platform-pc { color: #dedede; }
+.shelf-stats-media-pill.platform-sega { color: #5aa7ff; }
 
 .shelf-stats-media-pill .finished-stats-media-icon {
   width: 14px;
@@ -369,22 +388,31 @@ body.theme-kash
   height: 14px;
 }
 
-.shelf-stats-hover-float
-  > .finished-stats-game-row
-  > .shelf-stats-game-trailing {
-  grid-area: platform;
-}
-
-.shelf-stats-dialog .finished-stats-game-row > .shelf-stats-game-trailing {
-  grid-area: trailing;
-}
+.shelf-stats-hover-float > .finished-stats-game-row > .shelf-stats-game-trailing { margin-left: auto; }
+.shelf-stats-dialog .finished-stats-game-row > .shelf-stats-game-trailing { margin-left: auto; }
 
 .shelf-stats-radial-chart {
   min-height: 220px;
 }
 
-.shelf-stats-radial-chart.is-media {
+.shelf-stats-radial-chart.is-full-width {
   grid-column: 1 / -1;
+}
+
+.shelf-stats-region-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+}
+
+.shelf-stats-region-label img {
+  width: 20px;
+  height: 14px;
+  flex: 0 0 20px;
+  object-fit: cover;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 2px;
 }
 
 .shelf-stats-radial-chart .finished-stats-chart-list .finished-stats-breakdown {
