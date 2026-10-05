@@ -149,6 +149,7 @@ body.mobile-app-mode.shelf-page .backdrop {
   width: min(920px, calc(100vw - 24px));
   max-height: calc(100dvh - 24px);
   overflow: visible;
+  overflow-x: clip;
   border: 1px solid var(--line);
   border-radius: 8px;
   padding: 0;
@@ -165,6 +166,10 @@ body.mobile-app-mode.shelf-page .backdrop {
     center;
   box-shadow: var(--shadow);
   backdrop-filter: blur(8px) saturate(1.08);
+}
+
+body.shelf-page {
+  overflow-x: clip;
 }
 
 .shelf-stats-modal {
@@ -296,9 +301,25 @@ body.theme-kash
   min-width: 82px;
 }
 
-@media (max-width: 760px) {
-  .shelf-stats-body .finished-stats-kpis.is-shelf-three > .finished-stats-kpi:nth-child(3) {
-    grid-column: 1 / -1;
+.shelf-stats-body .finished-stats-kpis.is-shelf-one {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.shelf-stats-body .finished-stats-kpis.is-shelf-two {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.shelf-stats-body .finished-stats-kpis.is-shelf-one > .finished-stats-kpi,
+.shelf-stats-body .finished-stats-kpis.is-shelf-two > .finished-stats-kpi {
+  justify-items: center;
+  text-align: center;
+}
+
+@media (min-width: 761px) {
+  .shelf-stats-body .finished-stats-kpis.is-shelf-one > .finished-stats-kpi,
+  .shelf-stats-body .finished-stats-kpis.is-shelf-two > .finished-stats-kpi {
+    justify-items: start;
+    text-align: left;
   }
 }
 
@@ -369,12 +390,27 @@ body.theme-kash
   border-radius: 7px;
 }
 
-.shelf-stats-media-pill.platform-nintendo { color: #ff3b36; }
-.shelf-stats-media-pill.platform-playstation { color: #5970ff; }
-.shelf-stats-media-pill.platform-playstation.platform-ps5 { color: #f3f3f3; }
-.shelf-stats-media-pill.platform-xbox { color: #7ed732; }
-.shelf-stats-media-pill.platform-pc { color: #dedede; }
-.shelf-stats-media-pill.platform-sega { color: #5aa7ff; }
+.shelf-stats-media-pill.is-icon-only {
+  justify-content: center;
+  width: 20px;
+  min-width: 20px;
+  max-width: 20px;
+  height: 20px;
+  padding: 2px;
+}
+
+.shelf-stats-media-pill > span:not(.finished-stats-media-icon) {
+  display: none;
+}
+
+.shelf-stats-media-pill.platform-nintendo { color: #ff3b36 !important; }
+.shelf-stats-media-pill.platform-nintendo .download-badge-icon { stroke: #fff !important; }
+.shelf-stats-media-pill.platform-playstation { color: #5970ff !important; }
+.shelf-stats-media-pill.platform-playstation.platform-ps5 { color: #05070b !important; }
+.shelf-stats-media-pill.platform-playstation.platform-ps5 .download-badge-icon { stroke: #05070b !important; }
+.shelf-stats-media-pill.platform-xbox { color: #7ed732 !important; }
+.shelf-stats-media-pill.platform-pc { color: #dedede !important; }
+.shelf-stats-media-pill.platform-sega { color: #5aa7ff !important; }
 
 .shelf-stats-media-pill .finished-stats-media-icon {
   width: 14px;
@@ -454,11 +490,16 @@ body.theme-kash
 
 @media (max-width: 760px) {
   .shelf-stats-dialog {
-    width: calc(100vw - 14px);
+    box-sizing: border-box;
+    width: calc(100% - 14px);
+    max-width: calc(100% - 14px);
     max-height: calc(100dvh - 14px);
+    overflow-x: clip;
   }
 
   .shelf-stats-modal {
+    min-width: 0;
+    max-width: 100%;
     max-height: calc(100dvh - 14px);
     padding: 14px;
     overflow-x: hidden !important;
