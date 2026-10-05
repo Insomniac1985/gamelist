@@ -110,7 +110,6 @@ body:not(.can-edit) .showcase-edit-button {
 }
 
 body.mobile-app-mode.shelf-page {
-  --custom-backdrop-image: none;
   --theme-control-bg: linear-gradient(
     135deg,
     color-mix(in srgb, var(--accent) 12%, rgba(24, 25, 31, 0.84)),
@@ -138,6 +137,7 @@ body.mobile-app-mode.shelf-page .backdrop {
     radial-gradient(circle at 78% 9%, var(--glow-primary), transparent 30%),
     radial-gradient(circle at 11% 84%, var(--glow-secondary), transparent 34%),
     linear-gradient(120deg, rgba(255, 255, 255, 0.04), transparent 38%),
+    var(--custom-backdrop-image) top left / cover repeat,
     var(--bg) !important;
   background-position: center;
   transform: none;
@@ -174,86 +174,69 @@ body.mobile-app-mode.shelf-page .backdrop {
   padding-bottom: 6px;
 }
 
-.shelf-stats-kpis {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-  gap: 10px;
+.shelf-stats-controls {
+  display: flex;
+  justify-content: flex-end;
+  margin: -2px 0 12px;
 }
 
-.shelf-stats-kpi {
-  display: grid;
-  align-content: center;
-  gap: 7px;
-  min-height: 94px;
-  padding: 14px;
-  background: rgba(255, 255, 255, 0.045);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 7px;
-}
-
-.shelf-stats-kpi strong {
-  color: var(--accent-1);
-  font-size: 32px;
-  line-height: 1;
-}
-
-.shelf-stats-kpi span {
+.shelf-stats-controls .finished-stats-year-picker {
+  display: inline-grid;
+  grid-template-columns: auto auto;
+  align-items: center;
+  gap: 8px;
   color: var(--muted);
   font-size: 11px;
-  font-weight: 900;
+  font-weight: 850;
   text-transform: uppercase;
 }
 
-.shelf-stats-platforms {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr);
-  grid-column: 1 / -1;
-  gap: 9px;
-  padding: 40px 14px 14px;
+.shelf-stats-controls .finished-stats-year-picker select {
+  min-width: 112px;
+  height: 34px;
+  min-height: 34px;
 }
 
-.shelf-stats-platform-list {
-  display: grid;
-  gap: 8px;
-  max-height: 260px;
-  overflow-y: auto;
+.shelf-stats-radial-chart {
+  min-height: 220px;
 }
 
-.shelf-stats-platform-row {
-  display: grid;
-  grid-template-columns: minmax(90px, 0.8fr) minmax(90px, 2fr) 36px;
-  align-items: center;
-  gap: 10px;
-  color: var(--muted);
-  font-size: 12px;
+.shelf-stats-radial-chart .finished-stats-chart-list .finished-stats-breakdown {
+  width: min(340px, calc(100vw - 72px));
+  max-width: calc(100vw - 72px);
+  max-height: min(250px, calc(100vh - 170px));
 }
 
-.shelf-stats-platform-row > span:first-child {
-  overflow: hidden;
-  color: var(--text);
-  text-overflow: ellipsis;
-  white-space: nowrap;
+.shelf-stats-radial-chart:hover .finished-stats-breakdown,
+.shelf-stats-radial-chart:focus-within .finished-stats-breakdown {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
 }
 
-.shelf-stats-platform-row i {
-  height: 8px;
-  overflow: hidden;
-  background: rgba(255, 255, 255, 0.08);
-  border-radius: 99px;
+.shelf-stats-radial-chart .finished-stats-donut {
+  width: 150px;
 }
 
-.shelf-stats-platform-row i::after {
-  display: block;
-  width: var(--platform-share);
-  height: 100%;
-  content: "";
-  background: linear-gradient(90deg, var(--accent), var(--accent-1));
-  border-radius: inherit;
+.shelf-stats-radial-chart .finished-stats-donut svg {
+  border-radius: 50%;
 }
 
-.shelf-stats-platform-row strong {
-  color: var(--text);
-  text-align: right;
+.shelf-stats-radial-chart.is-static .finished-stats-chart-list > span {
+  min-height: 30px;
+}
+
+.shelf-stats-years-grid {
+  grid-template-columns: repeat(auto-fit, minmax(54px, 1fr)) !important;
+  grid-auto-rows: minmax(92px, auto);
+}
+
+.shelf-stats-launch-row {
+  justify-content: flex-end;
+}
+
+.shelf-stats-launch-row .completed-stats-button {
+  margin-left: auto;
 }
 
 @media (max-width: 760px) {
@@ -267,6 +250,14 @@ body.mobile-app-mode.shelf-page .backdrop {
     padding: 14px;
     overflow-x: hidden !important;
     overflow-y: auto !important;
+  }
+
+  .shelf-stats-controls {
+    margin-top: -4px;
+  }
+
+  .shelf-stats-radial-chart .finished-stats-donut {
+    width: 92px;
   }
 }
 

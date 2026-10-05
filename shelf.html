@@ -213,7 +213,7 @@
           <div class="release-calendar" id="shelfReleaseCalendar" aria-label="Upcoming release calendar"></div>
         </section>
         <section class="highlights-section" data-module="kpis">
-          <div class="column-head"><div><h2>Collection</h2></div><button class="icon-button completed-stats-button" id="shelfStatsButton" type="button" title="Shelf statistics" aria-label="Shelf statistics"><svg class="graph-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 19h16"></path><path d="M7 16V9"></path><path d="M12 16V5"></path><path d="M17 16v-4"></path></svg></button></div>
+          <div class="column-head shelf-stats-launch-row"><button class="icon-button completed-stats-button" id="shelfStatsButton" type="button" title="Shelf statistics" aria-label="Shelf statistics"><svg class="graph-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 19h16"></path><path d="M7 16V9"></path><path d="M12 16V5"></path><path d="M17 16v-4"></path></svg></button></div>
           <div class="stats" id="shelfStats" aria-live="polite"></div>
         </section>
 
@@ -483,13 +483,13 @@
             <p class="eyebrow" id="shelfStatsBrow">YEARLY STATISTICS</p>
             <h2 id="shelfStatsTitle">Shelf statistics</h2>
           </div>
-          <div class="finished-stats-head-actions">
-            <label class="finished-stats-year-picker">
-              <span class="sr-only">Statistics year</span>
-              <select id="shelfStatsYearSelect" aria-label="Statistics year"></select>
-            </label>
-            <button class="icon-button" id="shelfStatsCloseButton" type="button" title="Close" aria-label="Close">×</button>
-          </div>
+          <button class="icon-button" id="shelfStatsCloseButton" type="button" title="Close" aria-label="Close">×</button>
+        </div>
+        <div class="shelf-stats-controls">
+          <label class="finished-stats-year-picker">
+            <span>Year</span>
+            <select id="shelfStatsYearSelect" aria-label="Statistics year"></select>
+          </label>
         </div>
         <div class="finished-stats-body shelf-stats-body" id="shelfStatsBody"></div>
       </article>
