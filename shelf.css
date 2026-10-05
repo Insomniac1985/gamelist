@@ -315,6 +315,14 @@ body.theme-kash
   text-align: center;
 }
 
+@media (min-width: 761px) {
+  .shelf-stats-body .finished-stats-kpis.is-shelf-one > .finished-stats-kpi,
+  .shelf-stats-body .finished-stats-kpis.is-shelf-two > .finished-stats-kpi {
+    justify-items: start;
+    text-align: left;
+  }
+}
+
 .shelf-stats-hover-float {
   z-index: 180;
   right: auto;
