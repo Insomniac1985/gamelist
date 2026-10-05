@@ -636,7 +636,7 @@ function shelfStatsMediaPill(game) {
   const label = isDigitalShelfGame(game) ? "Digital" : "Physical";
   const cls = platformClass(game.platform || "");
   const icon = isDigitalShelfGame(game) ? downloadBadgeIcon() : physicalDiskIcon(cls);
-  return `<span class="shelf-stats-media-pill ${escapeHtml(cls)}" title="${escapeHtml(tt(label))}"><span class="finished-stats-media-icon" aria-hidden="true">${icon}</span><span>${escapeHtml(tt(label))}</span></span>`;
+  return `<span class="shelf-stats-media-pill media-format-pill is-icon-only ${escapeHtml(cls)}" title="${escapeHtml(tt(label))}" aria-label="${escapeHtml(tt(label))}"><span class="finished-stats-media-icon" aria-hidden="true">${icon}</span></span>`;
 }
 
 function bindShelfStatsHoverDetails() {
