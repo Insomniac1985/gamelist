@@ -2644,6 +2644,10 @@ html.stats-embed #finishedStatsDialog::backdrop {
   grid-template-columns: repeat(3, minmax(0, 1fr));
 }
 
+.achievement-summary-two-card {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
 .achievement-kpi,
 .rarity-graph {
   position: relative;
