@@ -117,8 +117,10 @@ async function fetchApiProduct(token, { id, upc, query }) {
 
 async function fetchPublicCandidates(searchUrl) {
   const response = await fetch(searchUrl, { headers: browserHeaders(), cf: { cacheTtl: 3600, cacheEverything: true } });
+  const html = await response.text();
+  if (isCloudflareChallenge(html)) throw priceChartingChallengeError();
   if (!response.ok) return [];
-  return parseSearchCandidates(await response.text());
+  return parseSearchCandidates(html);
 }
 
 async function fetchPublicProduct({ query, searchUrl, idSearchUrl = "", broadSearchUrls = [], requestedId, requestedUrl, fallbackUrls = [] }) {
@@ -134,8 +136,9 @@ async function fetchPublicProduct({ query, searchUrl, idSearchUrl = "", broadSea
   if (!candidate?.url) return candidate || null;
   if (!isVideoGameConsole(consoleNameFromProductUrl(candidate.url))) return null;
   const productResponse = await fetch(candidate.url, { headers: browserHeaders(), cf: { cacheTtl: 3600, cacheEverything: true } });
-  if (!productResponse.ok) return candidate;
   const html = await productResponse.text();
+  if (isCloudflareChallenge(html)) throw priceChartingChallengeError();
+  if (!productResponse.ok) return candidate;
   const chart = parseChart(html);
   const product = {
     ...candidate,
@@ -345,4 +348,6 @@ function cleanIdentifier(value) { return String(value || "").replace(/[^a-zA-Z0-
 function cleanPriceChartingUrl(value) { try { const url = new URL(String(value || "")); return url.hostname === "www.pricecharting.com" && /^\/(?:[a-z]{2}\/)?game\//i.test(url.pathname) ? `${url.origin}${url.pathname}` : ""; } catch { return ""; } }
 function consoleNameFromProductUrl(value) { try { const parts = new URL(value).pathname.split("/").filter(Boolean); const gameIndex = parts.indexOf("game"); const slug = parts[gameIndex + 1] || ""; return slug.split("-").map((part, index) => index === 0 && ["pal", "jp"].includes(part) ? part.toUpperCase() : part.charAt(0).toUpperCase() + part.slice(1)).join(" "); } catch { return ""; } }
 function browserHeaders() { return { "Accept": "text/html,application/xhtml+xml", "Accept-Language": "en-US,en;q=0.9", "User-Agent": "Mozilla/5.0 (compatible; GamelistShelf/1.0)" }; }
-function json(data, status = 200) { return new Response(JSON.stringify(data), { status, headers: { "Content-Type": "application/json", "Cache-Control": "public, max-age=900" } }); }
+function isCloudflareChallenge(html) { return /(?:id=["']challenge-error-text["']|\/cdn-cgi\/challenge-platform\/|cf-chl-|Enable JavaScript and cookies to continue)/i.test(String(html || "")); }
+function priceChartingChallengeError() { return new Error("PriceCharting is blocking Gamelist's request with a browser verification challenge. Try again later or configure a PriceCharting API token."); }
+function json(data, status = 200) { return new Response(JSON.stringify(data), { status, headers: { "Content-Type": "application/json", "Cache-Control": status >= 400 ? "no-store" : "public, max-age=900" } }); }

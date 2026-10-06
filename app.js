@@ -638,7 +638,7 @@ function logStatusLines(status, theme = "shabii", editorStatus = "NOT LOGGED IN"
     ["EDITOR", String(editorStatus || "not logged in").toLowerCase()],
     ["GOTY", gotyAvailabilityStatus()],
     ["IGDB API", igdbApiStatus(status.working?.IGDB)],
-    ["PRICECHARTING API", apiStatus(status.working?.PRICECHARTING)],
+    ["PRICECHARTING API", status.working?.PRICECHARTING_BLOCKED ? "blocked by PriceCharting" : apiStatus(status.working?.PRICECHARTING)],
     ["PSN API", accountApiStatus(status.working?.PSN, state.settings.psnUser, status.PSN_NPSSO)],
     ["OPENXBL API", accountApiStatus(status.working?.XBOX, state.settings.microsoftUser, status.OPENXBL_API_KEY)],
     ["STEAM API", accountApiStatus(status.working?.STEAM, state.settings.steamUser, status.STEAM_API_KEY)],
