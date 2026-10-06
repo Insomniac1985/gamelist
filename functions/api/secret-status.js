@@ -50,9 +50,11 @@ async function integrationHealth(env, request) {
   ]);
   const ok = (index) => checks[index].status === "fulfilled" ? checks[index].value : false;
   const update = checks[5].status === "fulfilled" ? checks[5].value : { ok: false, repoUrl: "" };
+  const priceCharting = ok(1);
   const value = {
     IGDB: ok(0),
-    PRICECHARTING: ok(1),
+    PRICECHARTING: priceCharting.ok,
+    PRICECHARTING_BLOCKED: priceCharting.blocked,
     PSN: ok(2),
     XBOX: ok(3),
     STEAM: ok(4),
@@ -75,7 +77,10 @@ async function checkPriceCharting() {
   const response = await safeFetch("https://www.pricecharting.com/search-products?type=prices&q=super%20mario", {
     headers: { "User-Agent": "Mozilla/5.0 (compatible; Gamelist/1.0)" },
   });
-  return Boolean(response?.ok);
+  if (!response) return { ok: false, blocked: false };
+  const body = await response.text().catch(() => "");
+  const blocked = /(?:id=["']challenge-error-text["']|\/cdn-cgi\/challenge-platform\/|cf-chl-|Enable JavaScript and cookies to continue)/i.test(body);
+  return { ok: Boolean(response.ok && !blocked), blocked };
 }
 
 async function checkPsn(env) {
