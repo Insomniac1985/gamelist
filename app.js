@@ -915,6 +915,7 @@ async function clearSiteCachesAndReload() {
 }
 
 function bindEvents() {
+  syncStyledSelect(el.detailTrophySort);
   el.brandLink.addEventListener("click", (event) => {
     event.preventDefault();
     const twitchUrl = twitchChannelUrl(normalizeSettings(state.settings).twitchUser);
