@@ -4412,6 +4412,7 @@ body.dialog-open .floating-edit-actions {
   min-width: 0;
   font-size: 14px;
   line-height: 1;
+  top: 2px;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
