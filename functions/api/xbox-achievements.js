@@ -1,7 +1,7 @@
 import { getXboxApiKey } from "./xbox-account.js";
 
 const OPENXBL_BASE = "https://api.xbl.io";
-const XBOX_CACHE_SECONDS = 12 * 60 * 60;
+const XBOX_CACHE_SECONDS = 60 * 60;
 const OPENXBL_TIMEOUT_MS = 6000;
 
 export async function onRequestGet({ request, env = {} }) {

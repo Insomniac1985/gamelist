@@ -300,6 +300,7 @@ function applyShelfSearchFromUrl() {
 function loadSharedSettings() { try { return JSON.parse(localStorage.getItem("gamelist:settings:v1") || "{}"); } catch { return {}; } }
 
 function bindEvents() {
+  syncStyledSelect(el.detailTrophySort);
   el.brandLink?.addEventListener("click", (event) => {
     event.preventDefault();
     const twitchUrl = twitchChannelUrl(state.gamelistSettings.twitchUser);
@@ -1090,6 +1091,7 @@ function tt(key, values) {
 
 function applyLanguage() {
   applyDocumentTranslations(currentLanguage());
+  syncStyledSelect(el.detailTrophySort);
   if (el.playingTitle) el.playingTitle.textContent = tt("Currently playing");
   const latestFinishedTitle = el.playingFinished?.querySelector(".achievement-subtitle");
   if (latestFinishedTitle) latestFinishedTitle.textContent = tt("Last finished games");
@@ -3881,6 +3883,11 @@ function onlineGlobeIcon() {
 function activityGameFor(game) {
   if (!shelfAllowsTrophyActivity(game.platform)) return null;
   if (!/(^|\s)ps[1-5](\s|$)|playstation/i.test(shortPlatform(game.platform || ""))) return null;
+  const normalizedTitle = normalize(game.trophyName || game.title || "");
+  if (/(^|\b)baldur/.test(normalizedTitle) && /\bgate\b/.test(normalizedTitle) && /(^|\s)ps5(\s|$)/i.test(shortPlatform(game.platform || ""))) {
+    const knownMatch = (state.trophyActivity?.games || []).find((item) => item.npCommunicationId === "NPWR36088_00");
+    return knownMatch || { title: "Baldur's Gate 3", npCommunicationId: "NPWR36088_00", npServiceName: "trophy2", rarity: "PS5" };
+  }
   return (state.trophyActivity?.games || []).map((item) => ({ item, score: activityTitleMatchScore(game.trophyName || game.title, item.title || item.game || "") })).filter(({ score }) => score >= 75).sort((a, b) => b.score - a.score)[0]?.item || null;
 }
 function activityProgressFor(game) {

@@ -16,7 +16,7 @@ const PLATINUM_META_CACHE_KEY = "gamelist:platinum-meta:v1";
 const PLATINUM_COVER_CACHE_KEY = "gamelist:platinum-covers:v1";
 const SETTINGS_KEY = "gamelist:settings:v1";
 const ACHIEVEMENT_CACHE_KEY = "gamelist:achievement-cache:v2";
-const ACHIEVEMENT_CACHE_TTL_MS = 12 * 60 * 60 * 1000;
+const ACHIEVEMENT_CACHE_REFRESH_MS = 60 * 60 * 1000;
 const DEFAULT_PAGE_ORDER = ["trophies", "calendar", "highlights", "search", "gamelist", "finished"];
 const LAYOUT_SECTION_KEYS = ["playing", ...DEFAULT_PAGE_ORDER, "latestFinished"];
 const VERSION_STORAGE_KEY = "gamelist:site-version";
@@ -171,6 +171,7 @@ const MANUAL_PLATINUM_META_OVERRIDES = [
   { match: ["spider", "man"], ids: ["8143"], exclude: ["2", "23918", "miles"], trophyName: "Be Greater", icon: "https://img.psnprofiles.com/trophy/m/8143/ccb3b536-eaae-4c03-beb5-4d9b3f8cb72c.png" },
 ];
 const MANUAL_PSN_TITLE_OVERRIDES = [
+  { match: ["baldur", "gate"], platforms: ["PS5"], ids: ["NPWR36088_00"], fallback: { title: "Baldur's Gate 3", npServiceName: "trophy2", rarity: "PS5" } },
   { match: ["mortal", "kombat", "1"], exclude: ["11"], platforms: ["PS5"], ids: ["NPWR29323_00"] },
   { match: ["mortal", "kombat", "11"], platforms: ["PS5"], ids: ["NPWR21249_00"] },
   { match: ["mortal", "kombat", "11"], platforms: ["PS4"], ids: ["NPWR15142_00"] },
@@ -200,6 +201,7 @@ let platformLogoOverlay = null;
 let playingTrailerFrame = 0;
 const searchCache = new Map();
 const searchInflight = new Map();
+let achievementRefreshPromise = null;
 const platinumMetaCache = loadPlatinumMetaCache();
 const initialSettings = loadLocalSettings();
 
@@ -913,6 +915,7 @@ async function clearSiteCachesAndReload() {
 }
 
 function bindEvents() {
+  syncStyledSelect(el.detailTrophySort);
   el.brandLink.addEventListener("click", (event) => {
     event.preventDefault();
     const twitchUrl = twitchChannelUrl(normalizeSettings(state.settings).twitchUser);
@@ -1800,6 +1803,7 @@ function tt(key, values) {
 
 function applyLanguage() {
   applyDocumentTranslations(currentLanguage());
+  syncStyledSelect(el.detailTrophySort);
   if (el.playingTitle) el.playingTitle.textContent = tt("Currently playing");
   const latestFinishedTitle = el.playingFinished?.querySelector(".achievement-subtitle");
   if (latestFinishedTitle) latestFinishedTitle.textContent = tt("Last finished games");
@@ -5647,6 +5651,16 @@ function equalizeMobilePlayingCards() {
 }
 
 async function refreshAchievements() {
+  if (achievementRefreshPromise) return achievementRefreshPromise;
+  achievementRefreshPromise = refreshAchievementsFromProviders();
+  try {
+    await achievementRefreshPromise;
+  } finally {
+    achievementRefreshPromise = null;
+  }
+}
+
+async function refreshAchievementsFromProviders() {
   const psnUser = state.settings.psnUser || "";
   const cacheKey = achievementSettingsKey(state.settings);
   const forceRefresh = state.settings.forceCacheOnLoad === true;
@@ -5654,7 +5668,7 @@ async function refreshAchievements() {
   if (cached) {
     renderAchievements(cached.psn || {}, cached.steam || emptySteamActivity(), cached.xbox || emptyXboxActivity());
     render();
-    return;
+    if (!achievementCacheNeedsRefresh(cacheKey)) return;
   }
   const psnRequest = psnUser
     ? (async () => {
@@ -5669,14 +5683,50 @@ async function refreshAchievements() {
     : { user: psnUser, achievements: [], sourceUrl: "https://www.playstation.com/", source: "psn", authError: true };
   const steamData = steamResult.status === "fulfilled" ? steamResult.value : emptySteamActivity();
   const xboxData = xboxResult.status === "fulfilled" ? xboxResult.value : emptyXboxActivity();
-  notifyAchievementProviderIssues(psnData, steamData, xboxData);
-  writeAchievementCache(cacheKey, { psn: psnData, steam: steamData, xbox: xboxData });
+  const nextData = {
+    psn: keepLastGoodAchievementProvider(cached?.psn, psnData),
+    steam: keepLastGoodAchievementProvider(cached?.steam, steamData),
+    xbox: keepLastGoodAchievementProvider(cached?.xbox, xboxData),
+  };
+  notifyAchievementProviderIssues(nextData.psn, nextData.steam, nextData.xbox);
+  writeAchievementCache(cacheKey, nextData);
   renderAchievements(
-    psnData,
-    steamData,
-    xboxData
+    nextData.psn,
+    nextData.steam,
+    nextData.xbox
   );
   render();
+}
+
+function achievementCacheNeedsRefresh(key) {
+  try {
+    const cached = JSON.parse(localStorage.getItem(ACHIEVEMENT_CACHE_KEY) || "{}");
+    const updatedAt = Number(cached?.updatedAt || 0);
+    return cached?.key === key && updatedAt > 0 && Date.now() - updatedAt >= ACHIEVEMENT_CACHE_REFRESH_MS;
+  } catch {
+    return false;
+  }
+}
+
+function keepLastGoodAchievementProvider(previous = {}, next = {}) {
+  if (!previous || !achievementProviderHasData(previous)) return next;
+  if (next.authError || next.needsSetup || next.error || !achievementProviderHasData(next)) return previous;
+  const previousHasLists = Boolean(previous.achievements?.length || previous.games?.length || previous.platinums?.length || previous.completed?.length || previous.cardGames?.length);
+  const nextHasLists = Boolean(next.achievements?.length || next.games?.length || next.platinums?.length || next.completed?.length || next.cardGames?.length);
+  if (previousHasLists && !nextHasLists) return previous;
+  return next;
+}
+
+function achievementProviderHasData(data = {}) {
+  return Boolean(
+    data.summary
+    || data.totalEarned
+    || data.achievements?.length
+    || data.games?.length
+    || data.platinums?.length
+    || data.completed?.length
+    || data.cardGames?.length
+  );
 }
 
 function notifyAchievementProviderIssues(psnData = {}, steamData = {}, xboxData = {}) {
@@ -5861,7 +5911,7 @@ function achievementSettingsKey(settings = state.settings) {
 function readAchievementCache(key) {
   try {
     const cached = JSON.parse(localStorage.getItem(ACHIEVEMENT_CACHE_KEY) || "{}");
-    if (!cached?.updatedAt || (Date.now() - Number(cached.updatedAt)) > ACHIEVEMENT_CACHE_TTL_MS) return null;
+    if (!cached?.updatedAt) return null;
     if (cached?.key === key && hasAchievementProviderIssue(cached.data)) {
       localStorage.removeItem(ACHIEVEMENT_CACHE_KEY);
       return null;
@@ -5874,11 +5924,7 @@ function readAchievementCache(key) {
 
 function writeAchievementCache(key, data) {
   try {
-    if (hasAchievementProviderIssue(data)) {
-      const cached = JSON.parse(localStorage.getItem(ACHIEVEMENT_CACHE_KEY) || "{}");
-      if (cached?.key === key) localStorage.removeItem(ACHIEVEMENT_CACHE_KEY);
-      return;
-    }
+    if (hasAchievementProviderIssue(data)) return;
     localStorage.setItem(ACHIEVEMENT_CACHE_KEY, JSON.stringify({ key, data, updatedAt: Date.now() }));
   } catch {
     // Achievement cache is only a load-time shortcut.
@@ -9325,7 +9371,11 @@ function manualPsnTitleForGame(game) {
     return hasMatch && !hasExcluded;
   });
   if (!override) return null;
-  return (state.psnActivity.games || []).find((psnGame) => (override.ids || []).includes(psnGame.npCommunicationId)) || null;
+  const found = (state.psnActivity.games || []).find((psnGame) => (override.ids || []).includes(psnGame.npCommunicationId));
+  if (found) return found;
+  return override.fallback && override.ids?.length
+    ? { ...override.fallback, npCommunicationId: override.ids[0] }
+    : null;
 }
 
 function manualTitleTermMatches(values, haystack, term) {
@@ -9577,16 +9627,16 @@ function normalizeTitlePhrase(value) {
   return String(value || "")
     .toLowerCase()
     .replace(/\btrophies\b/g, " ")
+    .replace(/\bXII\b/gi, "12")
+    .replace(/\bXI\b/gi, "11")
+    .replace(/\bIX\b/gi, "9")
     .replace(/\bVIII\b/gi, "8")
     .replace(/\bVII\b/gi, "7")
     .replace(/\bVI\b/gi, "6")
-    .replace(/\bXII\b/gi, "12")
-    .replace(/\bXI\b/gi, "11")
-    .replace(/\bX\b/gi, "10")
     .replace(/\bIV\b/gi, "4")
-    .replace(/\bIX\b/gi, "9")
     .replace(/\bIII\b/gi, "3")
     .replace(/\bII\b/gi, "2")
+    .replace(/\bX\b/gi, "10")
     .replace(/[^a-z0-9]+/g, " ")
     .trim()
     .replace(/\s+/g, " ");

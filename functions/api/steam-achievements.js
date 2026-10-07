@@ -1,7 +1,7 @@
 import { getSteamApiKey } from "./steam-account.js";
 
 const STEAM_API_BASE = "https://api.steampowered.com";
-const STEAM_CACHE_SECONDS = 12 * 60 * 60;
+const STEAM_CACHE_SECONDS = 60 * 60;
 
 export async function onRequestGet({ request, env = {} }) {
   const url = new URL(request.url);

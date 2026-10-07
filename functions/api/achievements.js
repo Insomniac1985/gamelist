@@ -3,7 +3,7 @@ import { getPsnAccessToken, getPsnNpsso } from "./psn-auth.js";
 
 const PSNP_BASE = "https://psnprofiles.com";
 const PSN_TROPHY_BASE = "https://m.np.playstation.com/api/trophy";
-const PSN_CACHE_SECONDS = 12 * 60 * 60;
+const PSN_CACHE_SECONDS = 60 * 60;
 const PSN_SEARCH_BASE = "https://m.np.playstation.com/api/search";
 const PSN_LEGACY_USER_BASE = "https://us-prof.np.community.playstation.net/userProfile/v1/users";
 const MANUAL_PLATINUM_OVERRIDES = [

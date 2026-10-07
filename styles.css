@@ -1051,7 +1051,7 @@ html.theme-gradient .goty-section .column-head h2 .trophy-icon {
   height: auto;
   line-height: 1;
   margin: 0;
-  transform: translateY(2px);
+  transform: none;
 }
 
 .goty-save-button,
@@ -4263,7 +4263,7 @@ body.dialog-open .floating-edit-actions {
   align-items: center;
   height: 32px;
   min-height: 32px;
-  padding: 2px 6px 0 8px;
+  padding: 0 6px 0 8px;
   background: transparent;
   border: 1px solid transparent;
   border-radius: 4px;
@@ -4352,11 +4352,11 @@ body.dialog-open .floating-edit-actions {
   height: 100%;
   min-height: 100%;
   justify-content: flex-start;
-  transform: translateY(2px);
+  transform: none;
 }
 
 .platform-logo-choice span {
-  margin-bottom: -2px;
+  margin-bottom: 0;
   color: inherit;
   font-size: inherit;
   font-weight: inherit;
@@ -4411,7 +4411,8 @@ body.dialog-open .floating-edit-actions {
   flex: 1 1 auto;
   min-width: 0;
   font-size: 14px;
-  line-height: 1.2;
+  line-height: 1;
+  top: 2px;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -4419,7 +4420,7 @@ body.dialog-open .floating-edit-actions {
 
 .platform-logo-button .platform-logo-choice-label {
   font-size: 14px;
-  line-height: 1.2;
+  line-height: 1;
 }
 
 .platform-logo-button .platform-logo-choice-label,
@@ -7952,7 +7953,7 @@ body:not(.can-edit) .game-card:focus-within .edit-action {
   height: auto;
   line-height: 1;
   margin: 0;
-  transform: translateY(2px);
+  transform: none;
 }
 
 .completed-head-actions #completedCount {
