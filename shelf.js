@@ -300,6 +300,7 @@ function applyShelfSearchFromUrl() {
 function loadSharedSettings() { try { return JSON.parse(localStorage.getItem("gamelist:settings:v1") || "{}"); } catch { return {}; } }
 
 function bindEvents() {
+  syncStyledSelect(el.detailTrophySort);
   el.brandLink?.addEventListener("click", (event) => {
     event.preventDefault();
     const twitchUrl = twitchChannelUrl(state.gamelistSettings.twitchUser);
@@ -1090,6 +1091,7 @@ function tt(key, values) {
 
 function applyLanguage() {
   applyDocumentTranslations(currentLanguage());
+  syncStyledSelect(el.detailTrophySort);
   if (el.playingTitle) el.playingTitle.textContent = tt("Currently playing");
   const latestFinishedTitle = el.playingFinished?.querySelector(".achievement-subtitle");
   if (latestFinishedTitle) latestFinishedTitle.textContent = tt("Last finished games");

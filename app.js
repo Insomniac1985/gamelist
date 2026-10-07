@@ -1803,6 +1803,7 @@ function tt(key, values) {
 
 function applyLanguage() {
   applyDocumentTranslations(currentLanguage());
+  syncStyledSelect(el.detailTrophySort);
   if (el.playingTitle) el.playingTitle.textContent = tt("Currently playing");
   const latestFinishedTitle = el.playingFinished?.querySelector(".achievement-subtitle");
   if (latestFinishedTitle) latestFinishedTitle.textContent = tt("Last finished games");
