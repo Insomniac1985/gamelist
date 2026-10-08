@@ -8487,7 +8487,7 @@ function approximatePlaytimeHours(value) {
 function finishHoursText(game) {
   const hours = finishHoursValue(game?.finishHours);
   if (!hours) return "";
-  return `${hours} ${hours === 1 ? "hr" : "hrs"}`;
+  return `${hours} ${hours === 1 ? "HR" : "HRS"}`;
 }
 
 function nextReplayCountForTitle(title, currentId = "") {
