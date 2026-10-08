@@ -7087,55 +7087,59 @@ body.theme-kash .game-card.stream-card.completed-trophy-card {
   z-index: 2;
   width: 78px;
   flex: 0 0 78px;
-  background:
-    linear-gradient(
-      125deg,
-      color-mix(in srgb, var(--time-color) 25%, rgba(255, 255, 255, 0.08)),
-      color-mix(in srgb, var(--time-estimate-color, var(--time-color)) 25%, rgba(255, 255, 255, 0.08))
-    ),
-    rgba(255, 255, 255, 0.055);
   transition: width 240ms ease, flex-basis 240ms ease, box-shadow 240ms ease;
 }
 
-.playtime-date-pill.live-playtime-pill strong,
-.game-card.playing-card .playtime-date-pill.live-playtime-pill::after {
-  color: transparent;
-  background: linear-gradient(100deg, var(--time-color), var(--time-estimate-color, var(--time-color)));
-  background-clip: text;
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-}
-
-.playtime-date-pill.live-playtime-pill::after {
-  content: attr(data-comparison);
+.playtime-date-pill.live-playtime-pill .live-playtime-expanded {
   position: absolute;
   left: 15px;
-  top: 50%;
-  color: var(--time-color);
+  bottom: 3px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
   font-size: 11px;
   font-weight: 850;
   letter-spacing: 0.025em;
   white-space: nowrap;
   opacity: 0;
-  transform: translate(5px, -50%);
+  transform: translateX(5px);
   transition: opacity 180ms ease, transform 240ms ease;
+  pointer-events: none;
+}
+
+.live-playtime-current {
+  color: var(--time-color);
+}
+
+.live-playtime-estimate {
+  color: var(--time-estimate-color, var(--time-color));
 }
 
 .game-card.playing-card:is(:hover, :focus) .playtime-date-pill.live-playtime-pill {
   width: var(--live-playtime-hover-width, 170px);
   flex-basis: var(--live-playtime-hover-width, 170px);
+  border-color: transparent;
+  background-color: rgba(255, 255, 255, 0.055);
+  background-image:
+    linear-gradient(
+      125deg,
+      color-mix(in srgb, var(--time-color) 8%, transparent),
+      color-mix(in srgb, var(--time-estimate-color, var(--time-color)) 8%, transparent)
+    ),
+    linear-gradient(125deg, var(--time-color), var(--time-estimate-color, var(--time-color)));
+  background-origin: padding-box, border-box;
+  background-clip: padding-box, border-box;
   box-shadow: 0 0 22px color-mix(in srgb, var(--time-glow) 85%, transparent);
 }
 
-.game-card.playing-card:is(:hover, :focus) .playtime-date-pill.live-playtime-pill small,
 .game-card.playing-card:is(:hover, :focus) .playtime-date-pill.live-playtime-pill strong {
   opacity: 0;
   transition: opacity 120ms ease;
 }
 
-.game-card.playing-card:is(:hover, :focus) .playtime-date-pill.live-playtime-pill::after {
+.game-card.playing-card:is(:hover, :focus) .playtime-date-pill.live-playtime-pill .live-playtime-expanded {
   opacity: 1;
-  transform: translate(0, -50%);
+  transform: translateX(0);
 }
 
 @keyframes live-playtime-bar-up {
@@ -7156,7 +7160,7 @@ body.theme-kash .game-card.stream-card.completed-trophy-card {
     transition: none;
   }
 
-  .playtime-date-pill.live-playtime-pill::after {
+  .playtime-date-pill.live-playtime-pill .live-playtime-expanded {
     transition: none;
   }
 }

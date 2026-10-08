@@ -3797,6 +3797,8 @@ async function refreshShelfPlayingCardPlaytime() {
         pill = dates.querySelector(".live-playtime-pill");
       }
       pill.style.cssText = `${shelfLivePlaytimePillStyle(game, value)};--live-playtime-hover-width:${shelfLivePlaytimeHoverWidth(label)}px`;
+      pill.querySelector("strong").textContent = `${value} ${value === 1 ? "HR" : "HRS"}`;
+      pill.querySelector(".live-playtime-expanded").innerHTML = shelfLivePlaytimeExpandedMarkup(game, value);
       pill.dataset.comparison = label;
       pill.title = label;
       pill.setAttribute("aria-label", label);
@@ -3861,7 +3863,15 @@ async function linkedShelfPlaytimeHours(game) {
 
 function shelfLivePlaytimePill(game, hours) {
   const label = shelfLivePlaytimeComparison(game, hours);
-  return `<span class="history-pill history-date-pill playtime-date-pill live-playtime-pill" style="${shelfLivePlaytimePillStyle(game, hours)};--live-playtime-hover-width:${shelfLivePlaytimeHoverWidth(label)}px" data-comparison="${escapeHtml(label)}" title="${escapeHtml(label)}" aria-label="${escapeHtml(label)}"><small>${escapeHtml(tt("Play Time"))}</small><strong>${hours} ${hours === 1 ? "HR" : "HRS"}</strong></span>`;
+  return `<span class="history-pill history-date-pill playtime-date-pill live-playtime-pill" style="${shelfLivePlaytimePillStyle(game, hours)};--live-playtime-hover-width:${shelfLivePlaytimeHoverWidth(label)}px" data-comparison="${escapeHtml(label)}" title="${escapeHtml(label)}" aria-label="${escapeHtml(label)}"><small>${escapeHtml(tt("Play Time"))}</small><strong>${hours} ${hours === 1 ? "HR" : "HRS"}</strong><span class="live-playtime-expanded">${shelfLivePlaytimeExpandedMarkup(game, hours)}</span></span>`;
+}
+
+function shelfLivePlaytimeExpandedMarkup(game, hours) {
+  const current = `${hours} ${hours === 1 ? "HR" : "HRS"}`;
+  const estimate = Math.ceil(Number(game?.lengthHours));
+  return estimate > 0
+    ? `<span class="live-playtime-current">${current}</span><span class="live-playtime-estimate">OF ${estimate} HRS</span>`
+    : `<span class="live-playtime-current">${current} PLAYED</span>`;
 }
 
 function shelfLivePlaytimePillStyle(game, hours) {
@@ -3877,7 +3887,7 @@ function shelfLivePlaytimeComparison(game, hours) {
 }
 
 function shelfLivePlaytimeHoverWidth(label) {
-  return Math.min(280, Math.max(138, Math.ceil(String(label).length * 7 + 28)));
+  return Math.min(280, Math.max(138, Math.ceil(String(label).length * 7 + 14)));
 }
 
 function shelfTimePillStyle(hours) {
