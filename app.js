@@ -10040,8 +10040,9 @@ function livePlaytimeExpandedMarkup(game, hours) {
 function livePlaytimePillStyle(game, hours) {
   const estimate = Number(game?.lengthHours);
   const estimateHours = Number.isFinite(estimate) && estimate > 0 ? estimate : hours;
+  const actualHue = Math.round(132 - (132 * Math.max(0, Math.min(1, (Number(hours) - 7) / 53))));
   const estimateHue = Math.round(132 - (132 * Math.max(0, Math.min(1, (estimateHours - 7) / 53))));
-  return `${timePillStyle(hours)};--time-estimate-color:hsl(${estimateHue}, 88%, 56%)`;
+  return `${timePillStyle(hours)};--time-color-solid:hsl(${actualHue}, 88%, 56%);--time-light-solid:hsl(${Math.min(140, actualHue + 10)}, 94%, 72%);--time-dark-solid:hsl(${Math.max(0, actualHue - 8)}, 82%, 39%);--time-estimate-color:hsl(${estimateHue}, 88%, 56%);--time-estimate-color-solid:hsl(${estimateHue}, 88%, 56%)`;
 }
 
 function livePlaytimeComparison(game, hours) {
