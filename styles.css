@@ -10579,6 +10579,10 @@ dialog {
   width: min(420px, calc(100vw - 24px));
 }
 
+dialog[open] {
+  overscroll-behavior: contain;
+}
+
 dialog::backdrop {
   touch-action: none;
   background: rgba(0, 0, 0, 0.62);
