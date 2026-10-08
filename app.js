@@ -7051,6 +7051,7 @@ function rowFor(game, section, options = {}) {
   const owners = ownerTags(game);
   const showRowPrices = !["backlog", "new"].includes(section) && priceProvidersForGame(game).length;
   row.className = "game-row";
+  row.classList.toggle("finished-game-row", Boolean(game.completedAt));
   row.classList.toggle("new-addition-row", section === "new");
   row.dataset.id = game.id;
   row.dataset.owner = statuses.join(" ");
@@ -8487,7 +8488,7 @@ function approximatePlaytimeHours(value) {
 function finishHoursText(game) {
   const hours = finishHoursValue(game?.finishHours);
   if (!hours) return "";
-  return `${hours} ${hours === 1 ? "HR" : "HRS"}`;
+  return `${hours} ${hours === 1 ? "hr" : "hrs"}`;
 }
 
 function nextReplayCountForTitle(title, currentId = "") {

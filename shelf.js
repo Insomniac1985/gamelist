@@ -3090,7 +3090,7 @@ function finishHoursValue(value) {
 function finishHoursText(game) {
   const hours = finishHoursValue(game?.finishHours);
   if (!hours) return "";
-  return `${hours} ${hours === 1 ? "HR" : "HRS"}`;
+  return `${hours} ${hours === 1 ? "hr" : "hrs"}`;
 }
 
 function finishedProjectionDateText(game) {
