@@ -7085,8 +7085,8 @@ body.theme-kash .game-card.stream-card.completed-trophy-card {
 }
 
 .playtime-date-pill.live-playtime-pill {
-  --live-time-fill-current: color-mix(in srgb, var(--time-color-solid, var(--time-color)) 8%, transparent);
-  --live-time-fill-estimate: color-mix(in srgb, var(--time-estimate-color-solid, var(--time-estimate-color, var(--time-color))) 8%, transparent);
+  --live-time-fill-current: color-mix(in srgb, var(--time-color-solid, var(--time-color)) 12%, rgba(255, 255, 255, 0.08));
+  --live-time-fill-estimate: color-mix(in srgb, var(--time-estimate-color-solid, var(--time-estimate-color, var(--time-color))) 12%, rgba(255, 255, 255, 0.08));
   --live-time-glow-current: color-mix(in srgb, var(--time-color-solid, var(--time-color)) 72%, transparent);
   --live-time-glow-estimate: color-mix(in srgb, var(--time-estimate-color-solid, var(--time-estimate-color, var(--time-color))) 72%, transparent);
   z-index: 2;
@@ -7158,6 +7158,7 @@ body.theme-kash .game-card.stream-card.completed-trophy-card {
   background-origin: padding-box;
   background-clip: padding-box;
   box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.12),
     -8px 0 20px -8px var(--live-time-glow-current),
     8px 0 20px -8px var(--live-time-glow-estimate),
     0 0 18px color-mix(in srgb, var(--time-glow) 45%, transparent);
