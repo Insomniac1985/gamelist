@@ -7109,12 +7109,12 @@ body.theme-kash .game-card.stream-card.completed-trophy-card {
   bottom: auto;
   height: 10px;
   min-height: 0;
-  animation: live-playtime-bar-up 1.1s linear infinite;
+  animation: live-playtime-bar-up 1.4s ease-in-out infinite alternate;
 }
 
 @keyframes live-playtime-bar-up {
-  from { transform: translateY(14px); }
-  to { transform: translateY(0); }
+  from { transform: translateY(0); }
+  to { transform: translateY(14px); }
 }
 
 @media (prefers-reduced-motion: reduce) {
