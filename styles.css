@@ -3114,10 +3114,6 @@ button.achievement-kpi {
   grid-template-columns: 54px minmax(0, 1fr);
 }
 
-.playing-finished-game.achievement-game > div {
-  align-self: end;
-}
-
 .playing-finished-game.achievement-game > img {
   width: 54px;
   height: 74px;
