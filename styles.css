@@ -7115,7 +7115,8 @@ body.theme-kash .game-card.stream-card.completed-trophy-card {
   color: var(--time-estimate-color, var(--time-color));
 }
 
-.game-card.playing-card:is(:hover, :focus) .playtime-date-pill.live-playtime-pill {
+.game-card.playing-card:is(:hover, :focus) .playtime-date-pill.live-playtime-pill:not(.is-tap-controlled),
+.playtime-date-pill.live-playtime-pill.is-expanded {
   width: var(--live-playtime-hover-width, 170px);
   flex-basis: var(--live-playtime-hover-width, 170px);
   border-color: transparent;
@@ -7135,12 +7136,14 @@ body.theme-kash .game-card.stream-card.completed-trophy-card {
     0 0 18px color-mix(in srgb, var(--time-glow) 45%, transparent);
 }
 
-.game-card.playing-card:is(:hover, :focus) .playtime-date-pill.live-playtime-pill strong {
+.game-card.playing-card:is(:hover, :focus) .playtime-date-pill.live-playtime-pill:not(.is-tap-controlled) strong,
+.playtime-date-pill.live-playtime-pill.is-expanded strong {
   opacity: 0;
   transition: opacity 120ms ease;
 }
 
-.game-card.playing-card:is(:hover, :focus) .playtime-date-pill.live-playtime-pill .live-playtime-expanded {
+.game-card.playing-card:is(:hover, :focus) .playtime-date-pill.live-playtime-pill:not(.is-tap-controlled) .live-playtime-expanded,
+.playtime-date-pill.live-playtime-pill.is-expanded .live-playtime-expanded {
   opacity: 1;
   transform: translateX(0);
 }

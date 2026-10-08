@@ -355,6 +355,7 @@ function bindEvents() {
   document.addEventListener("focusin", handleSelectOverflowTitle);
   document.addEventListener("pointerout", handleSelectOverflowLeave);
   document.addEventListener("focusout", handleSelectOverflowLeave);
+  document.addEventListener("click", toggleShelfLivePlaytimePill, true);
 
   el.shelf.addEventListener("click", handleShelfClick);
   el.shelf.addEventListener("keydown", (event) => { if (event.key !== "Enter" && event.key !== " ") return; const card = event.target.closest("[data-id]"); if (!card || event.target.closest("button, a, input")) return; event.preventDefault(); const game = shelfDisplayedGameById(card.dataset.id); if (game) game.preorderProjection ? openGamelistDetails(game) : openDetails(game); });
@@ -3863,7 +3864,16 @@ async function linkedShelfPlaytimeHours(game) {
 
 function shelfLivePlaytimePill(game, hours) {
   const label = shelfLivePlaytimeComparison(game, hours);
-  return `<span class="history-pill history-date-pill playtime-date-pill live-playtime-pill" style="${shelfLivePlaytimePillStyle(game, hours)};--live-playtime-hover-width:${shelfLivePlaytimeHoverWidth(label)}px" data-comparison="${escapeHtml(label)}" title="${escapeHtml(label)}" aria-label="${escapeHtml(label)}"><small>${escapeHtml(tt("Play Time"))}</small><strong>${hours} ${hours === 1 ? "HR" : "HRS"}</strong><span class="live-playtime-expanded">${shelfLivePlaytimeExpandedMarkup(game, hours)}</span></span>`;
+  return `<span class="history-pill history-date-pill playtime-date-pill live-playtime-pill" style="${shelfLivePlaytimePillStyle(game, hours)};--live-playtime-hover-width:${shelfLivePlaytimeHoverWidth(label)}px" data-comparison="${escapeHtml(label)}" title="${escapeHtml(label)}" aria-label="${escapeHtml(label)}" aria-expanded="false"><small>${escapeHtml(tt("Play Time"))}</small><strong>${hours} ${hours === 1 ? "HR" : "HRS"}</strong><span class="live-playtime-expanded">${shelfLivePlaytimeExpandedMarkup(game, hours)}</span></span>`;
+}
+
+function toggleShelfLivePlaytimePill(event) {
+  const pill = event.target?.closest?.(".live-playtime-pill");
+  if (!pill) return;
+  event.stopPropagation();
+  if (window.matchMedia("(hover: none)").matches) pill.classList.add("is-tap-controlled");
+  const expanded = pill.classList.toggle("is-expanded");
+  pill.setAttribute("aria-expanded", String(expanded));
 }
 
 function shelfLivePlaytimeExpandedMarkup(game, hours) {
