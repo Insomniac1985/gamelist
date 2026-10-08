@@ -10003,6 +10003,7 @@ async function refreshPlayingCardPlaytime() {
       }
       pill.style.cssText = livePlaytimePillStyle(game, value);
       pill.querySelector("strong").textContent = `${value} ${value === 1 ? "HR" : "HRS"}`;
+      pill.querySelector(".live-playtime-expanded").innerHTML = livePlaytimeExpandedMarkup(game, value);
       const comparison = livePlaytimeComparison(game, value);
       pill.style.setProperty("--live-playtime-hover-width", `${livePlaytimeHoverWidth(comparison)}px`);
       pill.dataset.comparison = comparison;
@@ -10015,7 +10016,15 @@ async function refreshPlayingCardPlaytime() {
 
 function livePlaytimePill(game, hours) {
   const label = livePlaytimeComparison(game, hours);
-  return `<span class="history-pill history-date-pill playtime-date-pill live-playtime-pill" style="${livePlaytimePillStyle(game, hours)};--live-playtime-hover-width:${livePlaytimeHoverWidth(label)}px" data-comparison="${escapeHtml(label)}" title="${escapeHtml(label)}" aria-label="${escapeHtml(label)}"><small>${escapeHtml(tt("Play Time"))}</small><strong>${hours} ${hours === 1 ? "HR" : "HRS"}</strong></span>`;
+  return `<span class="history-pill history-date-pill playtime-date-pill live-playtime-pill" style="${livePlaytimePillStyle(game, hours)};--live-playtime-hover-width:${livePlaytimeHoverWidth(label)}px" data-comparison="${escapeHtml(label)}" title="${escapeHtml(label)}" aria-label="${escapeHtml(label)}"><small>${escapeHtml(tt("Play Time"))}</small><strong>${hours} ${hours === 1 ? "HR" : "HRS"}</strong><span class="live-playtime-expanded">${livePlaytimeExpandedMarkup(game, hours)}</span></span>`;
+}
+
+function livePlaytimeExpandedMarkup(game, hours) {
+  const current = `${hours} ${hours === 1 ? "HR" : "HRS"}`;
+  const estimate = Math.ceil(Number(game?.lengthHours));
+  return estimate > 0
+    ? `<span class="live-playtime-current">${current}</span><span class="live-playtime-estimate">OF ${estimate} HRS</span>`
+    : `<span class="live-playtime-current">${current} PLAYED</span>`;
 }
 
 function livePlaytimePillStyle(game, hours) {
