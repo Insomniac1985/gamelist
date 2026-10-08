@@ -3651,7 +3651,7 @@ function openGamelistDetails(sourceGame) {
   el.detailPricePanel.classList.remove("is-collapsed");
   el.detailPriceToggle.setAttribute("aria-expanded", "true");
   el.detailLinks.innerHTML = activityStoreLinks(game);
-  const priceProviders = priceProvidersForGame(game);
+  const priceProviders = game.playing ? [] : priceProvidersForGame(game);
   el.detailStorePrices.style.setProperty("--price-columns", priceProviders.length || 1);
   el.detailStorePrices.innerHTML = priceProviders.length ? pricesFor(game) : "";
   el.detailStorePricePanel.hidden = !priceProviders.length;
