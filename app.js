@@ -10020,7 +10020,7 @@ function livePlaytimePill(game, hours) {
 function livePlaytimeComparison(game, hours) {
   const estimate = Math.ceil(Number(game?.lengthHours));
   return estimate > 0
-    ? `${hours} HRS OUT OF APPROX ${estimate} HRS`
+    ? `${hours} HRS OUT OF ${estimate} HRS`
     : `${hours} ${hours === 1 ? "HR" : "HRS"} PLAYED`;
 }
 

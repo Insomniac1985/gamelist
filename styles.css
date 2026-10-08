@@ -1288,7 +1288,7 @@ html.theme-gradient .goty-section .column-head h2 .trophy-icon {
 
 .goty-hover-info small {
   color: var(--muted);
-  font-size: 9px;
+  font-size: 10px;
   font-weight: 750;
   line-height: 1.15;
   text-align: center;
@@ -7106,8 +7106,8 @@ body.theme-kash .game-card.stream-card.completed-trophy-card {
 }
 
 .game-card.playing-card:is(:hover, :focus) .playtime-date-pill.live-playtime-pill {
-  width: 218px;
-  flex-basis: 218px;
+  width: 228px;
+  flex-basis: 228px;
   box-shadow: 0 0 22px color-mix(in srgb, var(--time-glow) 85%, transparent);
 }
 
