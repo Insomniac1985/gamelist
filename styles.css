@@ -7109,7 +7109,7 @@ body.theme-kash .game-card.stream-card.completed-trophy-card {
   bottom: auto;
   height: 10px;
   min-height: 0;
-  animation: live-playtime-bar-up 1.4s ease-in-out infinite alternate;
+  animation: live-playtime-bar-up 1.25s linear infinite;
 }
 
 .playtime-date-pill.live-playtime-pill {
@@ -7152,8 +7152,10 @@ body.theme-kash .game-card.stream-card.completed-trophy-card {
 }
 
 @keyframes live-playtime-bar-up {
-  from { transform: translateY(0); }
-  to { transform: translateY(14px); }
+  0% { opacity: 0; transform: translateY(14px); }
+  10% { opacity: 1; }
+  82% { opacity: 1; }
+  100% { opacity: 0; transform: translateY(0); }
 }
 
 @media (prefers-reduced-motion: reduce) {
