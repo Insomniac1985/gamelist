@@ -7183,7 +7183,7 @@ body.theme-kash .game-card.stream-card.completed-trophy-card {
 }
 
 @media (hover: hover) {
-  :is(.game-card.playing-card:hover .live-playtime-pill, .detail-modal .live-playtime-pill:hover) {
+  :is(.game-card.playing-card:hover .live-playtime-pill, .detail-modal:hover .live-playtime-pill) {
     width: max-content;
     min-width: 78px;
     flex-basis: auto;
@@ -7205,15 +7205,15 @@ body.theme-kash .game-card.stream-card.completed-trophy-card {
       0 0 18px color-mix(in srgb, var(--time-glow) 45%, transparent);
   }
 
-  :is(.game-card.playing-card:hover .live-playtime-pill, .detail-modal .live-playtime-pill:hover)::after {
+  :is(.game-card.playing-card:hover .live-playtime-pill, .detail-modal:hover .live-playtime-pill)::after {
     opacity: 1;
   }
 
-  :is(.game-card.playing-card:hover .live-playtime-pill, .detail-modal .live-playtime-pill:hover) strong {
+  :is(.game-card.playing-card:hover .live-playtime-pill, .detail-modal:hover .live-playtime-pill) strong {
     display: none;
   }
 
-  :is(.game-card.playing-card:hover .live-playtime-pill, .detail-modal .live-playtime-pill:hover) .live-playtime-expanded {
+  :is(.game-card.playing-card:hover .live-playtime-pill, .detail-modal:hover .live-playtime-pill) .live-playtime-expanded {
     position: static;
     margin-top: 2px;
     opacity: 1;
@@ -10577,6 +10577,10 @@ dialog {
 
 #sharedDeleteConfirmDialog {
   width: min(420px, calc(100vw - 24px));
+}
+
+dialog[open] {
+  overscroll-behavior: contain;
 }
 
 dialog::backdrop {
