@@ -3701,6 +3701,7 @@ function gamelistProjectionCard(game, options = {}) {
   card.querySelector(".meta").innerHTML = projectionMeta(game, { includePast: isReleaseDialog, includeProgress: neutralReleaseCard, includeRelease: !isReleaseDialog, includeCalendarState: isReleaseDialog });
   const dates = card.querySelector(".play-dates");
   dates.innerHTML = [
+    game.playing && !neutralReleaseCard ? `<span class="history-pill playing-state-pill">${escapeHtml(tt("Playing"))}</span>` : "",
     game.startedAt && !neutralReleaseCard ? `<span class="history-pill history-date-pill"><small>Started</small><strong>${escapeHtml(formatShortDate(game.startedAt))}</strong></span>` : "",
     isReleaseDialog && game.preorderStore ? preorderProjectionChip(game.preorderStore) : "",
   ].join("");
