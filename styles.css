@@ -7100,7 +7100,7 @@ body.theme-kash .game-card.stream-card.completed-trophy-card {
   left: 15px;
   top: 50%;
   color: var(--time-color);
-  font-size: 9px;
+  font-size: 11px;
   font-weight: 850;
   letter-spacing: 0.025em;
   white-space: nowrap;
@@ -7110,8 +7110,8 @@ body.theme-kash .game-card.stream-card.completed-trophy-card {
 }
 
 .game-card.playing-card:is(:hover, :focus) .playtime-date-pill.live-playtime-pill {
-  width: 228px;
-  flex-basis: 228px;
+  width: var(--live-playtime-hover-width, 170px);
+  flex-basis: var(--live-playtime-hover-width, 170px);
   box-shadow: 0 0 22px color-mix(in srgb, var(--time-glow) 85%, transparent);
 }
 
