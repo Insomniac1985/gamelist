@@ -3715,7 +3715,11 @@ function gamelistProjectionCard(game, options = {}) {
   ].join("");
   dates.hidden = !dates.innerHTML;
   card.querySelector(".chips").innerHTML = projectionChips(game, { includePreorder: !isReleaseDialog });
-  const trophies = card.querySelector(".card-trophies"); trophies.innerHTML = isReleaseDialog ? "" : shelfCardTrophies(game, { compactProgress: true }); trophies.hidden = !trophies.innerHTML;
+  const trophies = card.querySelector(".card-trophies");
+  const guideLinks = state.canEdit && game.playing && !isReleaseDialog ? activityGuideLinks(game) : [];
+  const guideRow = guideLinks.length ? `<div class="guide-links card-guide-row">${guideLinks.join("")}</div>` : "";
+  trophies.innerHTML = isReleaseDialog ? "" : `${guideRow}${shelfCardTrophies(game, { compactProgress: true })}`;
+  trophies.hidden = !trophies.innerHTML;
   card.querySelector(".card-actions").remove();
   const prices = card.querySelector(".prices");
   if (isReleaseDialog) {

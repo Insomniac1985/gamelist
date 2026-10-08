@@ -9701,7 +9701,7 @@ function cardTrophiesFor(game) {
   const cached = cacheKey ? state.cardTrophies[cacheKey] : null;
   if (psn && !cached) loadCardTrophies(game, psn);
   const guideLinks = guideLinksFor(game);
-  const guideRow = guideLinks.length ? `<div class="guide-links card-guide-row">${guideLinks.join("")}</div>` : "";
+  const guideRow = state.canEdit && guideLinks.length ? `<div class="guide-links card-guide-row">${guideLinks.join("")}</div>` : "";
   const trophies = cached?.trophies?.length ? cached.trophies : latestTrophiesForGame(game, 3);
   if (!trophies.length && cached?.loading) {
     return `${guideRow}<div class="card-trophy-head">${trophyIcon()}<span>Loading trophies...</span></div>`;
@@ -9727,7 +9727,7 @@ function cardSteamAchievementsFor(game) {
   const cached = cacheKey ? state.cardTrophies[cacheKey] : null;
   if (cacheKey && !cached && steamGameIsOwned(game)) loadCardSteamAchievements(game);
   const guideLinks = guideLinksFor(game);
-  const guideRow = guideLinks.length ? `<div class="guide-links card-guide-row">${guideLinks.join("")}</div>` : "";
+  const guideRow = state.canEdit && guideLinks.length ? `<div class="guide-links card-guide-row">${guideLinks.join("")}</div>` : "";
   if (cached?.loading) {
     return `${guideRow}<div class="card-trophy-head card-achievement-head">${trophyIcon()}<span>Loading achievements...</span></div>`;
   }
@@ -9758,7 +9758,7 @@ function cardSteamAchievementsFor(game) {
 function cardXboxAchievementsFor(game) {
   const xboxGame = matchedXboxGame(game);
   const guideLinks = guideLinksFor(game);
-  const guideRow = guideLinks.length ? `<div class="guide-links card-guide-row">${guideLinks.join("")}</div>` : "";
+  const guideRow = state.canEdit && guideLinks.length ? `<div class="guide-links card-guide-row">${guideLinks.join("")}</div>` : "";
   if (!xboxGame) return guideRow;
   const cacheKey = xboxAchievementCacheKey(xboxGame);
   const cached = cacheKey ? state.cardTrophies[cacheKey] : null;
