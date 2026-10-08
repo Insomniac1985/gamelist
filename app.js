@@ -10007,7 +10007,7 @@ async function refreshPlayingCardPlaytime() {
       pill.querySelector(".live-playtime-expanded").innerHTML = livePlaytimeExpandedMarkup(game, value);
       const comparison = livePlaytimeComparison(game, value);
       pill.dataset.comparison = comparison;
-      pill.title = comparison;
+      pill.removeAttribute("title");
       pill.setAttribute("aria-label", comparison);
       dates.hidden = false;
     });
@@ -10016,7 +10016,7 @@ async function refreshPlayingCardPlaytime() {
 
 function livePlaytimePill(game, hours) {
   const label = livePlaytimeComparison(game, hours);
-  return `<span class="history-pill history-date-pill playtime-date-pill live-playtime-pill" style="${livePlaytimePillStyle(game, hours)}" data-comparison="${escapeHtml(label)}" title="${escapeHtml(label)}" aria-label="${escapeHtml(label)}" aria-expanded="false"><small>${escapeHtml(tt("Play Time"))}</small><strong>${hours} ${hours === 1 ? "HR" : "HRS"}</strong><span class="live-playtime-expanded">${livePlaytimeExpandedMarkup(game, hours)}</span></span>`;
+  return `<span class="history-pill history-date-pill playtime-date-pill live-playtime-pill" style="${livePlaytimePillStyle(game, hours)}" data-comparison="${escapeHtml(label)}" aria-label="${escapeHtml(label)}" aria-expanded="false"><small>${escapeHtml(tt("Play Time"))}</small><strong>${hours} ${hours === 1 ? "HR" : "HRS"}</strong><span class="live-playtime-expanded">${livePlaytimeExpandedMarkup(game, hours)}</span></span>`;
 }
 
 function toggleLivePlaytimePill(event) {
