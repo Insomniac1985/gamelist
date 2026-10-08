@@ -3868,10 +3868,11 @@ function shelfLivePlaytimePill(game, hours) {
 }
 
 function toggleShelfLivePlaytimePill(event) {
+  if (!window.matchMedia("(hover: none)").matches) return;
   const pill = event.target?.closest?.(".live-playtime-pill");
   if (!pill) return;
   event.stopPropagation();
-  if (window.matchMedia("(hover: none)").matches) pill.classList.add("is-tap-controlled");
+  pill.classList.add("is-tap-controlled");
   const expanded = pill.classList.toggle("is-expanded");
   pill.setAttribute("aria-expanded", String(expanded));
 }
