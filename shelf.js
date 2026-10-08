@@ -3633,7 +3633,12 @@ function openGamelistDetails(sourceGame) {
   el.detailStudio.innerHTML = `${visibleOwners.map(ownerBadge).join("")}${detailStudio ? `<span>${escapeHtml(detailStudio)}</span>` : ""}`;
   el.detailStudio.hidden = !el.detailStudio.textContent;
   el.detailMeta.innerHTML = `${platformBadge(game.platform, { title: game.title })}${mediaFormatBadge(game)}${dlcBadge(game)}${entitlementBadge(game)}${preorderPlaytimePill(game)}`;
-  el.detailDates.innerHTML = `${shelfReleaseDatePill(game, "Releases")}`;
+  el.detailDates.innerHTML = [
+    shelfReleaseDatePill(game, "Releases"),
+    game.startedAt ? `<span class="history-pill history-date-pill"><small>${escapeHtml(tt("Started"))}</small><strong>${escapeHtml(formatShortDate(game.startedAt))}</strong></span>` : "",
+    game.playing && state.cardPlaytime[game.id] ? shelfLivePlaytimePill(game, state.cardPlaytime[game.id]) : "",
+    game.playing ? shelfCalendarStateBadge(game) : "",
+  ].join("");
   el.detailDates.hidden = !el.detailDates.innerHTML;
   el.detailChips.innerHTML = `${game.preorderStore ? preorderProjectionChip(game.preorderStore) : ""}${(game.genres || []).slice(0, 4).map((genre) => `<span class="chip genre">${escapeHtml(genre)}</span>`).join("")}`;
   el.detailCover.src = cover;
@@ -3704,7 +3709,6 @@ function gamelistProjectionCard(game, options = {}) {
   card.querySelector(".meta").innerHTML = projectionMeta(game, { includePast: isReleaseDialog, includeProgress: neutralReleaseCard, includeRelease: !isReleaseDialog, includeCalendarState: isReleaseDialog && !game.playing });
   const dates = card.querySelector(".play-dates");
   dates.innerHTML = [
-    game.playing && !neutralReleaseCard ? `<span class="history-pill playing-state-pill">${escapeHtml(tt("Playing"))}</span>` : "",
     game.startedAt && !neutralReleaseCard ? `<span class="history-pill history-date-pill"><small>Started</small><strong>${escapeHtml(formatShortDate(game.startedAt))}</strong></span>` : "",
     game.playing && !neutralReleaseCard && state.cardPlaytime[game.id] ? shelfLivePlaytimePill(game, state.cardPlaytime[game.id]) : "",
     isReleaseDialog && game.preorderStore ? preorderProjectionChip(game.preorderStore) : "",
@@ -3779,7 +3783,9 @@ async function refreshShelfPlayingCardPlaytime() {
     const value = Math.ceil(hours);
     state.cardPlaytime[game.id] = value;
     const label = shelfLivePlaytimeComparison(game, value);
-    document.querySelectorAll(`.game-card[data-gamelist-id="${CSS.escape(game.id)}"] .play-dates`).forEach((dates) => {
+    const dateContainers = [...document.querySelectorAll(`.game-card[data-gamelist-id="${CSS.escape(game.id)}"] .play-dates`)];
+    if (el.detailDialog.open && el.detailDialog.dataset.projection === "true" && el.detailDialog.dataset.id === game.id) dateContainers.push(el.detailDates);
+    dateContainers.forEach((dates) => {
       let pill = dates.querySelector(".live-playtime-pill");
       if (!pill) {
         dates.insertAdjacentHTML("beforeend", shelfLivePlaytimePill(game, value));
