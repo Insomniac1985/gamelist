@@ -9327,7 +9327,7 @@ function metaFor(game, options = {}) {
   if (game.emulator) values.push(`<span class="emulator-pill">Emulator</span>`);
   if (game.coop) values.push(coopBadge());
   if (game.multiplayer && !game.coop) values.push(multiplayerBadge());
-  if (game.lengthHours) values.push(timeBadge(game.lengthHours, hltbUrlFor(game)));
+  if (game.lengthHours && !game.playing) values.push(timeBadge(game.lengthHours, hltbUrlFor(game)));
   if (game.stream) values.push(streamBadge());
   gameStatuses(game).forEach((status) => values.push(statusBadge(status)));
   const progress = achievementProgressForGame(game);
@@ -9979,7 +9979,7 @@ function playDatesFor(game, options = {}) {
   else if (options.includePreorder && game.preferredStore) values.push(preferredPreorderChip(game.preferredStore));
   if (game.startedAt) values.push(`<span class="history-pill history-date-pill"><small>${escapeHtml(tt("Started"))}</small><strong>${escapeHtml(formatDate(game.startedAt))}</strong></span>`);
   const livePlaytime = game.playing ? Number(state.cardPlaytime[game.id]) : 0;
-  if (livePlaytime > 0) values.push(`<span class="history-pill history-date-pill playtime-date-pill live-playtime-pill" style="${timePillStyle(livePlaytime)}"><small>${escapeHtml(tt("Play Time"))}</small><strong>${livePlaytime} ${livePlaytime === 1 ? "HR" : "HRS"}</strong></span>`);
+  if (livePlaytime > 0) values.push(livePlaytimePill(game, livePlaytime));
   if (game.completedAt) values.push(`<span class="history-pill history-date-pill"><small>${escapeHtml(tt("Finished"))}</small><strong>${escapeHtml(formatDate(game.completedAt))}</strong></span>`);
   if (options.includeCalendarState) values.push(calendarStateForGame(game));
   const finishTime = finishHoursText(game);
@@ -9998,14 +9998,30 @@ async function refreshPlayingCardPlaytime() {
       const value = state.cardPlaytime[game.id];
       let pill = dates.querySelector(".live-playtime-pill");
       if (!pill) {
-        dates.insertAdjacentHTML("beforeend", `<span class="history-pill history-date-pill playtime-date-pill live-playtime-pill"><small>${escapeHtml(tt("Play Time"))}</small><strong></strong></span>`);
+        dates.insertAdjacentHTML("beforeend", livePlaytimePill(game, value));
         pill = dates.querySelector(".live-playtime-pill");
       }
       pill.style.cssText = timePillStyle(value);
       pill.querySelector("strong").textContent = `${value} ${value === 1 ? "HR" : "HRS"}`;
+      const comparison = livePlaytimeComparison(game, value);
+      pill.dataset.comparison = comparison;
+      pill.title = comparison;
+      pill.setAttribute("aria-label", comparison);
       dates.hidden = false;
     });
   }));
+}
+
+function livePlaytimePill(game, hours) {
+  const label = livePlaytimeComparison(game, hours);
+  return `<span class="history-pill history-date-pill playtime-date-pill live-playtime-pill" style="${timePillStyle(hours)}" data-comparison="${escapeHtml(label)}" title="${escapeHtml(label)}" aria-label="${escapeHtml(label)}"><small>${escapeHtml(tt("Play Time"))}</small><strong>${hours} ${hours === 1 ? "HR" : "HRS"}</strong></span>`;
+}
+
+function livePlaytimeComparison(game, hours) {
+  const estimate = Math.ceil(Number(game?.lengthHours));
+  return estimate > 0
+    ? `${hours} HRS OUT OF APPROX ${estimate} HRS`
+    : `${hours} ${hours === 1 ? "HR" : "HRS"} PLAYED`;
 }
 
 function calendarStateForGame(game) {

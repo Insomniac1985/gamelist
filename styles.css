@@ -7112,6 +7112,45 @@ body.theme-kash .game-card.stream-card.completed-trophy-card {
   animation: live-playtime-bar-up 1.4s ease-in-out infinite alternate;
 }
 
+.playtime-date-pill.live-playtime-pill {
+  z-index: 2;
+  width: 78px;
+  flex: 0 0 78px;
+  transition: width 240ms ease, flex-basis 240ms ease, box-shadow 240ms ease;
+}
+
+.playtime-date-pill.live-playtime-pill::after {
+  content: attr(data-comparison);
+  position: absolute;
+  left: 15px;
+  top: 50%;
+  color: var(--time-color);
+  font-size: 9px;
+  font-weight: 850;
+  letter-spacing: 0.025em;
+  white-space: nowrap;
+  opacity: 0;
+  transform: translate(5px, -50%);
+  transition: opacity 180ms ease, transform 240ms ease;
+}
+
+.game-card.playing-card:is(:hover, :focus) .playtime-date-pill.live-playtime-pill {
+  width: 218px;
+  flex-basis: 218px;
+  box-shadow: 0 0 22px color-mix(in srgb, var(--time-glow) 85%, transparent);
+}
+
+.game-card.playing-card:is(:hover, :focus) .playtime-date-pill.live-playtime-pill small,
+.game-card.playing-card:is(:hover, :focus) .playtime-date-pill.live-playtime-pill strong {
+  opacity: 0;
+  transition: opacity 120ms ease;
+}
+
+.game-card.playing-card:is(:hover, :focus) .playtime-date-pill.live-playtime-pill::after {
+  opacity: 1;
+  transform: translate(0, -50%);
+}
+
 @keyframes live-playtime-bar-up {
   from { transform: translateY(0); }
   to { transform: translateY(14px); }
@@ -7122,6 +7161,14 @@ body.theme-kash .game-card.stream-card.completed-trophy-card {
     top: 50%;
     animation: none;
     transform: translateY(-50%);
+  }
+
+  .playtime-date-pill.live-playtime-pill {
+    transition: none;
+  }
+
+  .playtime-date-pill.live-playtime-pill::after {
+    transition: none;
   }
 }
 
