@@ -110,6 +110,7 @@ const state = {
   xboxActivity: { achievements: [], games: [], completed: [], totalEarned: 0, sourceUrl: "" },
   achievementNoticeKey: "",
   cardTrophies: {},
+  cardPlaytime: {},
   canEdit: sessionStorage.getItem(SESSION_KEY) === "true",
   editingId: "",
   lookupResults: [],
@@ -285,6 +286,8 @@ async function init() {
   rebuildGames();
   applyShelfSearchFromUrl();
   renderAll();
+  void refreshShelfPlayingCardPlaytime();
+  window.setInterval(refreshShelfPlayingCardPlaytime, 5 * 60 * 1000);
   maybeShowUpdatesPopup();
 }
 
@@ -3698,10 +3701,12 @@ function gamelistProjectionCard(game, options = {}) {
   titleOwners.hidden = !titleOwners.innerHTML;
   card.querySelector(".edit-action").classList.remove("editor-only");
   const studioLine = card.querySelector(".studio-line"); studioLine.textContent = studio; studioLine.hidden = !studio;
-  card.querySelector(".meta").innerHTML = projectionMeta(game, { includePast: isReleaseDialog, includeProgress: neutralReleaseCard, includeRelease: !isReleaseDialog, includeCalendarState: isReleaseDialog });
+  card.querySelector(".meta").innerHTML = projectionMeta(game, { includePast: isReleaseDialog, includeProgress: neutralReleaseCard, includeRelease: !isReleaseDialog, includeCalendarState: isReleaseDialog && !game.playing });
   const dates = card.querySelector(".play-dates");
   dates.innerHTML = [
+    game.playing && !neutralReleaseCard ? `<span class="history-pill playing-state-pill">${escapeHtml(tt("Playing"))}</span>` : "",
     game.startedAt && !neutralReleaseCard ? `<span class="history-pill history-date-pill"><small>Started</small><strong>${escapeHtml(formatShortDate(game.startedAt))}</strong></span>` : "",
+    game.playing && !neutralReleaseCard && state.cardPlaytime[game.id] ? shelfLivePlaytimePill(game, state.cardPlaytime[game.id]) : "",
     isReleaseDialog && game.preorderStore ? preorderProjectionChip(game.preorderStore) : "",
   ].join("");
   dates.hidden = !dates.innerHTML;
@@ -3764,10 +3769,109 @@ function currentlyPlayingTitle(games) {
 function playingCountText(count) {
   return tt("Playing {count} {item}", { count, item: tt(count === 1 ? "game" : "games") });
 }
+
+async function refreshShelfPlayingCardPlaytime() {
+  if (document.hidden) return;
+  const games = state.gamelistGames.filter((game) => game.playing && !game.deletedAt);
+  await Promise.all(games.map(async (game) => {
+    const hours = await linkedShelfPlaytimeHours(game);
+    if (!Number.isFinite(hours) || hours <= 0) return;
+    const value = Math.ceil(hours);
+    state.cardPlaytime[game.id] = value;
+    const label = shelfLivePlaytimeComparison(game, value);
+    document.querySelectorAll(`.game-card[data-gamelist-id="${CSS.escape(game.id)}"] .play-dates`).forEach((dates) => {
+      let pill = dates.querySelector(".live-playtime-pill");
+      if (!pill) {
+        dates.insertAdjacentHTML("beforeend", shelfLivePlaytimePill(game, value));
+        pill = dates.querySelector(".live-playtime-pill");
+      }
+      pill.style.cssText = `${shelfTimePillStyle(value)};--live-playtime-hover-width:${shelfLivePlaytimeHoverWidth(label)}px`;
+      pill.dataset.comparison = label;
+      pill.title = label;
+      pill.setAttribute("aria-label", label);
+      pill.querySelector("strong").textContent = `${value} ${value === 1 ? "HR" : "HRS"}`;
+      dates.hidden = false;
+    });
+  }));
+}
+
+async function linkedShelfPlaytimeHours(game) {
+  try {
+    const platform = shortPlatform(game.platform || "").toLowerCase();
+    if (["switch", "switch 2"].includes(platform)) {
+      const params = new URLSearchParams({ title: game.title || "", platform: shortPlatform(game.platform) });
+      const response = await fetch(`/api/nintendo-playtime?${params}`, { cache: "no-store" });
+      if (!response.ok) return null;
+      const hours = Number((await response.json()).playtimeHours);
+      return Number.isFinite(hours) && hours > 0 ? hours : null;
+    }
+    if ((platform === "pc" || platform.includes("steam")) && state.gamelistSettings.steamUser) {
+      const appId = steamAppIdForShelfGame(game);
+      if (!appId) return null;
+      const params = achievementParams({ owned: "1" });
+      params.set("user", state.gamelistSettings.steamUser);
+      const response = await fetch(`/api/steam-achievements?${params}`, { cache: "no-store" });
+      if (!response.ok) return null;
+      const data = await response.json();
+      const match = (data.ownedGames || []).find((item) => String(item.appId).replace(/\D/g, "") === appId);
+      const minutes = Number(match?.playtimeForever);
+      return Number.isFinite(minutes) && minutes > 0 ? minutes / 60 : null;
+    }
+    if (/^ps[3-5]$/.test(platform) && state.gamelistSettings.psnUser) {
+      const params = achievementParams({ playtime: "1" });
+      params.set("user", state.gamelistSettings.psnUser);
+      const response = await fetch(`/api/achievements?${params}`, { cache: "no-store" });
+      if (!response.ok) return null;
+      const data = await response.json();
+      const played = (data.playedGames || [])
+        .map((item) => ({ item, score: activityTitleMatchScore(game.trophyName || game.title, item.title || "") }))
+        .filter(({ item, score }) => score >= 75 && (!item.platform || String(item.platform).toLowerCase().includes(platform)))
+        .sort((a, b) => b.score - a.score)[0]?.item;
+      const duration = String(played?.playDuration || "").match(/^P(?:(\d+(?:\.\d+)?)D)?(?:T(?:(\d+(?:\.\d+)?)H)?(?:(\d+(?:\.\d+)?)M)?(?:(\d+(?:\.\d+)?)S)?)?$/i);
+      if (!duration) return null;
+      return (Number(duration[1]) || 0) * 24 + (Number(duration[2]) || 0) + (Number(duration[3]) || 0) / 60 + (Number(duration[4]) || 0) / 3600;
+    }
+    if (platform.includes("xbox") || ["xone", "x360"].includes(platform)) {
+      const match = (state.xboxActivity.games || [])
+        .map((item) => ({ item, score: activityTitleMatchScore(game.trophyName || game.title, item.title || item.name || "") }))
+        .filter(({ item, score }) => score >= 75 && item.titleId)
+        .sort((a, b) => b.score - a.score)[0]?.item;
+      if (!match?.titleId || !state.gamelistSettings.microsoftUser) return null;
+      const params = achievementParams({ playtime: "1", titleId: match.titleId });
+      params.set("user", state.gamelistSettings.microsoftUser);
+      const response = await fetch(`/api/xbox-achievements?${params}`, { cache: "no-store" });
+      if (!response.ok) return null;
+      const hours = Number((await response.json()).playtimeHours);
+      return Number.isFinite(hours) && hours > 0 ? hours : null;
+    }
+  } catch {}
+  return null;
+}
+
+function shelfLivePlaytimePill(game, hours) {
+  const label = shelfLivePlaytimeComparison(game, hours);
+  return `<span class="history-pill history-date-pill playtime-date-pill live-playtime-pill" style="${shelfTimePillStyle(hours)};--live-playtime-hover-width:${shelfLivePlaytimeHoverWidth(label)}px" data-comparison="${escapeHtml(label)}" title="${escapeHtml(label)}" aria-label="${escapeHtml(label)}"><small>${escapeHtml(tt("Play Time"))}</small><strong>${hours} ${hours === 1 ? "HR" : "HRS"}</strong></span>`;
+}
+
+function shelfLivePlaytimeComparison(game, hours) {
+  const estimate = Math.ceil(Number(game?.lengthHours));
+  return estimate > 0 ? `${hours} HRS OUT OF ${estimate} HRS` : `${hours} ${hours === 1 ? "HR" : "HRS"} PLAYED`;
+}
+
+function shelfLivePlaytimeHoverWidth(label) {
+  return Math.min(280, Math.max(138, Math.ceil(String(label).length * 7 + 28)));
+}
+
+function shelfTimePillStyle(hours) {
+  const clamped = Math.max(0, Math.min(1, (Number(hours) - 7) / 53));
+  const hue = Math.round(132 - (132 * clamped));
+  return `--time-color:hsl(${hue}, 88%, 56%);--time-light:hsl(${Math.min(140, hue + 10)}, 94%, 72%);--time-dark:hsl(${Math.max(0, hue - 8)}, 82%, 39%);--time-glow:hsla(${hue}, 88%, 56%, 0.34)`;
+}
+
 function projectionMeta(game, options = {}) {
   const release = options.includeRelease === false ? "" : activityReleaseStatus(game, { includePast: Boolean(options.includePast) });
   const calendarState = options.includeCalendarState ? shelfCalendarStateBadge(game) : "";
-  return `${platformBadge(game.platform, { title: game.title })}${options.includeProgress ? shelfProgressPill(game) : ""}${mediaFormatBadge(game)}${dlcBadge(game)}${entitlementBadge(game)}${calendarState}${game.emulator ? `<span class="emulator-pill">${escapeHtml(tt("Emulator"))}</span>` : ""}${game.lengthHours ? timeBadgeMarkup(game.lengthHours, game.hltbUrl || game.howLongToBeatUrl || `https://howlongtobeat.com/?q=${encodeURIComponent(game.title)}`, escapeHtml) : ""}${game.stream ? streamBadge() : ""}${release ? releaseStatusPill(release) : ""}${game.coop ? coopBadge() : ""}${game.multiplayer && !game.coop ? multiplayerBadge() : ""}${game.replayCount ? `<span class="replay-pill">Replay ${escapeHtml(game.replayCount)}</span>` : ""}`;
+  return `${platformBadge(game.platform, { title: game.title })}${options.includeProgress ? shelfProgressPill(game) : ""}${mediaFormatBadge(game)}${dlcBadge(game)}${entitlementBadge(game)}${calendarState}${game.emulator ? `<span class="emulator-pill">${escapeHtml(tt("Emulator"))}</span>` : ""}${game.lengthHours && !game.playing ? timeBadgeMarkup(game.lengthHours, game.hltbUrl || game.howLongToBeatUrl || `https://howlongtobeat.com/?q=${encodeURIComponent(game.title)}`, escapeHtml) : ""}${game.stream ? streamBadge() : ""}${release ? releaseStatusPill(release) : ""}${game.coop ? coopBadge() : ""}${game.multiplayer && !game.coop ? multiplayerBadge() : ""}${game.replayCount ? `<span class="replay-pill">Replay ${escapeHtml(game.replayCount)}</span>` : ""}`;
 }
 
 function mediaFormatBadge(game) {
