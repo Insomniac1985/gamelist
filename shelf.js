@@ -3796,7 +3796,7 @@ async function refreshShelfPlayingCardPlaytime() {
         dates.insertAdjacentHTML("beforeend", shelfLivePlaytimePill(game, value));
         pill = dates.querySelector(".live-playtime-pill");
       }
-      pill.style.cssText = `${shelfTimePillStyle(value)};--live-playtime-hover-width:${shelfLivePlaytimeHoverWidth(label)}px`;
+      pill.style.cssText = `${shelfLivePlaytimePillStyle(game, value)};--live-playtime-hover-width:${shelfLivePlaytimeHoverWidth(label)}px`;
       pill.dataset.comparison = label;
       pill.title = label;
       pill.setAttribute("aria-label", label);
@@ -3861,7 +3861,14 @@ async function linkedShelfPlaytimeHours(game) {
 
 function shelfLivePlaytimePill(game, hours) {
   const label = shelfLivePlaytimeComparison(game, hours);
-  return `<span class="history-pill history-date-pill playtime-date-pill live-playtime-pill" style="${shelfTimePillStyle(hours)};--live-playtime-hover-width:${shelfLivePlaytimeHoverWidth(label)}px" data-comparison="${escapeHtml(label)}" title="${escapeHtml(label)}" aria-label="${escapeHtml(label)}"><small>${escapeHtml(tt("Play Time"))}</small><strong>${hours} ${hours === 1 ? "HR" : "HRS"}</strong></span>`;
+  return `<span class="history-pill history-date-pill playtime-date-pill live-playtime-pill" style="${shelfLivePlaytimePillStyle(game, hours)};--live-playtime-hover-width:${shelfLivePlaytimeHoverWidth(label)}px" data-comparison="${escapeHtml(label)}" title="${escapeHtml(label)}" aria-label="${escapeHtml(label)}"><small>${escapeHtml(tt("Play Time"))}</small><strong>${hours} ${hours === 1 ? "HR" : "HRS"}</strong></span>`;
+}
+
+function shelfLivePlaytimePillStyle(game, hours) {
+  const estimate = Number(game?.lengthHours);
+  const estimateHours = Number.isFinite(estimate) && estimate > 0 ? estimate : hours;
+  const estimateHue = Math.round(132 - (132 * Math.max(0, Math.min(1, (estimateHours - 7) / 53))));
+  return `${shelfTimePillStyle(hours)};--time-estimate-color:hsl(${estimateHue}, 88%, 56%)`;
 }
 
 function shelfLivePlaytimeComparison(game, hours) {
