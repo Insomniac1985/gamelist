@@ -12,9 +12,10 @@ const ACCOUNT_URL = "https://api.accounts.nintendo.com/2.0.0/users/me";
 const HISTORY_URL = "https://app-api.znej.nintendo.com/api/v2.0/users/me/play_histories";
 
 export async function onRequestGet({ request, env = {} }) {
-  if (!await isEditorRequest(request, env)) return json({ error: "Unauthorized" }, 401);
   const url = new URL(request.url);
+  const isEditor = await isEditorRequest(request, env);
   if (url.searchParams.get("action") === "status") {
+    if (!isEditor) return json({ error: "Unauthorized" }, 401);
     const sessionToken = await readSessionToken(env);
     if (!sessionToken) return json({ connected: false, accountName: "" });
     return json({ connected: true, accountName: await getNintendoAccountName(sessionToken) });
@@ -22,6 +23,9 @@ export async function onRequestGet({ request, env = {} }) {
 
   const title = String(url.searchParams.get("title") || "").trim();
   if (!title) return json({ error: "Missing title" }, 400);
+  if (!isEditor && !await isCurrentlyPlayingGame(env, title, url.searchParams.get("platform"))) {
+    return json({ error: "Unauthorized" }, 401);
+  }
   const sessionToken = await readSessionToken(env);
   if (!sessionToken) return json({ connected: false, error: "Connect a Nintendo Account in Settings first." }, 200);
 
@@ -41,10 +45,22 @@ export async function onRequestGet({ request, env = {} }) {
     });
     const titles = Array.isArray(history.playHistories) ? history.playHistories : [];
     const match = bestTitleMatch(title, url.searchParams.get("platform"), titles);
-    return json({ connected: true, playtimeHours: match ? Math.round(Number(match.totalPlayedMinutes || 0) / 60) : null, matchedTitle: match?.titleName || "" });
+    return json({ connected: true, playtimeHours: match ? Number(match.totalPlayedMinutes || 0) / 60 : null, matchedTitle: match?.titleName || "" });
   } catch (error) {
     return json({ connected: true, error: error?.message || "Nintendo Play Activity lookup failed." }, 502);
   }
+}
+
+async function isCurrentlyPlayingGame(env, title, platform) {
+  const data = await env.GAMELIST?.get("gamelist-data", "json").catch(() => null);
+  const wantedTitle = normalizeTitle(title);
+  const wantedPlatform = normalizePlatform(platform);
+  return Boolean(wantedTitle && (data?.games || []).some((game) =>
+    game?.playing === true
+    && !game.deletedAt
+    && normalizeTitle(game.title) === wantedTitle
+    && normalizePlatform(game.platform) === wantedPlatform
+  ));
 }
 
 export async function onRequestPost({ request, env = {} }) {

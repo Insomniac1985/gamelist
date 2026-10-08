@@ -3633,7 +3633,12 @@ function openGamelistDetails(sourceGame) {
   el.detailStudio.innerHTML = `${visibleOwners.map(ownerBadge).join("")}${detailStudio ? `<span>${escapeHtml(detailStudio)}</span>` : ""}`;
   el.detailStudio.hidden = !el.detailStudio.textContent;
   el.detailMeta.innerHTML = `${platformBadge(game.platform, { title: game.title })}${mediaFormatBadge(game)}${dlcBadge(game)}${entitlementBadge(game)}${preorderPlaytimePill(game)}`;
-  el.detailDates.innerHTML = `${shelfReleaseDatePill(game, "Releases")}`;
+  el.detailDates.innerHTML = [
+    shelfReleaseDatePill(game, "Releases"),
+    game.startedAt ? `<span class="history-pill history-date-pill"><small>${escapeHtml(tt("Started"))}</small><strong>${escapeHtml(formatShortDate(game.startedAt))}</strong></span>` : "",
+    game.playing && state.cardPlaytime[game.id] ? shelfLivePlaytimePill(game, state.cardPlaytime[game.id]) : "",
+    game.playing ? shelfCalendarStateBadge(game) : "",
+  ].join("");
   el.detailDates.hidden = !el.detailDates.innerHTML;
   el.detailChips.innerHTML = `${game.preorderStore ? preorderProjectionChip(game.preorderStore) : ""}${(game.genres || []).slice(0, 4).map((genre) => `<span class="chip genre">${escapeHtml(genre)}</span>`).join("")}`;
   el.detailCover.src = cover;
@@ -3646,7 +3651,7 @@ function openGamelistDetails(sourceGame) {
   el.detailPricePanel.classList.remove("is-collapsed");
   el.detailPriceToggle.setAttribute("aria-expanded", "true");
   el.detailLinks.innerHTML = activityStoreLinks(game);
-  const priceProviders = priceProvidersForGame(game);
+  const priceProviders = game.playing ? [] : priceProvidersForGame(game);
   el.detailStorePrices.style.setProperty("--price-columns", priceProviders.length || 1);
   el.detailStorePrices.innerHTML = priceProviders.length ? pricesFor(game) : "";
   el.detailStorePricePanel.hidden = !priceProviders.length;
@@ -3704,14 +3709,18 @@ function gamelistProjectionCard(game, options = {}) {
   card.querySelector(".meta").innerHTML = projectionMeta(game, { includePast: isReleaseDialog, includeProgress: neutralReleaseCard, includeRelease: !isReleaseDialog, includeCalendarState: isReleaseDialog && !game.playing });
   const dates = card.querySelector(".play-dates");
   dates.innerHTML = [
-    game.playing && !neutralReleaseCard ? `<span class="history-pill playing-state-pill">${escapeHtml(tt("Playing"))}</span>` : "",
     game.startedAt && !neutralReleaseCard ? `<span class="history-pill history-date-pill"><small>Started</small><strong>${escapeHtml(formatShortDate(game.startedAt))}</strong></span>` : "",
     game.playing && !neutralReleaseCard && state.cardPlaytime[game.id] ? shelfLivePlaytimePill(game, state.cardPlaytime[game.id]) : "",
     isReleaseDialog && game.preorderStore ? preorderProjectionChip(game.preorderStore) : "",
   ].join("");
   dates.hidden = !dates.innerHTML;
   card.querySelector(".chips").innerHTML = projectionChips(game, { includePreorder: !isReleaseDialog });
-  const trophies = card.querySelector(".card-trophies"); trophies.innerHTML = isReleaseDialog ? "" : shelfCardTrophies(game, { compactProgress: true }); trophies.hidden = !trophies.innerHTML;
+  const trophies = card.querySelector(".card-trophies");
+  const guideLinks = state.canEdit && game.playing && !isReleaseDialog ? activityGuideLinks(game) : [];
+  const guideRow = guideLinks.length ? `<div class="guide-links card-guide-row">${guideLinks.join("")}</div>` : "";
+  if (guideRow) dates.insertAdjacentHTML("afterend", guideRow);
+  trophies.innerHTML = isReleaseDialog ? "" : shelfCardTrophies(game, { compactProgress: true });
+  trophies.hidden = !trophies.innerHTML;
   card.querySelector(".card-actions").remove();
   const prices = card.querySelector(".prices");
   if (isReleaseDialog) {
@@ -3779,13 +3788,15 @@ async function refreshShelfPlayingCardPlaytime() {
     const value = Math.ceil(hours);
     state.cardPlaytime[game.id] = value;
     const label = shelfLivePlaytimeComparison(game, value);
-    document.querySelectorAll(`.game-card[data-gamelist-id="${CSS.escape(game.id)}"] .play-dates`).forEach((dates) => {
+    const dateContainers = [...document.querySelectorAll(`.game-card[data-gamelist-id="${CSS.escape(game.id)}"] .play-dates`)];
+    if (el.detailDialog.open && el.detailDialog.dataset.projection === "true" && el.detailDialog.dataset.id === game.id) dateContainers.push(el.detailDates);
+    dateContainers.forEach((dates) => {
       let pill = dates.querySelector(".live-playtime-pill");
       if (!pill) {
         dates.insertAdjacentHTML("beforeend", shelfLivePlaytimePill(game, value));
         pill = dates.querySelector(".live-playtime-pill");
       }
-      pill.style.cssText = `${shelfTimePillStyle(value)};--live-playtime-hover-width:${shelfLivePlaytimeHoverWidth(label)}px`;
+      pill.style.cssText = `${shelfLivePlaytimePillStyle(game, value)};--live-playtime-hover-width:${shelfLivePlaytimeHoverWidth(label)}px`;
       pill.dataset.comparison = label;
       pill.title = label;
       pill.setAttribute("aria-label", label);
@@ -3850,7 +3861,14 @@ async function linkedShelfPlaytimeHours(game) {
 
 function shelfLivePlaytimePill(game, hours) {
   const label = shelfLivePlaytimeComparison(game, hours);
-  return `<span class="history-pill history-date-pill playtime-date-pill live-playtime-pill" style="${shelfTimePillStyle(hours)};--live-playtime-hover-width:${shelfLivePlaytimeHoverWidth(label)}px" data-comparison="${escapeHtml(label)}" title="${escapeHtml(label)}" aria-label="${escapeHtml(label)}"><small>${escapeHtml(tt("Play Time"))}</small><strong>${hours} ${hours === 1 ? "HR" : "HRS"}</strong></span>`;
+  return `<span class="history-pill history-date-pill playtime-date-pill live-playtime-pill" style="${shelfLivePlaytimePillStyle(game, hours)};--live-playtime-hover-width:${shelfLivePlaytimeHoverWidth(label)}px" data-comparison="${escapeHtml(label)}" title="${escapeHtml(label)}" aria-label="${escapeHtml(label)}"><small>${escapeHtml(tt("Play Time"))}</small><strong>${hours} ${hours === 1 ? "HR" : "HRS"}</strong></span>`;
+}
+
+function shelfLivePlaytimePillStyle(game, hours) {
+  const estimate = Number(game?.lengthHours);
+  const estimateHours = Number.isFinite(estimate) && estimate > 0 ? estimate : hours;
+  const estimateHue = Math.round(132 - (132 * Math.max(0, Math.min(1, (estimateHours - 7) / 53))));
+  return `${shelfTimePillStyle(hours)};--time-estimate-color:hsl(${estimateHue}, 88%, 56%)`;
 }
 
 function shelfLivePlaytimeComparison(game, hours) {

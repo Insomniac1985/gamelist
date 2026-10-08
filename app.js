@@ -9701,7 +9701,7 @@ function cardTrophiesFor(game) {
   const cached = cacheKey ? state.cardTrophies[cacheKey] : null;
   if (psn && !cached) loadCardTrophies(game, psn);
   const guideLinks = guideLinksFor(game);
-  const guideRow = guideLinks.length ? `<div class="guide-links card-guide-row">${guideLinks.join("")}</div>` : "";
+  const guideRow = state.canEdit && guideLinks.length ? `<div class="guide-links card-guide-row">${guideLinks.join("")}</div>` : "";
   const trophies = cached?.trophies?.length ? cached.trophies : latestTrophiesForGame(game, 3);
   if (!trophies.length && cached?.loading) {
     return `${guideRow}<div class="card-trophy-head">${trophyIcon()}<span>Loading trophies...</span></div>`;
@@ -9727,7 +9727,7 @@ function cardSteamAchievementsFor(game) {
   const cached = cacheKey ? state.cardTrophies[cacheKey] : null;
   if (cacheKey && !cached && steamGameIsOwned(game)) loadCardSteamAchievements(game);
   const guideLinks = guideLinksFor(game);
-  const guideRow = guideLinks.length ? `<div class="guide-links card-guide-row">${guideLinks.join("")}</div>` : "";
+  const guideRow = state.canEdit && guideLinks.length ? `<div class="guide-links card-guide-row">${guideLinks.join("")}</div>` : "";
   if (cached?.loading) {
     return `${guideRow}<div class="card-trophy-head card-achievement-head">${trophyIcon()}<span>Loading achievements...</span></div>`;
   }
@@ -9758,7 +9758,7 @@ function cardSteamAchievementsFor(game) {
 function cardXboxAchievementsFor(game) {
   const xboxGame = matchedXboxGame(game);
   const guideLinks = guideLinksFor(game);
-  const guideRow = guideLinks.length ? `<div class="guide-links card-guide-row">${guideLinks.join("")}</div>` : "";
+  const guideRow = state.canEdit && guideLinks.length ? `<div class="guide-links card-guide-row">${guideLinks.join("")}</div>` : "";
   if (!xboxGame) return guideRow;
   const cacheKey = xboxAchievementCacheKey(xboxGame);
   const cached = cacheKey ? state.cardTrophies[cacheKey] : null;
@@ -10001,7 +10001,7 @@ async function refreshPlayingCardPlaytime() {
         dates.insertAdjacentHTML("beforeend", livePlaytimePill(game, value));
         pill = dates.querySelector(".live-playtime-pill");
       }
-      pill.style.cssText = timePillStyle(value);
+      pill.style.cssText = livePlaytimePillStyle(game, value);
       pill.querySelector("strong").textContent = `${value} ${value === 1 ? "HR" : "HRS"}`;
       const comparison = livePlaytimeComparison(game, value);
       pill.style.setProperty("--live-playtime-hover-width", `${livePlaytimeHoverWidth(comparison)}px`);
@@ -10015,7 +10015,14 @@ async function refreshPlayingCardPlaytime() {
 
 function livePlaytimePill(game, hours) {
   const label = livePlaytimeComparison(game, hours);
-  return `<span class="history-pill history-date-pill playtime-date-pill live-playtime-pill" style="${timePillStyle(hours)};--live-playtime-hover-width:${livePlaytimeHoverWidth(label)}px" data-comparison="${escapeHtml(label)}" title="${escapeHtml(label)}" aria-label="${escapeHtml(label)}"><small>${escapeHtml(tt("Play Time"))}</small><strong>${hours} ${hours === 1 ? "HR" : "HRS"}</strong></span>`;
+  return `<span class="history-pill history-date-pill playtime-date-pill live-playtime-pill" style="${livePlaytimePillStyle(game, hours)};--live-playtime-hover-width:${livePlaytimeHoverWidth(label)}px" data-comparison="${escapeHtml(label)}" title="${escapeHtml(label)}" aria-label="${escapeHtml(label)}"><small>${escapeHtml(tt("Play Time"))}</small><strong>${hours} ${hours === 1 ? "HR" : "HRS"}</strong></span>`;
+}
+
+function livePlaytimePillStyle(game, hours) {
+  const estimate = Number(game?.lengthHours);
+  const estimateHours = Number.isFinite(estimate) && estimate > 0 ? estimate : hours;
+  const estimateHue = Math.round(132 - (132 * Math.max(0, Math.min(1, (estimateHours - 7) / 53))));
+  return `${timePillStyle(hours)};--time-estimate-color:hsl(${estimateHue}, 88%, 56%)`;
 }
 
 function livePlaytimeComparison(game, hours) {
@@ -11908,7 +11915,7 @@ async function linkedPlatformPlaytimeHours(game) {
       if (!response.ok) return null;
       const data = await response.json();
       const hours = Number(data.playtimeHours);
-      return Number.isFinite(hours) && hours > 0 ? Math.round(hours) : null;
+      return Number.isFinite(hours) && hours > 0 ? Math.ceil(hours) : null;
     }
     if (isPcGame(game) && state.settings.steamUser) {
       const appId = steamAppIdFor(game);
