@@ -7125,8 +7125,10 @@ body.theme-kash .game-card.stream-card.completed-trophy-card {
       125deg,
       color-mix(in srgb, var(--time-color) 8%, transparent),
       color-mix(in srgb, var(--time-estimate-color, var(--time-color)) 8%, transparent)
-    ) padding-box,
-    linear-gradient(125deg, var(--time-color), var(--time-estimate-color, var(--time-color))) border-box;
+    ),
+    linear-gradient(125deg, var(--time-color), var(--time-estimate-color, var(--time-color)));
+  background-origin: padding-box, border-box;
+  background-clip: padding-box, border-box;
   box-shadow: 0 0 22px color-mix(in srgb, var(--time-glow) 85%, transparent);
 }
 
