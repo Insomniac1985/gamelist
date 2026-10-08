@@ -7104,6 +7104,27 @@ body.theme-kash .game-card.stream-card.completed-trophy-card {
   box-shadow: 0 0 12px var(--time-glow);
 }
 
+.playtime-date-pill.live-playtime-pill::before {
+  top: 4px;
+  bottom: auto;
+  height: 10px;
+  min-height: 0;
+  animation: live-playtime-bar-up 1.1s linear infinite;
+}
+
+@keyframes live-playtime-bar-up {
+  from { transform: translateY(14px); }
+  to { transform: translateY(0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .playtime-date-pill.live-playtime-pill::before {
+    top: 50%;
+    animation: none;
+    transform: translateY(-50%);
+  }
+}
+
 .playtime-date-pill strong {
   color: var(--time-color);
 }
