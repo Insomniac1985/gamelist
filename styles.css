@@ -7093,7 +7093,7 @@ body.theme-kash .game-card.stream-card.completed-trophy-card {
 .playtime-date-pill.live-playtime-pill .live-playtime-expanded {
   position: absolute;
   left: 15px;
-  top: 50%;
+  bottom: 3px;
   display: flex;
   align-items: center;
   gap: 4px;
@@ -7102,7 +7102,7 @@ body.theme-kash .game-card.stream-card.completed-trophy-card {
   letter-spacing: 0.025em;
   white-space: nowrap;
   opacity: 0;
-  transform: translate(5px, -50%);
+  transform: translateX(5px);
   transition: opacity 180ms ease, transform 240ms ease;
   pointer-events: none;
 }
@@ -7122,9 +7122,10 @@ body.theme-kash .game-card.stream-card.completed-trophy-card {
   background:
     linear-gradient(
       125deg,
-      color-mix(in srgb, var(--time-color) 12%, rgba(255, 255, 255, 0.04)),
-      color-mix(in srgb, var(--time-estimate-color, var(--time-color)) 12%, rgba(255, 255, 255, 0.04))
+      color-mix(in srgb, var(--time-color) 8%, transparent),
+      color-mix(in srgb, var(--time-estimate-color, var(--time-color)) 8%, transparent)
     ) padding-box,
+    rgba(255, 255, 255, 0.055) padding-box,
     linear-gradient(125deg, var(--time-color), var(--time-estimate-color, var(--time-color))) border-box;
   box-shadow: 0 0 22px color-mix(in srgb, var(--time-glow) 85%, transparent);
 }
@@ -7136,7 +7137,7 @@ body.theme-kash .game-card.stream-card.completed-trophy-card {
 
 .game-card.playing-card:is(:hover, :focus) .playtime-date-pill.live-playtime-pill .live-playtime-expanded {
   opacity: 1;
-  transform: translate(0, -50%);
+  transform: translateX(0);
 }
 
 @keyframes live-playtime-bar-up {

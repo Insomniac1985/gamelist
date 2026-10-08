@@ -10042,7 +10042,7 @@ function livePlaytimeComparison(game, hours) {
 }
 
 function livePlaytimeHoverWidth(label) {
-  return Math.min(280, Math.max(138, Math.ceil(String(label).length * 7 + 28)));
+  return Math.min(280, Math.max(138, Math.ceil(String(label).length * 7 + 14)));
 }
 
 function calendarStateForGame(game) {

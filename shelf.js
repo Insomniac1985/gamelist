@@ -3887,7 +3887,7 @@ function shelfLivePlaytimeComparison(game, hours) {
 }
 
 function shelfLivePlaytimeHoverWidth(label) {
-  return Math.min(280, Math.max(138, Math.ceil(String(label).length * 7 + 28)));
+  return Math.min(280, Math.max(138, Math.ceil(String(label).length * 7 + 14)));
 }
 
 function shelfTimePillStyle(hours) {
