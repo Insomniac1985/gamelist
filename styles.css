@@ -7081,12 +7081,21 @@ body.theme-kash .game-card.stream-card.completed-trophy-card {
   height: 10px;
   min-height: 0;
   animation: live-playtime-bar-up 1.25s linear infinite;
+  background: linear-gradient(180deg, var(--time-light-solid, var(--time-light)), var(--time-dark-solid, var(--time-dark)));
 }
 
 .playtime-date-pill.live-playtime-pill {
   z-index: 2;
   width: 78px;
   flex: 0 0 78px;
+  border-color: color-mix(in srgb, var(--time-color-solid, var(--time-color)) 46%, rgba(255, 255, 255, 0.16));
+  background:
+    linear-gradient(
+      135deg,
+      color-mix(in srgb, var(--time-color-solid, var(--time-color)) 22%, rgba(255, 255, 255, 0.08)),
+      rgba(255, 255, 255, 0.07)
+    ),
+    rgba(255, 255, 255, 0.055);
   transition: width 240ms ease, flex-basis 240ms ease, box-shadow 240ms ease;
 }
 
@@ -7108,36 +7117,42 @@ body.theme-kash .game-card.stream-card.completed-trophy-card {
 }
 
 .live-playtime-current {
-  color: var(--time-color);
+  color: var(--time-color-solid, var(--time-color));
 }
 
 .live-playtime-estimate {
-  color: var(--time-estimate-color, var(--time-color));
+  color: var(--time-estimate-color-solid, var(--time-estimate-color, var(--time-color)));
 }
 
-.game-card.playing-card:is(:hover, :focus) .playtime-date-pill.live-playtime-pill {
+.game-card.playing-card:is(:hover, :focus) .playtime-date-pill.live-playtime-pill:not(.is-tap-controlled),
+.playtime-date-pill.live-playtime-pill.is-expanded {
   width: var(--live-playtime-hover-width, 170px);
   flex-basis: var(--live-playtime-hover-width, 170px);
   border-color: transparent;
-  background-color: rgba(255, 255, 255, 0.055);
+  background-color: transparent;
   background-image:
     linear-gradient(
       125deg,
-      color-mix(in srgb, var(--time-color) 8%, transparent),
-      color-mix(in srgb, var(--time-estimate-color, var(--time-color)) 8%, transparent)
+      color-mix(in srgb, var(--time-color-solid, var(--time-color)) 3%, transparent),
+      color-mix(in srgb, var(--time-estimate-color-solid, var(--time-estimate-color, var(--time-color))) 3%, transparent)
     ),
-    linear-gradient(125deg, var(--time-color), var(--time-estimate-color, var(--time-color)));
+    linear-gradient(125deg, var(--time-color-solid, var(--time-color)), var(--time-estimate-color-solid, var(--time-estimate-color, var(--time-color))));
   background-origin: padding-box, border-box;
   background-clip: padding-box, border-box;
-  box-shadow: 0 0 22px color-mix(in srgb, var(--time-glow) 85%, transparent);
+  box-shadow:
+    -8px 0 20px -8px color-mix(in srgb, var(--time-color-solid, var(--time-color)) 72%, transparent),
+    8px 0 20px -8px color-mix(in srgb, var(--time-estimate-color-solid, var(--time-estimate-color, var(--time-color))) 72%, transparent),
+    0 0 18px color-mix(in srgb, var(--time-glow) 45%, transparent);
 }
 
-.game-card.playing-card:is(:hover, :focus) .playtime-date-pill.live-playtime-pill strong {
+.game-card.playing-card:is(:hover, :focus) .playtime-date-pill.live-playtime-pill:not(.is-tap-controlled) strong,
+.playtime-date-pill.live-playtime-pill.is-expanded strong {
   opacity: 0;
   transition: opacity 120ms ease;
 }
 
-.game-card.playing-card:is(:hover, :focus) .playtime-date-pill.live-playtime-pill .live-playtime-expanded {
+.game-card.playing-card:is(:hover, :focus) .playtime-date-pill.live-playtime-pill:not(.is-tap-controlled) .live-playtime-expanded,
+.playtime-date-pill.live-playtime-pill.is-expanded .live-playtime-expanded {
   opacity: 1;
   transform: translateX(0);
 }
@@ -7171,6 +7186,11 @@ body.theme-kash .game-card.stream-card.completed-trophy-card {
 
 .playtime-date-pill small {
   color: var(--time-color);
+}
+
+.playtime-date-pill.live-playtime-pill strong,
+.playtime-date-pill.live-playtime-pill small {
+  color: var(--time-color-solid, var(--time-color));
 }
 
 .time-pill {

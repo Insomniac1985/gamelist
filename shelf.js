@@ -355,6 +355,7 @@ function bindEvents() {
   document.addEventListener("focusin", handleSelectOverflowTitle);
   document.addEventListener("pointerout", handleSelectOverflowLeave);
   document.addEventListener("focusout", handleSelectOverflowLeave);
+  document.addEventListener("click", toggleShelfLivePlaytimePill, true);
 
   el.shelf.addEventListener("click", handleShelfClick);
   el.shelf.addEventListener("keydown", (event) => { if (event.key !== "Enter" && event.key !== " ") return; const card = event.target.closest("[data-id]"); if (!card || event.target.closest("button, a, input")) return; event.preventDefault(); const game = shelfDisplayedGameById(card.dataset.id); if (game) game.preorderProjection ? openGamelistDetails(game) : openDetails(game); });
@@ -3863,7 +3864,16 @@ async function linkedShelfPlaytimeHours(game) {
 
 function shelfLivePlaytimePill(game, hours) {
   const label = shelfLivePlaytimeComparison(game, hours);
-  return `<span class="history-pill history-date-pill playtime-date-pill live-playtime-pill" style="${shelfLivePlaytimePillStyle(game, hours)};--live-playtime-hover-width:${shelfLivePlaytimeHoverWidth(label)}px" data-comparison="${escapeHtml(label)}" title="${escapeHtml(label)}" aria-label="${escapeHtml(label)}"><small>${escapeHtml(tt("Play Time"))}</small><strong>${hours} ${hours === 1 ? "HR" : "HRS"}</strong><span class="live-playtime-expanded">${shelfLivePlaytimeExpandedMarkup(game, hours)}</span></span>`;
+  return `<span class="history-pill history-date-pill playtime-date-pill live-playtime-pill" style="${shelfLivePlaytimePillStyle(game, hours)};--live-playtime-hover-width:${shelfLivePlaytimeHoverWidth(label)}px" data-comparison="${escapeHtml(label)}" title="${escapeHtml(label)}" aria-label="${escapeHtml(label)}" aria-expanded="false"><small>${escapeHtml(tt("Play Time"))}</small><strong>${hours} ${hours === 1 ? "HR" : "HRS"}</strong><span class="live-playtime-expanded">${shelfLivePlaytimeExpandedMarkup(game, hours)}</span></span>`;
+}
+
+function toggleShelfLivePlaytimePill(event) {
+  const pill = event.target?.closest?.(".live-playtime-pill");
+  if (!pill) return;
+  event.stopPropagation();
+  if (window.matchMedia("(hover: none)").matches) pill.classList.add("is-tap-controlled");
+  const expanded = pill.classList.toggle("is-expanded");
+  pill.setAttribute("aria-expanded", String(expanded));
 }
 
 function shelfLivePlaytimeExpandedMarkup(game, hours) {
@@ -3877,8 +3887,9 @@ function shelfLivePlaytimeExpandedMarkup(game, hours) {
 function shelfLivePlaytimePillStyle(game, hours) {
   const estimate = Number(game?.lengthHours);
   const estimateHours = Number.isFinite(estimate) && estimate > 0 ? estimate : hours;
+  const actualHue = Math.round(132 - (132 * Math.max(0, Math.min(1, (Number(hours) - 7) / 53))));
   const estimateHue = Math.round(132 - (132 * Math.max(0, Math.min(1, (estimateHours - 7) / 53))));
-  return `${shelfTimePillStyle(hours)};--time-estimate-color:hsl(${estimateHue}, 88%, 56%)`;
+  return `${shelfTimePillStyle(hours)};--time-color-solid:hsl(${actualHue}, 88%, 56%);--time-light-solid:hsl(${Math.min(140, actualHue + 10)}, 94%, 72%);--time-dark-solid:hsl(${Math.max(0, actualHue - 8)}, 82%, 39%);--time-estimate-color:hsl(${estimateHue}, 88%, 56%);--time-estimate-color-solid:hsl(${estimateHue}, 88%, 56%)`;
 }
 
 function shelfLivePlaytimeComparison(game, hours) {
