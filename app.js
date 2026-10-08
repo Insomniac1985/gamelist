@@ -682,7 +682,7 @@ function bindTextureParallax() {
   if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
   let frame = 0;
   window.addEventListener("pointermove", (event) => {
-    if (frame) return;
+    if (event.pointerType === "touch" || frame) return;
     frame = requestAnimationFrame(() => {
       frame = 0;
       const x = ((event.clientX / window.innerWidth) - 0.5) * -14;
