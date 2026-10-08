@@ -5778,35 +5778,6 @@ body.theme-kash
   text-transform: uppercase;
 }
 
-.playing-section .game-card.playing-card .game-main {
-  position: relative;
-}
-
-.playing-section .game-card.playing-card .game-main::before {
-  content: "";
-  position: absolute;
-  left: -2px;
-  top: 12%;
-  width: 2px;
-  height: 44%;
-  border-radius: 99px;
-  background: linear-gradient(180deg, transparent, var(--accent-2) 45%, var(--accent) 65%, transparent);
-  opacity: 0.8;
-  pointer-events: none;
-  animation: playing-accent-cycle 2.4s ease-in-out infinite;
-}
-
-@keyframes playing-accent-cycle {
-  from { transform: translateY(75%); }
-  to { transform: translateY(-75%); }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .playing-section .game-card.playing-card .game-main::before {
-    animation: none;
-  }
-}
-
 .card-trophies {
   width: 100%;
   margin-top: 10px;
