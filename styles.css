@@ -5281,10 +5281,6 @@ body.theme-kash .game-row.stream-card:hover {
   margin-top: 2px;
 }
 
-.game-row.finished-game-row .time-pill span {
-  text-transform: lowercase;
-}
-
 .game-row .media-format-pill {
   display: inline-grid;
   place-items: center;
