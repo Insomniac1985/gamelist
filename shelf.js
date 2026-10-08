@@ -3797,7 +3797,7 @@ async function refreshShelfPlayingCardPlaytime() {
         dates.insertAdjacentHTML("beforeend", shelfLivePlaytimePill(game, value));
         pill = dates.querySelector(".live-playtime-pill");
       }
-      pill.style.cssText = `${shelfLivePlaytimePillStyle(game, value)};--live-playtime-hover-width:${shelfLivePlaytimeHoverWidth(label)}px`;
+      pill.style.cssText = shelfLivePlaytimePillStyle(game, value);
       pill.querySelector("strong").textContent = `${value} ${value === 1 ? "HR" : "HRS"}`;
       pill.querySelector(".live-playtime-expanded").innerHTML = shelfLivePlaytimeExpandedMarkup(game, value);
       pill.dataset.comparison = label;
@@ -3864,7 +3864,7 @@ async function linkedShelfPlaytimeHours(game) {
 
 function shelfLivePlaytimePill(game, hours) {
   const label = shelfLivePlaytimeComparison(game, hours);
-  return `<span class="history-pill history-date-pill playtime-date-pill live-playtime-pill" style="${shelfLivePlaytimePillStyle(game, hours)};--live-playtime-hover-width:${shelfLivePlaytimeHoverWidth(label)}px" data-comparison="${escapeHtml(label)}" title="${escapeHtml(label)}" aria-label="${escapeHtml(label)}" aria-expanded="false"><small>${escapeHtml(tt("Play Time"))}</small><strong>${hours} ${hours === 1 ? "HR" : "HRS"}</strong><span class="live-playtime-expanded">${shelfLivePlaytimeExpandedMarkup(game, hours)}</span></span>`;
+  return `<span class="history-pill history-date-pill playtime-date-pill live-playtime-pill" style="${shelfLivePlaytimePillStyle(game, hours)}" data-comparison="${escapeHtml(label)}" title="${escapeHtml(label)}" aria-label="${escapeHtml(label)}" aria-expanded="false"><small>${escapeHtml(tt("Play Time"))}</small><strong>${hours} ${hours === 1 ? "HR" : "HRS"}</strong><span class="live-playtime-expanded">${shelfLivePlaytimeExpandedMarkup(game, hours)}</span></span>`;
 }
 
 function toggleShelfLivePlaytimePill(event) {
@@ -3895,10 +3895,6 @@ function shelfLivePlaytimePillStyle(game, hours) {
 function shelfLivePlaytimeComparison(game, hours) {
   const estimate = Math.ceil(Number(game?.lengthHours));
   return estimate > 0 ? `${hours} HRS OUT OF ${estimate} HRS` : `${hours} ${hours === 1 ? "HR" : "HRS"} PLAYED`;
-}
-
-function shelfLivePlaytimeHoverWidth(label) {
-  return Math.min(280, Math.max(138, Math.ceil(String(label).length * 7 + 14)));
 }
 
 function shelfTimePillStyle(hours) {
