@@ -682,7 +682,7 @@ function bindTextureParallax() {
   if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
   let frame = 0;
   window.addEventListener("pointermove", (event) => {
-    if (frame) return;
+    if (event.pointerType === "touch" || frame) return;
     frame = requestAnimationFrame(() => {
       frame = 0;
       const x = ((event.clientX / window.innerWidth) - 0.5) * -14;
@@ -10006,7 +10006,6 @@ async function refreshPlayingCardPlaytime() {
       pill.querySelector("strong").textContent = `${value} ${value === 1 ? "HR" : "HRS"}`;
       pill.querySelector(".live-playtime-expanded").innerHTML = livePlaytimeExpandedMarkup(game, value);
       const comparison = livePlaytimeComparison(game, value);
-      pill.style.setProperty("--live-playtime-hover-width", `${livePlaytimeHoverWidth(comparison)}px`);
       pill.dataset.comparison = comparison;
       pill.title = comparison;
       pill.setAttribute("aria-label", comparison);
@@ -10017,14 +10016,15 @@ async function refreshPlayingCardPlaytime() {
 
 function livePlaytimePill(game, hours) {
   const label = livePlaytimeComparison(game, hours);
-  return `<span class="history-pill history-date-pill playtime-date-pill live-playtime-pill" style="${livePlaytimePillStyle(game, hours)};--live-playtime-hover-width:${livePlaytimeHoverWidth(label)}px" data-comparison="${escapeHtml(label)}" title="${escapeHtml(label)}" aria-label="${escapeHtml(label)}" aria-expanded="false"><small>${escapeHtml(tt("Play Time"))}</small><strong>${hours} ${hours === 1 ? "HR" : "HRS"}</strong><span class="live-playtime-expanded">${livePlaytimeExpandedMarkup(game, hours)}</span></span>`;
+  return `<span class="history-pill history-date-pill playtime-date-pill live-playtime-pill" style="${livePlaytimePillStyle(game, hours)}" data-comparison="${escapeHtml(label)}" title="${escapeHtml(label)}" aria-label="${escapeHtml(label)}" aria-expanded="false"><small>${escapeHtml(tt("Play Time"))}</small><strong>${hours} ${hours === 1 ? "HR" : "HRS"}</strong><span class="live-playtime-expanded">${livePlaytimeExpandedMarkup(game, hours)}</span></span>`;
 }
 
 function toggleLivePlaytimePill(event) {
+  if (!window.matchMedia("(hover: none)").matches) return;
   const pill = event.target?.closest?.(".live-playtime-pill");
   if (!pill) return;
   event.stopPropagation();
-  if (window.matchMedia("(hover: none)").matches) pill.classList.add("is-tap-controlled");
+  pill.classList.add("is-tap-controlled");
   const expanded = pill.classList.toggle("is-expanded");
   pill.setAttribute("aria-expanded", String(expanded));
 }
@@ -10050,10 +10050,6 @@ function livePlaytimeComparison(game, hours) {
   return estimate > 0
     ? `${hours} HRS OUT OF ${estimate} HRS`
     : `${hours} ${hours === 1 ? "HR" : "HRS"} PLAYED`;
-}
-
-function livePlaytimeHoverWidth(label) {
-  return Math.min(280, Math.max(138, Math.ceil(String(label).length * 7 + 14)));
 }
 
 function calendarStateForGame(game) {

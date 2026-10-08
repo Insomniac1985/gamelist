@@ -271,6 +271,7 @@ body {
     monospace;
 }
 
+html:has(dialog[open]),
 body.dialog-open {
   overflow: hidden;
 }
@@ -7085,6 +7086,11 @@ body.theme-kash .game-card.stream-card.completed-trophy-card {
 }
 
 .playtime-date-pill.live-playtime-pill {
+  overflow: visible;
+  --live-time-fill-current: color-mix(in srgb, var(--time-color-solid, var(--time-color)) 12%, rgba(255, 255, 255, 0.08));
+  --live-time-fill-estimate: color-mix(in srgb, var(--time-estimate-color-solid, var(--time-estimate-color, var(--time-color))) 12%, rgba(255, 255, 255, 0.08));
+  --live-time-glow-current: color-mix(in srgb, var(--time-color-solid, var(--time-color)) 72%, transparent);
+  --live-time-glow-estimate: color-mix(in srgb, var(--time-estimate-color-solid, var(--time-estimate-color, var(--time-color))) 72%, transparent);
   z-index: 2;
   width: 78px;
   flex: 0 0 78px;
@@ -7097,6 +7103,21 @@ body.theme-kash .game-card.stream-card.completed-trophy-card {
     ),
     rgba(255, 255, 255, 0.055);
   transition: width 240ms ease, flex-basis 240ms ease, box-shadow 240ms ease;
+}
+
+.playtime-date-pill.live-playtime-pill::after {
+  content: "";
+  position: absolute;
+  inset: -1px;
+  padding: 1px;
+  border-radius: inherit;
+  background: linear-gradient(125deg, var(--time-color-solid, var(--time-color)), var(--time-estimate-color-solid, var(--time-estimate-color, var(--time-color))));
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  opacity: 0;
+  pointer-events: none;
 }
 
 .playtime-date-pill.live-playtime-pill .live-playtime-expanded {
@@ -7124,37 +7145,80 @@ body.theme-kash .game-card.stream-card.completed-trophy-card {
   color: var(--time-estimate-color-solid, var(--time-estimate-color, var(--time-color)));
 }
 
-.game-card.playing-card:is(:hover, :focus) .playtime-date-pill.live-playtime-pill:not(.is-tap-controlled),
 .playtime-date-pill.live-playtime-pill.is-expanded {
-  width: var(--live-playtime-hover-width, 170px);
-  flex-basis: var(--live-playtime-hover-width, 170px);
+  width: max-content;
+  min-width: 78px;
+  flex-basis: auto;
+  padding-right: 9px;
   border-color: transparent;
-  background-color: transparent;
+  background-color: rgba(255, 255, 255, 0.055);
   background-image:
     linear-gradient(
       125deg,
-      color-mix(in srgb, var(--time-color-solid, var(--time-color)) 3%, transparent),
-      color-mix(in srgb, var(--time-estimate-color-solid, var(--time-estimate-color, var(--time-color))) 3%, transparent)
-    ),
-    linear-gradient(125deg, var(--time-color-solid, var(--time-color)), var(--time-estimate-color-solid, var(--time-estimate-color, var(--time-color))));
-  background-origin: padding-box, border-box;
-  background-clip: padding-box, border-box;
+      var(--live-time-fill-current),
+      var(--live-time-fill-estimate)
+    );
+  background-origin: padding-box;
+  background-clip: padding-box;
   box-shadow:
-    -8px 0 20px -8px color-mix(in srgb, var(--time-color-solid, var(--time-color)) 72%, transparent),
-    8px 0 20px -8px color-mix(in srgb, var(--time-estimate-color-solid, var(--time-estimate-color, var(--time-color))) 72%, transparent),
+    inset 0 1px 0 rgba(255, 255, 255, 0.12),
+    -8px 0 20px -8px var(--live-time-glow-current),
+    8px 0 20px -8px var(--live-time-glow-estimate),
     0 0 18px color-mix(in srgb, var(--time-glow) 45%, transparent);
 }
 
-.game-card.playing-card:is(:hover, :focus) .playtime-date-pill.live-playtime-pill:not(.is-tap-controlled) strong,
-.playtime-date-pill.live-playtime-pill.is-expanded strong {
-  opacity: 0;
-  transition: opacity 120ms ease;
+.playtime-date-pill.live-playtime-pill.is-expanded::after {
+  opacity: 1;
 }
 
-.game-card.playing-card:is(:hover, :focus) .playtime-date-pill.live-playtime-pill:not(.is-tap-controlled) .live-playtime-expanded,
+.playtime-date-pill.live-playtime-pill.is-expanded strong {
+  display: none;
+}
+
 .playtime-date-pill.live-playtime-pill.is-expanded .live-playtime-expanded {
+  position: static;
+  margin-top: 2px;
   opacity: 1;
-  transform: translateX(0);
+  transform: none;
+}
+
+@media (hover: hover) {
+  :is(.game-card.playing-card:hover .live-playtime-pill, .detail-modal .live-playtime-pill:hover) {
+    width: max-content;
+    min-width: 78px;
+    flex-basis: auto;
+    padding-right: 9px;
+    border-color: transparent;
+    background-color: rgba(255, 255, 255, 0.055);
+    background-image:
+      linear-gradient(
+        125deg,
+        var(--live-time-fill-current),
+        var(--live-time-fill-estimate)
+      );
+    background-origin: padding-box;
+    background-clip: padding-box;
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.12),
+      -8px 0 20px -8px var(--live-time-glow-current),
+      8px 0 20px -8px var(--live-time-glow-estimate),
+      0 0 18px color-mix(in srgb, var(--time-glow) 45%, transparent);
+  }
+
+  :is(.game-card.playing-card:hover .live-playtime-pill, .detail-modal .live-playtime-pill:hover)::after {
+    opacity: 1;
+  }
+
+  :is(.game-card.playing-card:hover .live-playtime-pill, .detail-modal .live-playtime-pill:hover) strong {
+    display: none;
+  }
+
+  :is(.game-card.playing-card:hover .live-playtime-pill, .detail-modal .live-playtime-pill:hover) .live-playtime-expanded {
+    position: static;
+    margin-top: 2px;
+    opacity: 1;
+    transform: none;
+  }
 }
 
 @keyframes live-playtime-bar-up {
@@ -10516,6 +10580,7 @@ dialog {
 }
 
 dialog::backdrop {
+  touch-action: none;
   background: rgba(0, 0, 0, 0.62);
   backdrop-filter: blur(4px);
 }
@@ -10665,6 +10730,7 @@ body.dialog-open .mobile-section-tabs {
 }
 
 .detail-modal {
+  overscroll-behavior: contain;
   position: relative;
   display: grid;
   grid-template-columns: minmax(170px, 260px) minmax(0, 1fr);
