@@ -256,6 +256,7 @@ let platformLogoOverlay = null;
 let shelfSettingsDirty = false;
 let shelfSettingsExitDestination = "";
 let shelfSettingsSnapshot = null;
+let shelfSettingsLogoutRequested = false;
 
 init();
 
@@ -426,10 +427,19 @@ function bindEvents() {
   });
   el.layoutDialog.addEventListener("cancel", (event) => { event.preventDefault(); requestShelfSettingsExit("close"); });
   el.layoutForm.addEventListener("submit", saveLayout);
+  document.querySelector("#shelfSettingsLogoutButton")?.addEventListener("click", () => {
+    if (shelfSettingsDirty) {
+      shelfSettingsLogoutRequested = true;
+      requestShelfSettingsExit("close");
+      return;
+    }
+    closeDialog(el.layoutDialog);
+    toggleEditMode();
+  });
   el.layoutForm.addEventListener("input", () => { shelfSettingsDirty = true; });
   el.layoutForm.addEventListener("change", () => { shelfSettingsDirty = true; });
   el.layoutForm.addEventListener("click", (event) => { if (event.target.closest("[data-layout-move], [data-owner-add], [data-owner-remove], [data-glow-option]")) shelfSettingsDirty = true; });
-  document.querySelector("#shelfSettingsUnsavedDialog [data-shelf-unsaved-cancel]")?.addEventListener("click", () => { document.querySelector("#shelfSettingsUnsavedDialog").close(); shelfSettingsExitDestination = ""; });
+  document.querySelector("#shelfSettingsUnsavedDialog [data-shelf-unsaved-cancel]")?.addEventListener("click", () => { document.querySelector("#shelfSettingsUnsavedDialog").close(); shelfSettingsExitDestination = ""; shelfSettingsLogoutRequested = false; });
   document.querySelector("#shelfSettingsUnsavedDialog [data-shelf-unsaved-save]")?.addEventListener("click", async () => {
     const destination = shelfSettingsExitDestination;
     document.querySelector("#shelfSettingsUnsavedDialog").close();
@@ -442,7 +452,7 @@ function bindEvents() {
     shelfSettingsExitDestination = "";
     discardShelfSettingsChanges(destination);
   });
-  document.querySelector("#shelfSettingsUnsavedDialog")?.addEventListener("cancel", () => { shelfSettingsExitDestination = ""; });
+  document.querySelector("#shelfSettingsUnsavedDialog")?.addEventListener("cancel", () => { shelfSettingsExitDestination = ""; shelfSettingsLogoutRequested = false; });
   el.layoutList.addEventListener("click", handleLayoutMove);
   el.showcaseClose.addEventListener("click", () => closeDialog(el.showcaseDialog));
   el.showcaseDialog.addEventListener("click", (event) => { if (event.target === el.showcaseDialog) closeDialog(el.showcaseDialog); });
@@ -2788,6 +2798,10 @@ function requestShelfSettingsExit(destination) {
 function finishShelfSettingsExit(destination) {
   if (destination === "close") {
     closeDialog(el.layoutDialog);
+    if (shelfSettingsLogoutRequested) {
+      shelfSettingsLogoutRequested = false;
+      toggleEditMode();
+    }
     return;
   }
   el.layoutDialog.querySelectorAll("[data-shelf-settings-window]").forEach((panel) => { panel.hidden = true; });
@@ -3623,7 +3637,7 @@ async function saveLayout(event, { close = true } = {}) {
   if (!state.layout.hidden.includes("trophies") && !state.trophyActivity) loadTrophyActivity();
   shelfSettingsDirty = false;
   shelfSettingsSnapshot = { layout: structuredClone(state.layout), settings: structuredClone(state.gamelistSettings) };
-  if (close) closeDialog(el.layoutDialog);
+  if (close) finishShelfSettingsExit("close");
   else finishShelfSettingsExit("back");
 }
 

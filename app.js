@@ -466,6 +466,7 @@ const el = {
   settingsThemeEditor: document.querySelector("#settingsThemeEditor"),
   settingsDefaultOwner: document.querySelector("#settingsDefaultOwner"),
   settingsDevFeatures: document.querySelector("#settingsDevFeatures"),
+  settingsDevPanelFeatures: document.querySelector("#settingsDevPanelFeatures"),
   settingsDevHome: document.querySelector("#settingsDevHome"),
   detailTitle: document.querySelector("#detailTitle"),
   detailStudio: document.querySelector("#detailStudio"),
@@ -2599,8 +2600,13 @@ function renderSettingsDialog() {
   el.settingsThemeEditor.innerHTML = themeSettingsContent(state.settings, tt);
   bindThemeSettingsContent(el.settingsThemeEditor, tt);
   document.querySelector("#settingsCsvData").innerHTML = settingsCsvDataItem();
-  if (el.settingsDevHome) el.settingsDevHome.hidden = !isShabiiMainOwner();
-  if (el.settingsDevFeatures) el.settingsDevFeatures.innerHTML = settingsDevFeaturesItem("gamelist");
+  const isShabiiOwner = isShabiiMainOwner();
+  if (el.settingsDevHome) el.settingsDevHome.hidden = !isShabiiOwner;
+  const devCategory = el.settingsDialog.querySelector("[data-settings-panel='dev']");
+  if (devCategory) devCategory.hidden = isShabiiOwner;
+  const devMarkup = settingsDevFeaturesItem("gamelist");
+  if (el.settingsDevFeatures) el.settingsDevFeatures.innerHTML = isShabiiOwner ? devMarkup : "";
+  if (el.settingsDevPanelFeatures) el.settingsDevPanelFeatures.innerHTML = isShabiiOwner ? "" : devMarkup;
   el.settingsStores.innerHTML = STORE_OPTIONS.map((store) => `
     <label class="check-filter toggle-check settings-store-check">
       <input type="checkbox" value="${escapeHtml(store)}" ${state.settings.stores.includes(store) ? "checked" : ""}>

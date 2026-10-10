@@ -7731,6 +7731,11 @@ body:not(.shelf-page) .price-refresh-action {
   display: none !important;
 }
 
+body.shelf-page #fetchPricesButton,
+body.shelf-page .top-actions-separator {
+  display: none !important;
+}
+
 #syncButton {
   display: none !important;
 }
@@ -10894,7 +10899,6 @@ html.theme-light .settings-category-card { border-color: rgba(31,42,61,.22); bac
   .settings-modal .modal-head-actions { flex: 0 0 auto; gap: 6px; }
   .settings-modal .modal-head-actions .primary-button { min-height: 40px; padding: 8px 12px; }
   .settings-window-panel { min-width: 0; gap: 16px; }
-  .settings-layout { grid-template-columns: 1fr; }
   .settings-detail-grid, .settings-detail-grid > * { min-width: 0; }
   .settings-inline-theme-section { min-width: 0; }
 }
@@ -10925,6 +10929,14 @@ html.theme-light .settings-category-card { border-color: rgba(31,42,61,.22); bac
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 10px;
+}
+
+@media (max-width: 760px) {
+  .settings-layout { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .settings-layout-card { min-width: 0; }
+  .settings-layout-actions { justify-content: center; flex-wrap: wrap; gap: 4px; }
+  .settings-layout-actions .settings-visible-check { margin-left: 0; }
+  .settings-layout-actions .icon-button { width: 28px; min-width: 28px; height: 28px; min-height: 28px; }
 }
 
 .settings-layout-card {
@@ -12872,6 +12884,12 @@ html.theme-light .shelf-card-delete-action:hover {
   flex: 0 0 20px;
   object-fit: contain;
   border-radius: 4px;
+}
+
+@media (max-width: 760px) {
+  .settings-store-list { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .settings-store-check { min-width: 0; gap: 6px; padding-inline: 8px; }
+  .settings-store-check > span { min-width: 0; overflow-wrap: anywhere; }
 }
 
 .release-dialog-list {
