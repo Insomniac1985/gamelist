@@ -953,13 +953,33 @@ function bindEvents() {
   el.mobileDockAdd?.addEventListener("click", quickAddGame);
   el.searchButton?.addEventListener("click", scrollToSearchArea);
   el.floatingSearchButton?.addEventListener("click", scrollToSearchArea);
-  el.mobileDockSearch?.addEventListener("click", scrollToSearchArea);
+  el.mobileDockSearch?.addEventListener("click", () => {
+    const toolbar = document.querySelector(".toolbar");
+    if (!toolbar || !("IntersectionObserver" in window)) {
+      scrollToSearchArea();
+      return;
+    }
+    el.mobileDockSearch.hidden = true;
+    let reachedSearchArea = false;
+    const observer = new IntersectionObserver(([entry]) => {
+      if (entry.isIntersecting) {
+        reachedSearchArea = true;
+      } else if (reachedSearchArea) {
+        el.mobileDockSearch.hidden = false;
+        observer.disconnect();
+      }
+    });
+    observer.observe(toolbar);
+    scrollToSearchArea();
+  });
   el.syncButton.addEventListener("click", syncNow);
   el.settingsButton?.addEventListener("click", openSettingsDialog);
   el.mobileDockSettings?.addEventListener("click", openSettingsDialog);
   el.mobileDockSwitch?.addEventListener("click", () => {
     if (pageSwitchHidden()) return;
-    window.location.href = pullNavigationUrl("shelf");
+    const transitionButton = document.querySelector(".page-pull-switch");
+    if (transitionButton) transitionButton.click();
+    else window.location.href = pullNavigationUrl("shelf");
   });
   el.settingsDialog?.querySelectorAll("[data-settings-panel]").forEach((button) => {
     button.addEventListener("click", () => {
