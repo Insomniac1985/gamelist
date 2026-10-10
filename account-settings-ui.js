@@ -104,11 +104,9 @@ export function accountSettingsMarkup() {
       </label>
       <div class="settings-account-field settings-provider-field settings-pricecharting-field">
         <span>PriceCharting API</span>
-        <small class="settings-provider-intro" id="settingsPriceChartingIntro">Connect the API token from your PriceCharting Legendary subscription.</small>
         <div class="settings-provider-controls">
           <span id="settingsPriceChartingStatus" class="settings-provider-status" hidden></span>
-          <a class="ghost-button settings-provider-page-button" href="https://www.pricecharting.com/api-documentation" target="_blank" rel="noopener noreferrer">PriceCharting API docs</a>
-          <a class="ghost-button settings-provider-page-button" href="https://www.pricecharting.com/subscriptions" target="_blank" rel="noopener noreferrer">Open subscription page</a>
+          <a class="ghost-button settings-provider-page-button" id="settingsPriceChartingSubscription" href="https://www.pricecharting.com/subscriptions" target="_blank" rel="noopener noreferrer">Open subscription page</a>
           <button class="ghost-button" id="settingsPriceChartingDisconnect" type="button" hidden>Disconnect</button>
         </div>
         <div class="settings-provider-callback" id="settingsPriceChartingSetup" hidden>
@@ -122,10 +120,21 @@ export function accountSettingsMarkup() {
   `;
 }
 
+let priceChartingSetupRevealed = false;
+
 document.addEventListener("click", (event) => {
   if (event.target.closest("#settingsPriceChartingConnect")) connectPriceChartingApi();
   else if (event.target.closest("#settingsPriceChartingDisconnect")) disconnectPriceChartingApi();
-  else if (event.target.closest("#settingsButton")) window.setTimeout(refreshPriceChartingStatus, 0);
+  else if (event.target.closest("#settingsPriceChartingSubscription")) {
+    priceChartingSetupRevealed = true;
+    const setup = document.querySelector("#settingsPriceChartingSetup");
+    if (setup) setup.hidden = false;
+  } else if (event.target.closest("#settingsButton")) {
+    priceChartingSetupRevealed = false;
+    const setup = document.querySelector("#settingsPriceChartingSetup");
+    if (setup) setup.hidden = true;
+    window.setTimeout(refreshPriceChartingStatus, 0);
+  }
 });
 
 document.addEventListener("focusin", (event) => {
@@ -203,15 +212,16 @@ function syncPriceChartingState(elements, connected) {
   elements.status.hidden = !connected;
   elements.apiStatus.textContent = "";
   elements.apiStatus.hidden = true;
-  elements.intro.hidden = connected;
-  elements.setup.hidden = connected;
+  elements.setup.hidden = connected || !priceChartingSetupRevealed;
   elements.disconnect.hidden = !connected;
-  if (!connected) elements.token.value = "";
+  if (!connected) {
+    elements.token.value = "";
+    priceChartingSetupRevealed = false;
+  }
 }
 
 function priceChartingElements() {
   return {
-    intro: document.querySelector("#settingsPriceChartingIntro"),
     status: document.querySelector("#settingsPriceChartingStatus"),
     setup: document.querySelector("#settingsPriceChartingSetup"),
     token: document.querySelector("#settingsPriceChartingToken"),

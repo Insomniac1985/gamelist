@@ -208,6 +208,50 @@ export function themeSettingsButton(settings, escapeHtml = htmlEscape, translate
   `;
 }
 
+export function themeSettingsContent(settings = {}, translate = identityTranslate) {
+  const draft = normalizeThemeSettings(settings);
+  const ownerRows = draft.ownerColors.length ? draft.ownerColors : [{ name: "", color: "#ff9ed2" }];
+  return `
+    <div class="theme-inline-content">
+      <section class="theme-editor-grid">
+        ${colorField("mainColor", "Main color", draft.mainColor, false, false, "theme-main-color", translate)}
+        ${colorField("accentColor", "Accent color", draft.accentColor, false, false, "theme-accent-color", translate)}
+        ${colorField("gradientColor", "Gradient color", draft.gradientColor, false, false, "theme-gradient-color", translate)}
+        ${colorField("extraColor", "Extra color", draft.extraColor, false, false, "theme-extra-color", translate)}
+        <div class="theme-editor-row theme-controls-row">
+          <label class="settings-detail-compact theme-mode-field"><span>${htmlEscape(translate("Theme"))}</span><select name="mode"><option value="dark" ${draft.mode === "dark" ? "selected" : ""}>${htmlEscape(translate("Dark"))}</option><option value="light" ${draft.mode === "light" ? "selected" : ""}>${htmlEscape(translate("Light (WIP)"))}</option></select></label>
+          <label class="settings-detail-compact theme-font-field"><span>${htmlEscape(translate("Title font"))}</span><select name="accentFont" style="font-family:&quot;${htmlEscape(FONT_OPTIONS.find((font) => font.value === draft.accentFont)?.family || "Cascadia Code")}&quot;">${FONT_OPTIONS.map((font) => `<option value="${htmlEscape(font.value)}" style="font-family:&quot;${htmlEscape(font.family)}&quot;" ${draft.accentFont === font.value ? "selected" : ""}>${htmlEscape(font.label)}</option>`).join("")}</select></label>
+          <label class="check-filter toggle-check theme-check"><input name="gradient" type="checkbox" ${draft.gradient ? "checked" : ""}><span>${htmlEscape(translate("Gradient titles"))}</span></label>
+          <label class="check-filter toggle-check theme-check"><input name="uppercaseTitles" type="checkbox" ${draft.uppercaseTitles ? "checked" : ""}><span>${htmlEscape(translate("Uppercase Titles"))}</span></label>
+          <label class="check-filter toggle-check theme-check"><input name="disableGlow" type="checkbox" ${draft.disableGlow ? "" : "checked"}><span>${htmlEscape(translate("Background glows"))}</span></label>
+        </div>
+        <div class="theme-editor-row theme-glow-row" ${draft.disableGlow ? "hidden" : ""}>
+          <label class="settings-detail-compact"><span>${htmlEscape(translate("Glow 1"))}</span>${glowSelect("glowPrimary", draft.glowPrimary, translate)}</label>
+          <label class="settings-detail-compact"><span>${htmlEscape(translate("Glow 2"))}</span>${glowSelect("glowSecondary", draft.glowSecondary, translate)}</label>
+        </div>
+        <label class="check-filter toggle-check theme-check theme-big-logo-row"><input name="bigLogo" type="checkbox" ${draft.bigLogo ? "checked" : ""}><span>${htmlEscape(translate("Big logo"))}</span></label>
+      </section>
+      <section class="settings-section">
+        <h3>${htmlEscape(translate("Custom Owner Colors"))}</h3>
+        <div class="theme-owner-table">
+          <div class="theme-owner-head"><span>${htmlEscape(translate("Owner"))}</span><span>${htmlEscape(translate("Main color"))}</span><span>${htmlEscape(translate("Pick"))}</span><span></span></div>
+          <div data-owner-rows>${ownerRows.map((owner) => ownerRow(owner, translate)).join("")}</div>
+          <button class="ghost-button" type="button" data-owner-add>${htmlEscape(translate("Add owner color"))}</button>
+        </div>
+      </section>
+    </div>
+  `;
+}
+
+export function bindThemeSettingsContent(root, translate = identityTranslate) {
+  bindThemeEditorControls(root, translate);
+}
+
+export function readThemeSettingsContent(root, settings = {}) {
+  const draft = normalizeThemeSettings(settings);
+  return normalizeThemeSettings({ ...settings, customTheme: readThemeForm(root, draft) });
+}
+
 export function openThemeEditor({ settings = {}, onSave, page = "gamelist", translate = identityTranslate }) {
   const dialog = ensureThemeDialog();
   const draft = structuredCloneSafe(normalizeThemeSettings(settings));
@@ -274,25 +318,28 @@ function renderThemeDialog(dialog, draft, settings, page, onSave, translate = id
   `;
   const form = dialog.querySelector("form");
   dialog.querySelector("[data-theme-close]")?.addEventListener("click", () => dialog.close());
-  form.querySelector("[name='accentFont']")?.addEventListener("change", (event) => {
-    event.currentTarget.style.fontFamily = `"${FONT_OPTIONS.find((font) => font.value === event.currentTarget.value)?.family || "Cascadia Code"}"`;
-  });
-  form.querySelector("[name='disableGlow']")?.addEventListener("change", (event) => {
-    form.querySelector(".theme-glow-row")?.toggleAttribute("hidden", !event.currentTarget.checked);
-  });
-  form.querySelector("[data-owner-add]")?.addEventListener("click", () => {
-    const rows = form.querySelector("[data-owner-rows]");
-    rows.insertAdjacentHTML("beforeend", ownerRow({ name: "", color: "#79f2ce" }, translate));
-  });
-  form.addEventListener("click", (event) => {
-    const remove = event.target.closest("[data-owner-remove]");
-    if (remove) remove.closest(".theme-owner-row")?.remove();
-  });
+  bindThemeEditorControls(form, translate);
   form.addEventListener("submit", async (event) => {
     event.preventDefault();
     const nextTheme = normalizeThemeSettings({ ...settings, customTheme: readThemeForm(form, draft) });
     await onSave?.({ ...settings, theme: "custom", customTheme: nextTheme });
     dialog.close();
+  });
+}
+
+function bindThemeEditorControls(root, translate) {
+  root.querySelector("[name='accentFont']")?.addEventListener("change", (event) => {
+    event.currentTarget.style.fontFamily = `"${FONT_OPTIONS.find((font) => font.value === event.currentTarget.value)?.family || "Cascadia Code"}"`;
+  });
+  root.querySelector("[name='disableGlow']")?.addEventListener("change", (event) => {
+    root.querySelector(".theme-glow-row")?.toggleAttribute("hidden", !event.currentTarget.checked);
+  });
+  root.querySelector("[data-owner-add]")?.addEventListener("click", () => {
+    root.querySelector("[data-owner-rows]")?.insertAdjacentHTML("beforeend", ownerRow({ name: "", color: "#79f2ce" }, translate));
+  });
+  root.addEventListener("click", (event) => {
+    const remove = event.target.closest("[data-owner-remove]");
+    if (remove) remove.closest(".theme-owner-row")?.remove();
   });
 }
 
@@ -327,25 +374,27 @@ function ownerRow(owner, translate = identityTranslate) {
 }
 
 function readThemeForm(form, draft) {
-  const value = (name) => form.elements[name]?.value || "";
+  const field = (name) => form.querySelector(`[name="${name}"]`);
+  const value = (name) => field(name)?.value || "";
+  const checked = (name) => Boolean(field(name)?.checked);
   const ownerNames = [...form.querySelectorAll("[name='ownerName']")];
   const ownerColors = [...form.querySelectorAll("[name='ownerColor']")];
   return normalizeThemeSettings({
     customTheme: {
       ...draft,
       mainColor: normalizeHex(value("mainColor")) || draft.mainColor,
-      mainColorReset: Boolean(form.elements.mainColorReset?.checked),
-      gradient: Boolean(form.elements.gradient?.checked),
-      uppercaseTitles: Boolean(form.elements.uppercaseTitles?.checked),
+      mainColorReset: checked("mainColorReset"),
+      gradient: checked("gradient"),
+      uppercaseTitles: checked("uppercaseTitles"),
       gradientColor: normalizeHex(value("gradientColor")) || draft.gradientColor,
       accentColor: normalizeHex(value("accentColor")) || draft.accentColor,
-      accentColorReset: Boolean(form.elements.accentColorReset?.checked),
+      accentColorReset: checked("accentColorReset"),
       extraColor: normalizeHex(value("extraColor")) || draft.extraColor,
       mode: value("mode") === "light" ? "light" : "dark",
-      disableGlow: !Boolean(form.elements.disableGlow?.checked),
+      disableGlow: !checked("disableGlow"),
       glowPrimary: value("glowPrimary") || draft.glowPrimary,
       glowSecondary: value("glowSecondary") || draft.glowSecondary,
-      bigLogo: Boolean(form.elements.bigLogo?.checked),
+      bigLogo: checked("bigLogo"),
       accentFont: value("accentFont"),
       ownerColors: ownerNames.map((input, index) => ({ name: input.value, color: ownerColors[index]?.value || "" })),
     },
