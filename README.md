@@ -248,7 +248,7 @@ GOOGLE_CALENDAR_ID
 2. Open it.
 3. Click **Edit mode** and enter the `EDIT_PASSWORD` you set.
 4. Open Settings.
-5. Set currency, region, selected shops, default owner, account names, theme, Shelf Sync, and visible sections.
+5. Set currency, region, selected shops, default owner, account names, theme, Sync games with Shelf, and visible sections.
 6. Save settings.
 
 Those settings are stored in the Worker KV namespace.

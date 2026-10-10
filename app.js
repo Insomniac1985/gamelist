@@ -942,7 +942,7 @@ function bindEvents() {
       window.open(twitchUrl, "_blank", "noopener,noreferrer");
       return;
     }
-    scrollToSearchArea();
+    scrollToGameList();
   });
   el.loginButton.addEventListener("click", toggleEditMode);
   document.querySelector("#settingsLogoutButton")?.addEventListener("click", () => {
@@ -2765,9 +2765,9 @@ function settingsShelfSyncItem() {
     <article class="settings-layout-card settings-sync-card" data-layout-key="shelf-sync">
       <div class="settings-wire wire-list" aria-hidden="true"><span></span><span></span><span></span></div>
       <div class="settings-theme-select">
-        <span>${escapeHtml(tt("Shelf Sync"))}</span>
+        <span>${escapeHtml(tt("Sync games with Shelf"))}</span>
         <div class="settings-check-field">
-          <label class="check-filter toggle-check settings-visible-check" title="${escapeHtml(tt("Shelf Sync"))}">
+          <label class="check-filter toggle-check settings-visible-check" title="${escapeHtml(tt("Sync games with Shelf"))}">
             <input type="checkbox" data-shelf-sync ${state.settings.shelfSync ? "checked" : ""}>
             <span>${escapeHtml(tt("Enabled"))}</span>
           </label>
@@ -5764,6 +5764,10 @@ function downloadCanvas(canvas, filename) {
 function scrollToSearchArea() {
   document.querySelector(".toolbar")?.scrollIntoView({ behavior: "smooth", block: "start" });
   window.requestAnimationFrame(() => el.searchInput?.focus({ preventScroll: true }));
+}
+
+function scrollToGameList() {
+  document.querySelector("#backlog")?.scrollIntoView({ behavior: "smooth", block: "start" });
 }
 
 function scrollToFinishedSection() {

@@ -17545,7 +17545,7 @@ html.theme-light .finish-trophy-check input[type="checkbox"]:checked {
     justify-items: center;
     padding: 0;
     border: 0;
-    border-radius: 12px;
+    border-radius: 8px;
     color: #fff;
     background: transparent;
     cursor: pointer;
@@ -17612,8 +17612,8 @@ html.theme-light .finish-trophy-check input[type="checkbox"]:checked {
 
   #mobileDockSwitch:hover,
   #mobileDockSwitch:focus-visible {
-    width: 184px;
-    flex-basis: 184px;
+    width: 220px;
+    flex-basis: 220px;
     gap: 8px;
     justify-content: flex-start;
     padding-inline: 12px;
@@ -17634,7 +17634,8 @@ html.theme-light .finish-trophy-check input[type="checkbox"]:checked {
 
   #mobileDockSwitch:hover > .mobile-switch-label,
   #mobileDockSwitch:focus-visible > .mobile-switch-label {
-    width: 124px;
+    width: 160px;
+    flex-shrink: 0;
     opacity: 1;
     transition-duration: 220ms;
   }
@@ -17699,6 +17700,22 @@ body.page-pulling #mobileActionDock {
 #settingsButton[hidden],
 #mobileDockSettings[hidden] {
   display: none !important;
+}
+
+@media (min-width: 761px) {
+  html.from-authenticated-navigation body.auth-checking #settingsButton[hidden] {
+    display: inline-grid !important;
+    visibility: visible;
+    pointer-events: none;
+  }
+}
+
+@media (max-width: 760px) {
+  html.from-authenticated-navigation body.auth-checking #mobileDockSettings[hidden] {
+    display: grid !important;
+    visibility: visible;
+    pointer-events: none;
+  }
 }
 
 body.auth-checking #settingsButton[aria-busy="true"],

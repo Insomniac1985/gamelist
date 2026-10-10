@@ -11,7 +11,12 @@
     <script>
       (() => {
         const root = document.documentElement;
-        if (new URLSearchParams(location.search).get("pull") === "1") root.classList.add("from-pull-navigation");
+        if (new URLSearchParams(location.search).get("pull") === "1") {
+          root.classList.add("from-pull-navigation");
+          try {
+            if (sessionStorage.getItem("gamelist-editor") === "true") root.classList.add("from-authenticated-navigation");
+          } catch {}
+        }
         const settingsKey = "gamelist:settings:v1";
         const themes = {
           shabii: { title: "Shabii's Shelf", icon: "assets/Icon_shelf.png", color: "#ff0039" },
