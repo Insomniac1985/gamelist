@@ -15490,12 +15490,17 @@ html.theme-light .finish-trophy-check input[type="checkbox"]:checked {
     min-height: 68px;
     width: 95%;
     gap: 2px;
+    padding: 6px;
     transform: translateX(-50%);
     border: 1px solid var(--line);
     border-radius: 15px;
     background: var(--panel);
     box-shadow: 0 18px 42px rgba(0, 0, 0, 0.28);
     backdrop-filter: blur(12px) saturate(1.15);
+  }
+
+  #mobileDockUp {
+    display: none;
   }
 
   .mobile-action-dock[hidden] {
@@ -17460,6 +17465,10 @@ html.theme-light .finish-trophy-check input[type="checkbox"]:checked {
 }
 
 @media (min-width: 761px) {
+  #scrollTopButton {
+    display: none !important;
+  }
+
   .mobile-action-dock {
     position: fixed;
     left: auto;
@@ -17470,15 +17479,14 @@ html.theme-light .finish-trophy-check input[type="checkbox"]:checked {
     width: max-content;
     min-height: 54px;
     gap: 2px;
-    padding: 8px;
-    transform: translateY(10px);
+    transform: translateY(0);
     border: 1px solid var(--line);
     border-radius: 16px;
     background: var(--panel);
     box-shadow: 0 18px 42px rgba(0, 0, 0, 0.28);
     backdrop-filter: blur(12px) saturate(1.15);
-    opacity: 0;
-    pointer-events: none;
+    opacity: 1;
+    pointer-events: auto;
     transition:
       opacity 160ms ease,
       transform 160ms ease;
@@ -17509,30 +17517,39 @@ html.theme-light .finish-trophy-check input[type="checkbox"]:checked {
     -webkit-tap-highlight-color: transparent;
   }
 
-  #mobileDockAdd::before {
-    content: attr(title);
-    position: absolute;
-    top: 50%;
-    right: calc(100% + 8px);
-    padding: 7px 10px;
-    color: var(--text);
-    white-space: nowrap;
-    background: var(--panel);
-    border: 1px solid var(--line);
-    border-radius: 9px;
-    box-shadow: 0 8px 22px rgba(0, 0, 0, 0.25);
-    opacity: 0;
-    pointer-events: none;
-    transform: translate(5px, -50%);
+  #mobileDockAdd {
+    overflow: hidden;
     transition:
-      opacity 140ms ease,
-      transform 140ms ease;
+      flex-basis 180ms ease,
+      width 180ms ease,
+      background 140ms ease,
+      box-shadow 140ms ease;
   }
 
-  #mobileDockAdd:hover::before,
-  #mobileDockAdd:focus-visible::before {
+  #mobileDockAdd > span {
+    display: inline-block;
+    width: 0;
+    overflow: hidden;
+    opacity: 0;
+    white-space: nowrap;
+    transition:
+      width 180ms ease,
+      opacity 120ms ease;
+  }
+
+  #mobileDockAdd:hover,
+  #mobileDockAdd:focus-visible {
+    width: 160px;
+    flex-basis: 160px;
+    gap: 8px;
+    justify-content: flex-start;
+    padding-inline: 12px;
+  }
+
+  #mobileDockAdd:hover > span,
+  #mobileDockAdd:focus-visible > span {
+    width: 104px;
     opacity: 1;
-    transform: translate(0, -50%);
   }
 
   .mobile-dock-action svg {
@@ -17555,6 +17572,7 @@ html.theme-light .finish-trophy-check input[type="checkbox"]:checked {
   }
 
   #mobileDockSettings,
+  #mobileDockSearch,
   .floating-edit-actions,
   .floating-search-button {
     display: none !important;
@@ -17571,7 +17589,9 @@ html.theme-light .finish-trophy-check input[type="checkbox"]:checked {
 body.page-pulling #mobileActionDock,
 body.page-switching > #mobileActionDock {
   transform: translateY(26px);
-  transition: transform 520ms cubic-bezier(0.2, 0.86, 0.2, 1), opacity 260ms ease;
+  transition:
+    transform 520ms cubic-bezier(0.2, 0.86, 0.2, 1),
+    opacity 260ms ease;
 }
 
 body.page-pulling #mobileActionDock {
@@ -17589,10 +17609,6 @@ body.page-pulling #mobileActionDock {
   }
 }
 
-@keyframes settings-auth-spin {
-  to { transform: translate(-50%, -50%) rotate(360deg); }
-}
-
 body.auth-checking #settingsButton[hidden],
 body.auth-checking #mobileDockSettings[hidden] {
   visibility: visible;
@@ -17603,26 +17619,6 @@ body.auth-checking #settingsButton[aria-busy="true"],
 body.auth-checking #mobileDockSettings[aria-busy="true"] {
   position: relative;
   pointer-events: none;
-}
-
-body.auth-checking #settingsButton[aria-busy="true"] svg,
-body.auth-checking #mobileDockSettings[aria-busy="true"] svg {
-  opacity: 0;
-}
-
-body.auth-checking #settingsButton[aria-busy="true"]::after,
-body.auth-checking #mobileDockSettings[aria-busy="true"]::after {
-  content: "";
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  width: 15px;
-  height: 15px;
-  border: 2px solid color-mix(in srgb, var(--accent) 34%, var(--muted));
-  border-top-color: var(--accent);
-  border-radius: 50%;
-  transform: translate(-50%, -50%);
-  animation: settings-auth-spin 760ms linear infinite;
 }
 
 #settingsButton svg,
