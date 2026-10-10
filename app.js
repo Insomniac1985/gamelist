@@ -948,7 +948,9 @@ function bindEvents() {
       if (home) home.hidden = true;
       const sectionTitle = button.querySelector(".settings-category-text strong")?.textContent.trim() || "Settings";
       document.querySelector("#settingsDialogEyebrow").textContent = "Settings";
-      document.querySelector("#settingsDialogTitle").textContent = sectionTitle;
+      document.querySelector("#settingsDialogTitle").hidden = true;
+      document.querySelector("#settingsDialogSectionTitle").textContent = sectionTitle;
+      document.querySelector("#settingsDialogBackTitle").hidden = false;
       el.settingsDialog.querySelectorAll("[data-settings-window]").forEach((section) => {
         section.hidden = section.dataset.settingsWindow !== panel;
       });
@@ -963,7 +965,8 @@ function bindEvents() {
       if (home) home.hidden = false;
       el.settingsDialog.classList.remove("has-settings-window");
       document.querySelector("#settingsDialogEyebrow").textContent = "Site settings";
-      document.querySelector("#settingsDialogTitle").textContent = "Settings";
+      document.querySelector("#settingsDialogTitle").hidden = false;
+      document.querySelector("#settingsDialogBackTitle").hidden = true;
       el.settingsDialog.querySelector(".settings-modal")?.scrollTo({ top: 0 });
     });
   });
@@ -1904,6 +1907,8 @@ function openSettingsDialog() {
   el.settingsDialog.classList.remove("has-settings-window");
   document.querySelector("#settingsDialogEyebrow").textContent = "Site settings";
   document.querySelector("#settingsDialogTitle").textContent = "Settings";
+  document.querySelector("#settingsDialogTitle").hidden = false;
+  document.querySelector("#settingsDialogBackTitle").hidden = true;
   renderSettingsDialog();
   el.settingsDialog.showModal();
   refreshIgdbConnectionStatus();
@@ -2571,8 +2576,8 @@ function settingsLayoutItem(key, index, options = {}) {
       <strong>${escapeHtml(title)}</strong>
       <div class="settings-layout-actions">
         ${fixed ? `<span class="settings-fixed-label">Fixed</span>` : `
-          <button class="icon-button" type="button" data-layout-key="${escapeHtml(key)}" data-layout-move="-1" ${index === 0 ? "disabled" : ""} title="Move up" aria-label="Move ${escapeHtml(title)} up">↑</button>
-          <button class="icon-button" type="button" data-layout-key="${escapeHtml(key)}" data-layout-move="1" ${index === state.settings.pageOrder.length - 1 ? "disabled" : ""} title="Move down" aria-label="Move ${escapeHtml(title)} down">↓</button>
+          <button class="icon-button" type="button" data-layout-key="${escapeHtml(key)}" data-layout-move="-1" ${index === 0 ? "disabled" : ""} title="Move up" aria-label="Move ${escapeHtml(title)} up"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 19V5m-7 7 7-7 7 7"/></svg></button>
+          <button class="icon-button" type="button" data-layout-key="${escapeHtml(key)}" data-layout-move="1" ${index === state.settings.pageOrder.length - 1 ? "disabled" : ""} title="Move down" aria-label="Move ${escapeHtml(title)} down"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14m7-7-7 7-7-7"/></svg></button>
         `}
         <label class="check-filter toggle-check settings-visible-check" title="${visible ? "Visible" : "Hidden"}">
           <input type="checkbox" value="${escapeHtml(key)}" data-layout-hidden ${visible ? "checked" : ""}>
@@ -6799,7 +6804,8 @@ function syncStyledSelect(select, options = {}) {
   }
   const selectOptions = [...select.options].map((option) => ({
     value: option.value,
-    label: `${option.dataset.flag ? `${option.dataset.flag} ` : ""}${option.textContent.trim()}`,
+    label: option.textContent.trim(),
+    flag: option.dataset.flag || "",
     selected: option.selected,
     disabled: option.disabled || option.hidden,
     fontFamily: option.style.fontFamily || "",
@@ -6809,12 +6815,12 @@ function syncStyledSelect(select, options = {}) {
   control.classList.toggle("is-active", options.activeValue != null && selected.value !== options.activeValue);
   control.innerHTML = `
     <button class="platform-logo-button" type="button" aria-haspopup="listbox" aria-expanded="false" data-full-label="${escapeHtml(selected.label)}" aria-label="${escapeHtml(selected.label)}">
-      ${platformLogoChoiceMarkup(selected.value, selected.label, { logos: useLogos, fontFamily: selected.fontFamily })}
+      ${platformLogoChoiceMarkup(selected.value, selected.label, { logos: useLogos, fontFamily: selected.fontFamily, flag: selected.flag })}
     </button>
     <div class="platform-logo-menu" role="listbox">
       ${visibleOptions.map((option) => `
         <button class="platform-logo-option ${option.selected ? "is-selected" : ""}" type="button" role="option" aria-selected="${option.selected ? "true" : "false"}" data-value="${escapeHtml(option.value)}" data-full-label="${escapeHtml(option.label)}">
-          ${platformLogoChoiceMarkup(option.value, option.label, { logos: useLogos, fontFamily: option.fontFamily })}
+          ${platformLogoChoiceMarkup(option.value, option.label, { logos: useLogos, fontFamily: option.fontFamily, flag: option.flag })}
         </button>
       `).join("")}
     </div>
@@ -6907,6 +6913,7 @@ function platformLogoChoiceMarkup(value, label, options = {}) {
   const fontStyle = options.fontFamily ? ` style="font-family:${escapeHtml(options.fontFamily)}"` : "";
   return `
     <span class="platform-logo-choice ${escapeHtml(cls)}">
+      ${options.flag ? `<span class="platform-logo-choice-icon settings-region-flag-icon"><img src="${escapeHtml(options.flag)}" alt="" width="22" height="16" decoding="async"></span>` : ""}
       ${showLogo ? `<span class="platform-logo-choice-icon"><img src="${escapeHtml(platformLogo(value))}" alt="" width="18" height="18" decoding="async"></span>` : ""}
       <span class="platform-logo-choice-label"${fontStyle}>${escapeHtml(label)}</span>
     </span>

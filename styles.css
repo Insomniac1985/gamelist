@@ -4382,6 +4382,9 @@ body.dialog-open .floating-edit-actions {
   transform: translateY(0);
 }
 
+.settings-region-flag-icon { width: 22px; height: 16px; flex-basis: 22px; overflow: hidden; border-radius: 2px; }
+.settings-region-flag-icon img { width: 22px; height: 16px; max-width: 22px; max-height: 16px; }
+
 .platform-logo-option:hover .platform-logo-choice-label,
 .platform-logo-option:focus-visible .platform-logo-choice-label,
 .platform-logo-option.is-selected .platform-logo-choice-label {
@@ -10820,13 +10823,15 @@ body.dialog-open .mobile-section-tabs {
 .settings-category-card {
   display: grid; grid-template-columns: 48px minmax(0, 1fr) 20px; align-items: center; gap: 13px;
   min-height: 98px; padding: 16px; text-align: left; color: var(--text); cursor: pointer;
-  border: 1px solid color-mix(in srgb, var(--accent) 24%, var(--line)); border-radius: 14px;
-  background: linear-gradient(135deg, color-mix(in srgb, var(--accent) 12%, transparent), rgba(255,255,255,.035));
-  box-shadow: inset 0 1px 0 rgba(255,255,255,.06); transition: transform .18s ease, border-color .18s ease, box-shadow .18s ease;
+  border: 1px solid rgba(255,255,255,.14); border-radius: 14px;
+  background: linear-gradient(135deg, rgba(255,255,255,.075), rgba(255,255,255,.035));
+  backdrop-filter: blur(16px) saturate(1.1);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.06); transition: transform .22s cubic-bezier(.16,1,.3,1), border-color .22s ease, background .22s ease, box-shadow .22s ease;
 }
 .settings-category-card:hover, .settings-category-card:focus-visible {
-  transform: translateY(-2px); outline: none; border-color: color-mix(in srgb, var(--accent) 70%, white);
-  box-shadow: 0 12px 30px color-mix(in srgb, var(--accent) 18%, transparent), inset 0 1px 0 rgba(255,255,255,.1);
+  transform: translateY(-2px); outline: none; border-color: rgba(255,255,255,.3);
+  background: linear-gradient(135deg, rgba(255,255,255,.12), rgba(255,255,255,.06));
+  box-shadow: 0 12px 30px rgba(0,0,0,.16), inset 0 1px 0 rgba(255,255,255,.12);
 }
 .settings-category-icon { display: grid; place-items: center; width: 48px; height: 48px; border-radius: 14px; color: #fff; background: rgba(255,255,255,.11); }
 .settings-category-icon svg { width: 27px; height: 27px; fill: none; stroke: currentColor; stroke-width: 1.9; stroke-linecap: round; stroke-linejoin: round; }
@@ -10834,23 +10839,27 @@ body.dialog-open .mobile-section-tabs {
 .settings-category-text strong { font-size: 14px; }
 .settings-category-text small { color: var(--muted); font-size: 11px; line-height: 1.35; }
 .settings-category-arrow { display: grid; place-items: center; justify-self: end; color: #fff; }
-.settings-category-arrow svg { display: block; width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; transition: transform .2s ease; }
+.settings-category-arrow svg { display: block; width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; transition: transform .32s cubic-bezier(.16,1,.3,1); }
 .settings-category-card:hover .settings-category-arrow svg,
-.settings-category-card:focus-visible .settings-category-arrow svg { transform: translateX(4px); }
+.settings-category-card:focus-visible .settings-category-arrow svg { transform: translateX(5px) scale(1.08); }
 .settings-window-panel { display: grid; gap: 18px; }
-.settings-window-head { display: flex; align-items: center; padding-bottom: 14px; border-bottom: 1px solid var(--line); }
-.settings-back-title { display: inline-grid; min-height: 30px; padding: 0; color: var(--text); border: 0; background: transparent; text-align: left; font: inherit; font-size: 19px; font-weight: 850; cursor: pointer; }
-.settings-back-title-current, .settings-back-title-hover { display: flex; align-items: center; gap: 10px; }
-.settings-back-glyph { color: var(--muted); font-size: 24px; font-weight: 600; line-height: 1; }
-.settings-back-title-hover { display: none; }
-.settings-back-title:hover .settings-back-title-current, .settings-back-title:focus-visible .settings-back-title-current { display: none; }
-.settings-back-title:hover .settings-back-title-hover, .settings-back-title:focus-visible .settings-back-title-hover { display: flex; }
-.settings-back-title:focus-visible { outline: 2px solid var(--accent); outline-offset: 4px; }
+.settings-main-heading { margin: 0; }
+.settings-main-back-title { display: grid; max-width: 100%; min-height: 1em; padding: 0; color: inherit; border: 0; background: transparent; text-align: left; font: inherit; cursor: pointer; }
+.settings-main-title-current, .settings-main-title-hover { grid-area: 1 / 1; display: flex; align-items: center; gap: 14px; white-space: nowrap; transition: opacity .22s ease, transform .32s cubic-bezier(.16,1,.3,1); }
+.settings-main-title-current { opacity: 1; transform: translateX(0); }
+.settings-main-title-hover { opacity: 0; transform: translateX(-10px); }
+.settings-main-back-glyph { display: block; width: .72em; height: .72em; flex: 0 0 .72em; fill: none; stroke: currentColor; stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; transition: transform .32s cubic-bezier(.16,1,.3,1); }
+.settings-main-back-title:hover .settings-main-title-current, .settings-main-back-title:focus-visible .settings-main-title-current { opacity: 0; transform: translateX(10px); }
+.settings-main-back-title:hover .settings-main-title-hover, .settings-main-back-title:focus-visible .settings-main-title-hover { opacity: 1; transform: translateX(0); }
+.settings-main-back-title:hover .settings-main-title-current .settings-main-back-glyph, .settings-main-back-title:focus-visible .settings-main-title-current .settings-main-back-glyph { transform: translateX(-5px); }
+.settings-main-back-title:hover .settings-main-title-hover .settings-main-back-glyph, .settings-main-back-title:focus-visible .settings-main-title-hover .settings-main-back-glyph { transform: translateX(-4px); }
+.settings-main-back-title:focus-visible { outline: 2px solid var(--accent); outline-offset: 5px; }
+.settings-customize-title { margin-top: 8px !important; }
 .settings-logout-button { justify-self: start; display: inline-flex; align-items: center; gap: 9px; padding: 11px 14px; color: #ffaaa8; border: 1px solid rgba(255,100,100,.32); border-radius: 10px; background: rgba(255,75,75,.08); cursor: pointer; }
 .settings-logout-button .exit-icon { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
 .settings-logout-button:hover { background: rgba(255,75,75,.16); border-color: rgba(255,100,100,.62); }
 .settings-account-separator { width: 100%; height: 1px; margin: 0; border: 0; background: var(--line); }
-html.theme-light .settings-category-card { background: linear-gradient(135deg, color-mix(in srgb, var(--accent) 10%, #fff), rgba(211,221,234,.8)); }
+html.theme-light .settings-category-card { border-color: rgba(31,42,61,.22); background: linear-gradient(135deg, rgba(255,255,255,.76), rgba(211,221,234,.7)); }
 
 @media (max-width: 620px) {
   .settings-category-grid { grid-template-columns: 1fr; }
@@ -11168,6 +11177,8 @@ html.theme-light .settings-category-card { background: linear-gradient(135deg, c
   min-height: 30px;
 }
 
+.settings-layout-actions .icon-button svg { display: block; width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+
 .settings-fixed-label {
   display: inline-grid;
   place-items: center;
@@ -11276,8 +11287,8 @@ html.theme-light .settings-category-card { background: linear-gradient(135deg, c
 }
 
 .settings-csv-data {
-  display: inline-grid;
-  width: min(520px, 100%);
+  display: block;
+  width: 100%;
 }
 
 .settings-csv-data .settings-data-card {
@@ -11288,33 +11299,44 @@ html.theme-light .settings-category-card { background: linear-gradient(135deg, c
 }
 
 .settings-csv-groups {
-  gap: 8px;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(220px, 100%), 1fr));
+  align-items: stretch;
+  gap: 12px;
 }
 
 .settings-csv-row {
   display: grid;
-  grid-template-columns: minmax(210px, 1fr) minmax(150px, 190px);
-  align-items: center;
-  gap: 10px;
+  grid-template-columns: minmax(0, 1fr);
+  align-content: space-between;
+  gap: 16px;
+  min-height: 118px;
+  padding: 14px;
+  background: rgba(255, 255, 255, 0.055);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  transition: background .18s ease, border-color .18s ease, transform .18s ease;
+}
+
+.settings-csv-row:hover {
+  background: rgba(255, 255, 255, 0.085);
+  border-color: rgba(255, 255, 255, 0.24);
+  transform: translateY(-1px);
 }
 
 .settings-csv-row > span {
-  display: grid;
-  align-items: center;
-  justify-items: start;
-  min-height: var(--settings-control-height, 42px);
-  padding: 0 16px;
+  display: block;
+  padding: 2px 0;
   color: var(--text);
-  background: rgba(255, 255, 255, 0.055);
-  border: 1px solid var(--line);
-  border-radius: 7px;
   font-size: 14px;
   font-weight: 900;
-  line-height: 1;
+  line-height: 1.3;
   text-align: left;
   text-transform: uppercase;
-  white-space: nowrap;
 }
+
+html.theme-light .settings-csv-row { background: rgba(211, 221, 234, .7); border-color: rgba(31, 42, 61, .28); }
+html.theme-light .settings-csv-row:hover { background: rgba(211, 221, 234, .95); border-color: rgba(31, 42, 61, .42); }
 
 .settings-dev-links {
   display: flex;
@@ -12577,9 +12599,8 @@ html.theme-light .shelf-card-delete-action:hover {
   gap: 8px;
 }
 
-.theme-owner-colors-title { text-transform: none !important; }
+.theme-owner-colors-title { margin-top: 24px !important; text-transform: none !important; }
 .theme-owner-add-button { justify-self: start; display: inline-flex; align-items: center; gap: 8px; width: auto; min-height: 34px; padding: 5px 11px; font-size: 12px; }
-.theme-owner-add-icon { display: inline-grid; place-items: center; width: 18px; height: 18px; border: 1px solid currentColor; border-radius: 50%; font-size: 16px; font-weight: 800; line-height: 1; }
 
 .theme-owner-head,
 .theme-owner-row {
@@ -12627,10 +12648,6 @@ html.theme-light .shelf-card-delete-action:hover {
 .settings-accounts-section .settings-account-field {
   grid-column: 1;
   min-width: 0;
-  padding: 12px;
-  border: 1px solid var(--line);
-  border-radius: 10px;
-  background: rgba(255, 255, 255, 0.035);
 }
 
 .settings-accounts-section .settings-account-field > span {
