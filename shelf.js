@@ -184,7 +184,7 @@ const el = {
   footerCreditText: document.querySelector("#footerCreditText"),
   scrollTop: document.querySelector("#scrollTopButton"),
   floatingActions: document.querySelector("#floatingEditActions"), floatingAdd: document.querySelector("#floatingAddButton"), floatingSearch: document.querySelector("#floatingSearchButton"),
-  mobileActionDock: document.querySelector("#mobileActionDock"), mobileDockAdd: document.querySelector("#mobileDockAdd"), mobileDockSearch: document.querySelector("#mobileDockSearch"), mobileDockSettings: document.querySelector("#mobileDockSettings"), mobileDockSwitch: document.querySelector("#mobileDockSwitch"), mobileDockTop: document.querySelector("#mobileDockTop"),
+  mobileActionDock: document.querySelector("#mobileActionDock"), mobileDockAdd: document.querySelector("#mobileDockAdd"), mobileDockSearch: document.querySelector("#mobileDockSearch"), mobileDockSettings: document.querySelector("#mobileDockSettings"), mobileDockSwitch: document.querySelector("#mobileDockSwitch"),
   detailDialog: document.querySelector("#detailDialog"),
   detailClose: document.querySelector("#detailClose"),
   detailTitle: document.querySelector("#detailTitle"),
@@ -364,7 +364,6 @@ function bindEvents() {
   el.syncButton?.addEventListener("click", syncShelfNow);
   el.fetchPricesButton.addEventListener("click", refreshAllShelfPrices);
   el.scrollTop.addEventListener("click", () => window.scrollTo({ top: 0, behavior: "smooth" }));
-  el.mobileDockTop?.addEventListener("click", () => window.scrollTo({ top: 0, behavior: "smooth" }));
   el.footerUpdate.addEventListener("click", clearSiteCachesAndReload);
   el.footerVersion.addEventListener("click", clearSiteCachesAndReload);
   el.brandVersion?.addEventListener("click", clearSiteCachesAndReload);
@@ -1215,17 +1214,9 @@ function initPagePullTransition({ targetLabel, targetUrl }) {
   let pageDragArmed = false;
   let pageDragging = false;
   let moved = false;
-  const mobilePullQuery = window.matchMedia("(max-width: 760px)");
   const pagePullThreshold = () => Math.min(260, Math.max(150, window.innerHeight * 0.34));
   const isAtPageTop = () => window.scrollY <= 2 && document.documentElement.scrollTop <= 2 && document.body.scrollTop <= 2;
-  const canStartPagePull = (event) => {
-    if (!mobilePullQuery.matches || pageSwitchHidden() || document.body.classList.contains("dialog-open")) return false;
-    if (event.pointerType && event.pointerType !== "touch") return false;
-    if (event.button != null && event.button !== 0) return false;
-    if (!isAtPageTop()) return false;
-    const interactive = event.target?.closest?.("button, a, input, select, textarea, dialog, .platform-logo-menu, .playing-list, .playing-finished-list");
-    return !interactive || interactive.classList?.contains("cover-button");
-  };
+  const canStartPagePull = () => false;
   const setPull = (distance) => {
     const pull = Math.max(0, Math.min(window.innerHeight, distance));
     const progress = Math.min(1, pull / pagePullThreshold());

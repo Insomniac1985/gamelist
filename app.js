@@ -345,7 +345,6 @@ const el = {
   mobileDockSearch: document.querySelector("#mobileDockSearch"),
   mobileDockSettings: document.querySelector("#mobileDockSettings"),
   mobileDockSwitch: document.querySelector("#mobileDockSwitch"),
-  mobileDockTop: document.querySelector("#mobileDockTop"),
   mobileTabs: document.querySelectorAll("[data-mobile-section]"),
   board: document.querySelector(".board"),
   detailDialog: document.querySelector("#detailDialog"),
@@ -1144,7 +1143,6 @@ function bindEvents() {
     if (document.body.classList.contains("dialog-open")) return;
     window.scrollTo({ top: 0, behavior: "smooth" });
   });
-  el.mobileDockTop?.addEventListener("click", () => window.scrollTo({ top: 0, behavior: "smooth" }));
   el.detailCloseButton.addEventListener("click", () => el.detailDialog.close());
   el.detailDialog.addEventListener("click", (event) => {
     if (event.target === el.detailDialog) el.detailDialog.close();
@@ -1399,17 +1397,9 @@ function initPagePullTransition({ targetLabel, targetUrl }) {
   let pageDragArmed = false;
   let pageDragging = false;
   let moved = false;
-  const mobilePullQuery = window.matchMedia("(max-width: 760px)");
   const pagePullThreshold = () => Math.min(260, Math.max(150, window.innerHeight * 0.34));
   const isAtPageTop = () => window.scrollY <= 2 && document.documentElement.scrollTop <= 2 && document.body.scrollTop <= 2;
-  const canStartPagePull = (event) => {
-    if (!mobilePullQuery.matches || pageSwitchHidden() || document.body.classList.contains("dialog-open")) return false;
-    if (event.pointerType && event.pointerType !== "touch") return false;
-    if (event.button != null && event.button !== 0) return false;
-    if (!isAtPageTop()) return false;
-    const interactive = event.target?.closest?.("button, a, input, select, textarea, dialog, .platform-logo-menu, .playing-list, .playing-finished-list");
-    return !interactive || interactive.classList?.contains("cover-button");
-  };
+  const canStartPagePull = () => false;
   const setPull = (distance) => {
     const pull = Math.max(0, Math.min(window.innerHeight, distance));
     const progress = Math.min(1, pull / pagePullThreshold());
