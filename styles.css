@@ -14942,7 +14942,8 @@ html.theme-light .finish-trophy-check input[type="checkbox"]:checked {
   .mobile-dock-action:hover,
   .mobile-dock-action:focus-visible {
     color: #fff;
-    background: color-mix(in srgb, var(--accent) 64%, transparent);
+    background: var(--accent);
+    box-shadow: 0 3px 24px color-mix(in srgb, var(--accent) 42%, transparent);
     outline: none;
   }
 
@@ -14957,19 +14958,44 @@ html.theme-light .finish-trophy-check input[type="checkbox"]:checked {
   }
 
   .mobile-switch-logos {
+    position: relative;
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 4px;
-    width: 40px;
-    height: 24px;
+    gap: 3px;
+    width: 48px;
+    height: 30px;
+    padding: 2px;
+    overflow: hidden;
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    background: var(--panel);
+  }
+
+  .mobile-switch-logos::before {
+    content: "";
+    position: absolute;
+    inset: 2px auto 2px 2px;
+    width: calc(50% - 2px);
+    border-radius: 7px;
+    background: color-mix(in srgb, var(--accent) 30%, transparent);
+    box-shadow: 0 0 14px color-mix(in srgb, var(--accent) 22%, transparent);
+    transform: translateX(100%);
+    transition: transform 180ms ease;
+    pointer-events: none;
+  }
+
+  .mobile-switch-logos[data-current-page="shelf"]::before {
+    transform: translateX(0);
   }
 
   .mobile-switch-logo {
+    position: relative;
+    z-index: 1;
     display: block;
-    width: 18px;
-    height: 20px;
-    flex: 0 0 18px;
+    width: 20px;
+    height: 23px;
+    flex: 0 0 20px;
     background: var(--accent);
     -webkit-mask-position: center;
     mask-position: center;
@@ -14989,7 +15015,7 @@ html.theme-light .finish-trophy-check input[type="checkbox"]:checked {
     mask-image: url("assets/Icon.png");
   }
 
-  .mobile-dock-action span {
+  .mobile-dock-action > span:not(.mobile-switch-logos) {
     display: block;
     max-width: 100%;
     text-align: center;
@@ -14999,16 +15025,10 @@ html.theme-light .finish-trophy-check input[type="checkbox"]:checked {
   .scroll-top-button.visible {
     right: max(16px, env(safe-area-inset-right));
     bottom: calc(max(6px, env(safe-area-inset-bottom)) + 106px);
-    width: 60px;
-    height: 60px;
-    min-width: 60px;
-    min-height: 60px;
-    border-radius: 50%;
-  }
-
-  .scroll-top-button .scroll-top-icon {
-    width: 24px;
-    height: 24px;
+    width: 40px;
+    height: 40px;
+    min-width: 40px;
+    min-height: 40px;
   }
 
   body.dialog-open .mobile-action-dock {
@@ -15143,16 +15163,23 @@ html.theme-light .finish-trophy-check input[type="checkbox"]:checked {
   .brand {
     min-width: 0;
     margin-left: 10px;
+    gap: 8px;
   }
 
   .brand-version-chip {
-    margin-left: 60px;
+    grid-column: 1;
+    grid-row: 2;
+    margin: -5px 0 0 52px;
     padding-inline: 8px;
-    margin-top: -55px;
   }
 
   .brand span:last-child {
-    display: none;
+    display: block;
+    min-width: 0;
+    overflow: hidden;
+    font-size: 14px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
 
   .top-actions {

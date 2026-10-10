@@ -2666,7 +2666,7 @@ textarea {
     height: var(--toolbar-control-height);
   }
   .shelf-tabs {
-    top: calc(25px + var(--pull-ui-offset, 0px));
+    top: calc(6px + var(--pull-ui-offset, 0px));
     margin: 12px 0 16px;
   }
 
