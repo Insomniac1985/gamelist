@@ -9329,7 +9329,7 @@ function metaFor(game, options = {}) {
   if (game.emulator) values.push(`<span class="emulator-pill">Emulator</span>`);
   if (game.coop) values.push(coopBadge());
   if (game.multiplayer && !game.coop) values.push(multiplayerBadge());
-  if (game.lengthHours && !game.playing) values.push(timeBadge(game.lengthHours, hltbUrlFor(game)));
+  if (game.lengthHours && !game.playing && !game.completedAt) values.push(timeBadge(game.lengthHours, hltbUrlFor(game)));
   if (game.stream) values.push(streamBadge());
   gameStatuses(game).forEach((status) => values.push(statusBadge(status)));
   const progress = achievementProgressForGame(game);
