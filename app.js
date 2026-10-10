@@ -942,7 +942,7 @@ function bindEvents() {
       window.open(twitchUrl, "_blank", "noopener,noreferrer");
       return;
     }
-    scrollToSearchArea();
+    scrollToGameList();
   });
   el.loginButton.addEventListener("click", toggleEditMode);
   document.querySelector("#settingsLogoutButton")?.addEventListener("click", () => {
@@ -5764,6 +5764,10 @@ function downloadCanvas(canvas, filename) {
 function scrollToSearchArea() {
   document.querySelector(".toolbar")?.scrollIntoView({ behavior: "smooth", block: "start" });
   window.requestAnimationFrame(() => el.searchInput?.focus({ preventScroll: true }));
+}
+
+function scrollToGameList() {
+  document.querySelector("#backlog")?.scrollIntoView({ behavior: "smooth", block: "start" });
 }
 
 function scrollToFinishedSection() {
