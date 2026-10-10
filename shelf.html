@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en" class="theme-booting">
+<html lang="en" class="theme-booting theme-fonts-loading">
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -94,6 +94,40 @@
             } catch {}
           });
         };
+        const waitForDisplayFont = async (theme) => {
+          const fontFiles = {
+            "Cascadia Code": ["assets/fonts/CascadiaCode.woff2", "font/woff2", 700],
+            "Antique Olive Nord": ["assets/fonts/AntiqueOliveNord.woff2", "font/woff2", 900],
+            "Georgia Bold": ["assets/fonts/Georgia-Bold.ttf", "font/ttf", 800],
+            "Pokemon GBA": ["assets/fonts/pokemon-emerald.ttf", "font/ttf", 400],
+            "04B 30": ["assets/fonts/04B_30.TTF", "font/ttf", 400],
+            Michroma: ["assets/fonts/Michroma.ttf", "font/ttf", 400],
+            Minecraft: ["assets/fonts/Minecraft.ttf", "font/ttf", 400],
+            "Mata Regular": ["assets/fonts/Mata%20Regular.otf", "font/otf", 400],
+          };
+          const [src, type, weight] = fontFiles[theme.font] || fontFiles["Cascadia Code"];
+          if (!document.querySelector(`link[data-display-font-preload][href="${src}"]`)) {
+            const link = document.createElement("link");
+            link.rel = "preload";
+            link.as = "font";
+            link.type = type;
+            link.crossOrigin = "anonymous";
+            link.href = src;
+            link.dataset.displayFontPreload = "true";
+            document.head.appendChild(link);
+          }
+          await new Promise((resolve) => {
+            const settle = () => resolve();
+            const timer = window.setTimeout(settle, 1400);
+            const load = () => document.fonts.load(`${weight} 40px "${theme.font}"`).then(settle, settle);
+            if (document.readyState === "loading") {
+              document.addEventListener("DOMContentLoaded", () => load().finally(() => window.clearTimeout(timer)), { once: true });
+            } else {
+              load().finally(() => window.clearTimeout(timer));
+            }
+          });
+          root.classList.remove("theme-fonts-loading");
+        };
         const saveTheme = (key, nextSettings = null) => {
           try {
             const settings = JSON.parse(localStorage.getItem(settingsKey) || "{}");
@@ -107,7 +141,7 @@
           savedTheme = savedSettings.theme || "";
         } catch {}
         window.__applyInitialTheme = apply;
-        window.__initialThemeReady = savedTheme
+        window.__initialThemeReady = (savedTheme
           ? Promise.resolve(apply(savedTheme, savedSettings))
           : fetch("/api/sync?settings=1", { cache: "no-store" })
             .then((response) => response.ok ? response.json() : {})
@@ -116,7 +150,10 @@
               saveTheme(key, data?.settings || {});
               return apply(key, data?.settings || {});
             })
-            .catch(() => apply("shabii", {}));
+            .catch(() => apply("shabii", {}))).then(async () => {
+              await waitForDisplayFont(window.__initialTheme || {});
+              return root.dataset.initialTheme;
+            });
         window.setTimeout(() => root.classList.remove("theme-booting"), 3500);
       })();
     </script>

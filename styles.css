@@ -3202,6 +3202,10 @@ h2 {
   background-clip: text;
 }
 
+html.theme-fonts-loading .column-head h2 {
+  visibility: hidden;
+}
+
 html.theme-gradient .column-head h2 {
   background: linear-gradient(
     135deg,
