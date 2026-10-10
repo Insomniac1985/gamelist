@@ -948,7 +948,9 @@ function bindEvents() {
       if (home) home.hidden = true;
       const sectionTitle = button.querySelector(".settings-category-text strong")?.textContent.trim() || "Settings";
       document.querySelector("#settingsDialogEyebrow").textContent = "Settings";
-      document.querySelector("#settingsDialogTitle").textContent = sectionTitle;
+      document.querySelector("#settingsDialogTitle").hidden = true;
+      document.querySelector("#settingsDialogSectionTitle").textContent = sectionTitle;
+      document.querySelector("#settingsDialogBackTitle").hidden = false;
       el.settingsDialog.querySelectorAll("[data-settings-window]").forEach((section) => {
         section.hidden = section.dataset.settingsWindow !== panel;
       });
@@ -963,7 +965,8 @@ function bindEvents() {
       if (home) home.hidden = false;
       el.settingsDialog.classList.remove("has-settings-window");
       document.querySelector("#settingsDialogEyebrow").textContent = "Site settings";
-      document.querySelector("#settingsDialogTitle").textContent = "Settings";
+      document.querySelector("#settingsDialogTitle").hidden = false;
+      document.querySelector("#settingsDialogBackTitle").hidden = true;
       el.settingsDialog.querySelector(".settings-modal")?.scrollTo({ top: 0 });
     });
   });
@@ -1904,6 +1907,8 @@ function openSettingsDialog() {
   el.settingsDialog.classList.remove("has-settings-window");
   document.querySelector("#settingsDialogEyebrow").textContent = "Site settings";
   document.querySelector("#settingsDialogTitle").textContent = "Settings";
+  document.querySelector("#settingsDialogTitle").hidden = false;
+  document.querySelector("#settingsDialogBackTitle").hidden = true;
   renderSettingsDialog();
   el.settingsDialog.showModal();
   refreshIgdbConnectionStatus();
@@ -2571,8 +2576,8 @@ function settingsLayoutItem(key, index, options = {}) {
       <strong>${escapeHtml(title)}</strong>
       <div class="settings-layout-actions">
         ${fixed ? `<span class="settings-fixed-label">Fixed</span>` : `
-          <button class="icon-button" type="button" data-layout-key="${escapeHtml(key)}" data-layout-move="-1" ${index === 0 ? "disabled" : ""} title="Move up" aria-label="Move ${escapeHtml(title)} up">↑</button>
-          <button class="icon-button" type="button" data-layout-key="${escapeHtml(key)}" data-layout-move="1" ${index === state.settings.pageOrder.length - 1 ? "disabled" : ""} title="Move down" aria-label="Move ${escapeHtml(title)} down">↓</button>
+          <button class="icon-button" type="button" data-layout-key="${escapeHtml(key)}" data-layout-move="-1" ${index === 0 ? "disabled" : ""} title="Move up" aria-label="Move ${escapeHtml(title)} up"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 19V5m-7 7 7-7 7 7"/></svg></button>
+          <button class="icon-button" type="button" data-layout-key="${escapeHtml(key)}" data-layout-move="1" ${index === state.settings.pageOrder.length - 1 ? "disabled" : ""} title="Move down" aria-label="Move ${escapeHtml(title)} down"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14m7-7-7 7-7-7"/></svg></button>
         `}
         <label class="check-filter toggle-check settings-visible-check" title="${visible ? "Visible" : "Hidden"}">
           <input type="checkbox" value="${escapeHtml(key)}" data-layout-hidden ${visible ? "checked" : ""}>

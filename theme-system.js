@@ -232,10 +232,11 @@ export function themeSettingsContent(settings = {}, translate = identityTranslat
         <label class="check-filter toggle-check theme-check theme-big-logo-row"><input name="bigLogo" type="checkbox" ${draft.bigLogo ? "checked" : ""}><span>${htmlEscape(translate("Big logo"))}</span></label>
       </section>
       <section class="settings-section">
+        <h3 class="theme-owner-colors-title">${htmlEscape(translate("Custom Owner Colors"))}</h3>
         <div class="theme-owner-table">
           <div class="theme-owner-head"><span>${htmlEscape(translate("Owner"))}</span><span>${htmlEscape(translate("Main color"))}</span><span>${htmlEscape(translate("Pick"))}</span><span></span></div>
           <div data-owner-rows>${ownerRows.map((owner) => ownerRow(owner, translate)).join("")}</div>
-          <button class="ghost-button theme-owner-add-button" type="button" data-owner-add><span class="theme-owner-add-icon" aria-hidden="true">+</span>${htmlEscape(translate("Add owner color"))}</button>
+          <button class="ghost-button theme-owner-add-button" type="button" data-owner-add><span>${htmlEscape(translate("Add owner color"))}</span><span class="button-icon" aria-hidden="true"><svg class="plus-icon" viewBox="0 0 24 24"><path d="M12 5v14"></path><path d="M5 12h14"></path></svg></span></button>
         </div>
       </section>
     </div>
@@ -305,10 +306,11 @@ function renderThemeDialog(dialog, draft, settings, page, onSave, translate = id
         <label class="check-filter toggle-check theme-check theme-big-logo-row"><input name="bigLogo" type="checkbox" ${draft.bigLogo ? "checked" : ""}><span>${htmlEscape(translate("Big logo"))}</span></label>
       </section>
       <section class="settings-section">
+        <h3 class="theme-owner-colors-title">${htmlEscape(translate("Custom Owner Colors"))}</h3>
         <div class="theme-owner-table">
           <div class="theme-owner-head"><span>${htmlEscape(translate("Owner"))}</span><span>${htmlEscape(translate("Main color"))}</span><span>${htmlEscape(translate("Pick"))}</span><span></span></div>
           <div data-owner-rows>${ownerRows.map((owner) => ownerRow(owner, translate)).join("")}</div>
-          <button class="ghost-button theme-owner-add-button" type="button" data-owner-add><span class="theme-owner-add-icon" aria-hidden="true">+</span>${htmlEscape(translate("Add owner color"))}</button>
+          <button class="ghost-button theme-owner-add-button" type="button" data-owner-add><span>${htmlEscape(translate("Add owner color"))}</span><span class="button-icon" aria-hidden="true"><svg class="plus-icon" viewBox="0 0 24 24"><path d="M12 5v14"></path><path d="M5 12h14"></path></svg></span></button>
         </div>
       </section>
       <div class="modal-actions"><button class="primary-button" type="submit">${htmlEscape(translate("Save"))}</button></div>

@@ -901,7 +901,7 @@
         <div class="modal-head">
           <div>
             <p class="eyebrow" id="settingsDialogEyebrow" data-i18n="Site settings">Site settings</p>
-            <h2 id="settingsDialogTitle" data-i18n="Settings">Settings</h2>
+            <h2 class="settings-main-heading"><span id="settingsDialogTitle" data-i18n="Settings">Settings</span><button class="settings-main-back-title" id="settingsDialogBackTitle" type="button" data-settings-back aria-label="Go back to settings" hidden><span class="settings-main-title-current"><svg class="settings-main-back-glyph" viewBox="0 0 24 24" aria-hidden="true"><path d="m15 18-6-6 6-6"/></svg><span id="settingsDialogSectionTitle"></span></span><span class="settings-main-title-hover"><svg class="settings-main-back-glyph" viewBox="0 0 24 24" aria-hidden="true"><path d="m15 18-6-6 6-6"/></svg>Go back to settings</span></button></h2>
           </div>
           <div class="modal-head-actions">
             <button class="primary-button modal-head-save" type="submit" data-i18n="Save">Save</button>
@@ -932,7 +932,6 @@
         </div>
 
         <section class="settings-window-panel" data-settings-window="design" hidden>
-          <div class="settings-window-head"><button class="settings-back-title" type="button" data-settings-back aria-label="Go back to settings"><span class="settings-back-title-current"><svg class="settings-back-glyph" viewBox="0 0 24 24" aria-hidden="true"><path d="m15 18-6-6 6-6"/></svg>Page design &amp; theme</span><span class="settings-back-title-hover"><svg class="settings-back-glyph" viewBox="0 0 24 24" aria-hidden="true"><path d="m15 18-6-6 6-6"/></svg>Go back to settings</span></button></div>
           <section class="settings-section"><h3 data-i18n="Page">Page</h3><div class="settings-layout" id="settingsLayoutList" aria-label="Page order"></div></section>
           <p class="eyebrow settings-detail-title" data-i18n="Details">Details</p>
           <section class="settings-grid settings-detail-grid">
@@ -978,7 +977,6 @@
         </section>
 
         <section class="settings-window-panel settings-accounts-section" data-settings-window="accounts" hidden>
-          <div class="settings-window-head"><button class="settings-back-title" type="button" data-settings-back aria-label="Go back to settings"><span class="settings-back-title-current"><svg class="settings-back-glyph" viewBox="0 0 24 24" aria-hidden="true"><path d="m15 18-6-6 6-6"/></svg>Accounts</span><span class="settings-back-title-hover"><svg class="settings-back-glyph" viewBox="0 0 24 24" aria-hidden="true"><path d="m15 18-6-6 6-6"/></svg>Go back to settings</span></button></div>
           <label class="settings-account-field settings-default-owner-field">
             <span data-i18n="Default owner">Default owner</span>
             <input id="settingsDefaultOwner" autocomplete="off">
@@ -989,12 +987,10 @@
         </section>
 
         <section class="settings-window-panel settings-csv-section" data-settings-window="data" hidden>
-          <div class="settings-window-head"><button class="settings-back-title" type="button" data-settings-back aria-label="Go back to settings"><span class="settings-back-title-current"><svg class="settings-back-glyph" viewBox="0 0 24 24" aria-hidden="true"><path d="m15 18-6-6 6-6"/></svg>Your Data</span><span class="settings-back-title-hover"><svg class="settings-back-glyph" viewBox="0 0 24 24" aria-hidden="true"><path d="m15 18-6-6 6-6"/></svg>Go back to settings</span></button></div>
           <div class="settings-csv-data" id="settingsCsvData"></div>
         </section>
 
         <section class="settings-window-panel settings-dev-section" data-settings-window="dev" hidden>
-          <div class="settings-window-head"><button class="settings-back-title" type="button" data-settings-back aria-label="Go back to settings"><span class="settings-back-title-current"><svg class="settings-back-glyph" viewBox="0 0 24 24" aria-hidden="true"><path d="m15 18-6-6 6-6"/></svg><span data-i18n="Dev features">Dev features</span></span><span class="settings-back-title-hover"><svg class="settings-back-glyph" viewBox="0 0 24 24" aria-hidden="true"><path d="m15 18-6-6 6-6"/></svg>Go back to settings</span></button></div>
           <div class="settings-dev-links" id="settingsDevFeatures"></div>
         </section>
 
