@@ -17545,7 +17545,7 @@ html.theme-light .finish-trophy-check input[type="checkbox"]:checked {
     justify-items: center;
     padding: 0;
     border: 0;
-    border-radius: 12px;
+    border-radius: 8px;
     color: #fff;
     background: transparent;
     cursor: pointer;
