@@ -286,6 +286,26 @@
     <div class="floating-edit-actions" id="floatingEditActions" aria-label="Quick actions">
       <button class="icon-button floating-action-button" id="floatingAddButton" type="button" title="Add Game" aria-label="Add Game" data-i18n-title="Add Game" data-i18n-aria-label="Add Game"><svg class="plus-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14"></path><path d="M5 12h14"></path></svg></button>
     </div>
+    <nav class="mobile-action-dock" id="mobileActionDock" aria-label="Quick actions">
+      <button class="mobile-dock-action mobile-dock-switch" id="mobileDockSwitch" type="button" title="Switch to Gamelist" aria-label="Switch to Gamelist">
+        <span class="mobile-switch-logos" data-current-page="shelf" aria-hidden="true"><span class="mobile-switch-logo mobile-switch-logo-shelf"></span><span class="mobile-switch-logo mobile-switch-logo-gamelist"></span></span>
+      </button>
+      <button class="mobile-dock-action" id="mobileDockSettings" type="button" title="Settings" aria-label="Settings" data-i18n-title="Settings" data-i18n-aria-label="Settings" hidden>
+        <svg class="settings-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h10M18 6h2M4 12h2M10 12h10M4 18h10M18 18h2"></path><circle cx="16" cy="6" r="2"></circle><circle cx="8" cy="12" r="2"></circle><circle cx="16" cy="18" r="2"></circle></svg>
+        <span data-i18n="Settings">Settings</span>
+      </button>
+      <button class="mobile-dock-action" id="mobileDockSearch" type="button" title="Search" aria-label="Search" data-i18n-title="Search" data-i18n-aria-label="Search">
+        <svg class="search-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.5"></circle><path d="m16 16 4 4"></path></svg>
+        <span data-i18n="Search">Search</span>
+      </button>
+      <button class="mobile-dock-action" id="mobileDockAdd" type="button" title="Add Game" aria-label="Add Game" data-i18n-title="Add Game" data-i18n-aria-label="Add Game">
+        <svg class="plus-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"></path></svg>
+        <span data-i18n="Add">Add</span>
+      </button>
+      <button class="mobile-dock-action mobile-dock-top" id="mobileDockTop" type="button" title="Back to top" aria-label="Back to top">
+        <svg class="scroll-top-icon" viewBox="0 0 24 24" aria-hidden="true"><polyline points="6 14 12 8 18 14"></polyline></svg>
+      </button>
+    </nav>
 
     <dialog id="detailDialog">
       <article class="detail-modal glass">

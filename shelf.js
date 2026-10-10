@@ -184,6 +184,7 @@ const el = {
   footerCreditText: document.querySelector("#footerCreditText"),
   scrollTop: document.querySelector("#scrollTopButton"),
   floatingActions: document.querySelector("#floatingEditActions"), floatingAdd: document.querySelector("#floatingAddButton"), floatingSearch: document.querySelector("#floatingSearchButton"),
+  mobileActionDock: document.querySelector("#mobileActionDock"), mobileDockAdd: document.querySelector("#mobileDockAdd"), mobileDockSearch: document.querySelector("#mobileDockSearch"), mobileDockSettings: document.querySelector("#mobileDockSettings"), mobileDockSwitch: document.querySelector("#mobileDockSwitch"), mobileDockTop: document.querySelector("#mobileDockTop"),
   detailDialog: document.querySelector("#detailDialog"),
   detailClose: document.querySelector("#detailClose"),
   detailTitle: document.querySelector("#detailTitle"),
@@ -349,11 +350,21 @@ function bindEvents() {
   el.searchButton?.addEventListener("click", scrollToShelfSearch);
   el.floatingAdd.addEventListener("click", () => state.canEdit ? openEditor(null, { digital: state.filters.tab === "drive" }) : openAuth());
   el.floatingSearch?.addEventListener("click", scrollToShelfSearch);
+  el.mobileDockAdd?.addEventListener("click", () => el.floatingAdd.click());
+  el.mobileDockSearch?.addEventListener("click", scrollToShelfSearch);
+  el.mobileDockSettings?.addEventListener("click", openLayout);
+  el.mobileDockSwitch?.addEventListener("click", () => {
+    if (pageSwitchHidden()) return;
+    const transitionButton = document.querySelector(".page-pull-switch");
+    if (transitionButton) transitionButton.click();
+    else window.location.href = pullNavigationUrl("./");
+  });
   el.layoutButton.addEventListener("click", openLayout);
   el.showcaseEdit.addEventListener("click", openShowcaseEditor);
   el.syncButton?.addEventListener("click", syncShelfNow);
   el.fetchPricesButton.addEventListener("click", refreshAllShelfPrices);
   el.scrollTop.addEventListener("click", () => window.scrollTo({ top: 0, behavior: "smooth" }));
+  el.mobileDockTop?.addEventListener("click", () => window.scrollTo({ top: 0, behavior: "smooth" }));
   el.footerUpdate.addEventListener("click", clearSiteCachesAndReload);
   el.footerVersion.addEventListener("click", clearSiteCachesAndReload);
   el.brandVersion?.addEventListener("click", clearSiteCachesAndReload);
@@ -426,6 +437,13 @@ function bindEvents() {
     if (event.target.closest("[data-shelf-settings-back]")) requestShelfSettingsExit("back");
   });
   el.layoutDialog.addEventListener("cancel", (event) => { event.preventDefault(); requestShelfSettingsExit("close"); });
+  el.layoutDialog.addEventListener("close", () => {
+    if (el.mobileDockSettings) {
+      el.mobileDockSettings.disabled = false;
+      el.mobileDockSettings.classList.remove("is-active");
+      el.mobileDockSettings.setAttribute("aria-pressed", "false");
+    }
+  });
   el.layoutForm.addEventListener("submit", saveLayout);
   document.querySelector("#shelfSettingsLogoutButton")?.addEventListener("click", () => {
     if (shelfSettingsDirty) {
@@ -1077,6 +1095,8 @@ function renderChrome() {
   document.body.classList.toggle("list-view-mode", state.viewMode === "list");
   el.addButton.hidden = false;
   el.layoutButton.hidden = !state.canEdit;
+  if (el.mobileDockSettings) el.mobileDockSettings.hidden = !state.canEdit;
+  if (el.mobileDockSwitch) el.mobileDockSwitch.hidden = pageSwitchHidden();
   if (el.syncButton) el.syncButton.hidden = true;
   const showPriceActions = state.canEdit && shelfPricesVisible();
   el.fetchPricesButton.hidden = !showPriceActions;
@@ -1118,8 +1138,10 @@ function normalizeOwnerKey(value) {
 
 function updateFloatingActions() {
   const visible = window.scrollY > 180 && !document.body.classList.contains("dialog-open");
+  const dockVisible = window.scrollY > 180;
   el.scrollTop.classList.toggle("visible", visible);
   el.floatingActions.classList.toggle("visible", visible);
+  el.mobileActionDock?.classList.toggle("visible", dockVisible);
 }
 
 async function syncShelfNow() {
@@ -2841,6 +2863,11 @@ function openLayout() {
   el.layoutDialogBackTitle.hidden = true;
   el.layoutDialogEyebrow.textContent = "Shelf settings";
   openDialog(el.layoutDialog);
+  if (el.mobileDockSettings) {
+    el.mobileDockSettings.disabled = true;
+    el.mobileDockSettings.classList.add("is-active");
+    el.mobileDockSettings.setAttribute("aria-pressed", "true");
+  }
   initShelfAccounts(document.querySelector("[data-shelf-accounts]"), {
     getSettings: () => state.gamelistSettings,
     saveSettings: async (settings) => {

@@ -340,10 +340,12 @@ const el = {
   floatingEditActions: document.querySelector("#floatingEditActions"),
   floatingAddButton: document.querySelector("#floatingAddButton"),
   floatingSearchButton: document.querySelector("#floatingSearchButton"),
+  mobileActionDock: document.querySelector("#mobileActionDock"),
   mobileDockAdd: document.querySelector("#mobileDockAdd"),
   mobileDockSearch: document.querySelector("#mobileDockSearch"),
   mobileDockSettings: document.querySelector("#mobileDockSettings"),
   mobileDockSwitch: document.querySelector("#mobileDockSwitch"),
+  mobileDockTop: document.querySelector("#mobileDockTop"),
   mobileTabs: document.querySelectorAll("[data-mobile-section]"),
   board: document.querySelector(".board"),
   detailDialog: document.querySelector("#detailDialog"),
@@ -1142,6 +1144,7 @@ function bindEvents() {
     if (document.body.classList.contains("dialog-open")) return;
     window.scrollTo({ top: 0, behavior: "smooth" });
   });
+  el.mobileDockTop?.addEventListener("click", () => window.scrollTo({ top: 0, behavior: "smooth" }));
   el.detailCloseButton.addEventListener("click", () => el.detailDialog.close());
   el.detailDialog.addEventListener("click", (event) => {
     if (event.target === el.detailDialog) el.detailDialog.close();
@@ -1183,7 +1186,14 @@ function bindEvents() {
     event.preventDefault();
     requestSettingsExit("close");
   });
-  el.settingsDialog?.addEventListener("close", syncScrollLock);
+  el.settingsDialog?.addEventListener("close", () => {
+    syncScrollLock();
+    if (el.mobileDockSettings) {
+      el.mobileDockSettings.disabled = false;
+      el.mobileDockSettings.classList.remove("is-active");
+      el.mobileDockSettings.setAttribute("aria-pressed", "false");
+    }
+  });
   el.settingsForm?.addEventListener("input", () => { settingsDirty = true; });
   el.settingsForm?.addEventListener("change", () => { settingsDirty = true; });
   el.settingsForm?.addEventListener("click", (event) => {
@@ -1979,6 +1989,11 @@ function openSettingsDialog() {
   settingsDirty = false;
   settingsSnapshot = JSON.parse(JSON.stringify(state.settings));
   el.settingsDialog.showModal();
+  if (el.mobileDockSettings) {
+    el.mobileDockSettings.disabled = true;
+    el.mobileDockSettings.classList.add("is-active");
+    el.mobileDockSettings.setAttribute("aria-pressed", "true");
+  }
   refreshIgdbConnectionStatus();
   refreshNintendoConnectionStatus();
   refreshPsnConnectionStatus();
@@ -9434,8 +9449,10 @@ function updateDetailTrophyEdges() {
 
 function updateScrollTopButton() {
   const visible = window.scrollY > 180 && !document.body.classList.contains("dialog-open");
+  const dockVisible = window.scrollY > 180;
   el.scrollTopButton?.classList.toggle("visible", visible);
   el.floatingEditActions?.classList.toggle("visible", visible);
+  el.mobileActionDock?.classList.toggle("visible", dockVisible);
 }
 
 function sortedDetailTrophies() {

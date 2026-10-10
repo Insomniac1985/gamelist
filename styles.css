@@ -7921,6 +7921,10 @@ body:not(.can-edit) .top-actions-separator {
   display: none;
 }
 
+.mobile-dock-action > span:not(.mobile-switch-logos) {
+  display: none;
+}
+
 body.dialog-open .floating-search-button {
   opacity: 0;
   pointer-events: none;
@@ -10699,8 +10703,7 @@ dialog::backdrop {
 }
 
 body.dialog-open .topbar,
-body.dialog-open .toolbar,
-body.dialog-open .mobile-section-tabs {
+body.dialog-open .toolbar {
   z-index: 0;
 }
 
@@ -15481,7 +15484,8 @@ html.theme-light .finish-trophy-check input[type="checkbox"]:checked {
   }
 
   .mobile-dock-action:hover,
-  .mobile-dock-action:focus-visible {
+  .mobile-dock-action:focus-visible,
+  .mobile-dock-action.is-active {
     color: #fff;
     background: var(--accent);
     box-shadow: 0 3px 24px color-mix(in srgb, var(--accent) 42%, transparent);
@@ -15539,6 +15543,10 @@ html.theme-light .finish-trophy-check input[type="checkbox"]:checked {
     mask-image: url("assets/Icon.png");
   }
 
+  .mobile-dock-top {
+    display: none;
+  }
+
   .mobile-dock-action > span:not(.mobile-switch-logos) {
     display: none;
   }
@@ -15551,11 +15559,6 @@ html.theme-light .finish-trophy-check input[type="checkbox"]:checked {
     height: 40px;
     min-width: 40px;
     min-height: 40px;
-  }
-
-  body.dialog-open .mobile-action-dock {
-    opacity: 0;
-    pointer-events: none;
   }
 
   .price-refresh-action,
@@ -17453,4 +17456,84 @@ html.theme-light .finish-trophy-check input[type="checkbox"]:checked {
   .lookup-result button {
     grid-column: 1 / -1;
   }
+}
+
+@media (min-width: 761px) {
+  .mobile-action-dock {
+    position: fixed;
+    left: 50%;
+    bottom: clamp(16px, 3vw, 28px);
+    z-index: 20;
+    display: flex;
+    width: max-content;
+    min-height: 64px;
+    gap: 4px;
+    padding: 6px;
+    transform: translate(-50%, 10px);
+    border: 1px solid var(--line);
+    border-radius: 16px;
+    background: var(--panel);
+    box-shadow: 0 18px 42px rgba(0, 0, 0, 0.28);
+    backdrop-filter: blur(12px) saturate(1.15);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 160ms ease, transform 160ms ease;
+  }
+
+  .mobile-action-dock.visible {
+    opacity: 1;
+    pointer-events: auto;
+    transform: translate(-50%, 0);
+  }
+
+  .mobile-dock-action {
+    display: grid;
+    width: 54px;
+    height: 50px;
+    min-width: 54px;
+    min-height: 50px;
+    flex: 0 0 54px;
+    align-content: center;
+    justify-items: center;
+    padding: 0;
+    border: 0;
+    border-radius: 12px;
+    color: #fff;
+    background: transparent;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .mobile-dock-action svg {
+    width: 24px;
+    height: 24px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2.3;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  .mobile-dock-action:hover,
+  .mobile-dock-action:focus-visible,
+  .mobile-dock-action.is-active {
+    color: #fff;
+    background: var(--accent);
+    box-shadow: 0 3px 24px color-mix(in srgb, var(--accent) 42%, transparent);
+    outline: none;
+  }
+
+  #mobileDockSettings,
+  .scroll-top-button,
+  .floating-edit-actions,
+  .floating-search-button {
+    display: none !important;
+  }
+}
+
+.mobile-dock-switch:hover .mobile-switch-logo,
+.mobile-dock-switch:focus-visible .mobile-switch-logo,
+.mobile-dock-switch:active .mobile-switch-logo,
+.mobile-dock-switch.is-active .mobile-switch-logo {
+  background: #fff;
 }
