@@ -1088,6 +1088,7 @@ function renderChrome() {
     : `<svg class="pencil-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h4l11-11a2.8 2.8 0 0 0-4-4L4 16v4Z"></path><path d="M13.5 6.5l4 4"></path></svg>`;
   el.login.title = state.canEdit ? tt("Stop Editing") : tt("Edit");
   el.login.setAttribute("aria-label", el.login.title);
+  el.login.hidden = state.canEdit;
   syncViewModeButton(el.view, state.viewMode, { gridIcon, linesIcon });
   el.sortDirection.innerHTML = sortArrowIcon(state.filters.direction === "desc");
   el.sortDirection.classList.toggle("desc", state.filters.direction === "desc");
