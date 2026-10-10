@@ -1,5 +1,5 @@
 import { normalizeSearchText, bindModalTouchGuard, createGameCardShell, bindActivityCardParallax, mountActivitySlider, mountTwitchPreview, mountReleaseCalendar, finishedGameMarkup, achievementCardMarkup, achievementDashboardMarkup, achievementPanelMarkup, completedCardMarkup, horizontalCarouselState, syncViewModeButton, slideHorizontalCarousel, comparePlayingGames, finishedDurationText, timeBadgeMarkup, guideLinksMarkup, storeButtonsMarkup, activityTrailerUrl, activityTrailerFrameMarkup, preloadPausedActivityTrailers, activityReleaseStatus, activityCoverOverride, activityAllowsPsnCardTrophies, formatFooterDate, formatFooterDateTime, formatFooterShortDate, confirmGameDelete } from "./activity-ui.js";
-import { applySiteTheme, normalizeThemeSettings, openThemeEditor, ownerCardColorClass, ownerColorClass, themeSettingsButton } from "./theme-system.js";
+import { applySiteTheme, normalizeThemeSettings, ownerCardColorClass, ownerColorClass, themeSettingsContent, bindThemeSettingsContent, readThemeSettingsContent } from "./theme-system.js";
 import { applyDocumentTranslations, languageOptions, normalizeLanguage, t } from "./i18n.js";
 import { accountSettingsMarkup } from "./account-settings-ui.js";
 
@@ -456,6 +456,7 @@ const el = {
   settingsRegion: document.querySelector("#settingsRegion"),
   settingsLanguage: document.querySelector("#settingsLanguage"),
   settingsStores: document.querySelector("#settingsStores"),
+  settingsThemeEditor: document.querySelector("#settingsThemeEditor"),
   settingsDefaultOwner: document.querySelector("#settingsDefaultOwner"),
   settingsDevFeatures: document.querySelector("#settingsDevFeatures"),
   detailTitle: document.querySelector("#detailTitle"),
@@ -945,6 +946,9 @@ function bindEvents() {
       const panel = button.dataset.settingsPanel;
       const home = document.querySelector("#settingsHome");
       if (home) home.hidden = true;
+      const sectionTitle = button.querySelector(".settings-category-text strong")?.textContent.trim() || "Settings";
+      document.querySelector("#settingsDialogEyebrow").textContent = "Settings";
+      document.querySelector("#settingsDialogTitle").textContent = sectionTitle;
       el.settingsDialog.querySelectorAll("[data-settings-window]").forEach((section) => {
         section.hidden = section.dataset.settingsWindow !== panel;
       });
@@ -958,6 +962,8 @@ function bindEvents() {
       const home = document.querySelector("#settingsHome");
       if (home) home.hidden = false;
       el.settingsDialog.classList.remove("has-settings-window");
+      document.querySelector("#settingsDialogEyebrow").textContent = "Site settings";
+      document.querySelector("#settingsDialogTitle").textContent = "Settings";
       el.settingsDialog.querySelector(".settings-modal")?.scrollTo({ top: 0 });
     });
   });
@@ -1896,6 +1902,8 @@ function openSettingsDialog() {
   const settingsHome = document.querySelector("#settingsHome");
   if (settingsHome) settingsHome.hidden = false;
   el.settingsDialog.classList.remove("has-settings-window");
+  document.querySelector("#settingsDialogEyebrow").textContent = "Site settings";
+  document.querySelector("#settingsDialogTitle").textContent = "Settings";
   renderSettingsDialog();
   el.settingsDialog.showModal();
   refreshIgdbConnectionStatus();
@@ -2479,13 +2487,16 @@ function renderSettingsDialog() {
     settingsLayoutItem("playing", -1, { fixed: true }),
     settingsLayoutItem("latestFinished", -1, { fixed: true }),
     ...state.settings.pageOrder.map((key) => settingsLayoutItem(key, pageIndex.get(key) ?? 0)),
-    `<div class="settings-preference-separator" role="presentation"></div><div class="settings-preference-row">${settingsThemeItem()}${settingsDefaultOrderItem()}${settingsWeekStartItem()}${settingsShelfSyncItem()}${settingsPageSwitchItem()}${settingsPrioritizeFinishedStreamItem()}${settingsHideNonStreamPlayingItem()}</div>`,
+    `<div class="settings-preference-separator" role="presentation"></div><div class="settings-preference-row">${settingsDefaultOrderItem()}${settingsWeekStartItem()}${settingsShelfSyncItem()}${settingsPageSwitchItem()}${settingsPrioritizeFinishedStreamItem()}${settingsHideNonStreamPlayingItem()}</div>`,
   ].join("");
+  el.settingsThemeEditor.innerHTML = themeSettingsContent(state.settings, tt);
+  bindThemeSettingsContent(el.settingsThemeEditor, tt);
   document.querySelector("#settingsCsvData").innerHTML = settingsCsvDataItem();
   if (el.settingsDevFeatures) el.settingsDevFeatures.innerHTML = settingsDevFeaturesItem("gamelist");
   el.settingsStores.innerHTML = STORE_OPTIONS.map((store) => `
     <label class="check-filter toggle-check settings-store-check">
       <input type="checkbox" value="${escapeHtml(store)}" ${state.settings.stores.includes(store) ? "checked" : ""}>
+      <img class="settings-store-icon" src="${escapeHtml(storeIcon(store))}" alt="" aria-hidden="true" loading="lazy">
       <span>${escapeHtml(store)}</span>
     </label>
   `).join("");
@@ -2507,21 +2518,6 @@ function renderSettingsDialog() {
       state.settings.hiddenSections = [...hidden].filter((key) => LAYOUT_SECTION_KEYS.includes(key));
       renderSettingsDialog();
     });
-  });
-  el.settingsLayoutList.querySelector("[data-theme-editor]")?.addEventListener("click", () => {
-    openThemeEditor({
-      settings: state.settings,
-      page: "gamelist",
-      translate: tt,
-      onSave: async (settings) => {
-        state.settings = normalizeSettings(settings);
-        persistLocalSettings();
-        await persistCloud();
-        renderSettingsDialog();
-        render();
-      },
-    });
-    requestAnimationFrame(() => syncStyledSelects(document.querySelector("#themeEditorDialog"), { activeValue: null }));
   });
   el.settingsLayoutList.querySelector("[data-default-order]")?.addEventListener("change", (event) => {
     state.settings.defaultOrder = event.target.value;
@@ -2596,10 +2592,6 @@ function moveSettingsLayoutItem(key, delta) {
   state.settings.pageOrder = order;
   renderSettingsDialog();
   applyPageOrder();
-}
-
-function settingsThemeItem() {
-  return themeSettingsButton(state.settings, escapeHtml, tt);
 }
 
 function settingsDefaultOrderItem() {
@@ -3205,11 +3197,12 @@ async function saveSettingsFromForm(event) {
     .filter((store) => STORE_OPTIONS.includes(store))
     .slice(0, MAX_PRICE_STORES);
   const visibleSections = new Set([...el.settingsLayoutList.querySelectorAll("[data-layout-hidden]:checked")].map((input) => input.value));
+  const customTheme = readThemeSettingsContent(el.settingsThemeEditor, state.settings);
   state.settings = normalizeSettings({
     ...state.settings,
     hiddenSections: LAYOUT_SECTION_KEYS.filter((key) => !visibleSections.has(key)),
-    theme: state.settings.theme,
-    customTheme: state.settings.customTheme,
+    theme: "custom",
+    customTheme,
     defaultOrder: el.settingsLayoutList.querySelector("[data-default-order]")?.value || state.settings.defaultOrder,
     psnUser: el.settingsPsnUser.value,
     microsoftUser: el.settingsMicrosoftUser.value,
@@ -6806,7 +6799,7 @@ function syncStyledSelect(select, options = {}) {
   }
   const selectOptions = [...select.options].map((option) => ({
     value: option.value,
-    label: option.textContent.trim(),
+    label: `${option.dataset.flag ? `${option.dataset.flag} ` : ""}${option.textContent.trim()}`,
     selected: option.selected,
     disabled: option.disabled || option.hidden,
     fontFamily: option.style.fontFamily || "",

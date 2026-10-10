@@ -900,8 +900,8 @@
       <form method="dialog" class="settings-modal glass" id="settingsForm" autocomplete="off">
         <div class="modal-head">
           <div>
-            <p class="eyebrow" data-i18n="Site settings">Site settings</p>
-            <h2 data-i18n="Settings">Settings</h2>
+            <p class="eyebrow" id="settingsDialogEyebrow" data-i18n="Site settings">Site settings</p>
+            <h2 id="settingsDialogTitle" data-i18n="Settings">Settings</h2>
           </div>
           <div class="modal-head-actions">
             <button class="primary-button modal-head-save" type="submit" data-i18n="Save">Save</button>
@@ -913,33 +913,29 @@
           <p class="settings-home-copy">Choose a section to open its settings.</p>
           <div class="settings-category-grid">
             <button class="settings-category-card" type="button" data-settings-panel="design">
-              <span class="settings-category-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m4 20 4.5-1 10.8-10.8a2.1 2.1 0 0 0-3-3L5.5 16 4 20Z"/><path d="m14.8 6.7 3 3M13 20h7"/></svg></span>
-              <span class="settings-category-text"><strong>Page design &amp; theme</strong><small>Layout, appearance, and preferences</small></span><span class="settings-category-arrow" aria-hidden="true">↗</span>
+              <span class="settings-category-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 20h4l11-11a2.8 2.8 0 0 0-4-4L4 16v4Z"/><path d="M13.5 6.5l4 4"/></svg></span>
+              <span class="settings-category-text"><strong>Page design &amp; theme</strong><small>Layout, appearance, and preferences</small></span><span class="settings-category-arrow" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m9 5 7 7-7 7"/></svg></span>
             </button>
             <button class="settings-category-card" type="button" data-settings-panel="accounts">
-              <span class="settings-category-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.5"/><path d="M2.8 20a6.2 6.2 0 0 1 12.4 0M16 11h5m-2.5-2.5v5"/></svg></span>
-              <span class="settings-category-text"><strong>Accounts</strong><small>Connected services and sign out</small></span><span class="settings-category-arrow" aria-hidden="true">↗</span>
+              <span class="settings-category-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="10" cy="7" r="4"/><path d="M3 21v-2a5 5 0 0 1 5-5h4a5 5 0 0 1 5 5v2M19 8v6m3-3h-6"/></svg></span>
+              <span class="settings-category-text"><strong>Accounts</strong><small>Connected services and sign out</small></span><span class="settings-category-arrow" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m9 5 7 7-7 7"/></svg></span>
             </button>
             <button class="settings-category-card" type="button" data-settings-panel="data">
-              <span class="settings-category-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 5h16v14H4zM8 9h8M8 13h8M8 17h5"/><path d="M7 2v3m10-3v3"/></svg></span>
-              <span class="settings-category-text"><strong>Your Data</strong><small>Import and export your collections</small></span><span class="settings-category-arrow" aria-hidden="true">↗</span>
+              <span class="settings-category-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M6 3h9l4 4v14H6zM14 3v5h5M9 12h7M9 16h7"/></svg></span>
+              <span class="settings-category-text"><strong>Your Data</strong><small>Import and export your collections</small></span><span class="settings-category-arrow" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m9 5 7 7-7 7"/></svg></span>
             </button>
             <button class="settings-category-card" type="button" data-settings-panel="dev">
-              <span class="settings-category-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m8 5-6 7 6 7m8-14 6 7-6 7m-2-17-4 20"/></svg></span>
-              <span class="settings-category-text"><strong>Dev features</strong><small>Tools and experimental features</small></span><span class="settings-category-arrow" aria-hidden="true">↗</span>
+              <span class="settings-category-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m8 7-5 5 5 5m8-10 5 5-5 5m-2-13-4 16"/></svg></span>
+              <span class="settings-category-text"><strong>Dev features</strong><small>Tools and experimental features</small></span><span class="settings-category-arrow" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m9 5 7 7-7 7"/></svg></span>
             </button>
           </div>
         </div>
 
         <section class="settings-window-panel" data-settings-window="design" hidden>
-          <div class="settings-window-head"><button class="settings-back-button" type="button" data-settings-back>← Settings</button><div><p class="eyebrow">Customize</p><h3>Page design &amp; theme</h3></div></div>
+          <div class="settings-window-head"><button class="settings-back-title" type="button" data-settings-back aria-label="Go back to settings"><span class="settings-back-title-current"><span class="settings-back-glyph" aria-hidden="true">&lt;</span>Page design &amp; theme</span><span class="settings-back-title-hover">Go back to settings</span></button></div>
           <section class="settings-section"><h3 data-i18n="Page">Page</h3><div class="settings-layout" id="settingsLayoutList" aria-label="Page order"></div></section>
           <p class="eyebrow settings-detail-title" data-i18n="Details">Details</p>
           <section class="settings-grid settings-detail-grid">
-          <label class="settings-detail-compact">
-            <span data-i18n="Default owner">Default owner</span>
-            <input id="settingsDefaultOwner" autocomplete="off">
-          </label>
           <label class="settings-detail-compact">
             <span data-i18n="Currency">Currency</span>
             <select id="settingsCurrency">
@@ -952,15 +948,15 @@
           <label class="settings-detail-compact">
             <span data-i18n="Region">Region</span>
             <select id="settingsRegion">
-              <option value="ES" data-i18n="Spain">Spain</option>
-              <option value="IT" data-i18n="Italy">Italy</option>
-              <option value="IE" data-i18n="Ireland">Ireland</option>
-              <option value="FR" data-i18n="France">France</option>
-              <option value="PT" data-i18n="Portugal">Portugal</option>
-              <option value="JP" data-i18n="Japan">Japan</option>
-              <option value="MX" data-i18n="Mexico">Mexico</option>
-              <option value="US">US</option>
-              <option value="UK">UK</option>
+              <option value="ES" data-flag="🇪🇸" data-i18n="Spain">Spain</option>
+              <option value="IT" data-flag="🇮🇹" data-i18n="Italy">Italy</option>
+              <option value="IE" data-flag="🇮🇪" data-i18n="Ireland">Ireland</option>
+              <option value="FR" data-flag="🇫🇷" data-i18n="France">France</option>
+              <option value="PT" data-flag="🇵🇹" data-i18n="Portugal">Portugal</option>
+              <option value="JP" data-flag="🇯🇵" data-i18n="Japan">Japan</option>
+              <option value="MX" data-flag="🇲🇽" data-i18n="Mexico">Mexico</option>
+              <option value="US" data-flag="🇺🇸">US</option>
+              <option value="UK" data-flag="🇬🇧">UK</option>
             </select>
           </label>
           <label class="settings-detail-compact">
@@ -975,21 +971,30 @@
           <h3 data-i18n="Stores">Stores</h3>
           <div class="settings-store-list" id="settingsStores"></div>
           </section>
+          <section class="settings-section settings-inline-theme-section">
+            <p class="eyebrow">Customize Theme</p>
+            <div id="settingsThemeEditor"></div>
+          </section>
         </section>
 
         <section class="settings-window-panel settings-accounts-section" data-settings-window="accounts" hidden>
-          <div class="settings-window-head"><button class="settings-back-button" type="button" data-settings-back>← Settings</button><div><p class="eyebrow">Connections</p><h3>Accounts</h3></div></div>
+          <div class="settings-window-head"><button class="settings-back-title" type="button" data-settings-back aria-label="Go back to settings"><span class="settings-back-title-current"><span class="settings-back-glyph" aria-hidden="true">&lt;</span>Accounts</span><span class="settings-back-title-hover">Go back to settings</span></button></div>
+          <label class="settings-account-field settings-default-owner-field">
+            <span data-i18n="Default owner">Default owner</span>
+            <input id="settingsDefaultOwner" autocomplete="off">
+          </label>
+          <hr class="settings-account-separator">
           <div id="settingsAccountsMount"></div>
-          <button class="settings-logout-button" id="settingsLogoutButton" type="button"><span aria-hidden="true">↪</span> Log out of edit mode</button>
+          <button class="settings-logout-button" id="settingsLogoutButton" type="button"><svg class="exit-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M10 5H6.8A2.8 2.8 0 0 0 4 7.8v8.4A2.8 2.8 0 0 0 6.8 19H10"></path><path d="M14 8l4 4-4 4"></path><path d="M8 12h10"></path></svg> Log out of my account</button>
         </section>
 
         <section class="settings-window-panel settings-csv-section" data-settings-window="data" hidden>
-          <div class="settings-window-head"><button class="settings-back-button" type="button" data-settings-back>← Settings</button><div><p class="eyebrow">Import &amp; export</p><h3>Your Data</h3></div></div>
+          <div class="settings-window-head"><button class="settings-back-title" type="button" data-settings-back aria-label="Go back to settings"><span class="settings-back-title-current"><span class="settings-back-glyph" aria-hidden="true">&lt;</span>Your Data</span><span class="settings-back-title-hover">Go back to settings</span></button></div>
           <div class="settings-csv-data" id="settingsCsvData"></div>
         </section>
 
         <section class="settings-window-panel settings-dev-section" data-settings-window="dev" hidden>
-          <div class="settings-window-head"><button class="settings-back-button" type="button" data-settings-back>← Settings</button><div><p class="eyebrow">Advanced</p><h3 data-i18n="Dev features">Dev features</h3></div></div>
+          <div class="settings-window-head"><button class="settings-back-title" type="button" data-settings-back aria-label="Go back to settings"><span class="settings-back-title-current"><span class="settings-back-glyph" aria-hidden="true">&lt;</span><span data-i18n="Dev features">Dev features</span></span><span class="settings-back-title-hover">Go back to settings</span></button></div>
           <div class="settings-dev-links" id="settingsDevFeatures"></div>
         </section>
 
