@@ -317,7 +317,7 @@
               <option value="playtime" data-i18n="Playtime">Playtime</option>
               <option value="rating" data-i18n="Rating">Rating</option>
             </select>
-            <button class="direction-toggle" id="sortDirectionButton" type="button" title="Sort ascending" aria-label="Sort ascending">↑</button>
+            <button class="direction-toggle" id="sortDirectionButton" type="button" title="Sort ascending" aria-label="Sort ascending"><svg class="sort-arrow-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 19V5m-7 7 7-7 7 7"></path></svg></button>
           </div>
         </label>
         <button class="icon-button view-toggle" id="viewToggleButton" type="button" title="Show as list" aria-label="Show as list"></button>
@@ -715,8 +715,8 @@
         </div>
         <p class="unsaved-edit-copy">You have unsaved changes.</p>
         <div class="modal-actions unsaved-edit-actions">
-          <button class="primary-button" type="button" data-editor-unsaved-save>Close and save</button>
-          <button class="ghost-button" type="button" data-editor-unsaved-discard>Close and don't save</button>
+          <button class="ghost-button" type="button" data-editor-unsaved-save>Close and save</button>
+          <button class="primary-button" type="button" data-editor-unsaved-discard>Close without saving</button>
         </div>
       </article>
     </dialog>
@@ -765,7 +765,7 @@
                   <option value="name" data-i18n="Name">Name</option>
                   <option value="completed" data-i18n="Completed">Completed</option>
                 </select>
-                <button class="direction-toggle" id="detailTrophyDirection" type="button" title="Sort ascending" aria-label="Sort ascending">↑</button>
+                <button class="direction-toggle" id="detailTrophyDirection" type="button" title="Sort ascending" aria-label="Sort ascending"><svg class="sort-arrow-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 19V5m-7 7 7-7 7 7"></path></svg></button>
               </div>
             </div>
             <div class="detail-trophy-scroller" id="detailTrophyScroller">
@@ -945,7 +945,7 @@
         </div>
 
         <section class="settings-window-panel" data-settings-window="design" hidden>
-          <section class="settings-section"><h3 data-i18n="Page">Page</h3><div class="settings-layout" id="settingsLayoutList" aria-label="Page order"></div></section>
+          <section class="settings-section"><h3 data-i18n="Page Layout">Page Layout</h3><div class="settings-layout" id="settingsLayoutList" aria-label="Page order"></div></section>
           <p class="eyebrow settings-detail-title" data-i18n="Details">Details</p>
           <section class="settings-grid settings-detail-grid">
           <label class="settings-detail-compact">
@@ -982,6 +982,9 @@
           <section class="settings-section">
           <h3 data-i18n="Stores">Stores</h3>
           <div class="settings-store-list" id="settingsStores"></div>
+          </section>
+          <section class="settings-section settings-detail-preferences">
+            <div class="settings-preference-row" id="settingsPreferenceRow"></div>
           </section>
           <section class="settings-section settings-inline-theme-section">
             <p class="eyebrow settings-customize-title">Customize Theme</p>
@@ -1024,8 +1027,8 @@
         </div>
         <p class="settings-unsaved-copy">You have unsaved changes.</p>
         <div class="modal-actions settings-unsaved-actions">
-          <button class="primary-button" type="button" data-settings-unsaved-save></button>
-          <button class="ghost-button" type="button" data-settings-unsaved-discard></button>
+          <button class="ghost-button" type="button" data-settings-unsaved-save></button>
+          <button class="primary-button" type="button" data-settings-unsaved-discard></button>
         </div>
       </article>
     </dialog>

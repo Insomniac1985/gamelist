@@ -4554,8 +4554,8 @@ body.dialog-open .floating-edit-actions {
 }
 
 .sort-arrow-icon {
-  width: 19px;
-  height: 19px;
+  width: 22px;
+  height: 22px;
   fill: none;
   stroke: currentColor;
   stroke-width: 2;
@@ -11193,7 +11193,7 @@ html.theme-light .settings-category-card { border-color: rgba(31,42,61,.22); bac
   min-height: 30px;
 }
 
-.settings-layout-actions .icon-button svg { display: block; width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.settings-layout-actions .icon-button svg { display: block; width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
 
 .settings-fixed-label {
   display: inline-grid;
@@ -11247,13 +11247,6 @@ html.theme-light .settings-category-card { border-color: rgba(31,42,61,.22); bac
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
   gap: 10px;
-}
-
-.settings-preference-separator {
-  grid-column: 1 / -1;
-  height: 1px;
-  margin: 2px 0;
-  background: rgba(255, 255, 255, 0.14);
 }
 
 .settings-preference-row .settings-theme-card,
@@ -11519,10 +11512,6 @@ html.theme-light .settings-preference-row .settings-sync-card,
 html.theme-light .settings-preference-row .settings-data-card {
   background: transparent;
   border: 0;
-}
-
-html.theme-light .settings-preference-separator {
-  background: rgba(17, 24, 39, 0.14);
 }
 
 html.theme-light .settings-layout-card strong,
@@ -12586,23 +12575,26 @@ html.theme-light .shelf-card-delete-action:hover {
 .theme-glow-trigger {
   display: flex;
   width: 100%;
+  box-sizing: border-box;
+  height: var(--settings-control-height, 42px);
   min-height: var(--settings-control-height, 42px);
   align-items: center;
   gap: 10px;
-  padding: 10px 12px;
-  color: var(--text);
+  padding: 0 12px;
+  color: #fff !important;
   border: 1px solid rgba(255, 255, 255, 0.14);
   border-radius: 7px;
   background: rgba(255, 255, 255, 0.07);
+  line-height: 1.2;
   text-align: left;
   cursor: pointer;
 }
 .theme-glow-trigger > span:nth-child(2) { flex: 1; }
 .theme-glow-trigger > svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
 .theme-glow-swatch { display: block; width: 18px; height: 18px; flex: 0 0 18px; border: 1px solid rgba(255, 255, 255, 0.48); border-radius: 3px; box-shadow: inset 0 0 0 2px rgba(0, 0, 0, 0.12); }
-.theme-glow-options { position: absolute; z-index: 30; top: calc(100% + 5px); right: 0; left: 0; display: grid; gap: 3px; padding: 5px; border: 1px solid var(--line); border-radius: 9px; background: var(--surface, #211b1e); box-shadow: 0 12px 28px rgba(0, 0, 0, 0.36); }
+.theme-glow-options { position: absolute; z-index: 30; top: calc(100% + 5px); right: 0; left: 0; display: grid; gap: 3px; padding: 5px; border: 1px solid var(--line); border-radius: 9px; background: var(--panel-strong, #211b1e); box-shadow: 0 12px 28px rgba(0, 0, 0, 0.36); }
 .theme-glow-options[hidden] { display: none !important; }
-.theme-glow-option { display: flex; min-height: 38px; align-items: center; gap: 10px; padding: 7px; color: var(--text); border: 0; border-radius: 6px; background: transparent; text-align: left; cursor: pointer; }
+.theme-glow-option { display: flex; min-height: 38px; align-items: center; gap: 10px; padding: 7px; color: #fff !important; border: 0; border-radius: 6px; background: transparent; line-height: 1.2; text-align: left; cursor: pointer; }
 .theme-glow-option:hover, .theme-glow-option[aria-checked="true"] { background: rgba(255, 255, 255, 0.1); }
 
 .theme-big-logo-row {

@@ -11,6 +11,7 @@ const STRINGS = {
     Save: "Guardar",
     Close: "Cerrar",
     Page: "Página",
+    "Page Layout": "Diseño de página",
     Details: "Detalles",
     "PlayStation account": "Cuenta de PlayStation",
     "Microsoft account": "Cuenta de Microsoft",

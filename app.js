@@ -410,6 +410,7 @@ const el = {
   preorderStoreFieldIcon: document.querySelector(".preorder-store-field-icon"),
   preferredStoreFieldIcon: document.querySelector(".preferred-store-field-icon"),
   settingsLayoutList: document.querySelector("#settingsLayoutList"),
+  settingsPreferenceRow: document.querySelector("#settingsPreferenceRow"),
   settingsPsnUser: document.querySelector("#settingsPsnUser"),
   settingsIgdbIntro: document.querySelector("#settingsIgdbIntro"),
   settingsIgdbSteps: document.querySelector("#settingsIgdbSteps"),
@@ -1977,7 +1978,7 @@ function requestSettingsExit(destination) {
   const saveButton = document.querySelector("[data-settings-unsaved-save]");
   const discardButton = document.querySelector("[data-settings-unsaved-discard]");
   if (saveButton) saveButton.textContent = destination === "back" ? "Go back and save" : "Close and save";
-  if (discardButton) discardButton.textContent = destination === "back" ? "Go back and don't save" : "Close and don't save";
+  if (discardButton) discardButton.textContent = destination === "back" ? "Go back without saving" : "Close without saving";
   document.querySelector("#settingsUnsavedDialog")?.showModal();
 }
 
@@ -2582,7 +2583,14 @@ function renderSettingsDialog() {
     settingsLayoutItem("playing", -1, { fixed: true }),
     settingsLayoutItem("latestFinished", -1, { fixed: true }),
     ...state.settings.pageOrder.map((key) => settingsLayoutItem(key, pageIndex.get(key) ?? 0)),
-    `<div class="settings-preference-separator" role="presentation"></div><div class="settings-preference-row">${settingsDefaultOrderItem()}${settingsWeekStartItem()}${settingsShelfSyncItem()}${settingsPageSwitchItem()}${settingsPrioritizeFinishedStreamItem()}${settingsHideNonStreamPlayingItem()}</div>`,
+  ].join("");
+  el.settingsPreferenceRow.innerHTML = [
+    settingsDefaultOrderItem(),
+    settingsWeekStartItem(),
+    settingsShelfSyncItem(),
+    settingsPageSwitchItem(),
+    settingsPrioritizeFinishedStreamItem(),
+    settingsHideNonStreamPlayingItem(),
   ].join("");
   el.settingsThemeEditor.innerHTML = themeSettingsContent(state.settings, tt);
   bindThemeSettingsContent(el.settingsThemeEditor, tt);
@@ -2614,10 +2622,10 @@ function renderSettingsDialog() {
       renderSettingsDialog();
     });
   });
-  el.settingsLayoutList.querySelector("[data-default-order]")?.addEventListener("change", (event) => {
+  el.settingsPreferenceRow.querySelector("[data-default-order]")?.addEventListener("change", (event) => {
     state.settings.defaultOrder = event.target.value;
   });
-  el.settingsLayoutList.querySelector("[data-week-start]")?.addEventListener("change", (event) => {
+  el.settingsPreferenceRow.querySelector("[data-week-start]")?.addEventListener("change", (event) => {
     state.settings.weekStart = normalizeWeekStart(event.target.value);
     renderReleaseCalendar();
   });
@@ -3298,7 +3306,7 @@ async function saveSettingsFromForm(event, { close = true } = {}) {
     hiddenSections: LAYOUT_SECTION_KEYS.filter((key) => !visibleSections.has(key)),
     theme: "custom",
     customTheme,
-    defaultOrder: el.settingsLayoutList.querySelector("[data-default-order]")?.value || state.settings.defaultOrder,
+    defaultOrder: el.settingsPreferenceRow.querySelector("[data-default-order]")?.value || state.settings.defaultOrder,
     psnUser: el.settingsPsnUser.value,
     microsoftUser: el.settingsMicrosoftUser.value,
     steamUser: el.settingsSteamUser.value,
@@ -3308,12 +3316,12 @@ async function saveSettingsFromForm(event, { close = true } = {}) {
     language: el.settingsLanguage.value,
     stores,
     defaultOwner: el.settingsDefaultOwner.value,
-    shelfSync: Boolean(el.settingsLayoutList.querySelector("[data-shelf-sync]")?.checked),
-    hidePageSwitch: el.settingsLayoutList.querySelector("[data-hide-page-switch]")?.checked === true,
-    streamFilterPriority: normalizeStreamFilterMode(el.settingsLayoutList.querySelector("[data-stream-filter-priority]")?.value),
-    prioritizeFinishedStream: normalizeStreamFilterMode(el.settingsLayoutList.querySelector("[data-stream-filter-priority]")?.value) === "stream",
-    hideNonStreamPlaying: el.settingsLayoutList.querySelector("[data-hide-non-stream-playing]")?.checked === true,
-    weekStart: normalizeWeekStart(el.settingsLayoutList.querySelector("[data-week-start]")?.value || state.settings.weekStart),
+    shelfSync: Boolean(el.settingsPreferenceRow.querySelector("[data-shelf-sync]")?.checked),
+    hidePageSwitch: el.settingsPreferenceRow.querySelector("[data-hide-page-switch]")?.checked === true,
+    streamFilterPriority: normalizeStreamFilterMode(el.settingsPreferenceRow.querySelector("[data-stream-filter-priority]")?.value),
+    prioritizeFinishedStream: normalizeStreamFilterMode(el.settingsPreferenceRow.querySelector("[data-stream-filter-priority]")?.value) === "stream",
+    hideNonStreamPlaying: el.settingsPreferenceRow.querySelector("[data-hide-non-stream-playing]")?.checked === true,
+    weekStart: normalizeWeekStart(el.settingsPreferenceRow.querySelector("[data-week-start]")?.value || state.settings.weekStart),
     forceCacheOnLoad: document.querySelector("#settingsForceCacheOnLoad")?.checked === true,
     gotyAlwaysShow: document.querySelector("#settingsGotyAlwaysShow")?.checked === true,
   });
@@ -10519,8 +10527,7 @@ function gridIcon() {
 function sortArrowIcon(desc = false) {
   return `
     <svg class="sort-arrow-icon" viewBox="0 0 24 24" aria-hidden="true">
-      <path d="${desc ? "M12 3.5v17" : "M12 20.5v-17"}"></path>
-      <path d="${desc ? "M6.5 15l5.5 5.5 5.5-5.5" : "M6.5 9l5.5-5.5L17.5 9"}"></path>
+      <path d="${desc ? "M12 5v14m-7-7 7 7 7-7" : "M12 19V5m-7 7 7-7 7 7"}"></path>
     </svg>
   `;
 }
