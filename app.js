@@ -410,7 +410,8 @@ const el = {
   preorderStoreFieldIcon: document.querySelector(".preorder-store-field-icon"),
   preferredStoreFieldIcon: document.querySelector(".preferred-store-field-icon"),
   settingsLayoutList: document.querySelector("#settingsLayoutList"),
-  settingsPreferenceRow: document.querySelector("#settingsPreferenceRow"),
+  settingsPreferencesBeforeCurrency: document.querySelector("#settingsPreferencesBeforeCurrency"),
+  settingsPreferencesAfterLanguage: document.querySelector("#settingsPreferencesAfterLanguage"),
   settingsPsnUser: document.querySelector("#settingsPsnUser"),
   settingsIgdbIntro: document.querySelector("#settingsIgdbIntro"),
   settingsIgdbSteps: document.querySelector("#settingsIgdbSteps"),
@@ -2585,11 +2586,13 @@ function renderSettingsDialog() {
     settingsLayoutItem("latestFinished", -1, { fixed: true }),
     ...state.settings.pageOrder.map((key) => settingsLayoutItem(key, pageIndex.get(key) ?? 0)),
   ].join("");
-  el.settingsPreferenceRow.innerHTML = [
-    settingsDefaultOrderItem(),
-    settingsWeekStartItem(),
+  el.settingsPreferencesBeforeCurrency.innerHTML = [
     settingsShelfSyncItem(),
     settingsPageSwitchItem(),
+    settingsDefaultOrderItem(),
+  ].join("");
+  el.settingsPreferencesAfterLanguage.innerHTML = [
+    settingsWeekStartItem(),
     settingsPrioritizeFinishedStreamItem(),
     settingsHideNonStreamPlayingItem(),
   ].join("");
@@ -2624,10 +2627,10 @@ function renderSettingsDialog() {
       renderSettingsDialog();
     });
   });
-  el.settingsPreferenceRow.querySelector("[data-default-order]")?.addEventListener("change", (event) => {
+  el.settingsDialog.querySelector("[data-default-order]")?.addEventListener("change", (event) => {
     state.settings.defaultOrder = event.target.value;
   });
-  el.settingsPreferenceRow.querySelector("[data-week-start]")?.addEventListener("change", (event) => {
+  el.settingsDialog.querySelector("[data-week-start]")?.addEventListener("change", (event) => {
     state.settings.weekStart = normalizeWeekStart(event.target.value);
     renderReleaseCalendar();
   });
@@ -3308,7 +3311,7 @@ async function saveSettingsFromForm(event, { close = true } = {}) {
     hiddenSections: LAYOUT_SECTION_KEYS.filter((key) => !visibleSections.has(key)),
     theme: "custom",
     customTheme,
-    defaultOrder: el.settingsPreferenceRow.querySelector("[data-default-order]")?.value || state.settings.defaultOrder,
+    defaultOrder: el.settingsDialog.querySelector("[data-default-order]")?.value || state.settings.defaultOrder,
     psnUser: el.settingsPsnUser.value,
     microsoftUser: el.settingsMicrosoftUser.value,
     steamUser: el.settingsSteamUser.value,
@@ -3318,12 +3321,12 @@ async function saveSettingsFromForm(event, { close = true } = {}) {
     language: el.settingsLanguage.value,
     stores,
     defaultOwner: el.settingsDefaultOwner.value,
-    shelfSync: Boolean(el.settingsPreferenceRow.querySelector("[data-shelf-sync]")?.checked),
-    hidePageSwitch: el.settingsPreferenceRow.querySelector("[data-hide-page-switch]")?.checked === true,
-    streamFilterPriority: normalizeStreamFilterMode(el.settingsPreferenceRow.querySelector("[data-stream-filter-priority]")?.value),
-    prioritizeFinishedStream: normalizeStreamFilterMode(el.settingsPreferenceRow.querySelector("[data-stream-filter-priority]")?.value) === "stream",
-    hideNonStreamPlaying: el.settingsPreferenceRow.querySelector("[data-hide-non-stream-playing]")?.checked === true,
-    weekStart: normalizeWeekStart(el.settingsPreferenceRow.querySelector("[data-week-start]")?.value || state.settings.weekStart),
+    shelfSync: Boolean(el.settingsDialog.querySelector("[data-shelf-sync]")?.checked),
+    hidePageSwitch: el.settingsDialog.querySelector("[data-hide-page-switch]")?.checked === true,
+    streamFilterPriority: normalizeStreamFilterMode(el.settingsDialog.querySelector("[data-stream-filter-priority]")?.value),
+    prioritizeFinishedStream: normalizeStreamFilterMode(el.settingsDialog.querySelector("[data-stream-filter-priority]")?.value) === "stream",
+    hideNonStreamPlaying: el.settingsDialog.querySelector("[data-hide-non-stream-playing]")?.checked === true,
+    weekStart: normalizeWeekStart(el.settingsDialog.querySelector("[data-week-start]")?.value || state.settings.weekStart),
     forceCacheOnLoad: document.querySelector("#settingsForceCacheOnLoad")?.checked === true,
     gotyAlwaysShow: document.querySelector("#settingsGotyAlwaysShow")?.checked === true,
   });

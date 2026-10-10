@@ -923,7 +923,7 @@
         </div>
 
         <div class="settings-home" id="settingsHome">
-          <p class="settings-home-copy">Choose a section to open its settings.</p>
+          <p class="settings-home-copy">Choose what you’d like to manage.</p>
           <div class="settings-category-grid">
             <button class="settings-category-card" type="button" data-settings-panel="design">
               <span class="settings-category-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 20h4l11-11a2.8 2.8 0 0 0-4-4L4 16v4Z"/><path d="M13.5 6.5l4 4"/><path d="M13 20h7"/></svg></span>
@@ -948,6 +948,7 @@
           <section class="settings-section"><h3 data-i18n="Page Layout">Page Layout</h3><div class="settings-layout" id="settingsLayoutList" aria-label="Page order"></div></section>
           <p class="eyebrow settings-detail-title" data-i18n="Details">Details</p>
           <section class="settings-grid settings-detail-grid">
+          <div class="settings-preference-row" id="settingsPreferencesBeforeCurrency"></div>
           <label class="settings-detail-compact">
             <span data-i18n="Currency">Currency</span>
             <select id="settingsCurrency">
@@ -978,9 +979,7 @@
               <option value="es-ES">Castellano</option>
             </select>
           </label>
-          </section>
-          <section class="settings-section settings-detail-preferences">
-            <div class="settings-preference-row" id="settingsPreferenceRow"></div>
+          <div class="settings-preference-row" id="settingsPreferencesAfterLanguage"></div>
           </section>
           <section class="settings-section">
           <h3 data-i18n="Stores">Stores</h3>

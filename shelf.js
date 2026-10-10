@@ -1,5 +1,5 @@
 import { normalizeSearchText, bindModalTouchGuard, createGameCardShell, bindActivityCardParallax, mountActivitySlider, mountTwitchPreview, mountReleaseCalendar, finishedGameMarkup, achievementCardMarkup, achievementDashboardMarkup, achievementPanelMarkup, completedCardMarkup, horizontalCarouselState, syncViewModeButton, slideHorizontalCarousel, comparePlayingGames, timeBadgeMarkup, guideLinksMarkup, storeButtonsMarkup, activityTrailerUrl, preloadPausedActivityTrailers, syncFocusedActivityTrailer, activityReleaseStatus, activityCoverOverride, activityLocalGameForTitle, activityTitleMatchScore, activityAllowsPsnCardTrophies, formatFooterDate, formatFooterDateTime, formatFooterShortDate, confirmGameDelete } from "./activity-ui.js";
-import { applySiteTheme, normalizeThemeSettings, openThemeEditor, ownerCardColorClass, ownerColorClass, themeSettingsButton } from "./theme-system.js";
+import { applySiteTheme, normalizeThemeSettings, ownerCardColorClass, ownerColorClass, themeSettingsContent, bindThemeSettingsContent, readThemeSettingsContent } from "./theme-system.js";
 import { applyDocumentTranslations, languageOptions, normalizeLanguage, t } from "./i18n.js";
 import { initShelfAccounts } from "./shelf-accounts.js";
 import { accountSettingsMarkup } from "./account-settings-ui.js";
@@ -226,8 +226,15 @@ const el = {
   layoutForm: document.querySelector("#layoutForm"),
   layoutClose: document.querySelector("#layoutClose"),
   layoutList: document.querySelector("#layoutList"),
+  layoutDialogEyebrow: document.querySelector("#layoutDialogEyebrow"),
+  layoutDialogTitle: document.querySelector("#layoutDialogTitle"),
+  layoutDialogBackTitle: document.querySelector("#layoutDialogBackTitle"),
+  layoutDialogSectionTitle: document.querySelector("#layoutDialogSectionTitle"),
+  settingsHome: document.querySelector("#shelfSettingsHome"),
+  settingsThemeEditor: document.querySelector("#shelfSettingsThemeEditor"),
+  settingsDevHome: document.querySelector("#shelfSettingsDevHome"),
   platformOptions: document.querySelector("#shelfPlatformOptions"),
-  settingsTheme: document.querySelector("#shelfSettingsTheme"), settingsDefaultOrder: document.querySelector("#shelfSettingsDefaultOrder"),
+  settingsDefaultOrder: document.querySelector("#shelfSettingsDefaultOrder"),
   settingsCurrency: document.querySelector("#shelfSettingsCurrency"), settingsRegion: document.querySelector("#shelfSettingsRegion"),
   settingsLanguage: document.querySelector("#shelfSettingsLanguage"),
   settingsStores: document.querySelector("#shelfSettingsStores"),
@@ -246,6 +253,9 @@ const el = {
 let selectOverflowPopover = null;
 let selectMeasureContext = null;
 let platformLogoOverlay = null;
+let shelfSettingsDirty = false;
+let shelfSettingsExitDestination = "";
+let shelfSettingsSnapshot = null;
 
 init();
 
@@ -407,9 +417,32 @@ function bindEvents() {
   Object.values(el.conditionFields).forEach((input) => input.addEventListener("change", () => syncConditionInputs(input)));
   document.addEventListener("error", handleCoverImageError, true);
 
-  el.layoutClose.addEventListener("click", () => closeDialog(el.layoutDialog));
-  el.layoutDialog.addEventListener("click", (event) => { if (event.target === el.layoutDialog) closeDialog(el.layoutDialog); });
+  el.layoutClose.addEventListener("click", () => requestShelfSettingsExit("close"));
+  el.layoutDialog.addEventListener("click", (event) => {
+    if (event.target === el.layoutDialog) { event.preventDefault(); requestShelfSettingsExit("close"); return; }
+    const category = event.target.closest("[data-shelf-settings-panel]");
+    if (category) openShelfSettingsPanel(category.dataset.shelfSettingsPanel, category.querySelector(".settings-category-text strong")?.textContent.trim() || "Settings");
+    if (event.target.closest("[data-shelf-settings-back]")) requestShelfSettingsExit("back");
+  });
+  el.layoutDialog.addEventListener("cancel", (event) => { event.preventDefault(); requestShelfSettingsExit("close"); });
   el.layoutForm.addEventListener("submit", saveLayout);
+  el.layoutForm.addEventListener("input", () => { shelfSettingsDirty = true; });
+  el.layoutForm.addEventListener("change", () => { shelfSettingsDirty = true; });
+  el.layoutForm.addEventListener("click", (event) => { if (event.target.closest("[data-layout-move], [data-owner-add], [data-owner-remove], [data-glow-option]")) shelfSettingsDirty = true; });
+  document.querySelector("#shelfSettingsUnsavedDialog [data-shelf-unsaved-cancel]")?.addEventListener("click", () => { document.querySelector("#shelfSettingsUnsavedDialog").close(); shelfSettingsExitDestination = ""; });
+  document.querySelector("#shelfSettingsUnsavedDialog [data-shelf-unsaved-save]")?.addEventListener("click", async () => {
+    const destination = shelfSettingsExitDestination;
+    document.querySelector("#shelfSettingsUnsavedDialog").close();
+    shelfSettingsExitDestination = "";
+    await saveLayout({ preventDefault() {} }, { close: destination === "close" });
+  });
+  document.querySelector("#shelfSettingsUnsavedDialog [data-shelf-unsaved-discard]")?.addEventListener("click", () => {
+    const destination = shelfSettingsExitDestination;
+    document.querySelector("#shelfSettingsUnsavedDialog").close();
+    shelfSettingsExitDestination = "";
+    discardShelfSettingsChanges(destination);
+  });
+  document.querySelector("#shelfSettingsUnsavedDialog")?.addEventListener("cancel", () => { shelfSettingsExitDestination = ""; });
   el.layoutList.addEventListener("click", handleLayoutMove);
   el.showcaseClose.addEventListener("click", () => closeDialog(el.showcaseDialog));
   el.showcaseDialog.addEventListener("click", (event) => { if (event.target === el.showcaseDialog) closeDialog(el.showcaseDialog); });
@@ -2728,13 +2761,76 @@ async function fetchEditorAuth(fallback = false) {
   }
 }
 
+function openShelfSettingsPanel(panelName, title) {
+  el.settingsHome.hidden = true;
+  el.layoutDialog.querySelectorAll("[data-shelf-settings-window]").forEach((panel) => { panel.hidden = panel.dataset.shelfSettingsWindow !== panelName; });
+  el.layoutDialogEyebrow.textContent = "Settings";
+  el.layoutDialogTitle.hidden = true;
+  el.layoutDialogSectionTitle.textContent = title;
+  el.layoutDialogBackTitle.hidden = false;
+  el.layoutDialog.classList.add("has-settings-window");
+  el.layoutDialog.querySelector(".settings-modal")?.scrollTo({ top: 0 });
+}
+
+function requestShelfSettingsExit(destination) {
+  if (!shelfSettingsDirty) {
+    finishShelfSettingsExit(destination);
+    return;
+  }
+  shelfSettingsExitDestination = destination;
+  const saveButton = document.querySelector("#shelfSettingsUnsavedDialog [data-shelf-unsaved-save]");
+  const discardButton = document.querySelector("#shelfSettingsUnsavedDialog [data-shelf-unsaved-discard]");
+  if (saveButton) saveButton.textContent = destination === "back" ? "Go back and save" : "Close and save";
+  if (discardButton) discardButton.textContent = destination === "back" ? "Go back without saving" : "Close without saving";
+  document.querySelector("#shelfSettingsUnsavedDialog")?.showModal();
+}
+
+function finishShelfSettingsExit(destination) {
+  if (destination === "close") {
+    closeDialog(el.layoutDialog);
+    return;
+  }
+  el.layoutDialog.querySelectorAll("[data-shelf-settings-window]").forEach((panel) => { panel.hidden = true; });
+  el.settingsHome.hidden = false;
+  el.layoutDialog.classList.remove("has-settings-window");
+  el.layoutDialogEyebrow.textContent = "Shelf settings";
+  el.layoutDialogTitle.hidden = false;
+  el.layoutDialogBackTitle.hidden = true;
+  el.layoutDialog.querySelector(".settings-modal")?.scrollTo({ top: 0 });
+}
+
+function discardShelfSettingsChanges(destination) {
+  if (shelfSettingsSnapshot) {
+    state.layout = structuredClone(shelfSettingsSnapshot.layout);
+    state.gamelistSettings = structuredClone(shelfSettingsSnapshot.settings);
+  }
+  shelfSettingsDirty = false;
+  applyLayout();
+  applyTheme();
+  renderLayoutEditor();
+  renderAll();
+  finishShelfSettingsExit(destination);
+}
+
 function openLayout() {
   renderLayoutEditor();
+  shelfSettingsDirty = false;
+  shelfSettingsSnapshot = {
+    layout: structuredClone(state.layout),
+    settings: structuredClone(state.gamelistSettings),
+  };
+  el.layoutDialog.classList.remove("has-settings-window");
+  el.settingsHome.hidden = false;
+  el.layoutDialog.querySelectorAll("[data-shelf-settings-window]").forEach((panel) => { panel.hidden = true; });
+  el.layoutDialogTitle.hidden = false;
+  el.layoutDialogBackTitle.hidden = true;
+  el.layoutDialogEyebrow.textContent = "Shelf settings";
   openDialog(el.layoutDialog);
   initShelfAccounts(document.querySelector("[data-shelf-accounts]"), {
     getSettings: () => state.gamelistSettings,
     saveSettings: async (settings) => {
       state.gamelistSettings = settings;
+      if (shelfSettingsSnapshot) shelfSettingsSnapshot.settings = structuredClone(settings);
       localStorage.setItem("gamelist:settings:v1", JSON.stringify(settings));
       await persistGamelistSettings();
       localStorage.removeItem(ACHIEVEMENT_CACHE_KEY);
@@ -2751,10 +2847,25 @@ function renderLayoutEditor() {
   el.layoutList.innerHTML = [
     ...state.layout.order.map((key, index) => settingsLayoutCard(key, index)),
     settingsPageFeatureToggles(),
-    `<div class="settings-preference-separator" role="presentation"></div><div class="settings-preference-row">${themeSettingsButton(state.gamelistSettings, escapeHtml, tt)}${settingsSelectCard("order", tt("Default order"), "shelfSettingsDefaultOrder", [{ value: "added", label: tt("Last added") }, { value: "title", label: tt("Name") }, { value: "platform", label: tt("Platform") }, { value: "region", label: tt("Region") }, ...(shelfPricesVisible() ? [{ value: "value", label: tt("Value") }] : [])])}${settingsSelectCard("calendar", tt("Week starts"), "shelfSettingsWeekStart", WEEK_START_OPTIONS.map(([value, label]) => ({ value, label: tt(label) })))}${settingsShelfSyncCard()}${settingsPageSwitchCard()}</div>`,
   ].join("");
   document.querySelector("#shelfSettingsCsvData").innerHTML = settingsCsvDataCard();
-  if (el.settingsDevFeatures) el.settingsDevFeatures.innerHTML = settingsDevFeaturesCard("shelf");
+  const isShabiiOwner = String(state.gamelistSettings.defaultOwner || "").trim().toLowerCase() === "shabii";
+  const devCard = settingsDevFeaturesCard("shelf");
+  if (el.settingsDevFeatures) el.settingsDevFeatures.innerHTML = isShabiiOwner ? "" : devCard;
+  if (el.settingsDevHome) {
+    el.settingsDevHome.hidden = !isShabiiOwner;
+    document.querySelector("#shelfSettingsDevHomeLinks").innerHTML = isShabiiOwner ? devCard : "";
+  }
+  const devCategory = document.querySelector("[data-shelf-settings-panel='dev']");
+  if (devCategory) devCategory.hidden = isShabiiOwner;
+  const defaultOrderOptions = [{ value: "added", label: tt("Last added") }, { value: "title", label: tt("Name") }, { value: "platform", label: tt("Platform") }, { value: "region", label: tt("Region") }, ...(shelfPricesVisible() ? [{ value: "value", label: tt("Value") }] : [])];
+  document.querySelector("#shelfSettingsPreferencesBeforeCurrency").innerHTML = [
+    settingsShelfSyncCard(), settingsPageSwitchCard(), settingsSelectCard("order", tt("Default order"), "shelfSettingsDefaultOrder", defaultOrderOptions),
+  ].join("");
+  document.querySelector("#shelfSettingsPreferencesAfterLanguage").innerHTML = [
+    settingsSelectCard("calendar", tt("Week starts"), "shelfSettingsWeekStart", WEEK_START_OPTIONS.map(([value, label]) => ({ value, label: tt(label) }))),
+    shelfStreamPriorityCard(), shelfHideNonStreamPlayingCard(),
+  ].join("");
   el.settingsDefaultOrder = document.querySelector("#shelfSettingsDefaultOrder");
   el.settingsWeekStart = document.querySelector("#shelfSettingsWeekStart");
   const settings = normalizePriceSettings(state.gamelistSettings);
@@ -2771,22 +2882,8 @@ function renderLayoutEditor() {
     const checked = [...el.settingsStores.querySelectorAll("input:checked")];
     if (checked.length > MAX_PRICE_STORES) input.checked = false;
   }));
-  el.layoutList.querySelector("[data-theme-editor]")?.addEventListener("click", () => {
-    openThemeEditor({
-      settings: state.gamelistSettings,
-      page: "shelf",
-      translate: tt,
-      onSave: async (settings) => {
-        state.gamelistSettings = { ...state.gamelistSettings, ...settings, customTheme: normalizeThemeSettings(settings) };
-        localStorage.setItem("gamelist:settings:v1", JSON.stringify(state.gamelistSettings));
-        await persistGamelistSettings();
-        applyTheme();
-        renderLayoutEditor();
-        renderAll();
-      },
-    });
-    requestAnimationFrame(() => syncStyledSelects(document.querySelector("#themeEditorDialog"), { activeValue: null }));
-  });
+  el.settingsThemeEditor.innerHTML = themeSettingsContent(state.gamelistSettings, tt);
+  bindThemeSettingsContent(el.settingsThemeEditor, tt);
   document.querySelector("[data-export-csv='gamelist']")?.addEventListener("click", exportGamelistCsv);
   document.querySelector("[data-import-csv='gamelist']")?.addEventListener("click", importGamelistCsv);
   document.querySelector("[data-export-csv='shelf']")?.addEventListener("click", exportShelfPhysicalCsv);
@@ -2827,6 +2924,15 @@ function settingsShelfSyncCard() {
 
 function settingsPageSwitchCard() {
   return `<article class="settings-layout-card settings-sync-card"><div class="settings-wire wire-list" aria-hidden="true"><span></span><span></span><span></span></div><div class="settings-theme-select"><span>${escapeHtml(tt("Shelf/Gamelist switch"))}</span><div class="settings-check-field"><label class="check-filter toggle-check settings-visible-check" title="${escapeHtml(tt("Hide switch"))}"><input type="checkbox" id="shelfSettingsHidePageSwitch" ${state.gamelistSettings.hidePageSwitch ? "checked" : ""}><span>${escapeHtml(tt("Hide switch"))}</span></label></div></div></article>`;
+}
+
+function shelfStreamPriorityCard() {
+  const priority = ["stream", "nonstream", "all"].includes(state.gamelistSettings.streamFilterPriority) ? state.gamelistSettings.streamFilterPriority : state.gamelistSettings.prioritizeFinishedStream ? "stream" : "all";
+  return `<article class="settings-layout-card settings-sync-card"><div class="settings-wire wire-finished" aria-hidden="true"><span></span><span></span><span></span></div><label class="settings-theme-select"><span>${escapeHtml(tt("Stream Filter Priority"))}</span><select id="shelfSettingsStreamPriority"><option value="stream" ${priority === "stream" ? "selected" : ""}>${escapeHtml(tt("Stream games"))}</option><option value="nonstream" ${priority === "nonstream" ? "selected" : ""}>${escapeHtml(tt("Non-stream games"))}</option><option value="all" ${priority === "all" ? "selected" : ""}>${escapeHtml(tt("All games"))}</option></select></label></article>`;
+}
+
+function shelfHideNonStreamPlayingCard() {
+  return `<article class="settings-layout-card settings-sync-card"><div class="settings-wire wire-playing" aria-hidden="true"><span></span><span></span><span></span></div><div class="settings-theme-select"><span>${escapeHtml(tt("Hide Non Stream Playing"))}</span><div class="settings-check-field"><label class="check-filter toggle-check settings-visible-check"><input type="checkbox" id="shelfSettingsHideNonStreamPlaying" ${state.gamelistSettings.hideNonStreamPlaying ? "checked" : ""}><span>${escapeHtml(tt("Enable"))}</span></label></div></div></article>`;
 }
 
 function settingsCsvDataCard() {
@@ -3499,12 +3605,14 @@ function handleLayoutMove(event) {
   renderLayoutEditor();
 }
 
-async function saveLayout(event) {
+async function saveLayout(event, { close = true } = {}) {
   event.preventDefault();
   state.layout.hidden = LAYOUT_KEYS.filter((key) => !el.layoutList.querySelector(`[data-layout-visible][value="${key}"]`)?.checked);
   localStorage.setItem(LAYOUT_KEY, JSON.stringify(state.layout));
   const stores = [...el.settingsStores.querySelectorAll("input:checked")].map((input) => input.value).filter((store) => STORE_OPTIONS.includes(store)).slice(0, MAX_PRICE_STORES);
-  state.gamelistSettings = { ...state.gamelistSettings, shelfDefaultOrder: el.settingsDefaultOrder.value, weekStart: normalizeWeekStart(el.settingsWeekStart?.value || state.gamelistSettings.weekStart), currency: el.settingsCurrency.value, region: el.settingsRegion.value, language: normalizeLanguage(el.settingsLanguage.value), twitchUser: el.settingsTwitchUser.value.trim(), defaultOwner: el.settingsDefaultOwner.value.trim(), stores, storeSettingsVersion: 2, shelfSync: document.querySelector("#shelfSettingsSync")?.checked !== false, shelfHidePrices: document.querySelector("#shelfSettingsShowPrices")?.checked === false, hidePageSwitch: document.querySelector("#shelfSettingsHidePageSwitch")?.checked === true, shelfDigitalGames: document.querySelector("#shelfSettingsDigitalGames")?.checked === true, forceCacheOnLoad: document.querySelector("#shelfSettingsForceCacheOnLoad")?.checked === true };
+  const streamPriority = document.querySelector("#shelfSettingsStreamPriority")?.value || "all";
+  const customThemeSettings = readThemeSettingsContent(el.settingsThemeEditor, state.gamelistSettings);
+  state.gamelistSettings = { ...state.gamelistSettings, customTheme: customThemeSettings, shelfDefaultOrder: el.settingsDefaultOrder.value, weekStart: normalizeWeekStart(el.settingsWeekStart?.value || state.gamelistSettings.weekStart), currency: el.settingsCurrency.value, region: el.settingsRegion.value, language: normalizeLanguage(el.settingsLanguage.value), twitchUser: el.settingsTwitchUser.value.trim(), defaultOwner: el.settingsDefaultOwner.value.trim(), stores, storeSettingsVersion: 2, shelfSync: document.querySelector("#shelfSettingsSync")?.checked !== false, shelfHidePrices: document.querySelector("#shelfSettingsShowPrices")?.checked === false, hidePageSwitch: document.querySelector("#shelfSettingsHidePageSwitch")?.checked === true, streamFilterPriority: streamPriority, prioritizeFinishedStream: streamPriority === "stream", hideNonStreamPlaying: document.querySelector("#shelfSettingsHideNonStreamPlaying")?.checked === true, shelfDigitalGames: document.querySelector("#shelfSettingsDigitalGames")?.checked === true, forceCacheOnLoad: document.querySelector("#shelfSettingsForceCacheOnLoad")?.checked === true };
   localStorage.setItem("gamelist:settings:v1", JSON.stringify(state.gamelistSettings));
   applyShelfDefaultOrder(state.gamelistSettings.shelfDefaultOrder);
   await Promise.all([persistShelf(), persistGamelistSettings()]);
@@ -3513,7 +3621,10 @@ async function saveLayout(event) {
   syncPagePullTransition();
   renderAll();
   if (!state.layout.hidden.includes("trophies") && !state.trophyActivity) loadTrophyActivity();
-  closeDialog(el.layoutDialog);
+  shelfSettingsDirty = false;
+  shelfSettingsSnapshot = { layout: structuredClone(state.layout), settings: structuredClone(state.gamelistSettings) };
+  if (close) closeDialog(el.layoutDialog);
+  else finishShelfSettingsExit("back");
 }
 
 function normalizePriceSettings(settings = {}) {
