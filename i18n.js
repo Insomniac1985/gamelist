@@ -267,7 +267,7 @@ const STRINGS = {
     "Track Digital Games (Drive)": "Registrar juegos digitales (Drive)",
     Export: "Exportar",
     Import: "Importar",
-    "Shelf Sync": "Sincronizar Shelf",
+    "Sync Shelf and Gamelist games": "Sincronizar juegos de Shelf y Gamelist",
     "Shelf/Gamelist switch": "Cambio Shelf/Gamelist",
     "Hide switch": "Ocultar cambio",
     "Prioratizes Finished Stream": "Priorizar terminados en stream",

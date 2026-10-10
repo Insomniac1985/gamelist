@@ -2765,9 +2765,9 @@ function settingsShelfSyncItem() {
     <article class="settings-layout-card settings-sync-card" data-layout-key="shelf-sync">
       <div class="settings-wire wire-list" aria-hidden="true"><span></span><span></span><span></span></div>
       <div class="settings-theme-select">
-        <span>${escapeHtml(tt("Shelf Sync"))}</span>
+        <span>${escapeHtml(tt("Sync Shelf and Gamelist games"))}</span>
         <div class="settings-check-field">
-          <label class="check-filter toggle-check settings-visible-check" title="${escapeHtml(tt("Shelf Sync"))}">
+          <label class="check-filter toggle-check settings-visible-check" title="${escapeHtml(tt("Sync Shelf and Gamelist games"))}">
             <input type="checkbox" data-shelf-sync ${state.settings.shelfSync ? "checked" : ""}>
             <span>${escapeHtml(tt("Enabled"))}</span>
           </label>
