@@ -2501,6 +2501,11 @@ textarea {
 }
 
 @media (max-width: 760px) {
+  .shelf-page .calendar-section.hero {
+    min-height: 0;
+    padding: 0 0 8px;
+  }
+
   #addDialog .lookup-row {
     display: grid;
     grid-template-columns: minmax(0, 1fr) 44px;
