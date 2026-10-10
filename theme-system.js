@@ -346,6 +346,7 @@ function bindThemeEditorControls(root, translate) {
         picker.querySelector("[data-glow-current]").textContent = option.querySelector("[data-glow-option-label]").textContent;
         picker.querySelectorAll("[data-glow-option]").forEach((item) => item.setAttribute("aria-checked", String(item === option)));
         picker.querySelector("[data-glow-options]").hidden = true;
+        picker.classList.remove("is-open");
         picker.querySelector("[data-glow-trigger]").setAttribute("aria-expanded", "false");
         updateGlowPickerColors(root);
       }
@@ -356,13 +357,20 @@ function bindThemeEditorControls(root, translate) {
       const options = picker?.querySelector("[data-glow-options]");
       if (!picker || !options) return;
       root.querySelectorAll("[data-glow-options]").forEach((list) => {
-        if (list !== options) list.hidden = true;
+        if (list !== options) {
+          list.hidden = true;
+          list.closest("[data-glow-select]")?.classList.remove("is-open");
+        }
       });
       options.hidden = !options.hidden;
+      picker.classList.toggle("is-open", !options.hidden);
       trigger.setAttribute("aria-expanded", String(!options.hidden));
       return;
     }
-    root.querySelectorAll("[data-glow-options]").forEach((list) => { list.hidden = true; });
+    root.querySelectorAll("[data-glow-options]").forEach((list) => {
+      list.hidden = true;
+      list.closest("[data-glow-select]")?.classList.remove("is-open");
+    });
     root.querySelectorAll("[data-glow-trigger]").forEach((button) => button.setAttribute("aria-expanded", "false"));
   });
   root.addEventListener("input", (event) => {

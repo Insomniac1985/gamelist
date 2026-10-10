@@ -465,6 +465,7 @@ const el = {
   settingsThemeEditor: document.querySelector("#settingsThemeEditor"),
   settingsDefaultOwner: document.querySelector("#settingsDefaultOwner"),
   settingsDevFeatures: document.querySelector("#settingsDevFeatures"),
+  settingsDevHome: document.querySelector("#settingsDevHome"),
   detailTitle: document.querySelector("#detailTitle"),
   detailStudio: document.querySelector("#detailStudio"),
   detailMeta: document.querySelector("#detailMeta"),
@@ -2595,6 +2596,7 @@ function renderSettingsDialog() {
   el.settingsThemeEditor.innerHTML = themeSettingsContent(state.settings, tt);
   bindThemeSettingsContent(el.settingsThemeEditor, tt);
   document.querySelector("#settingsCsvData").innerHTML = settingsCsvDataItem();
+  if (el.settingsDevHome) el.settingsDevHome.hidden = !isShabiiMainOwner();
   if (el.settingsDevFeatures) el.settingsDevFeatures.innerHTML = settingsDevFeaturesItem("gamelist");
   el.settingsStores.innerHTML = STORE_OPTIONS.map((store) => `
     <label class="check-filter toggle-check settings-store-check">
