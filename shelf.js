@@ -184,6 +184,7 @@ const el = {
   footerCreditText: document.querySelector("#footerCreditText"),
   scrollTop: document.querySelector("#scrollTopButton"),
   floatingActions: document.querySelector("#floatingEditActions"), floatingAdd: document.querySelector("#floatingAddButton"), floatingSearch: document.querySelector("#floatingSearchButton"),
+  mobileActionDock: document.querySelector("#mobileActionDock"), mobileDockAdd: document.querySelector("#mobileDockAdd"), mobileDockSearch: document.querySelector("#mobileDockSearch"), mobileDockSettings: document.querySelector("#mobileDockSettings"), mobileDockSwitch: document.querySelector("#mobileDockSwitch"),
   detailDialog: document.querySelector("#detailDialog"),
   detailClose: document.querySelector("#detailClose"),
   detailTitle: document.querySelector("#detailTitle"),
@@ -349,6 +350,15 @@ function bindEvents() {
   el.searchButton?.addEventListener("click", scrollToShelfSearch);
   el.floatingAdd.addEventListener("click", () => state.canEdit ? openEditor(null, { digital: state.filters.tab === "drive" }) : openAuth());
   el.floatingSearch?.addEventListener("click", scrollToShelfSearch);
+  el.mobileDockAdd?.addEventListener("click", () => el.floatingAdd.click());
+  el.mobileDockSearch?.addEventListener("click", scrollToShelfSearch);
+  el.mobileDockSettings?.addEventListener("click", openLayout);
+  el.mobileDockSwitch?.addEventListener("click", () => {
+    if (pageSwitchHidden()) return;
+    const transitionButton = document.querySelector(".page-pull-switch");
+    if (transitionButton) transitionButton.click();
+    else window.location.href = pullNavigationUrl("./");
+  });
   el.layoutButton.addEventListener("click", openLayout);
   el.showcaseEdit.addEventListener("click", openShowcaseEditor);
   el.syncButton?.addEventListener("click", syncShelfNow);
@@ -426,6 +436,13 @@ function bindEvents() {
     if (event.target.closest("[data-shelf-settings-back]")) requestShelfSettingsExit("back");
   });
   el.layoutDialog.addEventListener("cancel", (event) => { event.preventDefault(); requestShelfSettingsExit("close"); });
+  el.layoutDialog.addEventListener("close", () => {
+    if (el.mobileDockSettings) {
+      el.mobileDockSettings.disabled = false;
+      el.mobileDockSettings.classList.remove("is-active");
+      el.mobileDockSettings.setAttribute("aria-pressed", "false");
+    }
+  });
   el.layoutForm.addEventListener("submit", saveLayout);
   document.querySelector("#shelfSettingsLogoutButton")?.addEventListener("click", () => {
     if (shelfSettingsDirty) {
@@ -1077,6 +1094,9 @@ function renderChrome() {
   document.body.classList.toggle("list-view-mode", state.viewMode === "list");
   el.addButton.hidden = false;
   el.layoutButton.hidden = !state.canEdit;
+  if (el.mobileDockSettings) el.mobileDockSettings.hidden = !state.canEdit;
+  setSettingsAuthLoading(false);
+  if (el.mobileDockSwitch) el.mobileDockSwitch.hidden = pageSwitchHidden();
   if (el.syncButton) el.syncButton.hidden = true;
   const showPriceActions = state.canEdit && shelfPricesVisible();
   el.fetchPricesButton.hidden = !showPriceActions;
@@ -1118,8 +1138,10 @@ function normalizeOwnerKey(value) {
 
 function updateFloatingActions() {
   const visible = window.scrollY > 180 && !document.body.classList.contains("dialog-open");
+  const dockVisible = window.scrollY > 180;
   el.scrollTop.classList.toggle("visible", visible);
   el.floatingActions.classList.toggle("visible", visible);
+  el.mobileActionDock?.classList.toggle("visible", dockVisible);
 }
 
 async function syncShelfNow() {
@@ -1193,17 +1215,9 @@ function initPagePullTransition({ targetLabel, targetUrl }) {
   let pageDragArmed = false;
   let pageDragging = false;
   let moved = false;
-  const mobilePullQuery = window.matchMedia("(max-width: 760px)");
   const pagePullThreshold = () => Math.min(260, Math.max(150, window.innerHeight * 0.34));
   const isAtPageTop = () => window.scrollY <= 2 && document.documentElement.scrollTop <= 2 && document.body.scrollTop <= 2;
-  const canStartPagePull = (event) => {
-    if (!mobilePullQuery.matches || pageSwitchHidden() || document.body.classList.contains("dialog-open")) return false;
-    if (event.pointerType && event.pointerType !== "touch") return false;
-    if (event.button != null && event.button !== 0) return false;
-    if (!isAtPageTop()) return false;
-    const interactive = event.target?.closest?.("button, a, input, select, textarea, dialog, .platform-logo-menu, .playing-list, .playing-finished-list");
-    return !interactive || interactive.classList?.contains("cover-button");
-  };
+  const canStartPagePull = () => false;
   const setPull = (distance) => {
     const pull = Math.max(0, Math.min(window.innerHeight, distance));
     const progress = Math.min(1, pull / pagePullThreshold());
@@ -2721,6 +2735,7 @@ async function persistShelf(options = {}) {
 
 async function toggleEditMode() {
   if (!state.canEdit) return openAuth();
+  setSettingsAuthLoading(true);
   await fetch("/api/auth", { method: "DELETE" }).catch(() => {});
   state.canEdit = false;
   sessionStorage.removeItem(SESSION_KEY);
@@ -2738,9 +2753,10 @@ function openAuth() {
 
 async function submitAuth(event) {
   event.preventDefault();
+  setSettingsAuthLoading(true);
   const response = await fetch("/api/auth", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ password: el.authPassword.value }) }).catch(() => null);
   const data = await response?.json().catch(() => ({}));
-  if (!data?.ok) { el.authError.hidden = false; return; }
+  if (!data?.ok) { el.authError.hidden = false; setSettingsAuthLoading(false); return; }
   state.canEdit = true;
   sessionStorage.setItem(SESSION_KEY, "true");
   sessionStorage.setItem(`${SESSION_KEY}:password`, el.authPassword.value);
@@ -2751,13 +2767,27 @@ async function submitAuth(event) {
 }
 
 async function refreshSharedAuth() {
+  setSettingsAuthLoading(true);
   const active = await fetchEditorAuth(state.canEdit);
-  if (active === state.canEdit) return;
+  if (active === state.canEdit) {
+    setSettingsAuthLoading(false);
+    return;
+  }
   state.canEdit = active;
   if (active) sessionStorage.setItem(SESSION_KEY, "true");
   else sessionStorage.removeItem(SESSION_KEY);
   renderAll();
   if (active) maybeShowUpdatesPopup();
+}
+
+function setSettingsAuthLoading(loading) {
+  document.body.classList.toggle("auth-checking", loading);
+  [el.layoutButton, el.mobileDockSettings].forEach((button) => {
+    if (!button) return;
+    button.disabled = loading;
+    if (loading) button.setAttribute("aria-busy", "true");
+    else button.removeAttribute("aria-busy");
+  });
 }
 
 function signalAuthChange() { localStorage.setItem("gamelist-editor-signal", String(Date.now())); }
@@ -2841,6 +2871,11 @@ function openLayout() {
   el.layoutDialogBackTitle.hidden = true;
   el.layoutDialogEyebrow.textContent = "Shelf settings";
   openDialog(el.layoutDialog);
+  if (el.mobileDockSettings) {
+    el.mobileDockSettings.disabled = true;
+    el.mobileDockSettings.classList.add("is-active");
+    el.mobileDockSettings.setAttribute("aria-pressed", "true");
+  }
   initShelfAccounts(document.querySelector("[data-shelf-accounts]"), {
     getSettings: () => state.gamelistSettings,
     saveSettings: async (settings) => {

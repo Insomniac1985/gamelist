@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en" class="theme-booting">
+<html lang="en" class="theme-booting theme-fonts-loading">
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -104,6 +104,40 @@
             } catch {}
           });
         };
+        const waitForDisplayFont = async (theme) => {
+          const fontFiles = {
+            "Cascadia Code": ["assets/fonts/CascadiaCode.woff2", "font/woff2", 700],
+            "Antique Olive Nord": ["assets/fonts/AntiqueOliveNord.woff2", "font/woff2", 900],
+            "Georgia Bold": ["assets/fonts/Georgia-Bold.ttf", "font/ttf", 800],
+            "Pokemon GBA": ["assets/fonts/pokemon-emerald.ttf", "font/ttf", 400],
+            "04B 30": ["assets/fonts/04B_30.TTF", "font/ttf", 400],
+            Michroma: ["assets/fonts/Michroma.ttf", "font/ttf", 400],
+            Minecraft: ["assets/fonts/Minecraft.ttf", "font/ttf", 400],
+            "Mata Regular": ["assets/fonts/Mata%20Regular.otf", "font/otf", 400],
+          };
+          const [src, type, weight] = fontFiles[theme.font] || fontFiles["Cascadia Code"];
+          if (!document.querySelector(`link[data-display-font-preload][href="${src}"]`)) {
+            const link = document.createElement("link");
+            link.rel = "preload";
+            link.as = "font";
+            link.type = type;
+            link.crossOrigin = "anonymous";
+            link.href = src;
+            link.dataset.displayFontPreload = "true";
+            document.head.appendChild(link);
+          }
+          await new Promise((resolve) => {
+            const settle = () => resolve();
+            const timer = window.setTimeout(settle, 1400);
+            const load = () => document.fonts.load(`${weight} 40px "${theme.font}"`).then(settle, settle);
+            if (document.readyState === "loading") {
+              document.addEventListener("DOMContentLoaded", () => load().finally(() => window.clearTimeout(timer)), { once: true });
+            } else {
+              load().finally(() => window.clearTimeout(timer));
+            }
+          });
+          root.classList.remove("theme-fonts-loading");
+        };
         const saveTheme = (key, nextSettings = null) => {
           try {
             const settings = JSON.parse(localStorage.getItem(settingsKey) || "{}");
@@ -117,7 +151,7 @@
           savedTheme = savedSettings.theme || "";
         } catch {}
         window.__applyInitialTheme = apply;
-        window.__initialThemeReady = savedTheme
+        window.__initialThemeReady = (savedTheme
           ? Promise.resolve(apply(savedTheme, savedSettings))
           : fetch("/api/sync?settings=1", { cache: "no-store" })
             .then((response) => response.ok ? response.json() : {})
@@ -126,7 +160,10 @@
               saveTheme(key, data?.settings || {});
               return apply(key, data?.settings || {});
             })
-            .catch(() => apply("shabii", {}));
+            .catch(() => apply("shabii", {}))).then(async () => {
+              await waitForDisplayFont(window.__initialTheme || {});
+              return root.dataset.initialTheme;
+            });
         window.setTimeout(() => root.classList.remove("theme-booting"), 3500);
       })();
     </script>
@@ -149,7 +186,7 @@
     <link rel="preload" as="image" href="assets/stores/xtralife.ico">
     <link rel="stylesheet" href="styles.css">
   </head>
-  <body>
+  <body class="auth-checking">
     <script>
       (() => {
         const theme = window.__initialTheme || {};
@@ -199,7 +236,7 @@
             <path d="M13.5 6.5l4 4"></path>
           </svg>
         </button>
-        <button class="icon-button" id="settingsButton" type="button" title="Settings" aria-label="Settings" data-i18n-title="Settings" data-i18n-aria-label="Settings" hidden>
+        <button class="icon-button" id="settingsButton" type="button" title="Settings" aria-label="Settings" data-i18n-title="Settings" data-i18n-aria-label="Settings" aria-busy="true" disabled hidden>
           <svg class="settings-icon" viewBox="0 0 24 24" aria-hidden="true">
             <path d="M4 6h6"></path>
             <path d="M14 6h6"></path>
@@ -421,20 +458,20 @@
       </button>
     </div>
     <nav class="mobile-action-dock" id="mobileActionDock" aria-label="Quick actions">
-      <button class="mobile-dock-action" id="mobileDockAdd" type="button" title="Add Game" aria-label="Add Game" data-i18n-title="Add Game" data-i18n-aria-label="Add Game">
-        <svg class="plus-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"></path></svg>
-        <span data-i18n="Add">Add</span>
+      <button class="mobile-dock-action mobile-dock-switch" id="mobileDockSwitch" type="button" title="Switch between Shelf and Gamelist" aria-label="Switch between Shelf and Gamelist">
+        <span class="mobile-switch-logos" data-current-page="gamelist" aria-hidden="true"><span class="mobile-switch-logo mobile-switch-logo-shelf"></span><span class="mobile-switch-logo mobile-switch-logo-gamelist"></span></span>
+      </button>
+      <button class="mobile-dock-action" id="mobileDockSettings" type="button" title="Settings" aria-label="Settings" data-i18n-title="Settings" data-i18n-aria-label="Settings" aria-busy="true" disabled hidden>
+        <svg class="settings-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h10M18 6h2M4 12h2M10 12h10M4 18h10M18 18h2"></path><circle cx="16" cy="6" r="2"></circle><circle cx="8" cy="12" r="2"></circle><circle cx="16" cy="18" r="2"></circle></svg>
+        <span data-i18n="Settings">Settings</span>
       </button>
       <button class="mobile-dock-action" id="mobileDockSearch" type="button" title="Search" aria-label="Search" data-i18n-title="Search" data-i18n-aria-label="Search">
         <svg class="search-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.5"></circle><path d="m16 16 4 4"></path></svg>
         <span data-i18n="Search">Search</span>
       </button>
-      <button class="mobile-dock-action" id="mobileDockSettings" type="button" title="Settings" aria-label="Settings" data-i18n-title="Settings" data-i18n-aria-label="Settings" hidden>
-        <svg class="settings-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h10M18 6h2M4 12h2M10 12h10M4 18h10M18 18h2"></path><circle cx="16" cy="6" r="2"></circle><circle cx="8" cy="12" r="2"></circle><circle cx="16" cy="18" r="2"></circle></svg>
-        <span data-i18n="Settings">Settings</span>
-      </button>
-      <button class="mobile-dock-action mobile-dock-switch" id="mobileDockSwitch" type="button" title="Switch between Shelf and Gamelist" aria-label="Switch between Shelf and Gamelist">
-        <span class="mobile-switch-logos" data-current-page="gamelist" aria-hidden="true"><span class="mobile-switch-logo mobile-switch-logo-shelf"></span><span class="mobile-switch-logo mobile-switch-logo-gamelist"></span></span>
+      <button class="mobile-dock-action" id="mobileDockAdd" type="button" title="Add Game" aria-label="Add Game" data-i18n-title="Add Game" data-i18n-aria-label="Add Game">
+        <svg class="plus-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"></path></svg>
+        <span data-i18n="Add">Add</span>
       </button>
     </nav>
 

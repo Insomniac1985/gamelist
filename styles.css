@@ -3202,6 +3202,10 @@ h2 {
   background-clip: text;
 }
 
+html.theme-fonts-loading .column-head h2 {
+  visibility: hidden;
+}
+
 html.theme-gradient .column-head h2 {
   background: linear-gradient(
     135deg,
@@ -7921,6 +7925,51 @@ body:not(.can-edit) .top-actions-separator {
   display: none;
 }
 
+.mobile-dock-action > span:not(.mobile-switch-logos) {
+  display: none;
+}
+
+.mobile-switch-logos {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  overflow: hidden;
+}
+
+.mobile-switch-logos[data-current-page="gamelist"] .mobile-switch-logo-gamelist,
+.mobile-switch-logos[data-current-page="shelf"] .mobile-switch-logo-shelf {
+  display: none;
+}
+
+.mobile-switch-logo {
+  position: relative;
+  display: block;
+  width: 26px;
+  height: 28px;
+  flex: 0 0 26px;
+  background: var(--accent);
+  -webkit-mask-position: center;
+  mask-position: center;
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  -webkit-mask-size: contain;
+  mask-size: contain;
+}
+
+.mobile-switch-logo-shelf {
+  -webkit-mask-image: url("assets/Icon_shelf.png");
+  mask-image: url("assets/Icon_shelf.png");
+}
+
+.mobile-switch-logo-gamelist {
+  -webkit-mask-image: url("assets/Icon.png");
+  mask-image: url("assets/Icon.png");
+}
+
 body.dialog-open .floating-search-button {
   opacity: 0;
   pointer-events: none;
@@ -10699,8 +10748,7 @@ dialog::backdrop {
 }
 
 body.dialog-open .topbar,
-body.dialog-open .toolbar,
-body.dialog-open .mobile-section-tabs {
+body.dialog-open .toolbar {
   z-index: 0;
 }
 
@@ -15455,6 +15503,7 @@ html.theme-light .finish-trophy-check input[type="checkbox"]:checked {
   }
 
   .mobile-dock-action {
+    position: relative;
     display: grid;
     flex: 1 1 0;
     min-width: 0;
@@ -15481,7 +15530,8 @@ html.theme-light .finish-trophy-check input[type="checkbox"]:checked {
   }
 
   .mobile-dock-action:hover,
-  .mobile-dock-action:focus-visible {
+  .mobile-dock-action:focus-visible,
+  .mobile-dock-action.is-active {
     color: #fff;
     background: var(--accent);
     box-shadow: 0 3px 24px color-mix(in srgb, var(--accent) 42%, transparent);
@@ -15498,47 +15548,6 @@ html.theme-light .finish-trophy-check input[type="checkbox"]:checked {
     stroke-linejoin: round;
   }
 
-  .mobile-switch-logos {
-    position: relative;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 32px;
-    height: 32px;
-    padding: 0;
-    overflow: hidden;
-  }
-
-  .mobile-switch-logos[data-current-page="gamelist"] .mobile-switch-logo-gamelist,
-  .mobile-switch-logos[data-current-page="shelf"] .mobile-switch-logo-shelf {
-    display: none;
-  }
-
-  .mobile-switch-logo {
-    position: relative;
-    display: block;
-    width: 26px;
-    height: 28px;
-    flex: 0 0 26px;
-    background: var(--accent);
-    -webkit-mask-position: center;
-    mask-position: center;
-    -webkit-mask-repeat: no-repeat;
-    mask-repeat: no-repeat;
-    -webkit-mask-size: contain;
-    mask-size: contain;
-  }
-
-  .mobile-switch-logo-shelf {
-    -webkit-mask-image: url("assets/Icon_shelf.png");
-    mask-image: url("assets/Icon_shelf.png");
-  }
-
-  .mobile-switch-logo-gamelist {
-    -webkit-mask-image: url("assets/Icon.png");
-    mask-image: url("assets/Icon.png");
-  }
-
   .mobile-dock-action > span:not(.mobile-switch-logos) {
     display: none;
   }
@@ -15551,11 +15560,6 @@ html.theme-light .finish-trophy-check input[type="checkbox"]:checked {
     height: 40px;
     min-width: 40px;
     min-height: 40px;
-  }
-
-  body.dialog-open .mobile-action-dock {
-    opacity: 0;
-    pointer-events: none;
   }
 
   .price-refresh-action,
@@ -17452,5 +17456,196 @@ html.theme-light .finish-trophy-check input[type="checkbox"]:checked {
 
   .lookup-result button {
     grid-column: 1 / -1;
+  }
+}
+
+@media (min-width: 761px) {
+  .mobile-action-dock {
+    position: fixed;
+    left: auto;
+    right: clamp(14px, 2.4vw, 26px);
+    bottom: clamp(16px, 3vw, 28px);
+    z-index: 20;
+    display: flex;
+    width: max-content;
+    min-height: 54px;
+    gap: 2px;
+    padding: 8px;
+    transform: translateY(10px);
+    border: 1px solid var(--line);
+    border-radius: 16px;
+    background: var(--panel);
+    box-shadow: 0 18px 42px rgba(0, 0, 0, 0.28);
+    backdrop-filter: blur(12px) saturate(1.15);
+    opacity: 0;
+    pointer-events: none;
+    transition:
+      opacity 160ms ease,
+      transform 160ms ease;
+  }
+
+  .mobile-action-dock.visible {
+    opacity: 1;
+    pointer-events: auto;
+    transform: translateY(0);
+  }
+
+  .mobile-dock-action {
+    position: relative;
+    display: grid;
+    width: 42px;
+    height: 42px;
+    min-width: 42px;
+    min-height: 42px;
+    flex: 0 0 42px;
+    align-content: center;
+    justify-items: center;
+    padding: 0;
+    border: 0;
+    border-radius: 12px;
+    color: #fff;
+    background: transparent;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  #mobileDockAdd::before {
+    content: attr(title);
+    position: absolute;
+    top: 50%;
+    right: calc(100% + 8px);
+    padding: 7px 10px;
+    color: var(--text);
+    white-space: nowrap;
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 9px;
+    box-shadow: 0 8px 22px rgba(0, 0, 0, 0.25);
+    opacity: 0;
+    pointer-events: none;
+    transform: translate(5px, -50%);
+    transition:
+      opacity 140ms ease,
+      transform 140ms ease;
+  }
+
+  #mobileDockAdd:hover::before,
+  #mobileDockAdd:focus-visible::before {
+    opacity: 1;
+    transform: translate(0, -50%);
+  }
+
+  .mobile-dock-action svg {
+    width: 24px;
+    height: 24px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2.3;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  .mobile-dock-action:hover,
+  .mobile-dock-action:focus-visible,
+  .mobile-dock-action.is-active {
+    color: #fff;
+    background: var(--accent);
+    box-shadow: 0 3px 24px color-mix(in srgb, var(--accent) 42%, transparent);
+    outline: none;
+  }
+
+  #mobileDockSettings,
+  .floating-edit-actions,
+  .floating-search-button {
+    display: none !important;
+  }
+}
+
+.mobile-dock-switch:hover .mobile-switch-logo,
+.mobile-dock-switch:focus-visible .mobile-switch-logo,
+.mobile-dock-switch:active .mobile-switch-logo,
+.mobile-dock-switch.is-active .mobile-switch-logo {
+  background: #fff;
+}
+
+body.page-pulling #mobileActionDock,
+body.page-switching > #mobileActionDock {
+  transform: translateY(26px);
+  transition: transform 520ms cubic-bezier(0.2, 0.86, 0.2, 1), opacity 260ms ease;
+}
+
+body.page-pulling #mobileActionDock {
+  transform: translateY(12px);
+}
+
+@media (max-width: 760px) {
+  body.page-pulling #mobileActionDock,
+  body.page-switching > #mobileActionDock {
+    transform: translateX(-50%) translateY(26px);
+  }
+
+  body.page-pulling #mobileActionDock {
+    transform: translateX(-50%) translateY(12px);
+  }
+}
+
+@keyframes settings-auth-spin {
+  to { transform: translate(-50%, -50%) rotate(360deg); }
+}
+
+body.auth-checking #settingsButton[hidden],
+body.auth-checking #mobileDockSettings[hidden] {
+  visibility: visible;
+  pointer-events: none;
+}
+
+body.auth-checking #settingsButton[aria-busy="true"],
+body.auth-checking #mobileDockSettings[aria-busy="true"] {
+  position: relative;
+  pointer-events: none;
+}
+
+body.auth-checking #settingsButton[aria-busy="true"] svg,
+body.auth-checking #mobileDockSettings[aria-busy="true"] svg {
+  opacity: 0;
+}
+
+body.auth-checking #settingsButton[aria-busy="true"]::after,
+body.auth-checking #mobileDockSettings[aria-busy="true"]::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 15px;
+  height: 15px;
+  border: 2px solid color-mix(in srgb, var(--accent) 34%, var(--muted));
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  animation: settings-auth-spin 760ms linear infinite;
+}
+
+#settingsButton svg,
+#mobileDockSettings svg {
+  transition: opacity 180ms ease;
+}
+
+@media (min-width: 761px) {
+  body.auth-checking #settingsButton[hidden] {
+    display: inline-grid !important;
+  }
+
+  body.auth-checking #settingsButton[aria-busy="true"] {
+    opacity: 1;
+  }
+}
+
+@media (max-width: 760px) {
+  body.auth-checking .top-actions #settingsButton {
+    display: none !important;
+  }
+
+  body.auth-checking #mobileDockSettings[hidden] {
+    display: grid !important;
   }
 }
