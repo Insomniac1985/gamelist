@@ -7726,6 +7726,11 @@ body:not(.can-edit) #loginButton,
   background: var(--line);
 }
 
+body:not(.shelf-page) #fetchPricesButton,
+body:not(.shelf-page) .price-refresh-action {
+  display: none !important;
+}
+
 body:not(.can-edit) .top-actions-separator {
   display: none;
 }
@@ -10812,6 +10817,17 @@ body.dialog-open .mobile-section-tabs {
   margin: auto;
 }
 
+.settings-unsaved-dialog { width: min(480px, calc(100vw - 24px)); margin: auto; }
+.settings-unsaved-modal { display: grid; gap: 16px; padding: 18px; }
+.settings-unsaved-copy { margin: 0; color: var(--muted); }
+.settings-unsaved-actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 8px; }
+.settings-unsaved-actions button { flex: 1 1 auto; }
+.unsaved-edit-dialog { width: min(480px, calc(100vw - 24px)); margin: auto; }
+.unsaved-edit-modal { display: grid; gap: 16px; padding: 18px; }
+.unsaved-edit-copy { margin: 0; color: var(--muted); }
+.unsaved-edit-actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 8px; }
+.unsaved-edit-actions button { flex: 1 1 auto; }
+
 .settings-dialog:not(.has-settings-window) .modal-head-save,
 .settings-dialog:not(.has-settings-window) .settings-modal > .modal-actions { display: none; }
 
@@ -11331,7 +11347,7 @@ html.theme-light .settings-category-card { border-color: rgba(31,42,61,.22); bac
   font-size: 14px;
   font-weight: 900;
   line-height: 1.3;
-  text-align: left;
+  text-align: center;
   text-transform: uppercase;
 }
 
@@ -12566,6 +12582,29 @@ html.theme-light .shelf-card-delete-action:hover {
   grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
+.theme-glow-select { position: relative; }
+.theme-glow-trigger {
+  display: flex;
+  width: 100%;
+  min-height: var(--settings-control-height, 42px);
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  color: var(--text);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 7px;
+  background: rgba(255, 255, 255, 0.07);
+  text-align: left;
+  cursor: pointer;
+}
+.theme-glow-trigger > span:nth-child(2) { flex: 1; }
+.theme-glow-trigger > svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.theme-glow-swatch { display: block; width: 18px; height: 18px; flex: 0 0 18px; border: 1px solid rgba(255, 255, 255, 0.48); border-radius: 3px; box-shadow: inset 0 0 0 2px rgba(0, 0, 0, 0.12); }
+.theme-glow-options { position: absolute; z-index: 30; top: calc(100% + 5px); right: 0; left: 0; display: grid; gap: 3px; padding: 5px; border: 1px solid var(--line); border-radius: 9px; background: var(--surface, #211b1e); box-shadow: 0 12px 28px rgba(0, 0, 0, 0.36); }
+.theme-glow-options[hidden] { display: none !important; }
+.theme-glow-option { display: flex; min-height: 38px; align-items: center; gap: 10px; padding: 7px; color: var(--text); border: 0; border-radius: 6px; background: transparent; text-align: left; cursor: pointer; }
+.theme-glow-option:hover, .theme-glow-option[aria-checked="true"] { background: rgba(255, 255, 255, 0.1); }
+
 .theme-big-logo-row {
   justify-content: flex-start;
   width: 100%;
@@ -12597,10 +12636,15 @@ html.theme-light .shelf-card-delete-action:hover {
 .theme-owner-table {
   display: grid;
   gap: 8px;
+  padding: 14px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.035);
 }
 
-.theme-owner-colors-title { margin-top: 24px !important; text-transform: none !important; }
+.theme-owner-colors-title { margin-top: 24px !important; text-transform: capitalize !important; }
 .theme-owner-add-button { justify-self: start; display: inline-flex; align-items: center; gap: 8px; width: auto; min-height: 34px; padding: 5px 11px; font-size: 12px; }
+.theme-owner-add-button .plus-icon { width: 14px; height: 14px; }
 
 .theme-owner-head,
 .theme-owner-row {
@@ -12648,6 +12692,17 @@ html.theme-light .shelf-card-delete-action:hover {
 .settings-accounts-section .settings-account-field {
   grid-column: 1;
   min-width: 0;
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.035);
+}
+
+.settings-accounts-section .settings-default-owner-field {
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
 }
 
 .settings-accounts-section .settings-account-field > span {

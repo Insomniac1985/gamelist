@@ -396,6 +396,20 @@
       </form>
     </dialog>
 
+    <dialog id="editorUnsavedDialog" class="unsaved-edit-dialog">
+      <article class="auth-modal glass unsaved-edit-modal">
+        <div class="modal-head">
+          <div><p class="eyebrow">Shelf editor</p><h2>Are you sure?</h2></div>
+          <button class="icon-button" type="button" data-editor-unsaved-cancel aria-label="Return to editing">×</button>
+        </div>
+        <p class="unsaved-edit-copy">You have unsaved changes.</p>
+        <div class="modal-actions unsaved-edit-actions">
+          <button class="primary-button" type="button" data-editor-unsaved-save>Close and save</button>
+          <button class="ghost-button" type="button" data-editor-unsaved-discard>Close and don't save</button>
+        </div>
+      </article>
+    </dialog>
+
     <dialog id="layoutDialog" class="settings-dialog">
       <form class="settings-modal glass" id="layoutForm">
         <div class="modal-head">

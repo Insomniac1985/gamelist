@@ -544,6 +544,8 @@ const STRINGS = {
     "Background glows": "Brillos de fondo",
     "Glow 1": "Brillo 1",
     "Glow 2": "Brillo 2",
+    "Background Glow 1": "Brillo de fondo 1",
+    "Background Glow 2": "Brillo de fondo 2",
     Main: "Principal",
     Accent: "Acento",
     Gradient: "Degradado",

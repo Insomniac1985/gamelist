@@ -212,7 +212,6 @@
             <circle cx="8" cy="18" r="2"></circle>
           </svg>
         </button>
-        <span class="top-actions-separator" aria-hidden="true"></span>
         <button class="ghost-button" id="fetchPricesButton" type="button" hidden>
           <svg class="euro-icon" viewBox="0 0 24 24" aria-hidden="true">
             <path d="M19 5.5A7 7 0 0 0 8.2 7.1 7.4 7.4 0 0 0 7 12a7.4 7.4 0 0 0 1.2 4.9A7 7 0 0 0 19 18.5"></path>
@@ -708,6 +707,20 @@
       </form>
     </dialog>
 
+    <dialog id="editorUnsavedDialog" class="unsaved-edit-dialog">
+      <article class="auth-modal glass unsaved-edit-modal">
+        <div class="modal-head">
+          <div><p class="eyebrow">Game editor</p><h2>Are you sure?</h2></div>
+          <button class="icon-button" type="button" data-editor-unsaved-cancel aria-label="Return to editing">×</button>
+        </div>
+        <p class="unsaved-edit-copy">You have unsaved changes.</p>
+        <div class="modal-actions unsaved-edit-actions">
+          <button class="primary-button" type="button" data-editor-unsaved-save>Close and save</button>
+          <button class="ghost-button" type="button" data-editor-unsaved-discard>Close and don't save</button>
+        </div>
+      </article>
+    </dialog>
+
     <dialog id="detailDialog">
       <article class="detail-modal glass">
         <button class="icon-button detail-close" id="detailCloseButton" type="button" title="Close">×</button>
@@ -998,6 +1011,23 @@
           <button class="primary-button" type="submit" data-i18n="Save">Save</button>
         </div>
       </form>
+    </dialog>
+
+    <dialog id="settingsUnsavedDialog" class="settings-unsaved-dialog">
+      <article class="auth-modal glass settings-unsaved-modal">
+        <div class="modal-head">
+          <div>
+            <p class="eyebrow">Settings</p>
+            <h2>Are you sure?</h2>
+          </div>
+          <button class="icon-button" type="button" data-settings-unsaved-cancel aria-label="Go back to settings">×</button>
+        </div>
+        <p class="settings-unsaved-copy">You have unsaved changes.</p>
+        <div class="modal-actions settings-unsaved-actions">
+          <button class="primary-button" type="button" data-settings-unsaved-save></button>
+          <button class="ghost-button" type="button" data-settings-unsaved-discard></button>
+        </div>
+      </article>
     </dialog>
 
     <dialog id="authDialog">

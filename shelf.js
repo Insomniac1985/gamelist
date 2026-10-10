@@ -135,6 +135,8 @@ const state = {
   layout: loadLayout(),
 };
 
+let shelfEditorDirty = false;
+
 const el = {
   brandLink: document.querySelector(".brand"),
   brandVersion: document.querySelector("#brandVersion"),
@@ -374,10 +376,27 @@ function bindEvents() {
   el.detailTrophySort.addEventListener("change", renderGamelistDetailTrophyList);
   el.detailTrophyDirection.addEventListener("click", () => { state.gamelistDetailTrophyDirection = state.gamelistDetailTrophyDirection === "asc" ? "desc" : "asc"; renderGamelistDetailTrophyList(); });
 
-  el.addClose.addEventListener("click", () => closeDialog(el.addDialog));
+  el.addClose.addEventListener("click", requestShelfEditorClose);
   el.editDelete.addEventListener("click", deleteCurrentEditedGame);
-  el.addDialog.addEventListener("click", (event) => { if (event.target === el.addDialog) closeDialog(el.addDialog); });
+  el.addDialog.addEventListener("click", (event) => { if (event.target === el.addDialog) requestShelfEditorClose(); });
+  el.addDialog.addEventListener("cancel", (event) => {
+    if (!shelfEditorDirty) return;
+    event.preventDefault();
+    showShelfEditorUnsavedDialog();
+  });
   el.addForm.addEventListener("submit", saveEditor);
+  el.addForm.addEventListener("input", () => { shelfEditorDirty = true; });
+  el.addForm.addEventListener("change", () => { shelfEditorDirty = true; });
+  document.querySelector("#editorUnsavedDialog [data-editor-unsaved-cancel]")?.addEventListener("click", () => closeDialog(document.querySelector("#editorUnsavedDialog")));
+  document.querySelector("#editorUnsavedDialog [data-editor-unsaved-save]")?.addEventListener("click", () => {
+    closeDialog(document.querySelector("#editorUnsavedDialog"));
+    el.addForm.requestSubmit(el.addForm.querySelector("button[type='submit']"));
+  });
+  document.querySelector("#editorUnsavedDialog [data-editor-unsaved-discard]")?.addEventListener("click", () => {
+    shelfEditorDirty = false;
+    closeDialog(document.querySelector("#editorUnsavedDialog"));
+    closeDialog(el.addDialog);
+  });
   el.fields.platform.addEventListener("input", syncShelfEditorIcons);
   el.fields.platform.addEventListener("change", syncShelfEditorIcons);
   el.fields.country.addEventListener("change", syncShelfEditorIcons);
@@ -2113,7 +2132,20 @@ function openEditor(game = null, options = {}) {
   el.editDelete.hidden = !game;
   syncStyledSelects(el.addDialog, { activeValue: null });
   syncShelfEditorIcons();
+  shelfEditorDirty = false;
   openDialog(el.addDialog);
+}
+
+function requestShelfEditorClose() {
+  if (shelfEditorDirty) {
+    showShelfEditorUnsavedDialog();
+    return;
+  }
+  closeDialog(el.addDialog);
+}
+
+function showShelfEditorUnsavedDialog() {
+  document.querySelector("#editorUnsavedDialog")?.showModal();
 }
 
 function syncShelfDigitalEditorMode(digitalMode) {
@@ -2492,6 +2524,7 @@ async function saveEditor(event) {
   await persistShelf();
   rebuildGames();
   renderAll();
+  shelfEditorDirty = false;
   closeDialog(el.addDialog);
   if (digitalMode && state.gamelistSettings.shelfSync !== false && !game.gamelistId) await addShelfGameToGamelistNew(game);
 }
@@ -2502,6 +2535,7 @@ async function resetGame(game) {
   rebuildGames();
   renderAll();
   closeDialog(el.detailDialog);
+  shelfEditorDirty = false;
   closeDialog(el.addDialog);
 }
 
@@ -2612,6 +2646,7 @@ async function deleteGame(game) {
   rebuildGames();
   renderAll();
   closeDialog(el.detailDialog);
+  shelfEditorDirty = false;
   closeDialog(el.addDialog);
   return true;
 }
