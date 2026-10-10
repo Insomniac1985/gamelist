@@ -714,8 +714,7 @@ function bindTextureParallax() {
 }
 
 function quickAddGame() {
-  scrollToSearchArea();
-  window.setTimeout(() => openEditor(), 180);
+  openEditor();
 }
 
 function registerServiceWorker() {

@@ -17669,10 +17669,9 @@ body.page-pulling #mobileActionDock {
   }
 }
 
-body.auth-checking #settingsButton[hidden],
-body.auth-checking #mobileDockSettings[hidden] {
-  visibility: visible;
-  pointer-events: none;
+#settingsButton[hidden],
+#mobileDockSettings[hidden] {
+  display: none !important;
 }
 
 body.auth-checking #settingsButton[aria-busy="true"],
@@ -17684,24 +17683,4 @@ body.auth-checking #mobileDockSettings[aria-busy="true"] {
 #settingsButton svg,
 #mobileDockSettings svg {
   transition: opacity 180ms ease;
-}
-
-@media (min-width: 761px) {
-  body.auth-checking #settingsButton[hidden] {
-    display: inline-grid !important;
-  }
-
-  body.auth-checking #settingsButton[aria-busy="true"] {
-    opacity: 1;
-  }
-}
-
-@media (max-width: 760px) {
-  body.auth-checking .top-actions #settingsButton {
-    display: none !important;
-  }
-
-  body.auth-checking #mobileDockSettings[hidden] {
-    display: grid !important;
-  }
 }
