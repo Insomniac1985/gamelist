@@ -1587,7 +1587,7 @@ body.mobile-app-mode.shelf-page .shelf-grid.list-view .game-row-cover-preview {
   --tab-index: 0;
   --tab-width: calc((100% - 18px) / 2);
   position: sticky;
-  top: calc(125px + var(--pull-ui-offset, 0px));
+  top: calc(145px + var(--pull-ui-offset, 0px));
   z-index: 11;
   display: grid;
   grid-template-columns: repeat(var(--tab-count), minmax(0, 1fr));
