@@ -1095,6 +1095,7 @@ function renderChrome() {
   el.addButton.hidden = false;
   el.layoutButton.hidden = !state.canEdit;
   if (el.mobileDockSettings) el.mobileDockSettings.hidden = !state.canEdit;
+  setSettingsAuthLoading(false);
   if (el.mobileDockSwitch) el.mobileDockSwitch.hidden = pageSwitchHidden();
   if (el.syncButton) el.syncButton.hidden = true;
   const showPriceActions = state.canEdit && shelfPricesVisible();
@@ -2734,6 +2735,7 @@ async function persistShelf(options = {}) {
 
 async function toggleEditMode() {
   if (!state.canEdit) return openAuth();
+  setSettingsAuthLoading(true);
   await fetch("/api/auth", { method: "DELETE" }).catch(() => {});
   state.canEdit = false;
   sessionStorage.removeItem(SESSION_KEY);
@@ -2751,9 +2753,10 @@ function openAuth() {
 
 async function submitAuth(event) {
   event.preventDefault();
+  setSettingsAuthLoading(true);
   const response = await fetch("/api/auth", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ password: el.authPassword.value }) }).catch(() => null);
   const data = await response?.json().catch(() => ({}));
-  if (!data?.ok) { el.authError.hidden = false; return; }
+  if (!data?.ok) { el.authError.hidden = false; setSettingsAuthLoading(false); return; }
   state.canEdit = true;
   sessionStorage.setItem(SESSION_KEY, "true");
   sessionStorage.setItem(`${SESSION_KEY}:password`, el.authPassword.value);
@@ -2764,13 +2767,27 @@ async function submitAuth(event) {
 }
 
 async function refreshSharedAuth() {
+  setSettingsAuthLoading(true);
   const active = await fetchEditorAuth(state.canEdit);
-  if (active === state.canEdit) return;
+  if (active === state.canEdit) {
+    setSettingsAuthLoading(false);
+    return;
+  }
   state.canEdit = active;
   if (active) sessionStorage.setItem(SESSION_KEY, "true");
   else sessionStorage.removeItem(SESSION_KEY);
   renderAll();
   if (active) maybeShowUpdatesPopup();
+}
+
+function setSettingsAuthLoading(loading) {
+  document.body.classList.toggle("auth-checking", loading);
+  [el.layoutButton, el.mobileDockSettings].forEach((button) => {
+    if (!button) return;
+    button.disabled = loading;
+    if (loading) button.setAttribute("aria-busy", "true");
+    else button.removeAttribute("aria-busy");
+  });
 }
 
 function signalAuthChange() { localStorage.setItem("gamelist-editor-signal", String(Date.now())); }

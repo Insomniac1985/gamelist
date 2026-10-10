@@ -123,7 +123,7 @@
     <link rel="stylesheet" href="styles.css">
     <link rel="stylesheet" href="shelf.css">
   </head>
-  <body class="shelf-page">
+  <body class="shelf-page auth-checking">
     <script>
       (() => {
         const theme = window.__initialTheme || {};
@@ -164,7 +164,7 @@
         <button class="ghost-button" id="loginButton" type="button" title="Edit" aria-label="Edit" data-i18n-title="Edit" data-i18n-aria-label="Edit">
           <svg class="pencil-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h4l11-11a2.8 2.8 0 0 0-4-4L4 16v4Z"></path><path d="M13.5 6.5l4 4"></path></svg>
         </button>
-        <button class="icon-button" id="settingsButton" type="button" title="Settings" aria-label="Settings" data-i18n-title="Settings" data-i18n-aria-label="Settings" hidden>
+        <button class="icon-button" id="settingsButton" type="button" title="Settings" aria-label="Settings" data-i18n-title="Settings" data-i18n-aria-label="Settings" aria-busy="true" disabled hidden>
           <svg class="settings-icon" viewBox="0 0 24 24" aria-hidden="true">
             <path d="M4 6h6"></path>
             <path d="M14 6h6"></path>
@@ -290,7 +290,7 @@
       <button class="mobile-dock-action mobile-dock-switch" id="mobileDockSwitch" type="button" title="Switch to Gamelist" aria-label="Switch to Gamelist">
         <span class="mobile-switch-logos" data-current-page="shelf" aria-hidden="true"><span class="mobile-switch-logo mobile-switch-logo-shelf"></span><span class="mobile-switch-logo mobile-switch-logo-gamelist"></span></span>
       </button>
-      <button class="mobile-dock-action" id="mobileDockSettings" type="button" title="Settings" aria-label="Settings" data-i18n-title="Settings" data-i18n-aria-label="Settings" hidden>
+      <button class="mobile-dock-action" id="mobileDockSettings" type="button" title="Settings" aria-label="Settings" data-i18n-title="Settings" data-i18n-aria-label="Settings" aria-busy="true" disabled hidden>
         <svg class="settings-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h10M18 6h2M4 12h2M10 12h10M4 18h10M18 18h2"></path><circle cx="16" cy="6" r="2"></circle><circle cx="8" cy="12" r="2"></circle><circle cx="16" cy="18" r="2"></circle></svg>
         <span data-i18n="Settings">Settings</span>
       </button>

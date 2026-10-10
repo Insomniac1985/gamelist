@@ -1867,6 +1867,7 @@ function render() {
   el.syncButton.hidden = !state.canEdit;
   if (el.settingsButton) el.settingsButton.hidden = !state.canEdit;
   if (el.mobileDockSettings) el.mobileDockSettings.hidden = !state.canEdit;
+  setSettingsAuthLoading(false);
   if (el.mobileDockSwitch) el.mobileDockSwitch.hidden = pageSwitchHidden();
   if (el.fetchDataButton) el.fetchDataButton.hidden = true;
   el.fetchPricesButton.hidden = !state.canEdit;
@@ -12375,8 +12376,12 @@ async function hasSharedEditorSession() {
 }
 
 async function syncSharedEditorSession() {
+  setSettingsAuthLoading(true);
   const active = await hasSharedEditorSession();
-  if (active === state.canEdit) return;
+  if (active === state.canEdit) {
+    setSettingsAuthLoading(false);
+    return;
+  }
   state.canEdit = active;
   if (active) sessionStorage.setItem(SESSION_KEY, "true");
   else {
@@ -12387,14 +12392,26 @@ async function syncSharedEditorSession() {
   if (active) maybeShowUpdatesPopup();
 }
 
+function setSettingsAuthLoading(loading) {
+  document.body.classList.toggle("auth-checking", loading);
+  [el.settingsButton, el.mobileDockSettings].forEach((button) => {
+    if (!button) return;
+    button.disabled = loading;
+    if (loading) button.setAttribute("aria-busy", "true");
+    else button.removeAttribute("aria-busy");
+  });
+}
+
 async function ensureEditMode() {
   if (state.canEdit) return true;
   let showError = false;
   while (!state.canEdit) {
     const password = await requestEditorPassword({ error: showError });
     if (!password) return false;
+    setSettingsAuthLoading(true);
     const ok = await verifyPassword(password);
     if (!ok) {
+      setSettingsAuthLoading(false);
       showError = true;
       continue;
     }

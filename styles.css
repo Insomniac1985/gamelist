@@ -17466,7 +17466,7 @@ html.theme-light .finish-trophy-check input[type="checkbox"]:checked {
     width: max-content;
     min-height: 54px;
     gap: 2px;
-    padding: 4px;
+    padding: 8px;
     transform: translateY(10px);
     border: 1px solid var(--line);
     border-radius: 16px;
@@ -17475,7 +17475,9 @@ html.theme-light .finish-trophy-check input[type="checkbox"]:checked {
     backdrop-filter: blur(12px) saturate(1.15);
     opacity: 0;
     pointer-events: none;
-    transition: opacity 160ms ease, transform 160ms ease;
+    transition:
+      opacity 160ms ease,
+      transform 160ms ease;
   }
 
   .mobile-action-dock.visible {
@@ -17518,7 +17520,9 @@ html.theme-light .finish-trophy-check input[type="checkbox"]:checked {
     opacity: 0;
     pointer-events: none;
     transform: translate(5px, -50%);
-    transition: opacity 140ms ease, transform 140ms ease;
+    transition:
+      opacity 140ms ease,
+      transform 140ms ease;
   }
 
   #mobileDockAdd:hover::before,
@@ -17558,4 +17562,86 @@ html.theme-light .finish-trophy-check input[type="checkbox"]:checked {
 .mobile-dock-switch:active .mobile-switch-logo,
 .mobile-dock-switch.is-active .mobile-switch-logo {
   background: #fff;
+}
+
+body.page-pulling #mobileActionDock,
+body.page-switching > #mobileActionDock {
+  transform: translateY(26px);
+  transition: transform 520ms cubic-bezier(0.2, 0.86, 0.2, 1), opacity 260ms ease;
+}
+
+body.page-pulling #mobileActionDock {
+  transform: translateY(12px);
+}
+
+@media (max-width: 760px) {
+  body.page-pulling #mobileActionDock,
+  body.page-switching > #mobileActionDock {
+    transform: translateX(-50%) translateY(26px);
+  }
+
+  body.page-pulling #mobileActionDock {
+    transform: translateX(-50%) translateY(12px);
+  }
+}
+
+@keyframes settings-auth-spin {
+  to { transform: translate(-50%, -50%) rotate(360deg); }
+}
+
+body.auth-checking #settingsButton[hidden],
+body.auth-checking #mobileDockSettings[hidden] {
+  visibility: visible;
+  pointer-events: none;
+}
+
+body.auth-checking #settingsButton[aria-busy="true"],
+body.auth-checking #mobileDockSettings[aria-busy="true"] {
+  position: relative;
+  pointer-events: none;
+}
+
+body.auth-checking #settingsButton[aria-busy="true"] svg,
+body.auth-checking #mobileDockSettings[aria-busy="true"] svg {
+  opacity: 0;
+}
+
+body.auth-checking #settingsButton[aria-busy="true"]::after,
+body.auth-checking #mobileDockSettings[aria-busy="true"]::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 15px;
+  height: 15px;
+  border: 2px solid color-mix(in srgb, var(--accent) 34%, var(--muted));
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  animation: settings-auth-spin 760ms linear infinite;
+}
+
+#settingsButton svg,
+#mobileDockSettings svg {
+  transition: opacity 180ms ease;
+}
+
+@media (min-width: 761px) {
+  body.auth-checking #settingsButton[hidden] {
+    display: inline-grid !important;
+  }
+
+  body.auth-checking #settingsButton[aria-busy="true"] {
+    opacity: 1;
+  }
+}
+
+@media (max-width: 760px) {
+  body.auth-checking .top-actions #settingsButton {
+    display: none !important;
+  }
+
+  body.auth-checking #mobileDockSettings[hidden] {
+    display: grid !important;
+  }
 }
