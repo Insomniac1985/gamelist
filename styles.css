@@ -15725,7 +15725,7 @@ html.theme-light .finish-trophy-check input[type="checkbox"]:checked {
     display: block;
     min-width: 0;
     overflow: hidden;
-    font-size: 14px;
+    margin-left: 20px;
     text-overflow: ellipsis;
     white-space: nowrap;
   }
@@ -15981,7 +15981,7 @@ html.theme-light .finish-trophy-check input[type="checkbox"]:checked {
   }
 
   .mobile-section-tabs {
-    top: calc(25px + var(--pull-ui-offset, 0px));
+    top: calc(10px);
     margin: 12px 0 16px;
   }
 
