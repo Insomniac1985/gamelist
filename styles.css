@@ -7925,6 +7925,10 @@ body:not(.can-edit) .top-actions-separator {
   display: none;
 }
 
+#mobileDockUp {
+  display: none !important;
+}
+
 .mobile-dock-action > span:not(.mobile-switch-logos) {
   display: none;
 }
@@ -15499,10 +15503,6 @@ html.theme-light .finish-trophy-check input[type="checkbox"]:checked {
     backdrop-filter: blur(12px) saturate(1.15);
   }
 
-  #mobileDockUp {
-    display: none;
-  }
-
   .mobile-action-dock[hidden] {
     display: none;
   }
@@ -17465,6 +17465,22 @@ html.theme-light .finish-trophy-check input[type="checkbox"]:checked {
 }
 
 @media (min-width: 761px) {
+  #mobileDockUp {
+    display: grid !important;
+    opacity: 0;
+    pointer-events: none;
+    transform: translateY(6px);
+    transition:
+      opacity 160ms ease,
+      transform 160ms ease;
+  }
+
+  #mobileDockUp.is-visible {
+    opacity: 1;
+    pointer-events: auto;
+    transform: translateY(0);
+  }
+
   #scrollTopButton {
     display: none !important;
   }
@@ -17518,6 +17534,9 @@ html.theme-light .finish-trophy-check input[type="checkbox"]:checked {
   }
 
   #mobileDockAdd {
+    display: flex;
+    align-items: center;
+    justify-content: center;
     overflow: hidden;
     transition:
       flex-basis 180ms ease,
@@ -17542,6 +17561,7 @@ html.theme-light .finish-trophy-check input[type="checkbox"]:checked {
     width: 160px;
     flex-basis: 160px;
     gap: 8px;
+    flex-direction: row-reverse;
     justify-content: flex-start;
     padding-inline: 12px;
   }
@@ -17549,6 +17569,46 @@ html.theme-light .finish-trophy-check input[type="checkbox"]:checked {
   #mobileDockAdd:hover > span,
   #mobileDockAdd:focus-visible > span {
     width: 104px;
+    opacity: 1;
+  }
+
+  #mobileDockSwitch {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    transition:
+      flex-basis 180ms ease,
+      width 180ms ease,
+      background 140ms ease,
+      box-shadow 140ms ease;
+  }
+
+  #mobileDockSwitch:hover,
+  #mobileDockSwitch:focus-visible {
+    width: 184px;
+    flex-basis: 184px;
+    gap: 8px;
+    justify-content: flex-start;
+    padding-inline: 12px;
+  }
+
+  #mobileDockSwitch > .mobile-switch-label {
+    display: inline-block;
+    width: 0;
+    overflow: hidden;
+    opacity: 0;
+    font-size: 12px;
+    font-weight: 800;
+    white-space: nowrap;
+    transition:
+      width 180ms ease,
+      opacity 120ms ease;
+  }
+
+  #mobileDockSwitch:hover > .mobile-switch-label,
+  #mobileDockSwitch:focus-visible > .mobile-switch-label {
+    width: 124px;
     opacity: 1;
   }
 

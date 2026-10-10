@@ -9442,10 +9442,11 @@ function updateDetailTrophyEdges() {
 
 function updateScrollTopButton() {
   const visible = window.scrollY > 180 && !document.body.classList.contains("dialog-open");
-  const dockVisible = window.scrollY > 180;
+  const dockVisible = window.innerWidth >= 761 || window.scrollY > 180;
   el.scrollTopButton?.classList.toggle("visible", visible);
   el.floatingEditActions?.classList.toggle("visible", visible);
   el.mobileActionDock?.classList.toggle("visible", dockVisible);
+  el.mobileDockUp?.classList.toggle("is-visible", visible);
 }
 
 function sortedDetailTrophies() {

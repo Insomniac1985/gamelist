@@ -1139,10 +1139,11 @@ function normalizeOwnerKey(value) {
 
 function updateFloatingActions() {
   const visible = window.scrollY > 180 && !document.body.classList.contains("dialog-open");
-  const dockVisible = window.scrollY > 180;
+  const dockVisible = window.innerWidth >= 761 || window.scrollY > 180;
   el.scrollTop.classList.toggle("visible", visible);
   el.floatingActions.classList.toggle("visible", visible);
   el.mobileActionDock?.classList.toggle("visible", dockVisible);
+  el.mobileDockUp?.classList.toggle("is-visible", visible);
 }
 
 async function syncShelfNow() {
