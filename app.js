@@ -340,6 +340,10 @@ const el = {
   floatingEditActions: document.querySelector("#floatingEditActions"),
   floatingAddButton: document.querySelector("#floatingAddButton"),
   floatingSearchButton: document.querySelector("#floatingSearchButton"),
+  mobileDockAdd: document.querySelector("#mobileDockAdd"),
+  mobileDockSearch: document.querySelector("#mobileDockSearch"),
+  mobileDockSettings: document.querySelector("#mobileDockSettings"),
+  mobileDockSwitch: document.querySelector("#mobileDockSwitch"),
   mobileTabs: document.querySelectorAll("[data-mobile-section]"),
   board: document.querySelector(".board"),
   detailDialog: document.querySelector("#detailDialog"),
@@ -946,10 +950,17 @@ function bindEvents() {
   });
   el.addButton.addEventListener("click", quickAddGame);
   el.floatingAddButton.addEventListener("click", quickAddGame);
+  el.mobileDockAdd?.addEventListener("click", quickAddGame);
   el.searchButton?.addEventListener("click", scrollToSearchArea);
   el.floatingSearchButton?.addEventListener("click", scrollToSearchArea);
+  el.mobileDockSearch?.addEventListener("click", scrollToSearchArea);
   el.syncButton.addEventListener("click", syncNow);
   el.settingsButton?.addEventListener("click", openSettingsDialog);
+  el.mobileDockSettings?.addEventListener("click", openSettingsDialog);
+  el.mobileDockSwitch?.addEventListener("click", () => {
+    if (pageSwitchHidden()) return;
+    window.location.href = pullNavigationUrl("shelf");
+  });
   el.settingsDialog?.querySelectorAll("[data-settings-panel]").forEach((button) => {
     button.addEventListener("click", () => {
       const panel = button.dataset.settingsPanel;
@@ -1853,6 +1864,8 @@ function render() {
   el.addButton.hidden = false;
   el.syncButton.hidden = !state.canEdit;
   if (el.settingsButton) el.settingsButton.hidden = !state.canEdit;
+  if (el.mobileDockSettings) el.mobileDockSettings.hidden = !state.canEdit;
+  if (el.mobileDockSwitch) el.mobileDockSwitch.hidden = pageSwitchHidden();
   if (el.fetchDataButton) el.fetchDataButton.hidden = true;
   el.fetchPricesButton.hidden = !state.canEdit;
   if (state.canEdit && !el.fetchPricesButton.disabled) el.fetchPricesButton.innerHTML = `${currencyIcon()}<span class="button-label">${escapeHtml(tt("Fetch New Prices"))}</span>`;

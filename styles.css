@@ -7823,6 +7823,10 @@ body:not(.can-edit) .top-actions-separator {
   display: none;
 }
 
+.mobile-action-dock {
+  display: none;
+}
+
 body.dialog-open .floating-search-button {
   opacity: 0;
   pointer-events: none;
@@ -14865,16 +14869,107 @@ html.theme-light .finish-trophy-check input[type="checkbox"]:checked {
 }
 
 @media (max-width: 760px) {
+  body {
+    padding-bottom: calc(84px + env(safe-area-inset-bottom));
+  }
+
   .top-search-button {
     display: none;
   }
 
   .floating-search-button {
+    display: none !important;
+  }
+
+  .floating-edit-actions {
+    display: none !important;
+  }
+
+  .mobile-action-dock {
     position: fixed;
-    left: clamp(14px, 2.4vw, 26px);
-    bottom: clamp(16px, 3vw, 28px);
-    z-index: 16;
-    display: inline-grid;
+    left: 50%;
+    bottom: max(12px, env(safe-area-inset-bottom));
+    z-index: 20;
+    display: flex;
+    width: min(520px, calc(100vw - 24px));
+    min-height: 68px;
+    padding: 7px;
+    gap: 4px;
+    transform: translateX(-50%);
+    border: 1px solid color-mix(in srgb, var(--accent) 34%, rgba(255, 255, 255, 0.18));
+    border-radius: 22px;
+    background: color-mix(in srgb, var(--accent) 34%, rgba(24, 23, 27, 0.88));
+    box-shadow: 0 12px 36px rgba(0, 0, 0, 0.42), 0 0 24px color-mix(in srgb, var(--accent) 18%, transparent);
+    backdrop-filter: blur(20px) saturate(1.25);
+  }
+
+  .mobile-action-dock[hidden] {
+    display: none;
+  }
+
+  .mobile-dock-action {
+    display: grid;
+    flex: 1 1 0;
+    min-width: 0;
+    min-height: 52px;
+    align-content: center;
+    justify-items: center;
+    gap: 4px;
+    padding: 4px 2px;
+    border: 0;
+    border-radius: 14px;
+    color: #fff;
+    background: transparent;
+    font: inherit;
+    font-size: 10px;
+    font-weight: 750;
+    line-height: 1.05;
+    white-space: normal;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .mobile-dock-action[hidden] {
+    display: none;
+  }
+
+  .mobile-dock-action:hover,
+  .mobile-dock-action:focus-visible {
+    color: #fff;
+    background: color-mix(in srgb, var(--accent) 64%, transparent);
+    outline: none;
+  }
+
+  .mobile-dock-action svg {
+    width: 21px;
+    height: 21px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2.3;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  .mobile-dock-action span {
+    display: block;
+    max-width: 100%;
+    text-align: center;
+  }
+
+  .scroll-top-button,
+  .scroll-top-button.visible {
+    right: max(22px, env(safe-area-inset-right));
+    bottom: calc(max(12px, env(safe-area-inset-bottom)) + 82px);
+    width: 48px;
+    height: 48px;
+    min-width: 48px;
+    min-height: 48px;
+    border-radius: 50%;
+  }
+
+  body.dialog-open .mobile-action-dock {
+    opacity: 0;
+    pointer-events: none;
   }
 
   .price-refresh-action,
