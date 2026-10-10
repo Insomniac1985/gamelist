@@ -4629,7 +4629,7 @@ body.dialog-open .floating-edit-actions {
   --mobile-tab-index: 0;
   --mobile-tab-width: calc((100% - 24px) / 3);
   position: sticky;
-  top: calc(120px + var(--pull-ui-offset, 0px));
+  top: calc(140px + var(--pull-ui-offset, 0px));
   z-index: 11;
   display: grid;
   grid-template-columns: repeat(var(--mobile-tab-count), 1fr);
@@ -7923,6 +7923,10 @@ body:not(.can-edit) .top-actions-separator {
 
 .mobile-action-dock {
   display: none;
+}
+
+#mobileDockUp {
+  display: none !important;
 }
 
 .mobile-dock-action > span:not(.mobile-switch-logos) {
@@ -15463,6 +15467,10 @@ html.theme-light .finish-trophy-check input[type="checkbox"]:checked {
     padding-bottom: calc(84px + env(safe-area-inset-bottom));
   }
 
+  .toast-notification {
+    bottom: calc(84px + env(safe-area-inset-bottom));
+  }
+
   .top-actions #addButton,
   .top-actions #settingsButton {
     display: none !important;
@@ -15490,6 +15498,7 @@ html.theme-light .finish-trophy-check input[type="checkbox"]:checked {
     min-height: 68px;
     width: 95%;
     gap: 2px;
+    padding: 6px;
     transform: translateX(-50%);
     border: 1px solid var(--line);
     border-radius: 15px;
@@ -17460,6 +17469,40 @@ html.theme-light .finish-trophy-check input[type="checkbox"]:checked {
 }
 
 @media (min-width: 761px) {
+  #mobileDockUp {
+    display: grid !important;
+    width: 0;
+    height: 0;
+    min-width: 0;
+    min-height: 0;
+    flex-basis: 0;
+    overflow: hidden;
+    opacity: 0;
+    pointer-events: none;
+    transform: translateY(6px);
+    transition:
+      width 180ms ease,
+      height 180ms ease,
+      flex-basis 180ms ease,
+      opacity 160ms ease,
+      transform 160ms ease;
+  }
+
+  #mobileDockUp.is-visible {
+    width: 42px;
+    height: 42px;
+    min-width: 42px;
+    min-height: 42px;
+    flex-basis: 42px;
+    opacity: 1;
+    pointer-events: auto;
+    transform: translateY(0);
+  }
+
+  #scrollTopButton {
+    display: none !important;
+  }
+
   .mobile-action-dock {
     position: fixed;
     left: auto;
@@ -17471,14 +17514,14 @@ html.theme-light .finish-trophy-check input[type="checkbox"]:checked {
     min-height: 54px;
     gap: 2px;
     padding: 8px;
-    transform: translateY(10px);
+    transform: translateY(0);
     border: 1px solid var(--line);
     border-radius: 16px;
     background: var(--panel);
     box-shadow: 0 18px 42px rgba(0, 0, 0, 0.28);
     backdrop-filter: blur(12px) saturate(1.15);
-    opacity: 0;
-    pointer-events: none;
+    opacity: 1;
+    pointer-events: auto;
     transition:
       opacity 160ms ease,
       transform 160ms ease;
@@ -17509,30 +17552,91 @@ html.theme-light .finish-trophy-check input[type="checkbox"]:checked {
     -webkit-tap-highlight-color: transparent;
   }
 
-  #mobileDockAdd::before {
-    content: attr(title);
-    position: absolute;
-    top: 50%;
-    right: calc(100% + 8px);
-    padding: 7px 10px;
-    color: var(--text);
-    white-space: nowrap;
-    background: var(--panel);
-    border: 1px solid var(--line);
-    border-radius: 9px;
-    box-shadow: 0 8px 22px rgba(0, 0, 0, 0.25);
-    opacity: 0;
-    pointer-events: none;
-    transform: translate(5px, -50%);
+  #mobileDockAdd {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
     transition:
-      opacity 140ms ease,
-      transform 140ms ease;
+      flex-basis 420ms cubic-bezier(0.2, 0.8, 0.2, 1),
+      width 420ms cubic-bezier(0.2, 0.8, 0.2, 1),
+      padding 420ms cubic-bezier(0.2, 0.8, 0.2, 1),
+      gap 420ms cubic-bezier(0.2, 0.8, 0.2, 1),
+      background 140ms ease,
+      box-shadow 140ms ease;
   }
 
-  #mobileDockAdd:hover::before,
-  #mobileDockAdd:focus-visible::before {
+  #mobileDockAdd > span {
+    display: inline-block;
+    width: 0;
+    overflow: hidden;
+    opacity: 0;
+    font-weight: 900;
+    white-space: nowrap;
+    transition:
+      width 420ms cubic-bezier(0.2, 0.8, 0.2, 1),
+      opacity 220ms ease;
+  }
+
+  #mobileDockAdd:hover,
+  #mobileDockAdd:focus-visible {
+    width: 160px;
+    flex-basis: 160px;
+    gap: 8px;
+    flex-direction: row-reverse;
+    justify-content: flex-start;
+    padding-inline: 12px;
+    transition-duration: 220ms;
+  }
+
+  #mobileDockAdd:hover > span,
+  #mobileDockAdd:focus-visible > span {
+    width: 104px;
     opacity: 1;
-    transform: translate(0, -50%);
+    transition-duration: 220ms;
+  }
+
+  #mobileDockSwitch {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    transition:
+      flex-basis 420ms cubic-bezier(0.2, 0.8, 0.2, 1),
+      width 420ms cubic-bezier(0.2, 0.8, 0.2, 1),
+      padding 420ms cubic-bezier(0.2, 0.8, 0.2, 1),
+      gap 420ms cubic-bezier(0.2, 0.8, 0.2, 1),
+      background 140ms ease,
+      box-shadow 140ms ease;
+  }
+
+  #mobileDockSwitch:hover,
+  #mobileDockSwitch:focus-visible {
+    width: 184px;
+    flex-basis: 184px;
+    gap: 8px;
+    justify-content: flex-start;
+    padding-inline: 12px;
+    transition-duration: 220ms;
+  }
+
+  #mobileDockSwitch > .mobile-switch-label {
+    display: inline-block;
+    width: 0;
+    overflow: hidden;
+    opacity: 0;
+    font-weight: 900;
+    white-space: nowrap;
+    transition:
+      width 420ms cubic-bezier(0.2, 0.8, 0.2, 1),
+      opacity 220ms ease;
+  }
+
+  #mobileDockSwitch:hover > .mobile-switch-label,
+  #mobileDockSwitch:focus-visible > .mobile-switch-label {
+    width: 124px;
+    opacity: 1;
+    transition-duration: 220ms;
   }
 
   .mobile-dock-action svg {
@@ -17555,6 +17659,7 @@ html.theme-light .finish-trophy-check input[type="checkbox"]:checked {
   }
 
   #mobileDockSettings,
+  #mobileDockSearch,
   .floating-edit-actions,
   .floating-search-button {
     display: none !important;
@@ -17571,7 +17676,9 @@ html.theme-light .finish-trophy-check input[type="checkbox"]:checked {
 body.page-pulling #mobileActionDock,
 body.page-switching > #mobileActionDock {
   transform: translateY(26px);
-  transition: transform 520ms cubic-bezier(0.2, 0.86, 0.2, 1), opacity 260ms ease;
+  transition:
+    transform 520ms cubic-bezier(0.2, 0.86, 0.2, 1),
+    opacity 260ms ease;
 }
 
 body.page-pulling #mobileActionDock {
@@ -17589,14 +17696,9 @@ body.page-pulling #mobileActionDock {
   }
 }
 
-@keyframes settings-auth-spin {
-  to { transform: translate(-50%, -50%) rotate(360deg); }
-}
-
-body.auth-checking #settingsButton[hidden],
-body.auth-checking #mobileDockSettings[hidden] {
-  visibility: visible;
-  pointer-events: none;
+#settingsButton[hidden],
+#mobileDockSettings[hidden] {
+  display: none !important;
 }
 
 body.auth-checking #settingsButton[aria-busy="true"],
@@ -17605,47 +17707,7 @@ body.auth-checking #mobileDockSettings[aria-busy="true"] {
   pointer-events: none;
 }
 
-body.auth-checking #settingsButton[aria-busy="true"] svg,
-body.auth-checking #mobileDockSettings[aria-busy="true"] svg {
-  opacity: 0;
-}
-
-body.auth-checking #settingsButton[aria-busy="true"]::after,
-body.auth-checking #mobileDockSettings[aria-busy="true"]::after {
-  content: "";
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  width: 15px;
-  height: 15px;
-  border: 2px solid color-mix(in srgb, var(--accent) 34%, var(--muted));
-  border-top-color: var(--accent);
-  border-radius: 50%;
-  transform: translate(-50%, -50%);
-  animation: settings-auth-spin 760ms linear infinite;
-}
-
 #settingsButton svg,
 #mobileDockSettings svg {
   transition: opacity 180ms ease;
-}
-
-@media (min-width: 761px) {
-  body.auth-checking #settingsButton[hidden] {
-    display: inline-grid !important;
-  }
-
-  body.auth-checking #settingsButton[aria-busy="true"] {
-    opacity: 1;
-  }
-}
-
-@media (max-width: 760px) {
-  body.auth-checking .top-actions #settingsButton {
-    display: none !important;
-  }
-
-  body.auth-checking #mobileDockSettings[hidden] {
-    display: grid !important;
-  }
 }

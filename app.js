@@ -342,6 +342,7 @@ const el = {
   floatingSearchButton: document.querySelector("#floatingSearchButton"),
   mobileActionDock: document.querySelector("#mobileActionDock"),
   mobileDockAdd: document.querySelector("#mobileDockAdd"),
+  mobileDockUp: document.querySelector("#mobileDockUp"),
   mobileDockSearch: document.querySelector("#mobileDockSearch"),
   mobileDockSettings: document.querySelector("#mobileDockSettings"),
   mobileDockSwitch: document.querySelector("#mobileDockSwitch"),
@@ -713,8 +714,7 @@ function bindTextureParallax() {
 }
 
 function quickAddGame() {
-  scrollToSearchArea();
-  window.setTimeout(() => openEditor(), 180);
+  openEditor();
 }
 
 function registerServiceWorker() {
@@ -1143,6 +1143,7 @@ function bindEvents() {
     if (document.body.classList.contains("dialog-open")) return;
     window.scrollTo({ top: 0, behavior: "smooth" });
   });
+  el.mobileDockUp?.addEventListener("click", () => el.scrollTopButton.click());
   el.detailCloseButton.addEventListener("click", () => el.detailDialog.close());
   el.detailDialog.addEventListener("click", (event) => {
     if (event.target === el.detailDialog) el.detailDialog.close();
@@ -9440,10 +9441,11 @@ function updateDetailTrophyEdges() {
 
 function updateScrollTopButton() {
   const visible = window.scrollY > 180 && !document.body.classList.contains("dialog-open");
-  const dockVisible = window.scrollY > 180;
+  const dockVisible = window.innerWidth >= 761 || window.scrollY > 180;
   el.scrollTopButton?.classList.toggle("visible", visible);
   el.floatingEditActions?.classList.toggle("visible", visible);
   el.mobileActionDock?.classList.toggle("visible", dockVisible);
+  el.mobileDockUp?.classList.toggle("is-visible", visible);
 }
 
 function sortedDetailTrophies() {
