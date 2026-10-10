@@ -2496,6 +2496,7 @@ function renderSettingsDialog() {
   el.settingsStores.innerHTML = STORE_OPTIONS.map((store) => `
     <label class="check-filter toggle-check settings-store-check">
       <input type="checkbox" value="${escapeHtml(store)}" ${state.settings.stores.includes(store) ? "checked" : ""}>
+      <img class="settings-store-icon" src="${escapeHtml(storeIcon(store))}" alt="" aria-hidden="true" loading="lazy">
       <span>${escapeHtml(store)}</span>
     </label>
   `).join("");
@@ -6798,7 +6799,7 @@ function syncStyledSelect(select, options = {}) {
   }
   const selectOptions = [...select.options].map((option) => ({
     value: option.value,
-    label: option.textContent.trim(),
+    label: `${option.dataset.flag ? `${option.dataset.flag} ` : ""}${option.textContent.trim()}`,
     selected: option.selected,
     disabled: option.disabled || option.hidden,
     fontFamily: option.style.fontFamily || "",

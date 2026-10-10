@@ -104,6 +104,7 @@ export function accountSettingsMarkup() {
       </label>
       <div class="settings-account-field settings-provider-field settings-pricecharting-field">
         <span>PriceCharting API</span>
+        <small class="settings-provider-intro" id="settingsPriceChartingIntro">Connect the API token from your PriceCharting Legendary subscription.</small>
         <div class="settings-provider-controls">
           <span id="settingsPriceChartingStatus" class="settings-provider-status" hidden></span>
           <a class="ghost-button settings-provider-page-button" id="settingsPriceChartingSubscription" href="https://www.pricecharting.com/subscriptions" target="_blank" rel="noopener noreferrer">Open subscription page</a>
@@ -212,6 +213,7 @@ function syncPriceChartingState(elements, connected) {
   elements.status.hidden = !connected;
   elements.apiStatus.textContent = "";
   elements.apiStatus.hidden = true;
+  elements.intro.hidden = connected;
   elements.setup.hidden = connected || !priceChartingSetupRevealed;
   elements.disconnect.hidden = !connected;
   if (!connected) {
@@ -222,6 +224,7 @@ function syncPriceChartingState(elements, connected) {
 
 function priceChartingElements() {
   return {
+    intro: document.querySelector("#settingsPriceChartingIntro"),
     status: document.querySelector("#settingsPriceChartingStatus"),
     setup: document.querySelector("#settingsPriceChartingSetup"),
     token: document.querySelector("#settingsPriceChartingToken"),
