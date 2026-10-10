@@ -6799,7 +6799,8 @@ function syncStyledSelect(select, options = {}) {
   }
   const selectOptions = [...select.options].map((option) => ({
     value: option.value,
-    label: `${option.dataset.flag ? `${option.dataset.flag} ` : ""}${option.textContent.trim()}`,
+    label: option.textContent.trim(),
+    flag: option.dataset.flag || "",
     selected: option.selected,
     disabled: option.disabled || option.hidden,
     fontFamily: option.style.fontFamily || "",
@@ -6809,12 +6810,12 @@ function syncStyledSelect(select, options = {}) {
   control.classList.toggle("is-active", options.activeValue != null && selected.value !== options.activeValue);
   control.innerHTML = `
     <button class="platform-logo-button" type="button" aria-haspopup="listbox" aria-expanded="false" data-full-label="${escapeHtml(selected.label)}" aria-label="${escapeHtml(selected.label)}">
-      ${platformLogoChoiceMarkup(selected.value, selected.label, { logos: useLogos, fontFamily: selected.fontFamily })}
+      ${platformLogoChoiceMarkup(selected.value, selected.label, { logos: useLogos, fontFamily: selected.fontFamily, flag: selected.flag })}
     </button>
     <div class="platform-logo-menu" role="listbox">
       ${visibleOptions.map((option) => `
         <button class="platform-logo-option ${option.selected ? "is-selected" : ""}" type="button" role="option" aria-selected="${option.selected ? "true" : "false"}" data-value="${escapeHtml(option.value)}" data-full-label="${escapeHtml(option.label)}">
-          ${platformLogoChoiceMarkup(option.value, option.label, { logos: useLogos, fontFamily: option.fontFamily })}
+          ${platformLogoChoiceMarkup(option.value, option.label, { logos: useLogos, fontFamily: option.fontFamily, flag: option.flag })}
         </button>
       `).join("")}
     </div>
@@ -6907,6 +6908,7 @@ function platformLogoChoiceMarkup(value, label, options = {}) {
   const fontStyle = options.fontFamily ? ` style="font-family:${escapeHtml(options.fontFamily)}"` : "";
   return `
     <span class="platform-logo-choice ${escapeHtml(cls)}">
+      ${options.flag ? `<span class="platform-logo-choice-icon settings-region-flag-icon"><img src="${escapeHtml(options.flag)}" alt="" width="22" height="16" decoding="async"></span>` : ""}
       ${showLogo ? `<span class="platform-logo-choice-icon"><img src="${escapeHtml(platformLogo(value))}" alt="" width="18" height="18" decoding="async"></span>` : ""}
       <span class="platform-logo-choice-label"${fontStyle}>${escapeHtml(label)}</span>
     </span>

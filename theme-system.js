@@ -232,7 +232,6 @@ export function themeSettingsContent(settings = {}, translate = identityTranslat
         <label class="check-filter toggle-check theme-check theme-big-logo-row"><input name="bigLogo" type="checkbox" ${draft.bigLogo ? "checked" : ""}><span>${htmlEscape(translate("Big logo"))}</span></label>
       </section>
       <section class="settings-section">
-        <h3 class="theme-owner-colors-title">${htmlEscape(translate("Custom owner colors"))}</h3>
         <div class="theme-owner-table">
           <div class="theme-owner-head"><span>${htmlEscape(translate("Owner"))}</span><span>${htmlEscape(translate("Main color"))}</span><span>${htmlEscape(translate("Pick"))}</span><span></span></div>
           <div data-owner-rows>${ownerRows.map((owner) => ownerRow(owner, translate)).join("")}</div>
@@ -306,7 +305,6 @@ function renderThemeDialog(dialog, draft, settings, page, onSave, translate = id
         <label class="check-filter toggle-check theme-check theme-big-logo-row"><input name="bigLogo" type="checkbox" ${draft.bigLogo ? "checked" : ""}><span>${htmlEscape(translate("Big logo"))}</span></label>
       </section>
       <section class="settings-section">
-        <h3 class="theme-owner-colors-title">${htmlEscape(translate("Custom owner colors"))}</h3>
         <div class="theme-owner-table">
           <div class="theme-owner-head"><span>${htmlEscape(translate("Owner"))}</span><span>${htmlEscape(translate("Main color"))}</span><span>${htmlEscape(translate("Pick"))}</span><span></span></div>
           <div data-owner-rows>${ownerRows.map((owner) => ownerRow(owner, translate)).join("")}</div>
