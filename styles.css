@@ -15467,6 +15467,10 @@ html.theme-light .finish-trophy-check input[type="checkbox"]:checked {
     padding-bottom: calc(84px + env(safe-area-inset-bottom));
   }
 
+  .toast-notification {
+    bottom: calc(84px + env(safe-area-inset-bottom));
+  }
+
   .top-actions #addButton,
   .top-actions #settingsButton {
     display: none !important;
@@ -17467,15 +17471,29 @@ html.theme-light .finish-trophy-check input[type="checkbox"]:checked {
 @media (min-width: 761px) {
   #mobileDockUp {
     display: grid !important;
+    width: 0;
+    height: 0;
+    min-width: 0;
+    min-height: 0;
+    flex-basis: 0;
+    overflow: hidden;
     opacity: 0;
     pointer-events: none;
     transform: translateY(6px);
     transition:
+      width 180ms ease,
+      height 180ms ease,
+      flex-basis 180ms ease,
       opacity 160ms ease,
       transform 160ms ease;
   }
 
   #mobileDockUp.is-visible {
+    width: 42px;
+    height: 42px;
+    min-width: 42px;
+    min-height: 42px;
+    flex-basis: 42px;
     opacity: 1;
     pointer-events: auto;
     transform: translateY(0);
@@ -17539,8 +17557,10 @@ html.theme-light .finish-trophy-check input[type="checkbox"]:checked {
     justify-content: center;
     overflow: hidden;
     transition:
-      flex-basis 180ms ease,
-      width 180ms ease,
+      flex-basis 420ms cubic-bezier(0.2, 0.8, 0.2, 1),
+      width 420ms cubic-bezier(0.2, 0.8, 0.2, 1),
+      padding 420ms cubic-bezier(0.2, 0.8, 0.2, 1),
+      gap 420ms cubic-bezier(0.2, 0.8, 0.2, 1),
       background 140ms ease,
       box-shadow 140ms ease;
   }
@@ -17550,10 +17570,11 @@ html.theme-light .finish-trophy-check input[type="checkbox"]:checked {
     width: 0;
     overflow: hidden;
     opacity: 0;
+    font-weight: 900;
     white-space: nowrap;
     transition:
-      width 180ms ease,
-      opacity 120ms ease;
+      width 420ms cubic-bezier(0.2, 0.8, 0.2, 1),
+      opacity 220ms ease;
   }
 
   #mobileDockAdd:hover,
@@ -17564,12 +17585,14 @@ html.theme-light .finish-trophy-check input[type="checkbox"]:checked {
     flex-direction: row-reverse;
     justify-content: flex-start;
     padding-inline: 12px;
+    transition-duration: 220ms;
   }
 
   #mobileDockAdd:hover > span,
   #mobileDockAdd:focus-visible > span {
     width: 104px;
     opacity: 1;
+    transition-duration: 220ms;
   }
 
   #mobileDockSwitch {
@@ -17578,8 +17601,10 @@ html.theme-light .finish-trophy-check input[type="checkbox"]:checked {
     justify-content: center;
     overflow: hidden;
     transition:
-      flex-basis 180ms ease,
-      width 180ms ease,
+      flex-basis 420ms cubic-bezier(0.2, 0.8, 0.2, 1),
+      width 420ms cubic-bezier(0.2, 0.8, 0.2, 1),
+      padding 420ms cubic-bezier(0.2, 0.8, 0.2, 1),
+      gap 420ms cubic-bezier(0.2, 0.8, 0.2, 1),
       background 140ms ease,
       box-shadow 140ms ease;
   }
@@ -17591,6 +17616,7 @@ html.theme-light .finish-trophy-check input[type="checkbox"]:checked {
     gap: 8px;
     justify-content: flex-start;
     padding-inline: 12px;
+    transition-duration: 220ms;
   }
 
   #mobileDockSwitch > .mobile-switch-label {
@@ -17598,18 +17624,18 @@ html.theme-light .finish-trophy-check input[type="checkbox"]:checked {
     width: 0;
     overflow: hidden;
     opacity: 0;
-    font-size: 12px;
-    font-weight: 800;
+    font-weight: 900;
     white-space: nowrap;
     transition:
-      width 180ms ease,
-      opacity 120ms ease;
+      width 420ms cubic-bezier(0.2, 0.8, 0.2, 1),
+      opacity 220ms ease;
   }
 
   #mobileDockSwitch:hover > .mobile-switch-label,
   #mobileDockSwitch:focus-visible > .mobile-switch-label {
     width: 124px;
     opacity: 1;
+    transition-duration: 220ms;
   }
 
   .mobile-dock-action svg {
