@@ -4629,7 +4629,7 @@ body.dialog-open .floating-edit-actions {
   --mobile-tab-index: 0;
   --mobile-tab-width: calc((100% - 24px) / 3);
   position: sticky;
-  top: calc(120px + var(--pull-ui-offset, 0px));
+  top: calc(140px + var(--pull-ui-offset, 0px));
   z-index: 11;
   display: grid;
   grid-template-columns: repeat(var(--mobile-tab-count), 1fr);
