@@ -218,9 +218,12 @@ export function themeSettingsContent(settings = {}, translate = identityTranslat
         ${colorField("accentColor", "Accent color", draft.accentColor, false, false, "theme-accent-color", translate)}
         ${colorField("gradientColor", "Gradient color", draft.gradientColor, false, false, "theme-gradient-color", translate)}
         ${colorField("extraColor", "Extra color", draft.extraColor, false, false, "theme-extra-color", translate)}
-        <div class="theme-editor-row theme-controls-row">
+        <div class="theme-editor-row theme-selects-row">
           <label class="settings-detail-compact theme-mode-field"><span>${htmlEscape(translate("Theme"))}</span><select name="mode"><option value="dark" ${draft.mode === "dark" ? "selected" : ""}>${htmlEscape(translate("Dark"))}</option><option value="light" ${draft.mode === "light" ? "selected" : ""}>${htmlEscape(translate("Light (WIP)"))}</option></select></label>
           <label class="settings-detail-compact theme-font-field"><span>${htmlEscape(translate("Title font"))}</span><select name="accentFont" style="font-family:&quot;${htmlEscape(FONT_OPTIONS.find((font) => font.value === draft.accentFont)?.family || "Cascadia Code")}&quot;">${FONT_OPTIONS.map((font) => `<option value="${htmlEscape(font.value)}" style="font-family:&quot;${htmlEscape(font.family)}&quot;" ${draft.accentFont === font.value ? "selected" : ""}>${htmlEscape(font.label)}</option>`).join("")}</select></label>
+        </div>
+        <div class="theme-editor-row theme-controls-row">
+          <label class="check-filter toggle-check theme-check"><input name="bigLogo" type="checkbox" ${draft.bigLogo ? "checked" : ""}><span>${htmlEscape(translate("Big logo"))}</span></label>
           <label class="check-filter toggle-check theme-check"><input name="gradient" type="checkbox" ${draft.gradient ? "checked" : ""}><span>${htmlEscape(translate("Gradient titles"))}</span></label>
           <label class="check-filter toggle-check theme-check"><input name="uppercaseTitles" type="checkbox" ${draft.uppercaseTitles ? "checked" : ""}><span>${htmlEscape(translate("Uppercase Titles"))}</span></label>
           <label class="check-filter toggle-check theme-check"><input name="disableGlow" type="checkbox" ${draft.disableGlow ? "" : "checked"}><span>${htmlEscape(translate("Background glows"))}</span></label>
@@ -229,7 +232,6 @@ export function themeSettingsContent(settings = {}, translate = identityTranslat
           <label class="settings-detail-compact"><span>${htmlEscape(translate("Background Glow 1"))}</span>${glowSelect("glowPrimary", draft.glowPrimary, translate)}</label>
           <label class="settings-detail-compact"><span>${htmlEscape(translate("Background Glow 2"))}</span>${glowSelect("glowSecondary", draft.glowSecondary, translate)}</label>
         </div>
-        <label class="check-filter toggle-check theme-check theme-big-logo-row"><input name="bigLogo" type="checkbox" ${draft.bigLogo ? "checked" : ""}><span>${htmlEscape(translate("Big logo"))}</span></label>
       </section>
       <section class="settings-section">
         <h3 class="theme-owner-colors-title">${htmlEscape(translate("Custom Owner Colors"))}</h3>
@@ -292,9 +294,12 @@ function renderThemeDialog(dialog, draft, settings, page, onSave, translate = id
         ${colorField("accentColor", "Accent color", draft.accentColor, false, false, "theme-accent-color", translate)}
         ${colorField("gradientColor", "Gradient color", draft.gradientColor, false, false, "theme-gradient-color", translate)}
         ${colorField("extraColor", "Extra color", draft.extraColor, false, false, "theme-extra-color", translate)}
-        <div class="theme-editor-row theme-controls-row">
+        <div class="theme-editor-row theme-selects-row">
           <label class="settings-detail-compact theme-mode-field"><span>${htmlEscape(translate("Theme"))}</span><select name="mode"><option value="dark" ${draft.mode === "dark" ? "selected" : ""}>${htmlEscape(translate("Dark"))}</option><option value="light" ${draft.mode === "light" ? "selected" : ""}>${htmlEscape(translate("Light (WIP)"))}</option></select></label>
           <label class="settings-detail-compact theme-font-field"><span>${htmlEscape(translate("Title font"))}</span><select name="accentFont" style="font-family:&quot;${htmlEscape(FONT_OPTIONS.find((font) => font.value === draft.accentFont)?.family || "Cascadia Code")}&quot;">${FONT_OPTIONS.map((font) => `<option value="${htmlEscape(font.value)}" style="font-family:&quot;${htmlEscape(font.family)}&quot;" ${draft.accentFont === font.value ? "selected" : ""}>${htmlEscape(font.label)}</option>`).join("")}</select></label>
+        </div>
+        <div class="theme-editor-row theme-controls-row">
+          <label class="check-filter toggle-check theme-check"><input name="bigLogo" type="checkbox" ${draft.bigLogo ? "checked" : ""}><span>${htmlEscape(translate("Big logo"))}</span></label>
           <label class="check-filter toggle-check theme-check"><input name="gradient" type="checkbox" ${draft.gradient ? "checked" : ""}><span>${htmlEscape(translate("Gradient titles"))}</span></label>
           <label class="check-filter toggle-check theme-check"><input name="uppercaseTitles" type="checkbox" ${draft.uppercaseTitles ? "checked" : ""}><span>${htmlEscape(translate("Uppercase Titles"))}</span></label>
           <label class="check-filter toggle-check theme-check"><input name="disableGlow" type="checkbox" ${draft.disableGlow ? "" : "checked"}><span>${htmlEscape(translate("Background glows"))}</span></label>
@@ -303,7 +308,6 @@ function renderThemeDialog(dialog, draft, settings, page, onSave, translate = id
           <label class="settings-detail-compact"><span>${htmlEscape(translate("Background Glow 1"))}</span>${glowSelect("glowPrimary", draft.glowPrimary, translate)}</label>
           <label class="settings-detail-compact"><span>${htmlEscape(translate("Background Glow 2"))}</span>${glowSelect("glowSecondary", draft.glowSecondary, translate)}</label>
         </div>
-        <label class="check-filter toggle-check theme-check theme-big-logo-row"><input name="bigLogo" type="checkbox" ${draft.bigLogo ? "checked" : ""}><span>${htmlEscape(translate("Big logo"))}</span></label>
       </section>
       <section class="settings-section">
         <h3 class="theme-owner-colors-title">${htmlEscape(translate("Custom Owner Colors"))}</h3>

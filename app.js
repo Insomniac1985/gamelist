@@ -1949,7 +1949,7 @@ function applyPageOrder() {
 }
 
 function openSettingsDialog() {
-  if (!state.canEdit || window.matchMedia("(max-width: 760px)").matches) return;
+  if (!state.canEdit) return;
   el.settingsDialog.querySelectorAll("[data-settings-window]").forEach((section) => { section.hidden = true; });
   const settingsHome = document.querySelector("#settingsHome");
   if (settingsHome) settingsHome.hidden = false;
