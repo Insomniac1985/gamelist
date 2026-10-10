@@ -959,8 +959,6 @@ function bindEvents() {
   el.mobileDockSettings?.addEventListener("click", openSettingsDialog);
   el.mobileDockSwitch?.addEventListener("click", () => {
     if (pageSwitchHidden()) return;
-    const activePageSelector = el.mobileDockSwitch.querySelector(".mobile-switch-logos");
-    if (activePageSelector) activePageSelector.dataset.currentPage = "shelf";
     const transitionButton = document.querySelector(".page-pull-switch");
     if (transitionButton) transitionButton.click();
     else window.location.href = pullNavigationUrl("shelf");
