@@ -1,6 +1,7 @@
 import { getPsnAccessToken, getPsnNpsso } from "./psn-auth.js";
 import { getSteamApiKey } from "./steam-account.js";
 import { getXboxApiKey } from "./xbox-account.js";
+import { getPriceChartingToken } from "./pricecharting-account.js";
 import { igdbCredentials, verifyIgdbCredentials } from "./igdb-account.js";
 import { isEditorRequest } from "./editor-auth.js";
 
@@ -18,7 +19,7 @@ export async function onRequestGet({ request, env = {} }) {
     STEAM_API_KEY: isSet(await getSteamApiKey(env)),
     IGDB_CLIENT_ID: Boolean(igdb?.clientId),
     IGDB_CLIENT_SECRET: Boolean(igdb?.clientSecret),
-    PRICECHARTING_TOKEN: isSet(env.PRICECHARTING_TOKEN),
+    PRICECHARTING_TOKEN: isSet(await getPriceChartingToken(env)),
     GOOGLE_PRIVATE_KEY: isSet(env.GOOGLE_PRIVATE_KEY),
     UPDATE: working.UPDATE,
     CURRENT_REPO,

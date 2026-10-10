@@ -102,6 +102,121 @@ export function accountSettingsMarkup() {
         <span data-i18n="Twitch account">Twitch Account</span>
         <input id="settingsTwitchUser" autocomplete="off" data-lpignore="true" data-1p-ignore="true" data-bwignore="true" placeholder="Twitch username" data-i18n-placeholder="Twitch username">
       </label>
+      <div class="settings-account-field settings-provider-field settings-pricecharting-field">
+        <span>PriceCharting API</span>
+        <small class="settings-provider-intro" id="settingsPriceChartingIntro">Connect the API token from your PriceCharting Legendary subscription.</small>
+        <div class="settings-provider-controls">
+          <span id="settingsPriceChartingStatus" class="settings-provider-status" hidden></span>
+          <a class="ghost-button settings-provider-page-button" href="https://www.pricecharting.com/api-documentation" target="_blank" rel="noopener noreferrer">PriceCharting API docs</a>
+          <a class="ghost-button settings-provider-page-button" href="https://www.pricecharting.com/subscriptions" target="_blank" rel="noopener noreferrer">Open subscription page</a>
+          <button class="ghost-button" id="settingsPriceChartingDisconnect" type="button" hidden>Disconnect</button>
+        </div>
+        <div class="settings-provider-callback" id="settingsPriceChartingSetup" hidden>
+          <label for="settingsPriceChartingToken">PriceCharting API token</label>
+          <input id="settingsPriceChartingToken" type="password" autocomplete="new-password" name="pricecharting-api-token-entry" data-lpignore="true" data-1p-ignore="true" data-bwignore="true" readonly placeholder="Paste the 40-character API token">
+          <span id="settingsPriceChartingApiStatus" class="settings-provider-status" hidden></span>
+          <button class="ghost-button" id="settingsPriceChartingConnect" type="button">Verify and connect PriceCharting</button>
+        </div>
+      </div>
     </div>
   `;
+}
+
+document.addEventListener("click", (event) => {
+  if (event.target.closest("#settingsPriceChartingConnect")) connectPriceChartingApi();
+  else if (event.target.closest("#settingsPriceChartingDisconnect")) disconnectPriceChartingApi();
+  else if (event.target.closest("#settingsButton")) window.setTimeout(refreshPriceChartingStatus, 0);
+});
+
+document.addEventListener("focusin", (event) => {
+  if (event.target.matches?.("#settingsPriceChartingToken")) event.target.removeAttribute("readonly");
+});
+
+async function refreshPriceChartingStatus() {
+  const elements = priceChartingElements();
+  if (!elements.status) return;
+  try {
+    const response = await fetch("/api/pricecharting-account", { cache: "no-store" });
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok) throw new Error(data.error || "Could not check PriceCharting API token.");
+    syncPriceChartingState(elements, Boolean(data.apiTokenAvailable));
+  } catch (error) {
+    elements.apiStatus.textContent = error?.message || "Could not check PriceCharting API token.";
+    elements.apiStatus.hidden = false;
+  }
+}
+
+async function connectPriceChartingApi() {
+  const elements = priceChartingElements();
+  const token = elements.token?.value.trim() || "";
+  if (!token || !elements.connect) return;
+  elements.token.disabled = true;
+  elements.connect.disabled = true;
+  elements.apiStatus.textContent = "Verifying PriceCharting API token…";
+  elements.apiStatus.hidden = false;
+  try {
+    const response = await fetch("/api/pricecharting-account", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ action: "connect", token }),
+    });
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok) throw new Error(data.error || "Could not connect PriceCharting API token.");
+    elements.token.value = "";
+    elements.apiStatus.textContent = "";
+    elements.apiStatus.hidden = true;
+    syncPriceChartingState(elements, true);
+  } catch (error) {
+    elements.apiStatus.textContent = error?.message || "Could not connect PriceCharting API token.";
+    elements.apiStatus.hidden = false;
+  } finally {
+    elements.token.disabled = false;
+    elements.connect.disabled = false;
+  }
+}
+
+async function disconnectPriceChartingApi() {
+  const elements = priceChartingElements();
+  if (!elements.disconnect) return;
+  elements.disconnect.disabled = true;
+  try {
+    const response = await fetch("/api/pricecharting-account", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ action: "disconnect" }),
+    });
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok) throw new Error(data.error || "Could not disconnect PriceCharting API token.");
+    elements.apiStatus.textContent = "";
+    elements.apiStatus.hidden = true;
+    syncPriceChartingState(elements, false);
+  } catch (error) {
+    elements.apiStatus.textContent = error?.message || "Could not disconnect PriceCharting API token.";
+    elements.apiStatus.hidden = false;
+  } finally {
+    elements.disconnect.disabled = false;
+  }
+}
+
+function syncPriceChartingState(elements, connected) {
+  elements.status.textContent = connected ? "Connected" : "";
+  elements.status.hidden = !connected;
+  elements.apiStatus.textContent = "";
+  elements.apiStatus.hidden = true;
+  elements.intro.hidden = connected;
+  elements.setup.hidden = connected;
+  elements.disconnect.hidden = !connected;
+  if (!connected) elements.token.value = "";
+}
+
+function priceChartingElements() {
+  return {
+    intro: document.querySelector("#settingsPriceChartingIntro"),
+    status: document.querySelector("#settingsPriceChartingStatus"),
+    setup: document.querySelector("#settingsPriceChartingSetup"),
+    token: document.querySelector("#settingsPriceChartingToken"),
+    apiStatus: document.querySelector("#settingsPriceChartingApiStatus"),
+    connect: document.querySelector("#settingsPriceChartingConnect"),
+    disconnect: document.querySelector("#settingsPriceChartingDisconnect"),
+  };
 }

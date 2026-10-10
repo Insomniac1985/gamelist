@@ -930,12 +930,37 @@ function bindEvents() {
     scrollToSearchArea();
   });
   el.loginButton.addEventListener("click", toggleEditMode);
+  document.querySelector("#settingsLogoutButton")?.addEventListener("click", () => {
+    el.settingsDialog.close();
+    toggleEditMode();
+  });
   el.addButton.addEventListener("click", quickAddGame);
   el.floatingAddButton.addEventListener("click", quickAddGame);
   el.searchButton?.addEventListener("click", scrollToSearchArea);
   el.floatingSearchButton?.addEventListener("click", scrollToSearchArea);
   el.syncButton.addEventListener("click", syncNow);
   el.settingsButton?.addEventListener("click", openSettingsDialog);
+  el.settingsDialog?.querySelectorAll("[data-settings-panel]").forEach((button) => {
+    button.addEventListener("click", () => {
+      const panel = button.dataset.settingsPanel;
+      const home = document.querySelector("#settingsHome");
+      if (home) home.hidden = true;
+      el.settingsDialog.querySelectorAll("[data-settings-window]").forEach((section) => {
+        section.hidden = section.dataset.settingsWindow !== panel;
+      });
+      el.settingsDialog.classList.add("has-settings-window");
+      el.settingsDialog.querySelector(".settings-modal")?.scrollTo({ top: 0 });
+    });
+  });
+  el.settingsDialog?.querySelectorAll("[data-settings-back]").forEach((button) => {
+    button.addEventListener("click", () => {
+      el.settingsDialog.querySelectorAll("[data-settings-window]").forEach((section) => { section.hidden = true; });
+      const home = document.querySelector("#settingsHome");
+      if (home) home.hidden = false;
+      el.settingsDialog.classList.remove("has-settings-window");
+      el.settingsDialog.querySelector(".settings-modal")?.scrollTo({ top: 0 });
+    });
+  });
   el.authCloseButton?.addEventListener("click", () => el.authDialog.close("cancel"));
   el.authCancelButton?.addEventListener("click", () => el.authDialog.close("cancel"));
   el.fetchDataButton?.addEventListener("click", refreshAllGameData);
@@ -1764,6 +1789,7 @@ function render() {
   el.loginButton.innerHTML = state.canEdit ? `<span class="button-icon" aria-hidden="true">${exitIcon()}</span>` : pencilIcon();
   el.loginButton.title = state.canEdit ? tt("Stop Editing") : tt("Edit");
   el.loginButton.setAttribute("aria-label", el.loginButton.title);
+  el.loginButton.hidden = state.canEdit;
   el.addButton.hidden = false;
   el.syncButton.hidden = !state.canEdit;
   if (el.settingsButton) el.settingsButton.hidden = !state.canEdit;
@@ -1866,6 +1892,10 @@ function applyPageOrder() {
 
 function openSettingsDialog() {
   if (!state.canEdit || window.matchMedia("(max-width: 760px)").matches) return;
+  el.settingsDialog.querySelectorAll("[data-settings-window]").forEach((section) => { section.hidden = true; });
+  const settingsHome = document.querySelector("#settingsHome");
+  if (settingsHome) settingsHome.hidden = false;
+  el.settingsDialog.classList.remove("has-settings-window");
   renderSettingsDialog();
   el.settingsDialog.showModal();
   refreshIgdbConnectionStatus();

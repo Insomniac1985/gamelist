@@ -1,3 +1,5 @@
+import { getPriceChartingToken } from "./pricecharting-account.js";
+
 const API_URL = "https://www.pricecharting.com/api/product";
 const SITE_URL = "https://www.pricecharting.com";
 
@@ -25,7 +27,7 @@ export async function onRequestGet({ request, env = {} }) {
     stripSearchQualifiers(priceChartingTitle || title),
   ].filter(Boolean).map((value) => `${SITE_URL}/search-products?type=prices&region-name=all&exclude-variants=false&q=${encodeURIComponent(value)}`));
   const fallbackUrls = directProductUrls(priceChartingTitle || title, platform, region);
-  const token = env.PRICECHARTING_TOKEN || globalThis.process?.env?.PRICECHARTING_TOKEN || "";
+  const token = await getPriceChartingToken(env);
   try {
     if (searchMode) {
       let results = uniqueCandidates(rankCandidates(filterVideoGameCandidates(await fetchPublicCandidates(searchUrl), query), query));

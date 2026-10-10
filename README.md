@@ -274,7 +274,7 @@ Digital games use the platform store automatically when the platform matches:
 - <img src="assets/sites/steam.png" alt="Steam" width="18" align="center"> Different Steam regional prices.
 - <img src="assets/platforms/xbox.png" alt="Xbox" width="18" align="center"> Different regional Xbox Store or Xbox PC games.
 
-<img src="https://www.pricecharting.com/images/favicon.ico" alt="PriceCharting" width="18" align="center"> Shelf collection values also use PriceCharting data when a matching physical game from the collection, to track the average market value depending on the condition.
+<img src="https://www.pricecharting.com/images/favicon.ico" alt="PriceCharting" width="18" align="center"> Shelf collection values also use PriceCharting data when a matching physical game from the collection, to track the average market value depending on the condition. To use the PriceCharting API, connect your token in **Edit mode → Settings → Accounts**, below Twitch. API access requires a PriceCharting Legendary subscription.
 
 ### Twitch stream preview
 

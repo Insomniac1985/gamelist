@@ -10,6 +10,7 @@ import * as achievementCompletionsByYear from "./functions/api/achievement-compl
 import * as completedGamesByYear from "./functions/api/completed-games-by-year.js";
 import * as gamelistGamesByList from "./functions/api/gamelist-games-by-list.js";
 import * as prices from "./functions/api/prices.js";
+import * as priceChartingAccount from "./functions/api/pricecharting-account.js";
 import * as psnTrophiesByYear from "./functions/api/psn-trophies-by-year.js";
 import * as repoCopies from "./functions/api/repo-copies.js";
 import * as search from "./functions/api/search.js";
@@ -47,6 +48,7 @@ const routes = {
   "/api/gamelist-mass-add": gamelistMassAdd,
   "/api/gamelist-metadata": gamelistMetadata,
   "/api/prices": prices,
+  "/api/pricecharting-account": priceChartingAccount,
   "/api/psn-trophies-by-year": psnTrophiesByYear,
   "/api/repo-copies": repoCopies,
   "/api/search": search,
