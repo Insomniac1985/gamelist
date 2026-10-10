@@ -12455,7 +12455,6 @@ html.theme-light .shelf-card-delete-action:hover {
 }
 
 .theme-editor-row,
-.theme-editor-separator,
 .theme-big-logo-row {
   grid-column: 1 / -1;
 }
@@ -12466,7 +12465,6 @@ html.theme-light .shelf-card-delete-action:hover {
 }
 
 .theme-editor-row > .settings-detail-compact,
-.theme-editor-row > .theme-image-field,
 .theme-editor-row > .theme-font-field,
 .theme-editor-row > .theme-check {
   grid-column: auto;
@@ -12492,16 +12490,8 @@ html.theme-light .shelf-card-delete-action:hover {
   --dropdown-control-height: 42px;
 }
 
-.theme-glow-row,
-.theme-icon-row,
-.theme-media-row {
+.theme-glow-row {
   grid-template-columns: repeat(2, minmax(0, 1fr));
-}
-
-.theme-editor-separator {
-  height: 1px;
-  margin: 4px 0;
-  background: rgba(255, 255, 255, 0.14);
 }
 
 .theme-big-logo-row {
@@ -12530,11 +12520,6 @@ html.theme-light .shelf-card-delete-action:hover {
 .theme-check {
   align-self: end;
   min-height: 42px;
-}
-
-.theme-image-field input[type="file"] {
-  margin-top: 6px;
-  font-size: 11px;
 }
 
 .theme-owner-table {
@@ -14783,15 +14768,12 @@ html.theme-light .finish-trophy-check input[type="checkbox"]:checked {
   .theme-gradient-color,
   .theme-extra-color,
   .theme-editor-row,
-  .theme-editor-separator,
   .theme-big-logo-row {
     grid-column: 1;
   }
 
   .theme-controls-row,
-  .theme-glow-row,
-  .theme-icon-row,
-  .theme-media-row {
+  .theme-glow-row {
     grid-template-columns: 1fr;
   }
 

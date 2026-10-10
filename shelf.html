@@ -35,7 +35,8 @@
             if (theme.mainColorReset !== false) return themes[fallbackKey].icon;
             try { return localStorage.getItem(`gamelist:tinted-icon:shelf:${main}`) || themes[fallbackKey].icon; } catch { return themes[fallbackKey].icon; }
           };
-          return { title: `${owner}'s Shelf`, icon: theme.shelfIcon || defaultIcon(), color: main, accent, gradient, extra, glow1: mix(source(theme.glowPrimary), .22), glow2: mix(source(theme.glowSecondary || "accent"), .14), background: theme.backgroundImage || "", font: fonts[theme.accentFont] || "Cascadia Code", fontKey: theme.accentFont || "", mode: theme.mode === "light" ? "light" : "dark", disableGlow: Boolean(theme.disableGlow), gradientOn: Boolean(theme.gradient), uppercaseTitles: Boolean(theme.uppercaseTitles), bigLogo: fallbackKey === "kash" || Boolean(theme.bigLogo) };
+          const icon = owner.toLowerCase() === "kash" ? themes.kash.icon : (theme.shelfIcon || defaultIcon());
+          return { title: `${owner}'s Shelf`, icon, color: main, accent, gradient, extra, glow1: mix(source(theme.glowPrimary), .22), glow2: mix(source(theme.glowSecondary || "accent"), .14), background: theme.backgroundImage || "", font: fonts[theme.accentFont] || "Cascadia Code", fontKey: theme.accentFont || "", mode: theme.mode === "light" ? "light" : "dark", disableGlow: Boolean(theme.disableGlow), gradientOn: Boolean(theme.gradient), uppercaseTitles: Boolean(theme.uppercaseTitles), bigLogo: fallbackKey === "kash" || Boolean(theme.bigLogo) };
         };
         const apply = (key, settings = {}) => {
           const themeKey = themes[key] ? key : "shabii";

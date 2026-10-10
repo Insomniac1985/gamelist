@@ -99,7 +99,11 @@ export function resolveSiteTheme(settings = {}, page = "gamelist") {
     mainColor,
     accentColor,
     accent3,
-    icon: theme[isShelf ? "shelfIcon" : "gamelistIcon"] || defaultThemeIcon(isShelf ? "shelf" : "gamelist", mainColor, theme.mainColorReset),
+    // Kash's brand marks are chosen by the configured username, not by a
+    // theme preset or any legacy custom image values.
+    icon: owner.toLowerCase() === "kash"
+      ? PRESETS.kash[isShelf ? "shelfIcon" : "gamelistIcon"]
+      : (theme[isShelf ? "shelfIcon" : "gamelistIcon"] || defaultThemeIcon(isShelf ? "shelf" : "gamelist", mainColor, theme.mainColorReset)),
     appIcon: theme.appIcon || defaultThemeIcon("app", mainColor, theme.mainColorReset),
   };
 }
@@ -255,16 +259,7 @@ function renderThemeDialog(dialog, draft, settings, page, onSave, translate = id
           <label class="settings-detail-compact"><span>${htmlEscape(translate("Glow 1"))}</span>${glowSelect("glowPrimary", draft.glowPrimary, translate)}</label>
           <label class="settings-detail-compact"><span>${htmlEscape(translate("Glow 2"))}</span>${glowSelect("glowSecondary", draft.glowSecondary, translate)}</label>
         </div>
-        <div class="theme-editor-separator" role="presentation"></div>
-        <div class="theme-editor-row theme-icon-row">
-          ${imageField("gamelistIcon", "Gamelist icon", draft.gamelistIcon, translate)}
-          ${imageField("shelfIcon", "Shelf icon", draft.shelfIcon, translate)}
-        </div>
         <label class="check-filter toggle-check theme-check theme-big-logo-row"><input name="bigLogo" type="checkbox" ${draft.bigLogo ? "checked" : ""}><span>${htmlEscape(translate("Big logo"))}</span></label>
-        <div class="theme-editor-row theme-media-row">
-          ${imageField("appIcon", "Game app icon", draft.appIcon, translate)}
-          ${imageField("backgroundImage", "Custom Background", draft.backgroundImage, translate)}
-        </div>
       </section>
       <section class="settings-section">
         <h3>${htmlEscape(translate("Custom Owner Colors"))}</h3>
@@ -293,15 +288,6 @@ function renderThemeDialog(dialog, draft, settings, page, onSave, translate = id
     const remove = event.target.closest("[data-owner-remove]");
     if (remove) remove.closest(".theme-owner-row")?.remove();
   });
-  form.querySelectorAll("[data-image-input]").forEach((input) => {
-    input.addEventListener("change", async () => {
-      const file = input.files?.[0];
-      if (!file) return;
-      const compressed = await compressImageFile(file, input.dataset.imageInput === "backgroundImage" ? 1800 : 512);
-      const text = form.querySelector(`[name="${input.dataset.imageInput}"]`);
-      if (text) text.value = compressed;
-    });
-  });
   form.addEventListener("submit", async (event) => {
     event.preventDefault();
     const nextTheme = normalizeThemeSettings({ ...settings, customTheme: readThemeForm(form, draft) });
@@ -327,16 +313,6 @@ function glowSelect(name, value, translate = identityTranslate) {
     ["extra", "Extra Color"],
   ];
   return `<select name="${name}">${options.map(([source, label]) => `<option value="${source}" ${value === source ? "selected" : ""}>${htmlEscape(translate(label))}</option>`).join("")}</select>`;
-}
-
-function imageField(name, label, value, translate = identityTranslate) {
-  return `
-    <label class="settings-detail-compact theme-image-field">
-      <span>${htmlEscape(translate(label))}</span>
-      <input name="${name}" value="${htmlEscape(value || "")}" placeholder="${htmlEscape(translate("Upload or paste URL"))}">
-      <input type="file" accept="image/*" data-image-input="${name}">
-    </label>
-  `;
 }
 
 function ownerRow(owner, translate = identityTranslate) {
@@ -371,33 +347,9 @@ function readThemeForm(form, draft) {
       glowSecondary: value("glowSecondary") || draft.glowSecondary,
       bigLogo: Boolean(form.elements.bigLogo?.checked),
       accentFont: value("accentFont"),
-      backgroundImage: value("backgroundImage"),
-      gamelistIcon: value("gamelistIcon"),
-      shelfIcon: value("shelfIcon"),
-      appIcon: value("appIcon"),
       ownerColors: ownerNames.map((input, index) => ({ name: input.value, color: ownerColors[index]?.value || "" })),
     },
   });
-}
-
-async function compressImageFile(file, maxSize) {
-  const url = URL.createObjectURL(file);
-  try {
-    const image = await new Promise((resolve, reject) => {
-      const img = new Image();
-      img.onload = () => resolve(img);
-      img.onerror = reject;
-      img.src = url;
-    });
-    const scale = Math.min(1, maxSize / Math.max(image.naturalWidth, image.naturalHeight));
-    const canvas = document.createElement("canvas");
-    canvas.width = Math.max(1, Math.round(image.naturalWidth * scale));
-    canvas.height = Math.max(1, Math.round(image.naturalHeight * scale));
-    canvas.getContext("2d").drawImage(image, 0, 0, canvas.width, canvas.height);
-    return canvas.toDataURL("image/webp", maxSize > 600 ? 0.76 : 0.82);
-  } finally {
-    URL.revokeObjectURL(url);
-  }
 }
 
 function applyOwnerStyle(ownerColors) {
