@@ -135,6 +135,8 @@ const state = {
   layout: loadLayout(),
 };
 
+let shelfEditorDirty = false;
+
 const el = {
   brandLink: document.querySelector(".brand"),
   brandVersion: document.querySelector("#brandVersion"),
@@ -374,10 +376,27 @@ function bindEvents() {
   el.detailTrophySort.addEventListener("change", renderGamelistDetailTrophyList);
   el.detailTrophyDirection.addEventListener("click", () => { state.gamelistDetailTrophyDirection = state.gamelistDetailTrophyDirection === "asc" ? "desc" : "asc"; renderGamelistDetailTrophyList(); });
 
-  el.addClose.addEventListener("click", () => closeDialog(el.addDialog));
+  el.addClose.addEventListener("click", requestShelfEditorClose);
   el.editDelete.addEventListener("click", deleteCurrentEditedGame);
-  el.addDialog.addEventListener("click", (event) => { if (event.target === el.addDialog) closeDialog(el.addDialog); });
+  el.addDialog.addEventListener("click", (event) => { if (event.target === el.addDialog) requestShelfEditorClose(); });
+  el.addDialog.addEventListener("cancel", (event) => {
+    if (!shelfEditorDirty) return;
+    event.preventDefault();
+    showShelfEditorUnsavedDialog();
+  });
   el.addForm.addEventListener("submit", saveEditor);
+  el.addForm.addEventListener("input", () => { shelfEditorDirty = true; });
+  el.addForm.addEventListener("change", () => { shelfEditorDirty = true; });
+  document.querySelector("#editorUnsavedDialog [data-editor-unsaved-cancel]")?.addEventListener("click", () => closeDialog(document.querySelector("#editorUnsavedDialog")));
+  document.querySelector("#editorUnsavedDialog [data-editor-unsaved-save]")?.addEventListener("click", () => {
+    closeDialog(document.querySelector("#editorUnsavedDialog"));
+    el.addForm.requestSubmit(el.addForm.querySelector("button[type='submit']"));
+  });
+  document.querySelector("#editorUnsavedDialog [data-editor-unsaved-discard]")?.addEventListener("click", () => {
+    shelfEditorDirty = false;
+    closeDialog(document.querySelector("#editorUnsavedDialog"));
+    closeDialog(el.addDialog);
+  });
   el.fields.platform.addEventListener("input", syncShelfEditorIcons);
   el.fields.platform.addEventListener("change", syncShelfEditorIcons);
   el.fields.country.addEventListener("change", syncShelfEditorIcons);
@@ -2113,7 +2132,20 @@ function openEditor(game = null, options = {}) {
   el.editDelete.hidden = !game;
   syncStyledSelects(el.addDialog, { activeValue: null });
   syncShelfEditorIcons();
+  shelfEditorDirty = false;
   openDialog(el.addDialog);
+}
+
+function requestShelfEditorClose() {
+  if (shelfEditorDirty) {
+    showShelfEditorUnsavedDialog();
+    return;
+  }
+  closeDialog(el.addDialog);
+}
+
+function showShelfEditorUnsavedDialog() {
+  document.querySelector("#editorUnsavedDialog")?.showModal();
 }
 
 function syncShelfDigitalEditorMode(digitalMode) {
@@ -2492,6 +2524,7 @@ async function saveEditor(event) {
   await persistShelf();
   rebuildGames();
   renderAll();
+  shelfEditorDirty = false;
   closeDialog(el.addDialog);
   if (digitalMode && state.gamelistSettings.shelfSync !== false && !game.gamelistId) await addShelfGameToGamelistNew(game);
 }
@@ -2502,6 +2535,7 @@ async function resetGame(game) {
   rebuildGames();
   renderAll();
   closeDialog(el.detailDialog);
+  shelfEditorDirty = false;
   closeDialog(el.addDialog);
 }
 
@@ -2612,6 +2646,7 @@ async function deleteGame(game) {
   rebuildGames();
   renderAll();
   closeDialog(el.detailDialog);
+  shelfEditorDirty = false;
   closeDialog(el.addDialog);
   return true;
 }
@@ -2770,7 +2805,7 @@ function settingsLayoutCard(key, index) {
   const visible = !state.layout.hidden.includes(key);
   const wire = { latestFinished: "latest-finished", kpis: "highlights", filters: "search", library: "list" }[key] || key;
   const title = tt(MODULE_NAMES[key] || key);
-  return `<article class="settings-layout-card ${visible ? "" : "is-hidden-section"}" data-layout-key="${key}"><div class="settings-wire wire-${wire}" aria-hidden="true">${Array.from({ length: 6 }, () => "<span></span>").join("")}</div><strong>${escapeHtml(title)}</strong><div class="settings-layout-actions"><button class="icon-button" type="button" data-layout-move="-1" ${index === 0 ? "disabled" : ""} title="${escapeHtml(tt("Move up"))}" aria-label="${escapeHtml(tt("Move {title} up", { title }))}">↑</button><button class="icon-button" type="button" data-layout-move="1" ${index === state.layout.order.length - 1 ? "disabled" : ""} title="${escapeHtml(tt("Move down"))}" aria-label="${escapeHtml(tt("Move {title} down", { title }))}">↓</button><label class="check-filter toggle-check settings-visible-check" title="${escapeHtml(visible ? tt("Visible") : tt("Hidden"))}"><input type="checkbox" data-layout-visible value="${key}" ${visible ? "checked" : ""}><span>${escapeHtml(visible ? tt("Show") : tt("Hide"))}</span></label></div></article>`;
+  return `<article class="settings-layout-card ${visible ? "" : "is-hidden-section"}" data-layout-key="${key}"><div class="settings-wire wire-${wire}" aria-hidden="true">${Array.from({ length: 6 }, () => "<span></span>").join("")}</div><strong>${escapeHtml(title)}</strong><div class="settings-layout-actions"><button class="icon-button" type="button" data-layout-move="-1" ${index === 0 ? "disabled" : ""} title="${escapeHtml(tt("Move up"))}" aria-label="${escapeHtml(tt("Move {title} up", { title }))}"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 19V5m-7 7 7-7 7 7"></path></svg></button><button class="icon-button" type="button" data-layout-move="1" ${index === state.layout.order.length - 1 ? "disabled" : ""} title="${escapeHtml(tt("Move down"))}" aria-label="${escapeHtml(tt("Move {title} down", { title }))}"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14m-7-7 7 7 7-7"></path></svg></button><label class="check-filter toggle-check settings-visible-check" title="${escapeHtml(visible ? tt("Visible") : tt("Hidden"))}"><input type="checkbox" data-layout-visible value="${key}" ${visible ? "checked" : ""}><span>${escapeHtml(visible ? tt("Show") : tt("Hide"))}</span></label></div></article>`;
 }
 
 function settingsSelectCard(type, title, id, options) {
@@ -5002,7 +5037,7 @@ function currencyIcon() { const currency = normalizePriceSettings(state.gamelist
 function trophyIcon() { return `<svg class="trophy-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 4h8v4a4 4 0 0 1-8 0V4Z"></path><path d="M8 6H5a3 3 0 0 0 3 3"></path><path d="M16 6h3a3 3 0 0 1-3 3"></path><path d="M12 12v4"></path><path d="M9 20h6"></path><path d="M10 16h4v4h-4z"></path></svg>`; }
 function coopIcon() { return `<svg class="coop-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="8" cy="8" r="3"></circle><circle cx="16" cy="8" r="3"></circle><path d="M2.8 19c.4-4 2.1-6 5.2-6s4.8 2 5.2 6"></path><path d="M10.8 19c.4-4 2.1-6 5.2-6s4.8 2 5.2 6"></path></svg>`; }
 function carouselArrowIcon(direction = "right") { return `<svg class="sort-arrow-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="${direction === "left" ? "M15.5 5.5 9 12l6.5 6.5" : "M8.5 5.5 15 12l-6.5 6.5"}"></path></svg>`; }
-function sortArrowIcon(desc = false) { return `<svg class="sort-arrow-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="${desc ? "M12 3.5v17" : "M12 20.5v-17"}"></path><path d="${desc ? "M6.5 15l5.5 5.5 5.5-5.5" : "M6.5 9l5.5-5.5L17.5 9"}"></path></svg>`; }
+function sortArrowIcon(desc = false) { return `<svg class="sort-arrow-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="${desc ? "M12 5v14m-7-7 7 7 7-7" : "M12 19V5m-7 7 7-7 7 7"}"></path></svg>`; }
 function linesIcon() { return `<svg class="view-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 7h14M5 12h14M5 17h14"></path></svg>`; }
 function gridIcon() { return `<svg class="view-icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="4.5" y="4.5" width="5.5" height="5.5"></rect><rect x="14" y="4.5" width="5.5" height="5.5"></rect><rect x="4.5" y="14" width="5.5" height="5.5"></rect><rect x="14" y="14" width="5.5" height="5.5"></rect></svg>`; }
 function ownerBadge(owner) { return `<span class="owner-pill ${escapeHtml(ownerColorClass(owner))}">${escapeHtml(owner)}</span>`; }

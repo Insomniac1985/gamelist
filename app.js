@@ -226,6 +226,11 @@ function syncSharedViewModeFromStorage() {
   render();
 }
 
+let settingsDirty = false;
+let settingsSnapshot = null;
+let settingsExitDestination = "";
+let gameEditorDirty = false;
+
 const state = {
   games: [],
   psnActivity: { achievements: [], games: [], platinums: [], sourceUrl: "" },
@@ -405,6 +410,7 @@ const el = {
   preorderStoreFieldIcon: document.querySelector(".preorder-store-field-icon"),
   preferredStoreFieldIcon: document.querySelector(".preferred-store-field-icon"),
   settingsLayoutList: document.querySelector("#settingsLayoutList"),
+  settingsPreferenceRow: document.querySelector("#settingsPreferenceRow"),
   settingsPsnUser: document.querySelector("#settingsPsnUser"),
   settingsIgdbIntro: document.querySelector("#settingsIgdbIntro"),
   settingsIgdbSteps: document.querySelector("#settingsIgdbSteps"),
@@ -459,6 +465,7 @@ const el = {
   settingsThemeEditor: document.querySelector("#settingsThemeEditor"),
   settingsDefaultOwner: document.querySelector("#settingsDefaultOwner"),
   settingsDevFeatures: document.querySelector("#settingsDevFeatures"),
+  settingsDevHome: document.querySelector("#settingsDevHome"),
   detailTitle: document.querySelector("#detailTitle"),
   detailStudio: document.querySelector("#detailStudio"),
   detailMeta: document.querySelector("#detailMeta"),
@@ -959,16 +966,7 @@ function bindEvents() {
     });
   });
   el.settingsDialog?.querySelectorAll("[data-settings-back]").forEach((button) => {
-    button.addEventListener("click", () => {
-      el.settingsDialog.querySelectorAll("[data-settings-window]").forEach((section) => { section.hidden = true; });
-      const home = document.querySelector("#settingsHome");
-      if (home) home.hidden = false;
-      el.settingsDialog.classList.remove("has-settings-window");
-      document.querySelector("#settingsDialogEyebrow").textContent = "Site settings";
-      document.querySelector("#settingsDialogTitle").hidden = false;
-      document.querySelector("#settingsDialogBackTitle").hidden = true;
-      el.settingsDialog.querySelector(".settings-modal")?.scrollTo({ top: 0 });
-    });
+    button.addEventListener("click", () => requestSettingsExit("back"));
   });
   el.authCloseButton?.addEventListener("click", () => el.authDialog.close("cancel"));
   el.authCancelButton?.addEventListener("click", () => el.authDialog.close("cancel"));
@@ -1159,11 +1157,40 @@ function bindEvents() {
   el.dialog.addEventListener("click", (event) => {
     if (event.target === el.dialog) event.preventDefault();
   });
-  el.settingsCloseButton?.addEventListener("click", () => el.settingsDialog.close());
+  el.settingsCloseButton?.addEventListener("click", () => requestSettingsExit("close"));
   el.settingsDialog?.addEventListener("click", (event) => {
-    if (event.target === el.settingsDialog) el.settingsDialog.close();
+    if (event.target === el.settingsDialog) {
+      event.preventDefault();
+      requestSettingsExit("close");
+    }
+  });
+  el.settingsDialog?.addEventListener("cancel", (event) => {
+    event.preventDefault();
+    requestSettingsExit("close");
   });
   el.settingsDialog?.addEventListener("close", syncScrollLock);
+  el.settingsForm?.addEventListener("input", () => { settingsDirty = true; });
+  el.settingsForm?.addEventListener("change", () => { settingsDirty = true; });
+  el.settingsForm?.addEventListener("click", (event) => {
+    if (event.target.closest("[data-layout-move], [data-owner-add], [data-owner-remove]")) settingsDirty = true;
+  });
+  document.querySelector("#settingsUnsavedDialog")?.querySelector("[data-settings-unsaved-cancel]")?.addEventListener("click", () => {
+    document.querySelector("#settingsUnsavedDialog").close();
+    settingsExitDestination = "";
+  });
+  document.querySelector("#settingsUnsavedDialog")?.querySelector("[data-settings-unsaved-save]")?.addEventListener("click", async () => {
+    const destination = settingsExitDestination;
+    document.querySelector("#settingsUnsavedDialog").close();
+    settingsExitDestination = "";
+    await saveSettingsFromForm({ preventDefault() {} }, { close: destination === "close" });
+  });
+  document.querySelector("#settingsUnsavedDialog")?.querySelector("[data-settings-unsaved-discard]")?.addEventListener("click", () => {
+    const destination = settingsExitDestination;
+    document.querySelector("#settingsUnsavedDialog").close();
+    settingsExitDestination = "";
+    discardSettingsChanges(destination);
+  });
+  document.querySelector("#settingsUnsavedDialog")?.addEventListener("cancel", () => { settingsExitDestination = ""; });
   el.settingsIgdbOpen?.addEventListener("click", () => {
     el.settingsIgdbIntro.hidden = false;
     el.settingsIgdbSteps.hidden = false;
@@ -1282,7 +1309,29 @@ function bindEvents() {
   el.fields.replayCount.addEventListener("input", syncReplaySection);
   el.form.addEventListener("submit", saveFromForm);
   el.deleteButton.addEventListener("click", deleteCurrentGame);
-  el.closeDialogButton.addEventListener("click", () => el.dialog.close());
+  el.closeDialogButton.addEventListener("click", requestGameEditorClose);
+  el.form.addEventListener("input", () => { gameEditorDirty = true; });
+  el.form.addEventListener("change", () => { gameEditorDirty = true; });
+  el.dialog.addEventListener("cancel", (event) => {
+    if (!gameEditorDirty) return;
+    event.preventDefault();
+    showGameEditorUnsavedDialog();
+  });
+  el.dialog.addEventListener("click", (event) => {
+    if (event.target !== el.dialog) return;
+    event.preventDefault();
+    if (gameEditorDirty) showGameEditorUnsavedDialog();
+  });
+  document.querySelector("#editorUnsavedDialog [data-editor-unsaved-cancel]")?.addEventListener("click", () => document.querySelector("#editorUnsavedDialog").close());
+  document.querySelector("#editorUnsavedDialog [data-editor-unsaved-save]")?.addEventListener("click", () => {
+    document.querySelector("#editorUnsavedDialog").close();
+    el.form.requestSubmit(el.form.querySelector("button[type='submit']"));
+  });
+  document.querySelector("#editorUnsavedDialog [data-editor-unsaved-discard]")?.addEventListener("click", () => {
+    gameEditorDirty = false;
+    document.querySelector("#editorUnsavedDialog").close();
+    el.dialog.close();
+  });
   el.lookupButton.addEventListener("click", lookupGame);
   el.lookupInput.addEventListener("input", queueTitleLookup);
   el.lookupInput.addEventListener("keydown", (event) => {
@@ -1900,7 +1949,7 @@ function applyPageOrder() {
 }
 
 function openSettingsDialog() {
-  if (!state.canEdit || window.matchMedia("(max-width: 760px)").matches) return;
+  if (!state.canEdit) return;
   el.settingsDialog.querySelectorAll("[data-settings-window]").forEach((section) => { section.hidden = true; });
   const settingsHome = document.querySelector("#settingsHome");
   if (settingsHome) settingsHome.hidden = false;
@@ -1910,6 +1959,8 @@ function openSettingsDialog() {
   document.querySelector("#settingsDialogTitle").hidden = false;
   document.querySelector("#settingsDialogBackTitle").hidden = true;
   renderSettingsDialog();
+  settingsDirty = false;
+  settingsSnapshot = JSON.parse(JSON.stringify(state.settings));
   el.settingsDialog.showModal();
   refreshIgdbConnectionStatus();
   refreshNintendoConnectionStatus();
@@ -1917,6 +1968,47 @@ function openSettingsDialog() {
   refreshSteamApiStatus();
   refreshXboxApiStatus();
   syncScrollLock();
+}
+
+function requestSettingsExit(destination) {
+  if (!settingsDirty) {
+    finishSettingsExit(destination);
+    return;
+  }
+  settingsExitDestination = destination;
+  const saveButton = document.querySelector("[data-settings-unsaved-save]");
+  const discardButton = document.querySelector("[data-settings-unsaved-discard]");
+  if (saveButton) saveButton.textContent = destination === "back" ? "Go back and save" : "Close and save";
+  if (discardButton) discardButton.textContent = destination === "back" ? "Go back without saving" : "Close without saving";
+  document.querySelector("#settingsUnsavedDialog")?.showModal();
+}
+
+function finishSettingsExit(destination) {
+  if (destination === "close") {
+    el.settingsDialog.close();
+    return;
+  }
+  el.settingsDialog.querySelectorAll("[data-settings-window]").forEach((section) => { section.hidden = true; });
+  const home = document.querySelector("#settingsHome");
+  if (home) home.hidden = false;
+  el.settingsDialog.classList.remove("has-settings-window");
+  document.querySelector("#settingsDialogEyebrow").textContent = "Site settings";
+  document.querySelector("#settingsDialogTitle").hidden = false;
+  document.querySelector("#settingsDialogBackTitle").hidden = true;
+  el.settingsDialog.querySelector(".settings-modal")?.scrollTo({ top: 0 });
+}
+
+function discardSettingsChanges(destination) {
+  if (settingsSnapshot) state.settings = JSON.parse(JSON.stringify(settingsSnapshot));
+  state.completedStreamMode = streamFilterPriorityForSettings(state.settings);
+  settingsDirty = false;
+  render();
+  if (destination === "close") {
+    el.settingsDialog.close();
+    return;
+  }
+  renderSettingsDialog();
+  finishSettingsExit("back");
 }
 
 function setIgdbConnectionState() {
@@ -2492,11 +2584,19 @@ function renderSettingsDialog() {
     settingsLayoutItem("playing", -1, { fixed: true }),
     settingsLayoutItem("latestFinished", -1, { fixed: true }),
     ...state.settings.pageOrder.map((key) => settingsLayoutItem(key, pageIndex.get(key) ?? 0)),
-    `<div class="settings-preference-separator" role="presentation"></div><div class="settings-preference-row">${settingsDefaultOrderItem()}${settingsWeekStartItem()}${settingsShelfSyncItem()}${settingsPageSwitchItem()}${settingsPrioritizeFinishedStreamItem()}${settingsHideNonStreamPlayingItem()}</div>`,
+  ].join("");
+  el.settingsPreferenceRow.innerHTML = [
+    settingsDefaultOrderItem(),
+    settingsWeekStartItem(),
+    settingsShelfSyncItem(),
+    settingsPageSwitchItem(),
+    settingsPrioritizeFinishedStreamItem(),
+    settingsHideNonStreamPlayingItem(),
   ].join("");
   el.settingsThemeEditor.innerHTML = themeSettingsContent(state.settings, tt);
   bindThemeSettingsContent(el.settingsThemeEditor, tt);
   document.querySelector("#settingsCsvData").innerHTML = settingsCsvDataItem();
+  if (el.settingsDevHome) el.settingsDevHome.hidden = !isShabiiMainOwner();
   if (el.settingsDevFeatures) el.settingsDevFeatures.innerHTML = settingsDevFeaturesItem("gamelist");
   el.settingsStores.innerHTML = STORE_OPTIONS.map((store) => `
     <label class="check-filter toggle-check settings-store-check">
@@ -2524,10 +2624,10 @@ function renderSettingsDialog() {
       renderSettingsDialog();
     });
   });
-  el.settingsLayoutList.querySelector("[data-default-order]")?.addEventListener("change", (event) => {
+  el.settingsPreferenceRow.querySelector("[data-default-order]")?.addEventListener("change", (event) => {
     state.settings.defaultOrder = event.target.value;
   });
-  el.settingsLayoutList.querySelector("[data-week-start]")?.addEventListener("change", (event) => {
+  el.settingsPreferenceRow.querySelector("[data-week-start]")?.addEventListener("change", (event) => {
     state.settings.weekStart = normalizeWeekStart(event.target.value);
     renderReleaseCalendar();
   });
@@ -3193,7 +3293,7 @@ async function importGameOfTheYearCsv() {
   }
 }
 
-async function saveSettingsFromForm(event) {
+async function saveSettingsFromForm(event, { close = true } = {}) {
   event.preventDefault();
   const previousCurrency = state.settings.currency;
   const previousDefaultOrder = state.settings.defaultOrder;
@@ -3208,7 +3308,7 @@ async function saveSettingsFromForm(event) {
     hiddenSections: LAYOUT_SECTION_KEYS.filter((key) => !visibleSections.has(key)),
     theme: "custom",
     customTheme,
-    defaultOrder: el.settingsLayoutList.querySelector("[data-default-order]")?.value || state.settings.defaultOrder,
+    defaultOrder: el.settingsPreferenceRow.querySelector("[data-default-order]")?.value || state.settings.defaultOrder,
     psnUser: el.settingsPsnUser.value,
     microsoftUser: el.settingsMicrosoftUser.value,
     steamUser: el.settingsSteamUser.value,
@@ -3218,19 +3318,21 @@ async function saveSettingsFromForm(event) {
     language: el.settingsLanguage.value,
     stores,
     defaultOwner: el.settingsDefaultOwner.value,
-    shelfSync: Boolean(el.settingsLayoutList.querySelector("[data-shelf-sync]")?.checked),
-    hidePageSwitch: el.settingsLayoutList.querySelector("[data-hide-page-switch]")?.checked === true,
-    streamFilterPriority: normalizeStreamFilterMode(el.settingsLayoutList.querySelector("[data-stream-filter-priority]")?.value),
-    prioritizeFinishedStream: normalizeStreamFilterMode(el.settingsLayoutList.querySelector("[data-stream-filter-priority]")?.value) === "stream",
-    hideNonStreamPlaying: el.settingsLayoutList.querySelector("[data-hide-non-stream-playing]")?.checked === true,
-    weekStart: normalizeWeekStart(el.settingsLayoutList.querySelector("[data-week-start]")?.value || state.settings.weekStart),
+    shelfSync: Boolean(el.settingsPreferenceRow.querySelector("[data-shelf-sync]")?.checked),
+    hidePageSwitch: el.settingsPreferenceRow.querySelector("[data-hide-page-switch]")?.checked === true,
+    streamFilterPriority: normalizeStreamFilterMode(el.settingsPreferenceRow.querySelector("[data-stream-filter-priority]")?.value),
+    prioritizeFinishedStream: normalizeStreamFilterMode(el.settingsPreferenceRow.querySelector("[data-stream-filter-priority]")?.value) === "stream",
+    hideNonStreamPlaying: el.settingsPreferenceRow.querySelector("[data-hide-non-stream-playing]")?.checked === true,
+    weekStart: normalizeWeekStart(el.settingsPreferenceRow.querySelector("[data-week-start]")?.value || state.settings.weekStart),
     forceCacheOnLoad: document.querySelector("#settingsForceCacheOnLoad")?.checked === true,
     gotyAlwaysShow: document.querySelector("#settingsGotyAlwaysShow")?.checked === true,
   });
   state.completedStreamMode = streamFilterPriorityForSettings(state.settings);
   persistLocalSettings();
   await persistCloud();
-  el.settingsDialog.close();
+  settingsDirty = false;
+  settingsSnapshot = JSON.parse(JSON.stringify(state.settings));
+  if (close) el.settingsDialog.close();
   state.cardTrophies = {};
   if (previousDefaultOrder !== state.settings.defaultOrder) {
     applyDefaultOrder(state.settings.defaultOrder);
@@ -3240,6 +3342,7 @@ async function saveSettingsFromForm(event) {
   render();
   syncPagePullTransition();
   if (previousCurrency !== state.settings.currency) await refreshAllPrices();
+  if (!close) finishSettingsExit("back");
 }
 
 function renderModeToggle(button, mode) {
@@ -10426,8 +10529,7 @@ function gridIcon() {
 function sortArrowIcon(desc = false) {
   return `
     <svg class="sort-arrow-icon" viewBox="0 0 24 24" aria-hidden="true">
-      <path d="${desc ? "M12 3.5v17" : "M12 20.5v-17"}"></path>
-      <path d="${desc ? "M6.5 15l5.5 5.5 5.5-5.5" : "M6.5 9l5.5-5.5L17.5 9"}"></path>
+      <path d="${desc ? "M12 5v14m-7-7 7 7 7-7" : "M12 19V5m-7 7 7-7 7 7"}"></path>
     </svg>
   `;
 }
@@ -11657,6 +11759,7 @@ async function openEditor(id = "") {
   syncDialogPriceVisibility();
   syncStyledSelect(el.fields.section, { activeValue: null });
   syncNewGameRequiredHighlights();
+  gameEditorDirty = false;
   pauseAllPlayingTrailers();
   el.dialog.showModal();
   syncScrollLock();
@@ -11669,6 +11772,7 @@ async function addGameFromSearch(query, section = "wanted") {
   el.lookupInput.value = title;
   el.fields.title.value = title;
   if (["wanted", "released", "backlog"].includes(section)) el.fields.section.value = section;
+  gameEditorDirty = true;
   syncDialogPriceVisibility();
   syncNewGameRequiredHighlights();
   queueTitleLookup();
@@ -11728,12 +11832,25 @@ async function saveFromForm(event) {
   event.preventDefault();
   const existing = state.games.find((game) => game.id === el.fields.id.value);
   const game = await saveCurrentFormGame();
+  gameEditorDirty = false;
   state.finishSetupId = "";
   el.dialog.close();
   if (shouldCreatePreorderCalendarEvent(existing, game)) {
     await createPreorderCalendarEvent(game);
   }
   refreshPricesForGame(game.id, { silent: true });
+}
+
+function requestGameEditorClose() {
+  if (gameEditorDirty) {
+    showGameEditorUnsavedDialog();
+    return;
+  }
+  el.dialog.close();
+}
+
+function showGameEditorUnsavedDialog() {
+  document.querySelector("#editorUnsavedDialog")?.showModal();
 }
 
 async function saveCurrentFormGame() {
@@ -12122,7 +12239,10 @@ function restoreCompletedToBacklog(id) {
 }
 
 async function deleteCurrentGame() {
-  if (state.editingId && await deleteGame(state.editingId)) el.dialog.close();
+  if (state.editingId && await deleteGame(state.editingId)) {
+    gameEditorDirty = false;
+    el.dialog.close();
+  }
 }
 
 async function deleteGame(id) {
@@ -12705,6 +12825,7 @@ async function refreshCurrentPrices() {
   const title = el.fields.title.value.trim();
   if (!title) return;
   const savedGame = await saveCurrentFormGame();
+  gameEditorDirty = false;
   if (!shouldFetchPricesForGame(savedGame)) return;
   el.pricesButton.textContent = tt("Refreshing...");
   showToast(tt("Fetching prices..."));
