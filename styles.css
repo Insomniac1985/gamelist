@@ -7776,6 +7776,8 @@ a.time-pill {
 }
 
 .card-actions {
+  grid-column: 1 / -1;
+  align-self: end;
   margin-top: 10px;
   padding-top: 10px;
 }
@@ -18363,9 +18365,12 @@ html.theme-light #shelfCompletedDialog > .platinum-modal {
 }
 
 .game-card.glass:not(.playing-card) {
-  background: var(--grid-texture), color-mix(in srgb, var(--panel) 72%, transparent);
-  background-size: 22px 22px, auto;
-  background-position: var(--grid-x) var(--grid-y), center;
+  background:
+    linear-gradient(rgba(255, 255, 255, 0.025), rgba(255, 255, 255, 0.025)),
+    var(--grid-texture),
+    color-mix(in srgb, var(--panel) 72%, transparent);
+  background-size: auto, 22px 22px, auto;
+  background-position: center, var(--grid-x) var(--grid-y), center;
   backdrop-filter: blur(8px) saturate(1.08);
   -webkit-backdrop-filter: blur(8px) saturate(1.08);
 }
@@ -18392,6 +18397,14 @@ body:not(.shelf-page) #wanted .price-refresh-action {
   background-size: 22px 22px;
   background-position: var(--grid-x) var(--grid-y);
   pointer-events: none;
+}
+
+.playing-finished-game::before {
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.025), rgba(255, 255, 255, 0.025)),
+    var(--grid-texture);
+  background-size: auto, 22px 22px;
+  background-position: center, var(--grid-x) var(--grid-y);
 }
 
 .completed-row > *,
