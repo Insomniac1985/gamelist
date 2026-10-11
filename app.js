@@ -86,6 +86,7 @@ const DEFAULT_SETTINGS = {
   storeSettingsVersion: 2,
   defaultOwner: "User",
   shelfSync: true,
+  shelfSyncWishlist: true,
   hidePageSwitch: false,
   streamFilterPriority: "all",
   prioritizeFinishedStream: false,
@@ -1824,6 +1825,7 @@ function normalizeSettings(settings = {}) {
     storeSettingsVersion: 2,
     defaultOwner: cleanOwnerLabel(settings.defaultOwner) || DEFAULT_SETTINGS.defaultOwner,
     shelfSync: settings.shelfSync !== false,
+    shelfSyncWishlist: settings.shelfSyncWishlist !== false,
     hidePageSwitch: settings.hidePageSwitch === true,
     streamFilterPriority: streamFilterPriorityForSettings(settings),
     prioritizeFinishedStream: streamFilterPriorityForSettings(settings) === "stream",
@@ -8818,6 +8820,9 @@ function cardFor(game, options = {}) {
   const displaySection = options.displaySection || game.section;
   const neutralReleaseCard = releaseDialog && Boolean(game.playing);
   const card = createGameCardShell(document);
+  if (game.playing && !neutralReleaseCard) {
+    card.querySelector(".game-main")?.append(card.querySelector(".card-actions"));
+  }
   const statuses = gameStatuses(game);
   const owners = ownerTags(game);
   card.dataset.id = game.id;
@@ -8828,6 +8833,7 @@ function cardFor(game, options = {}) {
   card.classList.toggle("playing-card", Boolean(game.playing) && !neutralReleaseCard);
   card.classList.toggle("stream-card", Boolean(game.stream));
   card.classList.toggle("completed-trophy-card", Boolean(game.platinum));
+  card.classList.toggle("has-rating", ratingScoreValue(game) != null);
   card.classList.toggle("calendar-completed-card", releaseDialog && Boolean(game.platinum));
   const trailer = card.querySelector(".card-trailer");
   const trailerUrl = !neutralReleaseCard && shouldShowCardTrailer(game) ? trailerEmbedUrl(game.trailerUrl) : "";
@@ -8864,7 +8870,7 @@ function cardFor(game, options = {}) {
   card.querySelector(".meta").innerHTML = metaFor(game, {
     includePsn: neutralReleaseCard || !game.playing,
     includeCalendarState: releaseDialog,
-  }).join("");
+  }).join("") + ratingScoreBadge(game);
   const playDates = card.querySelector(".play-dates");
   playDates.innerHTML = playDatesFor(game, { includePastRelease: Boolean(options.includePastRelease), includeRelease: !releaseDialog, includePreorder: true, includeCalendarState: releaseDialog }).join("");
   playDates.hidden = !playDates.innerHTML;
@@ -8894,8 +8900,8 @@ function cardFor(game, options = {}) {
   const deleteAction = card.querySelector(".delete-action");
   if (priceRefreshAction) {
     priceRefreshAction.innerHTML = currencyIcon();
-    priceRefreshAction.title = tt("Prices");
-    priceRefreshAction.setAttribute("aria-label", tt("Prices"));
+    priceRefreshAction.title = tt("Refresh Prices");
+    priceRefreshAction.setAttribute("aria-label", tt("Refresh Prices"));
   }
   if (boughtAction) boughtAction.textContent = tt("Backlog");
   if (completeAction) completeAction.textContent = tt("Finished");

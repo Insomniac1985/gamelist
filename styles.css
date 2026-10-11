@@ -5040,6 +5040,10 @@ body[data-mobile-section="upcoming"] .column:not(#upcoming) {
   gap: 8px;
 }
 
+.card-list:not(.list-view) .game-card.has-rating {
+  min-height: 260px;
+}
+
 .game-row {
   position: relative;
   display: grid;
@@ -5715,6 +5719,8 @@ body.theme-kash
   background:
     linear-gradient(135deg, rgba(255, 255, 255, 0.16), transparent 24%),
     linear-gradient(180deg, transparent 58%, rgba(0, 0, 0, 0.38));
+  background-size: auto, auto;
+  background-position: center, center;
   opacity: 0.78;
 }
 
@@ -7772,8 +7778,19 @@ a.time-pill {
 }
 
 .card-actions {
+  grid-column: 1 / -1;
+  align-self: end;
   margin-top: 10px;
   padding-top: 10px;
+}
+
+.game-card:not(.playing-card) > .card-actions {
+  justify-self: start;
+  width: max-content;
+  max-width: 100%;
+  flex-direction: row;
+  justify-content: flex-start;
+  flex-wrap: wrap;
 }
 
 .icon-button,
@@ -8371,6 +8388,10 @@ body:not(.can-edit) .game-card:focus-within .edit-action {
 
 .completed-list.list-view {
   grid-template-columns: 1fr;
+}
+
+.completed-list:not(.list-view) .completed-row:has(.rating-score-pill) {
+  min-height: 122px;
 }
 
 #completedCount {
@@ -10286,6 +10307,28 @@ body.theme-kash .playing-finished-game.completed-trophy-card:hover {
     0 12px 28px rgba(247, 223, 105, 0.1) !important;
 }
 
+.completed-row.completed-trophy-card,
+.completed-row.completed-trophy-card:hover,
+.completed-row.stream-card.completed-trophy-card,
+.completed-row.stream-card.completed-trophy-card:hover,
+.playing-finished-game.completed-trophy-card,
+.playing-finished-game.completed-trophy-card:hover,
+body.theme-kash .completed-row.completed-trophy-card,
+body.theme-kash .completed-row.completed-trophy-card:hover,
+body.theme-kash .completed-row.stream-card.completed-trophy-card,
+body.theme-kash .completed-row.stream-card.completed-trophy-card:hover,
+body.theme-kash .playing-finished-game.completed-trophy-card,
+body.theme-kash .playing-finished-game.completed-trophy-card:hover {
+  background:
+    linear-gradient(
+      135deg,
+      rgba(247, 223, 105, 0.16),
+      rgba(255, 255, 255, 0.055) 48%,
+      rgba(247, 223, 105, 0.08)
+    ),
+    rgba(255, 255, 255, 0.05) !important;
+}
+
 .completed-trophy-card .psn-progress-pill {
   color: #fff6bc;
   background:
@@ -10846,7 +10889,7 @@ dialog {
 
 @media (min-width: 761px) {
   #updatesDialog {
-    width: min(760px, calc(100vw - 64px));
+    width: min(920px, calc(100vw - 64px));
   }
 
   .updates-modal {
@@ -11119,6 +11162,15 @@ body.dialog-open .toolbar {
   width: min(480px, calc(100vw - 24px));
   margin: auto;
 }
+.settings-unsaved-modal,
+.unsaved-edit-modal {
+  background: var(--grid-fade), var(--grid-texture), var(--panel-dark);
+  background-size: auto, 22px 22px, 22px 22px, auto;
+  background-position: center, var(--grid-x) var(--grid-y), var(--grid-x) var(--grid-y), center;
+  backdrop-filter: blur(8px) saturate(1.08);
+  -webkit-backdrop-filter: blur(8px) saturate(1.08);
+}
+
 .settings-unsaved-modal {
   display: grid;
   gap: 16px;
@@ -12944,6 +12996,20 @@ html.theme-light .playing-finished-game.completed-trophy-card:hover {
     0 12px 28px rgba(154, 106, 0, 0.1) !important;
 }
 
+html.theme-light .completed-row.completed-trophy-card,
+html.theme-light .completed-row.completed-trophy-card:hover,
+html.theme-light .completed-row.stream-card.completed-trophy-card,
+html.theme-light .completed-row.stream-card.completed-trophy-card:hover,
+html.theme-light .playing-finished-game.completed-trophy-card,
+html.theme-light .playing-finished-game.completed-trophy-card:hover {
+  background:
+    linear-gradient(
+      135deg,
+      rgba(255, 237, 146, 0.2),
+      rgba(214, 224, 237, 0.96)
+    ) !important;
+}
+
 html.theme-light .toolbar,
 html.theme-light .settings-toolbar,
 html.theme-light .search-panel,
@@ -14369,10 +14435,6 @@ body.theme-kash
   display: none;
 }
 
-.platinum-art-layer {
-  display: none;
-}
-
 .platinum-card {
   position: relative;
   display: grid;
@@ -14384,14 +14446,10 @@ body.theme-kash
   padding: 10px;
   color: var(--text);
   text-decoration: none;
-  background: var(--grid-fade), var(--grid-texture), color-mix(in srgb, var(--panel-dark) 68%, transparent);
-  background-size: auto, 22px 22px, auto;
-  background-position: center, var(--grid-x) var(--grid-y), center;
-  border: 1px solid var(--line);
+  background: rgba(229, 232, 255, 0.08);
+  border: 1px solid rgba(229, 232, 255, 0.24);
   border-radius: 7px;
   overflow: visible;
-  backdrop-filter: blur(8px) saturate(1.08);
-  -webkit-backdrop-filter: blur(8px) saturate(1.08);
   transition:
     border-color 160ms ease,
     background 160ms ease,
@@ -14782,7 +14840,7 @@ body.theme-kash
 .settings-page-toggle-row {
   grid-column: 1 / -1;
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 10px;
   margin-top: 2px;
 }
@@ -18290,8 +18348,7 @@ body.auth-checking #mobileDockSettings[aria-busy="true"] {
     box-shadow: 0 3px 24px color-mix(in srgb, var(--accent) 32%, transparent);
   }
 
-  .mobile-action-dock:has(.mobile-dock-action:not(#mobileDockAdd):active) #mobileDockAdd:not(:active),
-  .mobile-action-dock:has(.mobile-dock-action:not(#mobileDockAdd):focus-visible) #mobileDockAdd:not(:focus-visible) {
+  .mobile-action-dock:has(.mobile-dock-action:not(#mobileDockAdd):active) #mobileDockAdd:not(:active) {
     background: transparent;
     box-shadow: none;
   }
@@ -18353,3 +18410,60 @@ html.theme-light #shelfCompletedDialog > .platinum-modal {
 #gameDialog.is-new-game.needs-stream-check .stream-check span {
   color: color-mix(in srgb, var(--accent) 82%, #fff);
 }
+/* Keep game cards on both pages consistent with the translucent window panels. */
+.game-card.has-art:not(.playing-card)::before {
+  display: none !important;
+}
+
+.game-card.glass:not(.playing-card) {
+  background:
+    linear-gradient(rgba(255, 255, 255, 0.025), rgba(255, 255, 255, 0.025)),
+    var(--grid-texture),
+    color-mix(in srgb, var(--panel) 72%, transparent);
+  background-size: auto, 22px 22px, auto;
+  background-position: center, var(--grid-x) var(--grid-y), center;
+  backdrop-filter: blur(8px) saturate(1.08);
+  -webkit-backdrop-filter: blur(8px) saturate(1.08);
+}
+body:not(.shelf-page) #upcoming .price-refresh-action,
+body:not(.shelf-page) #wanted .price-refresh-action {
+  display: inline-flex !important;
+}
+.completed-row,
+.history-row,
+.playing-finished-game {
+  position: relative;
+  isolation: isolate;
+}
+
+.completed-row::before,
+.history-row::before,
+.playing-finished-game::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  border-radius: inherit;
+  background-image: var(--grid-texture);
+  background-size: 22px 22px;
+  background-position: var(--grid-x) var(--grid-y);
+  pointer-events: none;
+}
+
+.playing-finished-game::before {
+  background-image: linear-gradient(rgba(255, 255, 255, 0.025), rgba(255, 255, 255, 0.025));
+  background-size: auto;
+  background-position: center;
+}
+
+.completed-row::before {
+  background-image: none;
+}
+
+.completed-row > *,
+.history-row > *,
+.playing-finished-game > * {
+  position: relative;
+  z-index: 1;
+}
+
