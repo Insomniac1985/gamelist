@@ -9,6 +9,13 @@
     <link rel="icon" type="image/png" href="assets/Icon_shelf.png">
     <style>html.theme-booting:not(.from-pull-navigation) body{visibility:hidden}</style>
     <script>
+      if ("serviceWorker" in navigator) {
+        const hadController = Boolean(navigator.serviceWorker.controller);
+        if (hadController) navigator.serviceWorker.addEventListener("controllerchange", () => window.location.reload(), { once: true });
+        navigator.serviceWorker.register("/service-worker.js").catch(() => {});
+      }
+    </script>
+    <script>
       (() => {
         const root = document.documentElement;
         if (new URLSearchParams(location.search).get("pull") === "1") {

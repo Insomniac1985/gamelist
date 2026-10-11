@@ -7717,6 +7717,7 @@ a.time-pill {
   display: flex;
   flex: 0 0 auto;
   align-items: center;
+  align-self: center;
   flex-flow: row nowrap;
   gap: 5px;
   width: auto;
@@ -7727,9 +7728,19 @@ a.time-pill {
 }
 
 .game-card.has-price-footer .card-actions .bought-action {
+  order: 3;
+  height: 34px;
   min-height: 34px;
   padding: 6px 9px;
   font-size: 13px;
+}
+
+.game-card.has-price-footer .card-actions .price-refresh-action {
+  order: 2;
+}
+
+.game-card.has-price-footer .card-actions .delete-action {
+  order: 1;
 }
 
 .game-card.has-price-footer .card-actions .icon-only-button {
@@ -8461,6 +8472,32 @@ body:not(.can-edit) .game-card:focus-within .edit-action {
   min-width: 0;
 }
 
+@media (min-width: 761px) and (hover: hover) and (pointer: fine) {
+  .card-list:not(.list-view) .game-card .edit-action,
+  .completed-list:not(.list-view) .completed-edit-action,
+  .shelf-grid:not(.list-view) .game-card .edit-action {
+    opacity: 0;
+    pointer-events: none;
+    transform: translateY(-2px);
+    transition:
+      opacity 140ms ease,
+      transform 140ms ease,
+      background 140ms ease,
+      border-color 140ms ease;
+  }
+
+  .card-list:not(.list-view) .game-card:hover .edit-action,
+  .card-list:not(.list-view) .game-card:focus-within .edit-action,
+  .completed-list:not(.list-view) .completed-row:hover .completed-edit-action,
+  .completed-list:not(.list-view) .completed-row:focus-within .completed-edit-action,
+  .shelf-grid:not(.list-view) .game-card:hover .edit-action,
+  .shelf-grid:not(.list-view) .game-card:focus-within .edit-action {
+    opacity: 1;
+    pointer-events: auto;
+    transform: translateY(0);
+  }
+}
+
 .completed-item .completed-row {
   flex: 1 1 auto;
   height: auto;
@@ -8480,9 +8517,9 @@ body:not(.can-edit) .game-card:focus-within .edit-action {
 }
 
 .completed-rating-item {
-  display: flex;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
   align-items: center;
-  justify-content: space-between;
   gap: 5px;
   min-width: 0;
   color: var(--dim);
@@ -8496,11 +8533,17 @@ body:not(.can-edit) .game-card:focus-within .edit-action {
   white-space: nowrap;
 }
 
-.completed-rating-item strong {
-  flex: 0 0 auto;
-  color: var(--text);
-  font-size: 10px;
-  font-weight: 800;
+.completed-rating-stars {
+  display: inline-flex;
+  align-items: center;
+  color: #ffe985;
+  --rating-active-color: #ffe985;
+}
+
+.completed-rating-stars .star-display {
+  gap: 1px;
+  --rating-star-size: 11px;
+  --rating-star-gap: 1px;
 }
 
 #completedCount {

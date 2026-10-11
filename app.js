@@ -724,10 +724,8 @@ function quickAddGame() {
 
 function registerServiceWorker() {
   if (!("serviceWorker" in navigator)) return;
-  window.addEventListener("load", () => {
-    navigator.serviceWorker.register("/service-worker.js").catch(() => {
-      // Asset caching is optional; the app still works without it.
-    });
+  navigator.serviceWorker.register("/service-worker.js").catch(() => {
+    // Asset caching is optional; the app still works without it.
   });
 }
 
@@ -7436,13 +7434,13 @@ function renderCompleted() {
               ${completedDurationLine(game)}
               ${completedDateLine(game)}
             </div>
+            ${ratingBreakdown}
           </div>
           <div class="completed-actions">
             <button class="icon-button completed-edit-action" type="button" title="Edit" aria-label="Edit">${pencilIcon()}</button>
             <button class="ghost-button restore-action" type="button">${backIcon()}<span>${escapeHtml(tt("Backlog"))}</span></button>
           </div>
         </div>
-        ${ratingBreakdown}
       </div>
     `;
   }).join("") : `<div class="empty">Finished games will stay saved here.</div>`;
@@ -8828,7 +8826,6 @@ function cardFor(game, options = {}) {
   const card = createGameCardShell(document);
   if (game.playing && !neutralReleaseCard) {
     card.querySelector(".game-main")?.append(card.querySelector(".card-actions"));
-    card.querySelector(".card-footer")?.remove();
   }
   const statuses = gameStatuses(game);
   const owners = ownerTags(game);
@@ -8916,7 +8913,8 @@ function cardFor(game, options = {}) {
   if (backlogAction) {
     backlogAction.title = tt("Backlog");
     backlogAction.setAttribute("aria-label", tt("Move back to backlog"));
-    backlogAction.querySelector(".action-label").textContent = tt("Backlog");
+    const actionLabel = backlogAction.querySelector(".action-label");
+    if (actionLabel) actionLabel.textContent = tt("Backlog");
   }
   if (editAction) {
     editAction.title = tt("Edit");
@@ -8936,55 +8934,65 @@ function cardFor(game, options = {}) {
     card.querySelector(".card-footer")?.remove();
     prices.remove();
   } else if (displaySection === "new") {
-    card.querySelector(".edit-action").remove();
+    card.querySelector(".edit-action")?.remove();
     prices.remove();
-    priceRefreshAction.remove();
-    backlogAction.remove();
-    trophyAction.remove();
-    boughtAction.innerHTML = `${forwardIcon()}<span class="action-label">${escapeHtml(tt("Setup"))}</span>`;
-    boughtAction.classList.remove("ghost-button");
-    boughtAction.classList.add("primary-button");
-    boughtAction.addEventListener("click", () => finishSetupGame(game.id));
-    completeAction.innerHTML = `${playIcon()}<span class="action-label">${escapeHtml(tt("Play"))}</span>`;
-    completeAction.addEventListener("click", () => startPlaying(game.id));
+    priceRefreshAction?.remove();
+    backlogAction?.remove();
+    trophyAction?.remove();
+    if (boughtAction) {
+      boughtAction.innerHTML = `${forwardIcon()}<span class="action-label">${escapeHtml(tt("Setup"))}</span>`;
+      boughtAction.classList.remove("ghost-button");
+      boughtAction.classList.add("primary-button");
+      boughtAction.addEventListener("click", () => finishSetupGame(game.id));
+    }
+    if (completeAction) {
+      completeAction.innerHTML = `${playIcon()}<span class="action-label">${escapeHtml(tt("Play"))}</span>`;
+      completeAction.addEventListener("click", () => startPlaying(game.id));
+    }
   } else if (displaySection === "backlog" || game.completedAt) {
     prices.remove();
-    priceRefreshAction.remove();
-    boughtAction.remove();
+    priceRefreshAction?.remove();
+    boughtAction?.remove();
     if (game.playing) {
-      backlogAction.addEventListener("click", () => returnPlayingToBacklog(game.id));
+      backlogAction?.addEventListener("click", () => returnPlayingToBacklog(game.id));
       deleteAction?.remove();
-    } else backlogAction.remove();
-    completeAction.innerHTML = game.playing
-      ? `${checkIcon()}<span class="action-label">${escapeHtml(tt("Finished"))}</span>`
-      : `${playIcon()}<span class="action-label">${escapeHtml(tt("Play"))}</span>`;
-    completeAction.addEventListener("click", () => {
-      if (game.playing) completeGame(game.id);
-      else startPlaying(game.id);
-    });
-    trophyAction.hidden = !game.playing;
-    trophyAction.classList.toggle("active", Boolean(game.platinum));
-    if (game.playing) {
-      trophyAction.classList.add("playing-completed-action");
-      trophyAction.innerHTML = `${trophyIcon()}<span class="action-label">${escapeHtml(tt("Completed"))}</span>`;
-      card.querySelector(".card-actions")?.append(completeAction, trophyAction, backlogAction);
+    } else backlogAction?.remove();
+    if (completeAction) {
+      completeAction.innerHTML = game.playing
+        ? `${checkIcon()}<span class="action-label">${escapeHtml(tt("Finished"))}</span>`
+        : `${playIcon()}<span class="action-label">${escapeHtml(tt("Play"))}</span>`;
+      completeAction.addEventListener("click", () => {
+        if (game.playing) completeGame(game.id);
+        else startPlaying(game.id);
+      });
     }
-    trophyAction.addEventListener("click", () => completeGameWithTrophy(game.id));
+    if (trophyAction) {
+      trophyAction.hidden = !game.playing;
+      trophyAction.classList.toggle("active", Boolean(game.platinum));
+    }
+    if (game.playing) {
+      trophyAction?.classList.add("playing-completed-action");
+      if (trophyAction) trophyAction.innerHTML = `${trophyIcon()}<span class="action-label">${escapeHtml(tt("Completed"))}</span>`;
+      card.querySelector(".card-actions")?.append(...[completeAction, trophyAction, backlogAction].filter(Boolean));
+    }
+    trophyAction?.addEventListener("click", () => completeGameWithTrophy(game.id));
   } else {
-    backlogAction.remove();
-    completeAction.remove();
-    trophyAction.remove();
+    backlogAction?.remove();
+    completeAction?.remove();
+    trophyAction?.remove();
     const providers = priceProvidersForGame(game);
     if (providers.length) {
       prices.style.setProperty("--price-columns", providers.length);
       prices.innerHTML = pricesFor(game);
-      priceRefreshAction.addEventListener("click", () => refreshPricesForGame(game.id));
+      priceRefreshAction?.addEventListener("click", () => refreshPricesForGame(game.id));
     } else {
       prices.remove();
-      priceRefreshAction.remove();
+      priceRefreshAction?.remove();
     }
-    boughtAction.innerHTML = `${forwardIcon()}<span class="action-label">${escapeHtml(tt("Backlog"))}</span>`;
-    boughtAction.addEventListener("click", () => moveToBacklog(game.id));
+    if (boughtAction) {
+      boughtAction.innerHTML = `${forwardIcon()}<span class="action-label">${escapeHtml(tt("Backlog"))}</span>`;
+      boughtAction.addEventListener("click", () => moveToBacklog(game.id));
+    }
   }
   card.querySelector(".edit-action")?.addEventListener("click", () => openEditor(game.id));
   const trailerToggle = card.querySelector(".trailer-toggle");
@@ -9012,6 +9020,7 @@ function cardFor(game, options = {}) {
     if (event.target.closest("button, a")) return;
     openDetail(game.id);
   });
+  if (game.playing && !neutralReleaseCard) card.querySelector(".card-footer")?.remove();
   return card;
 }
 
@@ -10256,7 +10265,9 @@ function completedRatingBreakdownMarkup(game) {
   return `<div class="completed-rating-breakdown" aria-label="${escapeHtml(tt("Rating breakdown"))}">${rows.map(([key, label, value]) => `
     <span class="completed-rating-item" data-rating-key="${escapeHtml(key)}">
       <span>${escapeHtml(tt(label))}</span>
-      <strong>${escapeHtml(value)}/5</strong>
+      <span class="completed-rating-stars" style="${ratingStarFillStyle(value)}" aria-label="${escapeHtml(`${tt(label)}: ${value}/5`)}">
+        <span class="star-display" aria-hidden="true">${ratingStarsMarkup()}</span>
+      </span>
     </span>
   `).join("")}</div>`;
 }
