@@ -7430,7 +7430,7 @@ function renderCompleted() {
               ${completedDurationLine(game, " completed-duration-list")}
             </div>
             <div class="completed-meta">
-              <span class="completed-platform">${completedOwnerBadges(game)}${completedBadges(game, { includeRating: state.viewMode === "list" })}</span>
+              <span class="completed-platform">${completedOwnerBadges(game)}${completedBadges(game, { includeRating: true })}</span>
               ${completedDurationLine(game)}
               ${completedDateLine(game)}
             </div>
