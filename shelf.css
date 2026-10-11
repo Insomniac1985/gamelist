@@ -1652,6 +1652,11 @@ body.mobile-app-mode.shelf-page .shelf-grid.list-view .game-row-cover-preview {
   display: inline-flex;
 }
 
+.digital-tracking-disabled .lookup-digital-separator,
+.digital-tracking-disabled .lookup-digital-check {
+  display: none;
+}
+
 .preorder-tab-icon .shopping-bag-icon {
   width: 22px;
   height: 22px;
@@ -1959,6 +1964,40 @@ body.mobile-app-mode .shelf-tabs button.active:hover {
   grid-column: 1 / -1;
   min-width: 0;
   margin-top: 2px;
+}
+
+#addGameForm.is-new-shelf-game.needs-title-field .shelf-title-field input,
+#addGameForm.is-new-shelf-game.needs-platform-field .shelf-console-field input,
+#addGameForm.is-new-shelf-game.needs-release-date-field .shelf-release-field input,
+#addGameForm.is-new-shelf-game.needs-addition-date-field .shelf-addition-field input,
+#addGameForm.is-new-shelf-game.needs-region-field .shelf-region-field select {
+  border-color: color-mix(in srgb, var(--accent) 76%, var(--line));
+  background:
+    linear-gradient(
+      135deg,
+      color-mix(in srgb, var(--accent) 16%, transparent),
+      rgba(255, 255, 255, 0.055)
+    ),
+    var(--panel-strong);
+  box-shadow:
+    inset 0 0 0 1px color-mix(in srgb, var(--accent) 22%, transparent),
+    0 0 0 3px color-mix(in srgb, var(--accent) 9%, transparent);
+}
+
+#addGameForm.is-new-shelf-game.needs-region-field .shelf-region-field .platform-logo-button {
+  border-color: color-mix(in srgb, var(--accent) 76%, var(--line));
+  background-color: color-mix(in srgb, var(--accent) 14%, var(--panel-strong));
+  box-shadow:
+    inset 0 0 0 1px color-mix(in srgb, var(--accent) 22%, transparent),
+    0 0 0 3px color-mix(in srgb, var(--accent) 9%, transparent);
+}
+
+#addGameForm.is-new-shelf-game.needs-title-field .shelf-title-field > span,
+#addGameForm.is-new-shelf-game.needs-platform-field .shelf-console-field > span:first-child,
+#addGameForm.is-new-shelf-game.needs-release-date-field .shelf-release-field > span,
+#addGameForm.is-new-shelf-game.needs-addition-date-field .shelf-addition-field > span,
+#addGameForm.is-new-shelf-game.needs-region-field .shelf-region-field > span:first-child {
+  color: color-mix(in srgb, var(--accent) 82%, #fff);
 }
 
 .shelf-condition-notes-field {

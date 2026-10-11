@@ -485,7 +485,7 @@
             <h2 id="dialogTitle">Add Game</h2>
           </div>
           <div class="modal-head-actions">
-            <button class="primary-button modal-head-save" type="submit" data-i18n="Save">Save</button>
+            <button class="primary-button modal-head-save" id="gameDialogSaveButton" type="submit" data-i18n="Save">Save</button>
             <button class="icon-button" id="closeDialogButton" type="button" title="Close">×</button>
           </div>
         </div>
@@ -505,7 +505,7 @@
         </div>
         <div class="lookup-results" id="lookupResults"></div>
 
-        <section class="form-group">
+        <section class="form-group" id="playingFormSection">
           <h3 data-i18n="Playing">Playing</h3>
           <div class="form-grid playing-form-grid">
             <label class="check-filter toggle-check modal-playing-check">
@@ -557,7 +557,7 @@
           </div>
         </section>
 
-        <section class="form-group">
+        <section class="form-group" id="collectingFormSection">
           <h3 data-i18n="Collecting Information">Collecting Information</h3>
           <div class="form-grid collection-form-grid">
             <label class="title-field">
@@ -758,7 +758,7 @@
               <path d="M14 11v5"></path>
             </svg>
           </button>
-          <button class="primary-button modal-save-button" type="submit">Save</button>
+          <button class="primary-button modal-save-button" id="gameDialogBottomSaveButton" type="submit" data-i18n="Save">Save</button>
         </div>
       </form>
     </dialog>
@@ -1002,7 +1002,7 @@
         </div>
 
         <section class="settings-window-panel" data-settings-window="design" hidden>
-          <section class="settings-section"><h3 data-i18n="Page Layout">Page Layout</h3><div class="settings-layout" id="settingsLayoutList" aria-label="Page order"></div></section>
+          <section class="settings-section"><h3 data-i18n="Gamelist page layout">Gamelist page layout</h3><div class="settings-layout" id="settingsLayoutList" aria-label="Page order"></div></section>
           <p class="eyebrow settings-detail-title" data-i18n="Details">Details</p>
           <section class="settings-grid settings-detail-grid">
           <div class="settings-preference-row" id="settingsPreferencesBeforeCurrency"></div>
