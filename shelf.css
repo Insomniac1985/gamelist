@@ -1652,6 +1652,11 @@ body.mobile-app-mode.shelf-page .shelf-grid.list-view .game-row-cover-preview {
   display: inline-flex;
 }
 
+.digital-tracking-disabled .lookup-digital-separator,
+.digital-tracking-disabled .lookup-digital-check {
+  display: none;
+}
+
 .preorder-tab-icon .shopping-bag-icon {
   width: 22px;
   height: 22px;

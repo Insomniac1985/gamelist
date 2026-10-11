@@ -18305,3 +18305,20 @@ html.theme-light #shelfCompletedDialog > .platinum-modal {
     ),
     var(--grid-texture), var(--panel-dark);
 }
+
+#gameDialog.is-new-game.needs-stream-check .stream-check {
+  color: color-mix(in srgb, var(--accent) 82%, #fff);
+  border-color: color-mix(in srgb, var(--accent) 76%, #ff4d62);
+  background: color-mix(in srgb, var(--accent) 14%, var(--panel-strong));
+  box-shadow:
+    inset 0 0 0 1px color-mix(in srgb, var(--accent) 20%, transparent),
+    0 0 0 3px color-mix(in srgb, var(--accent) 10%, transparent);
+}
+
+#gameDialog.is-new-game.needs-stream-check .stream-check input[type="checkbox"] {
+  border-color: color-mix(in srgb, var(--accent) 76%, #ff4d62);
+}
+
+#gameDialog.is-new-game.needs-stream-check .stream-check span {
+  color: color-mix(in srgb, var(--accent) 82%, #fff);
+}

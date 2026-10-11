@@ -1298,6 +1298,7 @@ function bindEvents() {
   el.board.addEventListener("touchend", handleBoardSwipeEnd, { passive: true });
   window.addEventListener("touchend", handleBoardSwipeEnd, { passive: true });
   el.fields.title.addEventListener("input", syncNewGameRequiredHighlights);
+  el.fields.stream?.addEventListener("change", syncNewGameRequiredHighlights);
   el.fields.section.addEventListener("change", () => {
     markNewGameListTouched();
     syncDialogPriceVisibility();
@@ -11760,6 +11761,10 @@ function syncNewGameRequiredHighlights() {
   el.dialog.classList.toggle("needs-platform-field", isNewGame && !el.fields.platform.value.trim());
   el.dialog.classList.toggle("needs-release-date-field", isNewGame && !el.fields.releaseDate.value);
   el.dialog.classList.toggle("needs-list-field", isNewGame && !newGameListTouched);
+  el.dialog.classList.toggle(
+    "needs-stream-check",
+    isNewGame && Boolean(cleanTwitchUser(state.settings.twitchUser)) && !el.fields.stream?.checked,
+  );
 }
 
 function syncNewGameUpcomingSection() {

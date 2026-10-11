@@ -2240,6 +2240,7 @@ function showShelfEditorUnsavedDialog() {
 function syncShelfDigitalEditorMode(digitalMode) {
   el.addForm.classList.toggle("digital-game-editor", digitalMode);
   el.addForm.classList.toggle("is-new-shelf-game", !state.editingId && !digitalMode);
+  el.addForm.classList.toggle("digital-tracking-disabled", state.gamelistSettings.shelfDigitalGames !== true);
   el.addForm.dataset.digital = digitalMode ? "true" : "false";
   el.fields.country.required = !digitalMode;
   el.lookupInput.placeholder = tt(digitalMode ? "Game name" : "Game name or PriceCharting page");
