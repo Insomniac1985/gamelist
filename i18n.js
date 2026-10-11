@@ -80,6 +80,7 @@ const STRINGS = {
     "Sort ascending": "Orden ascendente",
     "Sort descending": "Orden descendente",
     "Add Game": "Añadir juego",
+    "Add to Gamelist": "Añadir a Gamelist",
     "Edit Game": "Editar juego",
     "No description yet.": "Sin descripción todavía.",
     "No completed games tracked yet.": "Aún no hay juegos completados.",

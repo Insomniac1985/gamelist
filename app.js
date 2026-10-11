@@ -501,6 +501,7 @@ const el = {
   dialog: document.querySelector("#gameDialog"),
   form: document.querySelector("#gameForm"),
   dialogTitle: document.querySelector("#dialogTitle"),
+  gameDialogSaveButton: document.querySelector("#gameDialogSaveButton"),
   lookupInput: document.querySelector("#lookupInput"),
   lookupButton: document.querySelector("#lookupButton"),
   lookupResults: document.querySelector("#lookupResults"),
@@ -11828,6 +11829,9 @@ async function openEditor(id = "") {
   const game = state.games.find((item) => item.id === id) || blankGame();
   newGameListTouched = Boolean(id);
   el.dialogTitle.textContent = id ? tt("Edit Game") : tt("Add Game");
+  const saveLabel = id ? "Save" : "Add to Gamelist";
+  el.gameDialogSaveButton.dataset.i18n = saveLabel;
+  el.gameDialogSaveButton.textContent = tt(saveLabel);
   el.dialog.classList.toggle("is-new-game", !id);
   el.deleteButton.hidden = !id;
   el.lookupResults.innerHTML = "";

@@ -1961,6 +1961,32 @@ body.mobile-app-mode .shelf-tabs button.active:hover {
   margin-top: 2px;
 }
 
+#addGameForm.is-new-shelf-game .shelf-title-field input,
+#addGameForm.is-new-shelf-game .shelf-console-field input,
+#addGameForm.is-new-shelf-game .shelf-release-field input,
+#addGameForm.is-new-shelf-game .shelf-addition-field input,
+#addGameForm.is-new-shelf-game .shelf-region-field select {
+  border-color: color-mix(in srgb, var(--accent) 76%, var(--line));
+  background:
+    linear-gradient(
+      135deg,
+      color-mix(in srgb, var(--accent) 16%, transparent),
+      rgba(255, 255, 255, 0.055)
+    ),
+    var(--panel-strong);
+  box-shadow:
+    inset 0 0 0 1px color-mix(in srgb, var(--accent) 22%, transparent),
+    0 0 0 3px color-mix(in srgb, var(--accent) 9%, transparent);
+}
+
+#addGameForm.is-new-shelf-game .shelf-title-field > span,
+#addGameForm.is-new-shelf-game .shelf-console-field > span:first-child,
+#addGameForm.is-new-shelf-game .shelf-release-field > span,
+#addGameForm.is-new-shelf-game .shelf-addition-field > span,
+#addGameForm.is-new-shelf-game .shelf-region-field > span:first-child {
+  color: color-mix(in srgb, var(--accent) 82%, #fff);
+}
+
 .shelf-condition-notes-field {
   grid-column: 1 / -1;
   margin-top: 8px;
