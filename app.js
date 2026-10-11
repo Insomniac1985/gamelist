@@ -1143,6 +1143,7 @@ function bindEvents() {
     if (event.target === el.gotyDialog) el.gotyDialog.close();
   });
   el.gotyDialog?.addEventListener("close", () => {
+    el.mobileDockGoty?.classList.remove("is-active");
     state.gotyDockDismissed = true;
     localStorage.setItem(GOTY_DOCK_DISMISSED_KEY, "true");
     syncMobileDockGoty();
@@ -3617,8 +3618,12 @@ function renderGameOfTheYear() {
   const categories = GAME_OF_YEAR_CATEGORIES;
   const candidateIds = new Set(candidates.map((game) => game.id));
   el.gotySection.hidden = false;
-  const sectionTitle = window.matchMedia("(max-width: 520px)").matches ? tt("My GOTYs {year}", { year }) : tt("My Games of the year {year}", { year });
-  el.gotyTitle.innerHTML = `${trophyIcon()} <span>${escapeHtml(sectionTitle)}</span>`;
+  const mobileTitle = window.matchMedia("(max-width: 760px)").matches;
+  const sectionTitle = mobileTitle
+    ? `<span class="goty-title-label">${escapeHtml(tt("My GOTYs {year}", { year: "" }).trim())}</span><span class="goty-title-year">${escapeHtml(year)}</span>`
+    : `<span>${escapeHtml(tt("My Games of the year {year}", { year }))}</span>`;
+  el.gotyTitle.classList.toggle("goty-mobile-title", mobileTitle);
+  el.gotyTitle.innerHTML = `${trophyIcon()}${sectionTitle}`;
   el.gotyYearSelect.innerHTML = years.map((item) => `<option value="${escapeHtml(item)}">${escapeHtml(item)}</option>`).join("");
   el.gotyYearSelect.value = year;
   syncStyledSelect(el.gotyYearSelect, { activeValue: null });
@@ -3716,6 +3721,7 @@ function openGameOfTheYearDialog(year = currentGameOfTheYear(), options = {}) {
       return false;
     }
   }
+  el.mobileDockGoty?.classList.add("is-active");
   syncScrollLock();
   return true;
 }

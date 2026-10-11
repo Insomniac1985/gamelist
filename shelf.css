@@ -105,10 +105,6 @@ body:not(.can-edit) .showcase-edit-button {
   flex: 1 1 0;
   min-width: 0;
 }
-.shelf-page .stats .glass {
-  background: var(--panel);
-}
-
 body.mobile-app-mode.shelf-page {
   --theme-control-bg: linear-gradient(
     135deg,
@@ -153,7 +149,7 @@ body.mobile-app-mode.shelf-page .backdrop {
   border: 1px solid var(--line);
   border-radius: 8px;
   padding: 0;
-  background: var(--grid-fade), var(--grid-texture), var(--panel-strong);
+  background: var(--grid-fade), var(--grid-texture), var(--panel-dark);
   background-size:
     auto,
     22px 22px,
@@ -1389,7 +1385,7 @@ body.mobile-app-mode.shelf-page .shelf-grid.list-view .game-row-cover-preview {
   overflow: auto;
   border: 1px solid var(--line);
   border-radius: 10px;
-  background: var(--grid-fade), var(--grid-texture), rgba(18, 20, 25, 0.97);
+  background: var(--grid-fade), var(--grid-texture), var(--panel-dark);
   background-size:
     auto,
     22px 22px,
