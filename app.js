@@ -11829,6 +11829,11 @@ function formatPillDate(value) {
 
 async function openEditor(id = "") {
   if (!await ensureEditMode()) return;
+  const playingSection = el.form.querySelector("#playingFormSection");
+  const collectingSection = el.form.querySelector("#collectingFormSection");
+  if (playingSection && collectingSection) {
+    el.form.insertBefore(id ? playingSection : collectingSection, id ? collectingSection : playingSection);
+  }
   state.editingId = id;
   state.pendingDescription = "";
   const game = state.games.find((item) => item.id === id) || blankGame();
