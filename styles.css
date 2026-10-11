@@ -945,6 +945,12 @@ html.theme-font-mata {
   gap: 8px;
 }
 
+.goty-section .column-head h2.goty-mobile-title {
+  align-items: flex-start;
+  flex-direction: column;
+  gap: 0;
+}
+
 .goty-section .column-head h2 > span {
   color: transparent;
   background: var(--accent);
@@ -1386,21 +1392,33 @@ html.theme-gradient .goty-section .column-head h2 .trophy-icon {
 
 @media (max-width: 760px) {
   .goty-dialog .goty-modal {
+    height: calc(100dvh - max(6px, env(safe-area-inset-bottom)) - 130px);
     max-height: calc(100dvh - max(6px, env(safe-area-inset-bottom)) - 130px);
+    min-height: 0;
+    box-sizing: border-box;
+    overflow-x: hidden;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    touch-action: pan-y;
+    -webkit-overflow-scrolling: touch;
   }
 
   .goty-dialog[open],
   #gotyStatsPreviewDialog[open] {
-    transform: translateY(calc(50dvh - 50% - max(6px, env(safe-area-inset-bottom)) - 118px));
+    transform: translateY(
+      calc(50dvh - 50% - max(6px, env(safe-area-inset-bottom)) - 118px)
+    );
   }
 
   #gotyStatsPreviewDialog .goty-stats-preview-modal {
-    max-height: calc(100dvh - max(6px, env(safe-area-inset-bottom)) - 130px) !important;
+    max-height: calc(
+      100dvh - max(6px, env(safe-area-inset-bottom)) - 130px
+    ) !important;
     overflow-y: auto !important;
   }
 
   .goty-callout {
-    bottom: calc(max(6px, env(safe-area-inset-bottom)) + 80px);
+    bottom: calc(max(6px, env(safe-area-inset-bottom)) + 80px) !important;
   }
 }
 
@@ -4652,7 +4670,10 @@ body.dialog-open .floating-edit-actions {
   --mobile-tab-index: 0;
   --mobile-tab-width: calc((100% - 24px) / 3);
   position: sticky;
-  top: calc(20px + var(--toolbar-sticky-height, 106px) + 14px + var(--pull-ui-offset, 0px));
+  top: calc(
+    20px + var(--toolbar-sticky-height, 106px) + 14px +
+      var(--pull-ui-offset, 0px)
+  );
   z-index: 11;
   display: grid;
   grid-template-columns: repeat(var(--mobile-tab-count), 1fr);
@@ -17485,7 +17506,11 @@ html.theme-light .finish-trophy-check input[type="checkbox"]:checked {
     grid-row: 2;
     width: 124px;
     margin: 0;
-    justify-self: end;
+    justify-self: center;
+  }
+
+  .goty-year-select .platform-logo-select {
+    justify-self: center;
   }
 
   .goty-save-button,
@@ -17634,8 +17659,10 @@ html.theme-light .finish-trophy-check input[type="checkbox"]:checked {
     box-shadow: 0 3px 24px color-mix(in srgb, var(--accent) 32%, transparent);
   }
 
-  .mobile-action-dock:has(.mobile-dock-action:not(#mobileDockAdd):hover) #mobileDockAdd:not(:hover),
-  .mobile-action-dock:has(.mobile-dock-action:not(#mobileDockAdd):focus-visible) #mobileDockAdd:not(:hover):not(:focus-visible) {
+  .mobile-action-dock:has(.mobile-dock-action:not(#mobileDockAdd):hover)
+    #mobileDockAdd:not(:hover),
+  .mobile-action-dock:has(.mobile-dock-action:not(#mobileDockAdd):focus-visible)
+    #mobileDockAdd:not(:hover):not(:focus-visible) {
     background: transparent;
     box-shadow: none;
   }
@@ -17877,6 +17904,26 @@ body.page-pulling #mobileActionDock {
     border-radius: 8px;
   }
 
+  #gameDialog,
+  #addDialog {
+    height: calc(100dvh - 16px);
+    max-height: calc(100dvh - 16px);
+  }
+
+  #gameDialog > .modal,
+  #addDialog > .add-modal {
+    display: block;
+    height: 100%;
+    max-height: 100%;
+    min-height: 0;
+    box-sizing: border-box;
+    overflow-x: hidden;
+    overflow-y: auto !important;
+    overscroll-behavior: contain;
+    touch-action: pan-y;
+    -webkit-overflow-scrolling: touch;
+  }
+
   #mobileDockGoty:active,
   #mobileDockGoty.is-active {
     color: #302817;
@@ -17906,7 +17953,9 @@ body.page-pulling #mobileActionDock {
 }
 
 @media (min-width: 761px) {
-  html.from-authenticated-navigation body.auth-checking #settingsButton[hidden] {
+  html.from-authenticated-navigation
+    body.auth-checking
+    #settingsButton[hidden] {
     display: inline-grid !important;
     visibility: visible;
     pointer-events: none;
@@ -17914,7 +17963,9 @@ body.page-pulling #mobileActionDock {
 }
 
 @media (max-width: 760px) {
-  html.from-authenticated-navigation body.auth-checking #mobileDockSettings[hidden] {
+  html.from-authenticated-navigation
+    body.auth-checking
+    #mobileDockSettings[hidden] {
     display: grid !important;
     visibility: visible;
     pointer-events: none;
