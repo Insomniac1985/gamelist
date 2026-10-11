@@ -8826,7 +8826,6 @@ function cardFor(game, options = {}) {
   const card = createGameCardShell(document);
   if (game.playing && !neutralReleaseCard) {
     card.querySelector(".game-main")?.append(card.querySelector(".card-actions"));
-    card.querySelector(".card-footer")?.remove();
   }
   const statuses = gameStatuses(game);
   const owners = ownerTags(game);
@@ -9021,6 +9020,7 @@ function cardFor(game, options = {}) {
     if (event.target.closest("button, a")) return;
     openDetail(game.id);
   });
+  if (game.playing && !neutralReleaseCard) card.querySelector(".card-footer")?.remove();
   return card;
 }
 
