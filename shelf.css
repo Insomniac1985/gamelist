@@ -1159,17 +1159,6 @@ html.theme-font-mata .shelf-page .playing-section .column-head h2 {
   object-fit: cover;
 }
 
-.shelf-grid.preorders-view .synced-projection-card .card-actions {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: flex-start;
-  gap: 8px;
-}
-
-.shelf-grid.preorders-view .synced-projection-card .prices {
-  grid-column: 1 / -1;
-}
-
 .shelf-grid .cover-button {
   width: var(--shelf-cover-width, 104px);
   height: var(--shelf-cover-height, 142px);
@@ -2937,12 +2926,31 @@ textarea {
     width: 96px;
     height: 131px;
   }
-  .shelf-grid.preorders-view .synced-projection-card .card-actions {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr)) 42px;
-    align-items: stretch;
-    justify-content: normal;
-    gap: 8px;
+  .shelf-grid .game-card.has-price-footer .card-actions {
+    display: flex;
+    flex: 0 0 auto;
+    flex-flow: row nowrap;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 5px;
+    width: auto;
+    max-width: 100%;
+    margin: 0 auto 0 0;
+    padding: 0;
+    border: 0;
+  }
+  .shelf-grid .game-card.has-price-footer .card-actions .bought-action {
+    width: auto;
+    min-height: 34px;
+    height: 34px;
+    padding: 6px 9px;
+  }
+  .shelf-grid .game-card.has-price-footer .card-actions .icon-only-button {
+    width: 34px;
+    min-width: 34px;
+    height: 34px;
+    min-height: 34px;
+    flex-basis: 34px;
   }
   .shelf-grid .game-card .card-actions {
     grid-template-columns: minmax(0, max-content) 42px;
