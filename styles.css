@@ -10764,8 +10764,12 @@ body.theme-kash .playing-finished-game.completed-trophy-card:hover {
 
 .rating-score-pill {
   display: inline-flex;
+  flex: 0 0 auto;
   align-items: center;
   justify-content: center;
+  box-sizing: border-box;
+  min-height: 31px;
+  padding: 4px 8px;
   gap: 4px;
   color: var(--rating-score-main);
   background:
@@ -10775,6 +10779,7 @@ body.theme-kash .playing-finished-game.completed-trophy-card:hover {
   border-radius: 7px;
   font-weight: 850;
   line-height: 1;
+  white-space: nowrap;
   --rating-score-start: rgba(255, 71, 103, 0.18);
   --rating-score-end: rgba(255, 153, 79, 0.12);
   --rating-score-border: rgba(255, 111, 133, 0.34);
@@ -18739,3 +18744,88 @@ body:not(.shelf-page) #wanted .price-refresh-action {
   z-index: 1;
 }
 
+
+/* Shared moving selector for new games on Gamelist and Shelf. */
+.shelf-gamelist-target-picker {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 12px;
+  width: 100%;
+  box-sizing: border-box;
+  padding: 0;
+  margin: 8px 0 14px;
+}
+
+.shelf-gamelist-target-label {
+  display: flex;
+  align-items: center;
+  min-height: 52px;
+  flex: 0 0 auto;
+  color: var(--dim);
+  font-size: 13px;
+  font-weight: 800;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.shelf-gamelist-target-options {
+  --target-count: 3;
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(var(--target-count), minmax(0, 1fr));
+  gap: 6px;
+  width: auto;
+  min-width: 0;
+  flex: 1 1 auto;
+  padding: 5px;
+  background: var(--panel-dark);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  isolation: isolate;
+}
+
+.shelf-gamelist-target-indicator {
+  position: absolute;
+  z-index: 0;
+  top: 5px;
+  bottom: 5px;
+  left: var(--target-left, 5px);
+  width: var(--target-width, calc((100% - 22px) / 3));
+  border-radius: 7px;
+  background: var(--accent);
+  box-shadow: 0 3px 18px color-mix(in srgb, var(--accent) 35%, transparent);
+  transition: left 180ms ease, width 180ms ease;
+  pointer-events: none;
+}
+
+.shelf-gamelist-target-options button {
+  position: relative;
+  z-index: 1;
+  min-width: 0;
+  min-height: 40px;
+  padding: 0 14px;
+  color: var(--muted);
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 7px;
+  font-size: 14px;
+  font-weight: 760;
+  white-space: nowrap;
+  transition: color 180ms ease;
+}
+
+.shelf-gamelist-target-options button.active {
+  color: #fff;
+  font-weight: 820;
+}
+
+.shelf-gamelist-target-picker[hidden] { display: none !important; }
+#gameDialog.is-new-game .collection-form-grid > .list-field { display: none; }
+#gameDialog.is-new-game .collection-form-grid > .release-text-field { grid-column: span 7; }
+@media (max-width: 760px) {
+  #gameAddTargetPicker { gap: 8px; }
+  #gameAddTargetPicker .shelf-gamelist-target-label { min-height: 0; font-size: 11px; }
+  #gameAddTargetPicker .shelf-gamelist-target-options button { padding: 0 7px; font-size: 13px; white-space: normal; }
+  #gameDialog.is-new-game .collection-form-grid > .release-text-field { grid-column: 1 / -1; }
+}

@@ -12,7 +12,7 @@ The app has two connected pages:
 
 Pull down the top bar/handle to go to the other page!
 
-Both pages share edit mode, themes, account settings, price-store settings, achievement integrations. Shelf Sync can also send physical collection additions back into the main Gamelist flow and in reverse when you add a new game to your backlog.
+Both pages share edit mode, themes, account settings, price-store settings, and achievement integrations. Shelf Sync links the physical Shelf collection with Gamelist, and can also sync Shelf Wishlist and Preorders into Gamelist.
 
 Made and designed by <img src="assets/shabii_logo.png" alt="Shabii" width="18" align="center"> [Shabii](https://x.com/Shabii_exe) with the help of ChatGPT Codex.
 
@@ -21,25 +21,17 @@ Email: <a href="mailto:shabiimitjans@gmail.com">shabiimitjans@gmail.com</a>
 
 ## Features
 
-- Cloud sync through Cloudflare Workers.
-- Backlog, upcoming, available, currently playing, and finished-game boards.
-- Release calendar with preorder markers.
-- Physical Shelf library with multiple owners, regions, conditions, categories, selected-store prices, PriceCharting collection values, and linked Gamelist entries.
-- Digital Drive library with multiple owners, categories and linked Gamelist entries.
-- Rate your played games.
-- Game of the year tracking and shareable image export.
-- IGDB-powered lookup for all game covers, release dates, descriptions, genres, developers, publishers, trailers, store links, and price-search helpers.
-- Twitch stream preview in Currently Playing when a streamed game and Twitch username are configured.
-- Shelf Showcase block for featured games, plus shared Currently Playing, Last Finished, Highlights, and Search modules.
-- PSN, Steam, and Xbox trophy/achievement dashboards.
-- Automatic time-to-finish estimates from linked Steam or PlayStation accounts when marking a game completed or finished.
-- Nintendo account connection from Settings.
-- Google Calendar preorder events when configured.
-- Theme editor with dark/light mode, colors, logos, title styles, and module ordering.
-- CSV import/export for Gamelist and Shelf data.
-- Mobile-ready responsive layout for phone, tablet, and desktop use.
-
-Logged-in users see the in-app update notes once per notification counter. Edit the content in `updates-popup.html`; to announce a new set of notes, increment `notificationVersion` in `version.json`.
+- Track your game collection between Gamelist and Shelf. Organize with Backlog, Upcoming, Available, Currently Playing, and Finished, with a release and preorder, all synced via the cloud.
+- Organize physical and digital games on Shelf, with owners, regions, conditions, categories, selected-store prices, and PriceCharting game values.
+- Search IGDB for game details, covers, trailers, store links, and price searches.
+- Rate games, track yearly favorites, and export a shareable Games of the Year image.
+- Refresh store prices from Available and Upcoming cards.
+- Have a Twitch stream preview alongside your Currently Playing games.
+- Playtime estimates from linked PlayStation, Steam, Xbox and Nintendo accounts.
+- Trophy and achievement dashboards for PlayStation, Steam, and Xbox, plus Nintendo account connection.
+- Customize themes and module order.
+- Responsive layouts and a mobile action dock for quick access to common actions.
+- Easily export and import your game data.
 
 ---
 
@@ -274,7 +266,7 @@ Digital games use the platform store automatically when the platform matches:
 - <img src="assets/sites/steam.png" alt="Steam" width="18" align="center"> Different Steam regional prices.
 - <img src="assets/platforms/xbox.png" alt="Xbox" width="18" align="center"> Different regional Xbox Store or Xbox PC games.
 
-<img src="https://www.pricecharting.com/images/favicon.ico" alt="PriceCharting" width="18" align="center"> Shelf collection values also use PriceCharting data when a matching physical game from the collection, to track the average market value depending on the condition. To use the PriceCharting API, connect your token in **Edit mode → Settings → Accounts**, below Twitch. API access requires a PriceCharting Legendary subscription.
+<img src="https://www.pricecharting.com/images/favicon.ico" alt="PriceCharting" width="18" align="center"> Shelf collection values use PriceCharting data to track loose, complete, and new values for a matching physical game. You can search Shelf by game name or paste a PriceCharting page URL, then select the matching edition. A PriceCharting page or product ID can also be saved with a Shelf game to link its collection value. To use PriceCharting lookup and collection values, connect your token in **Edit mode → Settings → Accounts**, below Twitch. API access requires a PriceCharting Legendary subscription.
 
 ### Twitch stream preview
 
@@ -297,9 +289,11 @@ When those are both set, Gamelist and Shelf add a Twitch preview as the first ca
 1. Enter **Edit mode**.
 2. Click **Add Game**.
 3. Search by title or paste an IGDB game URL.
-4. Choose the place it should be in: Backlog, Upcoming, Available.
+4. Choose **Backlog**, **Upcoming**, or **Available** with the selector. Search results with a future release date select Upcoming; released games select Available.
 5. Add platform, owners, preorder store, release date, store links, cover, notes...
 6. Save.
+
+When editing a game, its existing **List** dropdown remains in the form. In Shelf, the **Add game to** selector lets you add the game directly to Shelf, Wishlist, or Preorder. Wishlist picks Upcoming for a future release date and Available otherwise. Preorder requires a store before saving.
 
 If Google Calendar is configured, adding a new preorder store to an upcoming/wanted game with a release date can create a preorder calendar event.
 
@@ -313,6 +307,17 @@ If Google Calendar is configured, adding a new preorder store to an upcoming/wan
 6. Save.
 
 New physical games can sync into the Gamelist as setup-needed backlog/new-addition entries when Shelf Sync is enabled.
+
+### Use Shelf Wishlist and Preorders
+
+Enable **Sync games with Shelf** in **Settings → Gamelist page layout** (the same setting is available in Shelf settings). In **Settings → Shelf page layout**, turn on **Sync Wishlist** and **Show Preorders on Shelf** to show those tabs.
+
+- **Wishlist** shows Gamelist games in Available or Upcoming that do not have a preorder store set. From Shelf, you can move a Wishlist game to the Gamelist Backlog, view its Gamelist details and prices, or remove it.
+- **Preorders** shows games with a preorder store set. From Shelf, you can accept a preorder into the Gamelist Backlog, view its details and prices, edit it in Gamelist, or remove it.
+- **Add game to Wishlist or Preorder** from the Shelf form syncs the entry to Gamelist. Preorder requires a store; the form selects Upcoming automatically. Wishlist uses the release date to select Upcoming or Available.
+- Digital games appear in these synced views when digital games are enabled for Shelf tracking.
+
+The tabs and actions follow the Gamelist data, so moving a game between sections or adding/removing a preorder is reflected on Shelf.
 
 ### Add a a digital game to your Drive (Shelf) collection
 
