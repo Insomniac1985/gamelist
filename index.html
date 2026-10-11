@@ -295,8 +295,8 @@
             <label class="goty-year-select">
               <select id="gotyYearSelect" aria-label="Game of the year picks year" data-i18n-aria-label="Game of the year picks year"></select>
             </label>
-            <button class="ghost-button goty-save-button" id="gotySaveButton" type="button" data-i18n="Save">Save</button>
             <button class="ghost-button goty-edit-button" id="gotyEditButton" type="button" data-i18n="Edit" hidden>Edit</button>
+            <button class="ghost-button goty-save-button" id="gotySaveButton" type="button" data-i18n="Save">Save</button>
           </div>
         </div>
         <div class="goty-grid" id="gotyGrid"></div>
@@ -758,7 +758,7 @@
               <path d="M14 11v5"></path>
             </svg>
           </button>
-          <button class="primary-button" type="submit">Save</button>
+          <button class="primary-button modal-save-button" type="submit">Save</button>
         </div>
       </form>
     </dialog>
@@ -873,7 +873,7 @@
         <div class="goty-picker-grid" id="gotyPickerGrid"></div>
         <div class="goty-dialog-actions">
           <button class="danger-button icon-only-button goty-reset-button" id="gotyResetButton" type="button" title="Reset" aria-label="Reset Game of the year picks" data-i18n-title="Reset" data-i18n-aria-label="Reset Game of the year picks"></button>
-          <button class="primary-button goty-publish-button" type="submit" data-i18n="Save">Save</button>
+          <button class="primary-button goty-publish-button modal-save-button" type="submit" data-i18n="Save">Save</button>
         </div>
       </form>
     </dialog>
@@ -884,9 +884,6 @@
           <div>
             <p class="eyebrow" id="gotyStatsPreviewBrow">Before your picks</p>
             <h2 id="gotyStatsPreviewTitle">Your year in games</h2>
-          </div>
-          <div class="modal-head-actions">
-            <button class="icon-button" id="gotyStatsPreviewCloseButton" type="button" title="Close" data-i18n-title="Close">×</button>
           </div>
         </div>
         <div class="goty-stats-preview-body finished-stats-body" id="gotyStatsPreviewBody"></div>
@@ -1070,7 +1067,7 @@
         </section>
 
         <div class="modal-actions">
-          <button class="primary-button" type="submit" data-i18n="Save">Save</button>
+          <button class="primary-button modal-save-button" type="submit" data-i18n="Save">Save</button>
         </div>
       </form>
     </dialog>
@@ -1163,7 +1160,7 @@
         <p class="auth-error" id="finishTimeError" hidden>Use whole numbers only.</p>
         <div class="modal-actions">
           <button class="ghost-button" id="finishTimeSkipButton" type="button">Skip</button>
-          <button class="primary-button" type="submit">Save</button>
+          <button class="primary-button modal-save-button" type="submit">Save</button>
         </div>
       </form>
     </dialog>

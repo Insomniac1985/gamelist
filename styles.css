@@ -1399,11 +1399,27 @@ html.theme-gradient .goty-section .column-head h2 .trophy-icon {
 }
 
 @media (max-width: 760px) {
+  #gotyDialog,
+  #gotyStatsPreviewDialog {
+    position: fixed;
+    inset: 0 !important;
+    width: calc(100vw - 16px) !important;
+    max-width: calc(100vw - 16px) !important;
+    height: calc(100dvh - 16px) !important;
+    max-height: calc(100dvh - 16px) !important;
+    margin: auto !important;
+    padding: 0;
+    box-sizing: border-box;
+    overflow: hidden;
+    border-radius: 8px;
+    transform: none !important;
+  }
+
   .goty-dialog .goty-modal {
     width: 100%;
     max-width: 100%;
-    height: calc(100dvh - max(6px, env(safe-area-inset-bottom)) - 90px);
-    max-height: calc(100dvh - max(6px, env(safe-area-inset-bottom)) - 90px);
+    height: 100%;
+    max-height: 100%;
     min-height: 0;
     box-sizing: border-box;
     overflow-x: hidden;
@@ -1411,15 +1427,22 @@ html.theme-gradient .goty-section .column-head h2 .trophy-icon {
     overscroll-behavior: contain;
     touch-action: pan-y;
     -webkit-overflow-scrolling: touch;
+    padding: calc(18px + env(safe-area-inset-top)) 14px
+      calc(18px + env(safe-area-inset-bottom));
   }
 
   #gotyStatsPreviewDialog {
-    width: calc(100vw - 16px) !important;
-    max-width: calc(100vw - 16px) !important;
-    height: calc(100dvh - max(6px, env(safe-area-inset-bottom)) - 90px);
-    max-height: calc(100dvh - max(6px, env(safe-area-inset-bottom)) - 90px);
-    box-sizing: border-box;
-    overflow: hidden;
+    background: var(--grid-fade), var(--grid-texture), var(--panel-dark);
+    background-size:
+      auto,
+      22px 22px,
+      22px 22px,
+      auto;
+    background-position:
+      center,
+      var(--grid-x) var(--grid-y),
+      var(--grid-x) var(--grid-y),
+      center;
   }
 
   #gotyStatsPreviewDialog .goty-stats-preview-modal {
@@ -1433,20 +1456,13 @@ html.theme-gradient .goty-section .column-head h2 .trophy-icon {
     overscroll-behavior: contain;
     touch-action: pan-y;
     -webkit-overflow-scrolling: touch;
+    padding: calc(14px + env(safe-area-inset-top)) 14px
+      calc(14px + env(safe-area-inset-bottom));
   }
 
   .goty-dialog[open],
   #gotyStatsPreviewDialog[open] {
-    transform: translateY(
-      calc(50dvh - 50% - max(6px, env(safe-area-inset-bottom)) - 82px)
-    );
-  }
-
-  #gotyStatsPreviewDialog .goty-stats-preview-modal {
-    max-height: calc(
-      100dvh - max(6px, env(safe-area-inset-bottom)) - 90px
-    ) !important;
-    overflow-y: auto !important;
+    transform: none !important;
   }
 
   .goty-callout {
@@ -2297,7 +2313,7 @@ html.theme-gradient .goty-section .column-head h2 .trophy-icon {
 .goty-callout-title .trophy-icon {
   width: 16px;
   height: 16px;
-  color: var(--accent);
+  color: #ffe985;
   stroke: currentColor;
 }
 
@@ -14261,7 +14277,7 @@ body.theme-kash
   border: 1px solid var(--line);
   border-radius: 8px;
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05);
-  background: var(--panel-dark);
+  background: var(--panel);
   box-shadow:
     var(--shadow),
     0 10px 24px rgba(0, 0, 0, 0.24);
@@ -15501,6 +15517,17 @@ html.theme-light .finish-trophy-check input[type="checkbox"]:checked {
   margin-top: 14px;
 }
 
+/* Keep dialog Save actions aligned with their 36px Close controls. */
+.modal-head-actions > .modal-head-save,
+.modal-save-button {
+  height: 36px;
+  min-height: 36px;
+  box-sizing: border-box;
+  padding: 8px 14px;
+  font-size: 13px;
+  line-height: 18px;
+}
+
 .empty {
   padding: 18px;
   color: var(--muted);
@@ -15618,7 +15645,7 @@ html.theme-light .finish-trophy-check input[type="checkbox"]:checked {
   .mobile-action-dock {
     position: fixed;
     left: 50%;
-    bottom: max(6px, env(safe-area-inset-bottom));
+    bottom: calc(max(6px, env(safe-area-inset-bottom)) + var(--mobile-dock-viewport-bottom, 0px));
     z-index: 20;
     display: flex;
     width: min(620px, calc(100vw - 8px));
@@ -17556,11 +17583,11 @@ html.theme-light .finish-trophy-check input[type="checkbox"]:checked {
   }
 
   .goty-edit-button {
-    grid-column: 2;
+    grid-column: 1;
   }
 
   .goty-save-button {
-    grid-column: 1;
+    grid-column: 2;
   }
 
   .goty-grid {
@@ -17982,17 +18009,22 @@ body.page-pulling #mobileActionDock {
     border-radius: 8px;
   }
 
-  #platinumDialog {
-    width: calc(100vw - 8px) !important;
-    max-width: calc(100vw - 8px) !important;
-    height: calc(100dvh - max(6px, env(safe-area-inset-bottom)) - 90px);
-    max-height: calc(100dvh - max(6px, env(safe-area-inset-bottom)) - 90px);
-    transform: translateY(
-      calc(50dvh - 50% - max(6px, env(safe-area-inset-bottom)) - 82px)
-    );
+  :is(#platinumDialog, #shelfCompletedDialog) {
+    position: fixed;
+    inset: 0 !important;
+    width: calc(100vw - 16px) !important;
+    max-width: calc(100vw - 16px) !important;
+    height: calc(100dvh - 16px) !important;
+    max-height: calc(100dvh - 16px) !important;
+    margin: auto !important;
+    padding: 0;
+    box-sizing: border-box;
+    overflow: hidden;
+    border-radius: 8px;
+    transform: none !important;
   }
 
-  #platinumDialog > .platinum-modal {
+  :is(#platinumDialog, #shelfCompletedDialog) > .platinum-modal {
     width: 100%;
     height: 100%;
     max-height: 100%;
@@ -18003,6 +18035,34 @@ body.page-pulling #mobileActionDock {
     overscroll-behavior: contain;
     touch-action: pan-y;
     -webkit-overflow-scrolling: touch;
+    padding: calc(14px + env(safe-area-inset-top)) 10px
+      calc(14px + env(safe-area-inset-bottom));
+  }
+
+  :is(#platinumDialog, #shelfCompletedDialog) .platinum-filter-bar {
+    box-sizing: border-box;
+    grid-template-columns: minmax(0, 0.78fr) minmax(0, 0.96fr) minmax(0, 1.35fr);
+    gap: 8px;
+    padding: 8px;
+  }
+
+  :is(#platinumDialog, #shelfCompletedDialog) .platinum-order-control {
+    gap: 5px;
+  }
+
+  :is(#platinumDialog, #shelfCompletedDialog) .platinum-order-control .direction-toggle {
+    flex-basis: 36px;
+    width: 36px;
+    min-width: 36px;
+  }
+
+  :is(#platinumDialog, #shelfCompletedDialog) .platinum-list {
+    width: 100%;
+    max-width: none;
+    max-height: none;
+    box-sizing: border-box;
+    padding-right: 0;
+    overflow: visible;
   }
 
   #gameDialog,
@@ -18082,6 +18142,128 @@ body.auth-checking #mobileDockSettings[aria-busy="true"] {
 #settingsButton svg,
 #mobileDockSettings svg {
   transition: opacity 180ms ease;
+}
+
+@media (max-width: 760px) {
+  #mobileDockGoty:hover,
+  #mobileDockGoty:focus-visible,
+  #mobileDockGoty:active,
+  #mobileDockGoty.is-active {
+    color: #302817 !important;
+    background: #ffe985 !important;
+    border-color: #ffe985 !important;
+    box-shadow: 0 3px 24px rgba(255, 233, 133, 0.42) !important;
+  }
+
+  #mobileDockGoty:hover .trophy-icon,
+  #mobileDockGoty:focus-visible .trophy-icon,
+  #mobileDockGoty:active .trophy-icon,
+  #mobileDockGoty.is-active .trophy-icon {
+    color: #302817 !important;
+  }
+}
+
+@media (min-width: 761px) {
+  #gotyDialog[open] {
+    position: fixed;
+    inset: 8px !important;
+    width: calc(100vw - 16px) !important;
+    max-width: calc(100vw - 16px) !important;
+    height: calc(100dvh - 16px) !important;
+    max-height: calc(100dvh - 16px) !important;
+    margin: auto !important;
+    padding: 0;
+    box-sizing: border-box;
+    overflow: hidden;
+    transform: none !important;
+  }
+
+  #gotyDialog > .goty-modal {
+    width: 100%;
+    max-width: 100%;
+    height: 100%;
+    max-height: 100%;
+    min-height: 0;
+    box-sizing: border-box;
+    overflow-x: hidden;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+  }
+}
+
+@media (max-width: 760px) {
+  #gotyStatsPreviewDialog .goty-stats-preview-modal {
+    display: flex !important;
+    flex-direction: column;
+    height: 100% !important;
+    max-height: 100% !important;
+    overflow: hidden !important;
+    padding-bottom: 0;
+  }
+
+  #gotyStatsPreviewBody {
+    flex: 1 1 auto;
+    min-height: 0;
+    padding-bottom: 16px;
+    overflow-x: hidden;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  #gotyStatsPreviewDialog .goty-stats-preview-actions {
+    position: static !important;
+    bottom: auto;
+    flex: 0 0 auto;
+    width: 100%;
+    margin: 0;
+    padding: 10px 0 max(8px, env(safe-area-inset-bottom));
+    transform: none;
+    background: var(--panel-dark);
+  }
+
+  #gotyStatsPreviewDialog .goty-stats-preview-continue {
+    min-height: 48px;
+    padding-inline: 12px;
+    font-size: clamp(12px, 3.7vw, 15px);
+    line-height: 1.2;
+    white-space: normal;
+  }
+}
+
+@media (min-width: 761px) {
+  #gotyStatsPreviewDialog {
+    height: calc(100dvh - 24px);
+    max-height: calc(100dvh - 24px);
+    overflow: hidden;
+  }
+
+  #gotyStatsPreviewDialog .goty-stats-preview-modal {
+    display: flex !important;
+    flex-direction: column;
+    height: 100%;
+    max-height: 100% !important;
+    overflow: hidden !important;
+  }
+
+  #gotyStatsPreviewBody {
+    flex: 1 1 auto;
+    min-height: 0;
+    padding-bottom: 16px;
+    overflow-x: hidden;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+  }
+
+  #gotyStatsPreviewDialog .goty-stats-preview-actions {
+    position: static !important;
+    flex: 0 0 auto;
+    width: 100%;
+    margin: 0;
+    padding: 12px 0 0;
+    transform: none;
+    background: var(--panel-dark);
+  }
 }
 
 #gameDialog > .modal,
