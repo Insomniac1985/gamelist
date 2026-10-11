@@ -394,6 +394,13 @@
             <span data-i18n="Digital">Digital</span>
           </label>
         </div>
+        <div class="shelf-gamelist-target-picker" id="shelfGamelistTargetPicker" hidden>
+          <span class="shelf-gamelist-target-label" data-i18n="Add to Gamelist as">Add to Gamelist as</span>
+          <div class="shelf-gamelist-target-options">
+            <button type="button" class="ghost-button" data-gamelist-target="wishlist" data-i18n="Wishlist">Wishlist</button>
+            <button type="button" class="ghost-button" data-gamelist-target="preorder" data-i18n="Preorder">Preorder</button>
+          </div>
+        </div>
         <div class="lookup-results" id="lookupResults"></div>
 
         <section class="form-group">
@@ -446,6 +453,26 @@
             <label><span>ASIN</span><input id="asinInput"></label>
             <label><span data-i18n="eBay Product ID">eBay Product ID</span><input id="epidInput"></label>
             <label class="wide"><span data-i18n="PriceCharting Page or Product ID">PriceCharting Page or Product ID</span><input id="pricechartingIdInput" placeholder="https://www.pricecharting.com/game/... or product ID" data-i18n-placeholder="https://www.pricecharting.com/game/... or product ID"></label>
+          </div>
+        </section>
+        <section class="form-group shelf-gamelist-placement" id="shelfGamelistPlacement" hidden>
+          <h3 data-i18n="Gamelist placement">Gamelist placement</h3>
+          <div class="form-grid shelf-gamelist-placement-grid">
+            <label class="shelf-gamelist-list-field">
+              <span data-i18n="List">List</span>
+              <select id="shelfGamelistSectionInput">
+                <option value="wanted" data-i18n="Available now">Available now</option>
+                <option value="upcoming" data-i18n="Upcoming">Upcoming</option>
+                <option value="backlog" data-i18n="Backlog">Backlog</option>
+              </select>
+            </label>
+            <label class="shelf-gamelist-preorder-field" id="shelfGamelistPreorderField">
+              <span data-i18n="Preordered Where">Preordered Where</span>
+              <span class="icon-input store-icon-input">
+                <span class="field-leading-icon shelf-gamelist-store-icon" aria-hidden="true"></span>
+                <input id="shelfGamelistPreorderStoreInput" placeholder="Xtralife, Game, Amazon...">
+              </span>
+            </label>
           </div>
         </section>
         <div class="modal-actions">

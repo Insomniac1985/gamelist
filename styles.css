@@ -7676,6 +7676,70 @@ a.time-pill {
   display: none;
 }
 
+.game-card .card-footer {
+  display: contents;
+}
+
+.game-card.has-price-footer .card-footer {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  min-width: 0;
+  width: 100%;
+}
+
+.game-card.has-price-footer .prices {
+  flex: 1 1 0;
+  width: auto;
+  min-width: 0;
+  gap: 4px;
+  padding: 4px;
+}
+
+.game-card.has-price-footer .price-link {
+  gap: 4px;
+  padding: 3px 4px;
+}
+
+.game-card.has-price-footer .price-link strong {
+  overflow: hidden;
+  font-size: 10px;
+  text-overflow: ellipsis;
+}
+
+.game-card.has-price-footer .store-icon {
+  width: 14px;
+  height: 14px;
+}
+
+.game-card.has-price-footer .card-actions {
+  display: flex;
+  flex: 0 0 auto;
+  align-items: center;
+  flex-flow: row nowrap;
+  gap: 5px;
+  width: auto;
+  max-width: 100%;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.game-card.has-price-footer .card-actions .bought-action {
+  min-height: 34px;
+  padding: 6px 9px;
+  font-size: 13px;
+}
+
+.game-card.has-price-footer .card-actions .icon-only-button {
+  width: 34px;
+  min-width: 34px;
+  height: 34px;
+  min-height: 34px;
+  flex-basis: 34px;
+}
+
 .detail-prices {
   margin-top: 16px;
 }
@@ -7784,7 +7848,7 @@ a.time-pill {
   padding-top: 10px;
 }
 
-.game-card:not(.playing-card) > .card-actions {
+.game-card:not(.playing-card) .card-actions {
   justify-self: start;
   width: max-content;
   max-width: 100%;
@@ -8390,8 +8454,53 @@ body:not(.can-edit) .game-card:focus-within .edit-action {
   grid-template-columns: 1fr;
 }
 
-.completed-list:not(.list-view) .completed-row:has(.rating-score-pill) {
+.completed-item {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+
+.completed-item .completed-row {
+  flex: 1 1 auto;
+  height: auto;
+}
+
+.completed-item:has(.completed-rating-breakdown) .completed-row {
   min-height: 122px;
+}
+
+.completed-rating-breakdown {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 4px 8px;
+  min-width: 0;
+  padding: 5px 3px 2px;
+  border-top: 1px solid var(--line);
+}
+
+.completed-rating-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 5px;
+  min-width: 0;
+  color: var(--dim);
+  font-size: 10px;
+  line-height: 1.25;
+}
+
+.completed-rating-item > span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.completed-rating-item strong {
+  flex: 0 0 auto;
+  color: var(--text);
+  font-size: 10px;
+  font-weight: 800;
 }
 
 #completedCount {
@@ -10804,6 +10913,13 @@ dialog {
   background: transparent;
   border: 0;
   padding: 0;
+}
+
+@media (min-width: 761px) {
+  #gameDialog,
+  #addDialog {
+    width: min(1120px, calc(100vw - 64px));
+  }
 }
 
 #detailDialog {
@@ -18374,6 +18490,13 @@ body.auth-checking #mobileDockSettings[aria-busy="true"] {
     var(--grid-x) var(--grid-y),
     var(--grid-x) var(--grid-y),
     center;
+}
+
+#gameDialog > .modal,
+#addDialog > .add-modal {
+  background: var(--grid-fade), var(--grid-texture), var(--panel-dark);
+  background-size: auto, 22px 22px, 22px 22px, auto;
+  background-position: center, var(--grid-x) var(--grid-y), var(--grid-x) var(--grid-y), center;
 }
 
 html.theme-light #gameDialog > .modal,
