@@ -18755,7 +18755,7 @@ body:not(.shelf-page) #wanted .price-refresh-action {
   width: 100%;
   box-sizing: border-box;
   padding: 0;
-  margin: 8px 0 14px;
+  margin: 0 0 14px;
 }
 
 .shelf-gamelist-target-label {
