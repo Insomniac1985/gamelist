@@ -91,6 +91,7 @@ const STRINGS = {
     "Sort ascending": "Orden ascendente",
     "Sort descending": "Orden descendente",
     "Add Game": "Añadir juego",
+    "Add game": "Añadir juego",
     "Add to Gamelist": "Añadir a Gamelist",
     "Turn on Shelf sync to add to Gamelist.": "Activa la sincronización de Shelf para añadir a Gamelist.",
     "Edit Game": "Editar juego",

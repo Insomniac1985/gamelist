@@ -501,6 +501,7 @@ const el = {
   detailTrophyList: document.querySelector("#detailTrophyList"),
   detailCover: document.querySelector(".detail-cover img"),
   dialog: document.querySelector("#gameDialog"),
+  gameAddTargetPicker: document.querySelector("#gameAddTargetPicker"),
   form: document.querySelector("#gameForm"),
   dialogTitle: document.querySelector("#dialogTitle"),
   gameDialogSaveButton: document.querySelector("#gameDialogSaveButton"),
@@ -1303,6 +1304,13 @@ function bindEvents() {
     newGameStreamTouched = true;
     syncNewGameRequiredHighlights();
   });
+  el.gameAddTargetPicker.addEventListener("click", (event) => {
+    const button = event.target.closest("[data-game-target]");
+    if (!button || state.editingId) return;
+    el.fields.section.value = button.dataset.gameTarget;
+    syncStyledSelect(el.fields.section, { activeValue: null });
+    el.fields.section.dispatchEvent(new Event("change", { bubbles: true }));
+  });
   el.fields.section.addEventListener("change", () => {
     markNewGameListTouched();
     syncDialogPriceVisibility();
@@ -1403,6 +1411,7 @@ function bindEvents() {
   window.addEventListener("resize", () => {
     syncDisplayMode();
     syncSectionTabsStickyOffset();
+    syncGameAddTargetPicker();
   }, { passive: true });
   window.matchMedia("(display-mode: standalone)").addEventListener?.("change", syncDisplayMode);
 }
@@ -11801,7 +11810,27 @@ function markNewGameListTouched() {
   syncNewGameRequiredHighlights();
 }
 
+function syncGameAddTargetPicker() {
+  const picker = el.gameAddTargetPicker;
+  const isNewGame = !state.editingId && el.dialog.classList.contains("is-new-game");
+  picker.hidden = !isNewGame;
+  if (!isNewGame) return;
+  const options = picker.querySelector(".shelf-gamelist-target-options");
+  let activeButton;
+  picker.querySelectorAll("[data-game-target]").forEach((button) => {
+    const active = button.dataset.gameTarget === el.fields.section.value;
+    button.classList.toggle("active", active);
+    button.setAttribute("aria-pressed", String(active));
+    if (active) activeButton = button;
+  });
+  if (activeButton) requestAnimationFrame(() => {
+    options.style.setProperty("--target-left", `${activeButton.offsetLeft}px`);
+    options.style.setProperty("--target-width", `${activeButton.offsetWidth}px`);
+  });
+}
+
 function syncNewGameRequiredHighlights() {
+  syncGameAddTargetPicker();
   const isNewGame = !state.editingId && el.dialog.classList.contains("is-new-game");
   el.dialog.classList.toggle("needs-title-field", isNewGame && !el.fields.title.value.trim());
   el.dialog.classList.toggle("needs-platform-field", isNewGame && !el.fields.platform.value.trim());
@@ -11814,8 +11843,9 @@ function syncNewGameRequiredHighlights() {
 }
 
 function syncNewGameUpcomingSection() {
-  if (state.editingId || !newGameShouldBeUpcoming()) return;
-  el.fields.section.value = "upcoming";
+  if (state.editingId) return;
+  if (newGameShouldBeUpcoming()) el.fields.section.value = "upcoming";
+  else if (el.fields.releaseDate.value && el.fields.section.value === "upcoming") el.fields.section.value = "wanted";
   syncStyledSelect(el.fields.section, { activeValue: null });
   syncDialogPriceVisibility();
   syncNewGameRequiredHighlights();
@@ -11885,7 +11915,7 @@ async function openEditor(id = "") {
   const game = state.games.find((item) => item.id === id) || blankGame();
   newGameListTouched = Boolean(id);
   newGameStreamTouched = Boolean(id);
-  el.dialogTitle.textContent = id ? tt("Edit Game") : tt("Add Game");
+  el.dialogTitle.textContent = id ? tt("Edit Game") : tt("Add game");
   const saveLabel = id ? "Save" : "Add to Gamelist";
   el.gameDialogSaveButton.dataset.i18n = saveLabel;
   el.gameDialogSaveButton.textContent = tt(saveLabel);

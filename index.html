@@ -493,7 +493,7 @@
         <div class="modal-head">
           <div>
             <p class="eyebrow" data-i18n="Game details">Game details</p>
-            <h2 id="dialogTitle">Add Game</h2>
+            <h2 id="dialogTitle">Add game</h2>
           </div>
           <div class="modal-head-actions">
             <button class="primary-button modal-head-save" id="gameDialogSaveButton" type="submit" data-i18n="Save">Save</button>
@@ -513,6 +513,15 @@
               <path d="M16.5 16.5 21 21"></path>
             </svg>
           </button>
+        </div>
+        <div class="shelf-gamelist-target-picker" id="gameAddTargetPicker" hidden>
+          <span class="shelf-gamelist-target-label" data-i18n="Add Game To:">Add Game To:</span>
+          <div class="shelf-gamelist-target-options" role="group" aria-label="Add game to">
+            <span class="shelf-gamelist-target-indicator" aria-hidden="true"></span>
+            <button type="button" data-game-target="backlog" data-i18n="Backlog">Backlog</button>
+            <button type="button" data-game-target="upcoming" data-i18n="Upcoming">Upcoming</button>
+            <button type="button" data-game-target="wanted" data-i18n="Available">Available</button>
+          </div>
         </div>
         <div class="lookup-results" id="lookupResults"></div>
 
