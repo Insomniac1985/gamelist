@@ -141,7 +141,6 @@ const el = {
   brandLink: document.querySelector(".brand"),
   brandVersion: document.querySelector("#brandVersion"),
   stats: document.querySelector("#shelfStats"),
-  shelfStatsButton: document.querySelector("#shelfStatsButton"),
   statsDialog: document.querySelector("#shelfStatsDialog"), statsBrow: document.querySelector("#shelfStatsBrow"), statsTitle: document.querySelector("#shelfStatsTitle"), statsYearSelect: document.querySelector("#shelfStatsYearSelect"), statsBody: document.querySelector("#shelfStatsBody"), statsCloseButton: document.querySelector("#shelfStatsCloseButton"),
   count: document.querySelector("#resultCount"),
   libraryTitle: document.querySelector("#shelfLibraryTitle"),
@@ -357,7 +356,6 @@ function bindEvents() {
   el.clear.addEventListener("click", clearFilters);
   el.stats.addEventListener("click", handleStatsAction);
   el.stats.addEventListener("keydown", handleStatsActionKeydown);
-  el.shelfStatsButton?.addEventListener("click", openShelfStatsDialog);
   el.mobileDockStats?.addEventListener("click", openShelfStatsDialog);
   document.addEventListener("click", closePlatformLogoSelects);
   el.login.addEventListener("click", toggleEditMode);

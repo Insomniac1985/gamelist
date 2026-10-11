@@ -4104,6 +4104,9 @@ function resetGameOfTheYearFromForm(event) {
 
 function showGameOfTheYearCallout(year) {
   if (!state.canEdit || el.gotyDialog?.open) return;
+  state.gotyDockDismissed = false;
+  localStorage.removeItem(GOTY_DOCK_DISMISSED_KEY);
+  syncMobileDockGoty();
   let callout = document.querySelector(".goty-callout");
   if (!callout) {
     callout = document.createElement("div");
