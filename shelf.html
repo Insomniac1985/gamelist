@@ -402,10 +402,12 @@
           </label>
         </div>
         <div class="shelf-gamelist-target-picker" id="shelfGamelistTargetPicker" hidden>
-          <span class="shelf-gamelist-target-label" data-i18n="Add to Gamelist as">Add to Gamelist as</span>
-          <div class="shelf-gamelist-target-options">
-            <button type="button" class="ghost-button" data-gamelist-target="wishlist" data-i18n="Wishlist">Wishlist</button>
-            <button type="button" class="ghost-button" data-gamelist-target="preorder" data-i18n="Preorder">Preorder</button>
+          <span class="shelf-gamelist-target-label" data-i18n="Add Game To:">Add Game To:</span>
+          <div class="shelf-gamelist-target-options" role="group" aria-label="Add game to">
+            <span class="shelf-gamelist-target-indicator" aria-hidden="true"></span>
+            <button type="button" data-gamelist-target="shelf" data-i18n="Shelf">Shelf</button>
+            <button type="button" data-gamelist-target="wishlist" data-i18n="Wishlist">Wishlist</button>
+            <button type="button" data-gamelist-target="preorder" data-i18n="Preorder">Preorder</button>
           </div>
         </div>
         <div class="lookup-results" id="lookupResults"></div>

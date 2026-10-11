@@ -4603,6 +4603,18 @@ body.dialog-open .floating-edit-actions {
   padding-right: 18px;
 }
 
+.toolbar-check .preordered-filter-icon {
+  width: 17px;
+  height: 17px;
+  flex: 0 0 17px;
+  color: #fff;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.9;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
 .order-control {
   display: grid;
   grid-template-columns: minmax(0, 1fr) var(--toolbar-control-height);
@@ -8515,7 +8527,7 @@ body:not(.can-edit) .game-card:focus-within .edit-action {
 .completed-list:not(.list-view) .completed-row {
   grid-template-columns: 82px minmax(0, 1fr) auto;
   align-items: start;
-  padding-bottom: 52px;
+  min-height: 178px;
 }
 
 .completed-list:not(.list-view) .completed-cover {
@@ -8529,10 +8541,15 @@ body:not(.can-edit) .game-card:focus-within .edit-action {
   justify-content: flex-start;
 }
 
+.completed-list:not(.list-view) .completed-main {
+  position: static;
+}
+
 .completed-main > .restore-action {
   position: absolute;
-  left: calc(-82px - 12px);
-  bottom: -41px;
+  left: 11px;
+  bottom: 11px;
+  z-index: 2;
   justify-self: start;
   margin: 0;
 }
@@ -8593,13 +8610,9 @@ body:not(.can-edit) .game-card:focus-within .edit-action {
 
 @media (max-width: 760px) {
   .completed-rating-stars .star-display {
-    --rating-star-size: 12px;
+    --rating-star-size: 11px;
   }
 
-  .completed-list:not(.list-view) .completed-main > .restore-action {
-    left: calc(-82px - 9px);
-    bottom: -40px;
-  }
 }
 
 #completedCount {
@@ -15884,8 +15897,25 @@ html.theme-light .finish-trophy-check input[type="checkbox"]:checked {
     justify-content: center;
   }
 
-  .completed-list {
-    grid-template-columns: 1fr;
+  .completed-list:not(.list-view) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .completed-rating-breakdown {
+    gap: 4px 5px;
+  }
+
+  .completed-rating-item {
+    font-size: 10px;
+  }
+
+  .completed-rating-stars {
+    min-height: 24px;
+    padding: 0 4px;
+  }
+
+  .completed-rating-stars .star-display {
+    --rating-star-size: 13px;
   }
 
   .completed-row .restore-action {
@@ -16841,6 +16871,14 @@ html.theme-light .finish-trophy-check input[type="checkbox"]:checked {
 
   .card-list {
     grid-template-columns: 1fr;
+  }
+
+  .completed-list:not(.list-view) {
+    grid-template-columns: 1fr;
+  }
+
+  .completed-rating-stars .star-display {
+    --rating-star-size: 11px;
   }
 
   .card-list.list-view {
