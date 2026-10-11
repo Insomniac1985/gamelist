@@ -1966,11 +1966,11 @@ body.mobile-app-mode .shelf-tabs button.active:hover {
   margin-top: 2px;
 }
 
-#addGameForm.is-new-shelf-game .shelf-title-field input,
-#addGameForm.is-new-shelf-game .shelf-console-field input,
-#addGameForm.is-new-shelf-game .shelf-release-field input,
-#addGameForm.is-new-shelf-game .shelf-addition-field input,
-#addGameForm.is-new-shelf-game .shelf-region-field select {
+#addGameForm.is-new-shelf-game.needs-title-field .shelf-title-field input,
+#addGameForm.is-new-shelf-game.needs-platform-field .shelf-console-field input,
+#addGameForm.is-new-shelf-game.needs-release-date-field .shelf-release-field input,
+#addGameForm.is-new-shelf-game.needs-addition-date-field .shelf-addition-field input,
+#addGameForm.is-new-shelf-game.needs-region-field .shelf-region-field select {
   border-color: color-mix(in srgb, var(--accent) 76%, var(--line));
   background:
     linear-gradient(
@@ -1984,7 +1984,7 @@ body.mobile-app-mode .shelf-tabs button.active:hover {
     0 0 0 3px color-mix(in srgb, var(--accent) 9%, transparent);
 }
 
-#addGameForm.is-new-shelf-game .shelf-region-field .platform-logo-button {
+#addGameForm.is-new-shelf-game.needs-region-field .shelf-region-field .platform-logo-button {
   border-color: color-mix(in srgb, var(--accent) 76%, var(--line));
   background-color: color-mix(in srgb, var(--accent) 14%, var(--panel-strong));
   box-shadow:
@@ -1992,11 +1992,11 @@ body.mobile-app-mode .shelf-tabs button.active:hover {
     0 0 0 3px color-mix(in srgb, var(--accent) 9%, transparent);
 }
 
-#addGameForm.is-new-shelf-game .shelf-title-field > span,
-#addGameForm.is-new-shelf-game .shelf-console-field > span:first-child,
-#addGameForm.is-new-shelf-game .shelf-release-field > span,
-#addGameForm.is-new-shelf-game .shelf-addition-field > span,
-#addGameForm.is-new-shelf-game .shelf-region-field > span:first-child {
+#addGameForm.is-new-shelf-game.needs-title-field .shelf-title-field > span,
+#addGameForm.is-new-shelf-game.needs-platform-field .shelf-console-field > span:first-child,
+#addGameForm.is-new-shelf-game.needs-release-date-field .shelf-release-field > span,
+#addGameForm.is-new-shelf-game.needs-addition-date-field .shelf-addition-field > span,
+#addGameForm.is-new-shelf-game.needs-region-field .shelf-region-field > span:first-child {
   color: color-mix(in srgb, var(--accent) 82%, #fff);
 }
 

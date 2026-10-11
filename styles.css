@@ -14909,10 +14909,6 @@ body.theme-kash
   .collection-form-grid
   > .list-field
   select,
-#gameDialog.is-new-game.needs-list-field
-  .collection-form-grid
-  > .list-field
-  .platform-logo-button,
 #gameDialog.is-new-game.needs-release-date-field
   .collection-form-grid
   > .release-date-field
@@ -14926,6 +14922,17 @@ body.theme-kash
       rgba(255, 255, 255, 0.07)
     ),
     rgba(255, 0, 57, 0.08);
+  box-shadow:
+    inset 0 0 0 1px color-mix(in srgb, var(--accent) 24%, transparent),
+    0 0 0 3px color-mix(in srgb, var(--accent) 10%, transparent);
+}
+
+#gameDialog.is-new-game.needs-list-field
+  .collection-form-grid
+  > .list-field
+  .platform-logo-button {
+  border-color: color-mix(in srgb, var(--accent) 76%, #ff4d62);
+  background-color: color-mix(in srgb, var(--accent) 18%, var(--panel-strong));
   box-shadow:
     inset 0 0 0 1px color-mix(in srgb, var(--accent) 24%, transparent),
     0 0 0 3px color-mix(in srgb, var(--accent) 10%, transparent);
@@ -17723,12 +17730,14 @@ html.theme-light .finish-trophy-check input[type="checkbox"]:checked {
     box-shadow: 0 3px 24px color-mix(in srgb, var(--accent) 32%, transparent);
   }
 
-  .mobile-action-dock:has(.mobile-dock-action:not(#mobileDockAdd):hover)
-    #mobileDockAdd:not(:hover),
-  .mobile-action-dock:has(.mobile-dock-action:not(#mobileDockAdd):focus-visible)
-    #mobileDockAdd:not(:hover):not(:focus-visible) {
-    background: transparent;
-    box-shadow: none;
+  @media (hover: hover) and (pointer: fine) {
+    .mobile-action-dock:has(.mobile-dock-action:not(#mobileDockAdd):hover)
+      #mobileDockAdd:not(:hover),
+    .mobile-action-dock:has(.mobile-dock-action:not(#mobileDockAdd):focus-visible)
+      #mobileDockAdd:not(:hover):not(:focus-visible) {
+      background: transparent;
+      box-shadow: none;
+    }
   }
 
   #mobileDockAdd > span {
@@ -18263,6 +18272,20 @@ body.auth-checking #mobileDockSettings[aria-busy="true"] {
     padding: 12px 0 0;
     transform: none;
     background: var(--panel-dark);
+  }
+}
+
+@media (max-width: 760px) {
+  #mobileDockAdd:not([hidden]) {
+    color: #fff;
+    background: var(--accent);
+    box-shadow: 0 3px 24px color-mix(in srgb, var(--accent) 32%, transparent);
+  }
+
+  .mobile-action-dock:has(.mobile-dock-action:not(#mobileDockAdd):active) #mobileDockAdd:not(:active),
+  .mobile-action-dock:has(.mobile-dock-action:not(#mobileDockAdd):focus-visible) #mobileDockAdd:not(:focus-visible) {
+    background: transparent;
+    box-shadow: none;
   }
 }
 

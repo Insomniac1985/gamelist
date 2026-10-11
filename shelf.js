@@ -136,6 +136,7 @@ const state = {
 };
 
 let shelfEditorDirty = false;
+let shelfNewGameTouchedFields = new Set();
 
 const el = {
   brandLink: document.querySelector(".brand"),
@@ -420,8 +421,10 @@ function bindEvents() {
     showShelfEditorUnsavedDialog();
   });
   el.addForm.addEventListener("submit", saveEditor);
-  el.addForm.addEventListener("input", () => { shelfEditorDirty = true; });
-  el.addForm.addEventListener("change", () => { shelfEditorDirty = true; });
+  el.addForm.addEventListener("input", (event) => { shelfEditorDirty = true; markShelfNewGameFieldTouched(event); });
+  el.addForm.addEventListener("change", (event) => { shelfEditorDirty = true; markShelfNewGameFieldTouched(event); });
+  el.addForm.addEventListener("pointerdown", markShelfNewGameFieldTouched);
+  el.addForm.addEventListener("focusin", markShelfNewGameFieldTouched);
   document.querySelector("#editorUnsavedDialog [data-editor-unsaved-cancel]")?.addEventListener("click", () => closeDialog(document.querySelector("#editorUnsavedDialog")));
   document.querySelector("#editorUnsavedDialog [data-editor-unsaved-save]")?.addEventListener("click", () => {
     closeDialog(document.querySelector("#editorUnsavedDialog"));
@@ -2190,6 +2193,7 @@ function openDetails(game) {
 
 function openEditor(game = null, options = {}) {
   if (!state.canEdit) return openAuth();
+  shelfNewGameTouchedFields = new Set();
   const digitalMode = Boolean(options.digital || isDigitalShelfGame(game));
   state.editingId = game?.id || "";
   el.digitalInput.checked = digitalMode;
@@ -2240,6 +2244,7 @@ function showShelfEditorUnsavedDialog() {
 function syncShelfDigitalEditorMode(digitalMode) {
   el.addForm.classList.toggle("digital-game-editor", digitalMode);
   el.addForm.classList.toggle("is-new-shelf-game", !state.editingId && !digitalMode);
+  syncShelfNewGameHighlights();
   el.addForm.classList.toggle("digital-tracking-disabled", state.gamelistSettings.shelfDigitalGames !== true);
   el.addForm.dataset.digital = digitalMode ? "true" : "false";
   el.fields.country.required = !digitalMode;
@@ -2248,6 +2253,26 @@ function syncShelfDigitalEditorMode(digitalMode) {
   el.addForm.querySelector(".modal-head h2").textContent = tt(game?.pendingCollection ? "Add to Collection" : game ? "Edit Game" : digitalMode ? "Add Digital Game" : "Add Game");
   el.addForm.querySelectorAll("button[type='submit']").forEach((button) => { button.textContent = game?.pendingCollection ? "Add to Collection" : game ? "Save" : digitalMode ? "Add to Drive" : "Add to Shelf"; });
   syncShelfEntitlementEditor();
+}
+
+function markShelfNewGameFieldTouched(event) {
+  const target = event.target;
+  if (!(target instanceof Element)) return;
+  const field = target.closest(".shelf-title-field, .shelf-console-field, .shelf-release-field, .shelf-addition-field, .shelf-region-field");
+  if (!field || !el.addForm.contains(field)) return;
+  const key = field.classList.contains("shelf-title-field") ? "title"
+    : field.classList.contains("shelf-console-field") ? "platform"
+      : field.classList.contains("shelf-release-field") ? "release-date"
+        : field.classList.contains("shelf-addition-field") ? "addition-date" : "region";
+  shelfNewGameTouchedFields.add(key);
+  syncShelfNewGameHighlights();
+}
+
+function syncShelfNewGameHighlights() {
+  const isNewPhysicalGame = el.addForm.classList.contains("is-new-shelf-game");
+  for (const key of ["title", "platform", "release-date", "addition-date", "region"]) {
+    el.addForm.classList.toggle(`needs-${key}-field`, isNewPhysicalGame && !shelfNewGameTouchedFields.has(key));
+  }
 }
 
 async function deleteCurrentEditedGame() {
