@@ -465,6 +465,8 @@ function bindEvents() {
   });
   el.fields.platform.addEventListener("input", syncShelfEditorIcons);
   el.fields.platform.addEventListener("change", syncShelfEditorIcons);
+  el.fields.releaseDate.addEventListener("input", syncShelfGamelistSectionForTarget);
+  el.fields.releaseDate.addEventListener("change", syncShelfGamelistSectionForTarget);
   el.fields.country.addEventListener("change", syncShelfEditorIcons);
   el.lookupButton.addEventListener("click", lookupGame);
   el.digitalInput.addEventListener("change", () => syncShelfDigitalEditorMode(el.digitalInput.checked));
@@ -1924,7 +1926,7 @@ function syncedPreorderGames() {
 function syncedWishlistGames() {
   if (!state.canEdit || state.gamelistSettings.shelfSync === false || state.gamelistSettings.shelfSyncWishlist === false) return [];
   return state.gamelistGames
-    .filter((game) => !game.deletedAt && !game.completedAt && !game.playing && !game.preorderStore && game.section === "wanted" && (!isDigitalShelfGame(game) || state.gamelistSettings.shelfDigitalGames === true))
+    .filter((game) => !game.deletedAt && !game.completedAt && !game.playing && !game.preorderStore && ["wanted", "upcoming"].includes(game.section) && (!isDigitalShelfGame(game) || state.gamelistSettings.shelfDigitalGames === true))
     .map((game) => ({ ...game, platform: canonicalShelfPlatform(game.platform || ""), wishlistProjection: true, genre: (game.genres || []).join(", "), country: "", condition: "Game" }));
 }
 
@@ -2360,7 +2362,7 @@ function syncShelfGamelistTargetMode() {
     el.addForm.querySelectorAll("button[type='submit']").forEach((button) => { button.textContent = tt("Add to Gamelist"); });
     el.lookupLabelPhysical.textContent = tt("Search DB or IGDB URL");
     el.lookupInput.placeholder = tt("Type a game name or paste an IGDB page");
-    el.gamelistSection.value = target === "preorder" ? "upcoming" : "wanted";
+    syncShelfGamelistSectionForTarget();
     el.gamelistSection.disabled = true;
   } else {
     el.lookupLabelPhysical.textContent = tt("Search DB or PriceCharting");
@@ -2376,6 +2378,19 @@ function syncShelfGamelistTargetMode() {
   syncStyledSelect(el.gamelistSection);
   syncShelfGamelistPreorderRequirement();
   syncShelfNewGameHighlights();
+}
+
+function syncShelfGamelistSectionForTarget() {
+  if (state.gamelistAddTarget === "preorder") {
+    el.gamelistSection.value = "upcoming";
+  } else if (state.gamelistAddTarget === "wishlist") {
+    const releaseDate = dateOnly(el.fields.releaseDate.value);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const futureRelease = Boolean(releaseDate) && new Date(`${releaseDate}T00:00:00`).getTime() > today.getTime();
+    el.gamelistSection.value = futureRelease ? "upcoming" : "wanted";
+  }
+  syncStyledSelect(el.gamelistSection);
 }
 
 function syncShelfGamelistTargetIndicator() {
@@ -2667,6 +2682,7 @@ async function chooseLookupResult(event) {
   el.fields.genre.value = (result.genres || []).join(", ");
   el.fields.cover.value = result.cover || "";
   el.fields.releaseDate.value = result.releaseDate || "";
+  syncShelfGamelistSectionForTarget();
   markShelfNewGameFieldsTouched([
     ...(result.title ? ["title"] : []),
     ...(bestCollectionPlatform(result.platforms || [result.platform], el.fields.platform.value) ? ["platform"] : []),
@@ -2705,6 +2721,7 @@ function applyGameMetadata(result) {
   if (result.cover && !el.fields.cover.value) el.fields.cover.value = result.cover;
   if (result.releaseDate && !el.fields.releaseDate.value) {
     el.fields.releaseDate.value = result.releaseDate;
+    syncShelfGamelistSectionForTarget();
     markShelfNewGameFieldsTouched(["release-date"]);
   }
   if (result.description && !el.fields.description.value) el.fields.description.value = result.description;
@@ -2749,6 +2766,7 @@ function applyPhysicalMetadata(data) {
   }
   if (data.releaseDate) {
     el.fields.releaseDate.value = data.releaseDate;
+    syncShelfGamelistSectionForTarget();
     markShelfNewGameFieldsTouched(["release-date"]);
   }
   if (data.upc) el.fields.upc.value = data.upc;
