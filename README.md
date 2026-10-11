@@ -21,20 +21,17 @@ Email: <a href="mailto:shabiimitjans@gmail.com">shabiimitjans@gmail.com</a>
 
 ## Features
 
-- Cloud sync through Cloudflare Workers.
-- Track games across Backlog, Upcoming, Available, Currently Playing, and Finished, with a release calendar and preorder events.
-- Refresh store prices from Available and Upcoming cards.
-- Organize physical and digital games on Shelf, with owners, regions, conditions, categories, selected-store prices, and PriceCharting values.
-- Sync Wishlist and Preorders between Shelf and Gamelist.
+- Track your game collection between Gamelist and Shelf. Organize with Backlog, Upcoming, Available, Currently Playing, and Finished, with a release and preorder, all synced via the cloud.
+- Organize physical and digital games on Shelf, with owners, regions, conditions, categories, selected-store prices, and PriceCharting game values.
 - Search IGDB for game details, covers, trailers, store links, and price searches.
 - Rate games, track yearly favorites, and export a shareable Games of the Year image.
-- Twitch stream previews and shared modules for Currently Playing, Last Finished, Highlights, Search, and Shelf Showcase.
+- Refresh store prices from Available and Upcoming cards.
+- Have a Twitch stream preview alongside your Currently Playing games.
+- Playtime estimates from linked PlayStation, Steam, Xbox and Nintendo accounts.
 - Trophy and achievement dashboards for PlayStation, Steam, and Xbox, plus Nintendo account connection.
-- Playtime estimates from linked Steam and PlayStation accounts.
-- Customize themes and module order; import and export Gamelist and Shelf data as CSV.
+- Customize themes and module order.
 - Responsive layouts and a mobile action dock for quick access to common actions.
-
-Update notes appear in the app when the notification version changes. Edit `updates-popup.html` and increment `notificationVersion` in `version.json` to publish new notes.
+- Easily export and import your game data.
 
 ---
 
