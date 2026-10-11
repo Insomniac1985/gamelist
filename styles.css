@@ -1056,7 +1056,6 @@ html.theme-gradient .goty-section .column-head h2 .trophy-icon {
 }
 
 .goty-save-button,
-.goty-stats-button,
 .goty-edit-button {
   width: 36px;
   min-width: 36px;
@@ -1068,7 +1067,6 @@ html.theme-gradient .goty-section .column-head h2 .trophy-icon {
 
 .goty-edit-button .pencil-icon,
 .goty-save-button .download-icon,
-.goty-stats-button .graph-icon,
 .completed-stats-button .graph-icon {
   width: 18px;
   height: 18px;
@@ -8187,7 +8185,6 @@ body.can-edit #loginButton .pause-icon {
 
 .goty-edit-button .pencil-icon,
 .goty-save-button .download-icon,
-.goty-stats-button .graph-icon,
 .completed-stats-button .graph-icon {
   width: 18px;
   height: 18px;
@@ -8399,8 +8396,7 @@ body:not(.can-edit) .game-card:focus-within .edit-action {
 
 .completed-stats-button,
 .completed-stream-toggle,
-.playing-stream-toggle,
-.goty-stats-button {
+.playing-stream-toggle {
   width: 34px;
   height: 34px;
   min-width: 34px;
@@ -17477,7 +17473,7 @@ html.theme-light .finish-trophy-check input[type="checkbox"]:checked {
     display: grid;
     grid-column: 2;
     grid-row: 1 / span 2;
-    grid-template-columns: repeat(3, 36px);
+    grid-template-columns: repeat(2, 36px);
     gap: 6px 8px;
     justify-content: end;
     justify-self: end;
@@ -17493,17 +17489,12 @@ html.theme-light .finish-trophy-check input[type="checkbox"]:checked {
   }
 
   .goty-save-button,
-  .goty-stats-button,
   .goty-edit-button {
     grid-row: 1;
     align-self: start;
   }
 
   .goty-edit-button {
-    grid-column: 3;
-  }
-
-  .goty-stats-button {
     grid-column: 2;
   }
 

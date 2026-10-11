@@ -306,7 +306,6 @@ const el = {
   gotyYearSelect: document.querySelector("#gotyYearSelect"),
   gotyYearCount: document.querySelector("#gotyYearCount"),
   gotySaveButton: document.querySelector("#gotySaveButton"),
-  gotyStatsButton: document.querySelector("#gotyStatsButton"),
   gotyEditButton: document.querySelector("#gotyEditButton"),
   gotyResetButton: document.querySelector("#gotyResetButton"),
   gotyGrid: document.querySelector("#gotyGrid"),
@@ -1133,7 +1132,6 @@ function bindEvents() {
   });
   el.gotyEditButton?.addEventListener("click", () => openGameOfTheYearDialog(currentGameOfTheYear(), { force: true }));
   el.gotySaveButton?.addEventListener("click", downloadGameOfTheYearImage);
-  el.gotyStatsButton?.addEventListener("click", () => openFinishedStatsDialog(state.gotyYear || currentGameOfTheYear()));
   el.gotyResetButton?.addEventListener("click", resetGameOfTheYearFromForm);
   el.gotyPickerOrder?.addEventListener("change", () => {
     state.gotyPickerOrder = normalizeGameOfTheYearPickerOrder(el.gotyPickerOrder.value || gotyOrderForDefault(state.settings.defaultOrder));
@@ -3641,12 +3639,6 @@ function renderGameOfTheYear() {
   el.gotySaveButton.innerHTML = downloadIcon();
   el.gotySaveButton.title = tt("Download");
   el.gotySaveButton.setAttribute("aria-label", tt("Download"));
-  if (el.gotyStatsButton) {
-    el.gotyStatsButton.hidden = !completedGamesForYear(year).length;
-    el.gotyStatsButton.innerHTML = graphIcon();
-    el.gotyStatsButton.title = tt("Stats");
-    el.gotyStatsButton.setAttribute("aria-label", tt("Stats for {year}", { year }));
-  }
   const gotyCards = categories.map(([key, label]) => {
     const labelText = tt(label);
     const game = gameById(picks[key]);
