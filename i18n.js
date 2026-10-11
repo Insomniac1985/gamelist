@@ -265,6 +265,7 @@ const STRINGS = {
     "Show prices": "Mostrar precios",
     "Show Prices": "Mostrar precios",
     "Track Digital Games (Drive)": "Registrar juegos digitales (Drive)",
+    "Show Preorders on Shelf": "Mostrar reservas en Estantería",
     Export: "Exportar",
     Import: "Importar",
     "Sync games with Shelf": "Sincronizar juegos con Shelf",

@@ -1886,13 +1886,14 @@ function syncMobileDockGoty() {
     state.gotyDockDismissed = false;
     localStorage.removeItem(GOTY_DOCK_DISMISSED_KEY);
   }
-  button.hidden = window.innerWidth > 760
-    || !state.canEdit
+  button.hidden = !state.canEdit
     || !state.gotyDockDismissed
     || !candidates.length
     || isSetUp
     || Boolean(el.gotyDialog?.open);
-  button.innerHTML = trophyIcon();
+  button.innerHTML = `${trophyIcon()}<span>${escapeHtml(tt("Check my GOTYs"))}</span>`;
+  button.title = tt("Check my GOTYs");
+  button.setAttribute("aria-label", tt("Check my GOTYs"));
 }
 
 async function persistCloud() {

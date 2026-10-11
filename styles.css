@@ -1388,11 +1388,17 @@ html.theme-gradient .goty-section .column-head h2 .trophy-icon {
 
 @media (max-width: 760px) {
   .goty-dialog .goty-modal {
-    max-height: calc(100dvh - max(6px, env(safe-area-inset-bottom)) - 90px);
+    max-height: calc(100dvh - max(6px, env(safe-area-inset-bottom)) - 130px);
   }
 
-  .goty-dialog[open] {
-    transform: translateY(calc(50dvh - 50% - max(6px, env(safe-area-inset-bottom)) - 78px));
+  .goty-dialog[open],
+  #gotyStatsPreviewDialog[open] {
+    transform: translateY(calc(50dvh - 50% - max(6px, env(safe-area-inset-bottom)) - 118px));
+  }
+
+  #gotyStatsPreviewDialog .goty-stats-preview-modal {
+    max-height: calc(100dvh - max(6px, env(safe-area-inset-bottom)) - 130px) !important;
+    overflow-y: auto !important;
   }
 }
 
@@ -2209,6 +2215,12 @@ html.theme-gradient .goty-section .column-head h2 .trophy-icon {
   transition:
     opacity 180ms ease,
     transform 180ms ease;
+}
+
+@media (min-width: 761px) {
+  .goty-callout {
+    bottom: clamp(16px, 3vw, 28px);
+  }
 }
 
 .goty-callout.visible {
@@ -7890,18 +7902,14 @@ body:not(.can-edit) .top-actions-separator {
 
   .top-actions #addButton {
     order: 7;
-    width: 42px;
-    min-width: 42px;
-    padding: 0;
+    width: auto;
+    min-width: 0;
+    padding: 10px 14px;
     justify-content: center;
-    gap: 0;
+    gap: 8px;
     color: #fff;
     background: var(--accent);
     border-color: transparent;
-  }
-
-  .top-actions #addButton .button-label {
-    display: none;
   }
 
   .top-actions #addButton .button-icon {
@@ -7974,6 +7982,10 @@ body:not(.can-edit) .top-actions-separator {
   display: none !important;
 }
 
+#mobileDockGoty[hidden] {
+  display: none !important;
+}
+
 #mobileDockStats .graph-icon {
   width: 21px;
   height: 21px;
@@ -7982,7 +7994,13 @@ body:not(.can-edit) .top-actions-separator {
 #mobileDockGoty .trophy-icon {
   width: 23px;
   height: 23px;
-  color: #ffe985;
+  color: currentColor;
+}
+
+#mobileDockSettings .settings-icon {
+  width: 21px;
+  height: 21px;
+  stroke-width: 1.7;
 }
 
 .mobile-switch-logos {
@@ -14683,7 +14701,7 @@ body.theme-kash
 .settings-page-toggle-row {
   grid-column: 1 / -1;
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 10px;
   margin-top: 2px;
 }
@@ -17521,10 +17539,6 @@ html.theme-light .finish-trophy-check input[type="checkbox"]:checked {
 }
 
 @media (min-width: 761px) {
-  #mobileDockGoty {
-    display: none !important;
-  }
-
   #mobileDockUp {
     display: grid !important;
     width: 0;
@@ -17623,6 +17637,12 @@ html.theme-light .finish-trophy-check input[type="checkbox"]:checked {
     color: #fff;
     background: var(--accent);
     box-shadow: 0 3px 24px color-mix(in srgb, var(--accent) 32%, transparent);
+  }
+
+  .mobile-action-dock:has(.mobile-dock-action:not(#mobileDockAdd):hover) #mobileDockAdd:not(:hover),
+  .mobile-action-dock:has(.mobile-dock-action:not(#mobileDockAdd):focus-visible) #mobileDockAdd:not(:hover):not(:focus-visible) {
+    background: transparent;
+    box-shadow: none;
   }
 
   #mobileDockAdd > span {
@@ -17743,6 +17763,55 @@ html.theme-light .finish-trophy-check input[type="checkbox"]:checked {
     transition-duration: 220ms;
   }
 
+  #mobileDockGoty {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0;
+    overflow: hidden;
+    transition:
+      flex-basis 420ms cubic-bezier(0.2, 0.8, 0.2, 1),
+      width 420ms cubic-bezier(0.2, 0.8, 0.2, 1),
+      padding 420ms cubic-bezier(0.2, 0.8, 0.2, 1),
+      gap 420ms cubic-bezier(0.2, 0.8, 0.2, 1),
+      background 140ms ease,
+      box-shadow 140ms ease;
+  }
+
+  #mobileDockGoty > span {
+    display: inline-block;
+    width: 0;
+    overflow: hidden;
+    opacity: 0;
+    font-weight: 900;
+    white-space: nowrap;
+    transition:
+      width 420ms cubic-bezier(0.2, 0.8, 0.2, 1),
+      opacity 220ms ease;
+  }
+
+  #mobileDockGoty:hover,
+  #mobileDockGoty:focus-visible {
+    width: 194px;
+    flex-basis: 194px;
+    gap: 8px;
+    justify-content: flex-start;
+    padding-inline: 12px;
+    transition-duration: 220ms;
+  }
+
+  #mobileDockGoty:hover > span,
+  #mobileDockGoty:focus-visible > span {
+    width: 120px;
+    opacity: 1;
+    transition-duration: 220ms;
+  }
+
+  #mobileDockGoty:hover .trophy-icon,
+  #mobileDockGoty:focus-visible .trophy-icon {
+    color: #ffe985;
+  }
+
   .mobile-dock-action svg {
     width: 24px;
     height: 24px;
@@ -17790,6 +17859,10 @@ body.page-pulling #mobileActionDock {
 }
 
 @media (max-width: 760px) {
+  #mobileDockGoty .trophy-icon {
+    color: #ffe985;
+  }
+
   body.page-pulling #mobileActionDock,
   body.page-switching > #mobileActionDock {
     transform: translateX(-50%) translateY(26px);
