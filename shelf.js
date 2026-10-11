@@ -381,7 +381,17 @@ function bindEvents() {
   el.floatingAdd.addEventListener("click", () => state.canEdit ? openEditor(null, { digital: state.filters.tab === "drive" }) : openAuth());
   el.floatingSearch?.addEventListener("click", scrollToShelfSearch);
   el.mobileDockAdd?.addEventListener("click", () => el.floatingAdd.click());
-  el.mobileDockSearch?.addEventListener("click", scrollToShelfSearch);
+  el.mobileDockSearch?.addEventListener("click", () => {
+    el.mobileDockSearch.classList.add("is-active");
+    scrollToShelfSearch();
+  });
+  el.mobileActionDock?.addEventListener("click", (event) => {
+    const action = event.target.closest(".mobile-dock-action");
+    if (action && action !== el.mobileDockSearch) el.mobileDockSearch?.classList.remove("is-active");
+  });
+  document.addEventListener("pointerdown", (event) => {
+    if (!el.mobileActionDock?.contains(event.target)) el.mobileDockSearch?.classList.remove("is-active");
+  });
   el.mobileDockSettings?.addEventListener("click", openLayout);
   el.mobileDockSwitch?.addEventListener("click", () => {
     if (pageSwitchHidden()) return;
