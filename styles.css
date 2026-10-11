@@ -10764,8 +10764,12 @@ body.theme-kash .playing-finished-game.completed-trophy-card:hover {
 
 .rating-score-pill {
   display: inline-flex;
+  flex: 0 0 auto;
   align-items: center;
   justify-content: center;
+  box-sizing: border-box;
+  min-height: 31px;
+  padding: 4px 8px;
   gap: 4px;
   color: var(--rating-score-main);
   background:
@@ -10775,6 +10779,7 @@ body.theme-kash .playing-finished-game.completed-trophy-card:hover {
   border-radius: 7px;
   font-weight: 850;
   line-height: 1;
+  white-space: nowrap;
   --rating-score-start: rgba(255, 71, 103, 0.18);
   --rating-score-end: rgba(255, 153, 79, 0.12);
   --rating-score-border: rgba(255, 111, 133, 0.34);
