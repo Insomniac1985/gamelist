@@ -18780,10 +18780,14 @@ body:not(.shelf-page) #wanted .price-refresh-action {
   min-width: 0;
   flex: 0 0 auto;
   padding: 5px;
-  background: transparent;
-  border: 1px solid transparent;
+  background:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.075), rgba(255, 255, 255, 0.025)),
+    color-mix(in srgb, var(--panel-dark) 30%, transparent);
+  border: 1px solid rgba(255, 255, 255, 0.18);
   border-radius: 10px;
   isolation: isolate;
+  backdrop-filter: blur(10px) saturate(1.12);
+  -webkit-backdrop-filter: blur(10px) saturate(1.12);
 }
 
 .shelf-gamelist-target-indicator {
