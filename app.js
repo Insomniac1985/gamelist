@@ -363,7 +363,6 @@ const el = {
   gotyPickerOrder: document.querySelector("#gotyPickerOrder"),
   gotyPickerGrid: document.querySelector("#gotyPickerGrid"),
   gotyStatsPreviewDialog: document.querySelector("#gotyStatsPreviewDialog"),
-  gotyStatsPreviewCloseButton: document.querySelector("#gotyStatsPreviewCloseButton"),
   gotyStatsPreviewContinueButton: document.querySelector("#gotyStatsPreviewContinueButton"),
   gotyStatsPreviewBrow: document.querySelector("#gotyStatsPreviewBrow"),
   gotyStatsPreviewTitle: document.querySelector("#gotyStatsPreviewTitle"),
@@ -1150,7 +1149,6 @@ function bindEvents() {
     syncScrollLock();
   });
   el.gotyForm?.addEventListener("submit", saveGameOfTheYearFromForm);
-  el.gotyStatsPreviewCloseButton?.addEventListener("click", () => el.gotyStatsPreviewDialog.close());
   el.gotyStatsPreviewDialog?.addEventListener("click", (event) => {
     if (event.target === el.gotyStatsPreviewDialog) el.gotyStatsPreviewDialog.close();
   });

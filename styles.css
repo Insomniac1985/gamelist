@@ -1465,13 +1465,6 @@ html.theme-gradient .goty-section .column-head h2 .trophy-icon {
     transform: none !important;
   }
 
-  #gotyStatsPreviewDialog .goty-stats-preview-modal {
-    max-height: calc(
-      100dvh - max(6px, env(safe-area-inset-bottom)) - 90px
-    ) !important;
-    overflow-y: auto !important;
-  }
-
   .goty-callout {
     bottom: calc(max(6px, env(safe-area-inset-bottom)) + 80px) !important;
   }
@@ -18195,6 +18188,29 @@ body.auth-checking #mobileDockSettings[aria-busy="true"] {
     overflow-x: hidden;
     overflow-y: auto;
     overscroll-behavior: contain;
+  }
+}
+
+@media (max-width: 760px) {
+  .finished-stats-body.goty-stats-preview-body {
+    padding-bottom: 16px;
+  }
+
+  .goty-stats-preview-actions {
+    position: static !important;
+    bottom: auto;
+    width: 100%;
+    margin: 16px 0 0;
+    padding-bottom: env(safe-area-inset-bottom);
+    transform: none;
+  }
+
+  .goty-stats-preview-continue {
+    min-height: 48px;
+    padding-inline: 12px;
+    font-size: clamp(12px, 3.7vw, 15px);
+    line-height: 1.2;
+    white-space: normal;
   }
 }
 
