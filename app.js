@@ -7434,13 +7434,13 @@ function renderCompleted() {
               ${completedDurationLine(game)}
               ${completedDateLine(game)}
             </div>
+            ${ratingBreakdown}
           </div>
           <div class="completed-actions">
             <button class="icon-button completed-edit-action" type="button" title="Edit" aria-label="Edit">${pencilIcon()}</button>
             <button class="ghost-button restore-action" type="button">${backIcon()}<span>${escapeHtml(tt("Backlog"))}</span></button>
           </div>
         </div>
-        ${ratingBreakdown}
       </div>
     `;
   }).join("") : `<div class="empty">Finished games will stay saved here.</div>`;
@@ -10265,7 +10265,9 @@ function completedRatingBreakdownMarkup(game) {
   return `<div class="completed-rating-breakdown" aria-label="${escapeHtml(tt("Rating breakdown"))}">${rows.map(([key, label, value]) => `
     <span class="completed-rating-item" data-rating-key="${escapeHtml(key)}">
       <span>${escapeHtml(tt(label))}</span>
-      <strong>${escapeHtml(value)}/5</strong>
+      <span class="completed-rating-stars" style="${ratingStarFillStyle(value)}" aria-label="${escapeHtml(`${tt(label)}: ${value}/5`)}">
+        <span class="star-display" aria-hidden="true">${ratingStarsMarkup()}</span>
+      </span>
     </span>
   `).join("")}</div>`;
 }
