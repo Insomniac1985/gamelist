@@ -18295,8 +18295,7 @@ body.auth-checking #mobileDockSettings[aria-busy="true"] {
     box-shadow: 0 3px 24px color-mix(in srgb, var(--accent) 32%, transparent);
   }
 
-  .mobile-action-dock:has(.mobile-dock-action:not(#mobileDockAdd):active) #mobileDockAdd:not(:active),
-  .mobile-action-dock:has(.mobile-dock-action:not(#mobileDockAdd):focus-visible) #mobileDockAdd:not(:focus-visible) {
+  .mobile-action-dock:has(.mobile-dock-action:not(#mobileDockAdd):active) #mobileDockAdd:not(:active) {
     background: transparent;
     box-shadow: none;
   }
