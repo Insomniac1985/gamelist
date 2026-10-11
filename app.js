@@ -7345,7 +7345,7 @@ function renderCompleted() {
     el.completedStatsButton.innerHTML = graphIcon();
     if (el.mobileDockStats) {
       el.mobileDockStats.hidden = !hasFinishedGames;
-      el.mobileDockStats.innerHTML = graphIcon();
+      el.mobileDockStats.innerHTML = `${graphIcon()}<span>${escapeHtml(tt("Check statistics"))}</span>`;
     }
   }
   renderCompletedStreamToggle();

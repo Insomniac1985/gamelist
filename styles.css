@@ -1386,6 +1386,16 @@ html.theme-gradient .goty-section .column-head h2 .trophy-icon {
   transform: translateY(-42px);
 }
 
+@media (min-width: 761px) {
+  .goty-dialog .goty-modal {
+    max-height: calc(100dvh - clamp(16px, 3vw, 28px) - 96px);
+  }
+
+  .goty-dialog[open] {
+    transform: translateY(calc(50dvh - 50% - clamp(16px, 3vw, 28px) - 84px));
+  }
+}
+
 .goty-stats-preview-dialog {
   width: min(960px, calc(100vw - 24px));
   max-height: calc(100vh - 24px);
@@ -17592,6 +17602,10 @@ html.theme-light .finish-trophy-check input[type="checkbox"]:checked {
       box-shadow 140ms ease;
   }
 
+  #mobileDockAdd .plus-icon {
+    color: var(--accent);
+  }
+
   #mobileDockAdd > span {
     display: inline-block;
     width: 0;
@@ -17666,6 +17680,50 @@ html.theme-light .finish-trophy-check input[type="checkbox"]:checked {
     transition-duration: 220ms;
   }
 
+  #mobileDockStats {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0;
+    overflow: hidden;
+    transition:
+      flex-basis 420ms cubic-bezier(0.2, 0.8, 0.2, 1),
+      width 420ms cubic-bezier(0.2, 0.8, 0.2, 1),
+      padding 420ms cubic-bezier(0.2, 0.8, 0.2, 1),
+      gap 420ms cubic-bezier(0.2, 0.8, 0.2, 1),
+      background 140ms ease,
+      box-shadow 140ms ease;
+  }
+
+  #mobileDockStats > span {
+    display: inline-block;
+    width: 0;
+    overflow: hidden;
+    opacity: 0;
+    font-weight: 900;
+    white-space: nowrap;
+    transition:
+      width 420ms cubic-bezier(0.2, 0.8, 0.2, 1),
+      opacity 220ms ease;
+  }
+
+  #mobileDockStats:hover,
+  #mobileDockStats:focus-visible {
+    width: 174px;
+    flex-basis: 174px;
+    gap: 8px;
+    justify-content: flex-start;
+    padding-inline: 12px;
+    transition-duration: 220ms;
+  }
+
+  #mobileDockStats:hover > span,
+  #mobileDockStats:focus-visible > span {
+    width: 120px;
+    opacity: 1;
+    transition-duration: 220ms;
+  }
+
   .mobile-dock-action svg {
     width: 24px;
     height: 24px;
@@ -17683,6 +17741,11 @@ html.theme-light .finish-trophy-check input[type="checkbox"]:checked {
     background: var(--accent);
     box-shadow: 0 3px 24px color-mix(in srgb, var(--accent) 42%, transparent);
     outline: none;
+  }
+
+  #mobileDockAdd:hover .plus-icon,
+  #mobileDockAdd:focus-visible .plus-icon {
+    color: #fff;
   }
 
   #mobileDockSettings,
