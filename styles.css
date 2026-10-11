@@ -1399,11 +1399,27 @@ html.theme-gradient .goty-section .column-head h2 .trophy-icon {
 }
 
 @media (max-width: 760px) {
+  #gotyDialog,
+  #gotyStatsPreviewDialog {
+    position: fixed;
+    inset: 0 !important;
+    width: 100vw !important;
+    max-width: 100vw !important;
+    height: 100dvh !important;
+    max-height: 100dvh !important;
+    margin: 0 !important;
+    padding: 0;
+    box-sizing: border-box;
+    overflow: hidden;
+    border-radius: 0;
+    transform: none !important;
+  }
+
   .goty-dialog .goty-modal {
     width: 100%;
     max-width: 100%;
-    height: calc(100dvh - max(6px, env(safe-area-inset-bottom)) - 90px);
-    max-height: calc(100dvh - max(6px, env(safe-area-inset-bottom)) - 90px);
+    height: 100%;
+    max-height: 100%;
     min-height: 0;
     box-sizing: border-box;
     overflow-x: hidden;
@@ -1411,15 +1427,22 @@ html.theme-gradient .goty-section .column-head h2 .trophy-icon {
     overscroll-behavior: contain;
     touch-action: pan-y;
     -webkit-overflow-scrolling: touch;
+    padding: calc(18px + env(safe-area-inset-top)) 14px
+      calc(18px + env(safe-area-inset-bottom));
   }
 
   #gotyStatsPreviewDialog {
-    width: calc(100vw - 16px) !important;
-    max-width: calc(100vw - 16px) !important;
-    height: calc(100dvh - max(6px, env(safe-area-inset-bottom)) - 90px);
-    max-height: calc(100dvh - max(6px, env(safe-area-inset-bottom)) - 90px);
-    box-sizing: border-box;
-    overflow: hidden;
+    background: var(--grid-fade), var(--grid-texture), var(--panel-dark);
+    background-size:
+      auto,
+      22px 22px,
+      22px 22px,
+      auto;
+    background-position:
+      center,
+      var(--grid-x) var(--grid-y),
+      var(--grid-x) var(--grid-y),
+      center;
   }
 
   #gotyStatsPreviewDialog .goty-stats-preview-modal {
@@ -1433,13 +1456,13 @@ html.theme-gradient .goty-section .column-head h2 .trophy-icon {
     overscroll-behavior: contain;
     touch-action: pan-y;
     -webkit-overflow-scrolling: touch;
+    padding: calc(14px + env(safe-area-inset-top)) 14px
+      calc(14px + env(safe-area-inset-bottom));
   }
 
   .goty-dialog[open],
   #gotyStatsPreviewDialog[open] {
-    transform: translateY(
-      calc(50dvh - 50% - max(6px, env(safe-area-inset-bottom)) - 82px)
-    );
+    transform: none !important;
   }
 
   #gotyStatsPreviewDialog .goty-stats-preview-modal {
@@ -17556,11 +17579,11 @@ html.theme-light .finish-trophy-check input[type="checkbox"]:checked {
   }
 
   .goty-edit-button {
-    grid-column: 2;
+    grid-column: 1;
   }
 
   .goty-save-button {
-    grid-column: 1;
+    grid-column: 2;
   }
 
   .goty-grid {
@@ -17982,17 +18005,22 @@ body.page-pulling #mobileActionDock {
     border-radius: 8px;
   }
 
-  #platinumDialog {
-    width: calc(100vw - 8px) !important;
-    max-width: calc(100vw - 8px) !important;
-    height: calc(100dvh - max(6px, env(safe-area-inset-bottom)) - 90px);
-    max-height: calc(100dvh - max(6px, env(safe-area-inset-bottom)) - 90px);
-    transform: translateY(
-      calc(50dvh - 50% - max(6px, env(safe-area-inset-bottom)) - 82px)
-    );
+  :is(#platinumDialog, #shelfCompletedDialog) {
+    position: fixed;
+    inset: 0 !important;
+    width: 100vw !important;
+    max-width: 100vw !important;
+    height: 100dvh !important;
+    max-height: 100dvh !important;
+    margin: 0 !important;
+    padding: 0;
+    box-sizing: border-box;
+    overflow: hidden;
+    border-radius: 0;
+    transform: none !important;
   }
 
-  #platinumDialog > .platinum-modal {
+  :is(#platinumDialog, #shelfCompletedDialog) > .platinum-modal {
     width: 100%;
     height: 100%;
     max-height: 100%;
@@ -18003,6 +18031,34 @@ body.page-pulling #mobileActionDock {
     overscroll-behavior: contain;
     touch-action: pan-y;
     -webkit-overflow-scrolling: touch;
+    padding: calc(14px + env(safe-area-inset-top)) 10px
+      calc(14px + env(safe-area-inset-bottom));
+  }
+
+  :is(#platinumDialog, #shelfCompletedDialog) .platinum-filter-bar {
+    box-sizing: border-box;
+    grid-template-columns: minmax(0, 0.78fr) minmax(0, 0.96fr) minmax(0, 1.35fr);
+    gap: 8px;
+    padding: 8px;
+  }
+
+  :is(#platinumDialog, #shelfCompletedDialog) .platinum-order-control {
+    gap: 5px;
+  }
+
+  :is(#platinumDialog, #shelfCompletedDialog) .platinum-order-control .direction-toggle {
+    flex-basis: 36px;
+    width: 36px;
+    min-width: 36px;
+  }
+
+  :is(#platinumDialog, #shelfCompletedDialog) .platinum-list {
+    width: 100%;
+    max-width: none;
+    max-height: none;
+    box-sizing: border-box;
+    padding-right: 0;
+    overflow: visible;
   }
 
   #gameDialog,
