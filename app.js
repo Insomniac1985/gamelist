@@ -980,7 +980,17 @@ function bindEvents() {
   el.mobileDockAdd?.addEventListener("click", quickAddGame);
   el.searchButton?.addEventListener("click", scrollToSearchArea);
   el.floatingSearchButton?.addEventListener("click", scrollToSearchArea);
-  el.mobileDockSearch?.addEventListener("click", scrollToSearchArea);
+  el.mobileDockSearch?.addEventListener("click", () => {
+    el.mobileDockSearch.classList.add("is-active");
+    scrollToSearchArea();
+  });
+  el.mobileActionDock?.addEventListener("click", (event) => {
+    const action = event.target.closest(".mobile-dock-action");
+    if (action && action !== el.mobileDockSearch) el.mobileDockSearch?.classList.remove("is-active");
+  });
+  document.addEventListener("pointerdown", (event) => {
+    if (!el.mobileActionDock?.contains(event.target)) el.mobileDockSearch?.classList.remove("is-active");
+  });
   el.mobileDockStats?.addEventListener("click", () => openFinishedStatsDialog(state.completedYear || "all", { streamMode: state.completedStreamMode }));
   el.mobileDockGoty?.addEventListener("click", () => openGameOfTheYearDialogWithAutofillLoading(currentGameOfTheYear(), { force: true, autoPick: true }));
   el.syncButton.addEventListener("click", syncNow);
@@ -9557,7 +9567,6 @@ function updateDetailTrophyEdges() {
 }
 
 function updateScrollTopButton() {
-  syncMobileDockViewport();
   const visible = window.scrollY > 180 && !document.body.classList.contains("dialog-open");
   const dockVisible = window.innerWidth >= 761 || window.scrollY > 180;
   el.scrollTopButton?.classList.toggle("visible", visible);
@@ -9565,18 +9574,6 @@ function updateScrollTopButton() {
   el.mobileActionDock?.classList.toggle("visible", dockVisible);
   el.mobileDockUp?.classList.toggle("is-visible", visible);
 }
-
-function syncMobileDockViewport() {
-  const viewport = window.visualViewport;
-  const bottomGap = viewport
-    ? Math.max(0, Math.round(window.innerHeight - viewport.height - viewport.offsetTop))
-    : 0;
-  document.documentElement.style.setProperty("--mobile-dock-viewport-bottom", `${bottomGap}px`);
-}
-
-window.visualViewport?.addEventListener("resize", syncMobileDockViewport, { passive: true });
-window.visualViewport?.addEventListener("scroll", syncMobileDockViewport, { passive: true });
-syncMobileDockViewport();
 
 function sortedDetailTrophies() {
   const direction = state.detailTrophyDirection === "asc" ? 1 : -1;

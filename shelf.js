@@ -381,7 +381,17 @@ function bindEvents() {
   el.floatingAdd.addEventListener("click", () => state.canEdit ? openEditor(null, { digital: state.filters.tab === "drive" }) : openAuth());
   el.floatingSearch?.addEventListener("click", scrollToShelfSearch);
   el.mobileDockAdd?.addEventListener("click", () => el.floatingAdd.click());
-  el.mobileDockSearch?.addEventListener("click", scrollToShelfSearch);
+  el.mobileDockSearch?.addEventListener("click", () => {
+    el.mobileDockSearch.classList.add("is-active");
+    scrollToShelfSearch();
+  });
+  el.mobileActionDock?.addEventListener("click", (event) => {
+    const action = event.target.closest(".mobile-dock-action");
+    if (action && action !== el.mobileDockSearch) el.mobileDockSearch?.classList.remove("is-active");
+  });
+  document.addEventListener("pointerdown", (event) => {
+    if (!el.mobileActionDock?.contains(event.target)) el.mobileDockSearch?.classList.remove("is-active");
+  });
   el.mobileDockSettings?.addEventListener("click", openLayout);
   el.mobileDockSwitch?.addEventListener("click", () => {
     if (pageSwitchHidden()) return;
@@ -1185,7 +1195,6 @@ function normalizeOwnerKey(value) {
 }
 
 function updateFloatingActions() {
-  syncMobileDockViewport();
   const visible = window.scrollY > 180 && !document.body.classList.contains("dialog-open");
   const dockVisible = window.innerWidth >= 761 || window.scrollY > 180;
   el.scrollTop.classList.toggle("visible", visible);
@@ -1193,18 +1202,6 @@ function updateFloatingActions() {
   el.mobileActionDock?.classList.toggle("visible", dockVisible);
   el.mobileDockUp?.classList.toggle("is-visible", visible);
 }
-
-function syncMobileDockViewport() {
-  const viewport = window.visualViewport;
-  const bottomGap = viewport
-    ? Math.max(0, Math.round(window.innerHeight - viewport.height - viewport.offsetTop))
-    : 0;
-  document.documentElement.style.setProperty("--mobile-dock-viewport-bottom", `${bottomGap}px`);
-}
-
-window.visualViewport?.addEventListener("resize", syncMobileDockViewport, { passive: true });
-window.visualViewport?.addEventListener("scroll", syncMobileDockViewport, { passive: true });
-syncMobileDockViewport();
 
 async function syncShelfNow() {
   if (el.syncButton) el.syncButton.disabled = true;

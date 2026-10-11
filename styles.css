@@ -4358,8 +4358,8 @@ body.dialog-open .floating-edit-actions {
   height: 32px;
   min-height: 32px;
   padding: 0 6px 0 8px;
-  background: transparent;
-  border: 1px solid transparent;
+  background: color-mix(in srgb, var(--panel-dark) 38%, transparent);
+  border: 1px solid color-mix(in srgb, var(--line) 52%, transparent);
   border-radius: 4px;
   cursor: pointer;
   box-sizing: border-box;
@@ -15977,7 +15977,7 @@ html.theme-light .finish-trophy-check input[type="checkbox"]:checked {
   .mobile-action-dock {
     position: fixed;
     left: 50%;
-    bottom: calc(max(6px, env(safe-area-inset-bottom)) + var(--mobile-dock-viewport-bottom, 0px));
+    bottom: max(6px, env(safe-area-inset-bottom));
     z-index: 20;
     display: flex;
     width: min(620px, calc(100vw - 8px));
@@ -18615,7 +18615,9 @@ body.auth-checking #mobileDockSettings[aria-busy="true"] {
     box-shadow: 0 3px 24px color-mix(in srgb, var(--accent) 32%, transparent);
   }
 
-  .mobile-action-dock:has(.mobile-dock-action:not(#mobileDockAdd):active) #mobileDockAdd:not(:active) {
+  .mobile-action-dock:has(.mobile-dock-action:not(#mobileDockAdd):active) #mobileDockAdd:not(:active),
+  .mobile-action-dock:has(.mobile-dock-action:not(#mobileDockAdd):focus) #mobileDockAdd:not(:focus),
+  .mobile-action-dock:has(.mobile-dock-action:not(#mobileDockAdd).is-active) #mobileDockAdd:not(.is-active) {
     background: transparent;
     box-shadow: none;
   }
@@ -18780,10 +18782,14 @@ body:not(.shelf-page) #wanted .price-refresh-action {
   min-width: 0;
   flex: 0 0 auto;
   padding: 5px;
-  background: transparent;
-  border: 1px solid transparent;
+  background:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.075), rgba(255, 255, 255, 0.025)),
+    color-mix(in srgb, var(--panel-dark) 30%, transparent);
+  border: 1px solid rgba(255, 255, 255, 0.18);
   border-radius: 10px;
   isolation: isolate;
+  backdrop-filter: blur(10px) saturate(1.12);
+  -webkit-backdrop-filter: blur(10px) saturate(1.12);
 }
 
 .shelf-gamelist-target-indicator {

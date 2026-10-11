@@ -1960,11 +1960,6 @@ body.mobile-app-mode .shelf-tabs button.active:hover {
   display: none !important;
 }
 
-.shelf-gamelist-target-options {
-  background: transparent;
-  border-color: transparent;
-}
-
 .shelf-gamelist-placement:not([hidden]) {
   display: contents;
 }
