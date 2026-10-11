@@ -8511,6 +8511,27 @@ body:not(.can-edit) .game-card:focus-within .edit-action {
   height: auto;
 }
 
+.completed-list:not(.list-view) .completed-row {
+  grid-template-columns: 74px minmax(0, 1fr) auto;
+  align-items: start;
+}
+
+.completed-list:not(.list-view) .completed-cover {
+  width: 74px;
+  height: 102px;
+  align-self: start;
+}
+
+.completed-list:not(.list-view) .completed-actions {
+  align-self: start;
+  justify-content: flex-start;
+}
+
+.completed-main > .restore-action {
+  justify-self: start;
+  margin: 5px 0 0;
+}
+
 .completed-item:has(.completed-rating-breakdown) .completed-row {
   min-height: 122px;
 }
@@ -8518,16 +8539,16 @@ body:not(.can-edit) .game-card:focus-within .edit-action {
 .completed-rating-breakdown {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 4px 8px;
+  gap: 6px 10px;
   min-width: 0;
   padding: 0 3px 2px;
 }
 
 .completed-rating-item {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  align-items: center;
-  gap: 5px;
+  grid-template-rows: auto auto;
+  justify-items: start;
+  gap: 3px;
   min-width: 0;
   color: var(--dim);
   font-size: 11px;
@@ -8535,7 +8556,8 @@ body:not(.can-edit) .game-card:focus-within .edit-action {
   line-height: 1.25;
 }
 
-.completed-rating-item > span {
+.completed-rating-label {
+  max-width: 100%;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -8544,6 +8566,16 @@ body:not(.can-edit) .game-card:focus-within .edit-action {
 .completed-rating-stars {
   display: inline-flex;
   align-items: center;
+  min-height: 28px;
+  padding: 1px 6px;
+  color: var(--accent);
+  background: rgba(255, 255, 255, 0.045);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  --rating-active-color: var(--accent);
+}
+
+.completed-rating-stars.is-perfect {
   color: #ffe985;
   --rating-active-color: #ffe985;
 }
