@@ -14369,6 +14369,10 @@ body.theme-kash
   display: none;
 }
 
+.platinum-art-layer {
+  display: none;
+}
+
 .platinum-card {
   position: relative;
   display: grid;
@@ -14380,10 +14384,14 @@ body.theme-kash
   padding: 10px;
   color: var(--text);
   text-decoration: none;
-  background: rgba(229, 232, 255, 0.08);
-  border: 1px solid rgba(229, 232, 255, 0.24);
+  background: var(--grid-fade), var(--grid-texture), color-mix(in srgb, var(--panel-dark) 68%, transparent);
+  background-size: auto, 22px 22px, auto;
+  background-position: center, var(--grid-x) var(--grid-y), center;
+  border: 1px solid var(--line);
   border-radius: 7px;
   overflow: visible;
+  backdrop-filter: blur(8px) saturate(1.08);
+  -webkit-backdrop-filter: blur(8px) saturate(1.08);
   transition:
     border-color 160ms ease,
     background 160ms ease,
