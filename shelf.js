@@ -1805,6 +1805,7 @@ function renderLibrary() {
   state.filters.tab = tabs.includes(state.filters.tab) ? state.filters.tab : "shelf";
   const games = filteredGames();
   el.tabs.hidden = tabs.length < 2;
+  el.libraryTitle.hidden = tabs.length < 2;
   el.tabs.classList.toggle("sync-preorders-enabled", state.canEdit && state.gamelistSettings.shelfSync !== false);
   el.tabs.classList.toggle("four-tabs", tabs.length === 4);
   el.tabs.dataset.activeTab = state.filters.tab;

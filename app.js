@@ -1892,6 +1892,9 @@ function syncMobileDockGoty() {
   button.innerHTML = `${trophyIcon()}<span>${escapeHtml(tt("Check my GOTYs"))}</span>`;
   button.title = tt("Check my GOTYs");
   button.setAttribute("aria-label", tt("Check my GOTYs"));
+  if (el.mobileDockStats) {
+    el.mobileDockStats.hidden = !button.hidden || !finishedGamesForCurrentView().length;
+  }
 }
 
 async function persistCloud() {
@@ -7398,7 +7401,8 @@ function renderCompleted() {
     el.completedStatsButton.hidden = !hasFinishedGames;
     el.completedStatsButton.innerHTML = graphIcon();
     if (el.mobileDockStats) {
-      el.mobileDockStats.hidden = !hasFinishedGames;
+      const gotyOnDock = Boolean(el.mobileDockGoty && !el.mobileDockGoty.hidden);
+      el.mobileDockStats.hidden = !hasFinishedGames || gotyOnDock;
       el.mobileDockStats.innerHTML = `${graphIcon()}<span>${escapeHtml(tt("Check statistics"))}</span>`;
     }
   }

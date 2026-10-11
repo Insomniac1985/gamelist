@@ -1388,17 +1388,21 @@ html.theme-gradient .goty-section .column-head h2 .trophy-icon {
 
 @media (max-width: 760px) {
   .goty-dialog .goty-modal {
-    max-height: calc(100dvh - max(6px, env(safe-area-inset-bottom)) - 210px);
+    max-height: calc(100dvh - max(6px, env(safe-area-inset-bottom)) - 130px);
   }
 
   .goty-dialog[open],
   #gotyStatsPreviewDialog[open] {
-    transform: translateY(calc(50dvh - 50% - max(6px, env(safe-area-inset-bottom)) - 150px));
+    transform: translateY(calc(50dvh - 50% - max(6px, env(safe-area-inset-bottom)) - 118px));
   }
 
   #gotyStatsPreviewDialog .goty-stats-preview-modal {
-    max-height: calc(100dvh - max(6px, env(safe-area-inset-bottom)) - 210px) !important;
+    max-height: calc(100dvh - max(6px, env(safe-area-inset-bottom)) - 130px) !important;
     overflow-y: auto !important;
+  }
+
+  .goty-callout {
+    bottom: calc(max(6px, env(safe-area-inset-bottom)) + 80px);
   }
 }
 
@@ -17813,14 +17817,14 @@ html.theme-light .finish-trophy-check input[type="checkbox"]:checked {
   #mobileDockGoty:focus-visible .trophy-icon,
   #mobileDockGoty:active .trophy-icon,
   #mobileDockGoty.is-active .trophy-icon {
-    color: #fff;
+    color: #302817;
   }
 
   #mobileDockGoty:hover,
   #mobileDockGoty:focus-visible,
   #mobileDockGoty:active,
   #mobileDockGoty.is-active {
-    color: #fff;
+    color: #302817;
     background: #ffe985;
     border-color: #ffe985;
     box-shadow: 0 3px 24px rgba(255, 233, 133, 0.42);
@@ -17873,9 +17877,18 @@ body.page-pulling #mobileActionDock {
 }
 
 @media (max-width: 760px) {
+  body:not(.shelf-page) dialog[open],
+  body.shelf-page dialog[open] {
+    width: calc(100vw - 16px) !important;
+    max-width: calc(100vw - 16px) !important;
+    box-sizing: border-box;
+    overflow: hidden;
+    border-radius: 8px;
+  }
+
   #mobileDockGoty:active,
   #mobileDockGoty.is-active {
-    color: #fff;
+    color: #302817;
     background: #ffe985;
     border-color: #ffe985;
     box-shadow: 0 3px 24px rgba(255, 233, 133, 0.42);
@@ -17883,7 +17896,7 @@ body.page-pulling #mobileActionDock {
 
   #mobileDockGoty:active .trophy-icon,
   #mobileDockGoty.is-active .trophy-icon {
-    color: #fff;
+    color: #302817;
   }
 
   body.page-pulling #mobileActionDock,
