@@ -1970,7 +1970,8 @@ body.mobile-app-mode .shelf-tabs button.active:hover {
 #addGameForm.is-new-shelf-game .shelf-console-field input,
 #addGameForm.is-new-shelf-game .shelf-release-field input,
 #addGameForm.is-new-shelf-game .shelf-addition-field input,
-#addGameForm.is-new-shelf-game .shelf-region-field select {
+#addGameForm.is-new-shelf-game .shelf-region-field select,
+#addGameForm.is-new-shelf-game .shelf-region-field .platform-logo-button {
   border-color: color-mix(in srgb, var(--accent) 76%, var(--line));
   background:
     linear-gradient(
