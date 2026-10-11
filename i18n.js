@@ -12,6 +12,8 @@ const STRINGS = {
     Close: "Cerrar",
     Page: "Página",
     "Page Layout": "Diseño de página",
+    "Gamelist page layout": "Diseño de página de Gamelist",
+    "Shelf page layout": "Diseño de página de Estantería",
     Details: "Detalles",
     "PlayStation account": "Cuenta de PlayStation",
     "Microsoft account": "Cuenta de Microsoft",
