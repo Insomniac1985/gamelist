@@ -1983,6 +1983,14 @@ body.mobile-app-mode .shelf-tabs button.active:hover {
   display: none !important;
 }
 
+.shelf-gamelist-placement:not([hidden]) {
+  display: contents;
+}
+
+.shelf-gamelist-placement > label {
+  grid-column: span 4;
+}
+
 .shelf-gamelist-target-label {
   color: var(--muted);
   font-size: 13px;
@@ -1993,6 +2001,10 @@ body.mobile-app-mode .shelf-tabs button.active:hover {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
+}
+
+.shelf-gamelist-target-options button {
+  font-size: 16px;
 }
 
 .shelf-gamelist-target-options button.active {
@@ -2010,12 +2022,8 @@ body.mobile-app-mode .shelf-tabs button.active:hover {
   display: none !important;
 }
 
-.shelf-gamelist-placement-grid {
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-}
-
-.shelf-gamelist-placement-grid > label {
-  grid-column: span 1;
+.gamelist-target-editor .shelf-title-field {
+  grid-column: span 4;
 }
 
 #addGameForm.needs-gamelist-preorder-store .shelf-gamelist-preorder-field input {
@@ -2632,8 +2640,8 @@ textarea {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
-  .shelf-gamelist-placement-grid {
-    grid-template-columns: minmax(0, 1fr);
+  .shelf-gamelist-placement > label {
+    grid-column: 1 / -1;
   }
 
   .shelf-page .calendar-section.hero {

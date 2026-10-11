@@ -422,7 +422,6 @@ function bindEvents() {
   el.editDelete.addEventListener("click", deleteCurrentEditedGame);
   el.addDialog.addEventListener("click", (event) => { if (event.target === el.addDialog) requestShelfEditorClose(); });
   el.addDialog.addEventListener("cancel", (event) => {
-    if (!validateShelfGamelistTarget()) { event.preventDefault(); return; }
     if (!shelfEditorDirty) return;
     event.preventDefault();
     showShelfEditorUnsavedDialog();
@@ -446,10 +445,6 @@ function bindEvents() {
     el.addForm.requestSubmit(el.addForm.querySelector("button[type='submit']"));
   });
   document.querySelector("#editorUnsavedDialog [data-editor-unsaved-discard]")?.addEventListener("click", () => {
-    if (!validateShelfGamelistTarget()) {
-      closeDialog(document.querySelector("#editorUnsavedDialog"));
-      return;
-    }
     shelfEditorDirty = false;
     closeDialog(document.querySelector("#editorUnsavedDialog"));
     closeDialog(el.addDialog);
@@ -2272,7 +2267,6 @@ function openEditor(game = null, options = {}) {
 }
 
 function requestShelfEditorClose() {
-  if (!validateShelfGamelistTarget()) return;
   if (shelfEditorDirty) {
     showShelfEditorUnsavedDialog();
     return;
@@ -2355,7 +2349,6 @@ function setShelfGamelistAddTarget(target) {
   if (state.gamelistAddTarget === "preorder") el.gamelistPreorderStore.value = "";
   syncShelfGamelistTargetMode();
   shelfEditorDirty = true;
-  if (state.gamelistAddTarget === "preorder") requestAnimationFrame(() => el.gamelistPreorderStore.focus());
 }
 
 function syncShelfGamelistPreorderRequirement() {
@@ -2371,8 +2364,7 @@ function validateShelfGamelistTarget() {
   }
   syncShelfGamelistPreorderRequirement();
   if (!el.addForm.classList.contains("needs-gamelist-preorder-store")) return true;
-  el.gamelistPreorderStore.focus();
-  showToast(tt("Set the preorder store before saving or closing."), "error");
+  showToast(tt("Set the preorder store before saving."), "error");
   return false;
 }
 
