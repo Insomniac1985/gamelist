@@ -344,6 +344,7 @@ const el = {
   mobileDockAdd: document.querySelector("#mobileDockAdd"),
   mobileDockUp: document.querySelector("#mobileDockUp"),
   mobileDockSearch: document.querySelector("#mobileDockSearch"),
+  mobileDockStats: document.querySelector("#mobileDockStats"),
   mobileDockSettings: document.querySelector("#mobileDockSettings"),
   mobileDockSwitch: document.querySelector("#mobileDockSwitch"),
   mobileTabs: document.querySelectorAll("[data-mobile-section]"),
@@ -935,6 +936,14 @@ async function clearSiteCachesAndReload() {
 function bindEvents() {
   bindModalTouchGuard();
   syncStyledSelect(el.detailTrophySort);
+  window.addEventListener("keydown", (event) => {
+    if (window.innerWidth < 761 || event.key.toLowerCase() !== "f" || event.repeat || event.isComposing) return;
+    if (event.altKey || event.ctrlKey || event.metaKey || event.shiftKey) return;
+    const target = event.target;
+    if (target instanceof HTMLElement && target.closest("input, textarea, select, [contenteditable='true'], [role='textbox'], dialog[open]")) return;
+    event.preventDefault();
+    scrollToSearchArea();
+  });
   el.brandLink.addEventListener("click", (event) => {
     event.preventDefault();
     const twitchUrl = twitchChannelUrl(normalizeSettings(state.settings).twitchUser);
@@ -955,6 +964,7 @@ function bindEvents() {
   el.searchButton?.addEventListener("click", scrollToSearchArea);
   el.floatingSearchButton?.addEventListener("click", scrollToSearchArea);
   el.mobileDockSearch?.addEventListener("click", scrollToSearchArea);
+  el.mobileDockStats?.addEventListener("click", () => openFinishedStatsDialog(state.completedYear || "all", { streamMode: state.completedStreamMode }));
   el.syncButton.addEventListener("click", syncNow);
   el.settingsButton?.addEventListener("click", openSettingsDialog);
   el.mobileDockSettings?.addEventListener("click", openSettingsDialog);
@@ -7330,8 +7340,13 @@ function renderCompleted() {
   if (state.completedYear !== "all" && !years.includes(state.completedYear)) state.completedYear = "all";
   renderCompletedYearFilter(years);
   if (el.completedStatsButton) {
-    el.completedStatsButton.hidden = !finishedGamesForCurrentView().length;
+    const hasFinishedGames = Boolean(finishedGamesForCurrentView().length);
+    el.completedStatsButton.hidden = !hasFinishedGames;
     el.completedStatsButton.innerHTML = graphIcon();
+    if (el.mobileDockStats) {
+      el.mobileDockStats.hidden = !hasFinishedGames;
+      el.mobileDockStats.innerHTML = graphIcon();
+    }
   }
   renderCompletedStreamToggle();
   const filteredFinishedGames = filteredGames({ applyPreorder: false }).filter((game) => game.completedAt && finishedStreamFilterMatches(game));

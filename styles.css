@@ -1383,6 +1383,7 @@ html.theme-gradient .goty-section .column-head h2 .trophy-icon {
 
 .goty-dialog[open] {
   overflow-x: hidden;
+  transform: translateY(-42px);
 }
 
 .goty-stats-preview-dialog {
@@ -7869,6 +7870,22 @@ body:not(.can-edit) .top-actions-separator {
 
   .top-actions #addButton {
     order: 7;
+    width: 42px;
+    min-width: 42px;
+    padding: 0;
+    justify-content: center;
+    gap: 0;
+    color: #fff;
+    background: var(--accent);
+    border-color: transparent;
+  }
+
+  .top-actions #addButton .button-label {
+    display: none;
+  }
+
+  .top-actions #addButton .button-icon {
+    margin: 0;
   }
 }
 
@@ -7931,6 +7948,15 @@ body:not(.can-edit) .top-actions-separator {
 
 .mobile-dock-action > span:not(.mobile-switch-logos) {
   display: none;
+}
+
+#mobileDockStats[hidden] {
+  display: none !important;
+}
+
+#mobileDockStats .graph-icon {
+  width: 21px;
+  height: 21px;
 }
 
 .mobile-switch-logos {
