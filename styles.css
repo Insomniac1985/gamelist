@@ -1403,15 +1403,15 @@ html.theme-gradient .goty-section .column-head h2 .trophy-icon {
   #gotyStatsPreviewDialog {
     position: fixed;
     inset: 0 !important;
-    width: 100vw !important;
-    max-width: 100vw !important;
-    height: 100dvh !important;
-    max-height: 100dvh !important;
-    margin: 0 !important;
+    width: calc(100vw - 16px) !important;
+    max-width: calc(100vw - 16px) !important;
+    height: calc(100dvh - 16px) !important;
+    max-height: calc(100dvh - 16px) !important;
+    margin: auto !important;
     padding: 0;
     box-sizing: border-box;
     overflow: hidden;
-    border-radius: 0;
+    border-radius: 8px;
     transform: none !important;
   }
 
@@ -14284,7 +14284,7 @@ body.theme-kash
   border: 1px solid var(--line);
   border-radius: 8px;
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05);
-  background: var(--panel-dark);
+  background: var(--panel);
   box-shadow:
     var(--shadow),
     0 10px 24px rgba(0, 0, 0, 0.24);
@@ -15522,6 +15522,17 @@ html.theme-light .finish-trophy-check input[type="checkbox"]:checked {
 .modal-actions {
   justify-content: flex-end;
   margin-top: 14px;
+}
+
+/* Keep dialog Save actions aligned with their 36px Close controls. */
+.modal-head-actions > .modal-head-save,
+.modal-save-button {
+  height: 36px;
+  min-height: 36px;
+  box-sizing: border-box;
+  padding: 8px 14px;
+  font-size: 13px;
+  line-height: 18px;
 }
 
 .empty {
@@ -18008,15 +18019,15 @@ body.page-pulling #mobileActionDock {
   :is(#platinumDialog, #shelfCompletedDialog) {
     position: fixed;
     inset: 0 !important;
-    width: 100vw !important;
-    max-width: 100vw !important;
-    height: 100dvh !important;
-    max-height: 100dvh !important;
-    margin: 0 !important;
+    width: calc(100vw - 16px) !important;
+    max-width: calc(100vw - 16px) !important;
+    height: calc(100dvh - 16px) !important;
+    max-height: calc(100dvh - 16px) !important;
+    margin: auto !important;
     padding: 0;
     box-sizing: border-box;
     overflow: hidden;
-    border-radius: 0;
+    border-radius: 8px;
     transform: none !important;
   }
 
