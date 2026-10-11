@@ -5713,8 +5713,12 @@ body.theme-kash
   pointer-events: none;
   border-radius: inherit;
   background:
+    linear-gradient(rgba(255, 255, 255, 0.045) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.04) 1px, transparent 1px),
     linear-gradient(135deg, rgba(255, 255, 255, 0.16), transparent 24%),
     linear-gradient(180deg, transparent 58%, rgba(0, 0, 0, 0.38));
+  background-size: 22px 22px, 22px 22px, auto, auto;
+  background-position: var(--grid-x) var(--grid-y), var(--grid-x) var(--grid-y), center, center;
   opacity: 0.78;
 }
 
@@ -10846,7 +10850,7 @@ dialog {
 
 @media (min-width: 761px) {
   #updatesDialog {
-    width: min(760px, calc(100vw - 64px));
+    width: min(920px, calc(100vw - 64px));
   }
 
   .updates-modal {
@@ -11119,6 +11123,15 @@ body.dialog-open .toolbar {
   width: min(480px, calc(100vw - 24px));
   margin: auto;
 }
+.settings-unsaved-modal,
+.unsaved-edit-modal {
+  background: var(--grid-fade), var(--grid-texture), var(--panel-dark);
+  background-size: auto, 22px 22px, 22px 22px, auto;
+  background-position: center, var(--grid-x) var(--grid-y), var(--grid-x) var(--grid-y), center;
+  backdrop-filter: blur(8px) saturate(1.08);
+  -webkit-backdrop-filter: blur(8px) saturate(1.08);
+}
+
 .settings-unsaved-modal {
   display: grid;
   gap: 16px;
