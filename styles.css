@@ -18357,4 +18357,8 @@ html.theme-light #shelfCompletedDialog > .platinum-modal {
   backdrop-filter: blur(8px) saturate(1.08);
   -webkit-backdrop-filter: blur(8px) saturate(1.08);
 }
+body:not(.shelf-page) #upcoming .price-refresh-action,
+body:not(.shelf-page) #wanted .price-refresh-action {
+  display: inline-flex !important;
+}
 

@@ -8894,8 +8894,8 @@ function cardFor(game, options = {}) {
   const deleteAction = card.querySelector(".delete-action");
   if (priceRefreshAction) {
     priceRefreshAction.innerHTML = currencyIcon();
-    priceRefreshAction.title = tt("Prices");
-    priceRefreshAction.setAttribute("aria-label", tt("Prices"));
+    priceRefreshAction.title = tt("Refresh Prices");
+    priceRefreshAction.setAttribute("aria-label", tt("Refresh Prices"));
   }
   if (boughtAction) boughtAction.textContent = tt("Backlog");
   if (completeAction) completeAction.textContent = tt("Finished");
