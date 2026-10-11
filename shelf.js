@@ -2352,7 +2352,7 @@ function syncShelfGamelistTargetMode() {
   if (active) {
     if (eyebrow) eyebrow.textContent = tt("Gamelist");
     if (title) title.textContent = tt("Add to Gamelist");
-    el.addForm.querySelector(".form-group h3").textContent = tt("Game details");
+    el.addForm.querySelector(".form-group h3").textContent = tt("Collecting Information");
     el.addForm.querySelectorAll("button[type='submit']").forEach((button) => { button.textContent = tt("Add to Gamelist"); });
     el.lookupLabelPhysical.textContent = tt("Search DB or IGDB URL");
     el.lookupInput.placeholder = tt("Type a game name or paste an IGDB page");

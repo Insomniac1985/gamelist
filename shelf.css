@@ -1938,7 +1938,7 @@ body.mobile-app-mode .shelf-tabs button.active:hover {
 }
 
 .gamelist-target-editor .lookup-label-physical {
-  display: inline;
+  display: block;
 }
 
 .gamelist-target-editor .lookup-label-digital {
@@ -2080,9 +2080,9 @@ body.mobile-app-mode .shelf-tabs button.active:hover {
 
 .gamelist-target-editor .shelf-title-field { grid-area: 1 / 1 / 2 / 8; }
 .gamelist-target-editor .shelf-console-field { grid-area: 1 / 8 / 2 / 13; }
-.gamelist-target-editor .gamelist-target-digital-field { grid-area: 2 / 1 / 3 / 3; }
-.gamelist-target-editor .shelf-release-field { grid-area: 2 / 3 / 3 / 8; }
-.gamelist-target-editor .shelf-release-text-field { grid-area: 2 / 8 / 3 / 13; }
+.gamelist-target-editor .gamelist-target-digital-field { grid-area: 2 / 1 / 3 / 3; display: flex !important; }
+.gamelist-target-editor .shelf-release-field { grid-area: 2 / 3 / 3 / 6; }
+.gamelist-target-editor .shelf-release-text-field { grid-area: 2 / 6 / 3 / 13; }
 .gamelist-target-editor .shelf-dlc-field { grid-area: 3 / 1 / 4 / 4; }
 .gamelist-target-editor .shelf-gamelist-emulator-field { grid-area: 3 / 4 / 4 / 7; }
 .gamelist-target-editor .shelf-gamelist-coop-field { grid-area: 3 / 7 / 4 / 10; }
@@ -2094,13 +2094,14 @@ body.mobile-app-mode .shelf-tabs button.active:hover {
 .gamelist-target-editor .shelf-owner-field { grid-area: 5 / 1 / 6 / 7; }
 .gamelist-target-editor .shelf-gamelist-status-field { grid-area: 5 / 7 / 6 / 13; }
 .gamelist-target-editor .shelf-achievement-search-field { grid-area: 6 / 1 / 7 / 13; }
-.gamelist-target-editor .shelf-gamelist-stream-field { grid-area: 7 / 1 / 8 / 4; }
+.gamelist-target-editor .shelf-gamelist-stream-field { grid-area: 8 / 1 / 9 / 4; }
 .gamelist-target-editor .shelf-entitlement-field.shelf-psplus-field { grid-area: 7 / 4 / 8 / 7; }
 .gamelist-target-editor .shelf-entitlement-field.shelf-games-with-gold-field { grid-area: 7 / 7 / 8 / 10; }
 .gamelist-target-editor .shelf-gamelist-flag,
 .gamelist-target-editor .shelf-dlc-field,
 .gamelist-target-editor .shelf-entitlement-field,
 .gamelist-target-editor .gamelist-target-digital-field { align-self: end; min-height: 44px; }
+.gamelist-target-editor .shelf-dlc-field { display: flex !important; }
 
 #addGameForm.needs-gamelist-preorder-store .shelf-gamelist-preorder-field input {
   border-color: color-mix(in srgb, var(--accent) 78%, var(--line));
