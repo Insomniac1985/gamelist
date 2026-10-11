@@ -18350,7 +18350,7 @@ html.theme-light #shelfCompletedDialog > .platinum-modal {
   display: none !important;
 }
 
-.game-card.glass.has-art:not(.playing-card) {
+.game-card.glass:not(.playing-card) {
   background: var(--grid-texture), color-mix(in srgb, var(--panel) 72%, transparent);
   background-size: 22px 22px, auto;
   background-position: var(--grid-x) var(--grid-y), center;
@@ -18360,5 +18360,32 @@ html.theme-light #shelfCompletedDialog > .platinum-modal {
 body:not(.shelf-page) #upcoming .price-refresh-action,
 body:not(.shelf-page) #wanted .price-refresh-action {
   display: inline-flex !important;
+}
+.completed-row,
+.history-row,
+.playing-finished-game {
+  position: relative;
+  isolation: isolate;
+}
+
+.completed-row::before,
+.history-row::before,
+.playing-finished-game::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  border-radius: inherit;
+  background-image: var(--grid-texture);
+  background-size: 22px 22px;
+  background-position: var(--grid-x) var(--grid-y);
+  pointer-events: none;
+}
+
+.completed-row > *,
+.history-row > *,
+.playing-finished-game > * {
+  position: relative;
+  z-index: 1;
 }
 
