@@ -203,20 +203,15 @@
         })();
       </script>
       <div class="top-actions">
-        <button class="ghost-button" id="loginButton" type="button" title="Edit" aria-label="Edit" data-i18n-title="Edit" data-i18n-aria-label="Edit">
+        <button class="ghost-button" id="loginButton" type="button" title="Edit" aria-label="Edit" data-i18n-title="Edit" data-i18n-aria-label="Edit" hidden>
           <svg class="pencil-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h4l11-11a2.8 2.8 0 0 0-4-4L4 16v4Z"></path><path d="M13.5 6.5l4 4"></path></svg>
         </button>
         <button class="icon-button" id="settingsButton" type="button" title="Settings" aria-label="Settings" data-i18n-title="Settings" data-i18n-aria-label="Settings" aria-busy="true" disabled hidden>
           <svg class="settings-icon" viewBox="0 0 24 24" aria-hidden="true">
-            <path d="M4 6h6"></path>
-            <path d="M14 6h6"></path>
-            <circle cx="12" cy="6" r="2"></circle>
-            <path d="M4 12h11"></path>
-            <path d="M19 12h1"></path>
-            <circle cx="17" cy="12" r="2"></circle>
-            <path d="M4 18h2"></path>
-            <path d="M10 18h10"></path>
-            <circle cx="8" cy="18" r="2"></circle>
+            <path d="M4 6h10M18 6h2M4 12h2M10 12h10M4 18h10M18 18h2"></path>
+            <circle cx="16" cy="6" r="2"></circle>
+            <circle cx="8" cy="12" r="2"></circle>
+            <circle cx="16" cy="18" r="2"></circle>
           </svg>
         </button>
         <span class="top-actions-separator" aria-hidden="true"></span>
@@ -256,7 +251,6 @@
           <div class="release-calendar" id="shelfReleaseCalendar" aria-label="Upcoming release calendar"></div>
         </section>
         <section class="highlights-section" data-module="kpis">
-          <div class="column-head shelf-stats-launch-row"><button class="icon-button completed-stats-button" id="shelfStatsButton" type="button" title="Shelf statistics" aria-label="Shelf statistics"><svg class="graph-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 19h16"></path><path d="M7 16V9"></path><path d="M12 16V5"></path><path d="M17 16v-4"></path></svg></button></div>
           <div class="stats" id="shelfStats" aria-live="polite"></div>
         </section>
 
@@ -298,7 +292,7 @@
         <section class="shelf-library" data-module="library">
           <div class="shelf-tabs" id="shelfTabs" hidden></div>
           <div class="column-head">
-            <h2 id="shelfLibraryTitle">Shelf</h2>
+            <h2 id="shelfLibraryTitle" hidden>Shelf</h2>
             <span id="resultCount"></span>
           </div>
           <div class="shelf-grid" id="gameShelf" aria-live="polite"></div>
@@ -340,11 +334,15 @@
         <svg class="settings-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h10M18 6h2M4 12h2M10 12h10M4 18h10M18 18h2"></path><circle cx="16" cy="6" r="2"></circle><circle cx="8" cy="12" r="2"></circle><circle cx="16" cy="18" r="2"></circle></svg>
         <span data-i18n="Settings">Settings</span>
       </button>
+      <button class="mobile-dock-action" id="mobileDockStats" type="button" title="Shelf statistics" aria-label="Shelf statistics" data-i18n-title="Shelf statistics" data-i18n-aria-label="Shelf statistics">
+        <svg class="graph-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 19h16"></path><path d="M7 16V9"></path><path d="M12 16V5"></path><path d="M17 16v-4"></path></svg>
+        <span data-i18n="Check statistics">Check statistics</span>
+      </button>
       <button class="mobile-dock-action" id="mobileDockSearch" type="button" title="Search" aria-label="Search" data-i18n-title="Search" data-i18n-aria-label="Search">
         <svg class="search-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.5"></circle><path d="m16 16 4 4"></path></svg>
         <span data-i18n="Search">Search</span>
       </button>
-      <button class="mobile-dock-action" id="mobileDockAdd" type="button" aria-label="Add Game" data-i18n-aria-label="Add Game">
+      <button class="mobile-dock-action" id="mobileDockAdd" type="button" aria-label="Add Game" data-i18n-aria-label="Add Game" hidden>
         <svg class="plus-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"></path></svg>
         <span data-i18n="Add Game">Add Game</span>
       </button>

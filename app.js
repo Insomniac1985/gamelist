@@ -306,12 +306,10 @@ const el = {
   gotyYearSelect: document.querySelector("#gotyYearSelect"),
   gotyYearCount: document.querySelector("#gotyYearCount"),
   gotySaveButton: document.querySelector("#gotySaveButton"),
-  gotyStatsButton: document.querySelector("#gotyStatsButton"),
   gotyEditButton: document.querySelector("#gotyEditButton"),
   gotyResetButton: document.querySelector("#gotyResetButton"),
   gotyGrid: document.querySelector("#gotyGrid"),
   achievementSection: document.querySelector("#achievementSection"),
-  achievementStatsButton: document.querySelector("#achievementStatsButton"),
   calendarSection: document.querySelector(".calendar-section"),
   highlightsSection: document.querySelector(".highlights-section"),
   achievementPanel: document.querySelector("#achievementPanel"),
@@ -982,7 +980,7 @@ function bindEvents() {
   el.floatingSearchButton?.addEventListener("click", scrollToSearchArea);
   el.mobileDockSearch?.addEventListener("click", scrollToSearchArea);
   el.mobileDockStats?.addEventListener("click", () => openFinishedStatsDialog(state.completedYear || "all", { streamMode: state.completedStreamMode }));
-  el.mobileDockGoty?.addEventListener("click", () => openGameOfTheYearDialog(currentGameOfTheYear(), { force: true }));
+  el.mobileDockGoty?.addEventListener("click", () => openGameOfTheYearDialogWithAutofillLoading(currentGameOfTheYear(), { force: true, autoPick: true }));
   el.syncButton.addEventListener("click", syncNow);
   el.settingsButton?.addEventListener("click", openSettingsDialog);
   el.mobileDockSettings?.addEventListener("click", openSettingsDialog);
@@ -1121,7 +1119,6 @@ function bindEvents() {
   el.completedYearFilter?.addEventListener("change", handleCompletedYearChange);
   el.completedStreamToggleButton?.addEventListener("click", cycleCompletedStreamMode);
   el.completedStatsButton?.addEventListener("click", () => openFinishedStatsDialog(state.completedYear || "all", { streamMode: state.completedStreamMode }));
-  el.achievementStatsButton?.addEventListener("click", () => openFinishedStatsDialog("all", { yearPicker: true }));
   el.finishedStatsYearSelect?.addEventListener("change", () => {
     renderFinishedStatsDialog(el.finishedStatsYearSelect.value || "all");
   });
@@ -1135,7 +1132,6 @@ function bindEvents() {
   });
   el.gotyEditButton?.addEventListener("click", () => openGameOfTheYearDialog(currentGameOfTheYear(), { force: true }));
   el.gotySaveButton?.addEventListener("click", downloadGameOfTheYearImage);
-  el.gotyStatsButton?.addEventListener("click", () => openFinishedStatsDialog(state.gotyYear || currentGameOfTheYear()));
   el.gotyResetButton?.addEventListener("click", resetGameOfTheYearFromForm);
   el.gotyPickerOrder?.addEventListener("change", () => {
     state.gotyPickerOrder = normalizeGameOfTheYearPickerOrder(el.gotyPickerOrder.value || gotyOrderForDefault(state.settings.defaultOrder));
@@ -1886,13 +1882,17 @@ function syncMobileDockGoty() {
     state.gotyDockDismissed = false;
     localStorage.removeItem(GOTY_DOCK_DISMISSED_KEY);
   }
-  button.hidden = window.innerWidth > 760
-    || !state.canEdit
+  button.hidden = !state.canEdit
     || !state.gotyDockDismissed
     || !candidates.length
     || isSetUp
     || Boolean(el.gotyDialog?.open);
-  button.innerHTML = trophyIcon();
+  button.innerHTML = `${trophyIcon()}<span>${escapeHtml(tt("Check my GOTYs"))}</span>`;
+  button.title = tt("Check my GOTYs");
+  button.setAttribute("aria-label", tt("Check my GOTYs"));
+  if (el.mobileDockStats) {
+    el.mobileDockStats.hidden = !button.hidden || !finishedGamesForCurrentView().length;
+  }
 }
 
 async function persistCloud() {
@@ -1922,6 +1922,7 @@ function render() {
   el.loginButton.setAttribute("aria-label", el.loginButton.title);
   el.loginButton.hidden = state.canEdit;
   el.addButton.hidden = false;
+  if (el.mobileDockAdd) el.mobileDockAdd.hidden = !state.canEdit;
   el.syncButton.hidden = !state.canEdit;
   if (el.settingsButton) el.settingsButton.hidden = !state.canEdit;
   if (el.mobileDockSettings) el.mobileDockSettings.hidden = !state.canEdit;
@@ -3638,12 +3639,6 @@ function renderGameOfTheYear() {
   el.gotySaveButton.innerHTML = downloadIcon();
   el.gotySaveButton.title = tt("Download");
   el.gotySaveButton.setAttribute("aria-label", tt("Download"));
-  if (el.gotyStatsButton) {
-    el.gotyStatsButton.hidden = !completedGamesForYear(year).length;
-    el.gotyStatsButton.innerHTML = graphIcon();
-    el.gotyStatsButton.title = tt("Stats");
-    el.gotyStatsButton.setAttribute("aria-label", tt("Stats for {year}", { year }));
-  }
   const gotyCards = categories.map(([key, label]) => {
     const labelText = tt(label);
     const game = gameById(picks[key]);
@@ -4103,6 +4098,9 @@ function resetGameOfTheYearFromForm(event) {
 
 function showGameOfTheYearCallout(year) {
   if (!state.canEdit || el.gotyDialog?.open) return;
+  state.gotyDockDismissed = false;
+  localStorage.removeItem(GOTY_DOCK_DISMISSED_KEY);
+  syncMobileDockGoty();
   let callout = document.querySelector(".goty-callout");
   if (!callout) {
     callout = document.createElement("div");
@@ -7395,7 +7393,8 @@ function renderCompleted() {
     el.completedStatsButton.hidden = !hasFinishedGames;
     el.completedStatsButton.innerHTML = graphIcon();
     if (el.mobileDockStats) {
-      el.mobileDockStats.hidden = !hasFinishedGames;
+      const gotyOnDock = Boolean(el.mobileDockGoty && !el.mobileDockGoty.hidden);
+      el.mobileDockStats.hidden = !hasFinishedGames || gotyOnDock;
       el.mobileDockStats.innerHTML = `${graphIcon()}<span>${escapeHtml(tt("Check statistics"))}</span>`;
     }
   }
