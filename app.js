@@ -86,6 +86,7 @@ const DEFAULT_SETTINGS = {
   storeSettingsVersion: 2,
   defaultOwner: "User",
   shelfSync: true,
+  shelfSyncWishlist: true,
   hidePageSwitch: false,
   streamFilterPriority: "all",
   prioritizeFinishedStream: false,
@@ -1824,6 +1825,7 @@ function normalizeSettings(settings = {}) {
     storeSettingsVersion: 2,
     defaultOwner: cleanOwnerLabel(settings.defaultOwner) || DEFAULT_SETTINGS.defaultOwner,
     shelfSync: settings.shelfSync !== false,
+    shelfSyncWishlist: settings.shelfSyncWishlist !== false,
     hidePageSwitch: settings.hidePageSwitch === true,
     streamFilterPriority: streamFilterPriorityForSettings(settings),
     prioritizeFinishedStream: streamFilterPriorityForSettings(settings) === "stream",
@@ -8818,6 +8820,9 @@ function cardFor(game, options = {}) {
   const displaySection = options.displaySection || game.section;
   const neutralReleaseCard = releaseDialog && Boolean(game.playing);
   const card = createGameCardShell(document);
+  if (game.playing && !neutralReleaseCard) {
+    card.querySelector(".game-main")?.append(card.querySelector(".card-actions"));
+  }
   const statuses = gameStatuses(game);
   const owners = ownerTags(game);
   card.dataset.id = game.id;

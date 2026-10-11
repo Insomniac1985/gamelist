@@ -56,6 +56,8 @@ const STRINGS = {
     Available: "Disponible",
     Drive: "Drive",
     Preorders: "Reservas",
+    Wishlist: "Lista de deseos",
+    "Sync Wishlist": "Sincronizar lista de deseos",
     Achievements: "Logros",
     Calendar: "Calendario",
     Highlights: "Resumen",

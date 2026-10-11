@@ -5713,12 +5713,10 @@ body.theme-kash
   pointer-events: none;
   border-radius: inherit;
   background:
-    linear-gradient(rgba(255, 255, 255, 0.045) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255, 255, 255, 0.04) 1px, transparent 1px),
     linear-gradient(135deg, rgba(255, 255, 255, 0.16), transparent 24%),
     linear-gradient(180deg, transparent 58%, rgba(0, 0, 0, 0.38));
-  background-size: 22px 22px, 22px 22px, auto, auto;
-  background-position: var(--grid-x) var(--grid-y), var(--grid-x) var(--grid-y), center, center;
+  background-size: auto, auto;
+  background-position: center, center;
   opacity: 0.78;
 }
 
@@ -7780,6 +7778,15 @@ a.time-pill {
   align-self: end;
   margin-top: 10px;
   padding-top: 10px;
+}
+
+.game-card:not(.playing-card) > .card-actions {
+  justify-self: end;
+  width: max-content;
+  max-width: 100%;
+  flex-direction: row-reverse;
+  justify-content: flex-start;
+  flex-wrap: wrap;
 }
 
 .icon-button,
@@ -10290,6 +10297,28 @@ body.theme-kash .playing-finished-game.completed-trophy-card:hover {
   box-shadow:
     0 0 0 1px rgba(247, 223, 105, 0.16),
     0 12px 28px rgba(247, 223, 105, 0.1) !important;
+}
+
+.completed-row.completed-trophy-card,
+.completed-row.completed-trophy-card:hover,
+.completed-row.stream-card.completed-trophy-card,
+.completed-row.stream-card.completed-trophy-card:hover,
+.playing-finished-game.completed-trophy-card,
+.playing-finished-game.completed-trophy-card:hover,
+body.theme-kash .completed-row.completed-trophy-card,
+body.theme-kash .completed-row.completed-trophy-card:hover,
+body.theme-kash .completed-row.stream-card.completed-trophy-card,
+body.theme-kash .completed-row.stream-card.completed-trophy-card:hover,
+body.theme-kash .playing-finished-game.completed-trophy-card,
+body.theme-kash .playing-finished-game.completed-trophy-card:hover {
+  background:
+    linear-gradient(
+      135deg,
+      rgba(247, 223, 105, 0.16),
+      rgba(255, 255, 255, 0.055) 48%,
+      rgba(247, 223, 105, 0.08)
+    ),
+    rgba(255, 255, 255, 0.05) !important;
 }
 
 .completed-trophy-card .psn-progress-pill {
@@ -12959,6 +12988,20 @@ html.theme-light .playing-finished-game.completed-trophy-card:hover {
     0 12px 28px rgba(154, 106, 0, 0.1) !important;
 }
 
+html.theme-light .completed-row.completed-trophy-card,
+html.theme-light .completed-row.completed-trophy-card:hover,
+html.theme-light .completed-row.stream-card.completed-trophy-card,
+html.theme-light .completed-row.stream-card.completed-trophy-card:hover,
+html.theme-light .playing-finished-game.completed-trophy-card,
+html.theme-light .playing-finished-game.completed-trophy-card:hover {
+  background:
+    linear-gradient(
+      135deg,
+      rgba(255, 237, 146, 0.2),
+      rgba(214, 224, 237, 0.96)
+    ) !important;
+}
+
 html.theme-light .toolbar,
 html.theme-light .settings-toolbar,
 html.theme-light .search-panel,
@@ -14789,7 +14832,7 @@ body.theme-kash
 .settings-page-toggle-row {
   grid-column: 1 / -1;
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 10px;
   margin-top: 2px;
 }
@@ -16940,6 +16983,14 @@ html.theme-light .finish-trophy-check input[type="checkbox"]:checked {
     align-items: stretch;
   }
 
+  .game-card:not(.playing-card) > .card-actions {
+    direction: rtl;
+  }
+
+  .game-card:not(.playing-card) > .card-actions > * {
+    direction: ltr;
+  }
+
   .card-actions:has(.price-refresh-action),
   .card-actions:has([data-action="show-preorder-prices"]) {
     grid-template-columns: minmax(0, 1fr) 42px 42px;
@@ -18400,11 +18451,13 @@ body:not(.shelf-page) #wanted .price-refresh-action {
 }
 
 .playing-finished-game::before {
-  background-image:
-    linear-gradient(rgba(255, 255, 255, 0.025), rgba(255, 255, 255, 0.025)),
-    var(--grid-texture);
-  background-size: auto, 22px 22px;
-  background-position: center, var(--grid-x) var(--grid-y);
+  background-image: linear-gradient(rgba(255, 255, 255, 0.025), rgba(255, 255, 255, 0.025));
+  background-size: auto;
+  background-position: center;
+}
+
+.completed-row::before {
+  background-image: none;
 }
 
 .completed-row > *,

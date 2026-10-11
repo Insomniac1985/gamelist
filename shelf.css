@@ -1155,14 +1155,14 @@ html.theme-font-mata .shelf-page .playing-section .column-head h2 {
   object-fit: cover;
 }
 
-.shelf-grid.preorders-view .preorder-projection-card .card-actions {
+.shelf-grid.preorders-view .synced-projection-card .card-actions {
   display: flex;
   flex-wrap: wrap;
   justify-content: flex-start;
   gap: 8px;
 }
 
-.shelf-grid.preorders-view .preorder-projection-card .prices {
+.shelf-grid.preorders-view .synced-projection-card .prices {
   grid-column: 1 / -1;
 }
 
@@ -1317,7 +1317,7 @@ body.mobile-app-mode.shelf-page .shelf-grid.list-view .game-row-cover-preview {
   }
 
   .shelf-grid.preorders-view.list-view
-    .preorder-projection-row
+    .synced-projection-row
     .game-row-description {
     display: none;
   }
@@ -1661,6 +1661,21 @@ body.mobile-app-mode.shelf-page .shelf-grid.list-view .game-row-cover-preview {
   width: 22px;
   height: 22px;
   fill: none !important;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.wishlist-tab-icon {
+  display: none;
+  color: var(--muted);
+}
+
+.wishlist-tab-icon .wishlist-icon {
+  width: 18px;
+  height: 18px;
+  fill: none;
   stroke: currentColor;
   stroke-width: 2;
   stroke-linecap: round;
@@ -2758,6 +2773,29 @@ textarea {
     .preorder-tab-icon {
     color: #fff;
   }
+  .shelf-tabs.five-tabs button[data-shelf-tab="wishlist"] .wishlist-tab-text {
+    display: none;
+  }
+
+  .shelf-tabs.five-tabs button[data-shelf-tab="preorders"] .preorder-tab-text {
+    display: none;
+  }
+
+  .shelf-tabs.five-tabs button[data-shelf-tab="preorders"] .preorder-tab-icon {
+    display: inline-flex;
+  }
+
+  .shelf-tabs.five-tabs button.active[data-shelf-tab="preorders"] .preorder-tab-icon {
+    color: #fff;
+  }
+
+  .shelf-tabs.five-tabs button[data-shelf-tab="wishlist"] .wishlist-tab-icon {
+    display: inline-flex;
+  }
+
+  .shelf-tabs.five-tabs button.active[data-shelf-tab="wishlist"] .wishlist-tab-icon {
+    color: #fff;
+  }
   .shelf-grid {
     grid-template-columns: 1fr;
   }
@@ -2776,7 +2814,7 @@ textarea {
     width: 96px;
     height: 131px;
   }
-  .shelf-grid.preorders-view .preorder-projection-card .card-actions {
+  .shelf-grid.preorders-view .synced-projection-card .card-actions {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr)) 42px;
     align-items: stretch;
