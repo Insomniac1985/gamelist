@@ -1969,12 +1969,8 @@ body.mobile-app-mode .shelf-tabs button.active:hover {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 10px;
-  margin: 10px 0 14px;
-  padding: 10px 12px;
-  border: 1px solid var(--line);
-  border-radius: 8px;
-  background: color-mix(in srgb, var(--panel) 72%, transparent);
+  gap: 12px;
+  margin: 8px 0 14px;
 }
 
 .shelf-gamelist-target-picker[hidden],
@@ -1995,22 +1991,56 @@ body.mobile-app-mode .shelf-tabs button.active:hover {
   color: var(--muted);
   font-size: 13px;
   font-weight: 800;
+  white-space: nowrap;
 }
 
 .shelf-gamelist-target-options {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
+  --target-count: 3;
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(var(--target-count), minmax(0, 1fr));
+  gap: 6px;
+  width: min(100%, 520px);
+  padding: 5px;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  isolation: isolate;
+}
+
+.shelf-gamelist-target-indicator {
+  position: absolute;
+  z-index: 0;
+  top: 5px;
+  bottom: 5px;
+  left: var(--target-left, 5px);
+  width: var(--target-width, calc((100% - 22px) / 3));
+  border-radius: 7px;
+  background: var(--accent);
+  box-shadow: 0 3px 18px color-mix(in srgb, var(--accent) 35%, transparent);
+  transition: left 180ms ease, width 180ms ease;
+  pointer-events: none;
 }
 
 .shelf-gamelist-target-options button {
-  font-size: 16px;
+  position: relative;
+  z-index: 1;
+  min-width: 0;
+  min-height: 40px;
+  padding: 0 14px;
+  color: var(--muted);
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 7px;
+  font-size: 14px;
+  font-weight: 760;
+  white-space: nowrap;
+  transition: color 180ms ease;
 }
 
 .shelf-gamelist-target-options button.active {
   color: #fff;
-  background: var(--accent);
-  border-color: var(--accent);
+  font-weight: 820;
 }
 
 .gamelist-target-editor .shelf-region-field,
@@ -2631,13 +2661,18 @@ textarea {
 
 @media (max-width: 760px) {
   .shelf-gamelist-target-picker {
-    align-items: stretch;
+    align-items: flex-start;
     flex-direction: column;
+    gap: 8px;
   }
 
   .shelf-gamelist-target-options {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    width: 100%;
+  }
+
+  .shelf-gamelist-target-options button {
+    padding: 0 7px;
+    font-size: 13px;
   }
 
   .shelf-gamelist-placement > label {
