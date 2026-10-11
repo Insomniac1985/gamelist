@@ -18192,25 +18192,77 @@ body.auth-checking #mobileDockSettings[aria-busy="true"] {
 }
 
 @media (max-width: 760px) {
-  .finished-stats-body.goty-stats-preview-body {
-    padding-bottom: 16px;
+  #gotyStatsPreviewDialog .goty-stats-preview-modal {
+    display: flex !important;
+    flex-direction: column;
+    height: 100% !important;
+    max-height: 100% !important;
+    overflow: hidden !important;
+    padding-bottom: 0;
   }
 
-  .goty-stats-preview-actions {
+  #gotyStatsPreviewBody {
+    flex: 1 1 auto;
+    min-height: 0;
+    padding-bottom: 16px;
+    overflow-x: hidden;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  #gotyStatsPreviewDialog .goty-stats-preview-actions {
     position: static !important;
     bottom: auto;
+    flex: 0 0 auto;
     width: 100%;
-    margin: 16px 0 0;
-    padding-bottom: env(safe-area-inset-bottom);
+    margin: 0;
+    padding: 10px 0 max(8px, env(safe-area-inset-bottom));
     transform: none;
+    background: var(--panel-dark);
   }
 
-  .goty-stats-preview-continue {
+  #gotyStatsPreviewDialog .goty-stats-preview-continue {
     min-height: 48px;
     padding-inline: 12px;
     font-size: clamp(12px, 3.7vw, 15px);
     line-height: 1.2;
     white-space: normal;
+  }
+}
+
+@media (min-width: 761px) {
+  #gotyStatsPreviewDialog {
+    height: calc(100dvh - 24px);
+    max-height: calc(100dvh - 24px);
+    overflow: hidden;
+  }
+
+  #gotyStatsPreviewDialog .goty-stats-preview-modal {
+    display: flex !important;
+    flex-direction: column;
+    height: 100%;
+    max-height: 100% !important;
+    overflow: hidden !important;
+  }
+
+  #gotyStatsPreviewBody {
+    flex: 1 1 auto;
+    min-height: 0;
+    padding-bottom: 16px;
+    overflow-x: hidden;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+  }
+
+  #gotyStatsPreviewDialog .goty-stats-preview-actions {
+    position: static !important;
+    flex: 0 0 auto;
+    width: 100%;
+    margin: 0;
+    padding: 12px 0 0;
+    transform: none;
+    background: var(--panel-dark);
   }
 }
 
