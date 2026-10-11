@@ -18751,7 +18751,7 @@ body:not(.shelf-page) #wanted .price-refresh-action {
   flex-direction: column;
   align-items: stretch;
   justify-content: flex-start;
-  gap: 12px;
+  gap: 4px;
   width: 100%;
   box-sizing: border-box;
   padding: 0;
@@ -18780,8 +18780,8 @@ body:not(.shelf-page) #wanted .price-refresh-action {
   min-width: 0;
   flex: 0 0 auto;
   padding: 5px;
-  background: var(--panel-dark);
-  border: 1px solid var(--line);
+  background: transparent;
+  border: 1px solid transparent;
   border-radius: 10px;
   isolation: isolate;
 }
@@ -18825,7 +18825,7 @@ body:not(.shelf-page) #wanted .price-refresh-action {
 #gameDialog.is-new-game .collection-form-grid > .list-field { display: none; }
 #gameDialog.is-new-game .collection-form-grid > .release-text-field { grid-column: span 7; }
 @media (max-width: 760px) {
-  #gameAddTargetPicker { gap: 8px; }
+  #gameAddTargetPicker { gap: 4px; }
   #gameAddTargetPicker .shelf-gamelist-target-label { min-height: 0; font-size: 11px; }
   #gameAddTargetPicker .shelf-gamelist-target-options button { padding: 0 7px; font-size: 13px; white-space: normal; }
   #gameDialog.is-new-game .collection-form-grid > .release-text-field { grid-column: 1 / -1; }

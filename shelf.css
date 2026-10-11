@@ -1960,6 +1960,11 @@ body.mobile-app-mode .shelf-tabs button.active:hover {
   display: none !important;
 }
 
+.shelf-gamelist-target-options {
+  background: transparent;
+  border-color: transparent;
+}
+
 .shelf-gamelist-placement:not([hidden]) {
   display: contents;
 }
@@ -2629,7 +2634,7 @@ textarea {
   .shelf-gamelist-target-picker {
     flex-direction: column;
     align-items: stretch;
-    gap: 8px;
+    gap: 4px;
   }
 
   .shelf-gamelist-target-options {
