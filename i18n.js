@@ -124,6 +124,7 @@ const STRINGS = {
     "No dates": "Sin fechas",
     Hours: "Horas",
     Rating: "Valoración",
+    "Rating breakdown": "Desglose de valoración",
     "{owner}'s Rating": "Valoración de {owner}",
     Gameplay: "Jugabilidad",
     Story: "Historia",

@@ -7420,26 +7420,32 @@ function renderCompleted() {
   const hasMore = games.length > shownGames.length;
   list.classList.toggle("is-collapsed", hasMore);
   updateCompletedCount(completedCountForSelectedYear());
-  list.innerHTML = shownGames.length ? shownGames.map((game) => `
-    <div class="completed-row ${game.stream ? "stream-card" : ""} ${game.platinum ? "completed-trophy-card" : ""} ${ownerCardClass(game)}" data-id="${escapeHtml(game.id)}" role="button" tabindex="0" aria-label="${escapeHtml(`Open ${game.title}`)}">
-      <img class="completed-cover" src="${escapeHtml(game.cover || "")}" alt="" loading="lazy" decoding="async" ${game.cover ? "" : "hidden"}>
-      <div class="completed-main">
-        <div class="completed-identity">
-          <strong class="${game.platinum ? "completed-achievements-title" : ""}" tabindex="0">${escapeHtml(game.title)}</strong>
-          ${completedDurationLine(game, " completed-duration-list")}
+  list.innerHTML = shownGames.length ? shownGames.map((game) => {
+    const ratingBreakdown = state.viewMode === "list" ? "" : completedRatingBreakdownMarkup(game);
+    return `
+      <div class="completed-item">
+        <div class="completed-row ${game.stream ? "stream-card" : ""} ${game.platinum ? "completed-trophy-card" : ""} ${ownerCardClass(game)}" data-id="${escapeHtml(game.id)}" role="button" tabindex="0" aria-label="${escapeHtml(`Open ${game.title}`)}">
+          <img class="completed-cover" src="${escapeHtml(game.cover || "")}" alt="" loading="lazy" decoding="async" ${game.cover ? "" : "hidden"}>
+          <div class="completed-main">
+            <div class="completed-identity">
+              <strong class="${game.platinum ? "completed-achievements-title" : ""}" tabindex="0">${escapeHtml(game.title)}</strong>
+              ${completedDurationLine(game, " completed-duration-list")}
+            </div>
+            <div class="completed-meta">
+              <span class="completed-platform">${completedOwnerBadges(game)}${completedBadges(game, { includeRating: state.viewMode === "list" })}</span>
+              ${completedDurationLine(game)}
+              ${completedDateLine(game)}
+            </div>
+          </div>
+          <div class="completed-actions">
+            <button class="icon-button completed-edit-action" type="button" title="Edit" aria-label="Edit">${pencilIcon()}</button>
+            <button class="ghost-button restore-action" type="button">${backIcon()}<span>${escapeHtml(tt("Backlog"))}</span></button>
+          </div>
         </div>
-        <div class="completed-meta">
-          <span class="completed-platform">${completedOwnerBadges(game)}${completedBadges(game)}</span>
-          ${completedDurationLine(game)}
-          ${completedDateLine(game)}
-        </div>
+        ${ratingBreakdown}
       </div>
-      <div class="completed-actions">
-        <button class="icon-button completed-edit-action" type="button" title="Edit" aria-label="Edit">${pencilIcon()}</button>
-        <button class="ghost-button restore-action" type="button">${backIcon()}<span>${escapeHtml(tt("Backlog"))}</span></button>
-      </div>
-    </div>
-  `).join("") : `<div class="empty">Finished games will stay saved here.</div>`;
+    `;
+  }).join("") : `<div class="empty">Finished games will stay saved here.</div>`;
   if (el.completedMoreButton) {
     el.completedMoreButton.hidden = !hasMore;
     el.completedMoreButton.textContent = tt("See more");
@@ -8822,6 +8828,7 @@ function cardFor(game, options = {}) {
   const card = createGameCardShell(document);
   if (game.playing && !neutralReleaseCard) {
     card.querySelector(".game-main")?.append(card.querySelector(".card-actions"));
+    card.querySelector(".card-footer")?.remove();
   }
   const statuses = gameStatuses(game);
   const owners = ownerTags(game);
@@ -8834,6 +8841,7 @@ function cardFor(game, options = {}) {
   card.classList.toggle("stream-card", Boolean(game.stream));
   card.classList.toggle("completed-trophy-card", Boolean(game.platinum));
   card.classList.toggle("has-rating", ratingScoreValue(game) != null);
+  card.classList.toggle("has-price-footer", !releaseDialog && ["upcoming", "wanted"].includes(displaySection) && priceProvidersForGame(game).length > 0);
   card.classList.toggle("calendar-completed-card", releaseDialog && Boolean(game.platinum));
   const trailer = card.querySelector(".card-trailer");
   const trailerUrl = !neutralReleaseCard && shouldShowCardTrailer(game) ? trailerEmbedUrl(game.trailerUrl) : "";
@@ -8925,6 +8933,7 @@ function cardFor(game, options = {}) {
   if (neutralReleaseCard) {
     card.querySelector(".edit-action")?.remove();
     card.querySelector(".card-actions")?.remove();
+    card.querySelector(".card-footer")?.remove();
     prices.remove();
   } else if (displaySection === "new") {
     card.querySelector(".edit-action").remove();
@@ -10228,7 +10237,7 @@ function completedBadges(game, options = {}) {
     mediaFormatBadge(game),
     game.coop ? coopBadge() : "",
     game.multiplayer && !game.coop ? multiplayerBadge() : "",
-    ratingScoreBadge(game),
+    options.includeRating === false ? "" : ratingScoreBadge(game),
     game.dlc ? dlcBadge(game) : "",
     entitlementBadge(game),
     game.emulator ? `<span class="emulator-pill">${escapeHtml(tt("Emulator"))}</span>` : "",
@@ -10236,6 +10245,20 @@ function completedBadges(game, options = {}) {
     game.replayCount ? replayBadge(game.replayCount) : "",
     options.includePsn === false ? "" : (progress ? psnProgressBadge(progress) : ""),
   ].filter(Boolean).join("");
+}
+
+function completedRatingBreakdownMarkup(game) {
+  const ratings = normalizeGameRatings(game?.ratings);
+  const rows = GAME_RATING_CATEGORIES
+    .map(([key, label]) => [key, label, ratings[key] || 0])
+    .filter(([, , value]) => value > 0);
+  if (!rows.length) return "";
+  return `<div class="completed-rating-breakdown" aria-label="${escapeHtml(tt("Rating breakdown"))}">${rows.map(([key, label, value]) => `
+    <span class="completed-rating-item" data-rating-key="${escapeHtml(key)}">
+      <span>${escapeHtml(tt(label))}</span>
+      <strong>${escapeHtml(value)}/5</strong>
+    </span>
+  `).join("")}</div>`;
 }
 
 function playDatesFor(game, options = {}) {

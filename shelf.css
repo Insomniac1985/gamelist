@@ -2866,6 +2866,11 @@ textarea {
     .preorder-tab-icon {
     color: #fff;
   }
+
+  .shelf-tabs.four-tabs button[data-shelf-tab="wishlist"] .count {
+    display: none;
+  }
+
   .shelf-tabs.five-tabs button[data-shelf-tab="wishlist"] .wishlist-tab-text {
     display: none;
   }
