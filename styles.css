@@ -1092,8 +1092,16 @@ html.theme-gradient .goty-section .column-head h2 .trophy-icon {
 }
 
 .goty-publish-button {
+  padding: 8px 12px;
+}
+
+.goty-dialog .modal-head-save,
+.goty-dialog .goty-publish-button {
+  height: 36px;
   min-height: 36px;
-  padding: 8px 16px;
+  box-sizing: border-box;
+  padding: 8px 14px;
+  font-size: 13px;
 }
 
 .goty-grid {
@@ -1392,12 +1400,36 @@ html.theme-gradient .goty-section .column-head h2 .trophy-icon {
 
 @media (max-width: 760px) {
   .goty-dialog .goty-modal {
+    width: 100%;
+    max-width: 100%;
     height: calc(100dvh - max(6px, env(safe-area-inset-bottom)) - 130px);
     max-height: calc(100dvh - max(6px, env(safe-area-inset-bottom)) - 130px);
     min-height: 0;
     box-sizing: border-box;
     overflow-x: hidden;
     overflow-y: auto;
+    overscroll-behavior: contain;
+    touch-action: pan-y;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  #gotyStatsPreviewDialog {
+    width: calc(100vw - 16px) !important;
+    max-width: calc(100vw - 16px) !important;
+    height: calc(100dvh - max(6px, env(safe-area-inset-bottom)) - 130px);
+    max-height: calc(100dvh - max(6px, env(safe-area-inset-bottom)) - 130px);
+    box-sizing: border-box;
+    overflow: hidden;
+  }
+
+  #gotyStatsPreviewDialog .goty-stats-preview-modal {
+    width: 100%;
+    height: 100%;
+    min-height: 0;
+    max-height: 100% !important;
+    box-sizing: border-box;
+    overflow-x: hidden !important;
+    overflow-y: auto !important;
     overscroll-behavior: contain;
     touch-action: pan-y;
     -webkit-overflow-scrolling: touch;
@@ -8572,7 +8604,7 @@ body:not(.can-edit) .game-card:focus-within .edit-action {
 .goty-stats-preview-dialog {
   border: 1px solid var(--line);
   border-radius: 8px;
-  background: var(--grid-fade), var(--grid-texture), var(--panel-strong);
+  background: var(--grid-fade), var(--grid-texture), var(--panel-dark);
   background-size:
     auto,
     22px 22px,
@@ -10868,6 +10900,10 @@ body.dialog-open .toolbar {
   border-radius: 8px;
   box-shadow: var(--shadow);
   backdrop-filter: blur(8px) saturate(1.08);
+}
+
+#gameDialog > .modal {
+  background: var(--grid-fade), var(--grid-texture), var(--panel-dark);
 }
 
 .auth-modal {
@@ -17561,6 +17597,7 @@ html.theme-light .finish-trophy-check input[type="checkbox"]:checked {
 @media (min-width: 761px) {
   #mobileDockUp {
     display: grid !important;
+    order: 1;
     width: 0;
     height: 0;
     min-width: 0;
@@ -17808,6 +17845,7 @@ html.theme-light .finish-trophy-check input[type="checkbox"]:checked {
     overflow: hidden;
     opacity: 0;
     font-weight: 900;
+    text-align: center;
     white-space: nowrap;
     transition:
       width 420ms cubic-bezier(0.2, 0.8, 0.2, 1),
@@ -17819,9 +17857,49 @@ html.theme-light .finish-trophy-check input[type="checkbox"]:checked {
     width: 218px;
     flex-basis: 218px;
     gap: 8px;
-    justify-content: flex-start;
+    justify-content: center;
     padding-inline: 12px;
     transition-duration: 220ms;
+  }
+
+  #mobileDockAdd,
+  #mobileDockSwitch,
+  #mobileDockStats,
+  #mobileDockGoty {
+    transition-duration: 220ms, 220ms, 220ms, 220ms, 140ms, 140ms;
+    transition-delay: 80ms;
+  }
+
+  #mobileDockAdd:hover,
+  #mobileDockAdd:focus-visible,
+  #mobileDockSwitch:hover,
+  #mobileDockSwitch:focus-visible,
+  #mobileDockStats:hover,
+  #mobileDockStats:focus-visible,
+  #mobileDockGoty:hover,
+  #mobileDockGoty:focus-visible {
+    transition-duration: 190ms, 190ms, 190ms, 190ms, 140ms, 140ms;
+    transition-delay: 0s;
+  }
+
+  #mobileDockAdd > span,
+  #mobileDockSwitch > .mobile-switch-label,
+  #mobileDockStats > span,
+  #mobileDockGoty > span {
+    transition-duration: 180ms, 180ms;
+    transition-delay: 80ms;
+  }
+
+  #mobileDockAdd:hover > span,
+  #mobileDockAdd:focus-visible > span,
+  #mobileDockSwitch:hover > .mobile-switch-label,
+  #mobileDockSwitch:focus-visible > .mobile-switch-label,
+  #mobileDockStats:hover > span,
+  #mobileDockStats:focus-visible > span,
+  #mobileDockGoty:hover > span,
+  #mobileDockGoty:focus-visible > span {
+    transition-duration: 180ms, 180ms;
+    transition-delay: 0s;
   }
 
   #mobileDockGoty:hover > span,

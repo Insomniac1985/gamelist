@@ -1143,6 +1143,7 @@ function bindEvents() {
     if (event.target === el.gotyDialog) el.gotyDialog.close();
   });
   el.gotyDialog?.addEventListener("close", () => {
+    el.mobileDockGoty?.classList.remove("is-active");
     state.gotyDockDismissed = true;
     localStorage.setItem(GOTY_DOCK_DISMISSED_KEY, "true");
     syncMobileDockGoty();
@@ -3720,6 +3721,7 @@ function openGameOfTheYearDialog(year = currentGameOfTheYear(), options = {}) {
       return false;
     }
   }
+  el.mobileDockGoty?.classList.add("is-active");
   syncScrollLock();
   return true;
 }
