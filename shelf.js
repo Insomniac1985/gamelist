@@ -1107,6 +1107,7 @@ function renderChrome() {
   document.body.classList.toggle("can-edit", state.canEdit);
   document.body.classList.toggle("list-view-mode", state.viewMode === "list");
   el.addButton.hidden = false;
+  if (el.mobileDockAdd) el.mobileDockAdd.hidden = !state.canEdit;
   el.layoutButton.hidden = !state.canEdit;
   if (el.mobileDockSettings) el.mobileDockSettings.hidden = !state.canEdit;
   setSettingsAuthLoading(false);

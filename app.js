@@ -311,7 +311,6 @@ const el = {
   gotyResetButton: document.querySelector("#gotyResetButton"),
   gotyGrid: document.querySelector("#gotyGrid"),
   achievementSection: document.querySelector("#achievementSection"),
-  achievementStatsButton: document.querySelector("#achievementStatsButton"),
   calendarSection: document.querySelector(".calendar-section"),
   highlightsSection: document.querySelector(".highlights-section"),
   achievementPanel: document.querySelector("#achievementPanel"),
@@ -982,7 +981,7 @@ function bindEvents() {
   el.floatingSearchButton?.addEventListener("click", scrollToSearchArea);
   el.mobileDockSearch?.addEventListener("click", scrollToSearchArea);
   el.mobileDockStats?.addEventListener("click", () => openFinishedStatsDialog(state.completedYear || "all", { streamMode: state.completedStreamMode }));
-  el.mobileDockGoty?.addEventListener("click", () => openGameOfTheYearDialog(currentGameOfTheYear(), { force: true }));
+  el.mobileDockGoty?.addEventListener("click", () => openGameOfTheYearDialogWithAutofillLoading(currentGameOfTheYear(), { force: true, autoPick: true }));
   el.syncButton.addEventListener("click", syncNow);
   el.settingsButton?.addEventListener("click", openSettingsDialog);
   el.mobileDockSettings?.addEventListener("click", openSettingsDialog);
@@ -1121,7 +1120,6 @@ function bindEvents() {
   el.completedYearFilter?.addEventListener("change", handleCompletedYearChange);
   el.completedStreamToggleButton?.addEventListener("click", cycleCompletedStreamMode);
   el.completedStatsButton?.addEventListener("click", () => openFinishedStatsDialog(state.completedYear || "all", { streamMode: state.completedStreamMode }));
-  el.achievementStatsButton?.addEventListener("click", () => openFinishedStatsDialog("all", { yearPicker: true }));
   el.finishedStatsYearSelect?.addEventListener("change", () => {
     renderFinishedStatsDialog(el.finishedStatsYearSelect.value || "all");
   });
@@ -1923,6 +1921,7 @@ function render() {
   el.loginButton.setAttribute("aria-label", el.loginButton.title);
   el.loginButton.hidden = state.canEdit;
   el.addButton.hidden = false;
+  if (el.mobileDockAdd) el.mobileDockAdd.hidden = !state.canEdit;
   el.syncButton.hidden = !state.canEdit;
   if (el.settingsButton) el.settingsButton.hidden = !state.canEdit;
   if (el.mobileDockSettings) el.mobileDockSettings.hidden = !state.canEdit;
