@@ -2243,7 +2243,7 @@ function showShelfEditorUnsavedDialog() {
 
 function syncShelfDigitalEditorMode(digitalMode) {
   el.addForm.classList.toggle("digital-game-editor", digitalMode);
-  el.addForm.classList.toggle("is-new-shelf-game", !state.editingId && !digitalMode);
+  el.addForm.classList.toggle("is-new-shelf-game", !state.editingId);
   syncShelfNewGameHighlights();
   el.addForm.classList.toggle("digital-tracking-disabled", state.gamelistSettings.shelfDigitalGames !== true);
   el.addForm.dataset.digital = digitalMode ? "true" : "false";
@@ -2264,14 +2264,19 @@ function markShelfNewGameFieldTouched(event) {
     : field.classList.contains("shelf-console-field") ? "platform"
       : field.classList.contains("shelf-release-field") ? "release-date"
         : field.classList.contains("shelf-addition-field") ? "addition-date" : "region";
-  shelfNewGameTouchedFields.add(key);
+  markShelfNewGameFieldsTouched([key]);
+}
+
+function markShelfNewGameFieldsTouched(keys) {
+  if (state.editingId) return;
+  keys.forEach((key) => shelfNewGameTouchedFields.add(key));
   syncShelfNewGameHighlights();
 }
 
 function syncShelfNewGameHighlights() {
-  const isNewPhysicalGame = el.addForm.classList.contains("is-new-shelf-game");
+  const isNewShelfGame = el.addForm.classList.contains("is-new-shelf-game");
   for (const key of ["title", "platform", "release-date", "addition-date", "region"]) {
-    el.addForm.classList.toggle(`needs-${key}-field`, isNewPhysicalGame && !shelfNewGameTouchedFields.has(key));
+    el.addForm.classList.toggle(`needs-${key}-field`, isNewShelfGame && !shelfNewGameTouchedFields.has(key));
   }
 }
 
@@ -2493,6 +2498,11 @@ async function chooseLookupResult(event) {
   el.fields.genre.value = (result.genres || []).join(", ");
   el.fields.cover.value = result.cover || "";
   el.fields.releaseDate.value = result.releaseDate || "";
+  markShelfNewGameFieldsTouched([
+    ...(result.title ? ["title"] : []),
+    ...(bestCollectionPlatform(result.platforms || [result.platform], el.fields.platform.value) ? ["platform"] : []),
+    ...(result.releaseDate ? ["release-date"] : []),
+  ]);
   el.fields.igdbUrl.value = result.igdbUrl || el.fields.igdbUrl.value;
   fillStoreLinkFields(result.storeLinks);
   el.fields.hltbUrl.value = metadataHltbUrl(result) || el.fields.hltbUrl.value;
@@ -2522,7 +2532,10 @@ function applyGameMetadata(result) {
   if (result.developer && !el.fields.developer.value) el.fields.developer.value = result.developer;
   if ((result.genres || []).length && !el.fields.genre.value) el.fields.genre.value = result.genres.join(", ");
   if (result.cover && !el.fields.cover.value) el.fields.cover.value = result.cover;
-  if (result.releaseDate && !el.fields.releaseDate.value) el.fields.releaseDate.value = result.releaseDate;
+  if (result.releaseDate && !el.fields.releaseDate.value) {
+    el.fields.releaseDate.value = result.releaseDate;
+    markShelfNewGameFieldsTouched(["release-date"]);
+  }
   if (result.description && !el.fields.description.value) el.fields.description.value = result.description;
   if (result.igdbUrl && !el.fields.igdbUrl.value) el.fields.igdbUrl.value = result.igdbUrl;
   fillStoreLinkFields(result.storeLinks);
@@ -2533,6 +2546,7 @@ function applyGameMetadata(result) {
 async function prefillPhysicalResult(result) {
   el.fields.title.value = result.productName || el.fields.title.value;
   el.fields.platform.value = bestCollectionPlatform([result.consoleName], el.fields.platform.value);
+  markShelfNewGameFieldsTouched([...(result.productName ? ["title"] : []), ...(el.fields.platform.value ? ["platform"] : [])]);
   applyPriceChartingRegion(result.consoleName);
   applyPriceChartingSearchResult(result);
   const physical = await fetchPhysicalMetadata(result.productName, { id: result.productId, url: result.url });
@@ -2557,8 +2571,14 @@ async function fetchPhysicalMetadata(title, options = {}) {
 }
 
 function applyPhysicalMetadata(data) {
-  if (data.productName && !el.fields.title.value) el.fields.title.value = data.productName;
-  if (data.releaseDate) el.fields.releaseDate.value = data.releaseDate;
+  if (data.productName && !el.fields.title.value) {
+    el.fields.title.value = data.productName;
+    markShelfNewGameFieldsTouched(["title"]);
+  }
+  if (data.releaseDate) {
+    el.fields.releaseDate.value = data.releaseDate;
+    markShelfNewGameFieldsTouched(["release-date"]);
+  }
   if (data.upc) el.fields.upc.value = data.upc;
   if (data.sku) el.fields.sku.value = data.sku;
   if (data.asin) el.fields.asin.value = data.asin;
@@ -2598,7 +2618,7 @@ function priceChartingSearchUrl(game) {
   return `https://www.pricecharting.com/search-products?type=prices&region-name=all&exclude-variants=false&q=${encodeURIComponent(query || game?.title || "video game")}`;
 }
 function blankImage() { return "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw=="; }
-function applyPriceChartingRegion(consoleName) { const value = normalize(consoleName); if (value.startsWith("jp ")) el.fields.country.value = "Japan"; else if (value.startsWith("pal ") && !["United Kingdom", "Spain", "Italy", "France", "Germany", "Europe", "Australia"].includes(el.fields.country.value)) el.fields.country.value = "Europe"; else if (!value.startsWith("pal ") && !value.startsWith("jp ") && ["Japan", "Europe"].includes(el.fields.country.value)) el.fields.country.value = "United States of America"; syncShelfEditorIcons(); }
+function applyPriceChartingRegion(consoleName) { const current = el.fields.country.value; const value = normalize(consoleName); if (value.startsWith("jp ")) el.fields.country.value = "Japan"; else if (value.startsWith("pal ") && !["United Kingdom", "Spain", "Italy", "France", "Germany", "Europe", "Australia"].includes(el.fields.country.value)) el.fields.country.value = "Europe"; else if (!value.startsWith("pal ") && !value.startsWith("jp ") && ["Japan", "Europe"].includes(el.fields.country.value)) el.fields.country.value = "United States of America"; if (el.fields.country.value !== current) markShelfNewGameFieldsTouched(["region"]); syncShelfEditorIcons(); }
 
 async function saveEditor(event) {
   event.preventDefault();
