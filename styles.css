@@ -1386,6 +1386,16 @@ html.theme-gradient .goty-section .column-head h2 .trophy-icon {
   transform: translateY(-42px);
 }
 
+@media (max-width: 760px) {
+  .goty-dialog .goty-modal {
+    max-height: calc(100dvh - max(6px, env(safe-area-inset-bottom)) - 90px);
+  }
+
+  .goty-dialog[open] {
+    transform: translateY(calc(50dvh - 50% - max(6px, env(safe-area-inset-bottom)) - 78px));
+  }
+}
+
 @media (min-width: 761px) {
   .goty-dialog .goty-modal {
     max-height: calc(100dvh - clamp(16px, 3vw, 28px) - 96px);
@@ -4640,7 +4650,7 @@ body.dialog-open .floating-edit-actions {
   --mobile-tab-index: 0;
   --mobile-tab-width: calc((100% - 24px) / 3);
   position: sticky;
-  top: calc(140px + var(--pull-ui-offset, 0px));
+  top: calc(20px + var(--toolbar-sticky-height, 106px) + 14px + var(--pull-ui-offset, 0px));
   z-index: 11;
   display: grid;
   grid-template-columns: repeat(var(--mobile-tab-count), 1fr);
@@ -7967,6 +7977,12 @@ body:not(.can-edit) .top-actions-separator {
 #mobileDockStats .graph-icon {
   width: 21px;
   height: 21px;
+}
+
+#mobileDockGoty .trophy-icon {
+  width: 23px;
+  height: 23px;
+  color: #ffe985;
 }
 
 .mobile-switch-logos {
@@ -17505,6 +17521,10 @@ html.theme-light .finish-trophy-check input[type="checkbox"]:checked {
 }
 
 @media (min-width: 761px) {
+  #mobileDockGoty {
+    display: none !important;
+  }
+
   #mobileDockUp {
     display: grid !important;
     width: 0;
@@ -17600,10 +17620,9 @@ html.theme-light .finish-trophy-check input[type="checkbox"]:checked {
       gap 420ms cubic-bezier(0.2, 0.8, 0.2, 1),
       background 140ms ease,
       box-shadow 140ms ease;
-  }
-
-  #mobileDockAdd .plus-icon {
-    color: var(--accent);
+    color: #fff;
+    background: var(--accent);
+    box-shadow: 0 3px 24px color-mix(in srgb, var(--accent) 32%, transparent);
   }
 
   #mobileDockAdd > span {
@@ -17709,8 +17728,8 @@ html.theme-light .finish-trophy-check input[type="checkbox"]:checked {
 
   #mobileDockStats:hover,
   #mobileDockStats:focus-visible {
-    width: 174px;
-    flex-basis: 174px;
+    width: 226px;
+    flex-basis: 226px;
     gap: 8px;
     justify-content: flex-start;
     padding-inline: 12px;
@@ -17719,7 +17738,7 @@ html.theme-light .finish-trophy-check input[type="checkbox"]:checked {
 
   #mobileDockStats:hover > span,
   #mobileDockStats:focus-visible > span {
-    width: 120px;
+    width: 152px;
     opacity: 1;
     transition-duration: 220ms;
   }
@@ -17741,11 +17760,6 @@ html.theme-light .finish-trophy-check input[type="checkbox"]:checked {
     background: var(--accent);
     box-shadow: 0 3px 24px color-mix(in srgb, var(--accent) 42%, transparent);
     outline: none;
-  }
-
-  #mobileDockAdd:hover .plus-icon,
-  #mobileDockAdd:focus-visible .plus-icon {
-    color: #fff;
   }
 
   #mobileDockSettings,
