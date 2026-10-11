@@ -9515,6 +9515,7 @@ function updateDetailTrophyEdges() {
 }
 
 function updateScrollTopButton() {
+  syncMobileDockViewport();
   const visible = window.scrollY > 180 && !document.body.classList.contains("dialog-open");
   const dockVisible = window.innerWidth >= 761 || window.scrollY > 180;
   el.scrollTopButton?.classList.toggle("visible", visible);
@@ -9522,6 +9523,18 @@ function updateScrollTopButton() {
   el.mobileActionDock?.classList.toggle("visible", dockVisible);
   el.mobileDockUp?.classList.toggle("is-visible", visible);
 }
+
+function syncMobileDockViewport() {
+  const viewport = window.visualViewport;
+  const bottomGap = viewport
+    ? Math.max(0, Math.round(window.innerHeight - viewport.height - viewport.offsetTop))
+    : 0;
+  document.documentElement.style.setProperty("--mobile-dock-viewport-bottom", `${bottomGap}px`);
+}
+
+window.visualViewport?.addEventListener("resize", syncMobileDockViewport, { passive: true });
+window.visualViewport?.addEventListener("scroll", syncMobileDockViewport, { passive: true });
+syncMobileDockViewport();
 
 function sortedDetailTrophies() {
   const direction = state.detailTrophyDirection === "asc" ? 1 : -1;
