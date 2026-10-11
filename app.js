@@ -10247,13 +10247,13 @@ function completedBadges(game, options = {}) {
     mediaFormatBadge(game),
     game.coop ? coopBadge() : "",
     game.multiplayer && !game.coop ? multiplayerBadge() : "",
-    options.includeRating === false ? "" : ratingScoreBadge(game),
     game.dlc ? dlcBadge(game) : "",
     entitlementBadge(game),
     game.emulator ? `<span class="emulator-pill">${escapeHtml(tt("Emulator"))}</span>` : "",
     game.stream ? streamBadge() : "",
     game.replayCount ? replayBadge(game.replayCount) : "",
     options.includePsn === false ? "" : (progress ? psnProgressBadge(progress) : ""),
+    options.includeRating === false ? "" : ratingScoreBadge(game),
   ].filter(Boolean).join("");
 }
 

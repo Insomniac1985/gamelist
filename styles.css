@@ -4600,7 +4600,8 @@ body.dialog-open .floating-edit-actions {
 .toolbar-check {
   align-self: end;
   min-height: var(--toolbar-control-height);
-  padding-right: 18px;
+  gap: 6px;
+  padding-right: 24px;
 }
 
 .toolbar-check .preordered-filter-icon {
@@ -8563,6 +8564,7 @@ body:not(.can-edit) .game-card:focus-within .edit-action {
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 5px 8px;
   min-width: 0;
+  margin-top: 7px;
   padding: 0 3px 2px;
 }
 
@@ -8574,11 +8576,12 @@ body:not(.can-edit) .game-card:focus-within .edit-action {
   min-width: 0;
   color: var(--dim);
   font-size: 11px;
-  font-weight: 740;
+  font-weight: 500;
   line-height: 1.25;
 }
 
 .completed-rating-label {
+  text-transform: uppercase;
   max-width: 100%;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -15191,6 +15194,12 @@ body.theme-kash
   white-space: nowrap;
 }
 
+#addGameForm.needs-gamelist-preorder-store .shelf-gamelist-preorder-field input,
+#addGameForm.is-new-shelf-game.needs-title-field .shelf-title-field input,
+#addGameForm.is-new-shelf-game.needs-platform-field .shelf-console-field input,
+#addGameForm.is-new-shelf-game.needs-release-date-field .shelf-release-field input,
+#addGameForm.is-new-shelf-game.needs-addition-date-field .shelf-addition-field input,
+#addGameForm.is-new-shelf-game.needs-region-field .shelf-region-field select,
 #gameDialog.is-new-game.needs-title-field
   .collection-form-grid
   > .title-field
@@ -18654,6 +18663,7 @@ html.theme-light #shelfCompletedDialog > .platinum-modal {
     var(--grid-texture), var(--panel-dark);
 }
 
+#addGameForm.is-new-shelf-game.needs-stream-check .stream-check,
 #gameDialog.is-new-game.needs-stream-check .stream-check {
   color: color-mix(in srgb, var(--accent) 82%, #fff);
   border-color: color-mix(in srgb, var(--accent) 76%, #ff4d62);
@@ -18663,10 +18673,12 @@ html.theme-light #shelfCompletedDialog > .platinum-modal {
     0 0 0 3px color-mix(in srgb, var(--accent) 10%, transparent);
 }
 
+#addGameForm.is-new-shelf-game.needs-stream-check .stream-check input[type="checkbox"],
 #gameDialog.is-new-game.needs-stream-check .stream-check input[type="checkbox"] {
   border-color: color-mix(in srgb, var(--accent) 76%, #ff4d62);
 }
 
+#addGameForm.is-new-shelf-game.needs-stream-check .stream-check span,
 #gameDialog.is-new-game.needs-stream-check .stream-check span {
   color: color-mix(in srgb, var(--accent) 82%, #fff);
 }

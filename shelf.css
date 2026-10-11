@@ -1938,11 +1938,11 @@ body.mobile-app-mode .shelf-tabs button.active:hover {
 }
 
 .gamelist-target-editor .lookup-label-physical {
-  display: none;
+  display: block;
 }
 
 .gamelist-target-editor .lookup-label-digital {
-  display: inline;
+  display: none;
 }
 
 .lookup-digital-separator {
@@ -1969,7 +1969,10 @@ body.mobile-app-mode .shelf-tabs button.active:hover {
   display: flex;
   align-items: center;
   justify-content: flex-start;
-  gap: 16px;
+  gap: 12px;
+  width: 100%;
+  box-sizing: border-box;
+  padding: 0;
   margin: 8px 0 14px;
 }
 
@@ -1991,9 +1994,11 @@ body.mobile-app-mode .shelf-tabs button.active:hover {
   display: flex;
   align-items: center;
   min-height: 52px;
-  color: var(--muted);
+  flex: 0 0 auto;
+  color: var(--dim);
   font-size: 13px;
   font-weight: 800;
+  text-transform: uppercase;
   white-space: nowrap;
 }
 
@@ -2003,10 +2008,11 @@ body.mobile-app-mode .shelf-tabs button.active:hover {
   display: grid;
   grid-template-columns: repeat(var(--target-count), minmax(0, 1fr));
   gap: 6px;
-  width: min(100%, 680px);
-  flex: 0 1 680px;
+  width: auto;
+  min-width: 0;
+  flex: 1 1 auto;
   padding: 5px;
-  background: var(--panel);
+  background: var(--panel-dark);
   border: 1px solid var(--line);
   border-radius: 10px;
   isolation: isolate;
@@ -2056,18 +2062,61 @@ body.mobile-app-mode .shelf-tabs button.active:hover {
   display: none !important;
 }
 
-.gamelist-target-editor .shelf-title-field {
-  grid-column: span 4;
+.gamelist-target-editor .lookup-digital-separator {
+  display: none !important;
 }
 
-#addGameForm.needs-gamelist-preorder-store .shelf-gamelist-preorder-field input {
-  border-color: color-mix(in srgb, var(--accent) 78%, var(--line));
-  background:
-    linear-gradient(135deg, color-mix(in srgb, var(--accent) 18%, transparent), rgba(255, 255, 255, 0.055)),
-    var(--panel-strong);
-  box-shadow:
-    inset 0 0 0 1px color-mix(in srgb, var(--accent) 24%, transparent),
-    0 0 0 3px color-mix(in srgb, var(--accent) 10%, transparent);
+#addGameForm:not(.gamelist-target-editor) .shelf-release-text-field,
+#addGameForm:not(.gamelist-target-editor) .shelf-gamelist-flag,
+#addGameForm:not(.gamelist-target-editor) .shelf-gamelist-length-field,
+#addGameForm:not(.gamelist-target-editor) .shelf-gamelist-preferred-store-field,
+#addGameForm:not(.gamelist-target-editor) .shelf-gamelist-status-field {
+  display: none !important;
+}
+
+.gamelist-target-editor .shelf-gamelist-list-field {
+  display: none !important;
+}
+
+#addGameForm.gamelist-target-editor .shelf-title-field { grid-column: span 7; order: 1; }
+#addGameForm.gamelist-target-editor .shelf-console-field { grid-column: span 5; order: 2; }
+#addGameForm.gamelist-target-editor .gamelist-target-digital-field { grid-column: span 2; order: 3; }
+#addGameForm.gamelist-target-editor .shelf-release-field { grid-column: span 3; order: 4; }
+#addGameForm.gamelist-target-editor .shelf-release-text-field { grid-column: span 7; order: 5; }
+#addGameForm.gamelist-target-editor .shelf-dlc-field { grid-column: span 3; order: 6; }
+#addGameForm.gamelist-target-editor .shelf-gamelist-emulator-field { grid-column: span 3; order: 7; }
+#addGameForm.gamelist-target-editor .shelf-gamelist-coop-field { grid-column: span 3; order: 8; }
+#addGameForm.gamelist-target-editor .shelf-gamelist-multiplayer-field { grid-column: span 3; order: 9; }
+#addGameForm.gamelist-target-editor .shelf-entitlement-field { grid-column: span 4; order: 10; }
+.shelf-entitlement-grid-spacer { display: none; }
+#addGameForm.gamelist-target-editor.digital-game-editor.shelf-psplus-editor .shelf-entitlement-grid-spacer,
+#addGameForm.gamelist-target-editor.digital-game-editor.shelf-games-with-gold-editor .shelf-entitlement-grid-spacer {
+  display: block;
+  grid-column: span 8;
+  order: 10;
+}
+#addGameForm.gamelist-target-editor .shelf-gamelist-length-field { grid-column: span 4; order: 11; }
+#addGameForm.gamelist-target-editor .shelf-gamelist-preorder-field { grid-column: span 4; order: 12; }
+#addGameForm.gamelist-target-editor .shelf-gamelist-preferred-store-field { grid-column: span 4; order: 13; }
+#addGameForm.gamelist-target-editor .shelf-owner-field { grid-column: span 6; order: 14; }
+#addGameForm.gamelist-target-editor .shelf-gamelist-status-field { grid-column: span 6; order: 15; }
+#addGameForm.gamelist-target-editor .shelf-achievement-search-field { grid-column: span 12; order: 16; }
+#addGameForm.gamelist-target-editor .shelf-gamelist-stream-field { grid-column: span 4; order: 17; }
+#addGameForm.gamelist-target-editor.gamelist-target-wishlist .shelf-gamelist-preferred-store-field { grid-column: span 8; }
+#addGameForm.gamelist-target-editor .gamelist-target-digital-field,
+#addGameForm.gamelist-target-editor .shelf-dlc-field { display: flex !important; }
+#addGameForm.gamelist-target-editor .shelf-editor-grid .check-filter {
+  height: 44px;
+  min-height: 44px;
+  padding-inline: 8px;
+  box-sizing: border-box;
+  align-self: end;
+}
+#addGameForm.gamelist-target-editor .shelf-editor-grid input:not([type="checkbox"]),
+#addGameForm.gamelist-target-editor .shelf-editor-grid select {
+  height: 44px;
+  min-height: 44px;
+  box-sizing: border-box;
 }
 
 #addGameForm.needs-gamelist-preorder-store .shelf-gamelist-preorder-field > span:first-child {
@@ -2102,23 +2151,6 @@ body.mobile-app-mode .shelf-tabs button.active:hover {
   margin-top: 2px;
 }
 
-#addGameForm.is-new-shelf-game.needs-title-field .shelf-title-field input,
-#addGameForm.is-new-shelf-game.needs-platform-field .shelf-console-field input,
-#addGameForm.is-new-shelf-game.needs-release-date-field .shelf-release-field input,
-#addGameForm.is-new-shelf-game.needs-addition-date-field .shelf-addition-field input,
-#addGameForm.is-new-shelf-game.needs-region-field .shelf-region-field select {
-  border-color: color-mix(in srgb, var(--accent) 76%, var(--line));
-  background:
-    linear-gradient(
-      135deg,
-      color-mix(in srgb, var(--accent) 16%, transparent),
-      rgba(255, 255, 255, 0.055)
-    ),
-    var(--panel-strong);
-  box-shadow:
-    inset 0 0 0 1px color-mix(in srgb, var(--accent) 22%, transparent),
-    0 0 0 3px color-mix(in srgb, var(--accent) 9%, transparent);
-}
 
 #addGameForm.is-new-shelf-game.needs-region-field .shelf-region-field .platform-logo-button {
   border-color: color-mix(in srgb, var(--accent) 76%, var(--line));
@@ -2664,14 +2696,35 @@ textarea {
 }
 
 @media (max-width: 760px) {
+  #addGameForm.gamelist-target-editor .shelf-entitlement-grid-spacer {
+    display: none !important;
+  }
+
+  .gamelist-target-editor .shelf-editor-grid > * {
+    grid-area: auto !important;
+    grid-column: 1 / -1 !important;
+    grid-row: auto !important;
+  }
+
+  .gamelist-target-editor .shelf-gamelist-placement > * {
+    grid-area: auto !important;
+    grid-column: 1 / -1 !important;
+    grid-row: auto !important;
+  }
+
   .shelf-gamelist-target-picker {
-    align-items: flex-start;
-    flex-direction: column;
+    align-items: center;
     gap: 8px;
   }
 
   .shelf-gamelist-target-options {
-    width: 100%;
+    width: auto;
+    flex: 1 1 0;
+  }
+
+  .shelf-gamelist-target-label {
+    min-height: 0;
+    font-size: 11px;
   }
 
   .shelf-gamelist-target-options button {
