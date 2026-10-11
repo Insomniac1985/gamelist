@@ -446,6 +446,10 @@ function bindEvents() {
     if (button) setShelfGamelistAddTarget(button.dataset.gamelistTarget);
   });
   el.gamelistPreorderStore.addEventListener("input", syncShelfGamelistPreorderRequirement);
+  el.gamelistStream.addEventListener("change", () => {
+    shelfNewGameTouchedFields.add("stream");
+    syncShelfNewGameHighlights();
+  });
   el.gamelistSection.addEventListener("change", () => {
     if (state.gamelistAddTarget === "preorder") el.gamelistSection.value = "upcoming";
   });
@@ -2371,6 +2375,7 @@ function syncShelfGamelistTargetMode() {
   el.fields.country.required = el.addForm.dataset.digital !== "true" && !active;
   syncStyledSelect(el.gamelistSection);
   syncShelfGamelistPreorderRequirement();
+  syncShelfNewGameHighlights();
 }
 
 function syncShelfGamelistTargetIndicator() {
@@ -2435,9 +2440,13 @@ function markShelfNewGameFieldsTouched(keys) {
 
 function syncShelfNewGameHighlights() {
   const isNewShelfGame = el.addForm.classList.contains("is-new-shelf-game");
+  const projectionTarget = isGamelistProjectionTarget();
+  const values = { title: el.fields.title.value.trim(), platform: el.fields.platform.value.trim(), "release-date": el.fields.releaseDate.value };
   for (const key of ["title", "platform", "release-date", "addition-date", "region"]) {
-    el.addForm.classList.toggle(`needs-${key}-field`, isNewShelfGame && !shelfNewGameTouchedFields.has(key));
+    const needsHighlight = projectionTarget && key in values ? !values[key] : !shelfNewGameTouchedFields.has(key);
+    el.addForm.classList.toggle(`needs-${key}-field`, isNewShelfGame && needsHighlight);
   }
+  el.addForm.classList.toggle("needs-stream-check", isNewShelfGame && projectionTarget && Boolean(String(state.gamelistSettings.twitchUser || "").trim()) && !shelfNewGameTouchedFields.has("stream"));
 }
 
 async function deleteCurrentEditedGame() {
