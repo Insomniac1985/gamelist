@@ -21,6 +21,7 @@ const DEFAULT_PAGE_ORDER = ["trophies", "calendar", "highlights", "search", "gam
 const LAYOUT_SECTION_KEYS = ["playing", ...DEFAULT_PAGE_ORDER, "latestFinished"];
 const VERSION_STORAGE_KEY = "gamelist:site-version";
 const UPDATES_NOTIFICATION_STORAGE_KEY = "gamelist:updates-notification-version";
+const GOTY_DOCK_DISMISSED_KEY = "gamelist:goty-dock-dismissed";
 const CACHE_HOUR_STORAGE_KEY = "gamelist:cache-hour";
 const PULL_NAVIGATION_KEY = "gamelist:pull-navigation";
 const STORE_OPTIONS = ["Amazon", "eBay", "GAME.es", "Xtralife", "Retro Island NY", "GameStop", "Walmart"];
@@ -260,6 +261,7 @@ const state = {
   gotyYear: String(new Date().getFullYear()),
   gotyPickerOrder: gotyOrderForDefault(initialSettings.defaultOrder),
   gotyPromptShown: false,
+  gotyDockDismissed: localStorage.getItem(GOTY_DOCK_DISMISSED_KEY) === "true",
   historyYear: String(new Date().getFullYear()),
   platinumYear: "all",
   platinumPlatform: "all",
@@ -344,6 +346,8 @@ const el = {
   mobileDockAdd: document.querySelector("#mobileDockAdd"),
   mobileDockUp: document.querySelector("#mobileDockUp"),
   mobileDockSearch: document.querySelector("#mobileDockSearch"),
+  mobileDockStats: document.querySelector("#mobileDockStats"),
+  mobileDockGoty: document.querySelector("#mobileDockGoty"),
   mobileDockSettings: document.querySelector("#mobileDockSettings"),
   mobileDockSwitch: document.querySelector("#mobileDockSwitch"),
   mobileTabs: document.querySelectorAll("[data-mobile-section]"),
@@ -935,6 +939,28 @@ async function clearSiteCachesAndReload() {
 function bindEvents() {
   bindModalTouchGuard();
   syncStyledSelect(el.detailTrophySort);
+  const toolbar = document.querySelector(".toolbar");
+  const sectionTabs = document.querySelector(".mobile-section-tabs");
+  const syncSectionTabsStickyOffset = () => {
+    if (!toolbar || !sectionTabs) return;
+    if (toolbar.hidden) {
+      sectionTabs.style.removeProperty("--toolbar-sticky-height");
+      return;
+    }
+    sectionTabs.style.setProperty("--toolbar-sticky-height", `${toolbar.getBoundingClientRect().height}px`);
+  };
+  syncSectionTabsStickyOffset();
+  if (toolbar && sectionTabs && "ResizeObserver" in window) {
+    new ResizeObserver(syncSectionTabsStickyOffset).observe(toolbar);
+  }
+  window.addEventListener("keydown", (event) => {
+    if (window.innerWidth < 761 || event.key.toLowerCase() !== "f" || event.repeat || event.isComposing) return;
+    if (event.altKey || event.ctrlKey || event.metaKey || event.shiftKey) return;
+    const target = event.target;
+    if (target instanceof HTMLElement && target.closest("input, textarea, select, [contenteditable='true'], [role='textbox'], dialog[open]")) return;
+    event.preventDefault();
+    scrollToSearchArea();
+  });
   el.brandLink.addEventListener("click", (event) => {
     event.preventDefault();
     const twitchUrl = twitchChannelUrl(normalizeSettings(state.settings).twitchUser);
@@ -955,6 +981,8 @@ function bindEvents() {
   el.searchButton?.addEventListener("click", scrollToSearchArea);
   el.floatingSearchButton?.addEventListener("click", scrollToSearchArea);
   el.mobileDockSearch?.addEventListener("click", scrollToSearchArea);
+  el.mobileDockStats?.addEventListener("click", () => openFinishedStatsDialog(state.completedYear || "all", { streamMode: state.completedStreamMode }));
+  el.mobileDockGoty?.addEventListener("click", () => openGameOfTheYearDialog(currentGameOfTheYear(), { force: true }));
   el.syncButton.addEventListener("click", syncNow);
   el.settingsButton?.addEventListener("click", openSettingsDialog);
   el.mobileDockSettings?.addEventListener("click", openSettingsDialog);
@@ -1118,7 +1146,12 @@ function bindEvents() {
   el.gotyDialog?.addEventListener("click", (event) => {
     if (event.target === el.gotyDialog) el.gotyDialog.close();
   });
-  el.gotyDialog?.addEventListener("close", syncScrollLock);
+  el.gotyDialog?.addEventListener("close", () => {
+    state.gotyDockDismissed = true;
+    localStorage.setItem(GOTY_DOCK_DISMISSED_KEY, "true");
+    syncMobileDockGoty();
+    syncScrollLock();
+  });
   el.gotyForm?.addEventListener("submit", saveGameOfTheYearFromForm);
   el.gotyStatsPreviewCloseButton?.addEventListener("click", () => el.gotyStatsPreviewDialog.close());
   el.gotyStatsPreviewDialog?.addEventListener("click", (event) => {
@@ -1366,7 +1399,10 @@ function bindEvents() {
   });
   el.pricesButton?.addEventListener("click", refreshCurrentPrices);
   el.coverUpload?.addEventListener("change", handleCoverUpload);
-  window.addEventListener("resize", syncDisplayMode, { passive: true });
+  window.addEventListener("resize", () => {
+    syncDisplayMode();
+    syncSectionTabsStickyOffset();
+  }, { passive: true });
   window.matchMedia("(display-mode: standalone)").addEventListener?.("change", syncDisplayMode);
 }
 
@@ -1836,6 +1872,27 @@ function gameOfTheYearCategoriesValid(picks = {}, categories = GAME_OF_YEAR_CATE
     const game = gameMap.get(picks[key]);
     return Boolean(game) && gameOfTheYearGameAllowedForCategory(game, key);
   });
+}
+
+function syncMobileDockGoty() {
+  const button = el.mobileDockGoty;
+  if (!button) return;
+  const year = currentGameOfTheYear();
+  const candidates = gameOfTheYearCandidateGames(year);
+  const picks = state.settings.gameOfTheYear?.[year]?.picks || {};
+  const isSetUp = candidates.length > 0
+    && gameOfTheYearCategoriesValid(picks, gameOfTheYearCategoriesForYear(year, candidates), candidates);
+  if (isSetUp) {
+    state.gotyDockDismissed = false;
+    localStorage.removeItem(GOTY_DOCK_DISMISSED_KEY);
+  }
+  button.hidden = window.innerWidth > 760
+    || !state.canEdit
+    || !state.gotyDockDismissed
+    || !candidates.length
+    || isSetUp
+    || Boolean(el.gotyDialog?.open);
+  button.innerHTML = trophyIcon();
 }
 
 async function persistCloud() {
@@ -3542,6 +3599,7 @@ function renderPlayingFinished() {
 }
 
 function renderGameOfTheYear() {
+  syncMobileDockGoty();
   if (!el.gotySection) return;
   const years = gameOfTheYearYears();
   if (!gameOfTheYearVisible() || !years.length) {
@@ -4074,6 +4132,9 @@ function showGameOfTheYearCallout(year) {
     event.preventDefault();
     event.stopPropagation();
     callout.classList.remove("visible");
+    state.gotyDockDismissed = true;
+    localStorage.setItem(GOTY_DOCK_DISMISSED_KEY, "true");
+    syncMobileDockGoty();
   });
   requestAnimationFrame(() => callout.classList.add("visible"));
 }
@@ -7330,8 +7391,13 @@ function renderCompleted() {
   if (state.completedYear !== "all" && !years.includes(state.completedYear)) state.completedYear = "all";
   renderCompletedYearFilter(years);
   if (el.completedStatsButton) {
-    el.completedStatsButton.hidden = !finishedGamesForCurrentView().length;
+    const hasFinishedGames = Boolean(finishedGamesForCurrentView().length);
+    el.completedStatsButton.hidden = !hasFinishedGames;
     el.completedStatsButton.innerHTML = graphIcon();
+    if (el.mobileDockStats) {
+      el.mobileDockStats.hidden = !hasFinishedGames;
+      el.mobileDockStats.innerHTML = `${graphIcon()}<span>${escapeHtml(tt("Check statistics"))}</span>`;
+    }
   }
   renderCompletedStreamToggle();
   const filteredFinishedGames = filteredGames({ applyPreorder: false }).filter((game) => game.completedAt && finishedStreamFilterMatches(game));
