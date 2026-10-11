@@ -7690,6 +7690,7 @@ a.time-pill {
 }
 
 .game-card.has-price-footer .prices {
+  order: 2;
   flex: 1 1 0;
   width: auto;
   min-width: 0;
@@ -7714,6 +7715,7 @@ a.time-pill {
 }
 
 .game-card.has-price-footer .card-actions {
+  order: 1;
   display: flex;
   flex: 0 0 auto;
   align-items: center;
@@ -7728,7 +7730,7 @@ a.time-pill {
 }
 
 .game-card.has-price-footer .card-actions .bought-action {
-  order: 3;
+  order: 1;
   height: 34px;
   min-height: 34px;
   padding: 6px 9px;
@@ -7736,11 +7738,11 @@ a.time-pill {
 }
 
 .game-card.has-price-footer .card-actions .price-refresh-action {
-  order: 2;
+  order: 3;
 }
 
 .game-card.has-price-footer .card-actions .delete-action {
-  order: 1;
+  order: 2;
 }
 
 .game-card.has-price-footer .card-actions .icon-only-button {
@@ -8542,7 +8544,7 @@ body:not(.can-edit) .game-card:focus-within .edit-action {
 
 .completed-rating-stars .star-display {
   gap: 1px;
-  --rating-star-size: 11px;
+  --rating-star-size: 18px;
   --rating-star-gap: 1px;
 }
 
