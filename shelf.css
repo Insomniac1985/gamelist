@@ -105,10 +105,6 @@ body:not(.can-edit) .showcase-edit-button {
   flex: 1 1 0;
   min-width: 0;
 }
-.shelf-page .stats .glass {
-  background: var(--panel);
-}
-
 body.mobile-app-mode.shelf-page {
   --theme-control-bg: linear-gradient(
     135deg,
