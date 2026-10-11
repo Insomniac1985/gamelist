@@ -15977,7 +15977,7 @@ html.theme-light .finish-trophy-check input[type="checkbox"]:checked {
   .mobile-action-dock {
     position: fixed;
     left: 50%;
-    bottom: calc(max(6px, env(safe-area-inset-bottom)) + var(--mobile-dock-viewport-bottom, 0px));
+    bottom: max(6px, env(safe-area-inset-bottom));
     z-index: 20;
     display: flex;
     width: min(620px, calc(100vw - 8px));
@@ -18616,6 +18616,7 @@ body.auth-checking #mobileDockSettings[aria-busy="true"] {
   }
 
   .mobile-action-dock:has(.mobile-dock-action:not(#mobileDockAdd):active) #mobileDockAdd:not(:active),
+  .mobile-action-dock:has(.mobile-dock-action:not(#mobileDockAdd):focus) #mobileDockAdd:not(:focus),
   .mobile-action-dock:has(.mobile-dock-action:not(#mobileDockAdd).is-active) #mobileDockAdd:not(.is-active) {
     background: transparent;
     box-shadow: none;
