@@ -1968,8 +1968,8 @@ body.mobile-app-mode .shelf-tabs button.active:hover {
 .shelf-gamelist-target-picker {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 12px;
+  justify-content: flex-start;
+  gap: 16px;
   margin: 8px 0 14px;
 }
 
@@ -1988,6 +1988,9 @@ body.mobile-app-mode .shelf-tabs button.active:hover {
 }
 
 .shelf-gamelist-target-label {
+  display: flex;
+  align-items: center;
+  min-height: 52px;
   color: var(--muted);
   font-size: 13px;
   font-weight: 800;
@@ -2000,7 +2003,8 @@ body.mobile-app-mode .shelf-tabs button.active:hover {
   display: grid;
   grid-template-columns: repeat(var(--target-count), minmax(0, 1fr));
   gap: 6px;
-  width: min(100%, 520px);
+  width: min(100%, 680px);
+  flex: 0 1 680px;
   padding: 5px;
   background: var(--panel);
   border: 1px solid var(--line);

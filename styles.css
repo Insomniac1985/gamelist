@@ -4607,7 +4607,7 @@ body.dialog-open .floating-edit-actions {
   width: 17px;
   height: 17px;
   flex: 0 0 17px;
-  color: var(--accent);
+  color: #fff;
   fill: none;
   stroke: currentColor;
   stroke-width: 1.9;
@@ -8527,7 +8527,7 @@ body:not(.can-edit) .game-card:focus-within .edit-action {
 .completed-list:not(.list-view) .completed-row {
   grid-template-columns: 82px minmax(0, 1fr) auto;
   align-items: start;
-  padding-bottom: 52px;
+  min-height: 178px;
 }
 
 .completed-list:not(.list-view) .completed-cover {
@@ -8541,10 +8541,15 @@ body:not(.can-edit) .game-card:focus-within .edit-action {
   justify-content: flex-start;
 }
 
+.completed-list:not(.list-view) .completed-main {
+  position: static;
+}
+
 .completed-main > .restore-action {
   position: absolute;
-  left: calc(-82px - 22px);
-  bottom: -52px;
+  left: 11px;
+  bottom: 11px;
+  z-index: 2;
   justify-self: start;
   margin: 0;
 }
@@ -8608,10 +8613,6 @@ body:not(.can-edit) .game-card:focus-within .edit-action {
     --rating-star-size: 11px;
   }
 
-  .completed-list:not(.list-view) .completed-main > .restore-action {
-    left: calc(-82px - 19px);
-    bottom: -52px;
-  }
 }
 
 #completedCount {
