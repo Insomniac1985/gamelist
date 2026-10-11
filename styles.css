@@ -4358,8 +4358,8 @@ body.dialog-open .floating-edit-actions {
   height: 32px;
   min-height: 32px;
   padding: 0 6px 0 8px;
-  background: transparent;
-  border: 1px solid transparent;
+  background: color-mix(in srgb, var(--panel-dark) 38%, transparent);
+  border: 1px solid color-mix(in srgb, var(--line) 52%, transparent);
   border-radius: 4px;
   cursor: pointer;
   box-sizing: border-box;

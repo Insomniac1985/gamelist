@@ -1961,8 +1961,8 @@ body.mobile-app-mode .shelf-tabs button.active:hover {
 }
 
 .shelf-gamelist-target-options {
-  background: transparent;
-  border-color: transparent;
+  background: color-mix(in srgb, var(--panel-dark) 38%, transparent);
+  border-color: color-mix(in srgb, var(--line) 52%, transparent);
 }
 
 .shelf-gamelist-placement:not([hidden]) {
