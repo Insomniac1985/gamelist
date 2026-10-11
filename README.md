@@ -22,27 +22,19 @@ Email: <a href="mailto:shabiimitjans@gmail.com">shabiimitjans@gmail.com</a>
 ## Features
 
 - Cloud sync through Cloudflare Workers.
-- Backlog, upcoming, available, currently playing, and finished-game boards.
-- Release calendar with preorder markers.
-- Refresh selected store prices directly from Available and Upcoming game cards.
-- Physical Shelf library with multiple owners, regions, conditions, categories, selected-store prices, PriceCharting collection values, and linked Gamelist entries.
-- Shelf Wishlist and Preorders tabs synced from Gamelist when Shelf Sync is enabled. Wishlist includes available and upcoming games without a preorder; preorders stay in their own tab.
-- Digital Drive library with multiple owners, categories and linked Gamelist entries.
-- Rate your played games.
-- Game of the year tracking and shareable image export.
-- IGDB-powered lookup for all game covers, release dates, descriptions, genres, developers, publishers, trailers, store links, and price-search helpers.
-- Twitch stream preview in Currently Playing when a streamed game and Twitch username are configured.
-- Shelf Showcase block for featured games, plus shared Currently Playing, Last Finished, Highlights, and Search modules.
-- PSN, Steam, and Xbox trophy/achievement dashboards.
-- Automatic time-to-finish estimates from linked Steam or PlayStation accounts when marking a game completed or finished.
-- Nintendo account connection from Settings.
-- Google Calendar preorder events when configured.
-- Theme editor with dark/light mode, colors, logos, title styles, and module ordering.
-- CSV import/export for Gamelist and Shelf data.
-- Mobile-ready responsive layout for phone, tablet, and desktop use.
-- Mobile action dock with quick access to add, search, settings, stats, Games of the Year, page switching, and return to top, depending on the page and available actions.
+- Track games across Backlog, Upcoming, Available, Currently Playing, and Finished, with a release calendar and preorder events.
+- Refresh store prices from Available and Upcoming cards.
+- Organize physical and digital games on Shelf, with owners, regions, conditions, categories, selected-store prices, and PriceCharting values.
+- Sync Wishlist and Preorders between Shelf and Gamelist.
+- Search IGDB for game details, covers, trailers, store links, and price searches.
+- Rate games, track yearly favorites, and export a shareable Games of the Year image.
+- Twitch stream previews and shared modules for Currently Playing, Last Finished, Highlights, Search, and Shelf Showcase.
+- Trophy and achievement dashboards for PlayStation, Steam, and Xbox, plus Nintendo account connection.
+- Playtime estimates from linked Steam and PlayStation accounts.
+- Customize themes and module order; import and export Gamelist and Shelf data as CSV.
+- Responsive layouts and a mobile action dock for quick access to common actions.
 
-Logged-in users see the in-app update notes once per notification counter. Edit the content in `updates-popup.html`; to announce a new set of notes, increment `notificationVersion` in `version.json`.
+Update notes appear in the app when the notification version changes. Edit `updates-popup.html` and increment `notificationVersion` in `version.json` to publish new notes.
 
 ---
 
