@@ -4600,7 +4600,8 @@ body.dialog-open .floating-edit-actions {
 .toolbar-check {
   align-self: end;
   min-height: var(--toolbar-control-height);
-  padding-right: 18px;
+  gap: 6px;
+  padding-right: 24px;
 }
 
 .toolbar-check .preordered-filter-icon {
@@ -8563,6 +8564,7 @@ body:not(.can-edit) .game-card:focus-within .edit-action {
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 5px 8px;
   min-width: 0;
+  margin-top: 7px;
   padding: 0 3px 2px;
 }
 
@@ -8574,11 +8576,12 @@ body:not(.can-edit) .game-card:focus-within .edit-action {
   min-width: 0;
   color: var(--dim);
   font-size: 11px;
-  font-weight: 740;
+  font-weight: 500;
   line-height: 1.25;
 }
 
 .completed-rating-label {
+  text-transform: capitalize;
   max-width: 100%;
   overflow: hidden;
   text-overflow: ellipsis;

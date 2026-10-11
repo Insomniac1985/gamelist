@@ -212,6 +212,14 @@ const el = {
   gamelistSection: document.querySelector("#shelfGamelistSectionInput"),
   gamelistPreorderField: document.querySelector("#shelfGamelistPreorderField"),
   gamelistPreorderStore: document.querySelector("#shelfGamelistPreorderStoreInput"),
+  gamelistReleaseText: document.querySelector("#shelfGamelistReleaseTextInput"),
+  gamelistEmulator: document.querySelector("#shelfGamelistEmulatorInput"),
+  gamelistCoop: document.querySelector("#shelfGamelistCoopInput"),
+  gamelistMultiplayer: document.querySelector("#shelfGamelistMultiplayerInput"),
+  gamelistStream: document.querySelector("#shelfGamelistStreamInput"),
+  gamelistLength: document.querySelector("#shelfGamelistLengthInput"),
+  gamelistPreferredStore: document.querySelector("#shelfGamelistPreferredStoreInput"),
+  gamelistStatuses: document.querySelector("#shelfGamelistStatusesInput"),
   digitalInput: document.querySelector("#shelfDigitalInput"),
   platformFieldIcon: document.querySelector(".shelf-platform-field-icon"),
   fields: {
@@ -2245,6 +2253,14 @@ function openEditor(game = null, options = {}) {
   el.fields.dlc.checked = Boolean(values.dlc);
   el.fields.psPlus.checked = Boolean(values.psPlus);
   el.fields.gamesWithGold.checked = Boolean(values.gamesWithGold);
+  el.gamelistReleaseText.value = values.releaseText || "";
+  el.gamelistEmulator.checked = Boolean(values.emulator);
+  el.gamelistCoop.checked = Boolean(values.coop);
+  el.gamelistMultiplayer.checked = Boolean(values.multiplayer);
+  el.gamelistStream.checked = Boolean(values.stream);
+  el.gamelistLength.value = values.lengthHours ?? "";
+  el.gamelistPreferredStore.value = values.preferredStore || "";
+  el.gamelistStatuses.value = (values.statuses || []).join(", ");
   el.fields.owners.value = (values.owners || []).join(", ");
   const links = normalizedStoreLinks(values);
   el.fields.playstationUrl.value = links.playstation;
@@ -2297,12 +2313,8 @@ function syncShelfGamelistTargetPicker() {
   const syncEnabled = state.gamelistSettings.shelfSync === true || state.gamelistSettings.shelfSync == null;
   const wishlistEnabled = syncEnabled && state.gamelistSettings.shelfSyncWishlist !== false;
   const preorderEnabled = syncEnabled && state.gamelistSettings.shelfShowPreorders !== false;
-  const shelfButton = el.gamelistTargetPicker.querySelector('[data-gamelist-target="shelf"]');
-  const wishlistButton = el.gamelistTargetPicker.querySelector('[data-gamelist-target="wishlist"]');
-  const preorderButton = el.gamelistTargetPicker.querySelector('[data-gamelist-target="preorder"]');
-  shelfButton.hidden = false;
-  wishlistButton.hidden = !wishlistEnabled;
-  preorderButton.hidden = !preorderEnabled;
+  el.gamelistTargetPicker.querySelector('[data-gamelist-target="wishlist"]').hidden = !wishlistEnabled;
+  el.gamelistTargetPicker.querySelector('[data-gamelist-target="preorder"]').hidden = !preorderEnabled;
   el.gamelistTargetPicker.hidden = Boolean(state.editingId);
 }
 
@@ -2315,6 +2327,7 @@ function syncShelfGamelistTargetMode() {
   const active = isGamelistProjectionTarget();
   el.addForm.classList.toggle("gamelist-target-editor", active);
   el.gamelistPlacement.hidden = !active;
+  el.gamelistPlacement.querySelector(".shelf-gamelist-list-field").hidden = active;
   el.gamelistPreorderField.hidden = target !== "preorder";
   el.addForm.querySelectorAll("[data-gamelist-target]").forEach((button) => {
     const selected = button.dataset.gamelistTarget === target;
@@ -2369,7 +2382,6 @@ function setShelfGamelistAddTarget(target) {
   state.gamelistAddTarget = ["shelf", "wishlist", "preorder"].includes(target) ? target : "shelf";
   if (state.gamelistAddTarget === "preorder") el.gamelistPreorderStore.value = "";
   syncShelfGamelistTargetMode();
-  shelfEditorDirty = true;
 }
 
 function syncShelfGamelistPreorderRequirement() {
@@ -2641,6 +2653,8 @@ async function chooseLookupResult(event) {
   fillStoreLinkFields(result.storeLinks);
   el.fields.hltbUrl.value = metadataHltbUrl(result) || el.fields.hltbUrl.value;
   state.pendingLengthHours = result.lengthHours || state.pendingLengthHours;
+  el.gamelistLength.value = state.pendingLengthHours || "";
+  el.gamelistReleaseText.value = result.releaseText || el.gamelistReleaseText.value;
   el.fields.description.value = result.description || "";
   if (el.addForm.dataset.digital !== "true" && !isGamelistProjectionTarget()) {
     const physical = await fetchPhysicalMetadata(result.title);
@@ -2675,6 +2689,7 @@ function applyGameMetadata(result) {
   fillStoreLinkFields(result.storeLinks);
   if (metadataHltbUrl(result) && !el.fields.hltbUrl.value) el.fields.hltbUrl.value = metadataHltbUrl(result);
   state.pendingLengthHours = result.lengthHours || state.pendingLengthHours;
+  el.gamelistLength.value = state.pendingLengthHours || "";
 }
 
 async function prefillPhysicalResult(result) {
@@ -2811,6 +2826,7 @@ async function saveGamelistTargetFromShelf(event) {
   const owners = splitValues(el.fields.owners.value).map(canonicalOwner).filter(Boolean);
   const platform = shortPlatform(canonicalShelfPlatform(el.fields.platform.value));
   const digital = Boolean(el.digitalInput.checked || el.fields.dlc.checked);
+  const enteredLengthHours = Number(el.gamelistLength.value);
   const game = {
     id: crypto.randomUUID(),
     title,
@@ -2821,18 +2837,18 @@ async function saveGamelistTargetFromShelf(event) {
     psPlus: digital && ["PS3", "PS4", "PS5"].includes(platform) && el.fields.psPlus.checked,
     gamesWithGold: digital && ["X360", "XOne"].includes(platform) && el.fields.gamesWithGold.checked,
     releaseDate: el.fields.releaseDate.value,
-    releaseText: "",
+    releaseText: el.gamelistReleaseText.value.trim(),
     releaseRefreshLocked: false,
-    lengthHours: state.pendingLengthHours || null,
+    lengthHours: Number.isFinite(enteredLengthHours) && enteredLengthHours > 0 ? enteredLengthHours : state.pendingLengthHours || null,
     finishHours: 0,
     ratings: { gameplay: 0, story: 0, soundtrack: 0, graphics: 0, performance: 0 },
     notes: "",
     description: el.fields.description.value.trim(),
-    statuses: [],
-    emulator: false,
-    coop: false,
-    multiplayer: false,
-    stream: false,
+    statuses: splitValues(el.gamelistStatuses.value),
+    emulator: Boolean(el.gamelistEmulator.checked),
+    coop: Boolean(el.gamelistCoop.checked),
+    multiplayer: Boolean(el.gamelistMultiplayer.checked),
+    stream: Boolean(el.gamelistStream.checked),
     platinum: false,
     playing: false,
     replayCount: 0,
@@ -2849,7 +2865,7 @@ async function saveGamelistTargetFromShelf(event) {
     storeLinks: editorStoreLinks(),
     owners: owners.length ? owners : [state.gamelistSettings.defaultOwner || "User"],
     preorderStore: target === "preorder" ? el.gamelistPreorderStore.value.trim() : "",
-    preferredStore: "",
+    preferredStore: el.gamelistPreferredStore.value.trim(),
     cover: rawCoverUrl(el.fields.cover.value.trim()),
     prices: [],
     order: Math.max(-1, ...sectionOrders) + 1,
