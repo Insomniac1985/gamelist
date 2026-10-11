@@ -7435,10 +7435,11 @@ function renderCompleted() {
               ${completedDateLine(game)}
             </div>
             ${ratingBreakdown}
+            ${state.viewMode === "list" ? "" : `<button class="ghost-button restore-action" type="button">${backIcon()}<span>${escapeHtml(tt("Backlog"))}</span></button>`}
           </div>
           <div class="completed-actions">
             <button class="icon-button completed-edit-action" type="button" title="Edit" aria-label="Edit">${pencilIcon()}</button>
-            <button class="ghost-button restore-action" type="button">${backIcon()}<span>${escapeHtml(tt("Backlog"))}</span></button>
+            ${state.viewMode === "list" ? `<button class="ghost-button restore-action" type="button">${backIcon()}<span>${escapeHtml(tt("Backlog"))}</span></button>` : ""}
           </div>
         </div>
       </div>
@@ -10264,8 +10265,8 @@ function completedRatingBreakdownMarkup(game) {
   if (!rows.length) return "";
   return `<div class="completed-rating-breakdown" aria-label="${escapeHtml(tt("Rating breakdown"))}">${rows.map(([key, label, value]) => `
     <span class="completed-rating-item" data-rating-key="${escapeHtml(key)}">
-      <span>${escapeHtml(tt(label))}</span>
-      <span class="completed-rating-stars" style="${ratingStarFillStyle(value)}" aria-label="${escapeHtml(`${tt(label)}: ${value}/5`)}">
+      <span class="completed-rating-label">${escapeHtml(tt(label))}</span>
+      <span class="completed-rating-stars${value === 5 ? " is-perfect" : ""}" data-rating-value="${value}" style="${ratingStarFillStyle(value)}" aria-label="${escapeHtml(`${tt(label)}: ${value}/5`)}">
         <span class="star-display" aria-hidden="true">${ratingStarsMarkup()}</span>
       </span>
     </span>

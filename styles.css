@@ -7682,6 +7682,7 @@ a.time-pill {
 
 .game-card.has-price-footer .card-footer {
   grid-column: 1 / -1;
+  grid-row: 3;
   display: flex;
   align-items: center;
   gap: 7px;
@@ -8511,23 +8512,48 @@ body:not(.can-edit) .game-card:focus-within .edit-action {
   height: auto;
 }
 
+.completed-list:not(.list-view) .completed-row {
+  grid-template-columns: 82px minmax(0, 1fr) auto;
+  align-items: start;
+  padding-bottom: 52px;
+}
+
+.completed-list:not(.list-view) .completed-cover {
+  width: 82px;
+  height: 114px;
+  align-self: start;
+}
+
+.completed-list:not(.list-view) .completed-actions {
+  align-self: start;
+  justify-content: flex-start;
+}
+
+.completed-main > .restore-action {
+  position: absolute;
+  left: calc(-82px - 12px);
+  bottom: -41px;
+  justify-self: start;
+  margin: 0;
+}
+
 .completed-item:has(.completed-rating-breakdown) .completed-row {
   min-height: 122px;
 }
 
 .completed-rating-breakdown {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 4px 8px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 5px 8px;
   min-width: 0;
   padding: 0 3px 2px;
 }
 
 .completed-rating-item {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  align-items: center;
-  gap: 5px;
+  grid-template-rows: auto auto;
+  justify-items: start;
+  gap: 3px;
   min-width: 0;
   color: var(--dim);
   font-size: 11px;
@@ -8535,7 +8561,8 @@ body:not(.can-edit) .game-card:focus-within .edit-action {
   line-height: 1.25;
 }
 
-.completed-rating-item > span {
+.completed-rating-label {
+  max-width: 100%;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -8544,20 +8571,34 @@ body:not(.can-edit) .game-card:focus-within .edit-action {
 .completed-rating-stars {
   display: inline-flex;
   align-items: center;
+  min-height: 28px;
+  padding: 1px 6px;
+  color: var(--accent);
+  background: rgba(255, 255, 255, 0.045);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  --rating-active-color: var(--accent);
+}
+
+.completed-rating-stars.is-perfect {
   color: #ffe985;
   --rating-active-color: #ffe985;
 }
 
 .completed-rating-stars .star-display {
-  gap: 2px;
-  --rating-star-size: 22px;
-  --rating-star-gap: 2px;
+  gap: 1px;
+  --rating-star-size: 16px;
+  --rating-star-gap: 1px;
 }
 
 @media (max-width: 760px) {
   .completed-rating-stars .star-display {
-    --rating-star-size: 14px;
-    --rating-star-gap: 1px;
+    --rating-star-size: 12px;
+  }
+
+  .completed-list:not(.list-view) .completed-main > .restore-action {
+    left: calc(-82px - 9px);
+    bottom: -40px;
   }
 }
 
