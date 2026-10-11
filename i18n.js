@@ -59,7 +59,7 @@ const STRINGS = {
     Wishlist: "Lista de deseos",
     Preorder: "Reserva",
     "Sync Wishlist": "Sincronizar lista de deseos",
-    "Add Game To:": "Añadir juego a:",
+    "Add Game To": "Añadir juego a",
     "Gamelist placement": "Ubicación en Gamelist",
     "Set the preorder store before saving or closing.": "Indica la tienda de reserva antes de guardar o cerrar.",
     "Added preorder to Gamelist.": "Reserva añadida a Gamelist.",

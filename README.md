@@ -3,16 +3,14 @@
   <span style="color: #e92841;">Gamelist</span>
 </h1>
 
-Gamelist is a personal game backlog, preorder, price, trophy, achievement, and physical collection tracker. It runs as a self-hosted static frontend served by a Cloudflare Worker, with saved data stored in Cloudflare KV.
+Gamelist is a personal game backlog and collection tracker. It runs as a self-hosted static frontend served by a Cloudflare Worker, with saved data stored in Cloudflare KV.
 
-The app has two connected pages:
+The app has two main connected pages/modes:
 
 - <img src="assets/Icon.png" alt="Gamelist" width="18" align="center"> `/` for the main game backlog, preorder, release, and completion status tracker.
-- <img src="assets/Icon_shelf.png" alt="Shelf" width="18" align="center"> `/shelf` for the physical collection tracker and organizer. You can now track your digital games, as well.
+- <img src="assets/Icon_shelf.png" alt="Shelf" width="18" align="center"> `/shelf` for the physical and digital collection tracker and organizer.
 
-Pull down the top bar/handle to go to the other page!
-
-Both pages share edit mode, themes, account settings, price-store settings, and achievement integrations. Shelf Sync links the physical Shelf collection with Gamelist, and can also sync Shelf Wishlist and Preorders into Gamelist.
+Both pages share edit mode, themes, account settings, price-store settings, and achievement integrations. Enabling _Shelf Sync_ inside settings, links your Shelf or Gamelist additions letting you easily get them synced on the other tracking service. You can also track your preorder or wishlisted games between pages so you can easily access it without worring on which "mode" you are on.
 
 Made and designed by <img src="assets/shabii_logo.png" alt="Shabii" width="18" align="center"> [Shabii](https://x.com/Shabii_exe) with the help of ChatGPT Codex.
 

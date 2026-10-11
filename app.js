@@ -1900,6 +1900,7 @@ function syncMobileDockGoty() {
     localStorage.removeItem(GOTY_DOCK_DISMISSED_KEY);
   }
   button.hidden = !state.canEdit
+    || !gameOfTheYearVisible()
     || !state.gotyDockDismissed
     || !candidates.length
     || isSetUp
