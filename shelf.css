@@ -2627,13 +2627,14 @@ textarea {
   }
 
   .shelf-gamelist-target-picker {
-    align-items: center;
+    flex-direction: column;
+    align-items: stretch;
     gap: 8px;
   }
 
   .shelf-gamelist-target-options {
-    width: auto;
-    flex: 1 1 0;
+    width: 100%;
+    flex: 0 0 auto;
   }
 
   .shelf-gamelist-target-label {
