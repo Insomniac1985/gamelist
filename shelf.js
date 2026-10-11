@@ -206,6 +206,8 @@ const el = {
   editDelete: document.querySelector("#editDeleteButton"),
   lookupInput: document.querySelector("#lookupInput"),
   lookupButton: document.querySelector("#lookupButton"),
+  lookupLabelPhysical: document.querySelector("#addGameForm .lookup-label-physical"),
+  lookupDigitalSeparator: document.querySelector("#addGameForm .lookup-digital-separator"),
   lookupResults: document.querySelector("#lookupResults"),
   gamelistTargetPicker: document.querySelector("#shelfGamelistTargetPicker"),
   gamelistPlacement: document.querySelector("#shelfGamelistPlacement"),
@@ -2326,6 +2328,16 @@ function syncShelfGamelistTargetMode() {
   const target = state.gamelistAddTarget;
   const active = isGamelistProjectionTarget();
   el.addForm.classList.toggle("gamelist-target-editor", active);
+  el.addForm.classList.toggle("gamelist-target-wishlist", target === "wishlist");
+  el.addForm.classList.toggle("gamelist-target-preorder", target === "preorder");
+  const digitalToggle = el.digitalInput.closest(".lookup-digital-check");
+  if (active) {
+    digitalToggle.classList.add("gamelist-target-digital-field");
+    el.addForm.querySelector(".shelf-editor-grid").insertBefore(digitalToggle, el.gamelistPlacement);
+  } else {
+    digitalToggle.classList.remove("gamelist-target-digital-field");
+    el.lookupDigitalSeparator.after(digitalToggle);
+  }
   el.gamelistPlacement.hidden = !active;
   el.gamelistPlacement.querySelector(".shelf-gamelist-list-field").hidden = active;
   el.gamelistPreorderField.hidden = target !== "preorder";
@@ -2342,10 +2354,12 @@ function syncShelfGamelistTargetMode() {
     if (title) title.textContent = tt("Add to Gamelist");
     el.addForm.querySelector(".form-group h3").textContent = tt("Game details");
     el.addForm.querySelectorAll("button[type='submit']").forEach((button) => { button.textContent = tt("Add to Gamelist"); });
-    el.lookupInput.placeholder = tt("Game name");
+    el.lookupLabelPhysical.textContent = tt("Search DB or IGDB URL");
+    el.lookupInput.placeholder = tt("Type a game name or paste an IGDB page");
     el.gamelistSection.value = target === "preorder" ? "upcoming" : "wanted";
     el.gamelistSection.disabled = true;
   } else {
+    el.lookupLabelPhysical.textContent = tt("Search DB or PriceCharting");
     if (eyebrow) eyebrow.textContent = tt("Game data");
     const game = state.games.find((item) => item.id === state.editingId);
     if (title) title.textContent = tt(game?.pendingCollection ? "Add to Collection" : game ? "Edit Game" : el.addForm.dataset.digital === "true" ? "Add Digital Game" : "Add Game");

@@ -8581,7 +8581,7 @@ body:not(.can-edit) .game-card:focus-within .edit-action {
 }
 
 .completed-rating-label {
-  text-transform: capitalize;
+  text-transform: uppercase;
   max-width: 100%;
   overflow: hidden;
   text-overflow: ellipsis;

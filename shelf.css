@@ -1938,11 +1938,11 @@ body.mobile-app-mode .shelf-tabs button.active:hover {
 }
 
 .gamelist-target-editor .lookup-label-physical {
-  display: none;
+  display: inline;
 }
 
 .gamelist-target-editor .lookup-label-digital {
-  display: inline;
+  display: none;
 }
 
 .lookup-digital-separator {
@@ -1971,6 +1971,8 @@ body.mobile-app-mode .shelf-tabs button.active:hover {
   justify-content: flex-start;
   gap: 12px;
   width: 100%;
+  box-sizing: border-box;
+  padding: 0 8px;
   margin: 8px 0 14px;
 }
 
@@ -1993,7 +1995,7 @@ body.mobile-app-mode .shelf-tabs button.active:hover {
   align-items: center;
   min-height: 52px;
   flex: 0 0 auto;
-  color: var(--muted);
+  color: var(--dim);
   font-size: 13px;
   font-weight: 800;
   text-transform: uppercase;
@@ -2010,7 +2012,7 @@ body.mobile-app-mode .shelf-tabs button.active:hover {
   min-width: 0;
   flex: 1 1 auto;
   padding: 5px;
-  background: var(--panel);
+  background: var(--panel-dark);
   border: 1px solid var(--line);
   border-radius: 10px;
   isolation: isolate;
@@ -2060,6 +2062,10 @@ body.mobile-app-mode .shelf-tabs button.active:hover {
   display: none !important;
 }
 
+.gamelist-target-editor .lookup-digital-separator {
+  display: none !important;
+}
+
 #addGameForm:not(.gamelist-target-editor) .shelf-release-text-field,
 #addGameForm:not(.gamelist-target-editor) .shelf-gamelist-flag,
 #addGameForm:not(.gamelist-target-editor) .shelf-gamelist-length-field,
@@ -2068,39 +2074,33 @@ body.mobile-app-mode .shelf-tabs button.active:hover {
   display: none !important;
 }
 
-.gamelist-target-editor .shelf-title-field {
-  grid-column: span 6;
-}
-
-.gamelist-target-editor .shelf-console-field {
-  grid-column: span 6;
-}
-
 .gamelist-target-editor .shelf-gamelist-list-field {
   display: none !important;
 }
 
-.gamelist-target-editor .shelf-release-field,
-.gamelist-target-editor .shelf-release-text-field,
-.gamelist-target-editor .shelf-gamelist-preorder-field,
-.gamelist-target-editor .shelf-gamelist-preferred-store-field,
-.gamelist-target-editor .shelf-gamelist-length-field,
-.gamelist-target-editor .shelf-gamelist-status-field,
-.gamelist-target-editor .shelf-owner-field,
-.gamelist-target-editor .shelf-achievement-search-field {
-  grid-column: span 6;
-}
-
+.gamelist-target-editor .shelf-title-field { grid-area: 1 / 1 / 2 / 8; }
+.gamelist-target-editor .shelf-console-field { grid-area: 1 / 8 / 2 / 13; }
+.gamelist-target-editor .gamelist-target-digital-field { grid-area: 2 / 1 / 3 / 3; }
+.gamelist-target-editor .shelf-release-field { grid-area: 2 / 3 / 3 / 8; }
+.gamelist-target-editor .shelf-release-text-field { grid-area: 2 / 8 / 3 / 13; }
+.gamelist-target-editor .shelf-dlc-field { grid-area: 3 / 1 / 4 / 4; }
+.gamelist-target-editor .shelf-gamelist-emulator-field { grid-area: 3 / 4 / 4 / 7; }
+.gamelist-target-editor .shelf-gamelist-coop-field { grid-area: 3 / 7 / 4 / 10; }
+.gamelist-target-editor .shelf-gamelist-multiplayer-field { grid-area: 3 / 10 / 4 / 13; }
+.gamelist-target-editor .shelf-gamelist-length-field { grid-area: 4 / 1 / 5 / 5; }
+.gamelist-target-editor .shelf-gamelist-preorder-field { grid-area: 4 / 5 / 5 / 9; }
+.gamelist-target-editor .shelf-gamelist-preferred-store-field { grid-area: 4 / 9 / 5 / 13; }
+.gamelist-target-editor.gamelist-target-wishlist .shelf-gamelist-preferred-store-field { grid-area: 4 / 5 / 5 / 13; }
+.gamelist-target-editor .shelf-owner-field { grid-area: 5 / 1 / 6 / 7; }
+.gamelist-target-editor .shelf-gamelist-status-field { grid-area: 5 / 7 / 6 / 13; }
+.gamelist-target-editor .shelf-achievement-search-field { grid-area: 6 / 1 / 7 / 13; }
+.gamelist-target-editor .shelf-gamelist-stream-field { grid-area: 7 / 1 / 8 / 4; }
+.gamelist-target-editor .shelf-entitlement-field.shelf-psplus-field { grid-area: 7 / 4 / 8 / 7; }
+.gamelist-target-editor .shelf-entitlement-field.shelf-games-with-gold-field { grid-area: 7 / 7 / 8 / 10; }
 .gamelist-target-editor .shelf-gamelist-flag,
 .gamelist-target-editor .shelf-dlc-field,
-.gamelist-target-editor .shelf-entitlement-field {
-  grid-column: span 3;
-}
-
-.gamelist-target-editor .shelf-gamelist-flag {
-  align-self: end;
-  min-height: 44px;
-}
+.gamelist-target-editor .shelf-entitlement-field,
+.gamelist-target-editor .gamelist-target-digital-field { align-self: end; min-height: 44px; }
 
 #addGameForm.needs-gamelist-preorder-store .shelf-gamelist-preorder-field input {
   border-color: color-mix(in srgb, var(--accent) 78%, var(--line));
@@ -2707,7 +2707,15 @@ textarea {
 
 @media (max-width: 760px) {
   .gamelist-target-editor .shelf-editor-grid > * {
+    grid-area: auto !important;
     grid-column: 1 / -1 !important;
+    grid-row: auto !important;
+  }
+
+  .gamelist-target-editor .shelf-gamelist-placement > * {
+    grid-area: auto !important;
+    grid-column: 1 / -1 !important;
+    grid-row: auto !important;
   }
 
   .shelf-gamelist-target-picker {
