@@ -18346,14 +18346,14 @@ html.theme-light #shelfCompletedDialog > .platinum-modal {
   color: color-mix(in srgb, var(--accent) 82%, #fff);
 }
 /* Keep game cards on both pages consistent with the translucent window panels. */
-.game-card.has-art::before {
+.game-card.has-art:not(.playing-card)::before {
   display: none !important;
 }
 
-.game-card.glass.has-art {
-  background: var(--grid-fade), var(--grid-texture), color-mix(in srgb, var(--panel) 72%, transparent);
-  background-size: auto, 22px 22px, auto;
-  background-position: center, var(--grid-x) var(--grid-y), center;
+.game-card.glass.has-art:not(.playing-card) {
+  background: var(--grid-texture), color-mix(in srgb, var(--panel) 72%, transparent);
+  background-size: 22px 22px, auto;
+  background-position: var(--grid-x) var(--grid-y), center;
   backdrop-filter: blur(8px) saturate(1.08);
   -webkit-backdrop-filter: blur(8px) saturate(1.08);
 }
