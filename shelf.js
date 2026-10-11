@@ -1995,6 +1995,7 @@ function gameCard(game, options = {}) {
   card.dataset.id = game.id;
   card.setAttribute("role", "button"); card.tabIndex = 0;
   card.className += `${cover ? " has-art" : ""}${preorderProjection ? " preorder-projection-card synced-projection-card" : ""}${wishlistProjection ? " wishlist-projection-card synced-projection-card" : ""}${ownerClasses}`;
+  card.classList.toggle("has-rating", ratingScoreValue(game) != null);
   if (cover) {
     card.style.setProperty("--card-art", `url("${escapeCss(cover)}")`);
     bindActivityCardParallax(card);
@@ -2013,10 +2014,10 @@ function gameCard(game, options = {}) {
   if (syncedProjection) edit.dataset.action = "edit-preorder"; else edit.dataset.action = "edit";
   const studioText = studio || game.genre || tt(digitalGame || (syncedProjection && isDigitalShelfGame(game)) ? "Digital edition" : "Physical edition");
   card.querySelector(".studio-line").innerHTML = `${visibleOwners.map(ownerBadge).join("")}<span>${escapeHtml(studioText)}</span>`;
-  card.querySelector(".meta").innerHTML = syncedProjection
+  card.querySelector(".meta").innerHTML = (syncedProjection
     ? `${platformBadge(game.platform, { title: game.title })}${mediaFormatBadge(game)}${dlcBadge(game)}${entitlementBadge(game)}${preorderPlaytimePill(game)}`
     : digitalGame ? `${platformBadge(game.platform, { title: game.title })}${mediaFormatBadge(game)}${dlcBadge(game)}${entitlementBadge(game)}${shelfProgressPill(game)}`
-    : `<span class="region-flag" title="${escapeHtml(game.country)}">${flagIcon(game.country)}</span>${platformBadge(game.platform, { title: game.title })}${conditionBadge(condition)}${missingCollectionPriceBadge(game)}${shelfProgressPill(game)}`;
+    : `<span class="region-flag" title="${escapeHtml(game.country)}">${flagIcon(game.country)}</span>${platformBadge(game.platform, { title: game.title })}${conditionBadge(condition)}${missingCollectionPriceBadge(game)}${shelfProgressPill(game)}`) + ratingScoreBadge(game);
   const playDates = card.querySelector(".play-dates");
   if (preorderProjection) playDates.innerHTML = `${shelfReleaseDatePill(game, "Releases")}${game.preorderStore ? preorderProjectionChip(game.preorderStore) : ""}`;
   else if (wishlistProjection && game.releaseDate) playDates.innerHTML = shelfReleaseDatePill(game, "Released");

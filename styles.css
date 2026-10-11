@@ -5040,6 +5040,10 @@ body[data-mobile-section="upcoming"] .column:not(#upcoming) {
   gap: 8px;
 }
 
+.card-list:not(.list-view) .game-card.has-rating {
+  min-height: 260px;
+}
+
 .game-row {
   position: relative;
   display: grid;
@@ -7781,10 +7785,10 @@ a.time-pill {
 }
 
 .game-card:not(.playing-card) > .card-actions {
-  justify-self: end;
+  justify-self: start;
   width: max-content;
   max-width: 100%;
-  flex-direction: row-reverse;
+  flex-direction: row;
   justify-content: flex-start;
   flex-wrap: wrap;
 }
@@ -8384,6 +8388,10 @@ body:not(.can-edit) .game-card:focus-within .edit-action {
 
 .completed-list.list-view {
   grid-template-columns: 1fr;
+}
+
+.completed-list:not(.list-view) .completed-row:has(.rating-score-pill) {
+  min-height: 122px;
 }
 
 #completedCount {
@@ -16981,14 +16989,6 @@ html.theme-light .finish-trophy-check input[type="checkbox"]:checked {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr)) 42px;
     align-items: stretch;
-  }
-
-  .game-card:not(.playing-card) > .card-actions {
-    direction: rtl;
-  }
-
-  .game-card:not(.playing-card) > .card-actions > * {
-    direction: ltr;
   }
 
   .card-actions:has(.price-refresh-action),

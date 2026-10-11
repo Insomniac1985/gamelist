@@ -8833,6 +8833,7 @@ function cardFor(game, options = {}) {
   card.classList.toggle("playing-card", Boolean(game.playing) && !neutralReleaseCard);
   card.classList.toggle("stream-card", Boolean(game.stream));
   card.classList.toggle("completed-trophy-card", Boolean(game.platinum));
+  card.classList.toggle("has-rating", ratingScoreValue(game) != null);
   card.classList.toggle("calendar-completed-card", releaseDialog && Boolean(game.platinum));
   const trailer = card.querySelector(".card-trailer");
   const trailerUrl = !neutralReleaseCard && shouldShowCardTrailer(game) ? trailerEmbedUrl(game.trailerUrl) : "";
@@ -8869,7 +8870,7 @@ function cardFor(game, options = {}) {
   card.querySelector(".meta").innerHTML = metaFor(game, {
     includePsn: neutralReleaseCard || !game.playing,
     includeCalendarState: releaseDialog,
-  }).join("");
+  }).join("") + ratingScoreBadge(game);
   const playDates = card.querySelector(".play-dates");
   playDates.innerHTML = playDatesFor(game, { includePastRelease: Boolean(options.includePastRelease), includeRelease: !releaseDialog, includePreorder: true, includeCalendarState: releaseDialog }).join("");
   playDates.hidden = !playDates.innerHTML;

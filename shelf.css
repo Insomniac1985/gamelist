@@ -1131,6 +1131,10 @@ html.theme-font-mata .shelf-page .playing-section .column-head h2 {
   gap: 10px;
 }
 
+.shelf-grid:not(.list-view) .game-card.has-rating {
+  min-height: 260px;
+}
+
 .shelf-grid .game-card {
   grid-template-columns: var(--shelf-cover-width, 104px) minmax(0, 1fr);
   min-height: 240px;
@@ -2823,7 +2827,7 @@ textarea {
   }
   .shelf-grid .game-card .card-actions {
     grid-template-columns: minmax(0, max-content) 42px;
-    justify-content: end;
+    justify-content: start;
     gap: 6px;
   }
   .shelf-grid .game-card .card-actions:has(.add-collection-action) {
