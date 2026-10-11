@@ -10915,6 +10915,13 @@ dialog {
   padding: 0;
 }
 
+@media (min-width: 761px) {
+  #gameDialog,
+  #addDialog {
+    width: min(1120px, calc(100vw - 64px));
+  }
+}
+
 #detailDialog {
   width: min(980px, calc(100vw - 24px));
 }
@@ -18483,6 +18490,13 @@ body.auth-checking #mobileDockSettings[aria-busy="true"] {
     var(--grid-x) var(--grid-y),
     var(--grid-x) var(--grid-y),
     center;
+}
+
+#gameDialog > .modal,
+#addDialog > .add-modal {
+  background: var(--grid-fade), var(--grid-texture), var(--panel-dark);
+  background-size: auto, 22px 22px, 22px 22px, auto;
+  background-position: center, var(--grid-x) var(--grid-y), var(--grid-x) var(--grid-y), center;
 }
 
 html.theme-light #gameDialog > .modal,
