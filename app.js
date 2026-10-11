@@ -1309,7 +1309,9 @@ function bindEvents() {
     if (!button || state.editingId) return;
     el.fields.section.value = button.dataset.gameTarget;
     syncStyledSelect(el.fields.section, { activeValue: null });
-    el.fields.section.dispatchEvent(new Event("change", { bubbles: true }));
+    markNewGameListTouched();
+    syncDialogPriceVisibility();
+    syncGameAddTargetPicker();
   });
   el.fields.section.addEventListener("change", () => {
     markNewGameListTouched();
