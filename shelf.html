@@ -264,7 +264,11 @@
         <section class="toolbar glass shelf-toolbar" data-module="filters">
           <label class="search shelf-search-wide">
             <span data-i18n="Search">Search</span>
-            <input id="searchInput" type="search" placeholder="Game, publisher, genre..." data-i18n-placeholder="Game, publisher, genre...">
+            <span class="search-field">
+              <input id="searchInput" type="search" placeholder="Game, publisher, genre..." data-i18n-placeholder="Game, publisher, genre...">
+              <kbd class="search-shortcut" aria-hidden="true">F</kbd>
+              <svg class="search-mobile-icon search-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.5"></circle><path d="m16 16 4 4"></path></svg>
+            </span>
           </label>
           <label>
             <span data-i18n="Platform">Platform</span>

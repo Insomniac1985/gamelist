@@ -4222,6 +4222,50 @@ body.dialog-open .floating-edit-actions {
   line-height: var(--toolbar-control-height);
 }
 
+.search-field {
+  position: relative;
+  display: block;
+  min-width: 0;
+  margin: 0;
+  color: inherit;
+  font-size: inherit;
+  font-weight: inherit;
+  text-transform: none;
+}
+
+.search-field > input {
+  width: 100%;
+  padding-right: 54px !important;
+}
+
+.search-shortcut {
+  position: absolute;
+  top: 50%;
+  right: 12px;
+  display: inline-grid;
+  width: 23px;
+  height: 23px;
+  place-items: center;
+  transform: translateY(-50%);
+  border: 1px solid color-mix(in srgb, var(--muted) 32%, transparent);
+  border-radius: 5px;
+  background: color-mix(in srgb, var(--panel) 74%, transparent);
+  color: var(--muted);
+  font-size: 10px !important;
+  font-weight: 500 !important;
+  pointer-events: none;
+}
+
+.search-mobile-icon {
+  position: absolute;
+  top: 50%;
+  right: 13px;
+  display: none;
+  transform: translateY(-50%);
+  color: var(--muted);
+  pointer-events: none;
+}
+
 .toolbar select {
   padding-right: 34px;
 }
@@ -5160,7 +5204,7 @@ body.theme-kash .game-row.stream-card:hover {
   width: 100%;
   height: 100%;
   object-fit: contain;
-  border: 1px solid var(--line);
+  border: 0;
   border-radius: 5px;
   background: rgba(255, 255, 255, 0.06);
 }
@@ -6164,7 +6208,7 @@ body.theme-kash .game-card.stream-card.completed-trophy-card {
   overflow: hidden;
   color: var(--dim);
   background: rgba(255, 255, 255, 0.06);
-  border: 1px solid var(--line);
+  border: 0;
   border-radius: 7px;
 }
 
@@ -10587,7 +10631,7 @@ body.theme-kash .playing-finished-game.completed-trophy-card:hover {
   width: 56px;
   height: 76px;
   object-fit: cover;
-  border: 1px solid var(--line);
+  border: 0;
   border-radius: 6px;
   background: rgba(255, 255, 255, 0.06);
 }
@@ -14565,7 +14609,7 @@ body.theme-kash
   z-index: 30;
   overflow: visible;
   display: grid;
-  grid-template-columns: 110px 132px auto;
+  grid-template-columns: 110px 190px auto;
   align-items: end;
   justify-content: start;
   gap: 8px;
@@ -16436,6 +16480,18 @@ html.theme-light .finish-trophy-check input[type="checkbox"]:checked {
   .toolbar > label,
   .toolbar .toolbar-check {
     grid-column: 1 / -1;
+  }
+
+  .search-field > input {
+    padding-right: 44px !important;
+  }
+
+  .search-shortcut {
+    display: none;
+  }
+
+  .search-mobile-icon {
+    display: block;
   }
 
   .toolbar .order-label {
