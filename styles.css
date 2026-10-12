@@ -14608,7 +14608,7 @@ body.theme-kash
   z-index: 30;
   overflow: visible;
   display: grid;
-  grid-template-columns: 110px 132px auto;
+  grid-template-columns: 110px 190px auto;
   align-items: end;
   justify-content: start;
   gap: 8px;
