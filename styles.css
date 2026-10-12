@@ -8528,7 +8528,7 @@ body:not(.can-edit) .game-card:focus-within .edit-action {
 .completed-list:not(.list-view) .completed-row {
   grid-template-columns: 82px minmax(0, 1fr) auto;
   align-items: start;
-  min-height: 178px;
+  min-height: 122px;
 }
 
 .completed-list:not(.list-view) .completed-cover {
@@ -8548,15 +8548,11 @@ body:not(.can-edit) .game-card:focus-within .edit-action {
 
 .completed-main > .restore-action {
   position: absolute;
-  left: 11px;
+  right: 11px;
   bottom: 11px;
   z-index: 2;
-  justify-self: start;
+  justify-self: end;
   margin: 0;
-}
-
-.completed-item:has(.completed-rating-breakdown) .completed-row {
-  min-height: 122px;
 }
 
 .completed-rating-breakdown {
