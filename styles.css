@@ -4251,7 +4251,7 @@ body.dialog-open .floating-edit-actions {
   border-radius: 5px;
   background: color-mix(in srgb, var(--panel) 74%, transparent);
   color: var(--muted);
-  font: 600 12px/1 var(--font-body, inherit);
+  font: 500 10px/1 var(--font-body, inherit);
   pointer-events: none;
 }
 
