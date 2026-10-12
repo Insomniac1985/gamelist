@@ -331,7 +331,11 @@
       <section class="toolbar glass">
         <label class="search">
           <span data-i18n="Search">Search</span>
-          <input id="searchInput" type="search" placeholder="Game, platform, store, status..." data-i18n-placeholder="Game, platform, store, status...">
+          <span class="search-field">
+            <input id="searchInput" type="search" placeholder="Game, platform, store, status..." data-i18n-placeholder="Game, platform, store, status...">
+            <kbd class="search-shortcut" aria-hidden="true">F</kbd>
+            <svg class="search-mobile-icon search-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.5"></circle><path d="m16 16 4 4"></path></svg>
+          </span>
         </label>
         <label class="check-filter toggle-check toolbar-check">
           <input id="preorderedFilter" type="checkbox">

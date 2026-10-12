@@ -4222,6 +4222,44 @@ body.dialog-open .floating-edit-actions {
   line-height: var(--toolbar-control-height);
 }
 
+.search-field {
+  position: relative;
+  display: block;
+  min-width: 0;
+}
+
+.search-field > input {
+  width: 100%;
+  padding-right: 54px !important;
+}
+
+.search-shortcut {
+  position: absolute;
+  top: 50%;
+  right: 12px;
+  display: inline-grid;
+  width: 23px;
+  height: 23px;
+  place-items: center;
+  transform: translateY(-50%);
+  border: 1px solid color-mix(in srgb, var(--muted) 32%, transparent);
+  border-radius: 5px;
+  background: color-mix(in srgb, var(--panel) 74%, transparent);
+  color: var(--muted);
+  font: 600 12px/1 var(--font-body, inherit);
+  pointer-events: none;
+}
+
+.search-mobile-icon {
+  position: absolute;
+  top: 50%;
+  right: 13px;
+  display: none;
+  transform: translateY(-50%);
+  color: var(--muted);
+  pointer-events: none;
+}
+
 .toolbar select {
   padding-right: 34px;
 }
@@ -16436,6 +16474,18 @@ html.theme-light .finish-trophy-check input[type="checkbox"]:checked {
   .toolbar > label,
   .toolbar .toolbar-check {
     grid-column: 1 / -1;
+  }
+
+  .search-field > input {
+    padding-right: 44px !important;
+  }
+
+  .search-shortcut {
+    display: none;
+  }
+
+  .search-mobile-icon {
+    display: block;
   }
 
   .toolbar .order-label {
