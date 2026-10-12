@@ -6362,7 +6362,9 @@ function renderPlatinumDialog(platinums = platinumItems(), years = platinumYears
     state.platinumPlatform = el.platinumPlatformSelect.value || "all";
     renderPlatinumDialog(platinums, years);
   };
-  syncStyledSelects(el.platinumDialog, { activeValue: null });
+  syncStyledSelect(el.platinumYearSelect);
+  syncStyledSelect(el.platinumPlatformSelect, { logos: true });
+  syncStyledSelect(el.platinumSortSelect);
   el.platinumList.innerHTML = visible.length ? visible.map(platinumCard).join("") : `<div class="empty">No completed games tracked yet.</div>`;
   el.platinumList.querySelectorAll("[data-game-id]").forEach((button) => {
     button.addEventListener("click", () => {
