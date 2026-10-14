@@ -8,9 +8,8 @@ export async function onRequestGet({ request, env }) {
   if (new URL(request.url).searchParams.get("shelfProjections") === "1") {
     const settings = data?.settings && typeof data.settings === "object" ? data.settings : {};
     const games = (Array.isArray(data?.games) ? data.games : []).filter((game) => (
-      !game.deletedAt && !game.completedAt && (
-        Boolean(game.preorderStore) || (!game.playing && ["wanted", "upcoming"].includes(game.section))
-      )
+      !game.deletedAt && !game.completedAt && !game.preorderStore
+      && !game.playing && ["wanted", "upcoming"].includes(game.section)
     )).map((game) => ({
       id: game.id, title: game.title, platform: game.platform, section: game.section,
       preorderStore: game.preorderStore || "", digital: Boolean(game.digital), dlc: Boolean(game.dlc),

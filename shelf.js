@@ -1922,7 +1922,7 @@ function shelfTabs(pendingCount = 0, preorderCount = syncedPreorderGames().lengt
 }
 
 function syncedPreorderGames() {
-  if (state.gamelistSettings.shelfSync === false) return [];
+  if (!state.canEdit || state.gamelistSettings.shelfSync === false) return [];
   return state.gamelistGames
     .filter((game) => !game.deletedAt && !game.completedAt && game.preorderStore && (!isDigitalShelfGame(game) || state.gamelistSettings.shelfDigitalGames === true))
     .map((game) => ({ ...game, platform: canonicalShelfPlatform(game.platform || ""), preorderProjection: true, genre: (game.genres || []).join(", "), country: game.country || "", condition: "Preordered" }));
