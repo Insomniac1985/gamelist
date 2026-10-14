@@ -1,4 +1,4 @@
-import { getPsnAccessToken, getPsnNpsso } from "./psn-auth.js";
+import { getPsnAccessToken, getPsnNpsso, getPsnNpssoDaysLeft } from "./psn-auth.js";
 import { getSteamApiKey } from "./steam-account.js";
 import { getXboxApiKey } from "./xbox-account.js";
 import { getPriceChartingToken } from "./pricecharting-account.js";
@@ -12,9 +12,11 @@ export async function onRequestGet({ request, env = {} }) {
   const isSet = (value) => Boolean(String(value || "").trim());
   const health = await integrationHealth(env, request);
   const igdb = await igdbCredentials(env);
+  const psnNpsso = await getPsnNpsso(env);
   const { CURRENT_REPO, ...working } = health;
   return json({
-    PSN_NPSSO: isSet(await getPsnNpsso(env)),
+    PSN_NPSSO: isSet(psnNpsso),
+    PSN_TOKEN_DAYS_LEFT: psnNpsso ? await getPsnNpssoDaysLeft(env) : null,
     OPENXBL_API_KEY: isSet(await getXboxApiKey(env)),
     STEAM_API_KEY: isSet(await getSteamApiKey(env)),
     IGDB_CLIENT_ID: Boolean(igdb?.clientId),
