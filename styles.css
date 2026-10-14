@@ -885,7 +885,7 @@ html.theme-font-mata {
 
 .playing-finished-progress {
   display: grid !important;
-  grid-template-columns: 14px minmax(0, 1fr);
+  grid-template-columns: 14px auto minmax(0, 1fr);
   align-items: center;
   gap: 5px;
   width: 100%;
@@ -893,7 +893,7 @@ html.theme-font-mata {
 }
 
 .playing-finished-progress strong {
-  display: none;
+  display: block;
   color: #ffe985;
   font-size: 10px;
   font-weight: 850;
@@ -915,6 +915,7 @@ html.theme-font-mata {
 
 .playing-finished-progress em {
   display: block;
+  grid-column: 1 / -1;
   width: 100%;
   min-width: 0;
   height: 5px;
@@ -18914,6 +18915,10 @@ body:not(.shelf-page) #wanted .price-refresh-action {
 @media (min-width: 761px) {
   .playing-finished-progress {
     grid-template-columns: 14px auto minmax(0, 1fr);
+  }
+
+  .playing-finished-progress em {
+    grid-column: auto;
   }
 
   .playing-finished-progress strong {
