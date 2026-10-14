@@ -22,6 +22,12 @@ export async function onRequestGet({ request, env }) {
       shelfSync: settings.shelfSync, shelfSyncWishlist: settings.shelfSyncWishlist,
       shelfShowPreorders: settings.shelfShowPreorders, shelfDigitalGames: settings.shelfDigitalGames,
       shelfHidePrices: settings.shelfHidePrices, currency: settings.currency, language: settings.language,
+      defaultOwner: settings.defaultOwner,
+      customTheme: {
+        ownerColors: Array.isArray(settings.customTheme?.ownerColors)
+          ? settings.customTheme.ownerColors.map((owner) => ({ name: owner.name, color: owner.color }))
+          : [],
+      },
     } });
   }
   if (new URL(request.url).searchParams.get("settings") === "1") {
