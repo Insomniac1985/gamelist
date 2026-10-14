@@ -5,6 +5,26 @@ const KV_KEY = "gamelist-data";
 export async function onRequestGet({ request, env }) {
   if (!env.GAMELIST) return json({ games: [] });
   const data = await env.GAMELIST.get(KV_KEY, "json");
+  if (new URL(request.url).searchParams.get("shelfProjections") === "1") {
+    const settings = data?.settings && typeof data.settings === "object" ? data.settings : {};
+    const games = (Array.isArray(data?.games) ? data.games : []).filter((game) => (
+      !game.deletedAt && !game.completedAt && (
+        Boolean(game.preorderStore) || (!game.playing && ["wanted", "upcoming"].includes(game.section))
+      )
+    )).map((game) => ({
+      id: game.id, title: game.title, platform: game.platform, section: game.section,
+      preorderStore: game.preorderStore || "", digital: Boolean(game.digital), dlc: Boolean(game.dlc),
+      cover: game.cover || "", releaseDate: game.releaseDate || "", description: game.description || "",
+      genres: Array.isArray(game.genres) ? game.genres : [], publisher: game.publisher || "",
+      developer: game.developer || "", owners: Array.isArray(game.owners) ? game.owners : [],
+      tags: Array.isArray(game.tags) ? game.tags : [], country: game.country || "", storeLinks: game.storeLinks || {},
+    }));
+    return json({ games, settings: {
+      shelfSync: settings.shelfSync, shelfSyncWishlist: settings.shelfSyncWishlist,
+      shelfShowPreorders: settings.shelfShowPreorders, shelfDigitalGames: settings.shelfDigitalGames,
+      shelfHidePrices: settings.shelfHidePrices, currency: settings.currency, language: settings.language,
+    } });
+  }
   if (new URL(request.url).searchParams.get("settings") === "1") {
     return json({ settings: data?.settings || {} });
   }

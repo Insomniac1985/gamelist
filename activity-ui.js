@@ -207,7 +207,7 @@ function escapeActivityText(value) {
 
 export function finishedGameMarkup({ id, title, cover, completedClass = "", itemClass = "", badges = "", dateText = "", progress = null, dataName = "id", escape }) {
   const dateLine = dateText ? finishedDateLineMarkup(dateText, escape) : "";
-  const progressLine = progress != null ? `<span class="playing-finished-progress">${finishedTrophyIcon()}<em style="--progress:${progress}%"></em></span>` : "";
+  const progressLine = progress != null ? `<span class="playing-finished-progress">${finishedTrophyIcon()}<strong>${progress}%</strong><em style="--progress:${progress}%"></em></span>` : "";
   return `<button class="achievement-game playing-finished-game ${completedClass} ${itemClass}" type="button" data-${dataName}="${escape(id)}" aria-label="${escape(`Open ${title}`)}"><img src="${escape(cover)}" alt="" loading="lazy" decoding="async"><div><strong class="${completedClass ? "completed-achievements-title" : ""}">${escape(title)}</strong>${badges ? `<span class="playing-finished-tags">${badges}</span>` : ""}${dateLine}${progressLine}</div></button>`;
 }
 
