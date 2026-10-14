@@ -7373,7 +7373,7 @@ function rowPrimaryAction(game, section) {
   if (section === "new") {
     return `<button class="primary-button row-primary-action" type="button">${playIcon()}<span>${escapeHtml(tt("Play"))}</span></button><button class="primary-button row-setup-action" type="button">${forwardIcon()}<span>${escapeHtml(tt("Setup"))}</span></button>`;
   }
-  return `<button class="ghost-button row-primary-action" type="button">${forwardIcon()}<span>${escapeHtml(tt("Backlog"))}</span></button>`;
+  return `<button class="ghost-button row-primary-action row-backlog-action" type="button">${forwardIcon()}<span>${escapeHtml(tt("Backlog"))}</span></button>`;
 }
 
 function rowCoreStats(game) {
@@ -12210,6 +12210,7 @@ function markGameEdited(game, timestamp = new Date().toISOString()) {
 }
 
 function moveToBacklog(id) {
+  if (!state.canEdit) return;
   const game = getGame(id);
   const fromShelfAdditions = isShelfNewAddition(game);
   game.section = "backlog";
@@ -12462,6 +12463,7 @@ async function deleteCurrentGame() {
 }
 
 async function deleteGame(id) {
+  if (!state.canEdit) return false;
   const game = getGame(id);
   if (!game) return false;
   if (!await confirmGameDelete(game.title)) return false;
@@ -13077,6 +13079,7 @@ async function refreshCurrentPrices() {
 }
 
 async function refreshPricesForGame(id, options = {}) {
+  if (!state.canEdit) return;
   const silent = Boolean(options.silent);
   const game = getGame(id);
   if (!game) return;

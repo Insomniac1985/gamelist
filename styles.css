@@ -915,7 +915,6 @@ html.theme-font-mata {
 
 .playing-finished-progress em {
   display: block;
-  grid-column: 1 / -1;
   width: 100%;
   min-width: 0;
   height: 5px;
@@ -3254,7 +3253,7 @@ button.achievement-kpi {
 .achievement-game em {
   display: block;
   height: 4px;
-  margin-top: 5px;
+  margin-top: 2px;
   overflow: hidden;
   border-radius: 999px;
   background: rgba(255, 255, 255, 0.1);
@@ -8478,6 +8477,10 @@ body:not(.can-edit) #fetchPricesButton {
   display: none;
 }
 
+body:not(.shelf-page):not(.can-edit) :is(.backlog-action, .bought-action, .row-backlog-action, .delete-action, .row-delete-action, .price-refresh-action, #fetchPricesButton) {
+  display: none !important;
+}
+
 body:not(.can-edit) .game-card .edit-action {
   opacity: 0;
   pointer-events: none;
@@ -8580,7 +8583,9 @@ body:not(.can-edit) .game-card:focus-within .edit-action {
   .card-list:not(.list-view) .game-card:hover .edit-action,
   .card-list:not(.list-view) .game-card:focus-within .edit-action,
   .completed-list:not(.list-view) .completed-row:hover .completed-edit-action,
-  .completed-list:not(.list-view) .completed-row:focus-within .completed-edit-action,
+  .completed-list:not(.list-view)
+    .completed-row:focus-within
+    .completed-edit-action,
   .shelf-grid:not(.list-view) .game-card:hover .edit-action,
   .shelf-grid:not(.list-view) .game-card:focus-within .edit-action {
     opacity: 1;
@@ -8680,7 +8685,6 @@ body:not(.can-edit) .game-card:focus-within .edit-action {
   .completed-rating-stars .star-display {
     --rating-star-size: 11px;
   }
-
 }
 
 #completedCount {
@@ -11466,8 +11470,16 @@ body.dialog-open .toolbar {
 .settings-unsaved-modal,
 .unsaved-edit-modal {
   background: var(--grid-fade), var(--grid-texture), var(--panel-dark);
-  background-size: auto, 22px 22px, 22px 22px, auto;
-  background-position: center, var(--grid-x) var(--grid-y), var(--grid-x) var(--grid-y), center;
+  background-size:
+    auto,
+    22px 22px,
+    22px 22px,
+    auto;
+  background-position:
+    center,
+    var(--grid-x) var(--grid-y),
+    var(--grid-x) var(--grid-y),
+    center;
   backdrop-filter: blur(8px) saturate(1.08);
   -webkit-backdrop-filter: blur(8px) saturate(1.08);
 }
@@ -13303,12 +13315,11 @@ html.theme-light .completed-row.stream-card.completed-trophy-card,
 html.theme-light .completed-row.stream-card.completed-trophy-card:hover,
 html.theme-light .playing-finished-game.completed-trophy-card,
 html.theme-light .playing-finished-game.completed-trophy-card:hover {
-  background:
-    linear-gradient(
-      135deg,
-      rgba(255, 237, 146, 0.2),
-      rgba(214, 224, 237, 0.96)
-    ) !important;
+  background: linear-gradient(
+    135deg,
+    rgba(255, 237, 146, 0.2),
+    rgba(214, 224, 237, 0.96)
+  ) !important;
 }
 
 html.theme-light .toolbar,
@@ -15267,8 +15278,12 @@ body.theme-kash
 #addGameForm.needs-gamelist-preorder-store .shelf-gamelist-preorder-field input,
 #addGameForm.is-new-shelf-game.needs-title-field .shelf-title-field input,
 #addGameForm.is-new-shelf-game.needs-platform-field .shelf-console-field input,
-#addGameForm.is-new-shelf-game.needs-release-date-field .shelf-release-field input,
-#addGameForm.is-new-shelf-game.needs-addition-date-field .shelf-addition-field input,
+#addGameForm.is-new-shelf-game.needs-release-date-field
+  .shelf-release-field
+  input,
+#addGameForm.is-new-shelf-game.needs-addition-date-field
+  .shelf-addition-field
+  input,
 #addGameForm.is-new-shelf-game.needs-region-field .shelf-region-field select,
 #gameDialog.is-new-game.needs-title-field
   .collection-form-grid
@@ -18148,7 +18163,9 @@ html.theme-light .finish-trophy-check input[type="checkbox"]:checked {
   @media (hover: hover) and (pointer: fine) {
     .mobile-action-dock:has(.mobile-dock-action:not(#mobileDockAdd):hover)
       #mobileDockAdd:not(:hover),
-    .mobile-action-dock:has(.mobile-dock-action:not(#mobileDockAdd):focus-visible)
+    .mobile-action-dock:has(
+        .mobile-dock-action:not(#mobileDockAdd):focus-visible
+      )
       #mobileDockAdd:not(:hover):not(:focus-visible) {
       background: transparent;
       box-shadow: none;
@@ -18474,7 +18491,9 @@ body.page-pulling #mobileActionDock {
     gap: 5px;
   }
 
-  :is(#platinumDialog, #shelfCompletedDialog) .platinum-order-control .direction-toggle {
+  :is(#platinumDialog, #shelfCompletedDialog)
+    .platinum-order-control
+    .direction-toggle {
     flex-basis: 36px;
     width: 36px;
     min-width: 36px;
@@ -18697,9 +18716,12 @@ body.auth-checking #mobileDockSettings[aria-busy="true"] {
     box-shadow: 0 3px 24px color-mix(in srgb, var(--accent) 32%, transparent);
   }
 
-  .mobile-action-dock:has(.mobile-dock-action:not(#mobileDockAdd):active) #mobileDockAdd:not(:active),
-  .mobile-action-dock:has(.mobile-dock-action:not(#mobileDockAdd):focus) #mobileDockAdd:not(:focus),
-  .mobile-action-dock:has(.mobile-dock-action:not(#mobileDockAdd).is-active) #mobileDockAdd:not(.is-active) {
+  .mobile-action-dock:has(.mobile-dock-action:not(#mobileDockAdd):active)
+    #mobileDockAdd:not(:active),
+  .mobile-action-dock:has(.mobile-dock-action:not(#mobileDockAdd):focus)
+    #mobileDockAdd:not(:focus),
+  .mobile-action-dock:has(.mobile-dock-action:not(#mobileDockAdd).is-active)
+    #mobileDockAdd:not(.is-active) {
     background: transparent;
     box-shadow: none;
   }
@@ -18730,8 +18752,16 @@ body.auth-checking #mobileDockSettings[aria-busy="true"] {
 #gameDialog > .modal,
 #addDialog > .add-modal {
   background: var(--grid-fade), var(--grid-texture), var(--panel-dark);
-  background-size: auto, 22px 22px, 22px 22px, auto;
-  background-position: center, var(--grid-x) var(--grid-y), var(--grid-x) var(--grid-y), center;
+  background-size:
+    auto,
+    22px 22px,
+    22px 22px,
+    auto;
+  background-position:
+    center,
+    var(--grid-x) var(--grid-y),
+    var(--grid-x) var(--grid-y),
+    center;
 }
 
 html.theme-light #gameDialog > .modal,
@@ -18762,8 +18792,12 @@ html.theme-light #shelfCompletedDialog > .platinum-modal {
     0 0 0 3px color-mix(in srgb, var(--accent) 10%, transparent);
 }
 
-#addGameForm.is-new-shelf-game.needs-stream-check .stream-check input[type="checkbox"],
-#gameDialog.is-new-game.needs-stream-check .stream-check input[type="checkbox"] {
+#addGameForm.is-new-shelf-game.needs-stream-check
+  .stream-check
+  input[type="checkbox"],
+#gameDialog.is-new-game.needs-stream-check
+  .stream-check
+  input[type="checkbox"] {
   border-color: color-mix(in srgb, var(--accent) 76%, #ff4d62);
 }
 
@@ -18779,16 +18813,27 @@ html.theme-light #shelfCompletedDialog > .platinum-modal {
 .game-card.glass:not(.playing-card) {
   background:
     linear-gradient(rgba(255, 255, 255, 0.025), rgba(255, 255, 255, 0.025)),
-    var(--grid-texture),
-    color-mix(in srgb, var(--panel) 72%, transparent);
-  background-size: auto, 22px 22px, auto;
-  background-position: center, var(--grid-x) var(--grid-y), center;
+    var(--grid-texture), color-mix(in srgb, var(--panel) 72%, transparent);
+  background-size:
+    auto,
+    22px 22px,
+    auto;
+  background-position:
+    center,
+    var(--grid-x) var(--grid-y),
+    center;
   backdrop-filter: blur(8px) saturate(1.08);
   -webkit-backdrop-filter: blur(8px) saturate(1.08);
 }
 body:not(.shelf-page) #upcoming .price-refresh-action,
 body:not(.shelf-page) #wanted .price-refresh-action {
   display: inline-flex !important;
+}
+body:not(.can-edit):not(.shelf-page) .price-refresh-action {
+  display: none !important;
+}
+body:not(.can-edit):not(.shelf-page) :is(#upcoming, #wanted) .price-refresh-action {
+  display: none !important;
 }
 .completed-row,
 .history-row,
@@ -18812,7 +18857,10 @@ body:not(.shelf-page) #wanted .price-refresh-action {
 }
 
 .playing-finished-game::before {
-  background-image: linear-gradient(rgba(255, 255, 255, 0.025), rgba(255, 255, 255, 0.025));
+  background-image: linear-gradient(
+    rgba(255, 255, 255, 0.025),
+    rgba(255, 255, 255, 0.025)
+  );
   background-size: auto;
   background-position: center;
 }
@@ -18827,7 +18875,6 @@ body:not(.shelf-page) #wanted .price-refresh-action {
   position: relative;
   z-index: 1;
 }
-
 
 /* Shared moving selector for new games on Gamelist and Shelf. */
 .shelf-gamelist-target-picker {
@@ -18865,7 +18912,11 @@ body:not(.shelf-page) #wanted .price-refresh-action {
   flex: 0 0 auto;
   padding: 5px;
   background:
-    linear-gradient(135deg, rgba(255, 255, 255, 0.075), rgba(255, 255, 255, 0.025)),
+    linear-gradient(
+      135deg,
+      rgba(255, 255, 255, 0.075),
+      rgba(255, 255, 255, 0.025)
+    ),
     color-mix(in srgb, var(--panel-dark) 30%, transparent);
   border: 1px solid rgba(255, 255, 255, 0.18);
   border-radius: 10px;
@@ -18884,7 +18935,9 @@ body:not(.shelf-page) #wanted .price-refresh-action {
   border-radius: 7px;
   background: var(--accent);
   box-shadow: 0 3px 18px color-mix(in srgb, var(--accent) 35%, transparent);
-  transition: left 180ms ease, width 180ms ease;
+  transition:
+    left 180ms ease,
+    width 180ms ease;
   pointer-events: none;
 }
 
@@ -18909,16 +18962,18 @@ body:not(.shelf-page) #wanted .price-refresh-action {
   font-weight: 820;
 }
 
-.shelf-gamelist-target-picker[hidden] { display: none !important; }
-#gameDialog.is-new-game .collection-form-grid > .list-field { display: none; }
-#gameDialog.is-new-game .collection-form-grid > .release-text-field { grid-column: span 7; }
+.shelf-gamelist-target-picker[hidden] {
+  display: none !important;
+}
+#gameDialog.is-new-game .collection-form-grid > .list-field {
+  display: none;
+}
+#gameDialog.is-new-game .collection-form-grid > .release-text-field {
+  grid-column: span 7;
+}
 @media (min-width: 761px) {
   .playing-finished-progress {
     grid-template-columns: 14px auto minmax(0, 1fr);
-  }
-
-  .playing-finished-progress em {
-    grid-column: auto;
   }
 
   .playing-finished-progress strong {
@@ -18956,8 +19011,30 @@ body:not(.shelf-page) #wanted .price-refresh-action {
 }
 
 @media (max-width: 760px) {
-  #gameAddTargetPicker { gap: 4px; }
-  #gameAddTargetPicker .shelf-gamelist-target-label { min-height: 0; font-size: 11px; }
-  #gameAddTargetPicker .shelf-gamelist-target-options button { padding: 0 7px; font-size: 13px; white-space: normal; }
-  #gameDialog.is-new-game .collection-form-grid > .release-text-field { grid-column: 1 / -1; }
+  .playing-finished-game .playing-finished-progress strong {
+    align-self: center;
+    font-size: 10px;
+    line-height: 1;
+  }
+
+  .playing-finished-progress-icon {
+    width: 15px;
+    height: 15px;
+  }
+
+  #gameAddTargetPicker {
+    gap: 4px;
+  }
+  #gameAddTargetPicker .shelf-gamelist-target-label {
+    min-height: 0;
+    font-size: 11px;
+  }
+  #gameAddTargetPicker .shelf-gamelist-target-options button {
+    padding: 0 7px;
+    font-size: 13px;
+    white-space: normal;
+  }
+  #gameDialog.is-new-game .collection-form-grid > .release-text-field {
+    grid-column: 1 / -1;
+  }
 }

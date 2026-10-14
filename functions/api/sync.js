@@ -8,9 +8,8 @@ export async function onRequestGet({ request, env }) {
   if (new URL(request.url).searchParams.get("shelfProjections") === "1") {
     const settings = data?.settings && typeof data.settings === "object" ? data.settings : {};
     const games = (Array.isArray(data?.games) ? data.games : []).filter((game) => (
-      !game.deletedAt && !game.completedAt && (
-        Boolean(game.preorderStore) || (!game.playing && ["wanted", "upcoming"].includes(game.section))
-      )
+      !game.deletedAt && !game.completedAt && !game.preorderStore
+      && !game.playing && ["wanted", "upcoming"].includes(game.section)
     )).map((game) => ({
       id: game.id, title: game.title, platform: game.platform, section: game.section,
       preorderStore: game.preorderStore || "", digital: Boolean(game.digital), dlc: Boolean(game.dlc),
@@ -18,17 +17,32 @@ export async function onRequestGet({ request, env }) {
       genres: Array.isArray(game.genres) ? game.genres : [], publisher: game.publisher || "",
       developer: game.developer || "", owners: Array.isArray(game.owners) ? game.owners : [],
       tags: Array.isArray(game.tags) ? game.tags : [], country: game.country || "", storeLinks: game.storeLinks || {},
+      prices: publicStorePrices(game.prices), storePrices: publicStorePrices(game.storePrices),
     }));
     return json({ games, settings: {
       shelfSync: settings.shelfSync, shelfSyncWishlist: settings.shelfSyncWishlist,
       shelfShowPreorders: settings.shelfShowPreorders, shelfDigitalGames: settings.shelfDigitalGames,
       shelfHidePrices: settings.shelfHidePrices, currency: settings.currency, language: settings.language,
+      region: settings.region, stores: Array.isArray(settings.stores) ? settings.stores : [],
+      storeSettingsVersion: settings.storeSettingsVersion,
+      defaultOrder: settings.defaultOrder, shelfDefaultOrder: settings.shelfDefaultOrder,
+      defaultOwner: settings.defaultOwner,
+      theme: settings.theme,
+      customTheme: settings.customTheme && typeof settings.customTheme === "object" ? settings.customTheme : {},
     } });
   }
   if (new URL(request.url).searchParams.get("settings") === "1") {
     return json({ settings: data?.settings || {} });
   }
   return json(data || { games: [] });
+}
+
+function publicStorePrices(value) {
+  return Array.isArray(value) ? value.map((item) => ({
+    store: String(item?.store || ""), price: String(item?.price || ""),
+    numericPrice: Number.isFinite(Number(item?.numericPrice)) ? Number(item.numericPrice) : null,
+    url: String(item?.url || ""),
+  })).filter((item) => item.store) : [];
 }
 
 export async function onRequestPut({ request, env }) {

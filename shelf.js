@@ -1922,7 +1922,7 @@ function shelfTabs(pendingCount = 0, preorderCount = syncedPreorderGames().lengt
 }
 
 function syncedPreorderGames() {
-  if (state.gamelistSettings.shelfSync === false) return [];
+  if (!state.canEdit || state.gamelistSettings.shelfSync === false) return [];
   return state.gamelistGames
     .filter((game) => !game.deletedAt && !game.completedAt && game.preorderStore && (!isDigitalShelfGame(game) || state.gamelistSettings.shelfDigitalGames === true))
     .map((game) => ({ ...game, platform: canonicalShelfPlatform(game.platform || ""), preorderProjection: true, genre: (game.genres || []).join(", "), country: game.country || "", condition: "Preordered" }));
@@ -5412,7 +5412,7 @@ function priceGraph(history, currency = "USD") {
   return `<line x1="24" y1="126" x2="576" y2="126" stroke="rgba(255,255,255,.14)"/><polyline points="${points}" fill="none" stroke="var(--accent)" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>${coords.map(({ x, y, value, date }) => { const tooltipX = Math.min(486, Math.max(12, x - 45)); const tooltipY = Math.max(10, y - 50); return `<g class="price-history-point"><circle cx="${x}" cy="${y}" r="12" fill="transparent"></circle><circle cx="${x}" cy="${y}" r="4" fill="var(--accent)"></circle><g class="price-history-tooltip" transform="translate(${tooltipX} ${tooltipY})"><rect width="102" height="38" rx="7"></rect><text x="10" y="15">${escapeHtml(date || "Unknown")}</text><text class="price-history-tooltip-price" x="10" y="30">${escapeHtml(formatMoney(value, currency))}</text></g></g>`; }).join("")}<text x="24" y="145" fill="rgba(255,255,255,.48)" font-size="10">${escapeHtml(history[0]?.date || "")}</text><text x="576" y="145" fill="rgba(255,255,255,.48)" font-size="10" text-anchor="end">${escapeHtml(history.at(-1)?.date || "")}</text>`;
 }
 async function fetchCollectionValue() {
-  if (!shelfPricesVisible()) return;
+  if (!state.canEdit || !shelfPricesVisible()) return;
   const game = state.games.find((item) => item.id === el.detailDialog.dataset.id); if (!game) return;
   el.fetchValue.disabled = true; syncFetchValueButton("Fetching value");
   showToast("Fetching collection value...");
