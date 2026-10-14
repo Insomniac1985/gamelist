@@ -7785,6 +7785,15 @@ a.time-pill {
   padding: 4px;
 }
 
+body:not(.can-edit) .game-card.has-price-footer .card-footer {
+  display: block;
+}
+
+body:not(.can-edit) .game-card.has-price-footer .prices {
+  flex: none;
+  width: 100%;
+}
+
 .game-card.has-price-footer .price-link {
   gap: 4px;
   padding: 3px 4px;
