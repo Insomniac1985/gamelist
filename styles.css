@@ -18897,6 +18897,7 @@ body:not(.shelf-page) #wanted .price-refresh-action {
 
   .playing-finished-progress strong {
     display: block;
+    font-size: 8px;
   }
 
   .playing-section .card-trophy-head {
