@@ -289,11 +289,11 @@ async function init() {
   bindEvents();
   initRenderSettling();
   hydrateModuleCache();
-  const [shelfData, auth, gamelistData] = await Promise.all([
+  const [shelfData, auth] = await Promise.all([
     fetch("/api/shelf", { cache: "no-store" }).then((response) => response.ok ? response.json() : null).catch(() => null),
     fetchEditorAuth(),
-    fetch("/api/sync", { cache: "no-store" }).then((response) => response.ok ? response.json() : null).catch(() => null),
   ]);
+  const gamelistData = await fetch(auth ? "/api/sync" : "/api/sync?shelfProjections=1", { cache: "no-store" }).then((response) => response.ok ? response.json() : null).catch(() => null);
   const draft = loadDraft();
   if (shelfData) removeLocalStorageItem(LOCAL_DRAFT_KEY);
   state.sourceGames = shelfData?.sourceGames || draft.sourceGames || [];
@@ -1216,7 +1216,7 @@ async function syncShelfNow() {
   try {
     const [shelfData, gamelistData] = await Promise.all([
       fetch("/api/shelf", { cache: "no-store" }).then((response) => response.ok ? response.json() : null),
-      fetch("/api/sync", { cache: "no-store" }).then((response) => response.ok ? response.json() : null),
+      fetch(state.canEdit ? "/api/sync" : "/api/sync?shelfProjections=1", { cache: "no-store" }).then((response) => response.ok ? response.json() : null),
     ]);
     if (shelfData) {
       state.sourceGames = shelfData.sourceGames || [];
@@ -1922,14 +1922,14 @@ function shelfTabs(pendingCount = 0, preorderCount = syncedPreorderGames().lengt
 }
 
 function syncedPreorderGames() {
-  if (!state.canEdit || state.gamelistSettings.shelfSync === false) return [];
+  if (state.gamelistSettings.shelfSync === false) return [];
   return state.gamelistGames
     .filter((game) => !game.deletedAt && !game.completedAt && game.preorderStore && (!isDigitalShelfGame(game) || state.gamelistSettings.shelfDigitalGames === true))
     .map((game) => ({ ...game, platform: canonicalShelfPlatform(game.platform || ""), preorderProjection: true, genre: (game.genres || []).join(", "), country: game.country || "", condition: "Preordered" }));
 }
 
 function syncedWishlistGames() {
-  if (!state.canEdit || state.gamelistSettings.shelfSync === false || state.gamelistSettings.shelfSyncWishlist === false) return [];
+  if (state.gamelistSettings.shelfSync === false || state.gamelistSettings.shelfSyncWishlist === false) return [];
   return state.gamelistGames
     .filter((game) => !game.deletedAt && !game.completedAt && !game.playing && !game.preorderStore && ["wanted", "upcoming"].includes(game.section) && (!isDigitalShelfGame(game) || state.gamelistSettings.shelfDigitalGames === true))
     .map((game) => ({ ...game, platform: canonicalShelfPlatform(game.platform || ""), wishlistProjection: true, genre: (game.genres || []).join(", "), country: "", condition: "Game" }));

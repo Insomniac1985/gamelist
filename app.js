@@ -667,6 +667,7 @@ function logStatusLines(status, theme = "shabii", editorStatus = "NOT LOGGED IN"
     ["IGDB API", igdbApiStatus(status.working?.IGDB)],
     ["PRICECHARTING API", status.working?.PRICECHARTING_BLOCKED ? "blocked by PriceCharting" : apiStatus(status.working?.PRICECHARTING)],
     ["PSN API", accountApiStatus(status.working?.PSN, state.settings.psnUser, status.PSN_NPSSO)],
+    ["PSN TOKEN", !status.PSN_NPSSO ? "no token set" : Number.isFinite(status.PSN_TOKEN_DAYS_LEFT) ? status.PSN_TOKEN_DAYS_LEFT === 0 ? "refresh needed today" : `refresh in ${status.PSN_TOKEN_DAYS_LEFT} ${status.PSN_TOKEN_DAYS_LEFT === 1 ? "day" : "days"}` : "refresh date unavailable"],
     ["OPENXBL API", accountApiStatus(status.working?.XBOX, state.settings.microsoftUser, status.OPENXBL_API_KEY)],
     ["STEAM API", accountApiStatus(status.working?.STEAM, state.settings.steamUser, status.STEAM_API_KEY)],
   ];
