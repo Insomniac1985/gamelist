@@ -915,7 +915,6 @@ html.theme-font-mata {
 
 .playing-finished-progress em {
   display: block;
-  grid-column: 1 / -1;
   width: 100%;
   min-width: 0;
   height: 5px;
@@ -18917,10 +18916,6 @@ body:not(.shelf-page) #wanted .price-refresh-action {
     grid-template-columns: 14px auto minmax(0, 1fr);
   }
 
-  .playing-finished-progress em {
-    grid-column: auto;
-  }
-
   .playing-finished-progress strong {
     display: block;
     align-self: center;
@@ -18956,6 +18951,17 @@ body:not(.shelf-page) #wanted .price-refresh-action {
 }
 
 @media (max-width: 760px) {
+  .playing-finished-game .playing-finished-progress strong {
+    align-self: center;
+    font-size: 10px;
+    line-height: 1;
+  }
+
+  .playing-finished-progress-icon {
+    width: 15px;
+    height: 15px;
+  }
+
   #gameAddTargetPicker { gap: 4px; }
   #gameAddTargetPicker .shelf-gamelist-target-label { min-height: 0; font-size: 11px; }
   #gameAddTargetPicker .shelf-gamelist-target-options button { padding: 0 7px; font-size: 13px; white-space: normal; }
