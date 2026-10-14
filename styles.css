@@ -18909,6 +18909,12 @@ body:not(.shelf-page) #wanted .price-refresh-action {
     flex: 1 1 auto;
     width: auto;
     min-width: 0;
+    min-height: 0 !important;
+    padding: 0;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    box-shadow: none;
   }
 
   .playing-section .card-trophy-progress strong {
