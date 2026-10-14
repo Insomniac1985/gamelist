@@ -1519,6 +1519,10 @@ body.mobile-app-mode.shelf-page .shelf-grid.list-view .game-row-cover-preview {
   display: none !important;
 }
 
+.shelf-page:not(.can-edit) :is(#fetchValueButton, #fetchPricesButton, .price-refresh-action) {
+  display: none !important;
+}
+
 .shelf-grid .game-card {
   cursor: pointer;
 }
