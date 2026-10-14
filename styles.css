@@ -18829,6 +18829,9 @@ body:not(.shelf-page) #upcoming .price-refresh-action,
 body:not(.shelf-page) #wanted .price-refresh-action {
   display: inline-flex !important;
 }
+body:not(.can-edit):not(.shelf-page) :is(#upcoming, #wanted) .price-refresh-action {
+  display: none !important;
+}
 .completed-row,
 .history-row,
 .playing-finished-game {
