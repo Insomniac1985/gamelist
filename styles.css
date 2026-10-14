@@ -17234,6 +17234,11 @@ html.theme-light .finish-trophy-check input[type="checkbox"]:checked {
     grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 
+  .achievement-summary.achievement-summary-two-card {
+    width: 100%;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
   .achievement-kpi {
     justify-items: center;
     text-align: center;
