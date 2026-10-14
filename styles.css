@@ -8477,6 +8477,10 @@ body:not(.can-edit) #fetchPricesButton {
   display: none;
 }
 
+body:not(.shelf-page):not(.can-edit) :is(.backlog-action, .bought-action, .row-backlog-action, .delete-action, .row-delete-action, .price-refresh-action, #fetchPricesButton) {
+  display: none !important;
+}
+
 body:not(.can-edit) .game-card .edit-action {
   opacity: 0;
   pointer-events: none;
