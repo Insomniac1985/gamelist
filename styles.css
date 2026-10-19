@@ -7059,6 +7059,11 @@ body.theme-kash .game-card.stream-card.completed-trophy-card {
   stroke-width: 4;
 }
 
+.alert-tag-icon circle {
+  fill: currentColor;
+  stroke: none;
+}
+
 .stream-play-icon {
   width: 13px;
   height: 13px;
@@ -8618,6 +8623,14 @@ body:not(.can-edit) .game-card:focus-within .edit-action {
   width: 82px;
   height: 114px;
   align-self: start;
+}
+
+.completed-list:not(.list-view) .completed-cover-wrap {
+  display: contents;
+}
+
+.completed-list:not(.list-view) .completed-cover-preview {
+  display: none;
 }
 
 .completed-list:not(.list-view) .completed-actions {
@@ -10933,6 +10946,55 @@ body.theme-kash .playing-finished-game.completed-trophy-card:hover {
     height: auto;
     padding: 7px 9px;
     column-gap: 9px;
+  }
+
+  .completed-list.list-view .completed-row:has(.completed-cover-wrap:hover),
+  .completed-list.list-view .completed-row:has(.completed-cover-wrap:focus-within) {
+    z-index: 30;
+  }
+
+  .completed-list.list-view .completed-row {
+    position: relative;
+    overflow: visible;
+  }
+
+  .completed-list.list-view .completed-cover-wrap {
+    position: relative;
+    display: block;
+    grid-column: 1 / 2;
+    grid-row: 1 / -1;
+    width: 42px;
+    height: 57px;
+    z-index: 2;
+  }
+
+  .completed-list.list-view .completed-cover-wrap[hidden] {
+    display: none;
+  }
+
+  .completed-list.list-view .completed-cover-preview {
+    position: absolute;
+    left: 0;
+    top: 50%;
+    width: 116px;
+    height: 158px;
+    object-fit: contain;
+    background: rgba(8, 9, 12, 0.92);
+    border: 1px solid rgba(255, 225, 101, 0.26);
+    border-radius: 7px;
+    box-shadow: 0 18px 40px rgba(0, 0, 0, 0.48), 0 0 0 3px rgba(255, 225, 101, 0.1);
+    opacity: 0;
+    pointer-events: none;
+    transform: translateY(-50%) scale(0.82);
+    transform-origin: left center;
+    transition: opacity 160ms ease, transform 160ms ease;
+    z-index: 20;
+  }
+
+  .completed-list.list-view .completed-cover-wrap:hover .completed-cover-preview,
+  .completed-list.list-view .completed-cover-wrap:focus-within .completed-cover-preview {
+    opacity: 1;
+    transform: translateY(-50%) scale(1);
   }
 
   .completed-list.list-view .completed-cover {
@@ -15978,6 +16040,12 @@ html.theme-light .finish-trophy-check input[type="checkbox"]:checked {
   }
 }
 
+@media (min-width: 1121px) and (max-width: 1300px) {
+  .completed-list:not(.list-view) .completed-rating-breakdown {
+    display: none;
+  }
+}
+
 @media (max-width: 1120px) {
   .goty-grid {
     grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -16978,6 +17046,14 @@ html.theme-light .finish-trophy-check input[type="checkbox"]:checked {
 
   html.theme-font-antique .completed > .column-head h2 {
     font-size: clamp(21px, 7vw, 28px);
+  }
+
+  .completed > .column-head h2 {
+    display: block;
+    max-width: 100%;
+    font-size: clamp(22px, 6.5vw, 28px);
+    line-height: 1.1;
+    white-space: normal;
   }
 
   .notes {

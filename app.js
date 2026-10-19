@@ -7448,7 +7448,10 @@ function renderCompleted() {
     return `
       <div class="completed-item">
         <div class="completed-row ${game.stream ? "stream-card" : ""} ${game.platinum ? "completed-trophy-card" : ""} ${ownerCardClass(game)}" data-id="${escapeHtml(game.id)}" role="button" tabindex="0" aria-label="${escapeHtml(`Open ${game.title}`)}">
-          <img class="completed-cover" src="${escapeHtml(game.cover || "")}" alt="" loading="lazy" decoding="async" ${game.cover ? "" : "hidden"}>
+          <span class="completed-cover-wrap" ${game.cover ? "" : "hidden"}>
+            <img class="completed-cover" src="${escapeHtml(game.cover || "")}" alt="" loading="lazy" decoding="async">
+            <img class="completed-cover-preview" src="${escapeHtml(game.cover || "")}" alt="" loading="lazy" decoding="async" aria-hidden="true">
+          </span>
           <div class="completed-main">
             <div class="completed-identity">
               <strong class="${game.platinum ? "completed-achievements-title" : ""}" tabindex="0">${escapeHtml(game.title)}</strong>
@@ -10551,7 +10554,7 @@ function onlineGlobeIcon() {
 }
 
 function alertTagIcon() {
-  return `<svg class="alert-tag-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4.5v11"></path><path d="M12 19h.01"></path></svg>`;
+  return `<svg class="alert-tag-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4.5v10.5"></path><circle cx="12" cy="19" r="1.5"></circle></svg>`;
 }
 
 function replayBadge(count) {
