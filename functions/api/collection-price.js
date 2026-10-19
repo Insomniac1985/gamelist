@@ -34,19 +34,66 @@ export async function onRequestGet({ request, env = {} }) {
       if (!results.length) results = uniqueCandidates(rankCandidates(await fetchDirectCandidates(fallbackUrls, query, searchUrl), query));
       return json({ results: results.slice(0, 12), searchUrl, source: "PriceCharting" });
     }
-    const apiProduct = token ? await fetchApiProduct(token, { id: requestedId, upc: requestedUpc, query }) : null;
+    const apiProduct = token ? await fetchApiProduct(token, { id: requestedId, upc: requestedUpc, query }).catch(() => null) : null;
     const [publicProduct, retailProduct] = await Promise.all([
-      fetchPublicProduct({ query, searchUrl, idSearchUrl, broadSearchUrls, requestedId: requestedId || apiProduct?.productId || "", requestedUrl, fallbackUrls }),
+      fetchPublicProduct({ query, searchUrl, idSearchUrl, broadSearchUrls, requestedId: requestedId || apiProduct?.productId || "", requestedUrl, fallbackUrls }).catch(() => null),
       fetchXtralifeProduct({ title, platform, region }).catch(() => null),
     ]);
-    const product = convertCurrency(mergeProduct(apiProduct, publicProduct, retailProduct, { title, platform, searchUrl }), currency, publicProduct?.forexRates);
+    const useRetroLoot = !hasPriceValue({ ...(publicProduct?.prices || {}), ...(apiProduct?.prices || {}) });
+    const retroLootProduct = useRetroLoot ? await fetchRetroLootProduct({ title, platform, region }).catch(() => null) : null;
+    const product = retroLootProduct && useRetroLoot
+      ? { ...mergeProduct(apiProduct, retroLootProduct, retailProduct, { title, platform, searchUrl }), currency: "EUR" }
+      : convertCurrency(mergeProduct(apiProduct, publicProduct, retailProduct, { title, platform, searchUrl }), currency, publicProduct?.forexRates);
     if (!hasPriceValue(product.prices)) {
       return json({ error: "No matching physical edition found", notFound: true, searchUrl, prices: {}, history: {} });
     }
-    return json({ ...product, checkedAt: new Date().toISOString(), source: "PriceCharting", currency: product.currency || currency });
+    return json({ ...product, checkedAt: new Date().toISOString(), source: retroLootProduct && useRetroLoot ? "RetroLoot (PriceCharting data)" : "PriceCharting", currency: product.currency || currency });
   } catch (error) {
     return json({ error: error?.message || "Physical edition lookup failed", searchUrl, prices: {}, history: {} }, 502);
   }
+}
+
+async function fetchRetroLootProduct({ title, platform, region, currency }) {
+  if (!title) return null;
+  const endpoint = new URL("https://retroloot.app/api/games/search");
+  endpoint.searchParams.set("q", title);
+  endpoint.searchParams.set("limit", "25");
+  const response = await fetch(endpoint, { headers: { Accept: "application/json", "User-Agent": "GamelistShelf/1.0" }, cf: { cacheTtl: 900, cacheEverything: true } });
+  if (!response.ok) return null;
+  const data = await response.json();
+  const matches = (Array.isArray(data.games) ? data.games : []).filter((game) =>
+    normalize(game.name) === normalize(title)
+    && retroLootPlatformMatches(platform, game.platformName)
+    && retroLootRegionMatches(region, game.region)
+    && [game.loose, game.cib, game.new].some((value) => Number(value) > 0)
+  );
+  if (!matches.length) return null;
+  const match = matches[0];
+  const prices = { loose: cents(match.loose), complete: cents(match.cib), sealed: cents(match.new) };
+  return {
+    productId: String(match.id || ""), productName: match.name || title, consoleName: match.platformName || platform,
+    regionName: match.region || "", releaseDate: match.year ? String(match.year) : "", image: match.boxImageUrl || "",
+    prices, history: {}, mainValue: prices.sealed ?? prices.complete ?? prices.loose ?? null,
+    productUrl: `https://retroloot.app/en/games/${encodeURIComponent(match.platformSlug || "")}/${encodeURIComponent(match.slug || "")}`,
+    currency: "EUR", source: "RetroLoot",
+  };
+}
+
+function retroLootPlatformMatches(wanted, found) {
+  if (!wanted) return true;
+  const wantedSignature = consoleSignature(wanted);
+  const foundSignature = consoleSignature(found);
+  return wantedSignature ? wantedSignature === foundSignature : normalize(wanted) === normalize(found);
+}
+
+function retroLootRegionMatches(wanted, found) {
+  const queryRegion = physicalRegionTerm(wanted);
+  if (!queryRegion) return true;
+  const value = normalize(found);
+  return queryRegion === "JP" ? /\bjp\b|japan/.test(value)
+    : queryRegion === "PAL" ? /\bpal\b/.test(value)
+      : queryRegion === "NTSC" ? /\bntsc\b|\bus\b/.test(value)
+        : true;
 }
 
 async function fetchXtralifeProduct({ title, platform, region }) {
@@ -306,7 +353,7 @@ function mergeProduct(api, page, retail, fallback) {
     sku: retail?.sku || "", catalogNumber: retail?.catalogNumber || "", edition: retail?.edition || "", regionName: retail?.regionName || "",
     genre: api?.genre || page?.genre || retail?.genre || "", publisher: page?.publisher || retail?.publisher || "", developer: retail?.developer || "", rating: page?.rating || "", image: page?.image || "",
     prices, history, mainValue: prices.sealed ?? prices.complete ?? prices.loose ?? prices.graded ?? null,
-    productUrl: page?.url || "", searchUrl: fallback.searchUrl, retailer: retail?.retailer || "",
+    productUrl: page?.productUrl || page?.url || "", searchUrl: fallback.searchUrl, retailer: retail?.retailer || "",
   };
 }
 
