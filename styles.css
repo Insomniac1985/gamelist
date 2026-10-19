@@ -8560,6 +8560,12 @@ body:not(.can-edit) .game-card:focus-within .edit-action {
   --completed-mask-bottom: 96px;
 }
 
+.completed-list.list-view:has(.completed-cover-wrap:hover),
+.completed-list.list-view:has(.completed-cover-wrap:focus-within) {
+  -webkit-mask-image: none;
+  mask-image: none;
+}
+
 .completed-more-button {
   justify-self: center;
   min-height: 36px;
