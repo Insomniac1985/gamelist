@@ -10554,7 +10554,7 @@ function onlineGlobeIcon() {
 }
 
 function alertTagIcon() {
-  return `<svg class="alert-tag-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4.5v11"></path><path d="M12 19h.01"></path></svg>`;
+  return `<svg class="alert-tag-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4.5v10.5"></path><circle cx="12" cy="19" r="1.5"></circle></svg>`;
 }
 
 function replayBadge(count) {

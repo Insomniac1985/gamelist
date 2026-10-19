@@ -7059,6 +7059,11 @@ body.theme-kash .game-card.stream-card.completed-trophy-card {
   stroke-width: 4;
 }
 
+.alert-tag-icon circle {
+  fill: currentColor;
+  stroke: none;
+}
+
 .stream-play-icon {
   width: 13px;
   height: 13px;
@@ -10946,6 +10951,11 @@ body.theme-kash .playing-finished-game.completed-trophy-card:hover {
   .completed-list.list-view .completed-row:has(.completed-cover-wrap:hover),
   .completed-list.list-view .completed-row:has(.completed-cover-wrap:focus-within) {
     z-index: 30;
+  }
+
+  .completed-list.list-view .completed-row {
+    position: relative;
+    overflow: visible;
   }
 
   .completed-list.list-view .completed-cover-wrap {
@@ -16030,7 +16040,7 @@ html.theme-light .finish-trophy-check input[type="checkbox"]:checked {
   }
 }
 
-@media (min-width: 1121px) and (max-width: 1180px) {
+@media (min-width: 1121px) and (max-width: 1300px) {
   .completed-list:not(.list-view) .completed-rating-breakdown {
     display: none;
   }
