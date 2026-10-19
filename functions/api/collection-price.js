@@ -34,7 +34,7 @@ export async function onRequestGet({ request, env = {} }) {
       if (!results.length) results = uniqueCandidates(rankCandidates(await fetchDirectCandidates(fallbackUrls, query, searchUrl), query));
       return json({ results: results.slice(0, 12), searchUrl, source: "PriceCharting" });
     }
-    const apiProduct = token ? await fetchApiProduct(token, { id: requestedId, upc: requestedUpc, query }) : null;
+    const apiProduct = token ? await fetchApiProduct(token, { id: requestedId, upc: requestedUpc, query }).catch(() => null) : null;
     const [publicProduct, retailProduct] = await Promise.all([
       fetchPublicProduct({ query, searchUrl, idSearchUrl, broadSearchUrls, requestedId: requestedId || apiProduct?.productId || "", requestedUrl, fallbackUrls }),
       fetchXtralifeProduct({ title, platform, region }).catch(() => null),
