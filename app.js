@@ -699,7 +699,7 @@ function logConsoleBlock(title, rows, styles) {
 function consoleValueStyle(value) {
   const normalized = String(value || "").trim().toLowerCase();
   if (["offline", "false"].includes(normalized) || normalized.startsWith("available in ")) return "color:#8b0000;font-weight:900;";
-  if (["online", "true", "logged in"].includes(normalized) || normalized.startsWith("available")) return "color:#38d878;font-weight:900;";
+  if (["online", "true", "logged in"].includes(normalized) || normalized.startsWith("available") || normalized.startsWith("online,")) return "color:#38d878;font-weight:900;";
   return "color:#ff9f1a;font-weight:900;";
 }
 
