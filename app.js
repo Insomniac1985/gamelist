@@ -65,6 +65,7 @@ const THEMES = {
 };
 const siteVersion = { version: "", updatedAt: "", notificationVersion: 0 };
 let updatesPopupLoadPromise = null;
+let activeCompletedCoverPreview = null;
 let nintendoSetupStarted = false;
 let psnTokenDaysLeft = null;
 const steamApiAccount = { available: false, personaName: "" };
@@ -7416,6 +7417,8 @@ function rowPrices(game) {
 }
 
 function renderCompleted() {
+  activeCompletedCoverPreview?.cleanup();
+  activeCompletedCoverPreview = null;
   const list = document.querySelector(".completed-list");
   if (!list) return;
   list.classList.toggle("list-view", state.viewMode === "list");
@@ -7450,7 +7453,6 @@ function renderCompleted() {
         <div class="completed-row ${game.stream ? "stream-card" : ""} ${game.platinum ? "completed-trophy-card" : ""} ${ownerCardClass(game)}" data-id="${escapeHtml(game.id)}" role="button" tabindex="0" aria-label="${escapeHtml(`Open ${game.title}`)}">
           <span class="completed-cover-wrap" ${game.cover ? "" : "hidden"}>
             <img class="completed-cover" src="${escapeHtml(game.cover || "")}" alt="" loading="lazy" decoding="async">
-            <img class="completed-cover-preview" src="${escapeHtml(game.cover || "")}" alt="" loading="lazy" decoding="async" aria-hidden="true">
           </span>
           <div class="completed-main">
             <div class="completed-identity">
@@ -7473,6 +7475,7 @@ function renderCompleted() {
       </div>
     `;
   }).join("") : `<div class="empty">Finished games will stay saved here.</div>`;
+  bindCompletedCoverPreviews(list);
   if (el.completedMoreButton) {
     el.completedMoreButton.hidden = !hasMore;
     el.completedMoreButton.textContent = tt("See more");
@@ -7496,6 +7499,57 @@ function renderCompleted() {
     });
   });
   if (state.viewMode === "list") requestAnimationFrame(() => updateCompletedTitleOverflow(list));
+}
+
+function bindCompletedCoverPreviews(list) {
+  if (state.viewMode !== "list" || !window.matchMedia("(min-width: 761px) and (hover: hover) and (pointer: fine)").matches) return;
+  list.querySelectorAll(".completed-cover-wrap:not([hidden])").forEach((wrap) => {
+    const source = wrap.querySelector(".completed-cover");
+    if (!source?.src) return;
+    let floating = null;
+    let cleanup = () => {};
+
+    const show = () => {
+      if (floating || !source.complete && !source.currentSrc) return;
+      activeCompletedCoverPreview?.cleanup();
+      floating = source.cloneNode(true);
+      floating.className = "completed-cover-preview-floating";
+      floating.removeAttribute("loading");
+      floating.removeAttribute("decoding");
+      const position = () => {
+        if (!floating || !wrap.isConnected) return;
+        const rect = wrap.getBoundingClientRect();
+        const width = 116;
+        const height = 158;
+        let left = rect.left;
+        if (left + width > window.innerWidth - 8) left = Math.max(8, rect.right - width);
+        const top = Math.max(8, Math.min(rect.top + rect.height / 2 - height / 2, window.innerHeight - height - 8));
+        floating.style.left = `${left}px`;
+        floating.style.top = `${top}px`;
+      };
+      const onScroll = () => position();
+      document.body.append(floating);
+      position();
+      requestAnimationFrame(() => floating?.classList.add("is-visible"));
+      window.addEventListener("scroll", onScroll, true);
+      window.addEventListener("resize", onScroll);
+      cleanup = () => {
+        window.removeEventListener("scroll", onScroll, true);
+        window.removeEventListener("resize", onScroll);
+        floating?.remove();
+        floating = null;
+      };
+      activeCompletedCoverPreview = { cleanup };
+    };
+    const hide = () => {
+      if (!floating) return;
+      cleanup();
+      if (activeCompletedCoverPreview?.cleanup === cleanup) activeCompletedCoverPreview = null;
+    };
+
+    wrap.addEventListener("pointerenter", show);
+    wrap.addEventListener("pointerleave", hide);
+  });
 }
 
 function renderCompletedYearFilter(years) {

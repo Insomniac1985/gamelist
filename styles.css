@@ -8560,12 +8560,6 @@ body:not(.can-edit) .game-card:focus-within .edit-action {
   --completed-mask-bottom: 96px;
 }
 
-.completed-list.list-view:has(.completed-cover-wrap:hover),
-.completed-list.list-view:has(.completed-cover-wrap:focus-within) {
-  -webkit-mask-image: none;
-  mask-image: none;
-}
-
 .completed-more-button {
   justify-self: center;
   min-height: 36px;
@@ -8633,10 +8627,6 @@ body:not(.can-edit) .game-card:focus-within .edit-action {
 
 .completed-list:not(.list-view) .completed-cover-wrap {
   display: contents;
-}
-
-.completed-list:not(.list-view) .completed-cover-preview {
-  display: none;
 }
 
 .completed-list:not(.list-view) .completed-actions {
@@ -10978,10 +10968,8 @@ body.theme-kash .playing-finished-game.completed-trophy-card:hover {
     display: none;
   }
 
-  .completed-list.list-view .completed-cover-preview {
-    position: absolute;
-    left: 0;
-    top: 50%;
+  .completed-cover-preview-floating {
+    position: fixed;
     width: 116px;
     height: 158px;
     object-fit: contain;
@@ -10991,16 +10979,15 @@ body.theme-kash .playing-finished-game.completed-trophy-card:hover {
     box-shadow: 0 18px 40px rgba(0, 0, 0, 0.48), 0 0 0 3px rgba(255, 225, 101, 0.1);
     opacity: 0;
     pointer-events: none;
-    transform: translateY(-50%) scale(0.82);
-    transform-origin: left center;
+    transform: scale(0.82);
+    transform-origin: top left;
     transition: opacity 160ms ease, transform 160ms ease;
-    z-index: 20;
+    z-index: 2147483647;
   }
 
-  .completed-list.list-view .completed-cover-wrap:hover .completed-cover-preview,
-  .completed-list.list-view .completed-cover-wrap:focus-within .completed-cover-preview {
+  .completed-cover-preview-floating.is-visible {
     opacity: 1;
-    transform: translateY(-50%) scale(1);
+    transform: scale(1);
   }
 
   .completed-list.list-view .completed-cover {
