@@ -688,43 +688,7 @@
               <span data-i18n="Alternate Achievement search name">Alternate Achievement search name</span>
               <input id="trophyNameInput" placeholder="Optional alternate title" data-i18n-placeholder="Optional alternate title">
             </label>
-            <div class="shelf-destination-fields" id="shelfDestinationFields" hidden>
-              <label class="shelf-destination-region-field">
-                <span data-i18n="Region">Region</span>
-                <select id="gameShelfCountryInput">
-                  <option value="Spain">Spain</option>
-                  <option value="Italy">Italy</option>
-                  <option value="Ireland">Ireland</option>
-                  <option value="France">France</option>
-                  <option value="Portugal">Portugal</option>
-                  <option value="Japan">Japan</option>
-                  <option value="Mexico">Mexico</option>
-                  <option value="United States of America">United States</option>
-                  <option value="United Kingdom">United Kingdom</option>
-                  <option value="Europe">Europe</option>
-                  <option value="Other">Other</option>
-                </select>
-              </label>
-              <label class="shelf-destination-addition-field">
-                <span data-i18n="Addition Date">Addition Date</span>
-                <input id="gameShelfAdditionDateInput" type="date">
-              </label>
-              <label class="shelf-destination-value-field">
-                <span data-i18n="Estimated Value">Estimated Value</span>
-                <input id="gameShelfValueInput" inputmode="decimal" placeholder="0.00">
-              </label>
-              <div class="shelf-destination-condition-field">
-                <span class="shelf-condition-title" id="gameShelfConditionTitle" data-i18n="Collection condition">Collection condition</span>
-                <fieldset class="shelf-destination-condition condition-editor" aria-labelledby="gameShelfConditionTitle"><div class="condition-grid">
-                  <label class="check-filter toggle-check"><input id="gameShelfConditionGame" type="checkbox" checked><span data-i18n="Game">Game</span></label>
-                  <label class="check-filter toggle-check"><input id="gameShelfConditionManual" type="checkbox"><span data-i18n="Manual">Manual</span></label>
-                  <label class="check-filter toggle-check"><input id="gameShelfConditionBox" type="checkbox"><span data-i18n="Box">Box</span></label>
-                  <label class="check-filter toggle-check"><input id="gameShelfConditionOther" type="checkbox"><span data-i18n="Other">Other</span></label>
-                  <label class="check-filter toggle-check condition-sealed"><input id="gameShelfConditionSealed" type="checkbox"><span data-i18n="Sealed">Sealed</span></label>
-                </div></fieldset>
-              </div>
-              <label class="shelf-destination-notes-field"><span data-i18n="Condition Notes">Condition Notes</span><textarea id="gameShelfNotesInput" rows="3" placeholder="Missing booklet, sealed, damaged case..." data-i18n-placeholder="Missing booklet, sealed, damaged case..."></textarea></label>
-            </div>
+
           </div>
         </section>
 
@@ -779,17 +743,6 @@
               <span data-i18n="Cover URL">Cover URL</span>
               <input id="coverInput" placeholder="https://...">
             </label>
-          </div>
-        </section>
-
-        <section class="form-group shelf-destination-pricecharting-section" id="gameShelfPricechartingSection" hidden>
-          <h3 data-i18n="PriceCharting Data">PriceCharting Data</h3>
-          <div class="form-grid physical-id-grid">
-            <label><span>UPC / EAN</span><input id="gameShelfUpcInput" inputmode="numeric"></label>
-            <label><span data-i18n="SKU / Catalog Number">SKU / Catalog Number</span><input id="gameShelfSkuInput"></label>
-            <label><span>ASIN</span><input id="gameShelfAsinInput"></label>
-            <label><span data-i18n="eBay Product ID">eBay Product ID</span><input id="gameShelfEpidInput"></label>
-            <label class="wide"><span data-i18n="PriceCharting Page or Product ID">PriceCharting Page or Product ID</span><input id="gameShelfPricechartingInput" placeholder="https://www.pricecharting.com/game/... or product ID" data-i18n-placeholder="https://www.pricecharting.com/game/... or product ID"></label>
           </div>
         </section>
 

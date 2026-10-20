@@ -18,6 +18,7 @@
     <script>
       (() => {
         const root = document.documentElement;
+        if (window.parent !== window && new URLSearchParams(location.search).get("editor") === "1") root.classList.add("game-editor-embed");
         if (new URLSearchParams(location.search).get("pull") === "1") {
           root.classList.add("from-pull-navigation");
           try {

@@ -4926,7 +4926,8 @@ body.mobile-app-mode .mobile-section-tabs button.active:hover {
   color: #ffffff;
 }
 
-label span {
+label span,
+.rating-section > :is(h3, h4) {
   display: block;
   margin-bottom: 6px;
   color: var(--dim);
@@ -14517,6 +14518,13 @@ body.theme-kash
   padding-left: 9px;
 }
 
+.detail-trophy-tools :is(.platform-logo-button, .platform-logo-option) .platform-logo-choice-label {
+  top: 0;
+  margin: 0;
+  align-self: center;
+  transform: none;
+}
+
 .detail-trophy-tools .direction-toggle {
   width: 32px;
   height: 32px;
@@ -15575,7 +15583,7 @@ body.theme-kash
 
 .rating-section {
   display: grid;
-  gap: 8px;
+  gap: 6px;
   min-width: 0;
   margin-top: 10px;
 }
@@ -15583,20 +15591,12 @@ body.theme-kash
 .rating-section h3,
 .rating-section h4 {
   margin: 0;
-  color: var(--muted);
-  font-size: 12px;
-  font-weight: 900;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
+  letter-spacing: normal;
 }
 
 .finish-rating-section {
   gap: 8px;
   margin-top: 8px;
-}
-
-.finish-rating-section h3 {
-  color: var(--accent-2);
 }
 
 .game-rating-grid,
