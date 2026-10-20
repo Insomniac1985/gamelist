@@ -2116,6 +2116,14 @@ body.mobile-app-mode .shelf-tabs button.active:hover {
     grid-column: 7 / span 7;
   }
 
+  #addGameForm.digital-game-editor.shelf-psplus-editor .shelf-psplus-field,
+  #addGameForm.digital-game-editor.shelf-games-with-gold-editor .shelf-games-with-gold-field {
+    grid-column: 7 / span 7;
+    grid-row: 2;
+    width: 100%;
+    box-sizing: border-box;
+  }
+
   #addGameForm:not(.gamelist-target-editor) .shelf-achievement-search-field {
     grid-column: span 7;
   }
@@ -3388,7 +3396,7 @@ textarea {
 
 #addGameForm.gamelist-target-editor .shelf-gamelist-preorder-stream-row {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: minmax(0, 1fr);
   align-items: stretch;
   gap: 12px;
   margin: 0 0 8px;
@@ -3402,11 +3410,19 @@ textarea {
   display: none !important;
 }
 
-#addGameForm.gamelist-target-editor .shelf-gamelist-preorder-stream-row.has-preorder-store {
+#addGameForm.gamelist-target-editor .shelf-gamelist-preorder-stream-row.has-stream {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+#addGameForm.gamelist-target-editor .shelf-gamelist-preorder-stream-row.has-stream.has-preorder-store {
   grid-template-columns: minmax(0, 3fr) minmax(100px, 1fr);
 }
 
 #addGameForm.gamelist-target-editor .shelf-gamelist-preorder-stream-row.preorder-hidden {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+#addGameForm.gamelist-target-editor .shelf-gamelist-preorder-stream-row.has-stream.preorder-hidden {
   grid-template-columns: minmax(0, 1fr);
 }
 
@@ -3444,6 +3460,8 @@ textarea {
 
 @media (max-width: 760px) {
   #addGameForm.gamelist-target-editor .shelf-gamelist-preorder-stream-row,
+  #addGameForm.gamelist-target-editor .shelf-gamelist-preorder-stream-row.has-stream,
+  #addGameForm.gamelist-target-editor .shelf-gamelist-preorder-stream-row.has-stream.has-preorder-store,
   #addGameForm.gamelist-target-editor .shelf-gamelist-preorder-stream-row.has-preorder-store,
   #addGameForm.gamelist-target-editor .shelf-gamelist-preorder-stream-row.preorder-hidden {
     grid-template-columns: minmax(0, 1fr);

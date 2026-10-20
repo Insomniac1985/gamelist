@@ -487,9 +487,11 @@ function bindEvents() {
   el.gamelistPreferredStore.addEventListener("change", syncShelfGamelistStoreIcons);
   syncShelfGamelistStoreIcons();
   el.gamelistStream.addEventListener("change", () => {
+    syncShelfGamelistPreorderStreamLayout();
     shelfNewGameTouchedFields.add("stream");
     syncShelfNewGameHighlights();
   });
+  syncShelfGamelistPreorderStreamLayout();
   el.gamelistSection.addEventListener("change", syncShelfGamelistSectionButtons);
   document.querySelector("#editorUnsavedDialog [data-editor-unsaved-cancel]")?.addEventListener("click", () => closeDialog(document.querySelector("#editorUnsavedDialog")));
   document.querySelector("#editorUnsavedDialog [data-editor-unsaved-save]")?.addEventListener("click", () => {
@@ -515,7 +517,6 @@ function bindEvents() {
   window.matchMedia("(min-width: 761px)").addEventListener("change", () => syncShelfGamelistTargetMode());
   el.lookupButton.addEventListener("click", lookupGame);
   el.digitalInput.addEventListener("change", () => {
-    el.fields.dlc.checked = el.digitalInput.checked;
     syncShelfDigitalEditorMode(el.digitalInput.checked);
   });
   el.gamelistCoop.addEventListener("change", () => {
@@ -2321,6 +2322,7 @@ function openEditor(game = null, options = {}) {
   el.gamelistCoop.checked = Boolean(values.coop);
   el.gamelistMultiplayer.checked = Boolean(values.multiplayer || values.coop);
   el.gamelistStream.checked = Boolean(values.stream);
+  syncShelfGamelistPreorderStreamLayout();
   el.gamelistLength.value = values.lengthHours ?? "";
   el.gamelistSection.value = "wanted";
   el.gamelistPreorderCheck.checked = false;
@@ -2502,10 +2504,16 @@ function syncShelfGamelistPreorderVisibility() {
     group.classList.toggle("has-preorder-store", active && !isBacklog && el.gamelistPreorderCheck.checked);
     group.classList.toggle("preorder-hidden", isBacklog);
   }
+  syncShelfGamelistPreorderStreamLayout();
   if (isBacklog) {
     syncShelfGamelistStoreIcons();
     syncShelfGamelistPreorderRequirement();
   }
+}
+
+function syncShelfGamelistPreorderStreamLayout() {
+  const group = document.querySelector(".shelf-gamelist-preorder-stream-row");
+  group?.classList.toggle("has-stream", Boolean(el.gamelistStream?.checked));
 }
 
 function setShelfGamelistAddTarget(target) {
@@ -2535,12 +2543,11 @@ function syncShelfGamelistStoreIcons() {
 
 function syncShelfGamelistStoreIcon(input, slot) {
   if (!input || !slot) return;
-  if (slot.dataset.fallbackMarkup == null) slot.dataset.fallbackMarkup = slot.innerHTML;
   const store = knownShelfStoreIconName(input.value);
-  const icon = store ? storeIcon(store) : "";
-  slot.innerHTML = icon && icon !== "assets/Icon.png"
-    ? `<img src="${escapeHtml(icon)}" alt="" width="16" height="16" decoding="async">`
-    : slot.dataset.fallbackMarkup;
+  const mappedIcon = store ? storeIcon(store) : "";
+  const icon = mappedIcon && mappedIcon !== "assets/Icon.png" ? mappedIcon : "";
+  slot.innerHTML = icon ? `<img src="${escapeHtml(icon)}" alt="" width="16" height="16" decoding="async">` : "";
+  slot.closest(".icon-input")?.classList.toggle("has-icon", Boolean(icon));
   slot.title = store || "";
 }
 
