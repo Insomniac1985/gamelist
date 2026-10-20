@@ -1,4 +1,4 @@
-import { openSharedAddGame } from "./shared-add-game.js";
+import { openSharedAddGame, warmSharedAddGame } from "./shared-add-game.js";
 import { normalizeSearchText, bindModalTouchGuard, createGameCardShell, bindActivityCardParallax, mountActivitySlider, mountTwitchPreview, mountReleaseCalendar, finishedGameMarkup, achievementCardMarkup, achievementDashboardMarkup, achievementPanelMarkup, completedCardMarkup, horizontalCarouselState, syncViewModeButton, slideHorizontalCarousel, comparePlayingGames, finishedDurationText, timeBadgeMarkup, guideLinksMarkup, storeButtonsMarkup, activityTrailerUrl, activityTrailerFrameMarkup, preloadPausedActivityTrailers, activityReleaseStatus, activityCoverOverride, activityAllowsPsnCardTrophies, formatFooterDate, formatFooterDateTime, formatFooterShortDate, confirmGameDelete } from "./activity-ui.js";
 import { applySiteTheme, normalizeThemeSettings, ownerCardColorClass, ownerColorClass, themeSettingsContent, bindThemeSettingsContent, readThemeSettingsContent } from "./theme-system.js";
 import { applyDocumentTranslations, languageOptions, normalizeLanguage, t } from "./i18n.js";
@@ -582,6 +582,7 @@ async function init() {
     sessionStorage.removeItem(`${SESSION_KEY}:password`);
   }
   document.body.classList.toggle("can-edit", state.canEdit);
+  if (state.canEdit) warmSharedAddGame();
   bindEvents();
   initRenderSettling();
   warmUiIcons();
@@ -12031,7 +12032,7 @@ function formatPillDate(value) {
 
 async function openEditor(id = "") {
   if (!await ensureEditMode()) return;
-  if (!id) return openNativeAddGame();
+  if (!id) return openGameAddFlow();
   const playingSection = el.form.querySelector("#playingFormSection");
   const collectingSection = el.form.querySelector("#collectingFormSection");
   if (playingSection && collectingSection) {
@@ -12112,20 +12113,21 @@ async function openEditor(id = "") {
   syncScrollLock();
 }
 
-async function openNativeAddGame(options = {}) {
-  pauseAllPlayingTrailers();
-  const result = await openSharedAddGame({ ...options, target: "gamelist" });
-  if (result?.saved) {
-    await pullCloudData();
-    render();
-    showToast(tt(result.target === "shelf" ? "Added to Shelf." : "Added to Gamelist."));
-  }
-  syncScrollLock();
+function openGameAddFlow(options = {}) {
+  return openSharedAddGame({ ...options, target: "gamelist", settings: state.settings }, {
+    beforeOpen: pauseAllPlayingTrailers,
+    afterSave: async result => {
+      await pullCloudData();
+      render();
+      showToast(tt(result.target === "shelf" ? "Added to Shelf." : "Added to Gamelist."));
+    },
+    afterClose: syncScrollLock,
+  });
 }
 
 async function addGameFromSearch(query, section = "wanted") {
   if (!await ensureEditMode()) return;
-  return openNativeAddGame({ query: String(query || "").trim(), section });
+  return openGameAddFlow({ query: String(query || "").trim(), section });
 }
 
 function blankGame() {

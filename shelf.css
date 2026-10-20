@@ -2772,14 +2772,36 @@ textarea {
   .shelf-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
+}
+
+@media (min-width: 761px) and (max-width: 1300px) {
   .shelf-toolbar {
-    grid-template-columns: repeat(4, minmax(120px, 1fr));
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1.5fr) minmax(0, 0.75fr) minmax(0, 0.75fr) var(--toolbar-control-height);
   }
   .shelf-toolbar .search {
     grid-column: span 2;
   }
+  .shelf-toolbar > label:has(#platformFilter) {
+    grid-column: 3;
+  }
+  .shelf-toolbar > label:has(#regionFilter) {
+    grid-column: 4 / span 2;
+  }
+  .shelf-toolbar > label:has(#conditionFilter) {
+    grid-column: 1;
+  }
+  .shelf-toolbar > label:has(#categoryFilter) {
+    grid-column: 2 / span 2;
+  }
+  .shelf-toolbar .order-label {
+    grid-column: 4 / span 2;
+  }
   .shelf-toolbar .view-toggle {
-    width: 100%;
+    grid-column: 6;
+    align-self: end;
+    justify-self: stretch;
+    width: var(--toolbar-control-height);
+    height: var(--toolbar-control-height);
   }
 }
 
@@ -3432,4 +3454,9 @@ textarea {
 
 .gamelist-target-editor .shelf-gamelist-list-picker {
   margin: 0 0 8px;
+}
+
+@media (max-width: 760px) {
+  /* Shelf follows the shared markup: DLC, subscription, then release details. */
+  #addGameForm.gamelist-target-editor .shelf-entitlement-field { order: 11; }
 }

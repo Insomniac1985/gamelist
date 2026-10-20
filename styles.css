@@ -16129,21 +16129,41 @@ html.theme-light .finish-trophy-check input[type="checkbox"]:checked {
 }
 
 @media (max-width: 1180px) {
+  .achievement-panel {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 1300px) {
   .toolbar {
-    grid-template-columns: repeat(4, minmax(120px, 1fr));
+    grid-template-columns: minmax(0, 1fr) 132px minmax(0, 1fr) var(--toolbar-control-height);
   }
 
   .toolbar .search {
+    grid-column: 1;
+  }
+
+  .toolbar .toolbar-check {
+    grid-column: 2;
+  }
+
+  .toolbar > label:has(#platformFilter) {
+    grid-column: 3 / 5;
+  }
+
+  .toolbar > label:has(#tagFilter) {
     grid-column: span 2;
   }
 
   .toolbar .order-label {
-    grid-column: span 2;
+    grid-column: span 1;
   }
 
   .toolbar .view-toggle {
     justify-self: stretch;
-    width: 100%;
+    width: var(--toolbar-control-height);
+    min-width: var(--toolbar-control-height);
+    height: var(--toolbar-control-height);
   }
 }
 
@@ -16735,6 +16755,9 @@ html.theme-light .finish-trophy-check input[type="checkbox"]:checked {
     grid-column: 2;
     align-self: end;
     justify-self: stretch;
+    width: var(--toolbar-control-height);
+    min-width: var(--toolbar-control-height);
+    height: var(--toolbar-control-height);
   }
 
   .order-control {

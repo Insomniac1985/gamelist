@@ -1,4 +1,4 @@
-import { embeddedGameEditor, connectEmbeddedGameEditor, notifyEmbeddedGameSaved } from "./shared-add-game.js";
+import { embeddedGameEditor, connectEmbeddedGameEditor } from "./shared-add-game.js";
 import { normalizeSearchText, bindModalTouchGuard, createGameCardShell, bindActivityCardParallax, mountActivitySlider, mountTwitchPreview, mountReleaseCalendar, finishedGameMarkup, achievementCardMarkup, achievementDashboardMarkup, achievementPanelMarkup, completedCardMarkup, horizontalCarouselState, syncViewModeButton, slideHorizontalCarousel, comparePlayingGames, timeBadgeMarkup, guideLinksMarkup, storeButtonsMarkup, activityTrailerUrl, preloadPausedActivityTrailers, syncFocusedActivityTrailer, activityReleaseStatus, activityCoverOverride, activityLocalGameForTitle, activityTitleMatchScore, activityAllowsPsnCardTrophies, formatFooterDate, formatFooterDateTime, formatFooterShortDate, confirmGameDelete } from "./activity-ui.js";
 import { applySiteTheme, normalizeThemeSettings, ownerCardColorClass, ownerColorClass, themeSettingsContent, bindThemeSettingsContent, readThemeSettingsContent } from "./theme-system.js";
 import { applyDocumentTranslations, languageOptions, normalizeLanguage, t } from "./i18n.js";
@@ -279,6 +279,7 @@ let shelfSettingsLogoutRequested = false;
 init();
 
 async function init() {
+  if (embeddedGameEditor) return initEmbeddedAddGame();
   if (await checkSiteVersion()) return;
   await window.__initialThemeReady?.catch(() => "shabii");
   applyTheme();
@@ -319,26 +320,6 @@ async function init() {
   syncPagePullTransition();
   applyShelfDefaultOrder(state.gamelistSettings.shelfDefaultOrder ?? state.gamelistSettings.defaultOrder);
   applyTheme();
-  if (embeddedGameEditor) {
-    populateEditorOptions();
-    applyDocumentTranslations(currentLanguage());
-    rebuildGames();
-    connectEmbeddedGameEditor({ dialog: el.addDialog, requestClose: requestShelfEditorClose, open: options => {
-      openEditor(null, { digital: Boolean(options.digital), target: options.target });
-      if (options.query) {
-        el.lookupInput.value = options.query;
-        el.fields.title.value = options.query;
-        shelfEditorDirty = true;
-        void lookupGame();
-      }
-      if (["backlog", "upcoming", "wanted"].includes(options.section)) {
-        el.gamelistSection.value = options.section;
-        syncShelfGamelistSectionButtons();
-        syncStyledSelect(el.gamelistSection);
-      }
-    }});
-    return;
-  }
   loadTrophyActivity();
   rebuildGames();
   applyShelfSearchFromUrl();
@@ -346,6 +327,50 @@ async function init() {
   void refreshShelfPlayingCardPlaytime();
   window.setInterval(refreshShelfPlayingCardPlaytime, 5 * 60 * 1000);
   maybeShowUpdatesPopup();
+}
+
+function initEmbeddedAddGame() {
+  applyTheme();
+  document.documentElement.classList.remove("theme-booting");
+  populateEditorOptions();
+  connectEmbeddedGameEditor({
+    dialog: el.addDialog,
+    form: el.addForm,
+    requestClose: requestShelfEditorClose,
+    applyData: applyEmbeddedEditorData,
+    saveShelf: saveShelfEditor,
+    saveGamelist: saveGamelistTargetFromShelf,
+    onLoadError: () => showToast(tt("Could not load current game data. Please try again."), "error"),
+    open: options => {
+      state.canEdit = true;
+      state.gamelistSettings = { ...loadSharedSettings(), ...(options.settings || {}) };
+      applyTheme();
+      populateEditorOptions();
+      applyDocumentTranslations(currentLanguage());
+      openEditor(null, { digital: Boolean(options.digital), target: options.target });
+      if (["backlog", "upcoming", "wanted"].includes(options.section)) {
+        el.gamelistSection.value = options.section;
+        syncShelfGamelistSectionButtons();
+        syncStyledSelect(el.gamelistSection);
+      }
+      if (options.query) {
+        el.lookupInput.value = options.query;
+        el.fields.title.value = options.query;
+        shelfEditorDirty = true;
+        void lookupGame();
+      }
+    },
+  });
+  bindEvents();
+}
+
+function applyEmbeddedEditorData({ shelf: shelfData, gamelist: gamelistData }) {
+  state.sourceGames = shelfData.sourceGames || [];
+  state.additions = shelfData.games;
+  state.overrides = shelfData.overrides || {};
+  state.layout = normalizeLayout(shelfData.layout || state.layout);
+  state.favoriteGameIds = shelfFavoriteIdsFromSources(shelfData, gamelistData, loadDraft());
+  state.gamelistGames = gamelistData.games;
 }
 
 function applyShelfSearchFromUrl() {
@@ -2449,8 +2474,8 @@ function syncShelfGamelistTargetMode() {
   const title = el.addForm.querySelector(".modal-head h2");
   const eyebrow = el.addForm.querySelector(".modal-head .eyebrow");
   if (active) {
-    if (eyebrow) eyebrow.textContent = tt("Gamelist");
-    if (title) title.textContent = tt(el.addForm.dataset.digital === "true" ? "Add a digital game" : "Add to Gamelist");
+    if (eyebrow) eyebrow.textContent = "GAME DATA";
+    if (title) title.textContent = el.gamelistSection.value === "backlog" ? "Add game to Backlog" : el.gamelistSection.value === "wanted" ? "Add available game" : "Add game";
     el.addForm.querySelector(".form-group h3").textContent = tt("Collecting Information");
     el.addForm.querySelectorAll("button[type='submit']").forEach((button) => { button.textContent = tt("Add to Gamelist"); });
     el.lookupLabelPhysical.textContent = tt("Search DB or IGDB URL");
@@ -2502,6 +2527,10 @@ function syncShelfGamelistTargetIndicator() {
 function syncShelfGamelistSectionButtons() {
   syncShelfGamelistPreorderVisibility();
   syncGameListSlider(el.gamelistListPicker, el.gamelistSection.value);
+  if (isGamelistProjectionTarget()) {
+    const title = el.addForm.querySelector(".modal-head h2");
+    if (title) title.textContent = el.gamelistSection.value === "backlog" ? "Add game to Backlog" : el.gamelistSection.value === "wanted" ? "Add available game" : "Add game";
+  }
 }
 
 function syncShelfGamelistPreorderVisibility() {
@@ -2970,7 +2999,11 @@ function applyPriceChartingRegion(consoleName) { const current = el.fields.count
 async function saveEditor(event) {
   event.preventDefault();
   if (!state.canEdit) return;
-  if (isGamelistProjectionTarget()) return saveGamelistTargetFromShelf(event);
+  if (isGamelistProjectionTarget()) return saveGamelistTargetFromShelf();
+  return saveShelfEditor();
+}
+
+async function saveShelfEditor() {
   const existing = state.games.find((game) => game.id === state.editingId);
   const digitalMode = el.addForm.dataset.digital === "true";
   const manualPrice = digitalMode ? null : numberOrNull(el.fields.price.value);
@@ -2997,7 +3030,7 @@ async function saveEditor(event) {
     pendingCollection: false,
     updatedAt: new Date().toISOString(), recordType: "Owned", releaseType: existing?.releaseType || "Official",
   };
-  if (!game.title) return;
+  if (!game.title) return false;
   if (!digitalMode) applyManualCollectionValue(game, el.fields.price.value, existing);
   if (existing?.sourceRecord) state.overrides[game.id] = stripRuntimeFields(game);
   else {
@@ -3006,22 +3039,22 @@ async function saveEditor(event) {
     else state.additions.unshift(stripRuntimeFields(game));
   }
   const saved = await persistShelf();
-  if (embeddedGameEditor && !saved) {
-    showToast(tt("Could not add the game to Shelf."), "error");
-    return;
+  if (!saved) {
+    if (embeddedGameEditor) showToast(tt("Could not add the game to Shelf."), "error");
+    return false;
   }
   rebuildGames();
   if (!embeddedGameEditor) renderAll();
   shelfEditorDirty = false;
   if (digitalMode && state.gamelistSettings.shelfSync !== false && !game.gamelistId) await addShelfGameToGamelistNew(game);
-  notifyEmbeddedGameSaved("shelf");
-  closeDialog(el.addDialog);
+  if (!embeddedGameEditor) closeDialog(el.addDialog);
+  return true;
 }
 
-async function saveGamelistTargetFromShelf(event) {
-  if (!validateShelfGamelistTarget()) return;
+async function saveGamelistTargetFromShelf() {
+  if (!validateShelfGamelistTarget()) return false;
   const title = el.fields.title.value.trim();
-  if (!title) { el.fields.title.focus(); return; }
+  if (!title) { el.fields.title.focus(); return false; }
   const now = new Date().toISOString();
   const hasPreorder = el.gamelistPreorderCheck.checked;
   const section = hasPreorder ? "upcoming" : (el.gamelistSection.value || "wanted");
@@ -3084,11 +3117,14 @@ async function saveGamelistTargetFromShelf(event) {
     renderLibrary();
     shelfEditorDirty = false;
     state.gamelistAddTarget = "shelf";
-    notifyEmbeddedGameSaved("gamelist");
-    closeDialog(el.addDialog);
-    showToast(tt(hasPreorder ? "Added preorder to Gamelist." : "Added to Gamelist."));
+    if (!embeddedGameEditor) {
+      closeDialog(el.addDialog);
+      showToast(tt(hasPreorder ? "Added preorder to Gamelist." : "Added to Gamelist."));
+    }
+    return true;
   } catch (error) {
     showToast(error?.message || tt("Gamelist data could not be synced"), "error");
+    return false;
   }
 }
 
