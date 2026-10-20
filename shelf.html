@@ -393,7 +393,7 @@
 
         <div class="lookup-row">
           <label>
-            <span class="lookup-label-physical" data-i18n="Search DB or PriceCharting">Search DB or PriceCharting</span><span class="lookup-label-digital" data-i18n="Search IGDB">Search IGDB</span>
+            <span class="lookup-label-physical" data-i18n="Search DB or PriceCharting">Search DB or PriceCharting</span><span class="lookup-label-digital" data-i18n="Search DB or IGDB URL">Search DB or IGDB URL</span>
             <input id="lookupInput" type="search" placeholder="Game name or PriceCharting page" data-i18n-placeholder="Game name or PriceCharting page">
           </label>
           <button class="ghost-button icon-only-button" id="lookupButton" type="button" title="Fetch info" aria-label="Fetch info">
@@ -421,17 +421,20 @@
             <button type="button" data-gamelist-section="wanted" data-i18n="Available">Available</button>
           </div>
         </div>
-        <div class="shelf-gamelist-preorder-row" id="shelfGamelistPreorderRow">
-          <label class="check-filter toggle-check shelf-gamelist-preorder-check">
-            <input id="shelfGamelistPreorderCheck" type="checkbox">
-            <span class="check-label-with-icon"><svg class="shopping-bag-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M6.5 8.5h11l1 12h-13l1-12Z"></path><path d="M9 8.5V7a3 3 0 0 1 6 0v1.5"></path></svg><span data-i18n="Preorder">Preorder</span></span>
-          </label>
-          <label class="shelf-gamelist-preorder-field" id="shelfGamelistPreorderField" hidden>
-            <span class="icon-input store-icon-input has-icon">
-              <span class="field-leading-icon shelf-gamelist-store-icon" aria-hidden="true"><svg class="store-type-icon preorder-store-type-icon" viewBox="0 0 24 24"><path d="M6.5 8.5h11l1 12h-13l1-12Z"></path><path d="M9 8.5V7a3 3 0 0 1 6 0v1.5"></path></svg></span>
-              <input id="shelfGamelistPreorderStoreInput" placeholder="Xtralife, Game, Amazon...">
-            </span>
-          </label>
+        <div class="shelf-gamelist-preorder-stream-row" id="shelfGamelistPreorderStreamRow">
+          <div class="shelf-gamelist-preorder-row" id="shelfGamelistPreorderRow">
+            <label class="check-filter toggle-check shelf-gamelist-preorder-check">
+              <input id="shelfGamelistPreorderCheck" type="checkbox">
+              <span class="check-label-with-icon"><svg class="shopping-bag-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M6.5 8.5h11l1 12h-13l1-12Z"></path><path d="M9 8.5V7a3 3 0 0 1 6 0v1.5"></path></svg><span data-i18n="Preorder">Preorder</span></span>
+            </label>
+            <label class="shelf-gamelist-preorder-field" id="shelfGamelistPreorderField" hidden>
+              <span class="icon-input store-icon-input">
+                <span class="field-leading-icon shelf-gamelist-store-icon" aria-hidden="true"></span>
+                <input id="shelfGamelistPreorderStoreInput" placeholder="Xtralife, Game, Amazon...">
+              </span>
+            </label>
+          </div>
+          <label class="shelf-gamelist-flag shelf-gamelist-stream-field check-filter toggle-check stream-check" hidden><input id="shelfGamelistStreamInput" type="checkbox"><span data-i18n="Stream">Stream</span></label>
         </div>
         <div class="lookup-results" id="lookupResults"></div>
 
@@ -458,13 +461,12 @@
             <label class="shelf-gamelist-flag shelf-gamelist-emulator-field check-filter toggle-check"><input id="shelfGamelistEmulatorInput" type="checkbox"><span>Emulator</span></label>
             <label class="shelf-gamelist-flag shelf-gamelist-multiplayer-field check-filter toggle-check"><input id="shelfGamelistMultiplayerInput" type="checkbox"><span class="check-label-with-icon"><svg class="online-globe-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8"></circle><path d="M4 12h16"></path><path d="M12 4c2.1 2.2 3.2 4.8 3.2 8s-1.1 5.8-3.2 8"></path><path d="M12 4c-2.1 2.2-3.2 4.8-3.2 8s1.1 5.8 3.2 8"></path></svg><span data-i18n="Multiplayer">Multiplayer</span></span></label>
             <label class="shelf-gamelist-flag shelf-gamelist-coop-field check-filter toggle-check"><input id="shelfGamelistCoopInput" type="checkbox"><span class="check-label-with-icon"><svg class="coop-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="8" cy="8" r="3"></circle><circle cx="16" cy="8" r="3"></circle><path d="M2.8 19c.4-4 2.1-6 5.2-6s4.8 2 5.2 6"></path><path d="M10.8 19c.4-4 2.1-6 5.2-6s4.8 2 5.2 6"></path></svg><span data-i18n="Coop">Coop</span></span></label>
-            <label class="shelf-gamelist-flag shelf-gamelist-stream-field check-filter toggle-check stream-check"><input id="shelfGamelistStreamInput" type="checkbox"><span data-i18n="Stream">Stream</span></label>
-            <label class="shelf-entitlement-field shelf-psplus-field check-filter toggle-check"><input id="psPlusInput" type="checkbox"><span>PlayStation Plus</span></label>
-            <label class="shelf-entitlement-field shelf-games-with-gold-field check-filter toggle-check"><input id="gamesWithGoldInput" type="checkbox"><span data-i18n="Games with Gold">Games with Gold</span></label>
+            <label class="shelf-entitlement-field shelf-psplus-field check-filter toggle-check"><input id="psPlusInput" type="checkbox"><span class="check-label-with-icon"><img class="shelf-entitlement-icon" src="assets/platforms/psplus.png" alt="" aria-hidden="true"><span>PlayStation Plus</span></span></label>
+            <label class="shelf-entitlement-field shelf-games-with-gold-field check-filter toggle-check"><input id="gamesWithGoldInput" type="checkbox"><span class="check-label-with-icon"><img class="shelf-entitlement-icon" src="assets/platforms/gameswithgold.png" alt="" aria-hidden="true"><span data-i18n="Games with Gold">Games with Gold</span></span></label>
             <span class="shelf-entitlement-grid-spacer" aria-hidden="true"></span>
             <label class="shelf-value-field"><span data-i18n="Estimated Value">Estimated Value</span><input id="priceInput" inputmode="decimal" placeholder="0.00"></label>
             <label class="shelf-gamelist-length-field"><span data-i18n="Aproximate playtime">Aproximate playtime</span><input id="shelfGamelistLengthInput" type="number" min="0" step="1" placeholder="Hours" data-i18n-placeholder="Hours"></label>
-            <label class="shelf-gamelist-preferred-store-field"><span data-i18n="Preferred preorder store">Preferred preorder store</span><span class="icon-input store-icon-input has-icon"><span class="field-leading-icon shelf-gamelist-preferred-store-icon" aria-hidden="true"><svg class="store-type-icon" viewBox="0 0 24 24"><path d="m3 9 2-5h14l2 5"></path><path d="M4 9v10h16V9"></path><path d="M3 9a2.5 2.5 0 0 0 5 0 2.5 2.5 0 0 0 5 0 2.5 2.5 0 0 0 5 0 2.5 2.5 0 0 0 5 0"></path><path d="M9 19v-5h6v5"></path></svg></span><input id="shelfGamelistPreferredStoreInput" placeholder="Limited Run, Amazon..." data-i18n-placeholder="Limited Run, Amazon..."></span></label>
+            <label class="shelf-gamelist-preferred-store-field"><span data-i18n="Preferred preorder store">Preferred preorder store</span><span class="icon-input store-icon-input"><span class="field-leading-icon shelf-gamelist-preferred-store-icon" aria-hidden="true"></span><input id="shelfGamelistPreferredStoreInput" placeholder="Limited Run, Amazon..." data-i18n-placeholder="Limited Run, Amazon..."></span></label>
             <div class="shelf-condition-field"><span class="shelf-condition-title" id="shelfConditionLabel" data-i18n="Collection condition">Collection condition</span><fieldset class="condition-editor" aria-labelledby="shelfConditionLabel"><div class="condition-grid">
                 <label class="check-filter toggle-check"><input id="conditionGameInput" type="checkbox"><span data-i18n="Game">Game</span></label>
                 <label class="check-filter toggle-check"><input id="conditionManualInput" type="checkbox"><span data-i18n="Manual">Manual</span></label>

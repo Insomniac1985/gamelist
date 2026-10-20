@@ -19219,12 +19219,12 @@ body:not(.can-edit):not(.shelf-page) :is(#upcoming, #wanted) .price-refresh-acti
   }
 
   #addGameForm.gamelist-target-editor .shelf-title-field {
-    grid-column: 2 / span 5;
+    grid-column: 2 / span 6;
     grid-row: 1;
   }
 
   #addGameForm.gamelist-target-editor .shelf-console-field {
-    grid-column: 7 / span 5;
+    grid-column: 8 / span 4;
     grid-row: 1;
   }
 

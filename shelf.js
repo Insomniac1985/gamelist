@@ -207,6 +207,7 @@ const el = {
   lookupInput: document.querySelector("#lookupInput"),
   lookupButton: document.querySelector("#lookupButton"),
   lookupLabelPhysical: document.querySelector("#addGameForm .lookup-label-physical"),
+  lookupLabelDigital: document.querySelector("#addGameForm .lookup-label-digital"),
   lookupResults: document.querySelector("#lookupResults"),
   gamelistTargetPicker: document.querySelector("#shelfGamelistTargetPicker"),
   gamelistListPicker: document.querySelector("#shelfGamelistListPicker"),
@@ -310,7 +311,13 @@ async function init() {
   }
   state.updatedAt = shelfData?.updatedAt || "";
   state.gamelistGames = gamelistData?.games || [];
-  state.gamelistSettings = gamelistData?.settings || state.gamelistSettings;
+  const sharedSettings = loadSharedSettings();
+  const remoteSettings = gamelistData?.settings || {};
+  state.gamelistSettings = { ...sharedSettings, ...remoteSettings };
+  if (!Object.prototype.hasOwnProperty.call(remoteSettings, "twitchUser")) {
+    state.gamelistSettings.twitchUser = sharedSettings.twitchUser || "";
+  }
+  localStorage.setItem("gamelist:settings:v1", JSON.stringify(state.gamelistSettings));
   syncPagePullTransition();
   applyShelfDefaultOrder(state.gamelistSettings.shelfDefaultOrder ?? state.gamelistSettings.defaultOrder);
   applyTheme();
@@ -477,14 +484,21 @@ function bindEvents() {
     el.gamelistPreorderField.closest(".shelf-gamelist-preorder-row")?.classList.toggle("has-preorder-store", el.gamelistPreorderCheck.checked);
     if (el.gamelistPreorderCheck.checked) el.gamelistSection.value = "upcoming";
     else el.gamelistPreorderStore.value = "";
+    syncShelfGamelistStoreIcons();
     syncShelfGamelistSectionButtons();
     syncShelfGamelistPreorderRequirement();
   });
   el.gamelistPreorderStore.addEventListener("input", syncShelfGamelistPreorderRequirement);
+  el.gamelistPreorderStore.addEventListener("input", syncShelfGamelistStoreIcons);
+  el.gamelistPreferredStore.addEventListener("input", syncShelfGamelistStoreIcons);
+  el.gamelistPreferredStore.addEventListener("change", syncShelfGamelistStoreIcons);
+  syncShelfGamelistStoreIcons();
   el.gamelistStream.addEventListener("change", () => {
+    syncShelfGamelistPreorderStreamLayout();
     shelfNewGameTouchedFields.add("stream");
     syncShelfNewGameHighlights();
   });
+  syncShelfGamelistPreorderStreamLayout();
   el.gamelistSection.addEventListener("change", syncShelfGamelistSectionButtons);
   document.querySelector("#editorUnsavedDialog [data-editor-unsaved-cancel]")?.addEventListener("click", () => closeDialog(document.querySelector("#editorUnsavedDialog")));
   document.querySelector("#editorUnsavedDialog [data-editor-unsaved-save]")?.addEventListener("click", () => {
@@ -510,7 +524,11 @@ function bindEvents() {
   window.matchMedia("(min-width: 761px)").addEventListener("change", () => syncShelfGamelistTargetMode());
   el.lookupButton.addEventListener("click", lookupGame);
   el.digitalInput.addEventListener("change", () => {
-    el.fields.dlc.checked = el.digitalInput.checked;
+    if (!el.digitalInput.checked) {
+      el.fields.dlc.checked = false;
+      el.fields.psPlus.checked = false;
+      el.fields.gamesWithGold.checked = false;
+    }
     syncShelfDigitalEditorMode(el.digitalInput.checked);
   });
   el.gamelistCoop.addEventListener("change", () => {
@@ -2316,11 +2334,13 @@ function openEditor(game = null, options = {}) {
   el.gamelistCoop.checked = Boolean(values.coop);
   el.gamelistMultiplayer.checked = Boolean(values.multiplayer || values.coop);
   el.gamelistStream.checked = Boolean(values.stream);
+  syncShelfGamelistPreorderStreamLayout();
   el.gamelistLength.value = values.lengthHours ?? "";
   el.gamelistSection.value = "wanted";
   el.gamelistPreorderCheck.checked = false;
   el.gamelistPreorderField.hidden = true;
   el.gamelistPreferredStore.value = values.preferredStore || "";
+  syncShelfGamelistStoreIcons();
   el.gamelistStatuses.value = (values.statuses || []).join(", ");
   el.fields.owners.value = (values.owners || []).join(", ");
   const links = normalizedStoreLinks(values);
@@ -2362,7 +2382,8 @@ function syncShelfDigitalEditorMode(digitalMode) {
   el.addForm.classList.toggle("digital-tracking-disabled", state.gamelistSettings.shelfDigitalGames !== true);
   el.addForm.dataset.digital = digitalMode ? "true" : "false";
   el.fields.country.required = !digitalMode && !isGamelistProjectionTarget();
-  el.lookupInput.placeholder = tt(digitalMode ? "Game name" : "Game name or PriceCharting page");
+  if (el.lookupLabelDigital) el.lookupLabelDigital.textContent = tt("Search DB or IGDB URL");
+  el.lookupInput.placeholder = tt(digitalMode ? "Type a game name or paste an IGDB page" : "Game name or PriceCharting page");
   const game = state.games.find((item) => item.id === state.editingId);
   el.addForm.querySelector(".modal-head h2").textContent = tt(game?.pendingCollection ? "Add to Collection" : game ? "Edit Game" : digitalMode ? "Add Digital Game" : "Add game");
   el.addForm.querySelectorAll("button[type='submit']").forEach((button) => { button.textContent = game?.pendingCollection ? "Add to Collection" : game ? "Save" : digitalMode ? "Add to Drive" : "Add to Shelf"; });
@@ -2425,7 +2446,7 @@ function syncShelfGamelistTargetMode() {
     if (title) title.textContent = tt(game?.pendingCollection ? "Add to Collection" : game ? "Edit Game" : el.addForm.dataset.digital === "true" ? "Add Digital Game" : "Add game");
     el.addForm.querySelector(".form-group h3").textContent = tt("Collecting Information");
     el.addForm.querySelectorAll("button[type='submit']").forEach((button) => { button.textContent = game?.pendingCollection ? tt("Add to Collection") : game ? tt("Save") : el.addForm.dataset.digital === "true" ? tt("Add to Drive") : tt("Add to Shelf"); });
-    el.lookupInput.placeholder = tt(el.addForm.dataset.digital === "true" ? "Game name" : "Game name or PriceCharting page");
+    el.lookupInput.placeholder = tt(el.addForm.dataset.digital === "true" ? "Type a game name or paste an IGDB page" : "Game name or PriceCharting page");
     el.gamelistSection.disabled = false;
   }
   el.fields.country.required = el.addForm.dataset.digital !== "true" && !active;
@@ -2461,6 +2482,7 @@ function syncShelfGamelistTargetIndicator() {
 }
 
 function syncShelfGamelistSectionButtons() {
+  syncShelfGamelistPreorderVisibility();
   const options = el.gamelistListPicker?.querySelector(".shelf-gamelist-section-options");
   if (!options) return;
   const buttons = [...options.querySelectorAll("[data-gamelist-section]")];
@@ -2475,6 +2497,39 @@ function syncShelfGamelistSectionButtons() {
     options.style.setProperty("--target-left", `${active.offsetLeft}px`);
     options.style.setProperty("--target-width", `${active.offsetWidth}px`);
   });
+}
+
+function syncShelfGamelistPreorderVisibility() {
+  const row = el.gamelistPreorderCheck?.closest(".shelf-gamelist-preorder-row");
+  if (!row) return;
+  const group = row.closest(".shelf-gamelist-preorder-stream-row");
+  const active = isGamelistProjectionTarget();
+  const isBacklog = active && el.gamelistSection.value === "backlog";
+  if (isBacklog) {
+    el.gamelistPreorderCheck.checked = false;
+    el.gamelistPreorderStore.value = "";
+  }
+  row.hidden = !active || isBacklog;
+  el.gamelistPreorderField.hidden = !active || isBacklog || !el.gamelistPreorderCheck.checked;
+  row.classList.toggle("has-preorder-store", active && !isBacklog && el.gamelistPreorderCheck.checked);
+  if (group) {
+    group.hidden = !active;
+    group.classList.toggle("has-preorder-store", active && !isBacklog && el.gamelistPreorderCheck.checked);
+    group.classList.toggle("preorder-hidden", isBacklog);
+  }
+  syncShelfGamelistPreorderStreamLayout();
+  if (isBacklog) {
+    syncShelfGamelistStoreIcons();
+    syncShelfGamelistPreorderRequirement();
+  }
+}
+
+function syncShelfGamelistPreorderStreamLayout() {
+  const group = document.querySelector(".shelf-gamelist-preorder-stream-row");
+  const streamField = el.gamelistStream?.closest(".shelf-gamelist-stream-field");
+  const hasTwitchAccount = Boolean(String(state.gamelistSettings?.twitchUser || loadSharedSettings().twitchUser || "").trim());
+  if (streamField) streamField.hidden = !hasTwitchAccount;
+  group?.classList.toggle("has-stream", hasTwitchAccount);
 }
 
 function setShelfGamelistAddTarget(target) {
@@ -2495,6 +2550,44 @@ function setShelfGamelistAddTarget(target) {
 function syncShelfGamelistPreorderRequirement() {
   const required = isGamelistProjectionTarget() && el.gamelistPreorderCheck.checked && !el.gamelistPreorderStore.value.trim();
   el.addForm.classList.toggle("needs-gamelist-preorder-store", required);
+}
+
+function syncShelfGamelistStoreIcons() {
+  syncShelfGamelistStoreIcon(el.gamelistPreorderStore, document.querySelector(".shelf-gamelist-store-icon"));
+  syncShelfGamelistStoreIcon(el.gamelistPreferredStore, document.querySelector(".shelf-gamelist-preferred-store-icon"));
+}
+
+function syncShelfGamelistStoreIcon(input, slot) {
+  if (!input || !slot) return;
+  const store = knownShelfStoreIconName(input.value);
+  const mappedIcon = store ? storeIcon(store) : "";
+  const icon = mappedIcon && mappedIcon !== "assets/Icon.png" ? mappedIcon : "";
+  slot.innerHTML = icon ? `<img src="${escapeHtml(icon)}" alt="" width="16" height="16" decoding="async">` : "";
+  slot.closest(".icon-input")?.classList.toggle("has-icon", Boolean(icon));
+  slot.title = store || "";
+}
+
+function knownShelfStoreIconName(value) {
+  const raw = String(value || "").trim();
+  if (!raw) return "";
+  const normalized = normalizeTag(raw);
+  const exact = STORE_OPTIONS.find((store) => normalizeTag(store) === normalized);
+  if (exact) return exact;
+  if (normalized.startsWith("amazon")) return "Amazon";
+  if (normalized === "ebay" || normalized === "e bay") return "eBay";
+  if (isKickstarterStore(raw)) return "Kickstarter";
+  if (normalized === "game" || normalized === "game es") return "GAME.es";
+  if (normalized === "xtralife" || normalized === "xtra life") return "Xtralife";
+  if (normalized === "retro island" || normalized === "retro island ny") return "Retro Island NY";
+  if (["limitedrun", "limitedrungames", "lrg"].includes(normalized)) return "Limited Run";
+  if (["squareenix", "squareenixstore", "sqex", "sqexstore"].includes(normalized.replace(/[^a-z0-9]/g, ""))) return "Square Enix Store";
+  if (["gamestop", "game stop"].includes(normalized)) return "GameStop";
+  if (["walmart", "wallmart"].includes(normalized)) return "Walmart";
+  if (normalized.startsWith("nintendo")) return "Nintendo";
+  if (normalized.startsWith("playstation") || normalized.startsWith("play station")) return "PlayStation";
+  if (normalized === "steam") return "Steam";
+  if (normalized === "xbox") return "Xbox";
+  return "";
 }
 
 function validateShelfGamelistTarget() {
@@ -2535,7 +2628,7 @@ function syncShelfNewGameHighlights() {
     const needsHighlight = projectionTarget && key in values ? !values[key] : !shelfNewGameTouchedFields.has(key);
     el.addForm.classList.toggle(`needs-${key}-field`, isNewShelfGame && needsHighlight);
   }
-  el.addForm.classList.toggle("needs-stream-check", isNewShelfGame && projectionTarget && Boolean(String(state.gamelistSettings.twitchUser || "").trim()) && !shelfNewGameTouchedFields.has("stream"));
+  el.addForm.classList.toggle("needs-stream-check", isNewShelfGame && projectionTarget && Boolean(String(state.gamelistSettings.twitchUser || loadSharedSettings().twitchUser || "").trim()) && !shelfNewGameTouchedFields.has("stream"));
 }
 
 async function deleteCurrentEditedGame() {
@@ -2700,14 +2793,18 @@ function renderShelfLookupResults() {
     const body = physical
       ? `<p>${escapeHtml(platforms.join(" · ") || "Platform unknown")}</p>`
       : `${matchedTitle ? `<p>${escapeHtml(matchedTitle)}</p>` : ""}${publisherDate ? `<p>${escapeHtml(publisherDate)}</p>` : ""}${tags ? `<p>${escapeHtml(tags)}</p>` : ""}${description ? `<p>${escapeHtml(description)}</p>` : ""}`;
-    return `<div class="lookup-result shelf-lookup-result${image ? "" : " no-cover"}"><img class="${image ? "" : "lookup-cover-placeholder"}" src="${escapeHtml(image || "assets/Icon_shelf.png")}" alt=""><div><span class="lookup-result-title"><strong>${escapeHtml(result.title || "Untitled game")}</strong>${igdbRating}</span>${body}</div><button class="ghost-button" type="button" data-result-index="${index}">Use</button></div>`;
+    const cover = image
+      ? `<img src="${escapeHtml(image)}" alt="">`
+      : `<span class="lookup-cover-placeholder" aria-hidden="true"></span>`;
+    return `<div class="lookup-result shelf-lookup-result${image ? "" : " no-cover"}">${cover}<div><span class="lookup-result-title"><strong>${escapeHtml(result.title || "Untitled game")}</strong>${igdbRating}</span>${body}</div><button class="ghost-button" type="button" data-result-index="${index}">Use</button></div>`;
   }).join("");
   el.lookupResults.querySelectorAll(".lookup-result img").forEach((cover) => {
     cover.addEventListener("error", () => {
-      if (cover.dataset.placeholderApplied) return;
-      cover.dataset.placeholderApplied = "true";
-      cover.classList.add("lookup-cover-placeholder");
-      cover.src = "assets/Icon_shelf.png";
+      const placeholder = document.createElement("span");
+      placeholder.className = "lookup-cover-placeholder";
+      placeholder.setAttribute("aria-hidden", "true");
+      cover.closest(".lookup-result")?.classList.add("no-cover");
+      cover.replaceWith(placeholder);
     });
   });
   requestAnimationFrame(() => el.lookupResults.classList.add("loaded"));
@@ -5093,10 +5190,14 @@ function conditionLabel(game) {
 }
 function syncConditionInputs(changed) {
   if (changed === el.conditionFields.sealed && changed.checked) {
-    el.conditionFields.game.checked = true; el.conditionFields.box.checked = true; el.conditionFields.other.checked = true; el.conditionFields.manual.checked = false;
+    el.conditionFields.game.checked = true;
+    el.conditionFields.box.checked = true;
   }
-  if (!el.conditionFields.game.checked || !el.conditionFields.box.checked) el.conditionFields.sealed.checked = false;
-  el.conditionFields.sealed.disabled = !el.conditionFields.game.checked || !el.conditionFields.box.checked;
+  if ((changed === el.conditionFields.game && !changed.checked)
+    || (changed === el.conditionFields.box && !changed.checked)) {
+    el.conditionFields.sealed.checked = false;
+  }
+  el.conditionFields.sealed.disabled = false;
 }
 function conditionFromInputs() { return Object.fromEntries(Object.entries(el.conditionFields).map(([key, input]) => [key, input.checked])); }
 function splitValues(value) { return String(value || "").split(",").map((item) => item.trim()).filter(Boolean); }
@@ -5466,7 +5567,7 @@ function storePricesMarkup(prices, currency) {
 function placeholderStorePrices(settings = normalizePriceSettings(state.gamelistSettings)) {
   return settings.stores.map((store) => ({ store, price: "", numericPrice: null, url: "" }));
 }
-function storeIcon(store) { const normalizedStore = normalizeTag(store); if (String(store).startsWith("Amazon")) return "assets/stores/amazon.ico"; if (store === "eBay") return "https://www.ebay.com/favicon.ico"; if (isKickstarterStore(store)) return "https://www.kickstarter.com/favicon.ico"; if (store === "Xtralife") return "assets/stores/xtralife.ico"; if (store === "GAME.es") return "assets/stores/game.ico"; if (store === "Retro Island NY") return "assets/stores/retroisland.png"; if (normalizedStore === "limitedrun" || normalizedStore === "limitedrungames" || normalizedStore === "lrg") return "assets/stores/limited-run-games.png"; if (normalizedStore === "squareenix" || normalizedStore === "squareenixstore" || normalizedStore === "sqex" || normalizedStore === "sqexstore") return "assets/stores/square-enix-store.png"; if (store === "GameStop") return "https://www.gamestop.com/favicon.ico"; if (store === "Walmart") return "https://www.walmart.com/favicon.ico"; if (String(store).startsWith("Nintendo")) return "assets/sites/nintendo.png"; if (String(store).startsWith("PlayStation")) return "assets/sites/playstation.png"; if (store === "Steam") return "assets/sites/steam.png"; if (store === "Xbox") return "assets/platforms/xbox.png"; return "assets/Icon.png"; }
+function storeIcon(store) { const normalizedStore = normalizeTag(store); if (String(store).startsWith("Amazon")) return "assets/stores/amazon.ico"; if (store === "eBay") return "https://www.ebay.com/favicon.ico"; if (isKickstarterStore(store)) return "https://www.kickstarter.com/favicon.ico"; if (store === "Xtralife") return "assets/stores/xtralife.ico"; if (store === "GAME.es") return "assets/stores/game.ico"; if (store === "Retro Island NY") return "assets/stores/retroisland.png"; if (normalizedStore === "limitedrun" || normalizedStore === "limitedrungames" || normalizedStore === "lrg") return "assets/stores/limited-run-games.png"; if (["squareenix", "squareenixstore", "sqex", "sqexstore"].includes(normalizedStore.replace(/[^a-z0-9]/g, ""))) return "assets/stores/square-enix-store.png"; if (store === "GameStop") return "https://www.gamestop.com/favicon.ico"; if (store === "Walmart") return "https://www.walmart.com/favicon.ico"; if (String(store).startsWith("Nintendo")) return "assets/sites/nintendo.png"; if (String(store).startsWith("PlayStation")) return "assets/sites/playstation.png"; if (store === "Steam") return "assets/sites/steam.png"; if (store === "Xbox") return "assets/platforms/xbox.png"; return "assets/Icon.png"; }
 function isKickstarterStore(store) { return ["kickstarter", "kickstater", "kicstarter", "kickstart"].includes(normalizeTag(store).replace(/[^a-z0-9]+/g, "")); }
 function renderPriceDetails(game) {
   const prices = game.collectionPrices || {};
