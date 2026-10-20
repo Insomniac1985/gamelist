@@ -1,3 +1,12 @@
+/** The same collection regions are available from either game editor. */
+export const SHELF_COUNTRIES = [
+  ["Australia", "Australia", "au"], ["China", "China", "cn"], ["Europe", "EU", "eu"],
+  ["France", "France", "fr"], ["Germany", "Germany", "de"], ["Ireland", "Ireland", "ie"],
+  ["Italy", "Italy", "it"], ["Japan", "Japan", "jp"], ["Mexico", "Mexico", "mx"],
+  ["Portugal", "Portugal", "pt"], ["Spain", "Spain", "es"], ["Taiwan", "Taiwan", "tw"],
+  ["United Kingdom", "UK", "gb"], ["United States of America", "US", "us"], ["World", "World", "world"],
+];
+
 /** Keep list selection and its indicator identical in both game editors. */
 export function syncGameListSlider(picker, section) {
   if (!picker) return;
@@ -46,4 +55,15 @@ export function syncGameListControls({
   streamRow.classList.toggle("has-preorder-store", hasStore);
   streamRow.classList.toggle("preorder-hidden", !showPreorder);
   return { isBacklog, showPreorder, showStream, hasStore };
+}
+
+export function syncCollectionCondition(inputs, changed) {
+  if (changed === inputs.sealed && changed.checked) {
+    inputs.game.checked = true;
+    inputs.box.checked = true;
+  }
+  if ((changed === inputs.game && !changed.checked) || (changed === inputs.box && !changed.checked)) {
+    inputs.sealed.checked = false;
+  }
+  inputs.sealed.disabled = false;
 }

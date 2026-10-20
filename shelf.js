@@ -3,7 +3,7 @@ import { applySiteTheme, normalizeThemeSettings, ownerCardColorClass, ownerColor
 import { applyDocumentTranslations, languageOptions, normalizeLanguage, t } from "./i18n.js";
 import { initShelfAccounts } from "./shelf-accounts.js";
 import { accountSettingsMarkup } from "./account-settings-ui.js";
-import { syncGameListControls, syncGameListSlider } from "./game-editor-controls.js";
+import { syncGameListControls, syncGameListSlider, syncCollectionCondition, SHELF_COUNTRIES } from "./game-editor-controls.js";
 
 document.querySelector("#shelfAccountsMount").innerHTML = accountSettingsMarkup();
 
@@ -46,11 +46,7 @@ const PLATFORM_OPTIONS = [
   "PS1", "PS2", "PS3", "PSP", "PSVita", "PS4", "PS5",
   "Xbox", "X360", "XOne", "Xbox PC", "Xbox Series",
 ];
-const COUNTRY_OPTIONS = [
-  ["Australia", "Australia"], ["China", "China"], ["Europe", "EU"], ["France", "France"], ["Germany", "Germany"],
-  ["Ireland", "Ireland"], ["Italy", "Italy"], ["Japan", "Japan"], ["Mexico", "Mexico"], ["Portugal", "Portugal"],
-  ["Spain", "Spain"], ["Taiwan", "Taiwan"], ["United Kingdom", "UK"], ["United States of America", "US"], ["World", "World"],
-];
+const COUNTRY_OPTIONS = SHELF_COUNTRIES;
 const WEEK_START_OPTIONS = [
   ["monday", "Monday"],
   ["tuesday", "Tuesday"],
@@ -5166,15 +5162,7 @@ function conditionLabel(game) {
   return "Loose";
 }
 function syncConditionInputs(changed) {
-  if (changed === el.conditionFields.sealed && changed.checked) {
-    el.conditionFields.game.checked = true;
-    el.conditionFields.box.checked = true;
-  }
-  if ((changed === el.conditionFields.game && !changed.checked)
-    || (changed === el.conditionFields.box && !changed.checked)) {
-    el.conditionFields.sealed.checked = false;
-  }
-  el.conditionFields.sealed.disabled = false;
+  syncCollectionCondition(el.conditionFields, changed);
 }
 function conditionFromInputs() { return Object.fromEntries(Object.entries(el.conditionFields).map(([key, input]) => [key, input.checked])); }
 function splitValues(value) { return String(value || "").split(",").map((item) => item.trim()).filter(Boolean); }

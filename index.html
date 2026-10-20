@@ -713,14 +713,17 @@
                 <span data-i18n="Estimated Value">Estimated Value</span>
                 <input id="gameShelfValueInput" inputmode="decimal" placeholder="0.00">
               </label>
-              <fieldset class="shelf-destination-condition">
-                <legend data-i18n="Collection condition">Collection condition</legend>
-                <label class="check-filter toggle-check"><input id="gameShelfConditionGame" type="checkbox" checked><span data-i18n="Game">Game</span></label>
-                <label class="check-filter toggle-check"><input id="gameShelfConditionManual" type="checkbox"><span data-i18n="Manual">Manual</span></label>
-                <label class="check-filter toggle-check"><input id="gameShelfConditionBox" type="checkbox"><span data-i18n="Box">Box</span></label>
-                <label class="check-filter toggle-check"><input id="gameShelfConditionOther" type="checkbox"><span data-i18n="Other">Other</span></label>
-                <label class="check-filter toggle-check"><input id="gameShelfConditionSealed" type="checkbox"><span data-i18n="Sealed">Sealed</span></label>
-              </fieldset>
+              <div class="shelf-destination-condition-field">
+                <span class="shelf-condition-title" id="gameShelfConditionTitle" data-i18n="Collection condition">Collection condition</span>
+                <fieldset class="shelf-destination-condition condition-editor" aria-labelledby="gameShelfConditionTitle"><div class="condition-grid">
+                  <label class="check-filter toggle-check"><input id="gameShelfConditionGame" type="checkbox" checked><span data-i18n="Game">Game</span></label>
+                  <label class="check-filter toggle-check"><input id="gameShelfConditionManual" type="checkbox"><span data-i18n="Manual">Manual</span></label>
+                  <label class="check-filter toggle-check"><input id="gameShelfConditionBox" type="checkbox"><span data-i18n="Box">Box</span></label>
+                  <label class="check-filter toggle-check"><input id="gameShelfConditionOther" type="checkbox"><span data-i18n="Other">Other</span></label>
+                  <label class="check-filter toggle-check condition-sealed"><input id="gameShelfConditionSealed" type="checkbox"><span data-i18n="Sealed">Sealed</span></label>
+                </div></fieldset>
+              </div>
+              <label class="shelf-destination-notes-field"><span data-i18n="Condition Notes">Condition Notes</span><textarea id="gameShelfNotesInput" rows="3" placeholder="Missing booklet, sealed, damaged case..." data-i18n-placeholder="Missing booklet, sealed, damaged case..."></textarea></label>
             </div>
           </div>
         </section>
@@ -752,7 +755,7 @@
               <span data-i18n="HowLongToBeat URL">HowLongToBeat URL</span>
               <input id="hltbUrlInput" placeholder="https://howlongtobeat.com/game/...">
             </label>
-            <label class="wide">
+            <label class="wide game-trailer-field">
               <span data-i18n="Trailer URL">Trailer URL</span>
               <input id="trailerUrlInput" placeholder="https://www.youtube.com/watch?v=...">
             </label>
@@ -776,6 +779,17 @@
               <span data-i18n="Cover URL">Cover URL</span>
               <input id="coverInput" placeholder="https://...">
             </label>
+          </div>
+        </section>
+
+        <section class="form-group shelf-destination-pricecharting-section" id="gameShelfPricechartingSection" hidden>
+          <h3 data-i18n="PriceCharting Data">PriceCharting Data</h3>
+          <div class="form-grid physical-id-grid">
+            <label><span>UPC / EAN</span><input id="gameShelfUpcInput" inputmode="numeric"></label>
+            <label><span data-i18n="SKU / Catalog Number">SKU / Catalog Number</span><input id="gameShelfSkuInput"></label>
+            <label><span>ASIN</span><input id="gameShelfAsinInput"></label>
+            <label><span data-i18n="eBay Product ID">eBay Product ID</span><input id="gameShelfEpidInput"></label>
+            <label class="wide"><span data-i18n="PriceCharting Page or Product ID">PriceCharting Page or Product ID</span><input id="gameShelfPricechartingInput" placeholder="https://www.pricecharting.com/game/... or product ID" data-i18n-placeholder="https://www.pricecharting.com/game/... or product ID"></label>
           </div>
         </section>
 
