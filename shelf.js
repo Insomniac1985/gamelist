@@ -2772,13 +2772,9 @@ async function chooseLookupResult(event) {
 }
 
 function hideShelfLookupSearch() {
-  const row = el.lookupInput.closest(".lookup-row");
-  el.lookupInput.closest("label").hidden = true;
-  el.lookupButton.hidden = true;
   el.lookupResults.hidden = true;
   el.lookupResults.replaceChildren();
   el.lookupResults.classList.remove("loaded");
-  if (!row.querySelector(".lookup-digital-check")) row.hidden = true;
 }
 
 function bestGameMetadata(title) {

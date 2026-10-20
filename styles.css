@@ -8229,7 +8229,7 @@ body:not(.can-edit) .top-actions-separator {
   display: none !important;
 }
 
-.mobile-dock-action > span {
+.mobile-dock-action > span:not(.mobile-switch-logos) {
   display: none;
 }
 
@@ -8272,14 +8272,45 @@ body:not(.can-edit) .top-actions-separator {
   stroke-width: 1.7;
 }
 
-.mobile-switch-icon {
-  width: 22px;
-  height: 22px;
-  fill: none;
-  stroke: currentColor;
-  stroke-width: 1.8;
-  stroke-linecap: round;
-  stroke-linejoin: round;
+.mobile-switch-logos {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  overflow: hidden;
+}
+
+.mobile-switch-logos[data-current-page="gamelist"] .mobile-switch-logo-gamelist,
+.mobile-switch-logos[data-current-page="shelf"] .mobile-switch-logo-shelf {
+  display: none;
+}
+
+.mobile-switch-logo {
+  position: relative;
+  display: block;
+  width: 26px;
+  height: 28px;
+  flex: 0 0 26px;
+  background: var(--accent);
+  -webkit-mask-position: center;
+  mask-position: center;
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  -webkit-mask-size: contain;
+  mask-size: contain;
+}
+
+.mobile-switch-logo-shelf {
+  -webkit-mask-image: url("assets/Icon_shelf.png");
+  mask-image: url("assets/Icon_shelf.png");
+}
+
+.mobile-switch-logo-gamelist {
+  -webkit-mask-image: url("assets/Icon.png");
+  mask-image: url("assets/Icon.png");
 }
 
 body.dialog-open .floating-search-button {
@@ -16247,7 +16278,7 @@ html.theme-light .finish-trophy-check input[type="checkbox"]:checked {
     stroke-linejoin: round;
   }
 
-  .mobile-dock-action > span {
+  .mobile-dock-action > span:not(.mobile-switch-logos) {
     display: none;
   }
 
@@ -18560,6 +18591,13 @@ html.theme-light .finish-trophy-check input[type="checkbox"]:checked {
   .floating-search-button {
     display: none !important;
   }
+}
+
+.mobile-dock-switch:hover .mobile-switch-logo,
+.mobile-dock-switch:focus-visible .mobile-switch-logo,
+.mobile-dock-switch:active .mobile-switch-logo,
+.mobile-dock-switch.is-active .mobile-switch-logo {
+  background: #fff;
 }
 
 body.page-pulling #mobileActionDock,

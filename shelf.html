@@ -338,7 +338,7 @@
         <svg class="scroll-top-icon" viewBox="0 0 24 24" aria-hidden="true"><polyline points="6 14 12 8 18 14"></polyline></svg>
       </button>
       <button class="mobile-dock-action mobile-dock-switch" id="mobileDockSwitch" type="button" aria-label="Go to Gamelist" data-i18n-aria-label="Go to Gamelist">
-        <svg class="mobile-switch-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M16 3l4 4-4 4M4 7h16M8 21l-4-4 4-4M20 17H4"></path></svg>
+        <span class="mobile-switch-logos" data-current-page="shelf" aria-hidden="true"><span class="mobile-switch-logo mobile-switch-logo-shelf"></span><span class="mobile-switch-logo mobile-switch-logo-gamelist"></span></span>
         <span class="mobile-switch-label" data-i18n="Go to Gamelist">Go to Gamelist</span>
       </button>
       <button class="mobile-dock-action" id="mobileDockSettings" type="button" title="Settings" aria-label="Settings" data-i18n-title="Settings" data-i18n-aria-label="Settings" aria-busy="true" disabled hidden>
@@ -413,6 +413,17 @@
             <button type="button" data-gamelist-target="shelf" data-i18n="Shelf">Shelf</button>
           </div>
         </div>
+        <label class="check-filter toggle-check shelf-gamelist-preorder-check">
+          <input id="shelfGamelistPreorderCheck" type="checkbox">
+          <span data-i18n="Preorder">Preorder</span>
+        </label>
+        <label class="shelf-gamelist-preorder-field" id="shelfGamelistPreorderField" hidden>
+          <span data-i18n="Preordered Where">Preordered Where</span>
+          <span class="icon-input store-icon-input">
+            <span class="field-leading-icon shelf-gamelist-store-icon" aria-hidden="true"></span>
+            <input id="shelfGamelistPreorderStoreInput" placeholder="Xtralife, Game, Amazon...">
+          </span>
+        </label>
         <div class="shelf-gamelist-list-picker" id="shelfGamelistListPicker" hidden>
           <span class="shelf-gamelist-target-label" data-i18n="List">List</span>
           <div class="shelf-gamelist-section-options shelf-gamelist-target-options" role="group" aria-label="Gamelist list">
@@ -438,17 +449,6 @@
                 <option value="upcoming" data-i18n="Upcoming">Upcoming</option>
                 <option value="backlog" data-i18n="Backlog">Backlog</option>
               </select>
-              <label class="check-filter toggle-check shelf-gamelist-preorder-check">
-                <input id="shelfGamelistPreorderCheck" type="checkbox">
-                <span data-i18n="Preorder">Preorder</span>
-              </label>
-              <label class="shelf-gamelist-preorder-field" id="shelfGamelistPreorderField" hidden>
-                <span data-i18n="Preordered Where">Preordered Where</span>
-                <span class="icon-input store-icon-input">
-                  <span class="field-leading-icon shelf-gamelist-store-icon" aria-hidden="true"></span>
-                  <input id="shelfGamelistPreorderStoreInput" placeholder="Xtralife, Game, Amazon...">
-                </span>
-              </label>
             </div>
             <label class="shelf-region-field"><span data-i18n="Region">Region</span><span class="icon-input shelf-edit-icon-input"><select id="countryInput" required></select></span></label>
             <label class="shelf-dlc-field check-filter toggle-check"><input id="dlcInput" type="checkbox"><span data-i18n="DLC">DLC</span></label>
