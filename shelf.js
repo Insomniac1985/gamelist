@@ -475,6 +475,7 @@ function bindEvents() {
   });
   el.gamelistPreorderCheck?.addEventListener("change", () => {
     el.gamelistPreorderField.hidden = !el.gamelistPreorderCheck.checked;
+    el.gamelistPreorderField.closest(".shelf-gamelist-preorder-row")?.classList.toggle("has-preorder-store", el.gamelistPreorderCheck.checked);
     if (el.gamelistPreorderCheck.checked) el.gamelistSection.value = "upcoming";
     else el.gamelistPreorderStore.value = "";
     syncShelfGamelistSectionButtons();
@@ -2380,8 +2381,9 @@ function syncShelfGamelistTargetMode() {
   }
   el.gamelistPlacement.hidden = !active;
   el.gamelistListPicker.hidden = !active;
-  el.gamelistPreorderCheck.closest(".shelf-gamelist-preorder-check").hidden = !active;
+  el.gamelistPreorderCheck.closest(".shelf-gamelist-preorder-row").hidden = !active;
   el.gamelistPreorderField.hidden = !active || !el.gamelistPreorderCheck.checked;
+  el.gamelistPreorderField.closest(".shelf-gamelist-preorder-row")?.classList.toggle("has-preorder-store", active && el.gamelistPreorderCheck.checked);
   syncShelfGamelistSectionButtons();
   el.addForm.querySelectorAll("[data-gamelist-target]").forEach((button) => {
     const selected = button.dataset.gamelistTarget === target;

@@ -256,6 +256,7 @@ html {
   align-items: center;
   gap: 6px;
   min-width: 0;
+  white-space: nowrap;
 }
 
 .form-toggle-icon {
@@ -15311,6 +15312,10 @@ body.theme-kash
 
 .collection-form-grid > .digital-check {
   grid-column: span 2;
+  width: max-content;
+  min-width: 0;
+  max-width: 100%;
+  justify-self: start;
 }
 
 .collection-form-grid > .release-date-field {
