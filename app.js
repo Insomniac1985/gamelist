@@ -11952,11 +11952,13 @@ function syncGameAddDestination() {
   });
   el.dialogTitle.textContent = !isNewGame
     ? tt("Edit Game")
-    : el.fields.digital.checked
-      ? tt("Add a digital game")
-      : shelfTarget
-        ? tt("Add to Shelf")
-        : tt("Add to Gamelist");
+    : state.addDestination === "gamelist" && el.preorderCheck?.checked
+      ? tt("Add a game preorder")
+      : el.fields.digital.checked
+        ? tt("Add a digital game")
+        : shelfTarget
+          ? tt("Add to Shelf")
+          : tt("Add to Gamelist");
   syncGameAddTargetPicker();
 }
 

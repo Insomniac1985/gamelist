@@ -16735,6 +16735,11 @@ html.theme-light .finish-trophy-check input[type="checkbox"]:checked {
     grid-column: 1 / -1;
   }
 
+  .toolbar > label {
+    width: 100%;
+    min-width: 0;
+  }
+
   .search-field > input {
     padding-right: 44px !important;
   }
@@ -19384,5 +19389,29 @@ body:not(.can-edit):not(.shelf-page) :is(#upcoming, #wanted) .price-refresh-acti
   }
   #gameDialog.is-new-game .collection-form-grid > .release-text-field {
     grid-column: 1 / -1;
+  }
+}
+@media (max-width: 900px) {
+  .toolbar {
+    grid-template-columns: minmax(0, 1fr) var(--toolbar-control-height);
+  }
+
+  .toolbar > label,
+  .toolbar .toolbar-check {
+    grid-column: 1 / -1 !important;
+    width: 100%;
+    min-width: 0;
+  }
+
+  .toolbar .order-label {
+    grid-column: 1 !important;
+  }
+
+  .toolbar .view-toggle {
+    grid-column: 2 !important;
+    align-self: end;
+    width: var(--toolbar-control-height);
+    min-width: var(--toolbar-control-height);
+    height: var(--toolbar-control-height);
   }
 }
