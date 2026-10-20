@@ -2778,8 +2778,15 @@ textarea {
   .shelf-toolbar .search {
     grid-column: span 2;
   }
+  .shelf-toolbar .order-label {
+    grid-column: span 3;
+  }
   .shelf-toolbar .view-toggle {
-    width: 100%;
+    grid-column: 4;
+    align-self: end;
+    justify-self: stretch;
+    width: var(--toolbar-control-height);
+    height: var(--toolbar-control-height);
   }
 }
 
