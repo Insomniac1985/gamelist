@@ -210,6 +210,7 @@ const el = {
   lookupDigitalSeparator: document.querySelector("#addGameForm .lookup-digital-separator"),
   lookupResults: document.querySelector("#lookupResults"),
   gamelistTargetPicker: document.querySelector("#shelfGamelistTargetPicker"),
+  gamelistListPicker: document.querySelector("#shelfGamelistListPicker"),
   gamelistPlacement: document.querySelector("#shelfGamelistPlacement"),
   gamelistSection: document.querySelector("#shelfGamelistSectionInput"),
   gamelistPreorderCheck: document.querySelector("#shelfGamelistPreorderCheck"),
@@ -465,7 +466,7 @@ function bindEvents() {
     const button = event.target.closest("[data-gamelist-target]");
     if (button) setShelfGamelistAddTarget(button.dataset.gamelistTarget);
   });
-  el.gamelistPlacement.querySelector(".shelf-gamelist-section-options")?.addEventListener("click", (event) => {
+  el.gamelistListPicker.querySelector(".shelf-gamelist-section-options")?.addEventListener("click", (event) => {
     const button = event.target.closest("[data-gamelist-section]");
     if (!button) return;
     el.gamelistSection.value = button.dataset.gamelistSection;
@@ -2275,6 +2276,10 @@ function openEditor(game = null, options = {}) {
   state.pendingLengthHours = game?.lengthHours || null;
   state.lookupResults = [];
   el.lookupResults.classList.remove("loaded");
+  el.lookupInput.closest(".lookup-row").hidden = false;
+  el.lookupInput.closest("label").hidden = false;
+  el.lookupButton.hidden = false;
+  el.lookupResults.hidden = false;
   el.lookupResults.innerHTML = "";
   el.lookupInput.value = game?.title || "";
   const values = game || { platform: "", country: defaultShelfCountry(), owners: defaultShelfOwners(), game: true };
@@ -2370,7 +2375,7 @@ function syncShelfGamelistTargetMode() {
     el.lookupDigitalSeparator.after(digitalToggle);
   }
   el.gamelistPlacement.hidden = !active;
-  el.gamelistPlacement.querySelector(".shelf-gamelist-list-field").hidden = !active;
+  el.gamelistListPicker.hidden = !active;
   el.gamelistPreorderCheck.closest(".shelf-gamelist-preorder-check").hidden = !active;
   el.gamelistPreorderField.hidden = !active || !el.gamelistPreorderCheck.checked;
   syncShelfGamelistSectionButtons();
@@ -2433,7 +2438,7 @@ function syncShelfGamelistTargetIndicator() {
 }
 
 function syncShelfGamelistSectionButtons() {
-  const options = el.gamelistPlacement?.querySelector(".shelf-gamelist-section-options");
+  const options = el.gamelistListPicker?.querySelector(".shelf-gamelist-section-options");
   if (!options) return;
   const buttons = [...options.querySelectorAll("[data-gamelist-section]")];
   buttons.forEach((button) => {
@@ -2519,6 +2524,10 @@ async function deleteCurrentEditedGame() {
 async function lookupGame() {
   const query = el.lookupInput.value.trim() || el.fields.title.value.trim();
   if (!query) return;
+  el.lookupInput.closest(".lookup-row").hidden = false;
+  el.lookupInput.closest("label").hidden = false;
+  el.lookupButton.hidden = false;
+  el.lookupResults.hidden = false;
   showToast("Fetching game info...");
   el.lookupButton.disabled = true;
   el.lookupButton.classList.add("is-loading");
@@ -2727,6 +2736,7 @@ async function chooseLookupResult(event) {
     applyGameMetadata(bestGameMetadata(result.productName));
     renderPhysicalSelection(physical || result);
     syncShelfEditorIcons();
+    hideShelfLookupSearch();
     return;
   }
   el.fields.title.value = result.title || el.fields.title.value;
@@ -2758,6 +2768,17 @@ async function chooseLookupResult(event) {
     renderPhysicalSelection(null, result.title);
   }
   syncShelfEditorIcons();
+  hideShelfLookupSearch();
+}
+
+function hideShelfLookupSearch() {
+  const row = el.lookupInput.closest(".lookup-row");
+  el.lookupInput.closest("label").hidden = true;
+  el.lookupButton.hidden = true;
+  el.lookupResults.hidden = true;
+  el.lookupResults.replaceChildren();
+  el.lookupResults.classList.remove("loaded");
+  if (!row.querySelector(".lookup-digital-check")) row.hidden = true;
 }
 
 function bestGameMetadata(title) {

@@ -473,7 +473,7 @@
         <svg class="scroll-top-icon" viewBox="0 0 24 24" aria-hidden="true"><polyline points="6 14 12 8 18 14"></polyline></svg>
       </button>
       <button class="mobile-dock-action mobile-dock-switch" id="mobileDockSwitch" type="button" aria-label="Go to Shelf" data-i18n-aria-label="Go to Shelf">
-        <span class="mobile-switch-logos" data-current-page="gamelist" aria-hidden="true"><span class="mobile-switch-logo mobile-switch-logo-shelf"></span><span class="mobile-switch-logo mobile-switch-logo-gamelist"></span></span>
+        <svg class="mobile-switch-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M16 3l4 4-4 4M4 7h16M8 21l-4-4 4-4M20 17H4"></path></svg>
         <span class="mobile-switch-label" data-i18n="Go to Shelf">Go to Shelf</span>
       </button>
       <button class="mobile-dock-action" id="mobileDockSettings" type="button" title="Settings" aria-label="Settings" data-i18n-title="Settings" data-i18n-aria-label="Settings" aria-busy="true" disabled hidden>
@@ -518,8 +518,16 @@
             </svg>
           </button>
         </div>
-        <div class="shelf-gamelist-target-picker" id="gameAddTargetPicker" hidden>
+        <div class="shelf-gamelist-target-picker game-add-destination-picker" id="gameAddDestinationPicker" hidden>
           <span class="shelf-gamelist-target-label" data-i18n="Add Game To">Add Game To</span>
+          <div class="shelf-gamelist-target-options" role="group" aria-label="Add game to">
+            <span class="shelf-gamelist-target-indicator" aria-hidden="true"></span>
+            <button type="button" data-game-destination="gamelist" data-i18n="Gamelist">Gamelist</button>
+            <button type="button" data-game-destination="shelf" data-i18n="Shelf">Shelf</button>
+          </div>
+        </div>
+        <div class="shelf-gamelist-target-picker" id="gameAddTargetPicker" hidden>
+          <span class="shelf-gamelist-target-label" data-i18n="List">List</span>
           <div class="shelf-gamelist-target-options" role="group" aria-label="Add game to">
             <span class="shelf-gamelist-target-indicator" aria-hidden="true"></span>
             <button type="button" data-game-target="backlog" data-i18n="Backlog">Backlog</button>
@@ -676,6 +684,40 @@
               <span data-i18n="Alternate Achievement search name">Alternate Achievement search name</span>
               <input id="trophyNameInput" placeholder="Optional alternate title" data-i18n-placeholder="Optional alternate title">
             </label>
+            <div class="shelf-destination-fields" id="shelfDestinationFields" hidden>
+              <label class="shelf-destination-region-field">
+                <span data-i18n="Region">Region</span>
+                <select id="gameShelfCountryInput">
+                  <option value="Spain">Spain</option>
+                  <option value="Italy">Italy</option>
+                  <option value="Ireland">Ireland</option>
+                  <option value="France">France</option>
+                  <option value="Portugal">Portugal</option>
+                  <option value="Japan">Japan</option>
+                  <option value="Mexico">Mexico</option>
+                  <option value="United States of America">United States</option>
+                  <option value="United Kingdom">United Kingdom</option>
+                  <option value="Europe">Europe</option>
+                  <option value="Other">Other</option>
+                </select>
+              </label>
+              <label class="shelf-destination-addition-field">
+                <span data-i18n="Addition Date">Addition Date</span>
+                <input id="gameShelfAdditionDateInput" type="date">
+              </label>
+              <label class="shelf-destination-value-field">
+                <span data-i18n="Estimated Value">Estimated Value</span>
+                <input id="gameShelfValueInput" inputmode="decimal" placeholder="0.00">
+              </label>
+              <fieldset class="shelf-destination-condition">
+                <legend data-i18n="Collection condition">Collection condition</legend>
+                <label class="check-filter toggle-check"><input id="gameShelfConditionGame" type="checkbox" checked><span data-i18n="Game">Game</span></label>
+                <label class="check-filter toggle-check"><input id="gameShelfConditionManual" type="checkbox"><span data-i18n="Manual">Manual</span></label>
+                <label class="check-filter toggle-check"><input id="gameShelfConditionBox" type="checkbox"><span data-i18n="Box">Box</span></label>
+                <label class="check-filter toggle-check"><input id="gameShelfConditionOther" type="checkbox"><span data-i18n="Other">Other</span></label>
+                <label class="check-filter toggle-check"><input id="gameShelfConditionSealed" type="checkbox"><span data-i18n="Sealed">Sealed</span></label>
+              </fieldset>
+            </div>
           </div>
         </section>
 

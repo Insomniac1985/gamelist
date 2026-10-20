@@ -338,7 +338,7 @@
         <svg class="scroll-top-icon" viewBox="0 0 24 24" aria-hidden="true"><polyline points="6 14 12 8 18 14"></polyline></svg>
       </button>
       <button class="mobile-dock-action mobile-dock-switch" id="mobileDockSwitch" type="button" aria-label="Go to Gamelist" data-i18n-aria-label="Go to Gamelist">
-        <span class="mobile-switch-logos" data-current-page="shelf" aria-hidden="true"><span class="mobile-switch-logo mobile-switch-logo-shelf"></span><span class="mobile-switch-logo mobile-switch-logo-gamelist"></span></span>
+        <svg class="mobile-switch-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M16 3l4 4-4 4M4 7h16M8 21l-4-4 4-4M20 17H4"></path></svg>
         <span class="mobile-switch-label" data-i18n="Go to Gamelist">Go to Gamelist</span>
       </button>
       <button class="mobile-dock-action" id="mobileDockSettings" type="button" title="Settings" aria-label="Settings" data-i18n-title="Settings" data-i18n-aria-label="Settings" aria-busy="true" disabled hidden>
@@ -413,6 +413,15 @@
             <button type="button" data-gamelist-target="shelf" data-i18n="Shelf">Shelf</button>
           </div>
         </div>
+        <div class="shelf-gamelist-list-picker" id="shelfGamelistListPicker" hidden>
+          <span class="shelf-gamelist-target-label" data-i18n="List">List</span>
+          <div class="shelf-gamelist-section-options shelf-gamelist-target-options" role="group" aria-label="Gamelist list">
+            <span class="shelf-gamelist-target-indicator" aria-hidden="true"></span>
+            <button type="button" data-gamelist-section="backlog" data-i18n="Backlog">Backlog</button>
+            <button type="button" data-gamelist-section="upcoming" data-i18n="Upcoming">Upcoming</button>
+            <button type="button" data-gamelist-section="wanted" data-i18n="Available">Available</button>
+          </div>
+        </div>
         <div class="lookup-results" id="lookupResults"></div>
 
         <section class="form-group">
@@ -424,20 +433,11 @@
             <label class="shelf-title-field"><span data-i18n="Title">Title</span><input id="titleInput" required></label>
             <label class="shelf-console-field"><span data-i18n="Platform">Platform</span><span class="icon-input shelf-edit-icon-input"><span class="field-leading-icon shelf-platform-field-icon" aria-hidden="true"></span><input id="platformInput" list="shelfPlatformOptions"></span><datalist id="shelfPlatformOptions"></datalist></label>
             <div class="shelf-gamelist-placement" id="shelfGamelistPlacement" hidden>
-              <div class="shelf-gamelist-list-field">
-                <span class="shelf-gamelist-target-label" data-i18n="List">List</span>
-                <div class="shelf-gamelist-section-options shelf-gamelist-target-options" role="group" aria-label="Gamelist list">
-                  <span class="shelf-gamelist-target-indicator" aria-hidden="true"></span>
-                  <button type="button" data-gamelist-section="backlog" data-i18n="Backlog">Backlog</button>
-                  <button type="button" data-gamelist-section="upcoming" data-i18n="Upcoming">Upcoming</button>
-                  <button type="button" data-gamelist-section="wanted" data-i18n="Available">Available</button>
-                </div>
-                <select id="shelfGamelistSectionInput" hidden tabindex="-1" aria-hidden="true">
-                  <option value="wanted" data-i18n="Available now">Available now</option>
-                  <option value="upcoming" data-i18n="Upcoming">Upcoming</option>
-                  <option value="backlog" data-i18n="Backlog">Backlog</option>
-                </select>
-              </div>
+              <select id="shelfGamelistSectionInput" hidden tabindex="-1" aria-hidden="true">
+                <option value="wanted" data-i18n="Available now">Available now</option>
+                <option value="upcoming" data-i18n="Upcoming">Upcoming</option>
+                <option value="backlog" data-i18n="Backlog">Backlog</option>
+              </select>
               <label class="check-filter toggle-check shelf-gamelist-preorder-check">
                 <input id="shelfGamelistPreorderCheck" type="checkbox">
                 <span data-i18n="Preorder">Preorder</span>
@@ -463,11 +463,8 @@
             <label class="shelf-entitlement-field shelf-games-with-gold-field check-filter toggle-check"><input id="gamesWithGoldInput" type="checkbox"><span data-i18n="Games with Gold">Games with Gold</span></label>
             <span class="shelf-entitlement-grid-spacer" aria-hidden="true"></span>
             <label class="shelf-value-field"><span data-i18n="Estimated Value">Estimated Value</span><input id="priceInput" inputmode="decimal" placeholder="0.00"></label>
-            <label class="shelf-owner-field"><span data-i18n="Owner">Owner</span><input id="ownersInput" placeholder="Judy, Jordi, Cage" data-i18n-placeholder="Judy, Jordi, Cage"></label>
             <label class="shelf-gamelist-length-field"><span data-i18n="Aproximate playtime">Aproximate playtime</span><input id="shelfGamelistLengthInput" type="number" min="0" step="1" placeholder="Hours" data-i18n-placeholder="Hours"></label>
             <label class="shelf-gamelist-preferred-store-field"><span data-i18n="Preferred preorder store">Preferred preorder store</span><span class="icon-input store-icon-input"><span class="field-leading-icon shelf-gamelist-preferred-store-icon" aria-hidden="true"></span><input id="shelfGamelistPreferredStoreInput" placeholder="Limited Run, Amazon..." data-i18n-placeholder="Limited Run, Amazon..."></span></label>
-            <label class="shelf-gamelist-status-field"><span data-i18n="Other tags">Other tags</span><input id="shelfGamelistStatusesInput" placeholder="To Collect, Scarce, Waiting for Physical" data-i18n-placeholder="To Collect, Scarce, Waiting for Physical"></label>
-            <label class="shelf-achievement-search-field"><span data-i18n="Alternate Achievement search name">Alternate Achievement search name</span><input id="trophyNameInput" placeholder="Optional alternate title" data-i18n-placeholder="Optional alternate title"></label>
             <fieldset class="condition-editor shelf-condition-field"><legend data-i18n="Collection condition">Collection condition</legend><div class="condition-grid">
                 <label class="check-filter toggle-check"><input id="conditionGameInput" type="checkbox"><span data-i18n="Game">Game</span></label>
                 <label class="check-filter toggle-check"><input id="conditionManualInput" type="checkbox"><span data-i18n="Manual">Manual</span></label>
@@ -475,7 +472,10 @@
                 <label class="check-filter toggle-check"><input id="conditionOtherInput" type="checkbox"><span data-i18n="Other">Other</span></label>
                 <label class="check-filter toggle-check condition-sealed"><input id="conditionSealedInput" type="checkbox"><span data-i18n="Sealed">Sealed</span></label>
             </div></fieldset>
+            <label class="shelf-gamelist-status-field"><span data-i18n="Other tags">Other tags</span><input id="shelfGamelistStatusesInput" placeholder="To Collect, Scarce, Waiting for Physical" data-i18n-placeholder="To Collect, Scarce, Waiting for Physical"></label>
             <label class="wide shelf-condition-notes-field"><span data-i18n="Condition Notes">Condition Notes</span><textarea id="notesInput" rows="3" placeholder="Missing booklet, sealed, damaged case..." data-i18n-placeholder="Missing booklet, sealed, damaged case..."></textarea></label>
+            <label class="shelf-owner-field"><span data-i18n="Owner">Owner</span><input id="ownersInput" placeholder="Judy, Jordi, Cage" data-i18n-placeholder="Judy, Jordi, Cage"></label>
+            <label class="shelf-achievement-search-field"><span data-i18n="Alternate Achievement search name">Alternate Achievement search name</span><input id="trophyNameInput" placeholder="Optional alternate title" data-i18n-placeholder="Optional alternate title"></label>
           </div>
         </section>
 
