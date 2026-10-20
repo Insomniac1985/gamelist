@@ -16129,6 +16129,10 @@ html.theme-light .finish-trophy-check input[type="checkbox"]:checked {
 }
 
 @media (max-width: 1180px) {
+  .achievement-panel {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
   .toolbar {
     grid-template-columns: minmax(0, 1fr) 132px minmax(0, 1fr) var(--toolbar-control-height);
   }
