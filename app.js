@@ -251,6 +251,7 @@ const state = {
   sortTouched: false,
   viewMode: loadSharedViewMode(),
   editingId: "",
+  addDestination: "gamelist",
   finishSetupId: "",
   finishTimeGameId: "",
   pendingDescription: "",
@@ -418,6 +419,8 @@ const el = {
   finishTimeSkipButton: document.querySelector("#finishTimeSkipButton"),
   platformFieldIcon: document.querySelector(".platform-field-icon"),
   preorderStoreFieldIcon: document.querySelector(".preorder-store-field-icon"),
+  preorderCheck: document.querySelector("#gamePreorderCheck"),
+  preorderStoreField: document.querySelector("#gamePreorderStoreField"),
   preferredStoreFieldIcon: document.querySelector(".preferred-store-field-icon"),
   settingsLayoutList: document.querySelector("#settingsLayoutList"),
   settingsPreferencesBeforeCurrency: document.querySelector("#settingsPreferencesBeforeCurrency"),
@@ -503,6 +506,11 @@ const el = {
   detailCover: document.querySelector(".detail-cover img"),
   dialog: document.querySelector("#gameDialog"),
   gameAddTargetPicker: document.querySelector("#gameAddTargetPicker"),
+  gameAddDestinationPicker: document.querySelector("#gameAddDestinationPicker"),
+  shelfDestinationFields: document.querySelector("#shelfDestinationFields"),
+  shelfCountry: document.querySelector("#gameShelfCountryInput"),
+  shelfAdditionDate: document.querySelector("#gameShelfAdditionDateInput"),
+  shelfValue: document.querySelector("#gameShelfValueInput"),
   form: document.querySelector("#gameForm"),
   dialogTitle: document.querySelector("#dialogTitle"),
   gameDialogSaveButton: document.querySelector("#gameDialogSaveButton"),
@@ -1326,6 +1334,13 @@ function bindEvents() {
     syncDialogPriceVisibility();
     syncGameAddTargetPicker();
   });
+  el.gameAddDestinationPicker.addEventListener("click", (event) => {
+    const button = event.target.closest("[data-game-destination]");
+    if (!button || state.editingId) return;
+    state.addDestination = button.dataset.gameDestination === "shelf" ? "shelf" : "gamelist";
+    gameEditorDirty = true;
+    syncGameAddDestination();
+  });
   el.fields.section.addEventListener("change", () => {
     markNewGameListTouched();
     syncDialogPriceVisibility();
@@ -1350,6 +1365,11 @@ function bindEvents() {
   });
   el.fields.preorderStore.addEventListener("input", () => {
     syncStoreInputIcon(el.fields.preorderStore, el.preorderStoreFieldIcon);
+    syncNewGameUpcomingSection();
+  });
+  el.preorderCheck?.addEventListener("change", () => {
+    el.preorderStoreField.hidden = !el.preorderCheck.checked;
+    if (!el.preorderCheck.checked) el.fields.preorderStore.value = "";
     syncNewGameUpcomingSection();
   });
   el.fields.preorderStore.addEventListener("change", () => {
@@ -11874,7 +11894,7 @@ function markNewGameListTouched() {
 function syncGameAddTargetPicker() {
   const picker = el.gameAddTargetPicker;
   const isNewGame = !state.editingId && el.dialog.classList.contains("is-new-game");
-  picker.hidden = !isNewGame;
+  picker.hidden = !isNewGame || state.addDestination !== "gamelist";
   if (!isNewGame) return;
   const options = picker.querySelector(".shelf-gamelist-target-options");
   let activeButton;
@@ -11888,6 +11908,34 @@ function syncGameAddTargetPicker() {
     options.style.setProperty("--target-left", `${activeButton.offsetLeft}px`);
     options.style.setProperty("--target-width", `${activeButton.offsetWidth}px`);
   });
+}
+
+function syncGameAddDestination() {
+  const picker = el.gameAddDestinationPicker;
+  const isNewGame = !state.editingId && el.dialog.classList.contains("is-new-game");
+  const shelfTarget = isNewGame && state.addDestination === "shelf";
+  picker.hidden = !isNewGame;
+  el.dialog.classList.toggle("shelf-destination-selected", shelfTarget);
+  el.shelfDestinationFields.hidden = !shelfTarget;
+  picker.querySelectorAll("[data-game-destination]").forEach((button) => {
+    const selected = button.dataset.gameDestination === state.addDestination;
+    button.classList.toggle("active", selected);
+    button.setAttribute("aria-pressed", String(selected));
+  });
+  const options = picker.querySelector(".shelf-gamelist-target-options");
+  const activeButton = picker.querySelector(`[data-game-destination="${state.addDestination}"]`);
+  options.style.setProperty("--target-count", "2");
+  if (activeButton) requestAnimationFrame(() => {
+    options.style.setProperty("--target-left", `${activeButton.offsetLeft}px`);
+    options.style.setProperty("--target-width", `${activeButton.offsetWidth}px`);
+  });
+  const saveLabel = isNewGame ? (shelfTarget ? "Add to Shelf" : "Add to Gamelist") : "Save";
+  [el.gameDialogSaveButton, el.gameDialogBottomSaveButton].forEach((button) => {
+    button.dataset.i18n = saveLabel;
+    button.textContent = tt(saveLabel);
+  });
+  el.dialogTitle.textContent = !isNewGame ? tt("Edit Game") : shelfTarget ? tt("Add to Shelf") : tt("Add to Gamelist");
+  syncGameAddTargetPicker();
 }
 
 function syncNewGameRequiredHighlights() {
@@ -11972,6 +12020,7 @@ async function openEditor(id = "") {
     el.form.insertBefore(id ? playingSection : collectingSection, id ? collectingSection : playingSection);
   }
   state.editingId = id;
+  state.addDestination = "gamelist";
   state.pendingDescription = "";
   const game = state.games.find((item) => item.id === id) || blankGame();
   newGameListTouched = Boolean(id);
@@ -11984,6 +12033,10 @@ async function openEditor(id = "") {
   el.gameDialogBottomSaveButton.textContent = tt(saveLabel);
   el.dialog.classList.toggle("is-new-game", !id);
   el.deleteButton.hidden = !id;
+  el.lookupInput.closest("label").hidden = false;
+  el.lookupButton.hidden = false;
+  el.lookupInput.closest(".lookup-row").hidden = false;
+  el.lookupResults.hidden = false;
   el.lookupResults.innerHTML = "";
   el.lookupInput.value = game.title || "";
   el.fields.id.value = game.id || "";
@@ -12003,7 +12056,14 @@ async function openEditor(id = "") {
   setRatingInputs(el.playingRatingGrid, game.ratings);
   el.fields.platinum.checked = Boolean(game.platinum);
   el.fields.preorderStore.value = game.preorderStore || "";
+  if (el.preorderCheck) el.preorderCheck.checked = Boolean(game.preorderStore);
+  if (el.preorderStoreField) el.preorderStoreField.hidden = !game.preorderStore;
   el.fields.preferredStore.value = game.preferredStore || "";
+  el.shelfCountry.value = shelfCountryForRegion(state.settings.region);
+  el.shelfAdditionDate.value = todayDate();
+  el.shelfValue.value = "";
+  el.form.querySelector("#gameShelfConditionGame").checked = true;
+  el.form.querySelectorAll("#gameShelfConditionManual, #gameShelfConditionBox, #gameShelfConditionOther, #gameShelfConditionSealed").forEach((input) => { input.checked = false; });
   el.fields.owners.value = ownerTags(game).join(", ");
   el.fields.statuses.value = gameStatuses(game).join(", ");
   el.fields.digital.checked = Boolean(game.digital || game.dlc);
@@ -12030,6 +12090,7 @@ async function openEditor(id = "") {
   requestAnimationFrame(syncEditFieldIcons);
   window.setTimeout(syncEditFieldIcons, 0);
   syncGamelistEntitlementEditor();
+  syncGameAddDestination();
   syncDialogPriceVisibility();
   syncStyledSelect(el.fields.section, { activeValue: null });
   syncNewGameRequiredHighlights();
@@ -12104,6 +12165,10 @@ function blankGame() {
 
 async function saveFromForm(event) {
   event.preventDefault();
+  if (!state.editingId && state.addDestination === "shelf") {
+    await saveNewShelfGameFromForm();
+    return;
+  }
   const existing = state.games.find((game) => game.id === el.fields.id.value);
   const game = await saveCurrentFormGame();
   gameEditorDirty = false;
@@ -12113,6 +12178,88 @@ async function saveFromForm(event) {
     await createPreorderCalendarEvent(game);
   }
   refreshPricesForGame(game.id, { silent: true });
+}
+
+function shelfCountryForRegion(region) {
+  return ({ ES: "Spain", IT: "Italy", IE: "Ireland", FR: "France", PT: "Portugal", JP: "Japan", MX: "Mexico", US: "United States of America", UK: "United Kingdom" })[region] || "Spain";
+}
+
+async function saveNewShelfGameFromForm() {
+  const title = el.fields.title.value.trim();
+  if (!title) { el.fields.title.focus(); return; }
+  try {
+    const response = await fetch("/api/shelf", { cache: "no-store" });
+    if (!response.ok) throw new Error("Could not load Shelf data.");
+    const current = await response.json();
+    const now = new Date().toISOString();
+    const additionDate = el.shelfAdditionDate.value;
+    const enteredValueText = String(el.shelfValue.value || "").trim().replace(",", ".");
+    const enteredValue = enteredValueText ? Number(enteredValueText) : NaN;
+    const digital = Boolean(el.fields.digital.checked || el.fields.dlc.checked);
+    const shelfGame = {
+      id: crypto.randomUUID(),
+      title,
+      platform: platformDisplayName(el.fields.platform.value),
+      country: digital ? "" : el.shelfCountry.value,
+      region: digital ? "" : el.shelfCountry.value,
+      digital,
+      dlc: Boolean(el.fields.dlc.checked),
+      psPlus: Boolean(el.fields.psPlus.checked),
+      gamesWithGold: Boolean(el.fields.gamesWithGold.checked),
+      game: !digital && el.form.querySelector("#gameShelfConditionGame").checked,
+      manual: !digital && el.form.querySelector("#gameShelfConditionManual").checked,
+      box: !digital && el.form.querySelector("#gameShelfConditionBox").checked,
+      other: !digital && el.form.querySelector("#gameShelfConditionOther").checked,
+      sealed: !digital && el.form.querySelector("#gameShelfConditionSealed").checked,
+      price: !digital && Number.isFinite(enteredValue) && enteredValue >= 0 ? enteredValue : null,
+      owners: ownerInputValues(el.fields.owners.value),
+      tags: listFrom(el.fields.statuses.value),
+      statuses: listFrom(el.fields.statuses.value),
+      category: "Game",
+      releaseDate: el.fields.releaseDate.value,
+      releaseText: el.fields.releaseText.value.trim(),
+      createdAt: additionDate ? new Date(`${additionDate}T12:00:00`).toISOString() : now,
+      updatedAt: now,
+      recordType: "Owned",
+      releaseType: "Official",
+      genre: listFrom(el.fields.genres.value).join(", "),
+      publisher: el.fields.publisher.value.trim(),
+      developer: el.fields.developer.value.trim(),
+      cover: el.fields.cover.value.trim(),
+      description: el.fields.description.value.trim() || state.pendingDescription || "",
+      igdbUrl: el.fields.igdbUrl.value.trim(),
+      hltbUrl: normalizeGuideUrl(el.fields.hltbUrl.value),
+      lengthHours: approximatePlaytimeHours(el.fields.length.value) || null,
+      trophyName: el.fields.trophyName.value.trim(),
+      storeLinks: {
+        playstation: el.fields.playstationUrl.value.trim(),
+        nintendo: el.fields.nintendoUrl.value.trim(),
+        xbox: el.fields.xboxUrl.value.trim(),
+        steam: el.fields.steamUrl.value.trim(),
+      },
+      preferredStore: el.fields.preferredStore.value.trim(),
+      skipGamelistSync: true,
+    };
+    const payload = {
+      sourceGames: Array.isArray(current.sourceGames) ? current.sourceGames : [],
+      games: [shelfGame, ...(Array.isArray(current.games) ? current.games : [])],
+      overrides: current.overrides && typeof current.overrides === "object" ? current.overrides : {},
+      layout: current.layout || null,
+      favoriteGameIds: Array.isArray(current.favoriteGameIds) ? current.favoriteGameIds : [],
+    };
+    const password = sessionStorage.getItem(`${SESSION_KEY}:password`) || "";
+    const save = await fetch("/api/shelf", {
+      method: "PUT",
+      headers: { "Content-Type": "application/json", "x-edit-password": password },
+      body: JSON.stringify(payload),
+    });
+    if (!save.ok) throw new Error("Could not add the game to Shelf.");
+    gameEditorDirty = false;
+    el.dialog.close();
+    showToast(tt("Added to Shelf."));
+  } catch (error) {
+    showToast(error?.message || tt("Could not add the game to Shelf."), "error");
+  }
 }
 
 function requestGameEditorClose() {
@@ -12715,6 +12862,8 @@ async function verifyPassword(password) {
 async function lookupGame() {
   const query = el.lookupInput.value.trim() || el.fields.title.value.trim();
   if (!query) return;
+  el.lookupInput.closest(".lookup-row").hidden = false;
+  el.lookupResults.hidden = false;
   showToast(tt("Fetching game info..."));
   el.lookupResults.classList.remove("loaded");
   el.lookupResults.innerHTML = `<div class="empty">${escapeHtml(tt("Searching..."))}</div>`;
@@ -12746,7 +12895,7 @@ function renderLookupResults(results) {
     const description = previewDescription(result.description || "");
     const matchedTitle = localizedMatchedTitleLine(result);
     row.innerHTML = `
-      <img src="${escapeHtml(result.cover ? coverDisplayUrl(result.cover) : "")}" alt="" loading="lazy" decoding="async" ${result.cover ? "" : "hidden"}>
+      <img class="${result.cover ? "" : "lookup-cover-placeholder"}" src="${escapeHtml(result.cover ? coverDisplayUrl(result.cover) : "assets/Icon.png")}" alt="" loading="lazy" decoding="async">
       <div>
         <span class="lookup-result-title"><strong>${escapeHtml(result.title)}</strong>${igdbRating}</span>
         ${matchedTitle ? `<p>${escapeHtml(matchedTitle)}</p>` : ""}
@@ -12757,6 +12906,13 @@ function renderLookupResults(results) {
       <button class="ghost-button" type="button">${escapeHtml(tt("Use"))}</button>
     `;
     row.querySelector("button").addEventListener("click", () => applyLookup(result));
+    const cover = row.querySelector("img");
+    cover.addEventListener("error", () => {
+      if (cover.dataset.placeholderApplied) return;
+      cover.dataset.placeholderApplied = "true";
+      cover.classList.add("lookup-cover-placeholder");
+      cover.src = "assets/Icon.png";
+    });
     el.lookupResults.appendChild(row);
   });
   requestAnimationFrame(() => el.lookupResults.classList.add("loaded"));
@@ -12832,6 +12988,15 @@ function applyLookup(result) {
       syncReplaySection();
     }
   }
+  hideGameLookupSearch();
+}
+
+function hideGameLookupSearch() {
+  const row = el.lookupInput.closest(".lookup-row");
+  if (row) row.hidden = true;
+  el.lookupResults.hidden = true;
+  el.lookupResults.replaceChildren();
+  el.lookupResults.classList.remove("loaded");
 }
 
 function queueTitleLookup() {
