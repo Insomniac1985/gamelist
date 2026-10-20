@@ -2474,8 +2474,8 @@ function syncShelfGamelistTargetMode() {
   const title = el.addForm.querySelector(".modal-head h2");
   const eyebrow = el.addForm.querySelector(".modal-head .eyebrow");
   if (active) {
-    if (eyebrow) eyebrow.textContent = tt("Gamelist");
-    if (title) title.textContent = tt(el.addForm.dataset.digital === "true" ? "Add a digital game" : "Add to Gamelist");
+    if (eyebrow) eyebrow.textContent = "GAME DATA";
+    if (title) title.textContent = el.gamelistSection.value === "backlog" ? "Add game to Backlog" : el.gamelistSection.value === "wanted" ? "Add available game" : "Add game";
     el.addForm.querySelector(".form-group h3").textContent = tt("Collecting Information");
     el.addForm.querySelectorAll("button[type='submit']").forEach((button) => { button.textContent = tt("Add to Gamelist"); });
     el.lookupLabelPhysical.textContent = tt("Search DB or IGDB URL");
@@ -2527,6 +2527,10 @@ function syncShelfGamelistTargetIndicator() {
 function syncShelfGamelistSectionButtons() {
   syncShelfGamelistPreorderVisibility();
   syncGameListSlider(el.gamelistListPicker, el.gamelistSection.value);
+  if (isGamelistProjectionTarget()) {
+    const title = el.addForm.querySelector(".modal-head h2");
+    if (title) title.textContent = el.gamelistSection.value === "backlog" ? "Add game to Backlog" : el.gamelistSection.value === "wanted" ? "Add available game" : "Add game";
+  }
 }
 
 function syncShelfGamelistPreorderVisibility() {
