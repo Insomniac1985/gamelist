@@ -2774,9 +2774,9 @@ textarea {
   }
 }
 
-@media (min-width: 761px) and (max-width: 1180px) {
+@media (min-width: 761px) and (max-width: 1300px) {
   .shelf-toolbar {
-    grid-template-columns: repeat(5, minmax(0, 1fr)) var(--toolbar-control-height);
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1.25fr) minmax(0, 0.875fr) minmax(0, 0.875fr) var(--toolbar-control-height);
   }
   .shelf-toolbar .search {
     grid-column: span 2;
