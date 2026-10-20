@@ -418,6 +418,8 @@ const el = {
   finishTimeSkipButton: document.querySelector("#finishTimeSkipButton"),
   platformFieldIcon: document.querySelector(".platform-field-icon"),
   preorderStoreFieldIcon: document.querySelector(".preorder-store-field-icon"),
+  preorderCheck: document.querySelector("#gamePreorderCheck"),
+  preorderStoreField: document.querySelector("#gamePreorderStoreField"),
   preferredStoreFieldIcon: document.querySelector(".preferred-store-field-icon"),
   settingsLayoutList: document.querySelector("#settingsLayoutList"),
   settingsPreferencesBeforeCurrency: document.querySelector("#settingsPreferencesBeforeCurrency"),
@@ -1350,6 +1352,11 @@ function bindEvents() {
   });
   el.fields.preorderStore.addEventListener("input", () => {
     syncStoreInputIcon(el.fields.preorderStore, el.preorderStoreFieldIcon);
+    syncNewGameUpcomingSection();
+  });
+  el.preorderCheck?.addEventListener("change", () => {
+    el.preorderStoreField.hidden = !el.preorderCheck.checked;
+    if (!el.preorderCheck.checked) el.fields.preorderStore.value = "";
     syncNewGameUpcomingSection();
   });
   el.fields.preorderStore.addEventListener("change", () => {
@@ -12003,6 +12010,8 @@ async function openEditor(id = "") {
   setRatingInputs(el.playingRatingGrid, game.ratings);
   el.fields.platinum.checked = Boolean(game.platinum);
   el.fields.preorderStore.value = game.preorderStore || "";
+  if (el.preorderCheck) el.preorderCheck.checked = Boolean(game.preorderStore);
+  if (el.preorderStoreField) el.preorderStoreField.hidden = !game.preorderStore;
   el.fields.preferredStore.value = game.preferredStore || "";
   el.fields.owners.value = ownerTags(game).join(", ");
   el.fields.statuses.value = gameStatuses(game).join(", ");
@@ -12746,7 +12755,7 @@ function renderLookupResults(results) {
     const description = previewDescription(result.description || "");
     const matchedTitle = localizedMatchedTitleLine(result);
     row.innerHTML = `
-      <img src="${escapeHtml(result.cover ? coverDisplayUrl(result.cover) : "")}" alt="" loading="lazy" decoding="async" ${result.cover ? "" : "hidden"}>
+      <img class="${result.cover ? "" : "lookup-cover-placeholder"}" src="${escapeHtml(result.cover ? coverDisplayUrl(result.cover) : "assets/Icon.png")}" alt="" loading="lazy" decoding="async">
       <div>
         <span class="lookup-result-title"><strong>${escapeHtml(result.title)}</strong>${igdbRating}</span>
         ${matchedTitle ? `<p>${escapeHtml(matchedTitle)}</p>` : ""}
@@ -12757,6 +12766,13 @@ function renderLookupResults(results) {
       <button class="ghost-button" type="button">${escapeHtml(tt("Use"))}</button>
     `;
     row.querySelector("button").addEventListener("click", () => applyLookup(result));
+    const cover = row.querySelector("img");
+    cover.addEventListener("error", () => {
+      if (cover.dataset.placeholderApplied) return;
+      cover.dataset.placeholderApplied = "true";
+      cover.classList.add("lookup-cover-placeholder");
+      cover.src = "assets/Icon.png";
+    });
     el.lookupResults.appendChild(row);
   });
   requestAnimationFrame(() => el.lookupResults.classList.add("loaded"));

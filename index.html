@@ -527,6 +527,19 @@
             <button type="button" data-game-target="wanted" data-i18n="Available">Available</button>
           </div>
         </div>
+        <div class="game-preorder-control">
+          <label class="check-filter toggle-check game-preorder-check">
+            <input id="gamePreorderCheck" type="checkbox">
+            <span data-i18n="Preorder">Preorder</span>
+          </label>
+          <label class="preorder-store-field" id="gamePreorderStoreField" hidden>
+            <span data-i18n="Preordered Where">Preordered Where</span>
+            <span class="icon-input store-icon-input">
+              <span class="field-leading-icon preorder-store-field-icon" aria-hidden="true"></span>
+              <input id="preorderStoreInput" placeholder="Xtralife, Game, Amazon...">
+            </span>
+          </label>
+        </div>
         <div class="lookup-results" id="lookupResults"></div>
 
         <section class="form-group" id="playingFormSection">
@@ -643,13 +656,6 @@
             <label class="length-field">
               <span data-i18n="Aproximate playtime">Aproximate playtime</span>
               <input id="lengthInput" type="number" min="0" step="1" placeholder="Hours" data-i18n-placeholder="Hours">
-            </label>
-            <label class="preorder-store-field">
-              <span data-i18n="Preordered Where">Preordered Where</span>
-              <span class="icon-input store-icon-input">
-                <span class="field-leading-icon preorder-store-field-icon" aria-hidden="true"></span>
-                <input id="preorderStoreInput" placeholder="Xtralife, Game, Amazon...">
-              </span>
             </label>
             <label class="preferred-store-field">
               <span data-i18n="Preferred preorder store">Preferred preorder store</span>

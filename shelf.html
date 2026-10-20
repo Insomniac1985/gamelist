@@ -409,9 +409,8 @@
           <span class="shelf-gamelist-target-label" data-i18n="Add Game To">Add Game To</span>
           <div class="shelf-gamelist-target-options" role="group" aria-label="Add game to">
             <span class="shelf-gamelist-target-indicator" aria-hidden="true"></span>
+            <button type="button" data-gamelist-target="gamelist" data-i18n="Gamelist">Gamelist</button>
             <button type="button" data-gamelist-target="shelf" data-i18n="Shelf">Shelf</button>
-            <button type="button" data-gamelist-target="preorder" data-i18n="Preorder">Preorder</button>
-            <button type="button" data-gamelist-target="wishlist" data-i18n="Wishlist">Wishlist</button>
           </div>
         </div>
         <div class="lookup-results" id="lookupResults"></div>
@@ -419,18 +418,31 @@
         <section class="form-group">
           <h3 data-i18n="Collecting Information">Collecting Information</h3>
           <div class="form-grid shelf-editor-grid">
+            <div class="shelf-editor-cover-preview" role="img" aria-label="Game cover preview">
+              <img id="shelfEditorCoverPreview" src="assets/Icon_shelf.png" alt="" aria-hidden="true">
+            </div>
             <label class="shelf-title-field"><span data-i18n="Title">Title</span><input id="titleInput" required></label>
             <label class="shelf-console-field"><span data-i18n="Platform">Platform</span><span class="icon-input shelf-edit-icon-input"><span class="field-leading-icon shelf-platform-field-icon" aria-hidden="true"></span><input id="platformInput" list="shelfPlatformOptions"></span><datalist id="shelfPlatformOptions"></datalist></label>
             <div class="shelf-gamelist-placement" id="shelfGamelistPlacement" hidden>
-              <label class="shelf-gamelist-list-field">
-                <span data-i18n="List">List</span>
-                <select id="shelfGamelistSectionInput">
+              <div class="shelf-gamelist-list-field">
+                <span class="shelf-gamelist-target-label" data-i18n="List">List</span>
+                <div class="shelf-gamelist-section-options shelf-gamelist-target-options" role="group" aria-label="Gamelist list">
+                  <span class="shelf-gamelist-target-indicator" aria-hidden="true"></span>
+                  <button type="button" data-gamelist-section="backlog" data-i18n="Backlog">Backlog</button>
+                  <button type="button" data-gamelist-section="upcoming" data-i18n="Upcoming">Upcoming</button>
+                  <button type="button" data-gamelist-section="wanted" data-i18n="Available">Available</button>
+                </div>
+                <select id="shelfGamelistSectionInput" hidden tabindex="-1" aria-hidden="true">
                   <option value="wanted" data-i18n="Available now">Available now</option>
                   <option value="upcoming" data-i18n="Upcoming">Upcoming</option>
                   <option value="backlog" data-i18n="Backlog">Backlog</option>
                 </select>
+              </div>
+              <label class="check-filter toggle-check shelf-gamelist-preorder-check">
+                <input id="shelfGamelistPreorderCheck" type="checkbox">
+                <span data-i18n="Preorder">Preorder</span>
               </label>
-              <label class="shelf-gamelist-preorder-field" id="shelfGamelistPreorderField">
+              <label class="shelf-gamelist-preorder-field" id="shelfGamelistPreorderField" hidden>
                 <span data-i18n="Preordered Where">Preordered Where</span>
                 <span class="icon-input store-icon-input">
                   <span class="field-leading-icon shelf-gamelist-store-icon" aria-hidden="true"></span>
