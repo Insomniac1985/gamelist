@@ -2121,6 +2121,10 @@ body.mobile-app-mode .shelf-tabs button.active:hover {
     grid-column: 7 / span 7;
   }
 
+  #addGameForm:not(.gamelist-target-editor) .shelf-achievement-search-field {
+    grid-column: span 7;
+  }
+
   .shelf-editor-cover-preview {
     display: grid;
     grid-column: span 2;
@@ -2138,8 +2142,7 @@ body.mobile-app-mode .shelf-tabs button.active:hover {
     display: block;
     width: 100%;
     height: 100%;
-    object-fit: contain;
-    background: color-mix(in srgb, var(--panel-dark) 72%, transparent);
+    object-fit: cover;
   }
   .shelf-editor-cover-preview img.is-placeholder {
     box-sizing: border-box;
@@ -2248,10 +2251,11 @@ textarea {
   accent-color: var(--accent);
 }
 .condition-editor .check-filter {
-  height: 42px;
-  min-height: 42px;
-  max-height: 42px;
+  height: 44px;
+  min-height: 44px;
+  max-height: 44px;
   padding: 0 12px;
+  box-sizing: border-box;
 }
 .condition-editor label:has(input:checked) {
   color: var(--text);
@@ -3270,9 +3274,9 @@ textarea {
 
   #addGameForm.gamelist-target-editor .shelf-editor-cover-preview {
     grid-column: 1;
-    grid-row: 1 / span 5;
+    grid-row: 1 / span 3;
     max-width: 160px;
-    align-self: stretch;
+    align-self: start;
   }
 
   #addGameForm.gamelist-target-editor .shelf-title-field { grid-column: 2 / span 6; grid-row: 1; }
