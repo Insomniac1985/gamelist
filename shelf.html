@@ -18,6 +18,7 @@
     <script>
       (() => {
         const root = document.documentElement;
+        if (window.parent !== window && new URLSearchParams(location.search).get("editor") === "1") root.classList.add("game-editor-embed");
         if (new URLSearchParams(location.search).get("pull") === "1") {
           root.classList.add("from-pull-navigation");
           try {
@@ -171,6 +172,7 @@
     </script>
     <link rel="stylesheet" href="styles.css">
     <link rel="stylesheet" href="shelf.css">
+    <link rel="stylesheet" href="game-editor-layout.css">
   </head>
   <body class="shelf-page auth-checking">
     <script>
@@ -412,8 +414,8 @@
             <button type="button" data-gamelist-target="shelf"><span class="shelf-gamelist-target-logo shelf-target-logo" aria-hidden="true"></span><span data-i18n="Shelf">Shelf</span></button>
           </div>
         </div>
+        <div class="game-list-controls" id="shelfGamelistListControls" role="group" aria-label="Gamelist list and preorder" hidden>
         <div class="shelf-gamelist-list-picker" id="shelfGamelistListPicker" hidden>
-          <span class="shelf-gamelist-target-label" data-i18n="List">List</span>
           <div class="shelf-gamelist-section-options shelf-gamelist-target-options" role="group" aria-label="Gamelist list">
             <span class="shelf-gamelist-target-indicator" aria-hidden="true"></span>
             <button type="button" data-gamelist-section="backlog" data-i18n="Backlog">Backlog</button>
@@ -436,11 +438,12 @@
           </div>
           <label class="shelf-gamelist-flag shelf-gamelist-stream-field check-filter toggle-check stream-check" hidden><input id="shelfGamelistStreamInput" type="checkbox"><span data-i18n="Stream">Stream</span></label>
         </div>
+        </div>
         <div class="lookup-results" id="lookupResults"></div>
 
         <section class="form-group">
           <h3 data-i18n="Collecting Information">Collecting Information</h3>
-          <div class="form-grid shelf-editor-grid">
+          <div class="form-grid shelf-editor-grid unified-game-editor-grid">
             <div class="shelf-editor-cover-preview" role="img" aria-label="Game cover preview">
               <img id="shelfEditorCoverPreview" class="is-placeholder" src="assets/Icon_shelf.png" alt="" aria-hidden="true">
             </div>
@@ -485,7 +488,7 @@
           <h3 data-i18n="Game Data">Game Data</h3>
           <div class="form-grid">
             <label><span data-i18n="Developer">Developer</span><input id="developerInput" placeholder="Studio" data-i18n-placeholder="Studio"></label>
-            <label><span data-i18n="Publisher">Publisher</span><input id="publisherInput" placeholder="Publisher" data-i18n-placeholder="Publisher"></label>
+            <label><span data-i18n="Publisher">Publisher</span><input id="publisherInput" placeholder="Company" data-i18n-placeholder="Company"></label>
             <label class="wide"><span data-i18n="Genre">Genre</span><input id="genreInput" placeholder="Adventure, RPG, FPS" data-i18n-placeholder="Adventure, RPG, FPS"></label>
             <label class="wide"><span data-i18n="Description">Description</span><textarea id="shelfDescriptionInput" rows="4" placeholder="Manual description or fetched game summary" data-i18n-placeholder="Manual description or fetched game summary"></textarea></label>
             <label class="wide"><span data-i18n="IGDB Page">IGDB Page</span><input id="igdbUrlInput" type="url" placeholder="https://www.igdb.com/games/..."></label>

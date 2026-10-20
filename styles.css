@@ -4926,7 +4926,8 @@ body.mobile-app-mode .mobile-section-tabs button.active:hover {
   color: #ffffff;
 }
 
-label span {
+label span,
+.rating-section > :is(h3, h4) {
   display: block;
   margin-bottom: 6px;
   color: var(--dim);
@@ -14517,6 +14518,13 @@ body.theme-kash
   padding-left: 9px;
 }
 
+.detail-trophy-tools :is(.platform-logo-button, .platform-logo-option) .platform-logo-choice-label {
+  top: 0;
+  margin: 0;
+  align-self: center;
+  transform: none;
+}
+
 .detail-trophy-tools .direction-toggle {
   width: 32px;
   height: 32px;
@@ -15358,8 +15366,8 @@ body.theme-kash
 .game-preorder-check {
   flex: 0 0 auto;
   width: auto;
-  min-height: 34px !important;
-  height: 34px !important;
+  min-height: 44px;
+  height: 44px;
   padding: 4px 10px;
   font-size: 13px;
 }
@@ -15575,7 +15583,7 @@ body.theme-kash
 
 .rating-section {
   display: grid;
-  gap: 8px;
+  gap: 6px;
   min-width: 0;
   margin-top: 10px;
 }
@@ -15583,20 +15591,12 @@ body.theme-kash
 .rating-section h3,
 .rating-section h4 {
   margin: 0;
-  color: var(--muted);
-  font-size: 12px;
-  font-weight: 900;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
+  letter-spacing: normal;
 }
 
 .finish-rating-section {
   gap: 8px;
   margin-top: 8px;
-}
-
-.finish-rating-section h3 {
-  color: var(--accent-2);
 }
 
 .game-rating-grid,
@@ -19283,7 +19283,6 @@ body:not(.can-edit):not(.shelf-page) :is(#upcoming, #wanted) .price-refresh-acti
   #addGameForm.gamelist-target-editor .shelf-region-field,
   #addGameForm.gamelist-target-editor .shelf-addition-field,
   #addGameForm.gamelist-target-editor .shelf-value-field,
-  #addGameForm.gamelist-target-editor .shelf-entitlement-field,
   #addGameForm.gamelist-target-editor .shelf-entitlement-grid-spacer,
   #addGameForm.gamelist-target-editor .shelf-condition-field,
   #addGameForm.gamelist-target-editor .shelf-condition-notes-field {

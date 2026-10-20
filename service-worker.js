@@ -1,4 +1,4 @@
-const CACHE_VERSION = "gamelist-cache-v607";
+const CACHE_VERSION = "gamelist-cache-v608";
 const STATIC_CACHE = `${CACHE_VERSION}:static`;
 const MEDIA_CACHE = `${CACHE_VERSION}:media`;
 const STATIC_ASSETS = [
@@ -6,6 +6,9 @@ const STATIC_ASSETS = [
   "/index.html",
   "/manifest.webmanifest",
   "/styles.css",
+  "/game-editor-layout.css",
+  "/game-editor-controls.js",
+  "/shared-add-game.js",
   "/app.js",
   "/activity-ui.js",
   "/theme-system.js",

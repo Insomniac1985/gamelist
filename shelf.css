@@ -2095,6 +2095,7 @@ body.mobile-app-mode .shelf-tabs button.active:hover {
 
   #addGameForm:not(.gamelist-target-editor) .shelf-editor-grid {
     grid-template-columns: 160px repeat(12, minmax(0, 1fr));
+    grid-template-rows: repeat(3, 72px);
   }
 
   #addGameForm:not(.gamelist-target-editor) .shelf-editor-cover-preview {
@@ -2127,29 +2128,32 @@ body.mobile-app-mode .shelf-tabs button.active:hover {
     grid-column: 7 / span 7;
   }
 
-  #addGameForm.digital-game-editor.shelf-psplus-editor .shelf-psplus-field,
-  #addGameForm.digital-game-editor.shelf-games-with-gold-editor .shelf-games-with-gold-field {
+  #addGameForm:not(.gamelist-target-editor).digital-game-editor.shelf-psplus-editor .shelf-psplus-field,
+  #addGameForm:not(.gamelist-target-editor).digital-game-editor.shelf-games-with-gold-editor .shelf-games-with-gold-field {
     grid-column: 10 / span 4;
     grid-row: 2;
     width: 100%;
     box-sizing: border-box;
-    align-self: end;
+    align-self: start;
+    margin-top: 19px;
   }
 
   #addGameForm:not(.gamelist-target-editor).digital-game-editor .shelf-dlc-field {
     grid-column: 7 / span 3;
     grid-row: 2;
     width: 100%;
-    align-self: end;
+    align-self: start;
+    margin-top: 19px;
   }
 
-  #addGameForm:not(.gamelist-target-editor).digital-game-editor .shelf-release-field {
+  #addGameForm:not(.gamelist-target-editor) .shelf-release-field {
     display: flex;
     flex-direction: column;
-    justify-content: flex-end;
+    justify-content: flex-start;
+    align-self: start;
   }
 
-  #addGameForm:not(.gamelist-target-editor).digital-game-editor .shelf-release-field > input {
+  #addGameForm:not(.gamelist-target-editor) .shelf-release-field > input {
     height: 44px;
     flex-shrink: 0;
   }
@@ -3411,116 +3415,6 @@ textarea {
 
 #addGameForm.gamelist-target-editor .shelf-gamelist-target-picker {
   margin-bottom: 8px;
-}
-
-#addGameForm.gamelist-target-editor .shelf-gamelist-preorder-check {
-  width: 100%;
-  height: 44px;
-  min-height: 44px;
-  margin: 0;
-  padding-inline: 12px;
-}
-
-#addGameForm.gamelist-target-editor .shelf-gamelist-preorder-stream-row {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr);
-  align-items: stretch;
-  gap: 12px;
-  margin: 0 0 8px;
-}
-
-#addGameForm.gamelist-target-editor .shelf-gamelist-preorder-stream-row[hidden] {
-  display: none !important;
-}
-
-#addGameForm:not(.gamelist-target-editor) .shelf-gamelist-preorder-stream-row {
-  display: none !important;
-}
-
-#addGameForm.gamelist-target-editor .shelf-gamelist-preorder-stream-row.has-stream {
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-}
-
-#addGameForm.gamelist-target-editor .shelf-gamelist-preorder-stream-row.has-stream.has-preorder-store {
-  grid-template-columns: minmax(0, 3fr) minmax(100px, 1fr);
-}
-
-#addGameForm.gamelist-target-editor .shelf-gamelist-preorder-stream-row.preorder-hidden {
-  grid-template-columns: minmax(0, 1fr);
-}
-
-#addGameForm.gamelist-target-editor .shelf-gamelist-preorder-stream-row.has-stream.preorder-hidden {
-  grid-template-columns: minmax(0, 1fr);
-}
-
-#addGameForm.gamelist-target-editor .shelf-gamelist-stream-field {
-  width: 100%;
-  height: 44px;
-  min-height: 44px;
-  margin: 0;
-  box-sizing: border-box;
-}
-
-#addGameForm.gamelist-target-editor .shelf-gamelist-preorder-row {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr);
-  align-items: stretch;
-  gap: 12px;
-  margin: 0;
-}
-
-#addGameForm.gamelist-target-editor .shelf-gamelist-preorder-row[hidden] {
-  display: none !important;
-}
-
-#addGameForm.gamelist-target-editor .shelf-gamelist-preorder-row.has-preorder-store {
-  grid-template-columns: max-content minmax(0, 1fr);
-  height: 44px;
-}
-
-#addGameForm.gamelist-target-editor .shelf-gamelist-preorder-row.has-preorder-store .shelf-gamelist-preorder-check {
-  width: max-content;
-  height: 44px;
-  min-height: 44px;
-  box-sizing: border-box;
-}
-
-@media (max-width: 760px) {
-  #addGameForm.gamelist-target-editor .shelf-gamelist-preorder-stream-row,
-  #addGameForm.gamelist-target-editor .shelf-gamelist-preorder-stream-row.has-stream,
-  #addGameForm.gamelist-target-editor .shelf-gamelist-preorder-stream-row.has-stream.has-preorder-store,
-  #addGameForm.gamelist-target-editor .shelf-gamelist-preorder-stream-row.has-preorder-store,
-  #addGameForm.gamelist-target-editor .shelf-gamelist-preorder-stream-row.preorder-hidden {
-    grid-template-columns: minmax(0, 1fr);
-  }
-
-  #addGameForm.gamelist-target-editor .shelf-gamelist-preorder-row.has-preorder-store {
-    grid-template-columns: minmax(0, 1fr);
-    height: auto;
-  }
-
-  #addGameForm.gamelist-target-editor .shelf-gamelist-preorder-row.has-preorder-store .shelf-gamelist-preorder-check {
-    width: 100%;
-  }
-}
-
-#addGameForm.gamelist-target-editor .shelf-gamelist-preorder-field {
-  display: block;
-  min-width: 0;
-  margin: 0;
-}
-
-#addGameForm.gamelist-target-editor .shelf-gamelist-preorder-field .icon-input,
-#addGameForm.gamelist-target-editor .shelf-gamelist-preorder-field input {
-  width: 100%;
-  min-width: 0;
-  height: 44px;
-  min-height: 44px;
-  box-sizing: border-box;
-}
-
-#addGameForm.gamelist-target-editor .shelf-gamelist-preorder-field[hidden] {
-  display: none !important;
 }
 
 #addGameForm.gamelist-target-editor .shelf-gamelist-preorder-check .shopping-bag-icon,

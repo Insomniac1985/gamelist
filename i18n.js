@@ -162,6 +162,7 @@ const STRINGS = {
     Developer: "Desarrolladora",
     Studio: "Estudio",
     Publisher: "Editora",
+    Company: "Empresa",
     Genre: "Género",
     "Adventure, RPG, FPS": "Aventura, RPG, FPS",
     Description: "Descripción",
