@@ -399,7 +399,6 @@
           <button class="ghost-button icon-only-button" id="lookupButton" type="button" title="Fetch info" aria-label="Fetch info">
             <svg class="search-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle><path d="M16.5 16.5 21 21"></path></svg>
           </button>
-          <span class="lookup-digital-separator" aria-hidden="true"></span>
           <label class="check-filter toggle-check form-check collection-check lookup-digital-check">
             <input id="shelfDigitalInput" type="checkbox">
             <span class="check-label-with-icon"><svg class="download-badge-icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="4.5" width="14" height="15" rx="3"></rect><path d="M12 7.5v6.5"></path><path d="M9.5 11.8 12 14.3l2.5-2.5"></path><path d="M8.8 17h6.4"></path></svg><span data-i18n="Digital">Digital</span></span>
@@ -409,8 +408,8 @@
           <span class="shelf-gamelist-target-label" data-i18n="Add Game To">Add Game To</span>
           <div class="shelf-gamelist-target-options" role="group" aria-label="Add game to">
             <span class="shelf-gamelist-target-indicator" aria-hidden="true"></span>
-            <button type="button" data-gamelist-target="gamelist" data-i18n="Gamelist">Gamelist</button>
-            <button type="button" data-gamelist-target="shelf" data-i18n="Shelf">Shelf</button>
+            <button type="button" data-gamelist-target="gamelist"><span class="shelf-gamelist-target-logo gamelist-target-logo" aria-hidden="true"></span><span data-i18n="Gamelist">Gamelist</span></button>
+            <button type="button" data-gamelist-target="shelf"><span class="shelf-gamelist-target-logo shelf-target-logo" aria-hidden="true"></span><span data-i18n="Shelf">Shelf</span></button>
           </div>
         </div>
         <div class="shelf-gamelist-list-picker" id="shelfGamelistListPicker" hidden>
@@ -457,8 +456,8 @@
             <label class="shelf-release-text-field"><span data-i18n="Release Text (Optional)">Release Text (Optional)</span><input id="shelfGamelistReleaseTextInput" placeholder="2026?, 18 June, TBA..." data-i18n-placeholder="2026?, 18 June, TBA..."></label>
             <label class="shelf-addition-field"><span data-i18n="Addition Date">Addition Date</span><input id="additionDateInput" type="date"></label>
             <label class="shelf-gamelist-flag shelf-gamelist-emulator-field check-filter toggle-check"><input id="shelfGamelistEmulatorInput" type="checkbox"><span>Emulator</span></label>
-            <label class="shelf-gamelist-flag shelf-gamelist-coop-field check-filter toggle-check"><input id="shelfGamelistCoopInput" type="checkbox"><span data-i18n="Coop">Coop</span></label>
-            <label class="shelf-gamelist-flag shelf-gamelist-multiplayer-field check-filter toggle-check"><input id="shelfGamelistMultiplayerInput" type="checkbox"><span data-i18n="Multiplayer">Multiplayer</span></label>
+            <label class="shelf-gamelist-flag shelf-gamelist-multiplayer-field check-filter toggle-check"><input id="shelfGamelistMultiplayerInput" type="checkbox"><span class="check-label-with-icon"><svg class="online-globe-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8"></circle><path d="M4 12h16"></path><path d="M12 4c2.1 2.2 3.2 4.8 3.2 8s-1.1 5.8-3.2 8"></path><path d="M12 4c-2.1 2.2-3.2 4.8-3.2 8s1.1 5.8 3.2 8"></path></svg><span data-i18n="Multiplayer">Multiplayer</span></span></label>
+            <label class="shelf-gamelist-flag shelf-gamelist-coop-field check-filter toggle-check"><input id="shelfGamelistCoopInput" type="checkbox"><span class="check-label-with-icon"><svg class="coop-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="8" cy="8" r="3"></circle><circle cx="16" cy="8" r="3"></circle><path d="M2.8 19c.4-4 2.1-6 5.2-6s4.8 2 5.2 6"></path><path d="M10.8 19c.4-4 2.1-6 5.2-6s4.8 2 5.2 6"></path></svg><span data-i18n="Coop">Coop</span></span></label>
             <label class="shelf-gamelist-flag shelf-gamelist-stream-field check-filter toggle-check stream-check"><input id="shelfGamelistStreamInput" type="checkbox"><span data-i18n="Stream">Stream</span></label>
             <label class="shelf-entitlement-field shelf-psplus-field check-filter toggle-check"><input id="psPlusInput" type="checkbox"><span>PlayStation Plus</span></label>
             <label class="shelf-entitlement-field shelf-games-with-gold-field check-filter toggle-check"><input id="gamesWithGoldInput" type="checkbox"><span data-i18n="Games with Gold">Games with Gold</span></label>

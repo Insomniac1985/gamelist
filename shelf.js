@@ -207,7 +207,6 @@ const el = {
   lookupInput: document.querySelector("#lookupInput"),
   lookupButton: document.querySelector("#lookupButton"),
   lookupLabelPhysical: document.querySelector("#addGameForm .lookup-label-physical"),
-  lookupDigitalSeparator: document.querySelector("#addGameForm .lookup-digital-separator"),
   lookupResults: document.querySelector("#lookupResults"),
   gamelistTargetPicker: document.querySelector("#shelfGamelistTargetPicker"),
   gamelistListPicker: document.querySelector("#shelfGamelistListPicker"),
@@ -506,7 +505,20 @@ function bindEvents() {
   el.fields.cover.addEventListener("change", syncShelfEditorCoverPreview);
   window.matchMedia("(min-width: 761px)").addEventListener("change", () => syncShelfGamelistTargetMode());
   el.lookupButton.addEventListener("click", lookupGame);
-  el.digitalInput.addEventListener("change", () => syncShelfDigitalEditorMode(el.digitalInput.checked));
+  el.digitalInput.addEventListener("change", () => {
+    el.fields.dlc.checked = el.digitalInput.checked;
+    syncShelfDigitalEditorMode(el.digitalInput.checked);
+  });
+  el.gamelistCoop.addEventListener("change", () => {
+    if (el.gamelistCoop.checked) el.gamelistMultiplayer.checked = true;
+  });
+  el.gamelistMultiplayer.addEventListener("change", () => {
+    if (!el.gamelistMultiplayer.checked) el.gamelistCoop.checked = false;
+  });
+  el.fields.dlc.addEventListener("change", () => {
+    el.digitalInput.checked = el.fields.dlc.checked;
+    syncShelfDigitalEditorMode(el.digitalInput.checked);
+  });
   el.lookupInput.addEventListener("keydown", (event) => { if (event.key === "Enter") { event.preventDefault(); lookupGame(); } });
   el.lookupResults.addEventListener("click", chooseLookupResult);
   Object.values(el.conditionFields).forEach((input) => input.addEventListener("change", () => syncConditionInputs(input)));
@@ -2298,7 +2310,7 @@ function openEditor(game = null, options = {}) {
   el.gamelistReleaseText.value = values.releaseText || "";
   el.gamelistEmulator.checked = Boolean(values.emulator);
   el.gamelistCoop.checked = Boolean(values.coop);
-  el.gamelistMultiplayer.checked = Boolean(values.multiplayer);
+  el.gamelistMultiplayer.checked = Boolean(values.multiplayer || values.coop);
   el.gamelistStream.checked = Boolean(values.stream);
   el.gamelistLength.value = values.lengthHours ?? "";
   el.gamelistSection.value = "wanted";
@@ -2377,7 +2389,7 @@ function syncShelfGamelistTargetMode() {
     el.addForm.querySelector(".shelf-editor-grid").insertBefore(digitalToggle, el.gamelistPlacement);
   } else {
     digitalToggle.classList.remove("gamelist-target-digital-field");
-    el.lookupDigitalSeparator.after(digitalToggle);
+    el.lookupButton.after(digitalToggle);
   }
   el.gamelistPlacement.hidden = !active;
   el.gamelistListPicker.hidden = !active;
