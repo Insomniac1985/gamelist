@@ -15358,8 +15358,8 @@ body.theme-kash
 .game-preorder-check {
   flex: 0 0 auto;
   width: auto;
-  min-height: 34px !important;
-  height: 34px !important;
+  min-height: 44px;
+  height: 44px;
   padding: 4px 10px;
   font-size: 13px;
 }
@@ -19283,7 +19283,6 @@ body:not(.can-edit):not(.shelf-page) :is(#upcoming, #wanted) .price-refresh-acti
   #addGameForm.gamelist-target-editor .shelf-region-field,
   #addGameForm.gamelist-target-editor .shelf-addition-field,
   #addGameForm.gamelist-target-editor .shelf-value-field,
-  #addGameForm.gamelist-target-editor .shelf-entitlement-field,
   #addGameForm.gamelist-target-editor .shelf-entitlement-grid-spacer,
   #addGameForm.gamelist-target-editor .shelf-condition-field,
   #addGameForm.gamelist-target-editor .shelf-condition-notes-field {

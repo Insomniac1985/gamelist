@@ -197,6 +197,7 @@
     <link rel="preload" as="image" href="assets/stores/retroisland.png">
     <link rel="preload" as="image" href="assets/stores/xtralife.ico">
     <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="game-editor-layout.css">
   </head>
   <body class="auth-checking">
     <script>
@@ -522,31 +523,33 @@
           <span class="shelf-gamelist-target-label" data-i18n="Add Game To">Add Game To</span>
           <div class="shelf-gamelist-target-options" role="group" aria-label="Add game to">
             <span class="shelf-gamelist-target-indicator" aria-hidden="true"></span>
-            <button type="button" data-game-destination="gamelist" data-i18n="Gamelist">Gamelist</button>
-            <button type="button" data-game-destination="shelf" data-i18n="Shelf">Shelf</button>
+            <button type="button" data-game-destination="gamelist"><span class="shelf-gamelist-target-logo gamelist-target-logo" aria-hidden="true"></span><span data-i18n="Gamelist">Gamelist</span></button>
+            <button type="button" data-game-destination="shelf"><span class="shelf-gamelist-target-logo shelf-target-logo" aria-hidden="true"></span><span data-i18n="Shelf">Shelf</span></button>
           </div>
         </div>
+        <div class="game-list-controls" id="gameListControls" role="group" aria-label="Gamelist list and preorder">
         <div class="shelf-gamelist-target-picker" id="gameAddTargetPicker" hidden>
-          <span class="shelf-gamelist-target-label" data-i18n="List">List</span>
-          <div class="shelf-gamelist-target-options" role="group" aria-label="Add game to">
+          <div class="shelf-gamelist-target-options" role="group" aria-label="Gamelist list">
             <span class="shelf-gamelist-target-indicator" aria-hidden="true"></span>
             <button type="button" data-game-target="backlog" data-i18n="Backlog">Backlog</button>
             <button type="button" data-game-target="upcoming" data-i18n="Upcoming">Upcoming</button>
             <button type="button" data-game-target="wanted" data-i18n="Available">Available</button>
           </div>
         </div>
+        <div class="game-preorder-stream-row" id="gamePreorderStreamRow">
         <div class="game-preorder-control">
           <label class="check-filter toggle-check game-preorder-check">
             <input id="gamePreorderCheck" type="checkbox">
-            <span class="check-label-with-icon"><svg class="form-toggle-icon preorder-form-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 3v4m10-4v4M4 9h16M5 5h14a1 1 0 0 1 1 1v13H4V6a1 1 0 0 1 1-1Z"></path><path d="m9 15 2 2 4-4"></path></svg><span data-i18n="Preorder">Preorder</span></span>
+            <span class="check-label-with-icon"><svg class="shopping-bag-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M6.5 8.5h11l1 12h-13l1-12Z"></path><path d="M9 8.5V7a3 3 0 0 1 6 0v1.5"></path></svg><span data-i18n="Preorder">Preorder</span></span>
           </label>
           <label class="preorder-store-field" id="gamePreorderStoreField" hidden>
-            <span data-i18n="Preordered Where">Preordered Where</span>
             <span class="icon-input store-icon-input">
               <span class="field-leading-icon preorder-store-field-icon" aria-hidden="true"></span>
               <input id="preorderStoreInput" placeholder="Xtralife, Game, Amazon...">
             </span>
           </label>
+        </div>
+        </div>
         </div>
         <div class="lookup-results" id="lookupResults"></div>
 
@@ -604,7 +607,8 @@
 
         <section class="form-group" id="collectingFormSection">
           <h3 data-i18n="Collecting Information">Collecting Information</h3>
-          <div class="form-grid collection-form-grid">
+          <div class="form-grid collection-form-grid unified-game-editor-grid">
+            <div class="game-editor-cover editor-cover" role="img" aria-label="Game cover preview"><img id="gameEditorCoverPreview" alt="" hidden></div>
             <label class="title-field">
               <span data-i18n="Title">Title</span>
               <input id="titleInput" required>
@@ -618,7 +622,7 @@
             </label>
             <label class="check-filter toggle-check form-check collection-check digital-check">
               <input id="digitalInput" type="checkbox">
-              <span class="check-label-with-icon"><svg class="form-toggle-icon digital-form-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12m0 0 4-4m-4 4-4-4M5 17v3h14v-3"></path></svg><span data-i18n="Digital">Digital</span></span>
+              <span class="check-label-with-icon"><svg class="download-badge-icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="4.5" width="14" height="15" rx="3"></rect><path d="M12 7.5v6.5"></path><path d="M9.5 11.8 12 14.3l2.5-2.5"></path><path d="M8.8 17h6.4"></path></svg><span data-i18n="Digital">Digital</span></span>
             </label>
             <label class="list-field">
               <span data-i18n="List">List</span>
@@ -644,21 +648,21 @@
               <input id="emulatorInput" type="checkbox">
               <span>Emulator</span>
             </label>
-            <label class="check-filter toggle-check form-check collection-check coop-check">
-              <input id="coopInput" type="checkbox">
-              <span>Coop</span>
-            </label>
             <label class="check-filter toggle-check form-check collection-check multiplayer-check">
               <input id="multiplayerInput" type="checkbox">
-              <span data-i18n="Multiplayer">Multiplayer</span>
+              <span class="check-label-with-icon"><svg class="online-globe-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8"></circle><path d="M4 12h16"></path><path d="M12 4c2.1 2.2 3.2 4.8 3.2 8s-1.1 5.8-3.2 8"></path><path d="M12 4c-2.1 2.2-3.2 4.8-3.2 8s1.1 5.8 3.2 8"></path></svg><span data-i18n="Multiplayer">Multiplayer</span></span>
+            </label>
+            <label class="check-filter toggle-check form-check collection-check coop-check">
+              <input id="coopInput" type="checkbox">
+              <span class="check-label-with-icon"><svg class="coop-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="8" cy="8" r="3"></circle><circle cx="16" cy="8" r="3"></circle><path d="M2.8 19c.4-4 2.1-6 5.2-6s4.8 2 5.2 6"></path><path d="M10.8 19c.4-4 2.1-6 5.2-6s4.8 2 5.2 6"></path></svg><span data-i18n="Coop">Coop</span></span>
             </label>
             <label class="check-filter toggle-check form-check entitlement-check psplus-check">
               <input id="psPlusInput" type="checkbox">
-              <span>PlayStation Plus</span>
+              <span class="check-label-with-icon"><img class="entitlement-icon" src="assets/platforms/psplus.png" alt="" aria-hidden="true"><span>PlayStation Plus</span></span>
             </label>
             <label class="check-filter toggle-check form-check entitlement-check games-with-gold-check">
               <input id="gamesWithGoldInput" type="checkbox">
-              <span data-i18n="Games with Gold">Games with Gold</span>
+              <span class="check-label-with-icon"><img class="entitlement-icon" src="assets/platforms/gameswithgold.png" alt="" aria-hidden="true"><span data-i18n="Games with Gold">Games with Gold</span></span>
             </label>
             <span class="entitlement-grid-spacer" aria-hidden="true"></span>
             <label class="length-field">
@@ -730,7 +734,7 @@
             </label>
             <label>
               <span data-i18n="Publisher">Publisher</span>
-              <input id="publisherInput" placeholder="Publisher" data-i18n-placeholder="Publisher">
+              <input id="publisherInput" placeholder="Company" data-i18n-placeholder="Company">
             </label>
             <label class="wide game-tags-field">
               <span data-i18n="Genre">Genre</span>

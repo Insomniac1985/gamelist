@@ -6,6 +6,8 @@ const STATIC_ASSETS = [
   "/index.html",
   "/manifest.webmanifest",
   "/styles.css",
+  "/game-editor-layout.css",
+  "/game-editor-controls.js",
   "/app.js",
   "/activity-ui.js",
   "/theme-system.js",
