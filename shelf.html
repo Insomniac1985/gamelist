@@ -402,7 +402,7 @@
           <span class="lookup-digital-separator" aria-hidden="true"></span>
           <label class="check-filter toggle-check form-check collection-check lookup-digital-check">
             <input id="shelfDigitalInput" type="checkbox">
-            <span data-i18n="Digital">Digital</span>
+            <span class="check-label-with-icon"><svg class="form-toggle-icon digital-form-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12m0 0 4-4m-4 4-4-4M5 17v3h14v-3"></path></svg><span data-i18n="Digital">Digital</span></span>
           </label>
         </div>
         <div class="shelf-gamelist-target-picker" id="shelfGamelistTargetPicker" hidden>
@@ -413,17 +413,6 @@
             <button type="button" data-gamelist-target="shelf" data-i18n="Shelf">Shelf</button>
           </div>
         </div>
-        <label class="check-filter toggle-check shelf-gamelist-preorder-check">
-          <input id="shelfGamelistPreorderCheck" type="checkbox">
-          <span data-i18n="Preorder">Preorder</span>
-        </label>
-        <label class="shelf-gamelist-preorder-field" id="shelfGamelistPreorderField" hidden>
-          <span data-i18n="Preordered Where">Preordered Where</span>
-          <span class="icon-input store-icon-input">
-            <span class="field-leading-icon shelf-gamelist-store-icon" aria-hidden="true"></span>
-            <input id="shelfGamelistPreorderStoreInput" placeholder="Xtralife, Game, Amazon...">
-          </span>
-        </label>
         <div class="shelf-gamelist-list-picker" id="shelfGamelistListPicker" hidden>
           <span class="shelf-gamelist-target-label" data-i18n="List">List</span>
           <div class="shelf-gamelist-section-options shelf-gamelist-target-options" role="group" aria-label="Gamelist list">
@@ -433,6 +422,17 @@
             <button type="button" data-gamelist-section="wanted" data-i18n="Available">Available</button>
           </div>
         </div>
+        <label class="check-filter toggle-check shelf-gamelist-preorder-check">
+          <input id="shelfGamelistPreorderCheck" type="checkbox">
+          <span class="check-label-with-icon"><svg class="form-toggle-icon preorder-form-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 3v4m10-4v4M4 9h16M5 5h14a1 1 0 0 1 1 1v13H4V6a1 1 0 0 1 1-1Z"></path><path d="m9 15 2 2 4-4"></path></svg><span data-i18n="Preorder">Preorder</span></span>
+        </label>
+        <label class="shelf-gamelist-preorder-field" id="shelfGamelistPreorderField" hidden>
+          <span data-i18n="Preordered Where">Preordered Where</span>
+          <span class="icon-input store-icon-input">
+            <span class="field-leading-icon shelf-gamelist-store-icon" aria-hidden="true"></span>
+            <input id="shelfGamelistPreorderStoreInput" placeholder="Xtralife, Game, Amazon...">
+          </span>
+        </label>
         <div class="lookup-results" id="lookupResults"></div>
 
         <section class="form-group">

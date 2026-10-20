@@ -1738,6 +1738,10 @@ function renderFilters() {
 
 function syncStyledSelect(select, options = {}) {
   if (!select) return;
+  if (select.id === "shelfGamelistSectionInput") {
+    if (select.nextElementSibling?.classList.contains("platform-logo-select")) select.nextElementSibling.remove();
+    return;
+  }
   const useLogos = Boolean(options.logos);
   const useFlags = Boolean(options.flags) || select.id === "countryInput";
   select.classList.add(useLogos ? "native-platform-filter" : "native-styled-select");
