@@ -207,6 +207,7 @@ const el = {
   lookupInput: document.querySelector("#lookupInput"),
   lookupButton: document.querySelector("#lookupButton"),
   lookupLabelPhysical: document.querySelector("#addGameForm .lookup-label-physical"),
+  lookupLabelDigital: document.querySelector("#addGameForm .lookup-label-digital"),
   lookupResults: document.querySelector("#lookupResults"),
   gamelistTargetPicker: document.querySelector("#shelfGamelistTargetPicker"),
   gamelistListPicker: document.querySelector("#shelfGamelistListPicker"),
@@ -310,7 +311,13 @@ async function init() {
   }
   state.updatedAt = shelfData?.updatedAt || "";
   state.gamelistGames = gamelistData?.games || [];
-  state.gamelistSettings = gamelistData?.settings || state.gamelistSettings;
+  const sharedSettings = loadSharedSettings();
+  const remoteSettings = gamelistData?.settings || {};
+  state.gamelistSettings = { ...sharedSettings, ...remoteSettings };
+  if (!Object.prototype.hasOwnProperty.call(remoteSettings, "twitchUser")) {
+    state.gamelistSettings.twitchUser = sharedSettings.twitchUser || "";
+  }
+  localStorage.setItem("gamelist:settings:v1", JSON.stringify(state.gamelistSettings));
   syncPagePullTransition();
   applyShelfDefaultOrder(state.gamelistSettings.shelfDefaultOrder ?? state.gamelistSettings.defaultOrder);
   applyTheme();
@@ -2375,7 +2382,8 @@ function syncShelfDigitalEditorMode(digitalMode) {
   el.addForm.classList.toggle("digital-tracking-disabled", state.gamelistSettings.shelfDigitalGames !== true);
   el.addForm.dataset.digital = digitalMode ? "true" : "false";
   el.fields.country.required = !digitalMode && !isGamelistProjectionTarget();
-  el.lookupInput.placeholder = tt(digitalMode ? "Game name" : "Game name or PriceCharting page");
+  if (el.lookupLabelDigital) el.lookupLabelDigital.textContent = tt("Search DB or IGDB URL");
+  el.lookupInput.placeholder = tt(digitalMode ? "Type a game name or paste an IGDB page" : "Game name or PriceCharting page");
   const game = state.games.find((item) => item.id === state.editingId);
   el.addForm.querySelector(".modal-head h2").textContent = tt(game?.pendingCollection ? "Add to Collection" : game ? "Edit Game" : digitalMode ? "Add Digital Game" : "Add game");
   el.addForm.querySelectorAll("button[type='submit']").forEach((button) => { button.textContent = game?.pendingCollection ? "Add to Collection" : game ? "Save" : digitalMode ? "Add to Drive" : "Add to Shelf"; });
@@ -2438,7 +2446,7 @@ function syncShelfGamelistTargetMode() {
     if (title) title.textContent = tt(game?.pendingCollection ? "Add to Collection" : game ? "Edit Game" : el.addForm.dataset.digital === "true" ? "Add Digital Game" : "Add game");
     el.addForm.querySelector(".form-group h3").textContent = tt("Collecting Information");
     el.addForm.querySelectorAll("button[type='submit']").forEach((button) => { button.textContent = game?.pendingCollection ? tt("Add to Collection") : game ? tt("Save") : el.addForm.dataset.digital === "true" ? tt("Add to Drive") : tt("Add to Shelf"); });
-    el.lookupInput.placeholder = tt(el.addForm.dataset.digital === "true" ? "Game name" : "Game name or PriceCharting page");
+    el.lookupInput.placeholder = tt(el.addForm.dataset.digital === "true" ? "Type a game name or paste an IGDB page" : "Game name or PriceCharting page");
     el.gamelistSection.disabled = false;
   }
   el.fields.country.required = el.addForm.dataset.digital !== "true" && !active;
@@ -2519,7 +2527,7 @@ function syncShelfGamelistPreorderVisibility() {
 function syncShelfGamelistPreorderStreamLayout() {
   const group = document.querySelector(".shelf-gamelist-preorder-stream-row");
   const streamField = el.gamelistStream?.closest(".shelf-gamelist-stream-field");
-  const hasTwitchAccount = Boolean(String(state.gamelistSettings?.twitchUser || "").trim());
+  const hasTwitchAccount = Boolean(String(state.gamelistSettings?.twitchUser || loadSharedSettings().twitchUser || "").trim());
   if (streamField) streamField.hidden = !hasTwitchAccount;
   group?.classList.toggle("has-stream", hasTwitchAccount);
 }
@@ -2620,7 +2628,7 @@ function syncShelfNewGameHighlights() {
     const needsHighlight = projectionTarget && key in values ? !values[key] : !shelfNewGameTouchedFields.has(key);
     el.addForm.classList.toggle(`needs-${key}-field`, isNewShelfGame && needsHighlight);
   }
-  el.addForm.classList.toggle("needs-stream-check", isNewShelfGame && projectionTarget && Boolean(String(state.gamelistSettings.twitchUser || "").trim()) && !shelfNewGameTouchedFields.has("stream"));
+  el.addForm.classList.toggle("needs-stream-check", isNewShelfGame && projectionTarget && Boolean(String(state.gamelistSettings.twitchUser || loadSharedSettings().twitchUser || "").trim()) && !shelfNewGameTouchedFields.has("stream"));
 }
 
 async function deleteCurrentEditedGame() {

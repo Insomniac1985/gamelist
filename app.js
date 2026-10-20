@@ -1382,6 +1382,7 @@ function bindEvents() {
     if (!el.fields.digital.checked && el.fields.emulator) el.fields.emulator.checked = false;
     syncDialogPriceVisibility();
     syncGamelistEntitlementEditor();
+    syncGameAddDestination();
   });
   el.fields.emulator?.addEventListener("change", () => {
     if (el.fields.digital) el.fields.digital.checked = el.fields.emulator.checked;
@@ -11934,7 +11935,13 @@ function syncGameAddDestination() {
     button.dataset.i18n = saveLabel;
     button.textContent = tt(saveLabel);
   });
-  el.dialogTitle.textContent = !isNewGame ? tt("Edit Game") : shelfTarget ? tt("Add to Shelf") : tt("Add to Gamelist");
+  el.dialogTitle.textContent = !isNewGame
+    ? tt("Edit Game")
+    : el.fields.digital.checked
+      ? tt("Add Digital Game")
+      : shelfTarget
+        ? tt("Add to Shelf")
+        : tt("Add to Gamelist");
   syncGameAddTargetPicker();
 }
 
