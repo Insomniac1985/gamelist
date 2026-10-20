@@ -198,7 +198,6 @@ const MANUAL_PSN_TITLE_OVERRIDES = [
 const SEARCH_CACHE_TTL = 1000 * 60 * 60;
 let titleLookupTimer = 0;
 let newGameListTouched = false;
-let newGameStreamTouched = false;
 let selectMeasureContext = null;
 let selectOverflowPopover = null;
 let platformLogoOverlay = null;
@@ -1321,10 +1320,6 @@ function bindEvents() {
   el.board.addEventListener("touchend", handleBoardSwipeEnd, { passive: true });
   window.addEventListener("touchend", handleBoardSwipeEnd, { passive: true });
   el.fields.title.addEventListener("input", syncNewGameRequiredHighlights);
-  el.fields.stream?.addEventListener("change", () => {
-    newGameStreamTouched = true;
-    syncNewGameRequiredHighlights();
-  });
   el.gameAddTargetPicker.addEventListener("click", (event) => {
     const button = event.target.closest("[data-game-target]");
     if (!button || state.editingId) return;
@@ -11952,10 +11947,6 @@ function syncNewGameRequiredHighlights() {
   el.dialog.classList.toggle("needs-platform-field", isNewGame && !el.fields.platform.value.trim());
   el.dialog.classList.toggle("needs-release-date-field", isNewGame && !el.fields.releaseDate.value);
   el.dialog.classList.toggle("needs-list-field", isNewGame && !newGameListTouched);
-  el.dialog.classList.toggle(
-    "needs-stream-check",
-    isNewGame && Boolean(cleanTwitchUser(state.settings.twitchUser)) && !newGameStreamTouched,
-  );
 }
 
 function syncNewGameUpcomingSection() {
@@ -12031,7 +12022,6 @@ async function openEditor(id = "") {
   state.pendingDescription = "";
   const game = state.games.find((item) => item.id === id) || blankGame();
   newGameListTouched = Boolean(id);
-  newGameStreamTouched = Boolean(id);
   el.dialogTitle.textContent = id ? tt("Edit Game") : tt("Add game");
   const saveLabel = id ? "Save" : "Add to Gamelist";
   el.gameDialogSaveButton.dataset.i18n = saveLabel;

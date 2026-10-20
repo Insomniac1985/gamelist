@@ -495,8 +495,6 @@ function bindEvents() {
   syncShelfGamelistStoreIcons();
   el.gamelistStream.addEventListener("change", () => {
     syncShelfGamelistPreorderStreamLayout();
-    shelfNewGameTouchedFields.add("stream");
-    syncShelfNewGameHighlights();
   });
   syncShelfGamelistPreorderStreamLayout();
   el.gamelistSection.addEventListener("change", syncShelfGamelistSectionButtons);
@@ -2629,7 +2627,6 @@ function syncShelfNewGameHighlights() {
     const needsHighlight = projectionTarget && key in values ? !values[key] : !shelfNewGameTouchedFields.has(key);
     el.addForm.classList.toggle(`needs-${key}-field`, isNewShelfGame && needsHighlight);
   }
-  el.addForm.classList.toggle("needs-stream-check", isNewShelfGame && projectionTarget && Boolean(String(state.gamelistSettings.twitchUser || loadSharedSettings().twitchUser || "").trim()) && !shelfNewGameTouchedFields.has("stream"));
 }
 
 async function deleteCurrentEditedGame() {
