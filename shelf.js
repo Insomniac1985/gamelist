@@ -2487,6 +2487,7 @@ function syncShelfGamelistSectionButtons() {
 function syncShelfGamelistPreorderVisibility() {
   const row = el.gamelistPreorderCheck?.closest(".shelf-gamelist-preorder-row");
   if (!row) return;
+  const group = row.closest(".shelf-gamelist-preorder-stream-row");
   const active = isGamelistProjectionTarget();
   const isBacklog = active && el.gamelistSection.value === "backlog";
   if (isBacklog) {
@@ -2496,6 +2497,11 @@ function syncShelfGamelistPreorderVisibility() {
   row.hidden = !active || isBacklog;
   el.gamelistPreorderField.hidden = !active || isBacklog || !el.gamelistPreorderCheck.checked;
   row.classList.toggle("has-preorder-store", active && !isBacklog && el.gamelistPreorderCheck.checked);
+  if (group) {
+    group.hidden = !active;
+    group.classList.toggle("has-preorder-store", active && !isBacklog && el.gamelistPreorderCheck.checked);
+    group.classList.toggle("preorder-hidden", isBacklog);
+  }
   if (isBacklog) {
     syncShelfGamelistStoreIcons();
     syncShelfGamelistPreorderRequirement();

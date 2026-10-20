@@ -2746,10 +2746,21 @@ textarea {
     display: none !important;
   }
 
+  #addGameForm.gamelist-target-editor .shelf-editor-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
   .gamelist-target-editor .shelf-editor-grid > * {
     grid-area: auto !important;
     grid-column: 1 / -1 !important;
     grid-row: auto !important;
+  }
+
+  #addGameForm.gamelist-target-editor .shelf-editor-grid > .shelf-dlc-field,
+  #addGameForm.gamelist-target-editor .shelf-editor-grid > .shelf-gamelist-emulator-field,
+  #addGameForm.gamelist-target-editor .shelf-editor-grid > .shelf-gamelist-multiplayer-field,
+  #addGameForm.gamelist-target-editor .shelf-editor-grid > .shelf-gamelist-coop-field {
+    grid-column: span 1 !important;
   }
 
   .gamelist-target-editor .shelf-gamelist-placement > * {
@@ -3375,12 +3386,44 @@ textarea {
   padding-inline: 12px;
 }
 
+#addGameForm.gamelist-target-editor .shelf-gamelist-preorder-stream-row {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  align-items: stretch;
+  gap: 12px;
+  margin: 0 0 8px;
+}
+
+#addGameForm.gamelist-target-editor .shelf-gamelist-preorder-stream-row[hidden] {
+  display: none !important;
+}
+
+#addGameForm:not(.gamelist-target-editor) .shelf-gamelist-preorder-stream-row {
+  display: none !important;
+}
+
+#addGameForm.gamelist-target-editor .shelf-gamelist-preorder-stream-row.has-preorder-store {
+  grid-template-columns: minmax(0, 3fr) minmax(100px, 1fr);
+}
+
+#addGameForm.gamelist-target-editor .shelf-gamelist-preorder-stream-row.preorder-hidden {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+#addGameForm.gamelist-target-editor .shelf-gamelist-stream-field {
+  width: 100%;
+  height: 44px;
+  min-height: 44px;
+  margin: 0;
+  box-sizing: border-box;
+}
+
 #addGameForm.gamelist-target-editor .shelf-gamelist-preorder-row {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
   align-items: stretch;
   gap: 12px;
-  margin: 0 0 8px;
+  margin: 0;
 }
 
 #addGameForm.gamelist-target-editor .shelf-gamelist-preorder-row[hidden] {
@@ -3397,6 +3440,23 @@ textarea {
   height: 44px;
   min-height: 44px;
   box-sizing: border-box;
+}
+
+@media (max-width: 760px) {
+  #addGameForm.gamelist-target-editor .shelf-gamelist-preorder-stream-row,
+  #addGameForm.gamelist-target-editor .shelf-gamelist-preorder-stream-row.has-preorder-store,
+  #addGameForm.gamelist-target-editor .shelf-gamelist-preorder-stream-row.preorder-hidden {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  #addGameForm.gamelist-target-editor .shelf-gamelist-preorder-row.has-preorder-store {
+    grid-template-columns: minmax(0, 1fr);
+    height: auto;
+  }
+
+  #addGameForm.gamelist-target-editor .shelf-gamelist-preorder-row.has-preorder-store .shelf-gamelist-preorder-check {
+    width: 100%;
+  }
 }
 
 #addGameForm.gamelist-target-editor .shelf-gamelist-preorder-field {
