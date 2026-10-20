@@ -517,6 +517,11 @@ function bindEvents() {
   window.matchMedia("(min-width: 761px)").addEventListener("change", () => syncShelfGamelistTargetMode());
   el.lookupButton.addEventListener("click", lookupGame);
   el.digitalInput.addEventListener("change", () => {
+    if (!el.digitalInput.checked) {
+      el.fields.dlc.checked = false;
+      el.fields.psPlus.checked = false;
+      el.fields.gamesWithGold.checked = false;
+    }
     syncShelfDigitalEditorMode(el.digitalInput.checked);
   });
   el.gamelistCoop.addEventListener("change", () => {
@@ -2513,7 +2518,10 @@ function syncShelfGamelistPreorderVisibility() {
 
 function syncShelfGamelistPreorderStreamLayout() {
   const group = document.querySelector(".shelf-gamelist-preorder-stream-row");
-  group?.classList.toggle("has-stream", Boolean(el.gamelistStream?.checked));
+  const streamField = el.gamelistStream?.closest(".shelf-gamelist-stream-field");
+  const hasTwitchAccount = Boolean(String(state.gamelistSettings?.twitchUser || "").trim());
+  if (streamField) streamField.hidden = !hasTwitchAccount;
+  group?.classList.toggle("has-stream", hasTwitchAccount);
 }
 
 function setShelfGamelistAddTarget(target) {
@@ -2564,7 +2572,7 @@ function knownShelfStoreIconName(value) {
   if (normalized === "xtralife" || normalized === "xtra life") return "Xtralife";
   if (normalized === "retro island" || normalized === "retro island ny") return "Retro Island NY";
   if (["limitedrun", "limitedrungames", "lrg"].includes(normalized)) return "Limited Run";
-  if (["squareenix", "squareenixstore", "sqex", "sqexstore"].includes(normalized)) return "Square Enix Store";
+  if (["squareenix", "squareenixstore", "sqex", "sqexstore"].includes(normalized.replace(/[^a-z0-9]/g, ""))) return "Square Enix Store";
   if (["gamestop", "game stop"].includes(normalized)) return "GameStop";
   if (["walmart", "wallmart"].includes(normalized)) return "Walmart";
   if (normalized.startsWith("nintendo")) return "Nintendo";
@@ -2777,14 +2785,18 @@ function renderShelfLookupResults() {
     const body = physical
       ? `<p>${escapeHtml(platforms.join(" · ") || "Platform unknown")}</p>`
       : `${matchedTitle ? `<p>${escapeHtml(matchedTitle)}</p>` : ""}${publisherDate ? `<p>${escapeHtml(publisherDate)}</p>` : ""}${tags ? `<p>${escapeHtml(tags)}</p>` : ""}${description ? `<p>${escapeHtml(description)}</p>` : ""}`;
-    return `<div class="lookup-result shelf-lookup-result${image ? "" : " no-cover"}"><img class="${image ? "" : "lookup-cover-placeholder"}" src="${escapeHtml(image || "assets/Icon_shelf.png")}" alt=""><div><span class="lookup-result-title"><strong>${escapeHtml(result.title || "Untitled game")}</strong>${igdbRating}</span>${body}</div><button class="ghost-button" type="button" data-result-index="${index}">Use</button></div>`;
+    const cover = image
+      ? `<img src="${escapeHtml(image)}" alt="">`
+      : `<span class="lookup-cover-placeholder" aria-hidden="true"></span>`;
+    return `<div class="lookup-result shelf-lookup-result${image ? "" : " no-cover"}">${cover}<div><span class="lookup-result-title"><strong>${escapeHtml(result.title || "Untitled game")}</strong>${igdbRating}</span>${body}</div><button class="ghost-button" type="button" data-result-index="${index}">Use</button></div>`;
   }).join("");
   el.lookupResults.querySelectorAll(".lookup-result img").forEach((cover) => {
     cover.addEventListener("error", () => {
-      if (cover.dataset.placeholderApplied) return;
-      cover.dataset.placeholderApplied = "true";
-      cover.classList.add("lookup-cover-placeholder");
-      cover.src = "assets/Icon_shelf.png";
+      const placeholder = document.createElement("span");
+      placeholder.className = "lookup-cover-placeholder";
+      placeholder.setAttribute("aria-hidden", "true");
+      cover.closest(".lookup-result")?.classList.add("no-cover");
+      cover.replaceWith(placeholder);
     });
   });
   requestAnimationFrame(() => el.lookupResults.classList.add("loaded"));
@@ -5547,7 +5559,7 @@ function storePricesMarkup(prices, currency) {
 function placeholderStorePrices(settings = normalizePriceSettings(state.gamelistSettings)) {
   return settings.stores.map((store) => ({ store, price: "", numericPrice: null, url: "" }));
 }
-function storeIcon(store) { const normalizedStore = normalizeTag(store); if (String(store).startsWith("Amazon")) return "assets/stores/amazon.ico"; if (store === "eBay") return "https://www.ebay.com/favicon.ico"; if (isKickstarterStore(store)) return "https://www.kickstarter.com/favicon.ico"; if (store === "Xtralife") return "assets/stores/xtralife.ico"; if (store === "GAME.es") return "assets/stores/game.ico"; if (store === "Retro Island NY") return "assets/stores/retroisland.png"; if (normalizedStore === "limitedrun" || normalizedStore === "limitedrungames" || normalizedStore === "lrg") return "assets/stores/limited-run-games.png"; if (normalizedStore === "squareenix" || normalizedStore === "squareenixstore" || normalizedStore === "sqex" || normalizedStore === "sqexstore") return "assets/stores/square-enix-store.png"; if (store === "GameStop") return "https://www.gamestop.com/favicon.ico"; if (store === "Walmart") return "https://www.walmart.com/favicon.ico"; if (String(store).startsWith("Nintendo")) return "assets/sites/nintendo.png"; if (String(store).startsWith("PlayStation")) return "assets/sites/playstation.png"; if (store === "Steam") return "assets/sites/steam.png"; if (store === "Xbox") return "assets/platforms/xbox.png"; return "assets/Icon.png"; }
+function storeIcon(store) { const normalizedStore = normalizeTag(store); if (String(store).startsWith("Amazon")) return "assets/stores/amazon.ico"; if (store === "eBay") return "https://www.ebay.com/favicon.ico"; if (isKickstarterStore(store)) return "https://www.kickstarter.com/favicon.ico"; if (store === "Xtralife") return "assets/stores/xtralife.ico"; if (store === "GAME.es") return "assets/stores/game.ico"; if (store === "Retro Island NY") return "assets/stores/retroisland.png"; if (normalizedStore === "limitedrun" || normalizedStore === "limitedrungames" || normalizedStore === "lrg") return "assets/stores/limited-run-games.png"; if (["squareenix", "squareenixstore", "sqex", "sqexstore"].includes(normalizedStore.replace(/[^a-z0-9]/g, ""))) return "assets/stores/square-enix-store.png"; if (store === "GameStop") return "https://www.gamestop.com/favicon.ico"; if (store === "Walmart") return "https://www.walmart.com/favicon.ico"; if (String(store).startsWith("Nintendo")) return "assets/sites/nintendo.png"; if (String(store).startsWith("PlayStation")) return "assets/sites/playstation.png"; if (store === "Steam") return "assets/sites/steam.png"; if (store === "Xbox") return "assets/platforms/xbox.png"; return "assets/Icon.png"; }
 function isKickstarterStore(store) { return ["kickstarter", "kickstater", "kicstarter", "kickstart"].includes(normalizeTag(store).replace(/[^a-z0-9]+/g, "")); }
 function renderPriceDetails(game) {
   const prices = game.collectionPrices || {};
