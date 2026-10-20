@@ -3433,3 +3433,8 @@ textarea {
 .gamelist-target-editor .shelf-gamelist-list-picker {
   margin: 0 0 8px;
 }
+
+@media (max-width: 760px) {
+  /* Shelf follows the shared markup: DLC, subscription, then release details. */
+  #addGameForm.gamelist-target-editor .shelf-entitlement-field { order: 11; }
+}

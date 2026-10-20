@@ -1,4 +1,4 @@
-import { openSharedAddGame } from "./shared-add-game.js";
+import { openSharedAddGame, warmSharedAddGame } from "./shared-add-game.js";
 import { normalizeSearchText, bindModalTouchGuard, createGameCardShell, bindActivityCardParallax, mountActivitySlider, mountTwitchPreview, mountReleaseCalendar, finishedGameMarkup, achievementCardMarkup, achievementDashboardMarkup, achievementPanelMarkup, completedCardMarkup, horizontalCarouselState, syncViewModeButton, slideHorizontalCarousel, comparePlayingGames, finishedDurationText, timeBadgeMarkup, guideLinksMarkup, storeButtonsMarkup, activityTrailerUrl, activityTrailerFrameMarkup, preloadPausedActivityTrailers, activityReleaseStatus, activityCoverOverride, activityAllowsPsnCardTrophies, formatFooterDate, formatFooterDateTime, formatFooterShortDate, confirmGameDelete } from "./activity-ui.js";
 import { applySiteTheme, normalizeThemeSettings, ownerCardColorClass, ownerColorClass, themeSettingsContent, bindThemeSettingsContent, readThemeSettingsContent } from "./theme-system.js";
 import { applyDocumentTranslations, languageOptions, normalizeLanguage, t } from "./i18n.js";
@@ -582,6 +582,7 @@ async function init() {
     sessionStorage.removeItem(`${SESSION_KEY}:password`);
   }
   document.body.classList.toggle("can-edit", state.canEdit);
+  if (state.canEdit) warmSharedAddGame();
   bindEvents();
   initRenderSettling();
   warmUiIcons();
@@ -12114,7 +12115,7 @@ async function openEditor(id = "") {
 
 async function openNativeAddGame(options = {}) {
   pauseAllPlayingTrailers();
-  const result = await openSharedAddGame({ ...options, target: "gamelist" });
+  const result = await openSharedAddGame({ ...options, target: "gamelist", settings: state.settings });
   if (result?.saved) {
     await pullCloudData();
     render();

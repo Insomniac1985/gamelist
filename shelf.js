@@ -279,6 +279,7 @@ let shelfSettingsLogoutRequested = false;
 init();
 
 async function init() {
+  if (embeddedGameEditor) return initEmbeddedAddGame();
   if (await checkSiteVersion()) return;
   await window.__initialThemeReady?.catch(() => "shabii");
   applyTheme();
@@ -319,26 +320,6 @@ async function init() {
   syncPagePullTransition();
   applyShelfDefaultOrder(state.gamelistSettings.shelfDefaultOrder ?? state.gamelistSettings.defaultOrder);
   applyTheme();
-  if (embeddedGameEditor) {
-    populateEditorOptions();
-    applyDocumentTranslations(currentLanguage());
-    rebuildGames();
-    connectEmbeddedGameEditor({ dialog: el.addDialog, requestClose: requestShelfEditorClose, open: options => {
-      openEditor(null, { digital: Boolean(options.digital), target: options.target });
-      if (options.query) {
-        el.lookupInput.value = options.query;
-        el.fields.title.value = options.query;
-        shelfEditorDirty = true;
-        void lookupGame();
-      }
-      if (["backlog", "upcoming", "wanted"].includes(options.section)) {
-        el.gamelistSection.value = options.section;
-        syncShelfGamelistSectionButtons();
-        syncStyledSelect(el.gamelistSection);
-      }
-    }});
-    return;
-  }
   loadTrophyActivity();
   rebuildGames();
   applyShelfSearchFromUrl();
@@ -346,6 +327,58 @@ async function init() {
   void refreshShelfPlayingCardPlaytime();
   window.setInterval(refreshShelfPlayingCardPlaytime, 5 * 60 * 1000);
   maybeShowUpdatesPopup();
+}
+
+let embeddedEditorDataReady;
+let embeddedEditorLoad = 0;
+
+function initEmbeddedAddGame() {
+  applyTheme();
+  document.documentElement.classList.remove("theme-booting");
+  populateEditorOptions();
+  bindEvents();
+  connectEmbeddedGameEditor({ dialog: el.addDialog, requestClose: requestShelfEditorClose, open: options => {
+    // The parent already authenticated; server writes still check that session.
+    state.canEdit = true;
+    state.gamelistSettings = { ...loadSharedSettings(), ...(options.settings || {}) };
+    applyTheme();
+    populateEditorOptions();
+    applyDocumentTranslations(currentLanguage());
+    embeddedEditorDataReady = refreshEmbeddedEditorData();
+    openEditor(null, { digital: Boolean(options.digital), target: options.target });
+    if (["backlog", "upcoming", "wanted"].includes(options.section)) {
+      el.gamelistSection.value = options.section;
+      syncShelfGamelistSectionButtons();
+      syncStyledSelect(el.gamelistSection);
+    }
+    if (options.query) {
+      el.lookupInput.value = options.query;
+      el.fields.title.value = options.query;
+      shelfEditorDirty = true;
+      void lookupGame();
+    }
+  }});
+}
+
+async function refreshEmbeddedEditorData() {
+  const load = ++embeddedEditorLoad;
+  try {
+    const read = async url => {
+      const response = await fetch(url, { cache: "no-store" });
+      if (!response.ok) throw new Error("Could not load current game data.");
+      return response.json();
+    };
+    const [shelfData, gamelistData] = await Promise.all([read("/api/shelf"), read("/api/sync")]);
+    if (!Array.isArray(shelfData.games) || !Array.isArray(gamelistData.games)) return false;
+    if (load !== embeddedEditorLoad) return false;
+    state.sourceGames = shelfData.sourceGames || [];
+    state.additions = shelfData.games;
+    state.overrides = shelfData.overrides || {};
+    state.layout = normalizeLayout(shelfData.layout || state.layout);
+    state.favoriteGameIds = shelfFavoriteIdsFromSources(shelfData, gamelistData, loadDraft());
+    state.gamelistGames = gamelistData.games;
+    return true;
+  } catch { return false; }
 }
 
 function applyShelfSearchFromUrl() {
@@ -2970,6 +3003,16 @@ function applyPriceChartingRegion(consoleName) { const current = el.fields.count
 async function saveEditor(event) {
   event.preventDefault();
   if (!state.canEdit) return;
+  if (embeddedGameEditor) {
+    const load = embeddedEditorLoad;
+    const ready = await embeddedEditorDataReady;
+    if (load !== embeddedEditorLoad || !el.addDialog.open) return;
+    if (!ready) {
+      showToast(tt("Could not load current game data. Please try again."), "error");
+      embeddedEditorDataReady = refreshEmbeddedEditorData();
+      return;
+    }
+  }
   if (isGamelistProjectionTarget()) return saveGamelistTargetFromShelf(event);
   const existing = state.games.find((game) => game.id === state.editingId);
   const digitalMode = el.addForm.dataset.digital === "true";
