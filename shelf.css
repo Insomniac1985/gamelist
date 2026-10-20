@@ -3462,3 +3462,27 @@ textarea {
   /* Shelf follows the shared markup: DLC, subscription, then release details. */
   #addGameForm.gamelist-target-editor .shelf-entitlement-field { order: 11; }
 }
+
+@media (max-width: 900px) {
+  .shelf-toolbar {
+    grid-template-columns: minmax(0, 1fr) var(--toolbar-control-height);
+  }
+
+  .shelf-toolbar > label {
+    grid-column: 1 / -1 !important;
+    width: 100%;
+    min-width: 0;
+  }
+
+  .shelf-toolbar .order-label {
+    grid-column: 1 !important;
+  }
+
+  .shelf-toolbar .view-toggle {
+    grid-column: 2 !important;
+    align-self: end;
+    justify-self: stretch;
+    width: var(--toolbar-control-height);
+    height: var(--toolbar-control-height);
+  }
+}
