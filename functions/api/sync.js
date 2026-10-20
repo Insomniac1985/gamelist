@@ -24,6 +24,7 @@ export async function onRequestGet({ request, env }) {
       shelfShowPreorders: settings.shelfShowPreorders, shelfDigitalGames: settings.shelfDigitalGames,
       shelfHidePrices: settings.shelfHidePrices, currency: settings.currency, language: settings.language,
       region: settings.region, stores: Array.isArray(settings.stores) ? settings.stores : [],
+      twitchUser: String(settings.twitchUser || ""),
       storeSettingsVersion: settings.storeSettingsVersion,
       defaultOrder: settings.defaultOrder, shelfDefaultOrder: settings.shelfDefaultOrder,
       defaultOwner: settings.defaultOwner,
