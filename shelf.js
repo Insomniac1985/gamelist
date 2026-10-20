@@ -497,7 +497,11 @@ function bindEvents() {
     closeDialog(el.addDialog);
   });
   el.fields.platform.addEventListener("input", syncShelfEditorIcons);
-  el.fields.platform.addEventListener("change", syncShelfEditorIcons);
+  el.fields.platform.addEventListener("change", () => {
+    const platform = canonicalShelfPlatform(el.fields.platform.value);
+    el.fields.platform.value = platform ? platformDisplayName(platform) : "";
+    syncShelfEditorIcons();
+  });
   el.fields.releaseDate.addEventListener("input", syncShelfGamelistSectionForTarget);
   el.fields.releaseDate.addEventListener("change", syncShelfGamelistSectionForTarget);
   el.fields.country.addEventListener("change", syncShelfEditorIcons);
@@ -510,7 +514,7 @@ function bindEvents() {
     syncShelfDigitalEditorMode(el.digitalInput.checked);
   });
   el.gamelistCoop.addEventListener("change", () => {
-    if (el.gamelistCoop.checked) el.gamelistMultiplayer.checked = true;
+    el.gamelistMultiplayer.checked = el.gamelistCoop.checked;
   });
   el.gamelistMultiplayer.addEventListener("change", () => {
     if (!el.gamelistMultiplayer.checked) el.gamelistCoop.checked = false;
@@ -2302,7 +2306,7 @@ function openEditor(game = null, options = {}) {
   const values = game || { platform: "", country: defaultShelfCountry(), owners: defaultShelfOwners(), game: true };
   for (const [key, input] of Object.entries(el.fields)) if (!["dlc", "psPlus", "gamesWithGold"].includes(key)) input.value = values[key] ?? "";
   el.fields.additionDate.value = shelfDateInputValue(values.createdAt) || (game ? "" : shelfDateInputValue(new Date().toISOString()));
-  el.fields.platform.value = canonicalShelfPlatform(values.platform || "");
+  el.fields.platform.value = values.platform ? platformDisplayName(values.platform) : "";
   syncShelfEditorCoverPreview();
   el.fields.dlc.checked = Boolean(values.dlc);
   el.fields.psPlus.checked = Boolean(values.psPlus);
@@ -2437,6 +2441,7 @@ function syncShelfGamelistSectionForTarget() {
     today.setHours(0, 0, 0, 0);
     const futureRelease = Boolean(releaseDate) && new Date(`${releaseDate}T00:00:00`).getTime() > today.getTime();
     el.gamelistSection.value = futureRelease ? "upcoming" : "wanted";
+    syncShelfGamelistSectionButtons();
   }
   syncStyledSelect(el.gamelistSection);
 }
@@ -2566,7 +2571,7 @@ async function lookupGame() {
     if (directUrl) {
       const physical = await fetchPhysicalMetadata(el.fields.title.value.trim(), { url: directUrl });
       if (!physical) throw new Error(tt("PriceCharting edition unavailable"));
-      el.fields.platform.value = bestCollectionPlatform([physical.consoleName], el.fields.platform.value);
+      el.fields.platform.value = platformDisplayName(bestCollectionPlatform([physical.consoleName], el.fields.platform.value));
       applyPriceChartingRegion(physical.consoleName);
       applyPhysicalMetadata(physical);
       renderPhysicalSelection(physical);
@@ -2758,7 +2763,7 @@ async function chooseLookupResult(event) {
     return;
   }
   el.fields.title.value = result.title || el.fields.title.value;
-  el.fields.platform.value = bestCollectionPlatform(result.platforms || [result.platform], el.fields.platform.value);
+  el.fields.platform.value = platformDisplayName(bestCollectionPlatform(result.platforms || [result.platform], el.fields.platform.value));
   el.fields.publisher.value = result.publisher || "";
   el.fields.developer.value = result.developer || "";
   el.fields.genre.value = (result.genres || []).join(", ");
@@ -2825,7 +2830,7 @@ function applyGameMetadata(result) {
 
 async function prefillPhysicalResult(result) {
   el.fields.title.value = result.productName || el.fields.title.value;
-  el.fields.platform.value = bestCollectionPlatform([result.consoleName], el.fields.platform.value);
+  el.fields.platform.value = platformDisplayName(bestCollectionPlatform([result.consoleName], el.fields.platform.value));
   markShelfNewGameFieldsTouched([...(result.productName ? ["title"] : []), ...(el.fields.platform.value ? ["platform"] : [])]);
   applyPriceChartingRegion(result.consoleName);
   applyPriceChartingSearchResult(result);
@@ -4197,7 +4202,7 @@ function openDialog(dialog) { dialog.showModal(); document.body.classList.add("d
 function closeDialog(dialog) { if (dialog.open) dialog.close(); document.body.classList.toggle("dialog-open", document.querySelector("dialog[open]") !== null); }
 
 function populateEditorOptions() {
-  el.platformOptions.innerHTML = PLATFORM_OPTIONS.map((platform) => `<option value="${platform}">${platformDisplayName(platform)}</option>`).join("");
+  el.platformOptions.innerHTML = PLATFORM_OPTIONS.map((platform) => `<option value="${escapeHtml(platformDisplayName(platform))}"></option>`).join("");
   el.fields.country.innerHTML = COUNTRY_OPTIONS.map(([value, label]) => `<option value="${value}">${escapeHtml(tt(label))}</option>`).join("");
 }
 
