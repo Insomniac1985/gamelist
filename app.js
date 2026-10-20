@@ -11938,7 +11938,7 @@ function syncGameAddDestination() {
   el.dialogTitle.textContent = !isNewGame
     ? tt("Edit Game")
     : el.fields.digital.checked
-      ? tt("Add Digital Game")
+      ? tt("Add a Digital Game")
       : shelfTarget
         ? tt("Add to Shelf")
         : tt("Add to Gamelist");
