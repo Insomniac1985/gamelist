@@ -2289,6 +2289,7 @@ function openDetails(game) {
   el.detailGuides.hidden = !guides.length;
   el.detailGuideLinks.innerHTML = guides.join("");
   const showPrices = shelfPricesVisible() && !game._gamelistProjection && !digitalGame;
+  el.detailConditionPanel.classList.toggle("price-panel-hidden", !showPrices);
   el.detailStorePricePanel.hidden = !showPrices;
   el.detailPricePanel.hidden = !showPrices;
   if (showPrices) {
@@ -2352,7 +2353,7 @@ function openEditor(game = null, options = {}) {
   el.fields.igdbUrl.value = values.igdbUrl || links.igdb;
   Object.entries(el.conditionFields).forEach(([key, input]) => { input.checked = conditionValue(values, key); });
   syncConditionInputs();
-  el.addForm.querySelector(".modal-head h2").textContent = tt(game?.pendingCollection ? "Add to Collection" : game ? "Edit Game" : digitalMode ? "Add Digital Game" : "Add game");
+  el.addForm.querySelector(".modal-head h2").textContent = tt(game?.pendingCollection ? "Add to Collection" : game ? "Edit Game" : digitalMode ? "Add a Digital Game" : "Add game");
   el.addForm.querySelectorAll("button[type='submit']").forEach((button) => { button.textContent = game?.pendingCollection ? "Add to Collection" : game ? "Save" : digitalMode ? "Add to Drive" : "Add to Shelf"; });
   syncShelfGamelistTargetPicker();
   syncShelfGamelistTargetMode();
@@ -2385,7 +2386,7 @@ function syncShelfDigitalEditorMode(digitalMode) {
   if (el.lookupLabelDigital) el.lookupLabelDigital.textContent = tt("Search DB or IGDB URL");
   el.lookupInput.placeholder = tt(digitalMode ? "Type a game name or paste an IGDB page" : "Game name or PriceCharting page");
   const game = state.games.find((item) => item.id === state.editingId);
-  el.addForm.querySelector(".modal-head h2").textContent = tt(game?.pendingCollection ? "Add to Collection" : game ? "Edit Game" : digitalMode ? "Add Digital Game" : "Add game");
+  el.addForm.querySelector(".modal-head h2").textContent = tt(game?.pendingCollection ? "Add to Collection" : game ? "Edit Game" : digitalMode ? "Add a Digital Game" : "Add game");
   el.addForm.querySelectorAll("button[type='submit']").forEach((button) => { button.textContent = game?.pendingCollection ? "Add to Collection" : game ? "Save" : digitalMode ? "Add to Drive" : "Add to Shelf"; });
   syncShelfEntitlementEditor();
   if (el.gamelistTargetPicker) syncShelfGamelistTargetMode();
@@ -2443,7 +2444,7 @@ function syncShelfGamelistTargetMode() {
     el.lookupLabelPhysical.textContent = tt("Search DB or PriceCharting");
     if (eyebrow) eyebrow.textContent = tt("Game data");
     const game = state.games.find((item) => item.id === state.editingId);
-    if (title) title.textContent = tt(game?.pendingCollection ? "Add to Collection" : game ? "Edit Game" : el.addForm.dataset.digital === "true" ? "Add Digital Game" : "Add game");
+    if (title) title.textContent = tt(game?.pendingCollection ? "Add to Collection" : game ? "Edit Game" : el.addForm.dataset.digital === "true" ? "Add a Digital Game" : "Add game");
     el.addForm.querySelector(".form-group h3").textContent = tt("Collecting Information");
     el.addForm.querySelectorAll("button[type='submit']").forEach((button) => { button.textContent = game?.pendingCollection ? tt("Add to Collection") : game ? tt("Save") : el.addForm.dataset.digital === "true" ? tt("Add to Drive") : tt("Add to Shelf"); });
     el.lookupInput.placeholder = tt(el.addForm.dataset.digital === "true" ? "Type a game name or paste an IGDB page" : "Game name or PriceCharting page");
@@ -4413,6 +4414,7 @@ function openGamelistDetails(sourceGame) {
   el.detailNote.hidden = true;
   el.detailPricePanel.hidden = true;
   el.detailConditionPanel.hidden = true;
+  el.detailConditionPanel.classList.remove("price-panel-hidden");
   const guides = activityGuideLinks(game);
   el.detailGuides.hidden = !guides.length;
   el.detailGuideLinks.innerHTML = guides.join("");
