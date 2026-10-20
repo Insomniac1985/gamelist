@@ -477,10 +477,15 @@ function bindEvents() {
     el.gamelistPreorderField.closest(".shelf-gamelist-preorder-row")?.classList.toggle("has-preorder-store", el.gamelistPreorderCheck.checked);
     if (el.gamelistPreorderCheck.checked) el.gamelistSection.value = "upcoming";
     else el.gamelistPreorderStore.value = "";
+    syncShelfGamelistStoreIcons();
     syncShelfGamelistSectionButtons();
     syncShelfGamelistPreorderRequirement();
   });
   el.gamelistPreorderStore.addEventListener("input", syncShelfGamelistPreorderRequirement);
+  el.gamelistPreorderStore.addEventListener("input", syncShelfGamelistStoreIcons);
+  el.gamelistPreferredStore.addEventListener("input", syncShelfGamelistStoreIcons);
+  el.gamelistPreferredStore.addEventListener("change", syncShelfGamelistStoreIcons);
+  syncShelfGamelistStoreIcons();
   el.gamelistStream.addEventListener("change", () => {
     shelfNewGameTouchedFields.add("stream");
     syncShelfNewGameHighlights();
@@ -2321,6 +2326,7 @@ function openEditor(game = null, options = {}) {
   el.gamelistPreorderCheck.checked = false;
   el.gamelistPreorderField.hidden = true;
   el.gamelistPreferredStore.value = values.preferredStore || "";
+  syncShelfGamelistStoreIcons();
   el.gamelistStatuses.value = (values.statuses || []).join(", ");
   el.fields.owners.value = (values.owners || []).join(", ");
   const links = normalizedStoreLinks(values);
@@ -2461,6 +2467,7 @@ function syncShelfGamelistTargetIndicator() {
 }
 
 function syncShelfGamelistSectionButtons() {
+  syncShelfGamelistPreorderVisibility();
   const options = el.gamelistListPicker?.querySelector(".shelf-gamelist-section-options");
   if (!options) return;
   const buttons = [...options.querySelectorAll("[data-gamelist-section]")];
@@ -2475,6 +2482,24 @@ function syncShelfGamelistSectionButtons() {
     options.style.setProperty("--target-left", `${active.offsetLeft}px`);
     options.style.setProperty("--target-width", `${active.offsetWidth}px`);
   });
+}
+
+function syncShelfGamelistPreorderVisibility() {
+  const row = el.gamelistPreorderCheck?.closest(".shelf-gamelist-preorder-row");
+  if (!row) return;
+  const active = isGamelistProjectionTarget();
+  const isBacklog = active && el.gamelistSection.value === "backlog";
+  if (isBacklog) {
+    el.gamelistPreorderCheck.checked = false;
+    el.gamelistPreorderStore.value = "";
+  }
+  row.hidden = !active || isBacklog;
+  el.gamelistPreorderField.hidden = !active || isBacklog || !el.gamelistPreorderCheck.checked;
+  row.classList.toggle("has-preorder-store", active && !isBacklog && el.gamelistPreorderCheck.checked);
+  if (isBacklog) {
+    syncShelfGamelistStoreIcons();
+    syncShelfGamelistPreorderRequirement();
+  }
 }
 
 function setShelfGamelistAddTarget(target) {
@@ -2495,6 +2520,45 @@ function setShelfGamelistAddTarget(target) {
 function syncShelfGamelistPreorderRequirement() {
   const required = isGamelistProjectionTarget() && el.gamelistPreorderCheck.checked && !el.gamelistPreorderStore.value.trim();
   el.addForm.classList.toggle("needs-gamelist-preorder-store", required);
+}
+
+function syncShelfGamelistStoreIcons() {
+  syncShelfGamelistStoreIcon(el.gamelistPreorderStore, document.querySelector(".shelf-gamelist-store-icon"));
+  syncShelfGamelistStoreIcon(el.gamelistPreferredStore, document.querySelector(".shelf-gamelist-preferred-store-icon"));
+}
+
+function syncShelfGamelistStoreIcon(input, slot) {
+  if (!input || !slot) return;
+  if (slot.dataset.fallbackMarkup == null) slot.dataset.fallbackMarkup = slot.innerHTML;
+  const store = knownShelfStoreIconName(input.value);
+  const icon = store ? storeIcon(store) : "";
+  slot.innerHTML = icon && icon !== "assets/Icon.png"
+    ? `<img src="${escapeHtml(icon)}" alt="" width="16" height="16" decoding="async">`
+    : slot.dataset.fallbackMarkup;
+  slot.title = store || "";
+}
+
+function knownShelfStoreIconName(value) {
+  const raw = String(value || "").trim();
+  if (!raw) return "";
+  const normalized = normalizeTag(raw);
+  const exact = STORE_OPTIONS.find((store) => normalizeTag(store) === normalized);
+  if (exact) return exact;
+  if (normalized.startsWith("amazon")) return "Amazon";
+  if (normalized === "ebay" || normalized === "e bay") return "eBay";
+  if (isKickstarterStore(raw)) return "Kickstarter";
+  if (normalized === "game" || normalized === "game es") return "GAME.es";
+  if (normalized === "xtralife" || normalized === "xtra life") return "Xtralife";
+  if (normalized === "retro island" || normalized === "retro island ny") return "Retro Island NY";
+  if (["limitedrun", "limitedrungames", "lrg"].includes(normalized)) return "Limited Run";
+  if (["squareenix", "squareenixstore", "sqex", "sqexstore"].includes(normalized)) return "Square Enix Store";
+  if (["gamestop", "game stop"].includes(normalized)) return "GameStop";
+  if (["walmart", "wallmart"].includes(normalized)) return "Walmart";
+  if (normalized.startsWith("nintendo")) return "Nintendo";
+  if (normalized.startsWith("playstation") || normalized.startsWith("play station")) return "PlayStation";
+  if (normalized === "steam") return "Steam";
+  if (normalized === "xbox") return "Xbox";
+  return "";
 }
 
 function validateShelfGamelistTarget() {
@@ -5093,10 +5157,14 @@ function conditionLabel(game) {
 }
 function syncConditionInputs(changed) {
   if (changed === el.conditionFields.sealed && changed.checked) {
-    el.conditionFields.game.checked = true; el.conditionFields.box.checked = true; el.conditionFields.other.checked = true; el.conditionFields.manual.checked = false;
+    el.conditionFields.game.checked = true;
+    el.conditionFields.box.checked = true;
   }
-  if (!el.conditionFields.game.checked || !el.conditionFields.box.checked) el.conditionFields.sealed.checked = false;
-  el.conditionFields.sealed.disabled = !el.conditionFields.game.checked || !el.conditionFields.box.checked;
+  if ((changed === el.conditionFields.game && !changed.checked)
+    || (changed === el.conditionFields.box && !changed.checked)) {
+    el.conditionFields.sealed.checked = false;
+  }
+  el.conditionFields.sealed.disabled = false;
 }
 function conditionFromInputs() { return Object.fromEntries(Object.entries(el.conditionFields).map(([key, input]) => [key, input.checked])); }
 function splitValues(value) { return String(value || "").split(",").map((item) => item.trim()).filter(Boolean); }
