@@ -2776,7 +2776,7 @@ textarea {
 
 @media (min-width: 761px) and (max-width: 1300px) {
   .shelf-toolbar {
-    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1.25fr) minmax(0, 0.875fr) minmax(0, 0.875fr) var(--toolbar-control-height);
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1.5fr) minmax(0, 0.75fr) minmax(0, 0.75fr) var(--toolbar-control-height);
   }
   .shelf-toolbar .search {
     grid-column: span 2;
