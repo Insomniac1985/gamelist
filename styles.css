@@ -251,6 +251,27 @@ html {
   }
 }
 
+.check-label-with-icon {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  white-space: nowrap;
+}
+
+.form-toggle-icon {
+  display: block;
+  width: 16px;
+  height: 16px;
+  flex: 0 0 16px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  pointer-events: none;
+}
+
 @media (hover: none), (pointer: coarse) {
   *:not(input):not(textarea) {
     -webkit-touch-callout: none;
@@ -15291,6 +15312,10 @@ body.theme-kash
 
 .collection-form-grid > .digital-check {
   grid-column: span 2;
+  width: max-content;
+  min-width: 0;
+  max-width: 100%;
+  justify-self: start;
 }
 
 .collection-form-grid > .release-date-field {
@@ -19124,6 +19149,10 @@ body:not(.can-edit):not(.shelf-page) :is(#upcoming, #wanted) .price-refresh-acti
 }
 
 .shelf-gamelist-target-options button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
   position: relative;
   z-index: 1;
   min-width: 0;
@@ -19137,6 +19166,30 @@ body:not(.can-edit):not(.shelf-page) :is(#upcoming, #wanted) .price-refresh-acti
   font-weight: 760;
   white-space: nowrap;
   transition: color 180ms ease;
+}
+
+.shelf-gamelist-target-logo {
+  display: block;
+  width: 16px;
+  height: 16px;
+  flex: 0 0 16px;
+  background: currentColor;
+  -webkit-mask-position: center;
+  mask-position: center;
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  -webkit-mask-size: contain;
+  mask-size: contain;
+}
+
+.gamelist-target-logo {
+  -webkit-mask-image: url("assets/Icon.png");
+  mask-image: url("assets/Icon.png");
+}
+
+.shelf-target-logo {
+  -webkit-mask-image: url("assets/Icon_shelf.png");
+  mask-image: url("assets/Icon_shelf.png");
 }
 
 .shelf-gamelist-target-options button.active {
@@ -19203,12 +19256,12 @@ body:not(.can-edit):not(.shelf-page) :is(#upcoming, #wanted) .price-refresh-acti
     grid-row: 3;
   }
 
-  #addGameForm.gamelist-target-editor .shelf-gamelist-coop-field {
+  #addGameForm.gamelist-target-editor .shelf-gamelist-multiplayer-field {
     grid-column: 8 / span 3;
     grid-row: 3;
   }
 
-  #addGameForm.gamelist-target-editor .shelf-gamelist-multiplayer-field {
+  #addGameForm.gamelist-target-editor .shelf-gamelist-coop-field {
     grid-column: 11 / span 3;
     grid-row: 3;
   }
@@ -19244,16 +19297,6 @@ body:not(.can-edit):not(.shelf-page) :is(#upcoming, #wanted) .price-refresh-acti
 
   #addGameForm.gamelist-target-editor .shelf-gamelist-placement[hidden] {
     display: none !important;
-  }
-
-  #addGameForm.gamelist-target-editor .shelf-gamelist-preorder-check {
-    grid-column: 2 / span 3;
-    grid-row: 6;
-  }
-
-  #addGameForm.gamelist-target-editor .shelf-gamelist-preorder-field {
-    grid-column: 5 / span 9;
-    grid-row: 6;
   }
 
   #addGameForm.gamelist-target-editor .shelf-region-field,
