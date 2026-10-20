@@ -375,7 +375,7 @@ const STRINGS = {
     "Physical edition": "Edición física",
     "Add to Collection": "Añadir a colección",
     "Add to Backlog": "Añadir a pendientes",
-    "Add a Digital Game": "Añadir un juego digital",
+    "Add a digital game": "Añadir un juego digital",
     "Got it": "Lo tengo",
     "Latest achievements": "Últimos logros",
     "Achievement activity": "Actividad de logros",
