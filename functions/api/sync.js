@@ -66,25 +66,25 @@ export async function onRequestPut({ request, env }) {
   if (!body || !Array.isArray(body.games)) {
     return json({ error: "Expected { games: [], settings?: {} }" }, 400);
   }
-  const previous = await env.GAMELIST.get(KV_KEY, "json") || { games: [] };
-  const previousById = new Map((previous.games || []).map((game) => [game.id, game]));
-  const newlyCollected = body.games.filter((game) => (
-    game.section === "backlog"
-    && !game.shelfId
-    && !game.deletedAt
-    && (!game.digital && !game.dlc || body.settings?.shelfDigitalGames === true)
-    && (!previousById.has(game.id) || previousById.get(game.id)?.section !== "backlog")
-  ));
+  const collectionGame = body.collectionGame;
+  if (collectionGame) {
+    const linked = body.games.find((game) => game.id === collectionGame.gamelistId);
+    if (!linked || linked.section !== "backlog" || linked.deletedAt || !collectionGame.id
+      || linked.shelfId !== collectionGame.id
+      || ((linked.digital || linked.dlc) && body.settings?.shelfDigitalGames !== true)) {
+      return json({ error: "Invalid collection addition" }, 400);
+    }
+  }
   await env.GAMELIST.put(KV_KEY, JSON.stringify({
     games: body.games,
     settings: { ...(body.settings && typeof body.settings === "object" ? body.settings : {}), shelfSync: true },
     updatedAt: new Date().toISOString(),
   }));
-  await syncBacklogGamesToShelf(env, body.games, newlyCollected);
+  await syncBacklogGamesToShelf(env, body.games, collectionGame);
   return json({ ok: true });
 }
 
-async function syncBacklogGamesToShelf(env, allGames, games) {
+async function syncBacklogGamesToShelf(env, allGames, collectionGame = null) {
   const shelf = await env.GAMELIST.get("shelf-data", "json") || { sourceGames: [], games: [], overrides: {} };
   const byId = new Map(allGames.map((game) => [game.id, game]));
   let changed = false;
@@ -103,60 +103,28 @@ async function syncBacklogGamesToShelf(env, allGames, games) {
   };
   const sourceGames = (shelf.sourceGames || []).map(syncOwners);
   const shelfGames = (shelf.games || []).map(syncOwners);
-  const all = [...sourceGames, ...shelfGames];
-  const known = new Set(all.flatMap((game) => [game.gamelistId, game.id]).filter(Boolean));
-  const additions = games.filter((game) => !known.has(game.id)).map((game) => {
-    const digital = Boolean(game.digital || game.dlc);
-    return {
-      id: `gamelist-${game.id}`,
-      gamelistId: game.id,
-      source: "gamelist",
-      pendingCollection: true,
-      digital,
-      dlc: Boolean(game.dlc),
-      psPlus: digital && ["PS3", "PS4", "PS5"].includes(game.platform) && Boolean(game.psPlus),
-      gamesWithGold: digital && ["X360", "XOne"].includes(game.platform) && Boolean(game.gamesWithGold),
-      title: game.title,
-      trophyName: game.trophyName || "",
-      platform: game.platform || "Unknown platform",
-      country: digital ? "" : "World",
-      region: digital ? "" : "Unconfirmed",
-      category: digital ? "Game" : "Gamelist",
-      tags: cleanTransferTags(game.tags),
-      owners: Array.isArray(game.owners) ? game.owners : [],
-      game: !digital,
-      box: false,
-      manual: false,
-      other: false,
-      sealed: false,
-      publisher: game.publisher || "",
-      developer: game.developer || "",
-      genre: (game.genres || []).join(", "),
-      cover: game.cover || "",
-      releaseDate: game.releaseDate || "",
-      description: game.description || "",
-      igdbUrl: game.igdbUrl || "",
-      storeLinks: game.storeLinks || {},
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    };
-  });
+  const overrides = { ...shelf.overrides };
+  const additions = [];
+  if (collectionGame) {
+    const sourceIndex = sourceGames.findIndex((game) => game.id === collectionGame.id);
+    const existingIndex = shelfGames.findIndex((game) => game.id === collectionGame.id || game.gamelistId === collectionGame.gamelistId);
+    if (sourceIndex >= 0) {
+      sourceGames[sourceIndex] = { ...sourceGames[sourceIndex], ...collectionGame };
+      overrides[collectionGame.id] = { ...overrides[collectionGame.id], ...collectionGame };
+    } else if (existingIndex >= 0) shelfGames[existingIndex] = { ...shelfGames[existingIndex], ...collectionGame };
+    else additions.push(collectionGame);
+    changed = true;
+  }
   if (!additions.length && !changed) return;
   await env.GAMELIST.put("shelf-data", JSON.stringify({
     ...shelf,
     sourceGames,
     games: [...additions, ...shelfGames],
-    overrides: shelf.overrides || {},
+    overrides,
     layout: shelf.layout || null,
     favoriteGameIds: Array.isArray(shelf.favoriteGameIds) ? shelf.favoriteGameIds.slice(0, 5) : [],
     updatedAt: new Date().toISOString(),
   }));
-}
-
-function cleanTransferTags(tags) {
-  return Array.isArray(tags)
-    ? tags.filter((tag) => String(tag || "").trim().toLowerCase() !== "gamelist")
-    : [];
 }
 
 function json(data, status = 200) {
