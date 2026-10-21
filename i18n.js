@@ -46,7 +46,13 @@ const STRINGS = {
     "All conditions": "Todos los estados",
     Condition: "Estado",
     "Available now": "Disponible",
-    Upcoming: "Por salir",
+    Upcoming: "Radar",
+    Radar: "Radar",
+    Collection: "Colección",
+    "Add to backlog": "Añadir a pendientes",
+    "Default list": "Lista predeterminada",
+    "Add game to Radar": "Añadir juego al radar",
+    "Add game to Wishlist": "Añadir juego a la lista de deseos",
     Backlog: "Pendientes",
     "Currently playing": "Jugando",
     "Currently streaming": "En directo",
@@ -95,6 +101,9 @@ const STRINGS = {
     "Add a game preorder": "Añadir juego en reserva",
     "Autocomplete game info": "Autocompletar datos del juego",
     "Add to Gamelist": "Añadir a Gamelist",
+    "Add game to Shelf": "Añadir juego a Shelf",
+    "Add upcoming game": "Añadir próximo juego",
+    "Add a new preorder": "Añadir nueva reserva",
     "Only collection": "Solo colección",
     "Add to Gamelist and Shelf": "Añadir a Gamelist y Shelf",
     "Shelf collection": "Colección de Shelf",
@@ -279,7 +288,9 @@ const STRINGS = {
     "Fetching prices...": "Actualizando precios...",
     "Found {count} price links.": "{count} enlaces de precio encontrados.",
     "Price refresh is unavailable right now.": "La actualización de precios no está disponible ahora.",
-    "No Available or Upcoming games to refresh.": "No hay juegos disponibles o por salir para actualizar.",
+    "No Wishlist or Radar games to refresh.": "No hay juegos en la lista de deseos o el radar para actualizar.",
+    "No statistics for this year.": "No hay estadísticas de este año.",
+    Statistics: "Estadísticas",
     "Fetching prices for {count} games...": "Actualizando precios de {count} juegos...",
     "Checking {current}/{total}": "Comprobando {current}/{total}",
     "Updated prices for {updated} games{failed}.": "Precios actualizados para {updated} juegos{failed}.",
@@ -593,7 +604,8 @@ export function normalizeLanguage(value) {
 
 export function t(language, key, values = {}) {
   const normalized = normalizeLanguage(language);
-  const template = STRINGS[normalized]?.[key] || key;
+  const label = ({ Upcoming: "Radar", Available: "Wishlist", "Available now": "Wishlist", "Add upcoming game": "Add game to Radar", "Add available game": "Add game to Wishlist" })[key] || key;
+  const template = STRINGS[normalized]?.[label] || label;
   return Object.entries(values).reduce((text, [name, value]) => text.replaceAll(`{${name}}`, String(value)), template);
 }
 

@@ -74,23 +74,6 @@ const routes = {
   "/api/xbox-trophies-by-year": xboxTrophiesByYear,
 };
 
-const shelfOnlyPaths = new Set([
-  "/shelf",
-  "/shelf/",
-  "/shelf.html",
-  "/shelf.css",
-  "/shelf.js",
-  "/api/collection-price",
-  "/api/cover",
-  "/api/shelf",
-  "/api/shelf-covers",
-  "/api/shelf-games-platforms",
-  "/api/shelf-mass-add",
-  "/api/shelf-metadata",
-  "/api/shelf-price-audit",
-  "/api/shelf-import-digital",
-]);
-
 export default {
   async scheduled(controller, env, ctx) {
     if (!env.GITHUB_WORKFLOW_TOKEN) return;
@@ -99,12 +82,6 @@ export default {
 
   async fetch(request, env, ctx) {
     const url = new URL(request.url);
-    if (shelfOnlyPaths.has(url.pathname) && env.SHELF_ENABLED !== "true") {
-      return new Response("Not found", {
-        status: 404,
-        headers: { "Cache-Control": "no-store" },
-      });
-    }
     const module = routes[url.pathname];
     if (module) {
       const method = request.method.toLowerCase();

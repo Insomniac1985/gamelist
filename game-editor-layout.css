@@ -157,7 +157,7 @@
 
 @media (min-width: 761px) {
   :is(#gameDialog:not(.shelf-destination-selected), #addGameForm.gamelist-target-editor:not(.shelf-gamelist-import-mini)) .unified-game-editor-grid {
-    grid-template-columns: 160px repeat(12, minmax(0, 1fr));
+    grid-template-columns: 160px repeat(24, minmax(0, 1fr));
     grid-template-rows: repeat(3, 72px);
     align-items: end;
   }
@@ -173,25 +173,37 @@
     box-sizing: border-box;
   }
 
-  :is(#gameDialog:not(.shelf-destination-selected), #addGameForm.gamelist-target-editor:not(.shelf-gamelist-import-mini)) .unified-game-editor-grid > :is(.title-field, .shelf-title-field) { grid-column: 2 / span 6; grid-row: 1; }
-  :is(#gameDialog:not(.shelf-destination-selected), #addGameForm.gamelist-target-editor:not(.shelf-gamelist-import-mini)) .unified-game-editor-grid > :is(.platform-field, .shelf-console-field) { grid-column: 8 / span 4; grid-row: 1; }
-  :is(#gameDialog:not(.shelf-destination-selected), #addGameForm.gamelist-target-editor:not(.shelf-gamelist-import-mini)) .unified-game-editor-grid > :is(.digital-check, .gamelist-target-digital-field) { grid-column: 12 / span 2; grid-row: 1; }
-  :is(#gameDialog:not(.shelf-destination-selected), #addGameForm.gamelist-target-editor:not(.shelf-gamelist-import-mini)) .unified-game-editor-grid > :is(.release-date-field, .shelf-release-field) { grid-column: 2 / span 5; grid-row: 2; }
-  :is(#gameDialog:not(.shelf-destination-selected), #addGameForm.gamelist-target-editor:not(.shelf-gamelist-import-mini)) .unified-game-editor-grid > :is(.release-text-field, .shelf-release-text-field) { grid-column: 7 / span 7; grid-row: 2; }
-  :is(#gameDialog:not(.shelf-destination-selected), #addGameForm.gamelist-target-editor:not(.shelf-gamelist-import-mini)) .unified-game-editor-grid > :is(.dlc-check, .shelf-dlc-field) { grid-column: 2 / span 3; grid-row: 3; }
-  :is(#gameDialog:not(.shelf-destination-selected), #addGameForm.gamelist-target-editor:not(.shelf-gamelist-import-mini)) .unified-game-editor-grid > :is(.emulator-check, .shelf-gamelist-emulator-field) { grid-column: 5 / span 3; grid-row: 3; }
-  :is(#gameDialog:not(.shelf-destination-selected), #addGameForm.gamelist-target-editor:not(.shelf-gamelist-import-mini)) .unified-game-editor-grid > :is(.multiplayer-check, .shelf-gamelist-multiplayer-field) { grid-column: 8 / span 3; grid-row: 3; }
-  :is(#gameDialog:not(.shelf-destination-selected), #addGameForm.gamelist-target-editor:not(.shelf-gamelist-import-mini)) .unified-game-editor-grid > :is(.coop-check, .shelf-gamelist-coop-field) { grid-column: 11 / span 3; grid-row: 3; }
+  :is(#gameDialog:not(.shelf-destination-selected), #addGameForm.gamelist-target-editor:not(.shelf-gamelist-import-mini)) .unified-game-editor-grid > :is(.title-field, .shelf-title-field) { grid-column: 2 / span 12; grid-row: 1; }
+  :is(#gameDialog:not(.shelf-destination-selected), #addGameForm.gamelist-target-editor:not(.shelf-gamelist-import-mini)) .unified-game-editor-grid > :is(.platform-field, .shelf-console-field) { grid-column: 14 / span 8; grid-row: 1; }
+  :is(#gameDialog:not(.shelf-destination-selected), #addGameForm.gamelist-target-editor:not(.shelf-gamelist-import-mini)) .unified-game-editor-grid > :is(.digital-check, .gamelist-target-digital-field) { grid-column: 22 / span 4; grid-row: 1; }
+  :is(#gameDialog:not(.shelf-destination-selected), #addGameForm.gamelist-target-editor:not(.shelf-gamelist-import-mini)) .unified-game-editor-grid > :is(.release-date-field, .shelf-release-field) { grid-column: 2 / span 10; grid-row: 2; }
+  :is(#gameDialog:not(.shelf-destination-selected), #addGameForm.gamelist-target-editor:not(.shelf-gamelist-import-mini)) .unified-game-editor-grid > :is(.release-text-field, .shelf-release-text-field) { grid-column: 12 / span 14; grid-row: 2; }
+  :is(#gameDialog:not(.shelf-destination-selected), #addGameForm.gamelist-target-editor:not(.shelf-gamelist-import-mini)) .unified-game-editor-grid > :is(.dlc-check, .shelf-dlc-field) { grid-column: 2 / span 6; grid-row: 3; }
+  :is(#gameDialog:not(.shelf-destination-selected), #addGameForm.gamelist-target-editor:not(.shelf-gamelist-import-mini)) .unified-game-editor-grid > :is(.emulator-check, .shelf-gamelist-emulator-field) { grid-column: 8 / span 6; grid-row: 3; }
+  :is(#gameDialog:not(.shelf-destination-selected), #addGameForm.gamelist-target-editor:not(.shelf-gamelist-import-mini)) .unified-game-editor-grid > :is(.multiplayer-check, .shelf-gamelist-multiplayer-field) { grid-column: 14 / span 6; grid-row: 3; }
+  :is(#gameDialog:not(.shelf-destination-selected), #addGameForm.gamelist-target-editor:not(.shelf-gamelist-import-mini)) .unified-game-editor-grid > :is(.coop-check, .shelf-gamelist-coop-field) { grid-column: 20 / span 6; grid-row: 3; }
   :is(#gameDialog:not(.shelf-destination-selected), #addGameForm.gamelist-target-editor:not(.shelf-gamelist-import-mini)) .unified-game-editor-grid > :is(.dlc-check, .shelf-dlc-field, .emulator-check, .shelf-gamelist-emulator-field, .multiplayer-check, .shelf-gamelist-multiplayer-field, .coop-check, .shelf-gamelist-coop-field) { margin: 20px 0 0; }
-  :is(#gameDialog:not(.shelf-destination-selected), #addGameForm.gamelist-target-editor:not(.shelf-gamelist-import-mini)) .unified-game-editor-grid > :is(.length-field, .shelf-gamelist-length-field) { grid-column: 1 / span 2; grid-row: 4; }
-  :is(#gameDialog:not(.shelf-destination-selected), #addGameForm.gamelist-target-editor:not(.shelf-gamelist-import-mini)) .unified-game-editor-grid > :is(.preferred-store-field, .shelf-gamelist-preferred-store-field) { grid-column: 3 / span 4; grid-row: 4; }
-  :is(#gameDialog:not(.shelf-destination-selected), #addGameForm.gamelist-target-editor:not(.shelf-gamelist-import-mini)) .unified-game-editor-grid > :is(.status-field, .shelf-gamelist-status-field) { grid-column: 7 / span 7; grid-row: 4; }
-  :is(#gameDialog:not(.shelf-destination-selected), #addGameForm.gamelist-target-editor:not(.shelf-gamelist-import-mini)) .unified-game-editor-grid > :is(.owners-field, .shelf-owner-field) { grid-column: 1 / span 6; grid-row: 5; }
-  :is(#gameDialog:not(.shelf-destination-selected), #addGameForm.gamelist-target-editor:not(.shelf-gamelist-import-mini)) .unified-game-editor-grid > :is(.trophy-search-field, .shelf-achievement-search-field) { grid-column: 7 / span 7; grid-row: 5; }
+  :is(#gameDialog:not(.shelf-destination-selected), #addGameForm.gamelist-target-editor:not(.shelf-gamelist-import-mini)) .unified-game-editor-grid > :is(.length-field, .shelf-gamelist-length-field) { grid-column: 1 / span 3; grid-row: 4; }
+  :is(#gameDialog:not(.shelf-destination-selected), #addGameForm.gamelist-target-editor:not(.shelf-gamelist-import-mini)) .unified-game-editor-grid > :is(.preferred-store-field, .shelf-gamelist-preferred-store-field) { grid-column: 4 / span 8; grid-row: 4; }
+  :is(#gameDialog:not(.shelf-destination-selected), #addGameForm.gamelist-target-editor:not(.shelf-gamelist-import-mini)) .unified-game-editor-grid > :is(.status-field, .shelf-gamelist-status-field) { grid-column: 12 / span 14; grid-row: 4; }
+  :is(#gameDialog:not(.shelf-destination-selected), #addGameForm.gamelist-target-editor:not(.shelf-gamelist-import-mini)) .unified-game-editor-grid > :is(.owners-field, .shelf-owner-field) { grid-column: 1 / span 12; grid-row: 5; }
+  :is(#gameDialog:not(.shelf-destination-selected), #addGameForm.gamelist-target-editor:not(.shelf-gamelist-import-mini)) .unified-game-editor-grid > :is(.trophy-search-field, .shelf-achievement-search-field) { grid-column: 13 / span 13; grid-row: 5; }
 
-  :is(#gameDialog:not(.shelf-destination-selected), #addGameForm.gamelist-target-editor:not(.shelf-gamelist-import-mini)) .unified-game-editor-grid > :is(.entitlement-check, .shelf-entitlement-field) { grid-column: 1 / -1; grid-row: 4; }
-  :is(#gameDialog:not(.shelf-destination-selected), #addGameForm.gamelist-target-editor:not(.shelf-gamelist-import-mini)) .unified-game-editor-grid.has-editor-entitlement > :is(.length-field, .preferred-store-field, .status-field, .shelf-gamelist-length-field, .shelf-gamelist-preferred-store-field, .shelf-gamelist-status-field) { grid-row: 5; }
-  :is(#gameDialog:not(.shelf-destination-selected), #addGameForm.gamelist-target-editor:not(.shelf-gamelist-import-mini)) .unified-game-editor-grid.has-editor-entitlement > :is(.owners-field, .trophy-search-field, .shelf-owner-field, .shelf-achievement-search-field) { grid-row: 6; }
+  :is(#gameDialog:not(.shelf-destination-selected), #addGameForm.gamelist-target-editor:not(.shelf-gamelist-import-mini)) .unified-game-editor-grid.has-editor-entitlement > :is(.dlc-check, .shelf-dlc-field) { grid-column: 2 / span 3; }
+  :is(#gameDialog:not(.shelf-destination-selected), #addGameForm.gamelist-target-editor:not(.shelf-gamelist-import-mini)) .unified-game-editor-grid.has-editor-entitlement > :is(.entitlement-check, .shelf-entitlement-field) { grid-column: 5 / span 7; grid-row: 3; margin: 20px 0 0; }
+  :is(#gameDialog:not(.shelf-destination-selected), #addGameForm.gamelist-target-editor:not(.shelf-gamelist-import-mini)) .unified-game-editor-grid.has-editor-entitlement > :is(.emulator-check, .shelf-gamelist-emulator-field) { grid-column: 12 / span 4; }
+  :is(#gameDialog:not(.shelf-destination-selected), #addGameForm.gamelist-target-editor:not(.shelf-gamelist-import-mini)) .unified-game-editor-grid.has-editor-entitlement > :is(.multiplayer-check, .shelf-gamelist-multiplayer-field) { grid-column: 16 / span 6; }
+  :is(#gameDialog:not(.shelf-destination-selected), #addGameForm.gamelist-target-editor:not(.shelf-gamelist-import-mini)) .unified-game-editor-grid.has-editor-entitlement > :is(.coop-check, .shelf-gamelist-coop-field) { grid-column: 22 / span 4; }
+  :is(#gameDialog:not(.shelf-destination-selected), #addGameForm.gamelist-target-editor:not(.shelf-gamelist-import-mini)) .unified-game-editor-grid.has-editor-entitlement > :is(.dlc-check, .shelf-dlc-field, .entitlement-check, .shelf-entitlement-field, .emulator-check, .shelf-gamelist-emulator-field, .multiplayer-check, .shelf-gamelist-multiplayer-field, .coop-check, .shelf-gamelist-coop-field) {
+    min-width: 0;
+    gap: 4px;
+    padding-inline: 4px;
+    font-size: clamp(10px, 1vw, 13px);
+    white-space: nowrap;
+  }
+  :is(#gameDialog:not(.shelf-destination-selected), #addGameForm.gamelist-target-editor:not(.shelf-gamelist-import-mini)) .unified-game-editor-grid.has-editor-entitlement .check-label-with-icon { gap: 4px; font-size: inherit; }
+  :is(#gameDialog:not(.shelf-destination-selected), #addGameForm.gamelist-target-editor:not(.shelf-gamelist-import-mini)) .unified-game-editor-grid.has-editor-entitlement > .check-filter input[type="checkbox"] { width: 16px; min-width: 16px; height: 16px; flex: 0 0 16px; }
+  :is(#gameDialog:not(.shelf-destination-selected), #addGameForm.gamelist-target-editor:not(.shelf-gamelist-import-mini)) .unified-game-editor-grid.has-editor-entitlement > .check-filter :is(svg, .entitlement-icon, .shelf-entitlement-icon) { width: 16px; height: 16px; flex: 0 0 16px; }
   #gameDialog .unified-game-editor-grid > .notes-field { grid-column: 1 / -1; grid-row: 7; }
 }
 
@@ -215,8 +227,6 @@
 @media (min-width: 761px) {
   #gameDialog:not(.is-new-game) .unified-game-editor-grid > #gameListControls { grid-column: 1 / -1; grid-row: 5; }
   #gameDialog:not(.is-new-game) .collection-form-grid.unified-game-editor-grid > :is(.owners-field, .trophy-search-field) { grid-row: 6; }
-  #gameDialog:not(.is-new-game) .unified-game-editor-grid.has-editor-entitlement > #gameListControls { grid-row: 6; }
-  #gameDialog:not(.is-new-game) .collection-form-grid.unified-game-editor-grid.has-editor-entitlement > :is(.owners-field, .trophy-search-field) { grid-row: 7; }
   #gameDialog:not(.is-new-game) .unified-game-editor-grid > .notes-field { grid-row: 8; }
 }
 
