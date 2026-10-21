@@ -12365,7 +12365,8 @@ function moveToBacklog(id) {
       gamelistGameId: game.id,
       target: "gamelist",
       section: "backlog",
-      autocomplete: true,
+      miniGamelistImport: true,
+      autocomplete: false,
     });
     return;
   }

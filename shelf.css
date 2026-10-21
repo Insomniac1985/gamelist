@@ -3538,6 +3538,10 @@ textarea {
   gap: 8px;
 }
 
+#addGameForm.shelf-gamelist-import-mini .shelf-editor-grid > * {
+  grid-row: auto !important;
+}
+
 #addGameForm.shelf-gamelist-import-mini .shelf-editor-cover-preview {
   display: none;
 }
@@ -3567,11 +3571,11 @@ textarea {
 #addGameForm.shelf-gamelist-import-mini .shelf-collecting-section .shelf-condition-notes-field { grid-column: span 12; }
 
 #addGameForm.shelf-gamelist-import-mini .shelf-game-data-section .form-grid > * {
-  grid-column: span 6;
+  grid-column: span 1;
 }
 
 #addGameForm.shelf-gamelist-import-mini .shelf-game-data-section .form-grid > .wide {
-  grid-column: span 12;
+  grid-column: 1 / -1;
 }
 
 .shelf-gamelist-import-summary {
