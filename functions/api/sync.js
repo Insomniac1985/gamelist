@@ -4,7 +4,8 @@ const KV_KEY = "gamelist-data";
 
 export async function onRequestGet({ request, env }) {
   if (!env.GAMELIST) return json({ games: [] });
-  const data = await env.GAMELIST.get(KV_KEY, "json");
+  const stored = await env.GAMELIST.get(KV_KEY, "json");
+  const data = stored ? { ...stored, settings: { ...stored.settings, shelfSync: true } } : null;
   if (new URL(request.url).searchParams.get("shelfProjections") === "1") {
     const settings = data?.settings && typeof data.settings === "object" ? data.settings : {};
     const games = (Array.isArray(data?.games) ? data.games : []).filter((game) => (
@@ -20,7 +21,7 @@ export async function onRequestGet({ request, env }) {
       prices: publicStorePrices(game.prices), storePrices: publicStorePrices(game.storePrices),
     }));
     return json({ games, settings: {
-      shelfSync: settings.shelfSync, shelfSyncWishlist: settings.shelfSyncWishlist,
+      shelfSync: true, shelfSyncWishlist: settings.shelfSyncWishlist,
       shelfShowPreorders: settings.shelfShowPreorders, shelfDigitalGames: settings.shelfDigitalGames,
       shelfHidePrices: settings.shelfHidePrices, currency: settings.currency, language: settings.language,
       region: settings.region, stores: Array.isArray(settings.stores) ? settings.stores : [],
@@ -57,7 +58,7 @@ export async function onRequestPut({ request, env }) {
     const previous = await env.GAMELIST.get(KV_KEY, "json") || { games: [] };
     await env.GAMELIST.put(KV_KEY, JSON.stringify({
       games: Array.isArray(previous.games) ? previous.games : [],
-      settings: body.settings,
+      settings: { ...body.settings, shelfSync: true },
       updatedAt: new Date().toISOString(),
     }));
     return json({ ok: true });
@@ -76,15 +77,11 @@ export async function onRequestPut({ request, env }) {
   ));
   await env.GAMELIST.put(KV_KEY, JSON.stringify({
     games: body.games,
-    settings: body.settings && typeof body.settings === "object" ? body.settings : {},
+    settings: { ...(body.settings && typeof body.settings === "object" ? body.settings : {}), shelfSync: true },
     updatedAt: new Date().toISOString(),
   }));
-  if (shelfSyncEnabled(body.settings)) await syncBacklogGamesToShelf(env, body.games, newlyCollected);
+  await syncBacklogGamesToShelf(env, body.games, newlyCollected);
   return json({ ok: true });
-}
-
-function shelfSyncEnabled(settings = {}) {
-  return settings?.shelfSync !== false;
 }
 
 async function syncBacklogGamesToShelf(env, allGames, games) {
