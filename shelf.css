@@ -3539,6 +3539,14 @@ textarea {
   margin-top: 20px;
 }
 
+#addGameForm.shelf-gamelist-import-mini .shelf-collecting-section {
+  border-top: 0;
+}
+
+#addGameForm.shelf-gamelist-import-mini:has(#shelfGameDataDisclosure:not([open])) > .modal-actions {
+  display: none;
+}
+
 .shelf-game-data-toggle {
   display: flex;
   align-items: center;

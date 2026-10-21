@@ -214,15 +214,15 @@
 /* Editing keeps list selection between the collecting details and owner fields. */
 @media (min-width: 761px) {
   #gameDialog:not(.is-new-game) .unified-game-editor-grid > #gameListControls { grid-column: 1 / -1; grid-row: 5; }
-  #gameDialog:not(.is-new-game) .unified-game-editor-grid > :is(.owners-field, .trophy-search-field) { grid-row: 6; }
+  #gameDialog:not(.is-new-game) .collection-form-grid.unified-game-editor-grid > :is(.owners-field, .trophy-search-field) { grid-row: 6; }
   #gameDialog:not(.is-new-game) .unified-game-editor-grid.has-editor-entitlement > #gameListControls { grid-row: 6; }
-  #gameDialog:not(.is-new-game) .unified-game-editor-grid.has-editor-entitlement > :is(.owners-field, .trophy-search-field) { grid-row: 7; }
+  #gameDialog:not(.is-new-game) .collection-form-grid.unified-game-editor-grid.has-editor-entitlement > :is(.owners-field, .trophy-search-field) { grid-row: 7; }
   #gameDialog:not(.is-new-game) .unified-game-editor-grid > .notes-field { grid-row: 8; }
 }
 
 @media (max-width: 760px) {
   #gameDialog:not(.is-new-game) .unified-game-editor-grid > #gameListControls { order: 21; }
-  #gameDialog:not(.is-new-game) .unified-game-editor-grid > :is(.owners-field, .trophy-search-field) { order: 22; }
+  #gameDialog:not(.is-new-game) .collection-form-grid.unified-game-editor-grid > :is(.owners-field, .trophy-search-field) { order: 22; }
   #gameDialog:not(.is-new-game) .unified-game-editor-grid > .notes-field { order: 23; }
 }
 
