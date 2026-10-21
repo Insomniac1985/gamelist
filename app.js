@@ -11898,7 +11898,7 @@ function syncGameAddTargetPicker() {
   picker.hidden = isNewGame && state.addDestination !== "gamelist";
   controls.hidden = picker.hidden;
   if (isNewGame) {
-    el.form.insertBefore(controls, el.lookupResults);
+    el.form.insertBefore(controls, el.gameAddDestinationPicker.nextSibling);
   } else {
     const grid = collectingSection.querySelector(".collection-form-grid");
     grid.insertBefore(controls, grid.querySelector(".owners-field"));
