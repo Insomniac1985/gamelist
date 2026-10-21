@@ -10,6 +10,7 @@ const STATIC_ASSETS = [
   "/game-editor-controls.js",
   "/shared-add-game.js",
   "/collection-workspace.js",
+  "/media-format-toggle.js",
   "/collection-workspace.css",
   "/app.js",
   "/activity-ui.js",

@@ -6,11 +6,6 @@ body.collection-selected .board > .column { display: none !important; }
 #collectionToolbar { min-width: 0; margin-bottom: 0; }
 #collectionShowcase { min-width: 0; }
 #mobileDockSwitch, .page-pull-switch, .page-pull-curtain { display: none !important; }
-.unified-media-toggle { display: flex; align-items: center; gap: 4px; }
-.unified-media-toggle button { width: 36px; min-width: 36px; height: 42px; padding: 8px; }
-.unified-media-toggle button.active { border-color: var(--accent); background: color-mix(in srgb, var(--accent) 12%, transparent); }
-.unified-media-toggle button > img { width: 20px; height: 20px; object-fit: contain; }
-.unified-media-toggle button .digital-format-pill { padding: 0; border: 0; background: none; }
 .gamelist-added-pill { display: inline-flex; }
 .mobile-section-tabs { overflow-x: auto; scrollbar-width: none; }
 .mobile-section-tabs button { min-width: 0; }

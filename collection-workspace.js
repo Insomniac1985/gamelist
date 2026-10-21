@@ -1,3 +1,4 @@
+import { syncMediaFormatToggle } from "./media-format-toggle.js";
 /** Mount the existing Shelf UI in scoped surfaces, using its original markup,
  * styles, renderers and event handlers. The legacy Shelf page remains intact. */
 let workspacePromise;
@@ -25,13 +26,8 @@ async function mount({ slots, changed, openGame, mediaChanged, viewChanged }) {
       .shelf-favorites-section{margin:0 0 24px}.highlights-section{margin:0}
       .shell.shelf-shell{display:none!important}.shelf-page.dialog-open{overflow:visible}
       .shelf-library>.column-head{justify-content:flex-end} [hidden]{display:none!important}
-      .unified-media-toggle{display:flex;gap:4px}.unified-media-toggle button{min-width:36px;padding:8px}
-      .unified-media-toggle img,.unified-media-toggle svg{height:18px;width:18px;object-fit:contain}
-      .unified-media-toggle svg{fill:none;stroke:currentColor;stroke-width:2}
-      .unified-media-toggle button.active{border-color:var(--accent);color:var(--accent)}
       .collection-view-controls{display:flex;align-items:flex-end;gap:6px;justify-self:end}
       .collection-view-controls .view-toggle{flex:0 0 42px}
-      .unified-media-toggle button{width:32px;min-width:32px;padding:6px}
       .shelf-toolbar{grid-template-columns:2fr repeat(4,minmax(80px,1fr)) minmax(120px,1fr) auto}
       @media(min-width:901px) and (max-width:1300px){
         .shelf-toolbar{grid-template-columns:repeat(4,minmax(0,1fr))}
@@ -96,13 +92,18 @@ async function mount({ slots, changed, openGame, mediaChanged, viewChanged }) {
   viewControls.className = 'collection-view-controls';
   viewControls.append(toolbar.querySelector('#viewToggleButton'), mediaControl);
   toolbar.querySelector('.shelf-toolbar').append(viewControls);
+  const renderMedia = () => syncMediaFormatToggle(mediaControl, {
+    value: media,
+    icon: mode => api?.mediaIcon(mode) || "",
+    translate: (key, values) => api?.translate(key, values) || key,
+    onChange: setMedia,
+  });
   const setMedia = value => {
     media = value;
-    mediaControl.innerHTML = ['physical', 'digital', 'all'].map(mode => `<button type="button" class="icon-button ${mode === media ? 'active' : ''}" data-media="${mode}" title="${mode}" aria-label="${mode}" aria-pressed="${mode === media}">${mode === 'all' ? '<img src="assets/Icon.png" alt="">' : api?.mediaIcon(mode) || ''}</button>`).join('');
+    renderMedia();
     mediaChanged?.(media);
   };
-  mediaControl.addEventListener('click', event => { const button = event.target.closest('[data-media]'); if (button) setMedia(button.dataset.media); });
-  setMedia('all');
+  renderMedia();
   window.__unifiedShelfScope = { document: scopeDocument, changed, openGame, viewChanged, ready(value) { api = value; resolveReady(); } };
   await import('./shelf.js');
   await ready;
@@ -120,6 +121,6 @@ async function mount({ slots, changed, openGame, mediaChanged, viewChanged }) {
   });
   new MutationObserver(syncDialogLock).observe(runtime, { subtree: true, attributes: true, attributeFilter: ['open'] });
   syncTheme();
-  return { ...api, setMedia, syncMedia(value) { media = value; mediaControl.querySelectorAll("[data-media]").forEach(button => { const selected = button.dataset.media === value; button.classList.toggle("active", selected); button.setAttribute("aria-pressed", String(selected)); }); }, pendingRoot: slots.library.shadowRoot, syncTheme };
+  return { ...api, setMedia, syncMedia(value) { media = value; renderMedia(); }, pendingRoot: slots.library.shadowRoot, syncTheme };
 }
 async function read(response) { if (!response.ok) throw new Error('Could not load collection UI.'); return response.text(); }
