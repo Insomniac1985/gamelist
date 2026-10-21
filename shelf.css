@@ -2747,6 +2747,23 @@ textarea {
   animation: shelf-search-pulse 0.75s ease-in-out infinite alternate;
 }
 
+#addDialog #lookupButton .autocomplete-cone-icon {
+  display: none;
+}
+
+#addDialog #lookupButton.is-autocomplete .search-icon {
+  display: none;
+}
+
+#addDialog #lookupButton.is-autocomplete .autocomplete-cone-icon {
+  display: block;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
 @keyframes shelf-search-pulse {
   to {
     opacity: 0.35;

@@ -61,6 +61,7 @@ export function connectEmbeddedGameEditor({ dialog, form, requestClose, open, ap
   if (!embeddedGameEditor) return;
   let dataReady = Promise.resolve(false);
   let loadId = 0;
+  let openId = 0;
   const loadCurrentData = async () => {
     const currentLoad = ++loadId;
     try {
@@ -78,10 +79,19 @@ export function connectEmbeddedGameEditor({ dialog, form, requestClose, open, ap
   window.addEventListener("message", event => {
     if (event.origin !== location.origin || event.source !== window.parent) return;
     if (event.data?.type === "game-editor:open") {
-      dataReady = loadCurrentData();
-      open(event.data.options || {});
+      const currentOpen = ++openId;
+      const options = event.data.options || {};
+      dataReady = loadCurrentData().then(loaded => {
+        if (currentOpen !== openId) return false;
+        if (loaded) open(options);
+        else onLoadError?.();
+        return loaded;
+      });
     }
-    if (event.data?.type === "game-editor:request-close") requestClose();
+    if (event.data?.type === "game-editor:request-close") {
+      openId += 1;
+      requestClose();
+    }
   });
   form.addEventListener("submit", async event => {
     event.preventDefault();
