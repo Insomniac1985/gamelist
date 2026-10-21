@@ -226,6 +226,7 @@ const el = {
   gamelistLength: document.querySelector("#shelfGamelistLengthInput"),
   gamelistPreferredStore: document.querySelector("#shelfGamelistPreferredStoreInput"),
   gamelistStatuses: document.querySelector("#shelfGamelistStatusesInput"),
+  gamelistImportSummary: document.querySelector("#shelfGamelistImportSummary"),
   digitalInput: document.querySelector("#shelfDigitalInput"),
   platformFieldIcon: document.querySelector(".shelf-platform-field-icon"),
   fields: {
@@ -420,7 +421,7 @@ function bindEvents() {
     new ResizeObserver(syncShelfTabsStickyOffset).observe(shelfToolbar);
   }
   window.addEventListener("keydown", (event) => {
-    if (window.innerWidth < 761 || event.key.toLowerCase() !== "f" || event.repeat || event.isComposing) return;
+    if (window.innerWidth < 761 || typeof event.key !== "string" || event.key.toLowerCase() !== "f" || event.repeat || event.isComposing) return;
     if (event.altKey || event.ctrlKey || event.metaKey || event.shiftKey) return;
     const target = event.target;
     if (target instanceof HTMLElement && target.closest("input, textarea, select, [contenteditable='true'], [role='textbox'], dialog[open]")) return;
@@ -2314,10 +2315,7 @@ function openPreorderInGamelistEditor(game) {
 }
 
 function openShelfGameInGamelist(game) {
-  openEditor(game, { target: "gamelist", section: "backlog", autocomplete: true, importShelfId: game.id });
-  el.lookupInput.value = game.title || "";
-  el.fields.title.value = game.title || "";
-  void lookupGame();
+  openEditor(game, { target: "gamelist", section: "backlog", importShelfId: game.id, miniGamelistImport: true });
 }
 
 function openDetails(game) {
@@ -2378,6 +2376,9 @@ function openEditor(game = null, options = {}) {
   state.gamelistImportShelfId = options.importShelfId || "";
   state.gamelistImportGameId = options.importGameId || "";
   state.autocompleteImport = Boolean(options.autocomplete);
+  el.addDialog.classList.toggle("shelf-gamelist-import-mini", Boolean(options.miniGamelistImport));
+  el.addForm.classList.toggle("shelf-gamelist-import-mini", Boolean(options.miniGamelistImport));
+  renderShelfGamelistImportSummary(options.miniGamelistImport ? game : null);
   const digitalMode = Boolean(options.digital || isDigitalShelfGame(game));
   state.editingId = game?.id || "";
   el.digitalInput.checked = digitalMode;
@@ -2439,6 +2440,26 @@ function openEditor(game = null, options = {}) {
   syncShelfEditorIcons();
   shelfEditorDirty = false;
   openDialog(el.addDialog);
+}
+
+function renderShelfGamelistImportSummary(game) {
+  const summary = el.gamelistImportSummary;
+  if (!summary) return;
+  summary.hidden = !game;
+  if (!game) return;
+  const cover = summary.querySelector(".shelf-gamelist-import-cover");
+  const fallback = coverUrl(game.cover || "") || platformFallback(game.platform);
+  cover.src = fallback;
+  cover.alt = game.title ? `${game.title} cover` : "";
+  cover.onerror = () => { cover.onerror = null; cover.src = "assets/Icon_shelf.png"; };
+  summary.querySelector(".shelf-gamelist-import-title").textContent = game.title || "";
+  const platformRegion = [platformDisplayName(game.platform), game.country || game.region || ""].filter(Boolean).join(" · ");
+  summary.querySelector(".shelf-gamelist-import-platform").textContent = platformRegion;
+  const condition = ["game", "manual", "box", "other", "sealed"]
+    .filter((key) => conditionValue(game, key))
+    .map((key) => tt(key[0].toUpperCase() + key.slice(1)));
+  summary.querySelector(".shelf-gamelist-import-condition").textContent = condition.join(" · ");
+  summary.querySelector(".shelf-gamelist-import-notes").textContent = game.notes || "";
 }
 
 function requestShelfEditorClose() {
@@ -2510,10 +2531,10 @@ function syncShelfGamelistTargetMode() {
   const title = el.addForm.querySelector(".modal-head h2");
   const eyebrow = el.addForm.querySelector(".modal-head .eyebrow");
   if (active) {
-    if (eyebrow) eyebrow.textContent = "GAME DATA";
+    if (eyebrow) eyebrow.textContent = el.addForm.classList.contains("shelf-gamelist-import-mini") ? tt("Shelf collection") : "GAME DATA";
     if (title) title.textContent = el.gamelistSection.value === "backlog" ? "Add game to Backlog" : el.gamelistSection.value === "wanted" ? "Add available game" : "Add game";
     el.addForm.querySelector(".form-group h3").textContent = tt("Collecting Information");
-    el.addForm.querySelectorAll("button[type='submit']").forEach((button) => { button.textContent = tt("Add to Gamelist"); });
+    el.addForm.querySelectorAll("button[type='submit']").forEach((button) => { button.textContent = tt(el.addForm.classList.contains("shelf-gamelist-import-mini") ? "Add to Gamelist and Shelf" : "Add to Gamelist"); });
     el.lookupLabelPhysical.textContent = tt("Search DB or IGDB URL");
     el.lookupInput.placeholder = tt("Type a game name or paste an IGDB page");
     syncShelfGamelistSectionForTarget();
@@ -3109,6 +3130,8 @@ async function saveGamelistTargetFromShelf() {
   const sectionOrders = state.gamelistGames.filter((game) => !game.deletedAt && game.section === section).map((game) => Number(game.order) || 0);
   const importShelfId = state.gamelistImportShelfId;
   const importGameId = state.gamelistImportGameId;
+  const importedShelfGame = importShelfId ? state.games.find((item) => item.id === importShelfId) : null;
+  const shelfOnlyImport = Boolean(importedShelfGame);
   const existingImportIndex = state.gamelistGames.findIndex((item) => !item.deletedAt && (
     (importGameId && item.id === importGameId)
     || (importShelfId && (item.shelfId === importShelfId || item.id === `shelf-${importShelfId}`))
@@ -3122,6 +3145,11 @@ async function saveGamelistTargetFromShelf() {
     ...(existingImport || {}),
     id: existingImport?.id || crypto.randomUUID(),
     ...(importShelfId ? { shelfId: importShelfId } : {}),
+    igdbId: shelfOnlyImport ? null : existingImport?.igdbId || null,
+    hltbId: shelfOnlyImport ? null : existingImport?.hltbId || null,
+    igdbRating: shelfOnlyImport ? null : existingImport?.igdbRating || null,
+    igdbRatingCount: shelfOnlyImport ? 0 : existingImport?.igdbRatingCount || 0,
+    matchedTitle: shelfOnlyImport ? "" : existingImport?.matchedTitle || "",
     title,
     platform,
     section,
@@ -3132,33 +3160,33 @@ async function saveGamelistTargetFromShelf() {
     releaseDate: el.fields.releaseDate.value,
     releaseText: el.gamelistReleaseText.value.trim(),
     releaseRefreshLocked: false,
-    lengthHours: Number.isFinite(enteredLengthHours) && enteredLengthHours > 0 ? enteredLengthHours : state.pendingLengthHours || null,
+    lengthHours: shelfOnlyImport ? null : Number.isFinite(enteredLengthHours) && enteredLengthHours > 0 ? enteredLengthHours : state.pendingLengthHours || null,
     finishHours: 0,
     ratings: { gameplay: 0, story: 0, soundtrack: 0, graphics: 0, performance: 0 },
-    notes: "",
-    description: el.fields.description.value.trim(),
-    statuses: splitValues(el.gamelistStatuses.value),
-    emulator: Boolean(el.gamelistEmulator.checked),
-    coop: Boolean(el.gamelistCoop.checked),
-    multiplayer: Boolean(el.gamelistMultiplayer.checked),
-    stream: Boolean(el.gamelistStream.checked),
+    notes: shelfOnlyImport ? importedShelfGame.notes || "" : "",
+    description: shelfOnlyImport ? "" : el.fields.description.value.trim(),
+    statuses: shelfOnlyImport ? cleanTransferTags(importedShelfGame.tags) : splitValues(el.gamelistStatuses.value),
+    emulator: shelfOnlyImport ? false : Boolean(el.gamelistEmulator.checked),
+    coop: shelfOnlyImport ? false : Boolean(el.gamelistCoop.checked),
+    multiplayer: shelfOnlyImport ? false : Boolean(el.gamelistMultiplayer.checked),
+    stream: shelfOnlyImport ? false : Boolean(el.gamelistStream.checked),
     platinum: false,
     playing: false,
     replayCount: 0,
     startedAt: "",
     completedAt: "",
-    genres: el.fields.genre.value.split(",").map((value) => value.trim()).filter(Boolean),
-    trophyName: el.fields.trophyName.value.trim(),
-    developer: el.fields.developer.value.trim(),
-    publisher: el.fields.publisher.value.trim(),
-    igdbUrl: el.fields.igdbUrl.value.trim(),
-    hltbUrl: el.fields.hltbUrl.value.trim(),
+    genres: shelfOnlyImport ? [] : el.fields.genre.value.split(",").map((value) => value.trim()).filter(Boolean),
+    trophyName: shelfOnlyImport ? "" : el.fields.trophyName.value.trim(),
+    developer: shelfOnlyImport ? "" : el.fields.developer.value.trim(),
+    publisher: shelfOnlyImport ? "" : el.fields.publisher.value.trim(),
+    igdbUrl: shelfOnlyImport ? "" : el.fields.igdbUrl.value.trim(),
+    hltbUrl: shelfOnlyImport ? "" : el.fields.hltbUrl.value.trim(),
     trailerUrl: "",
     steamAppId: "",
-    storeLinks: editorStoreLinks(),
+    storeLinks: shelfOnlyImport ? {} : editorStoreLinks(),
     owners: owners.length ? owners : [state.gamelistSettings.defaultOwner || "User"],
     preorderStore: hasPreorder ? el.gamelistPreorderStore.value.trim() : "",
-    preferredStore: el.gamelistPreferredStore.value.trim(),
+    preferredStore: shelfOnlyImport ? "" : el.gamelistPreferredStore.value.trim(),
     cover: rawCoverUrl(el.fields.cover.value.trim()),
     prices: [],
     order: Math.max(-1, ...sectionOrders) + 1,

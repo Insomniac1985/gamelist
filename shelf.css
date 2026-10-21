@@ -3475,6 +3475,81 @@ textarea {
   margin: 0 0 8px;
 }
 
+#addDialog.shelf-gamelist-import-mini {
+  width: min(500px, calc(100vw - 28px));
+  max-height: min(520px, calc(100vh - 28px));
+}
+
+#addDialog.shelf-gamelist-import-mini .modal {
+  max-height: min(520px, calc(100vh - 28px));
+  gap: 12px;
+}
+
+#addGameForm.shelf-gamelist-import-mini > :is(.lookup-row, .lookup-results, .form-group, .shelf-pricecharting-section, .modal-actions),
+#addGameForm.shelf-gamelist-import-mini #shelfGamelistTargetPicker,
+#addGameForm.shelf-gamelist-import-mini #editDeleteButton {
+  display: none !important;
+}
+
+#addGameForm.shelf-gamelist-import-mini #shelfGamelistPreorderStreamRow {
+  display: none !important;
+}
+
+#addGameForm.shelf-gamelist-import-mini #shelfGamelistListControls {
+  display: block;
+  margin: 0;
+}
+
+#addGameForm.shelf-gamelist-import-mini .shelf-gamelist-list-picker {
+  margin: 0;
+}
+
+.shelf-gamelist-import-summary {
+  display: grid;
+  grid-template-columns: 64px minmax(0, 1fr);
+  gap: 14px;
+  align-items: center;
+  min-width: 0;
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  background: rgba(255, 255, 255, 0.055);
+}
+
+.shelf-gamelist-import-summary[hidden] {
+  display: none !important;
+}
+
+.shelf-gamelist-import-cover {
+  width: 64px;
+  height: 86px;
+  object-fit: contain;
+  border-radius: 5px;
+  background: rgba(0, 0, 0, 0.2);
+}
+
+.shelf-gamelist-import-copy {
+  display: grid;
+  gap: 5px;
+  min-width: 0;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.shelf-gamelist-import-copy > * {
+  overflow-wrap: anywhere;
+}
+
+.shelf-gamelist-import-title {
+  color: var(--text);
+  font-size: 17px;
+}
+
+.shelf-gamelist-import-notes:empty,
+.shelf-gamelist-import-condition:empty {
+  display: none;
+}
+
 @media (max-width: 760px) {
   /* Shelf follows the shared markup: DLC, subscription, then release details. */
   #addGameForm.gamelist-target-editor .shelf-entitlement-field { order: 11; }
