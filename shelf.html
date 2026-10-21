@@ -257,7 +257,7 @@
           <div id="shelfTrophyCard" class="achievement-panel glass"></div>
         </section>
         <section class="calendar-section hero" data-module="calendar">
-          <div class="release-calendar" id="shelfReleaseCalendar" aria-label="Upcoming release calendar"></div>
+          <div class="release-calendar" id="shelfReleaseCalendar" aria-label="Radar release calendar"></div>
         </section>
         <section class="highlights-section" data-module="kpis">
           <div class="stats" id="shelfStats" aria-live="polite"></div>
@@ -429,10 +429,9 @@
         <div class="shelf-gamelist-list-picker" id="shelfGamelistListPicker" hidden>
           <div class="shelf-gamelist-section-options shelf-gamelist-target-options" role="group" aria-label="Gamelist list">
             <span class="shelf-gamelist-target-indicator" aria-hidden="true"></span>
-            <button type="button" data-gamelist-section="backlog"><span class="shelf-gamelist-target-logo gamelist-target-logo" aria-hidden="true"></span><span data-i18n="Backlog">Backlog</span></button>
-            <button type="button" data-gamelist-section="upcoming"><span class="shelf-gamelist-target-logo gamelist-target-logo" aria-hidden="true"></span><span data-i18n="Upcoming">Upcoming</span></button>
-            <button type="button" data-gamelist-section="wanted"><span class="shelf-gamelist-target-logo gamelist-target-logo" aria-hidden="true"></span><span data-i18n="Available">Available</span></button>
-            <button type="button" data-gamelist-section="collection"><span class="shelf-gamelist-target-logo shelf-target-logo" aria-hidden="true"></span><span data-i18n="Only collection">Only collection</span></button>
+            <button type="button" data-gamelist-section="collection"><span data-i18n="Collection">Collection</span></button>
+            <button type="button" data-gamelist-section="upcoming"><span data-i18n="Radar">Radar</span></button>
+            <button type="button" data-gamelist-section="wanted"><span data-i18n="Wishlist">Wishlist</span></button>
           </div>
         </div>
         <div class="game-list-controls" id="shelfGamelistListControls" role="group" aria-label="Gamelist list and preorder" hidden>
@@ -449,7 +448,7 @@
               </span>
             </label>
           </div>
-          <label class="check-filter toggle-check shelf-add-collection-check" hidden><input id="shelfAddCollectionInput" type="checkbox"><span class="check-label-with-icon"><span class="shelf-gamelist-target-logo shelf-target-logo" aria-hidden="true"></span><span data-i18n="Add to Collection">Add to Collection</span></span></label>
+          <label class="check-filter toggle-check shelf-add-collection-check" hidden><input id="shelfAddCollectionInput" type="checkbox"><span class="check-label-with-icon"><span class="shelf-gamelist-target-logo gamelist-target-logo" aria-hidden="true"></span><span data-i18n="Add to backlog">Add to backlog</span></span></label>
           <label class="shelf-gamelist-flag shelf-gamelist-stream-field check-filter toggle-check stream-check" hidden><input id="shelfGamelistStreamInput" type="checkbox"><span data-i18n="Stream">Stream</span></label>
         </div>
         </div>
@@ -463,8 +462,8 @@
             <label class="shelf-console-field"><span data-i18n="Platform">Platform</span><span class="icon-input shelf-edit-icon-input"><span class="field-leading-icon shelf-platform-field-icon" aria-hidden="true"></span><input id="platformInput" list="shelfPlatformOptions"></span><datalist id="shelfPlatformOptions"></datalist></label>
             <div class="shelf-gamelist-placement" id="shelfGamelistPlacement" hidden>
               <select id="shelfGamelistSectionInput" hidden tabindex="-1" aria-hidden="true">
-                <option value="wanted" data-i18n="Available now">Available now</option>
-                <option value="upcoming" data-i18n="Upcoming">Upcoming</option>
+                <option value="wanted" data-i18n="Wishlist">Wishlist</option>
+                <option value="upcoming" data-i18n="Radar">Radar</option>
                 <option value="backlog" data-i18n="Backlog">Backlog</option>
               </select>
             </div>

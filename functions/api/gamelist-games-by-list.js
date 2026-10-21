@@ -21,7 +21,7 @@ export async function onRequestGet({ request, env }) {
 }
 
 function listLabel(value) {
-  const labels = { new: "New additions", backlog: "Backlog", upcoming: "Upcoming", preorder: "Preorders", completed: "Completed" };
+  const labels = { new: "New additions", backlog: "Backlog", upcoming: "Radar", wanted: "Wishlist", preorder: "Preorders", completed: "Completed" };
   return labels[value] || value.replace(/[-_]+/g, " ").replace(/\b\w/g, (letter) => letter.toUpperCase());
 }
 

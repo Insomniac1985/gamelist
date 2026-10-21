@@ -198,6 +198,8 @@
     <link rel="preload" as="image" href="assets/stores/xtralife.ico">
     <link rel="stylesheet" href="styles.css">
     <link rel="stylesheet" href="game-editor-layout.css">
+    <link rel="stylesheet" href="shelf.css">
+    <link rel="stylesheet" href="collection-workspace.css">
   </head>
   <body class="auth-checking">
     <script>
@@ -290,6 +292,7 @@
 
     <main class="shell">
       <section class="playing-section" id="playingSection" hidden></section>
+      <section id="collectionShowcase"></section>
 
       <section class="goty-section" id="gotySection" hidden>
         <div class="column-head">
@@ -322,11 +325,12 @@
       </section>
 
       <section class="calendar-section hero">
-        <div class="release-calendar" id="releaseCalendar" aria-label="Upcoming release calendar"></div>
+        <div class="release-calendar" id="releaseCalendar" aria-label="Radar release calendar"></div>
       </section>
 
       <section class="highlights-section">
         <div class="stats" id="stats" aria-live="polite"></div>
+        <div id="collectionKpis" hidden></div>
       </section>
 
       <section class="toolbar glass">
@@ -370,16 +374,21 @@
           </div>
         </label>
         <button class="icon-button view-toggle" id="viewToggleButton" type="button" title="Show as list" aria-label="Show as list"></button>
+        <div id="collectionMediaToggle" class="unified-media-toggle" role="group" aria-label="Collection format"></div>
       </section>
 
+      <section id="collectionToolbar" hidden></section>
       <nav class="mobile-section-tabs" aria-label="Mobile sections" data-i18n-aria-label="Mobile sections">
         <button type="button" data-mobile-section="new" data-i18n="New additions" hidden>New additions</button>
         <button type="button" data-mobile-section="backlog" data-i18n="Backlog">Backlog</button>
-        <button type="button" data-mobile-section="upcoming" data-i18n="Upcoming">Upcoming</button>
-        <button type="button" data-mobile-section="wanted" data-i18n="Available">Available</button>
+        <button type="button" data-mobile-section="shelf" data-i18n="Shelf">Shelf</button>
+        <button type="button" data-mobile-section="drive" data-i18n="Drive" hidden>Drive</button>
+        <button type="button" data-mobile-section="upcoming" data-i18n="Radar">Radar</button>
+        <button type="button" data-mobile-section="wanted" data-i18n="Wishlist">Wishlist</button>
       </nav>
 
       <section class="board" aria-live="polite">
+        <section id="collectionLibrary" hidden></section>
         <article class="column" id="new" hidden>
           <div class="column-head">
             <div>
@@ -403,7 +412,7 @@
         <article class="column" id="upcoming">
           <div class="column-head">
             <div>
-              <h2 data-i18n="Upcoming">Upcoming</h2>
+              <h2 data-i18n="Radar">Radar</h2>
             </div>
             <span id="upcomingCount"></span>
           </div>
@@ -413,7 +422,7 @@
         <article class="column" id="wanted">
           <div class="column-head">
             <div>
-              <h2 data-i18n="Available now">Available now</h2>
+              <h2 data-i18n="Wishlist">Wishlist</h2>
             </div>
             <span id="wantedCount"></span>
           </div>
@@ -468,6 +477,7 @@
           <path d="M5 12h14"></path>
         </svg>
       </button>
+      <button class="icon-button floating-action-button" id="floatingStatsButton" type="button" title="Statistics" aria-label="Statistics"></button>
     </div>
     <nav class="mobile-action-dock" id="mobileActionDock" aria-label="Quick actions">
       <button class="mobile-dock-action" id="mobileDockUp" type="button" title="Back to top" aria-label="Back to top">
@@ -533,8 +543,8 @@
           <div class="shelf-gamelist-target-options" role="group" aria-label="Gamelist list">
             <span class="shelf-gamelist-target-indicator" aria-hidden="true"></span>
             <button type="button" data-game-target="backlog" data-i18n="Backlog">Backlog</button>
-            <button type="button" data-game-target="upcoming" data-i18n="Upcoming">Upcoming</button>
-            <button type="button" data-game-target="wanted" data-i18n="Available">Available</button>
+            <button type="button" data-game-target="upcoming" data-i18n="Radar">Radar</button>
+            <button type="button" data-game-target="wanted" data-i18n="Wishlist">Wishlist</button>
           </div>
         </div>
         <div class="game-preorder-stream-row" id="gamePreorderStreamRow">
@@ -626,8 +636,8 @@
             <label class="list-field">
               <span data-i18n="List">List</span>
               <select id="sectionInput">
-                <option value="wanted" data-i18n="Available now">Available now</option>
-                <option value="upcoming" data-i18n="Upcoming">Upcoming</option>
+                <option value="wanted" data-i18n="Wishlist">Wishlist</option>
+                <option value="upcoming" data-i18n="Radar">Radar</option>
                 <option value="backlog" data-i18n="Backlog">Backlog</option>
               </select>
             </label>

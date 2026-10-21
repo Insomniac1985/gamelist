@@ -1,3 +1,4 @@
+import { mountCollectionWorkspace } from "./collection-workspace.js";
 import { openSharedAddGame, warmSharedAddGame } from "./shared-add-game.js";
 import { normalizeSearchText, bindModalTouchGuard, createGameCardShell, bindActivityCardParallax, mountActivitySlider, mountTwitchPreview, mountReleaseCalendar, finishedGameMarkup, achievementCardMarkup, achievementDashboardMarkup, achievementPanelMarkup, completedCardMarkup, horizontalCarouselState, syncViewModeButton, slideHorizontalCarousel, comparePlayingGames, finishedDurationText, timeBadgeMarkup, guideLinksMarkup, storeButtonsMarkup, activityTrailerUrl, activityTrailerFrameMarkup, preloadPausedActivityTrailers, activityReleaseStatus, activityCoverOverride, activityAllowsPsnCardTrophies, formatFooterDate, formatFooterDateTime, formatFooterShortDate, confirmGameDelete } from "./activity-ui.js";
 import { applySiteTheme, normalizeThemeSettings, ownerCardColorClass, ownerColorClass, themeSettingsContent, bindThemeSettingsContent, readThemeSettingsContent } from "./theme-system.js";
@@ -19,7 +20,7 @@ const PLATINUM_COVER_CACHE_KEY = "gamelist:platinum-covers:v1";
 const SETTINGS_KEY = "gamelist:settings:v1";
 const ACHIEVEMENT_CACHE_KEY = "gamelist:achievement-cache:v2";
 const ACHIEVEMENT_CACHE_REFRESH_MS = 60 * 60 * 1000;
-const DEFAULT_PAGE_ORDER = ["trophies", "calendar", "highlights", "search", "gamelist", "finished"];
+const DEFAULT_PAGE_ORDER = ["showcase", "trophies", "calendar", "highlights", "search", "gamelist", "finished"];
 const LAYOUT_SECTION_KEYS = ["playing", ...DEFAULT_PAGE_ORDER, "latestFinished"];
 const VERSION_STORAGE_KEY = "gamelist:site-version";
 const UPDATES_NOTIFICATION_STORAGE_KEY = "gamelist:updates-notification-version";
@@ -79,6 +80,10 @@ const DEFAULT_SETTINGS = {
   theme: "shabii",
   customTheme: {},
   defaultOrder: "custom",
+  defaultList: "backlog",
+  shelfDigitalGames: false,
+  shelfHidePrices: false,
+  shelfDefaultOrder: "added",
   psnUser: "",
   microsoftUser: "",
   steamUser: "",
@@ -590,6 +595,13 @@ async function init() {
   await loadData();
   void logConsoleInfo(initialTheme, authStatus);
   const cloudChanged = await pullCloudData();
+  state.mobileSection = state.settings.defaultList || "backlog";
+  defaultCollectionListApplied = true;
+  void ensureCollectionWorkspace();
+  window.addEventListener("focus", () => {
+    if (!collectionUI || document.hidden || document.querySelector("dialog[open]")) return;
+    void Promise.all([refreshCollectionData(), pullCloudData()]).then(() => render()).catch(() => {});
+  });
   syncPagePullTransition();
   if (await maybeRenderGameOfTheYearExportPreview()) return;
   render();
@@ -1005,7 +1017,8 @@ function bindEvents() {
   document.addEventListener("pointerdown", (event) => {
     if (!el.mobileActionDock?.contains(event.target)) el.mobileDockSearch?.classList.remove("is-active");
   });
-  el.mobileDockStats?.addEventListener("click", () => openFinishedStatsDialog(state.completedYear || "all", { streamMode: state.completedStreamMode }));
+  document.querySelector("#floatingStatsButton")?.addEventListener("click", () => openFinishedStatsDialog("all", { yearPicker: true }));
+  el.mobileDockStats?.addEventListener("click", () => openFinishedStatsDialog("all", { yearPicker: true }));
   el.mobileDockGoty?.addEventListener("click", () => openGameOfTheYearDialogWithAutofillLoading(currentGameOfTheYear(), { force: true, autoPick: true }));
   el.syncButton.addEventListener("click", syncNow);
   el.settingsButton?.addEventListener("click", openSettingsDialog);
@@ -1648,13 +1661,11 @@ function initPagePullTransition({ targetLabel, targetUrl }) {
 }
 
 function syncPagePullTransition() {
-  if (window.self !== window.top) return;
-  if (pageSwitchHidden()) removePagePullTransition();
-  else initPagePullTransition({ targetLabel: "Shelf", targetUrl: "shelf" });
+  removePagePullTransition();
 }
 
 function pageSwitchHidden() {
-  return state.settings.hidePageSwitch === true;
+  return true;
 }
 
 function removePagePullTransition() {
@@ -1869,7 +1880,7 @@ function normalizeSettings(settings = {}) {
   return {
     ...DEFAULT_SETTINGS,
     ...settings,
-    pageOrder: [...pageOrder, ...DEFAULT_PAGE_ORDER.filter((item) => !pageOrder.includes(item))],
+    pageOrder: [...(!pageOrder.includes("showcase") ? ["showcase"] : []), ...pageOrder, ...DEFAULT_PAGE_ORDER.filter((item) => item !== "showcase" && !pageOrder.includes(item))],
     hiddenSections,
     theme: THEMES[settings.theme] || settings.theme === "custom" ? settings.theme : DEFAULT_SETTINGS.theme,
     customTheme: normalizeThemeSettings(settings),
@@ -1886,7 +1897,8 @@ function normalizeSettings(settings = {}) {
     defaultOwner: cleanOwnerLabel(settings.defaultOwner) || DEFAULT_SETTINGS.defaultOwner,
     shelfSync: true,
     shelfSyncWishlist: settings.shelfSyncWishlist !== false,
-    hidePageSwitch: settings.hidePageSwitch === true,
+    hidePageSwitch: false,
+    defaultList: ["backlog", "shelf", "drive", "upcoming", "wanted", "new"].includes(settings.defaultList) ? settings.defaultList : "backlog",
     streamFilterPriority: streamFilterPriorityForSettings(settings),
     prioritizeFinishedStream: streamFilterPriorityForSettings(settings) === "stream",
     hideNonStreamPlaying: settings.hideNonStreamPlaying === true,
@@ -1960,7 +1972,7 @@ function syncMobileDockGoty() {
   button.title = tt("Check my GOTYs");
   button.setAttribute("aria-label", tt("Check my GOTYs"));
   if (el.mobileDockStats) {
-    el.mobileDockStats.hidden = !button.hidden || !finishedGamesForCurrentView().length;
+    el.mobileDockStats.hidden = false;
   }
 }
 
@@ -2028,6 +2040,7 @@ function render() {
   el.tagFilter.classList.toggle("is-active", state.filters.tag !== "all");
   updateScrollTopButton();
   maybePromptGameOfTheYear();
+  syncCollectionWorkspace();
   scheduleRenderSettle("render");
 }
 
@@ -2737,8 +2750,8 @@ function renderSettingsDialog() {
     ...state.settings.pageOrder.map((key) => settingsLayoutItem(key, pageIndex.get(key) ?? 0)),
   ].join("");
   el.settingsPreferencesBeforeCurrency.innerHTML = [
-    settingsPageSwitchItem(),
     settingsDefaultOrderItem(),
+    collectionSettingsMarkup(),
   ].join("");
   el.settingsPreferencesAfterLanguage.innerHTML = [
     settingsWeekStartItem(),
@@ -2800,12 +2813,26 @@ function renderSettingsDialog() {
   document.querySelector("[data-import-csv='finished']")?.addEventListener("click", importYearlyStatsCsv);
   document.querySelector("[data-export-csv='yearly-stats']")?.addEventListener("click", exportYearlyStatsCsv);
   document.querySelector("[data-import-csv='yearly-stats']")?.addEventListener("click", importYearlyStatsCsv);
+  el.settingsDialog.querySelectorAll("[data-collection-export], [data-collection-import]").forEach(button => button.addEventListener("click", async () => {
+    await ensureCollectionWorkspace();
+    const digital = (button.dataset.collectionExport || button.dataset.collectionImport) === "digital";
+    const action = button.dataset.collectionExport ? (digital ? "exportDigital" : "exportPhysical") : (digital ? "importDigital" : "importPhysical");
+    await collectionUI?.[action]();
+  }));
+  el.settingsDialog.querySelector("[data-track-digital]")?.addEventListener("change", event => {
+    const select = el.settingsDialog.querySelector("[data-default-list]");
+    const drive = select.querySelector('option[value="drive"]');
+    if (event.target.checked && !drive) select.add(new Option(tt("Drive"), "drive"), 2);
+    if (!event.target.checked && drive) { if (select.value === "drive") select.value = "shelf"; drive.remove(); }
+    syncStyledSelect(select);
+  });
   applyLanguage();
   syncStyledSelects(el.settingsDialog, { activeValue: null });
 }
 
 function settingsLayoutItem(key, index, options = {}) {
   const title = {
+    showcase: "Showcase",
     playing: "Currently playing",
     trophies: "Achievements",
     calendar: "Calendar",
@@ -2886,22 +2913,6 @@ function settingsWeekStartItem() {
   `;
 }
 
-function settingsPageSwitchItem() {
-  return `
-    <article class="settings-layout-card settings-sync-card" data-layout-key="page-switch">
-      <div class="settings-wire wire-list" aria-hidden="true"><span></span><span></span><span></span></div>
-      <div class="settings-theme-select">
-        <span>${escapeHtml(tt("Shelf/Gamelist switch"))}</span>
-        <div class="settings-check-field">
-          <label class="check-filter toggle-check settings-visible-check" title="${escapeHtml(tt("Hide switch"))}">
-            <input type="checkbox" data-hide-page-switch ${state.settings.hidePageSwitch ? "checked" : ""}>
-            <span>${escapeHtml(tt("Hide switch"))}</span>
-          </label>
-        </div>
-      </div>
-    </article>
-  `;
-}
 
 function settingsPrioritizeFinishedStreamItem() {
   const priority = streamFilterPriorityForSettings(state.settings);
@@ -2969,6 +2980,11 @@ function settingsDevFeaturesItem(kind) {
     { href: "/api/gamelist-mass-add", label: "Mass add" },
     { href: "/api/gamelist-metadata", label: "Fill metadata" },
     { href: "/api/secret-status", label: "Integration health" },
+    { href: "/api/shelf-mass-add", label: "Collection: Mass add" },
+    { href: "/api/shelf-metadata", label: "Collection: Fill metadata" },
+    { href: "/api/shelf-price-audit", label: "Collection: Price audit" },
+    { href: "/api/shelf-import-digital", label: "Import Digital from Platforms" },
+    { href: "/api/shelf-covers", label: "Collection: Mass cover add" },
   ].map((link) => `
     <a class="ghost-button settings-dev-link" href="${escapeHtml(link.href)}" target="_blank" rel="noreferrer" data-dev-feature="${escapeHtml(kind)}">
       ${escapeHtml(tt(link.label))}
@@ -3459,7 +3475,11 @@ async function saveSettingsFromForm(event, { close = true } = {}) {
     stores,
     defaultOwner: el.settingsDefaultOwner.value,
     shelfSync: true,
-    hidePageSwitch: el.settingsDialog.querySelector("[data-hide-page-switch]")?.checked === true,
+    hidePageSwitch: false,
+    defaultList: el.settingsDialog.querySelector("[data-default-list]")?.value || "backlog",
+    shelfDigitalGames: el.settingsDialog.querySelector("[data-track-digital]")?.checked === true,
+    shelfHidePrices: el.settingsDialog.querySelector("[data-collection-prices]")?.checked === false,
+    shelfDefaultOrder: el.settingsDialog.querySelector("[data-collection-order]")?.value || "added",
     streamFilterPriority: normalizeStreamFilterMode(el.settingsDialog.querySelector("[data-stream-filter-priority]")?.value),
     prioritizeFinishedStream: normalizeStreamFilterMode(el.settingsDialog.querySelector("[data-stream-filter-priority]")?.value) === "stream",
     hideNonStreamPlaying: el.settingsDialog.querySelector("[data-hide-non-stream-playing]")?.checked === true,
@@ -5877,6 +5897,7 @@ function downloadCanvas(canvas, filename) {
 }
 
 function scrollToSearchArea() {
+  if (["shelf", "drive"].includes(state.mobileSection) && collectionUI) return collectionUI.search();
   document.querySelector(".toolbar")?.scrollIntoView({ behavior: "smooth", block: "start" });
   window.requestAnimationFrame(() => el.searchInput?.focus({ preventScroll: true }));
 }
@@ -6897,6 +6918,9 @@ function platformCounts(games) {
 }
 
 function renderMobileTabs() {
+  if (!defaultCollectionListApplied) {
+    state.mobileSection = state.settings.defaultList || "backlog";
+  }
   const sections = mobileSections();
   const counts = mobileSectionCounts();
   if (!sections.includes(state.mobileSection)) state.mobileSection = sections[0] || "backlog";
@@ -6906,7 +6930,7 @@ function renderMobileTabs() {
     const active = visible && button.dataset.mobileSection === state.mobileSection;
     button.classList.toggle("active", active);
     const label = mobileSectionLabel(button.dataset.mobileSection);
-    const count = counts[button.dataset.mobileSection] || 0;
+    const count = button.dataset.mobileSection === "new" ? (counts.new || 0) + (collectionUI?.pending().length || 0) : counts[button.dataset.mobileSection] || 0;
     button.innerHTML = `<span class="label">${escapeHtml(label)}</span>${button.dataset.mobileSection === "new" ? `<span class="count">${count}</span>` : ""}`;
   });
   const index = Math.max(0, sections.indexOf(state.mobileSection));
@@ -6927,6 +6951,7 @@ function renderMobileTabs() {
     column.setAttribute("aria-hidden", String(columnIndex < 0 || column.id !== state.mobileSection));
   });
   document.body.dataset.mobileSection = state.mobileSection;
+  if (window.innerWidth <= 760) el.mobileTabs.forEach(button => { if (button.classList.contains("active")) button.scrollIntoView({ block: "nearest", inline: "nearest" }); });
   requestAnimationFrame(syncSectionTabsVisibility);
 }
 
@@ -6950,7 +6975,7 @@ function syncMobileTabIndicator() {
 }
 
 function mobileSections() {
-  return hasNewAdditions() ? ["new", "backlog", "upcoming", "wanted"] : ["backlog", "upcoming", "wanted"];
+  return [hasNewAdditions() || collectionUI?.pending().length ? "new" : "", "backlog", "shelf", state.settings.shelfDigitalGames === true ? "drive" : "", "upcoming", "wanted"].filter(Boolean);
 }
 
 function mobileSectionCounts() {
@@ -6966,8 +6991,10 @@ function mobileSectionLabel(section) {
   const label = {
     new: "New additions",
     backlog: "Backlog",
-    upcoming: "Upcoming",
-    wanted: "Available",
+    shelf: "Shelf",
+    drive: "Drive",
+    upcoming: "Radar",
+    wanted: "Wishlist",
   }[section] || section;
   return tt(label);
 }
@@ -7013,7 +7040,7 @@ function syncMobileSectionToResults() {
     || state.filters.platform !== "all"
     || state.filters.tag !== "all"
     || state.filters.preordered;
-  if (!hasActiveFilter) return;
+  if (!hasActiveFilter || ["shelf", "drive", "new"].includes(state.mobileSection)) return;
   const sections = state.filters.preordered ? mobileSections().filter((section) => section !== "new").sort((a, b) => ["upcoming", "backlog", "wanted"].indexOf(a) - ["upcoming", "backlog", "wanted"].indexOf(b)) : mobileSections();
   const hasCurrent = filteredGames().some((game) => (
     gameMatchesMobileSection(game, state.mobileSection)
@@ -7422,6 +7449,7 @@ function rowCoreStats(game) {
     mediaFormatBadge(game),
     game.dlc ? dlcBadge(game) : "",
     entitlementBadge(game),
+    gamelistAddedBadge(game),
     game.coop ? coopBadge() : "",
     game.multiplayer && !game.coop ? multiplayerBadge() : "",
     game.emulator ? `<span class="emulator-pill">${escapeHtml(tt("Emulator"))}</span>` : "",
@@ -7466,11 +7494,12 @@ function renderCompleted() {
   renderCompletedYearFilter(years);
   if (el.completedStatsButton) {
     const hasFinishedGames = Boolean(finishedGamesForCurrentView().length);
-    el.completedStatsButton.hidden = !hasFinishedGames;
+    el.completedStatsButton.hidden = false;
     el.completedStatsButton.innerHTML = graphIcon();
+    document.querySelector("#floatingStatsButton").innerHTML = graphIcon();
     if (el.mobileDockStats) {
       const gotyOnDock = Boolean(el.mobileDockGoty && !el.mobileDockGoty.hidden);
-      el.mobileDockStats.hidden = !hasFinishedGames || gotyOnDock;
+      el.mobileDockStats.hidden = false;
       el.mobileDockStats.innerHTML = `${graphIcon()}<span>${escapeHtml(tt("Check statistics"))}</span>`;
     }
   }
@@ -7669,10 +7698,10 @@ function completedCountForSelectedYear() {
 
 function openFinishedStatsDialog(year = "all", { yearPicker = false, streamMode = "all" } = {}) {
   state.finishedStatsStreamMode = normalizeStreamFilterMode(streamMode);
-  const years = yearPicker ? finishedStatsYears() : [];
-  const singleYearStats = yearPicker && years.length === 1;
+  const years = finishedStatsYears();
+  const singleYearStats = false;
   const selectedYear = singleYearStats && String(year || "all") === "all" ? years[0] : String(year || "all");
-  const showYearPicker = yearPicker && !singleYearStats;
+  const showYearPicker = true;
   el.finishedStatsDialog.classList.toggle("from-achievements", yearPicker);
   el.finishedStatsYearPicker.hidden = !showYearPicker;
   if (showYearPicker) {
@@ -7683,15 +7712,22 @@ function openFinishedStatsDialog(year = "all", { yearPicker = false, streamMode 
   }
   renderFinishedStatsDialog(selectedYear, { preserveAll: showYearPicker });
   el.finishedStatsDialog.showModal();
+  if (!collectionUI) void ensureCollectionWorkspace().then(() => { if (el.finishedStatsDialog.open) openUnifiedStatsYear(selectedYear); });
   syncScrollLock();
 }
 
+function openUnifiedStatsYear(year) {
+  el.finishedStatsYearSelect.innerHTML = ["all", ...finishedStatsYears()].map(value => `<option value="${escapeHtml(value)}">${value === "all" ? escapeHtml(tt("All")) : escapeHtml(value)}</option>`).join("");
+  el.finishedStatsYearSelect.value = year;
+  renderFinishedStatsDialog(year);
+}
+
 function finishedStatsYears() {
-  return completedYears(finishedStatsBaseGames());
+  return [...new Set([...completedYears(finishedStatsBaseGames()), ...(collectionUI?.years() || [])])].sort((a, b) => Number(b) - Number(a));
 }
 
 function renderFinishedStatsDialog(year = "all", { preserveAll = true } = {}) {
-  const scope = preserveAll ? String(year || "all") : finishedStatsScope(year);
+  const scope = String(year || "all");
   const games = finishedStatsGames(scope);
   const completed = finishedStatsCompleted(scope);
   el.finishedStatsBrow.textContent = scope === "all" ? tt("All-time statistics") : tt("YEARLY STATISTICS");
@@ -7701,7 +7737,10 @@ function renderFinishedStatsDialog(year = "all", { preserveAll = true } = {}) {
     : statsMode === "nonstream"
       ? (scope === "all" ? tt("Non-stream games") : tt("Non-stream games {year}", { year: scope }))
       : (scope === "all" ? tt("Finished games") : tt("Finished {year}", { year: scope }));
-  el.finishedStatsBody.innerHTML = finishedStatsMarkup(scope, games, completed);
+  el.finishedStatsBody.innerHTML = games.length || completed.length ? finishedStatsMarkup(scope, games, completed) : "";
+  mergeCollectionStats(scope);
+  if (!el.finishedStatsBody.children.length) el.finishedStatsBody.innerHTML = `<div class="empty">${escapeHtml(tt("No statistics for this year."))}</div>`;
+  el.finishedStatsTitle.textContent = scope === "all" ? tt("Statistics") : `${tt("Statistics")} ${scope}`;
   el.finishedStatsBody.querySelector("[data-stats-action='completed']")?.addEventListener("click", () => {
     openPlatinumDialog(scope);
   });
@@ -8365,6 +8404,7 @@ function bindFinishedStatsTopGamesCarousel(scope = "all") {
 
 function bindFinishedStatsMobileOverlays(body = el.finishedStatsBody, dialog = el.finishedStatsDialog) {
   body?.querySelectorAll("[data-stats-overlay-title]").forEach((node) => {
+    if (node.closest("[data-stats-source=collection]")) return;
     node.addEventListener("click", (event) => {
       if (!window.matchMedia("(max-width: 760px)").matches) return;
       if (event.target.closest(".finished-stats-breakdown")) return;
@@ -8436,12 +8476,14 @@ function bindFinishedStatsDesktopOverlays(dialog = el.finishedStatsDialog, body 
   };
 
   body.querySelectorAll("[data-stats-overlay-title]").forEach((node) => {
+    if (node.closest("[data-stats-source=collection]")) return;
     node.addEventListener("mouseenter", () => openFloatingOverlay(node));
     node.addEventListener("mouseleave", scheduleClose);
     node.addEventListener("focusin", () => openFloatingOverlay(node));
     node.addEventListener("focusout", scheduleClose);
   });
   body.querySelectorAll(".finished-stats-donut").forEach((donut) => {
+    if (donut.closest("[data-stats-source=collection]")) return;
     donut.querySelectorAll(".finished-stats-pie-segment").forEach((segment) => {
       const indexClass = [...segment.classList].find((name) => name.startsWith("finished-stats-pie-segment-"));
       const index = indexClass?.replace("finished-stats-pie-segment-", "");
@@ -8905,6 +8947,7 @@ function filteredGames(options = {}) {
   const { applyPreorder = true } = options;
   return state.games.filter((game) => {
     if (game.deletedAt) return false;
+    if (collectionMedia !== "all" && (collectionMedia === "digital") !== Boolean(game.digital || game.dlc)) return false;
     if (game.section === "new" && !canSeeNewAdditions()) return false;
     const haystack = [
       game.title,
@@ -9721,6 +9764,7 @@ function metaFor(game, options = {}) {
   values.push(mediaFormatBadge(game));
   if (game.dlc) values.push(dlcBadge(game));
   values.push(entitlementBadge(game));
+  values.push(gamelistAddedBadge(game));
   if (game.emulator) values.push(`<span class="emulator-pill">Emulator</span>`);
   if (game.coop) values.push(coopBadge());
   if (game.multiplayer && !game.coop) values.push(multiplayerBadge());
@@ -10595,7 +10639,7 @@ function dlcBadge(game, label = "DLC", options = {}) {
 
 function entitlementBadge(game) {
   const type = game?.psPlus ? "psplus" : game?.gamesWithGold ? "gameswithgold" : "";
-  if (!type) return "";
+  if (!type || !(game.digital || game.dlc)) return "";
   const title = type === "psplus" ? "PlayStation Plus" : "Games with Gold";
   return `<span class="entitlement-pill entitlement-${type}" title="${title}" aria-label="${title}"><img src="assets/platforms/${type}.png" alt="" width="22" height="22" decoding="async"></span>`;
 }
@@ -12124,10 +12168,12 @@ async function openEditor(id = "") {
 }
 
 function openGameAddFlow(options = {}) {
-  return openSharedAddGame({ ...options, target: "gamelist", settings: state.settings }, {
+  const section = options.section || (["upcoming", "wanted"].includes(state.mobileSection) ? state.mobileSection : "collection");
+  const collection = ["collection", "backlog"].includes(section) && !options.miniGamelistImport;
+  return openSharedAddGame({ ...options, section: section === "collection" ? "backlog" : section, target: collection ? "shelf" : "gamelist", digital: options.digital ?? state.mobileSection === "drive", settings: state.settings }, {
     beforeOpen: pauseAllPlayingTrailers,
     afterSave: async result => {
-      await pullCloudData();
+      await Promise.all([pullCloudData(), refreshCollectionData()]);
       render();
       showToast(tt(result.target === "shelf" ? "Added to Shelf." : "Added to Gamelist."));
     },
@@ -12383,6 +12429,7 @@ function moveToBacklog(id) {
   }
   const fromShelfAdditions = isShelfNewAddition(game);
   game.section = "backlog";
+  game.backlogAddedAt = new Date().toISOString();
   if (fromShelfAdditions) game.acceptedFromShelfAt = new Date().toISOString();
   game.preorderStore = "";
   game.prices = [];
@@ -13306,10 +13353,11 @@ async function refreshPricesForGame(id, options = {}) {
 }
 
 async function refreshAllPrices() {
+  if (["shelf", "drive"].includes(state.mobileSection) && collectionUI) return collectionUI.refreshPrices();
   if (!state.canEdit) return;
   const games = activeGames().filter((game) => ["upcoming", "wanted"].includes(game.section) && game.title && priceProvidersForGame(game).length);
   if (!games.length) {
-    showToast(tt("No Available or Upcoming games to refresh."));
+    showToast(tt("No Wishlist or Radar games to refresh."));
     return;
   }
 
@@ -13398,7 +13446,7 @@ function compressImage(file) {
 }
 
 async function syncNow() {
-  await pullCloudData();
+  await Promise.all([pullCloudData(), refreshCollectionData()]);
   if (state.canEdit) await persistCloud();
   render();
 }
@@ -13473,4 +13521,127 @@ function escapeHtml(value) {
     '"': "&quot;",
     "'": "&#039;",
   }[char]));
+}
+
+
+let collectionUI = null;
+let collectionData = null;
+let collectionLoad = null;
+let collectionMedia = "all";
+let collectionRenderInputs = null;
+let defaultCollectionListApplied = false;
+
+async function refreshCollectionData() {
+  const response = await fetch("/api/shelf", { cache: "no-store" });
+  if (!response.ok) throw new Error("Could not load your collection.");
+  collectionData = await response.json();
+  return collectionData;
+}
+
+function ensureCollectionWorkspace() {
+  if (collectionLoad) return collectionLoad;
+  collectionLoad = (async () => {
+    await refreshCollectionData();
+    const slots = Object.fromEntries(["showcase", "kpis", "toolbar", "library"].map(key => [key, document.querySelector("#collection" + key[0].toUpperCase() + key.slice(1))]));
+    const stats = document.createElement("div");
+    stats.hidden = true;
+    document.body.append(stats);
+    slots.stats = stats;
+    collectionUI = await mountCollectionWorkspace({ slots, openGame: openDetail, mediaChanged: setCollectionMedia, viewChanged: mode => { state.viewMode = mode; saveSharedViewMode(mode); render(); }, changed: async () => {
+      await Promise.all([refreshCollectionData(), pullCloudData()]);
+      render();
+    } });
+    syncCollectionWorkspace();
+    renderMobileTabs();
+  })().catch(error => {
+    collectionLoad = null;
+    document.querySelector("#collectionLibrary").textContent = tt("Could not load your collection.");
+    console.error(error);
+  });
+  return collectionLoad;
+}
+
+function syncCollectionWorkspace() {
+  const collection = ["shelf", "drive"].includes(state.mobileSection);
+  const pending = state.mobileSection === "new";
+  const hidden = new Set(state.settings.hiddenSections);
+  document.body.classList.toggle("collection-selected", collection);
+  document.querySelector("#collectionToolbar").hidden = !collection || hidden.has("search");
+  document.querySelector(".toolbar").hidden = collection || hidden.has("search");
+  document.querySelector("#collectionKpis").hidden = !collection;
+  el.stats.hidden = collection;
+  const library = document.querySelector("#collectionLibrary");
+  library.hidden = !(collection || pending && collectionUI?.pending().length);
+  document.querySelector("#collectionShowcase").hidden = hidden.has("showcase");
+  const order = new Map(state.settings.pageOrder.map((key, index) => [key, index + 1]));
+  document.querySelector("#collectionShowcase").style.order = String(order.get("showcase") || 1);
+  document.querySelector("#collectionToolbar").style.order = String(order.get("search") || 4);
+  document.querySelector(".mobile-section-tabs").style.setProperty("--toolbar-sticky-height", collection ? "0px" : `${document.querySelector(".toolbar").getBoundingClientRect().height}px`);
+  if (!collectionUI) { void ensureCollectionWorkspace(); return; }
+  const inputs = [collectionData, state.games, state.settings, state.canEdit, pending ? "new" : collection ? state.mobileSection : "shelf", collectionMedia, state.viewMode, pending ? JSON.stringify(state.filters) : ""];
+  if (!collectionRenderInputs || inputs.some((value, index) => value !== collectionRenderInputs[index])) {
+    collectionRenderInputs = inputs;
+    collectionUI.update({ shelf: collectionData || {}, games: state.games, settings: state.settings, canEdit: state.canEdit, tab: inputs[4], media: collectionMedia, view: state.viewMode, pendingFilters: pending ? state.filters : null });
+    const selected = state.mobileSection;
+    renderMobileTabs();
+    if (selected !== state.mobileSection) return syncCollectionWorkspace();
+  }
+  const mobileStats = document.querySelector("#mobileDockStats");
+  if (mobileStats) mobileStats.hidden = false;
+  collectionUI.syncMedia(collectionMedia);
+  renderCollectionMedia();
+}
+
+function setCollectionMedia(mode) {
+  if (!["all", "physical", "digital"].includes(mode)) return;
+  if (collectionMedia === mode) return;
+  collectionMedia = mode;
+  render();
+}
+
+function renderCollectionMedia() {
+  const root = document.querySelector("#collectionMediaToggle");
+  root.innerHTML = ["physical", "digital", "all"].map(mode => `<button class="icon-button ${collectionMedia === mode ? "active" : ""}" type="button" data-media="${mode}" aria-label="${escapeHtml(tt(mode === "physical" ? "Physical" : mode === "digital" ? "Digital" : "All"))}" aria-pressed="${collectionMedia === mode}" title="${escapeHtml(tt(mode === "physical" ? "Physical" : mode === "digital" ? "Digital" : "All"))}">${mode === "all" ? '<img src="assets/Icon.png" alt="">' : mode === "physical" ? mediaFormatBadge({ digital: false }) : mediaFormatBadge({ digital: true })}</button>`).join("");
+  if (!root.dataset.bound) {
+    root.dataset.bound = "true";
+    root.addEventListener("click", event => { const button = event.target.closest("[data-media]"); if (button) setCollectionMedia(button.dataset.media); });
+  }
+}
+
+function gamelistAddedBadge(game) {
+  if (!game.createdAt) return "";
+  return `<span class="history-pill history-date-pill gamelist-added-pill"><small>${escapeHtml(tt("Added"))}</small><strong>${escapeHtml(formatShortDate(game.backlogAddedAt || game.createdAt))}</strong></span>`;
+}
+
+function collectionSettingsMarkup() {
+  const lists = [["backlog", "Backlog"], ["shelf", "Shelf"], ...(state.settings.shelfDigitalGames ? [["drive", "Drive"]] : []), ["upcoming", "Radar"], ["wanted", "Wishlist"]];
+  return `<article class="settings-layout-card"><div class="settings-theme-select"><span>${escapeHtml(tt("Default list"))}</span><select data-default-list>${lists.map(([value, label]) => `<option value="${value}" ${state.settings.defaultList === value ? "selected" : ""}>${escapeHtml(tt(label))}</option>`).join("")}</select></div></article>
+    <article class="settings-layout-card"><div class="settings-theme-select"><span>${escapeHtml(tt("Collection"))}</span>
+      <label class="check-filter toggle-check"><input data-track-digital type="checkbox" ${state.settings.shelfDigitalGames ? "checked" : ""}><span>${escapeHtml(tt("Track Digital Games (Drive)"))}</span></label>
+      <label class="check-filter toggle-check"><input data-collection-prices type="checkbox" ${state.settings.shelfHidePrices ? "" : "checked"}><span>${escapeHtml(tt("Show Prices"))}</span></label>
+      <label><span>${escapeHtml(tt("Default order"))} · ${escapeHtml(tt("Shelf"))}</span><select data-collection-order>${[["added", "Last added"], ["title", "Name"], ["platform", "Platform"], ["region", "Region"], ["value", "Value"]].map(([value, label]) => `<option value="${value}" ${state.settings.shelfDefaultOrder === value ? "selected" : ""}>${escapeHtml(tt(label))}</option>`).join("")}</select></label>
+      <div class="settings-data-actions"><button type="button" class="ghost-button" data-collection-export="physical">${escapeHtml(tt("Export"))} · ${escapeHtml(tt("Physical"))}</button><button type="button" class="ghost-button" data-collection-import="physical">${escapeHtml(tt("Import"))} · ${escapeHtml(tt("Physical"))}</button><button type="button" class="ghost-button" data-collection-export="digital">${escapeHtml(tt("Export"))} · ${escapeHtml(tt("Digital"))}</button><button type="button" class="ghost-button" data-collection-import="digital">${escapeHtml(tt("Import"))} · ${escapeHtml(tt("Digital"))}</button></div>
+    </div></article>`;
+}
+
+function mergeCollectionStats(year) {
+  if (!collectionUI) return;
+  const collection = collectionUI.stats(year, el.finishedStatsDialog, el.finishedStatsBody);
+  if (!collection.count) return;
+  const kpis = collection.nodes.find(node => node.classList.contains("finished-stats-kpis"));
+  const charts = collection.nodes.find(node => node.classList.contains("finished-stats-charts"));
+  const periods = collection.nodes.filter(node => node !== kpis && node !== charts);
+  if (kpis) {
+    kpis.dataset.statsSource = "collection";
+    const listKpis = el.finishedStatsBody.querySelector(".finished-stats-kpis");
+    if (listKpis) listKpis.after(kpis); else el.finishedStatsBody.append(kpis);
+  }
+  if (charts) {
+    charts.dataset.statsSource = "collection";
+    const listCharts = el.finishedStatsBody.querySelector(".finished-stats-charts");
+    if (listCharts) listCharts.after(charts); else el.finishedStatsBody.append(charts);
+  }
+  periods.forEach(node => { node.dataset.statsSource = "collection"; });
+  el.finishedStatsBody.append(...periods);
+  collection.bind();
 }

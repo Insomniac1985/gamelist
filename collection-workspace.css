@@ -1,0 +1,35 @@
+/* Unified navigation keeps collection browsing in the existing Gamelist shell. */
+.collection-runtime { display: contents; }
+body.collection-selected .board > .column { display: none !important; }
+#collectionLibrary[hidden], #collectionToolbar[hidden], #collectionShowcase[hidden], #collectionKpis[hidden], #stats[hidden] { display: none !important; }
+#collectionLibrary { min-width: 0; margin-bottom: 20px; }
+#collectionToolbar { min-width: 0; margin-bottom: 0; }
+#collectionShowcase { min-width: 0; }
+#mobileDockSwitch, .page-pull-switch, .page-pull-curtain { display: none !important; }
+.unified-media-toggle { display: flex; align-items: center; gap: 4px; }
+.unified-media-toggle button { width: 36px; min-width: 36px; height: 42px; padding: 8px; }
+.unified-media-toggle button.active { border-color: var(--accent); background: color-mix(in srgb, var(--accent) 12%, transparent); }
+.unified-media-toggle button > img { width: 20px; height: 20px; object-fit: contain; }
+.unified-media-toggle button .digital-format-pill { padding: 0; border: 0; background: none; }
+.gamelist-added-pill { display: inline-flex; }
+.mobile-section-tabs { overflow-x: auto; scrollbar-width: none; }
+.mobile-section-tabs button { min-width: 0; }
+.floating-edit-actions { flex-direction: column; }
+#floatingAddButton { order: 0; }
+#floatingStatsButton { order: 1; }
+#mobileDockAdd { order: 1; }
+#mobileDockStats { order: 2; }
+#mobileDockSearch { order: 3; }
+#mobileDockSettings { order: 4; }
+#mobileDockGoty { order: 5; }
+#mobileDockUp { order: 6; }
+#finishedStatsBody > [data-stats-source="collection"] { margin-top: 20px; }
+@media (min-width: 1001px) {
+  .toolbar { grid-template-columns: minmax(180px, 2fr) auto repeat(2, minmax(100px, 1fr)) minmax(140px, 1fr) auto auto; }
+}
+@media (max-width: 760px) {
+  .mobile-section-tabs { grid-template-columns: repeat(var(--mobile-tab-count), minmax(62px, 1fr)) !important; }
+  .mobile-section-tabs button { font-size: 11px; padding-inline: 6px; }
+  #collectionMediaToggle { justify-content: flex-end; }
+  #collectionLibrary { width: 100%; }
+}
