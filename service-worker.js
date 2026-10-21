@@ -152,9 +152,13 @@ async function cacheFirst(request, cacheName) {
   const cache = await caches.open(cacheName);
   const cached = await cache.match(request);
   if (cached) return cached;
-  const response = await fetch(request);
-  await safePut(cache, request, response.clone());
-  return response;
+  try {
+    const response = await fetch(request);
+    await safePut(cache, request, response.clone());
+    return response;
+  } catch {
+    return new Response("", { status: 503, statusText: "Offline" });
+  }
 }
 
 async function staleWhileRevalidate(request, cacheName) {

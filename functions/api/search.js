@@ -120,31 +120,27 @@ async function igdbSearch(query, credentials, lookup = {}, language = "en") {
     `where slug = "${escapeIgdbString(lookup.igdbSlug)}";`,
     "limit 1;",
   ].join(" ") : "";
-  const searchQueries = slugBody ? [query] : await igdbSearchQueries(query, language, token, credentials);
+  const searchQueries = slugBody ? [query] : igdbSearchQueries(query);
   let games = [];
   if (slugBody) {
     games = await igdbPost("games", slugBody, credentials, token);
   } else {
-    const gamesById = new Map();
-    for (const searchQuery of searchQueries) {
+    const responses = await Promise.all(searchQueries.map(async (searchQuery) => {
       const body = [
         fields,
         `search "${escapeIgdbString(searchAlias(searchQuery))}";`,
         "where version_parent = null;",
         "limit 10;",
       ].join(" ");
-      (await igdbPost("games", body, credentials, token)).forEach((game) => {
-        gamesById.set(String(game.id || game.slug || game.name), game);
-      });
-    }
-    if (language === "es-ES") {
-      const localized = await igdbLocalizedTitleGames(query, fields, credentials, token);
-      localized.forEach((game) => gamesById.set(String(game.id || game.slug || game.name), game));
-    }
+      return igdbPost("games", body, credentials, token);
+    }));
+    const gamesById = new Map(responses.flat().map((game) => [String(game.id || game.slug || game.name), game]));
     games = [...gamesById.values()];
   }
   if (slugBody && !games.length) return igdbSearch(query, credentials, { ...lookup, igdbSlug: "" }, language);
-  const hltbResults = (await Promise.all(searchQueries.map((searchQuery) => safeHltbResults(searchQuery)))).flat();
+  // IGDB results are useful on their own. Keep HLTB out of this critical path;
+  // it remains available as a fallback when IGDB has no match.
+  const hltbResults = [];
   const settledResults = await Promise.allSettled(games
     .map((game) => igdbResult(game, query, hltbResults, lookup, language, searchQueries)));
   const results = settledResults
@@ -172,9 +168,8 @@ async function igdbPost(endpoint, body, credentials, token) {
   return response.json();
 }
 
-async function igdbSearchQueries(query, language, token, credentials) {
-  const aliases = language === "es-ES" ? await spanishTitleAliases(query, token, credentials) : [];
-  return uniqueSearchQueries([query, searchAlias(query), ...aliases, ...aliases.map(searchAlias)]).slice(0, 5);
+function igdbSearchQueries(query) {
+  return uniqueSearchQueries([query, searchAlias(query)]).slice(0, 2);
 }
 
 async function igdbLocalizedTitleGames(query, fields, credentials, token) {
@@ -234,8 +229,7 @@ async function igdbResult(game, query, hltbResults, lookup = {}, language = "en"
   const release = bestIgdbRelease(game.release_dates) || igdbFirstReleaseDate(game.first_release_date);
   const score = textScore + igdbQualityScore(game, hltbMatch);
   const storeLinks = storeLinksFromWebsites(game.websites);
-  const steamTrailerUrl = await steamTrailer(storeLinks.steam);
-  const description = await localizedDescription(title, game.summary || game.storyline || "", language, [query, ...searchQueries]);
+  const description = fullDescription(game.summary || game.storyline || "");
   return {
     id: game.id ? `igdb:${game.id}` : title,
     igdbId: game.id || null,
@@ -252,7 +246,7 @@ async function igdbResult(game, query, hltbResults, lookup = {}, language = "en"
     developer: companyName(companies, "developer"),
     publisher: companyName(companies, "publisher"),
     description,
-    trailerUrl: steamTrailerUrl || igdbTrailer(game.videos),
+    trailerUrl: igdbTrailer(game.videos),
     storeLinks,
     lengthHours: hltbMatch?.lengthHours || null,
     igdbRating: igdbRating(game.total_rating),

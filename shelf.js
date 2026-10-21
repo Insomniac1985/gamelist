@@ -420,7 +420,7 @@ function bindEvents() {
     new ResizeObserver(syncShelfTabsStickyOffset).observe(shelfToolbar);
   }
   window.addEventListener("keydown", (event) => {
-    if (window.innerWidth < 761 || event.key.toLowerCase() !== "f" || event.repeat || event.isComposing) return;
+    if (window.innerWidth < 761 || typeof event.key !== "string" || event.key.toLowerCase() !== "f" || event.repeat || event.isComposing) return;
     if (event.altKey || event.ctrlKey || event.metaKey || event.shiftKey) return;
     const target = event.target;
     if (target instanceof HTMLElement && target.closest("input, textarea, select, [contenteditable='true'], [role='textbox'], dialog[open]")) return;
