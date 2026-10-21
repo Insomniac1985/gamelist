@@ -2375,6 +2375,7 @@ function openEditor(game = null, options = {}) {
   state.autocompleteImport = Boolean(options.autocomplete && !options.miniGamelistImport);
   el.addDialog.classList.toggle("shelf-gamelist-import-mini", Boolean(options.miniGamelistImport));
   el.addForm.classList.toggle("shelf-gamelist-import-mini", Boolean(options.miniGamelistImport));
+  document.querySelector("#shelfGameDataDisclosure").open = !options.miniGamelistImport;
   renderShelfGamelistImportSummary(options.miniGamelistImport ? game : null);
   const digitalMode = Boolean(options.digital || isDigitalShelfGame(game));
   state.editingId = game?.id || "";

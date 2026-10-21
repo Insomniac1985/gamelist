@@ -495,7 +495,8 @@
         </section>
 
         <section class="form-group shelf-game-data-section">
-          <h3 data-i18n="Game Data">Game Data</h3>
+          <details id="shelfGameDataDisclosure" open>
+          <summary class="shelf-game-data-toggle"><span data-i18n="Game Data">Game Data</span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m9 5 7 7-7 7"></path></svg></summary>
           <div class="form-grid">
             <label><span data-i18n="Developer">Developer</span><input id="developerInput" placeholder="Studio" data-i18n-placeholder="Studio"></label>
             <label><span data-i18n="Publisher">Publisher</span><input id="publisherInput" placeholder="Company" data-i18n-placeholder="Company"></label>
@@ -509,6 +510,7 @@
             <label><span data-i18n="Xbox URL">Xbox URL</span><input id="xboxUrlInput" type="url" placeholder="https://www.xbox.com/..."></label>
             <label class="wide"><span data-i18n="Cover URL">Cover URL</span><input id="coverInput" type="url" placeholder="https://..." data-i18n-placeholder="https://..."></label>
           </div>
+          </details>
         </section>
 
         <section class="form-group shelf-pricecharting-section">
