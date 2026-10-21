@@ -36,8 +36,6 @@ export async function onRequestPut({ request, env }) {
     return json({ error: "Expected { games: [], overrides: {} }" }, 400);
   }
   const existing = await env.GAMELIST.get(KV_KEY, "json") || {};
-  const previousIds = new Set([...(existing.sourceGames || []), ...(existing.games || [])].map((game) => game.id));
-  const newlyAdded = body.games.filter((game) => !previousIds.has(game.id));
   const sourceGames = Array.isArray(body.sourceGames) ? body.sourceGames : (Array.isArray(existing.sourceGames) ? existing.sourceGames : []);
   const data = {
     sourceGames,
@@ -49,7 +47,7 @@ export async function onRequestPut({ request, env }) {
   };
   await env.GAMELIST.put(KV_KEY, JSON.stringify(data));
   await saveShowcaseFavoriteSettings(env, data.favoriteGameIds);
-  await syncShelfGamesToBacklog(env, body.games, newlyAdded);
+  await syncLinkedShelfGamesToGamelist(env, body.games);
   return json({ ok: true, updatedAt: data.updatedAt, favoriteGameIds: data.favoriteGameIds });
 }
 
@@ -63,9 +61,8 @@ export async function onRequestDelete({ request, env }) {
   return json({ ok: true, updatedAt: data.updatedAt });
 }
 
-export async function syncShelfGamesToBacklog(env, allShelfGames, games) {
+export async function syncLinkedShelfGamesToGamelist(env, allShelfGames) {
   const list = await env.GAMELIST.get("gamelist-data", "json") || { games: [], settings: {} };
-  if (list.settings?.shelfSync === false) return;
   const shelfById = new Map(allShelfGames.map((game) => [game.id, game]));
   let changed = false;
   const listGames = (list.games || []).map((game) => {
@@ -79,57 +76,12 @@ export async function syncShelfGamesToBacklog(env, allShelfGames, games) {
     changed = true;
     return { ...game, owners, trophyName, psPlus, gamesWithGold, updatedAt: new Date().toISOString() };
   });
-  const known = new Set(listGames.flatMap((game) => [game.shelfId, game.id]).filter(Boolean));
-  const additions = games.filter((game) => !game.gamelistId && !game.skipGamelistSync && !known.has(game.id)).map((game) => ({
-    id: `shelf-${game.id}`,
-    shelfId: game.id,
-    title: game.title,
-    trophyName: game.trophyName || "",
-    platform: shortPlatform(game.platform),
-    section: "new",
-    digital: Boolean(game.digital || game.dlc),
-    dlc: Boolean(game.dlc),
-    psPlus: Boolean(game.psPlus),
-    gamesWithGold: Boolean(game.gamesWithGold),
-    playing: false,
-    platinum: false,
-    completedAt: "",
-    owners: Array.isArray(game.owners) ? game.owners : [],
-    statuses: [],
-    tags: cleanTransferTags(game.tags),
-    genres: String(game.genre || "").split(",").map((value) => value.trim()).filter(Boolean),
-    publisher: game.publisher || "",
-    developer: game.developer || "",
-    cover: game.cover || "",
-    releaseDate: game.releaseDate || "",
-    description: game.description || "",
-    igdbUrl: game.igdbUrl || "",
-    storeLinks: game.storeLinks || {},
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-    order: 0,
-  }));
-  if (!additions.length && !changed) return;
+  if (!changed) return;
   await env.GAMELIST.put("gamelist-data", JSON.stringify({
-    games: [...additions, ...listGames],
-    settings: list.settings || {},
+    games: listGames,
+    settings: { ...list.settings, shelfSync: true },
     updatedAt: new Date().toISOString(),
   }));
-}
-
-function cleanTransferTags(tags) {
-  return Array.isArray(tags)
-    ? tags.filter((tag) => String(tag || "").trim().toLowerCase() !== "gamelist")
-    : [];
-}
-
-function shortPlatform(value) {
-  const clean = String(value || "").trim();
-  return ({
-    "Sony PlayStation": "PS1", "Sony PlayStation 2": "PS2", "Sony PlayStation 3": "PS3",
-    "Sony PlayStation 4": "PS4", "Sony PlayStation 5": "PS5", "Nintendo Switch": "Switch",
-    "Nintendo Switch 2": "Switch 2", "Nintendo DS": "DS", "Nintendo 3DS": "3DS", "Nintendo 64": "N64",
-  })[clean] || clean;
 }
 
 function validLayout(value) {

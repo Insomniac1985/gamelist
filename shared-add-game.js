@@ -62,6 +62,7 @@ export function connectEmbeddedGameEditor({ dialog, form, requestClose, open, ap
   let dataReady = Promise.resolve(false);
   let loadId = 0;
   let openId = 0;
+  let hasData = false;
   const loadCurrentData = async () => {
     const currentLoad = ++loadId;
     try {
@@ -73,6 +74,7 @@ export function connectEmbeddedGameEditor({ dialog, form, requestClose, open, ap
       const [shelf, gamelist] = await Promise.all([read("/api/shelf"), read("/api/sync")]);
       if (!Array.isArray(shelf.games) || !Array.isArray(gamelist.games) || currentLoad !== loadId) return false;
       applyData({ shelf, gamelist });
+      hasData = true;
       return true;
     } catch { return false; }
   };
@@ -81,12 +83,15 @@ export function connectEmbeddedGameEditor({ dialog, form, requestClose, open, ap
     if (event.data?.type === "game-editor:open") {
       const currentOpen = ++openId;
       const options = event.data.options || {};
+      // A linked Shelf record needs its collection fields before it can be edited.
+      const waitForShelf = Boolean(options.shelfGameId) && !hasData;
       dataReady = loadCurrentData().then(loaded => {
         if (currentOpen !== openId) return false;
-        if (loaded) open(options);
-        else onLoadError?.();
+        if (loaded && waitForShelf) open(options);
+        if (!loaded && (waitForShelf || dialog.open)) onLoadError?.();
         return loaded;
       });
+      if (!waitForShelf) open(options);
     }
     if (event.data?.type === "game-editor:request-close") {
       openId += 1;
@@ -111,5 +116,6 @@ export function connectEmbeddedGameEditor({ dialog, form, requestClose, open, ap
     dialog.close();
   });
   dialog.addEventListener("close", () => window.parent.postMessage({ type: "game-editor:closed" }, location.origin));
+  dataReady = loadCurrentData();
   window.parent.postMessage({ type: "game-editor:ready" }, location.origin);
 }

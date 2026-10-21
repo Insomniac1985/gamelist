@@ -1883,7 +1883,7 @@ function normalizeSettings(settings = {}) {
     stores: stores.slice(0, MAX_PRICE_STORES),
     storeSettingsVersion: 2,
     defaultOwner: cleanOwnerLabel(settings.defaultOwner) || DEFAULT_SETTINGS.defaultOwner,
-    shelfSync: settings.shelfSync !== false,
+    shelfSync: true,
     shelfSyncWishlist: settings.shelfSyncWishlist !== false,
     hidePageSwitch: settings.hidePageSwitch === true,
     streamFilterPriority: streamFilterPriorityForSettings(settings),
@@ -2736,7 +2736,6 @@ function renderSettingsDialog() {
     ...state.settings.pageOrder.map((key) => settingsLayoutItem(key, pageIndex.get(key) ?? 0)),
   ].join("");
   el.settingsPreferencesBeforeCurrency.innerHTML = [
-    settingsShelfSyncItem(),
     settingsPageSwitchItem(),
     settingsDefaultOrderItem(),
   ].join("");
@@ -2882,23 +2881,6 @@ function settingsWeekStartItem() {
           ${WEEK_START_OPTIONS.map(([value, label]) => `<option value="${value}" ${state.settings.weekStart === value ? "selected" : ""}>${escapeHtml(tt(label))}</option>`).join("")}
         </select>
       </label>
-    </article>
-  `;
-}
-
-function settingsShelfSyncItem() {
-  return `
-    <article class="settings-layout-card settings-sync-card" data-layout-key="shelf-sync">
-      <div class="settings-wire wire-list" aria-hidden="true"><span></span><span></span><span></span></div>
-      <div class="settings-theme-select">
-        <span>${escapeHtml(tt("Sync games with Shelf"))}</span>
-        <div class="settings-check-field">
-          <label class="check-filter toggle-check settings-visible-check" title="${escapeHtml(tt("Sync games with Shelf"))}">
-            <input type="checkbox" data-shelf-sync ${state.settings.shelfSync ? "checked" : ""}>
-            <span>${escapeHtml(tt("Enabled"))}</span>
-          </label>
-        </div>
-      </div>
     </article>
   `;
 }
@@ -3475,7 +3457,7 @@ async function saveSettingsFromForm(event, { close = true } = {}) {
     language: el.settingsLanguage.value,
     stores,
     defaultOwner: el.settingsDefaultOwner.value,
-    shelfSync: Boolean(el.settingsDialog.querySelector("[data-shelf-sync]")?.checked),
+    shelfSync: true,
     hidePageSwitch: el.settingsDialog.querySelector("[data-hide-page-switch]")?.checked === true,
     streamFilterPriority: normalizeStreamFilterMode(el.settingsDialog.querySelector("[data-stream-filter-priority]")?.value),
     prioritizeFinishedStream: normalizeStreamFilterMode(el.settingsDialog.querySelector("[data-stream-filter-priority]")?.value) === "stream",
@@ -12390,6 +12372,7 @@ function moveToBacklog(id) {
       platform: game.platform || "",
       shelfGameId: game.shelfId ? String(game.shelfId) : "",
       gamelistGameId: game.id,
+      gamelistGame: game,
       target: "gamelist",
       section: "backlog",
       miniGamelistImport: true,

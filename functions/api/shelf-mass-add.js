@@ -1,6 +1,6 @@
 import { isEditorRequest } from "./editor-auth.js";
 import { runnerStyle, runnerThemeSettings } from "./runner-style.js";
-import { syncShelfGamesToBacklog } from "./shelf.js";
+import { syncLinkedShelfGamesToGamelist } from "./shelf.js";
 
 const KV_KEY = "shelf-data";
 
@@ -70,7 +70,7 @@ export async function onRequestPost({ request, env }) {
   };
 
   await env.GAMELIST.put(KV_KEY, JSON.stringify(data));
-  await syncShelfGamesToBacklog(env, nextGames, additions);
+  await syncLinkedShelfGamesToGamelist(env, nextGames);
   return json({ ok: true, added: additions.length, accepted, updated, total: nextGames.length, updatedAt: now });
 }
 
