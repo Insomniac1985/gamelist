@@ -1246,10 +1246,10 @@ body.mobile-app-mode.shelf-page .shelf-grid.list-view .game-row-cover-preview {
   justify-self: end;
 }
 
-.shelf-dialog .lookup-result .lookup-placeholder {
+.shelf-dialog .lookup-result .lookup-cover-placeholder {
   background: color-mix(in srgb, var(--muted) 30%, transparent);
   border: 1px solid var(--line);
-  opacity: 0.3;
+  opacity: 0.72;
 }
 
 .shelf-dialog .lookup-result.no-cover {

@@ -117,7 +117,7 @@ export async function igdbLookup(rawQuery, credentials, language = "en") {
 
 async function igdbSearch(query, credentials, lookup = {}, language = "en", hltbLookupPromise = null) {
   const token = await getIgdbToken(credentials);
-  const fields = "fields name,slug,summary,storyline,first_release_date,cover.image_id,genres.name,hypes,total_rating,total_rating_count,alternative_names.name,alternative_names.comment,game_localizations.name,involved_companies.company.name,involved_companies.developer,involved_companies.publisher,platforms.name,release_dates.category,release_dates.date,release_dates.date_format,release_dates.human,release_dates.platform.name,release_dates.y,websites.url,websites.category,videos.name,videos.video_id;";
+  const fields = "fields name,slug,summary,storyline,first_release_date,cover.image_id,genres.name,game_type.name,game_modes.name,multiplayer_modes.onlinecoop,multiplayer_modes.offlinecoop,multiplayer_modes.lancoop,multiplayer_modes.campaigncoop,multiplayer_modes.splitscreen,multiplayer_modes.splitscreenonline,multiplayer_modes.onlinemax,multiplayer_modes.offlinemax,hypes,total_rating,total_rating_count,alternative_names.name,alternative_names.comment,game_localizations.name,involved_companies.company.name,involved_companies.developer,involved_companies.publisher,platforms.name,release_dates.category,release_dates.date,release_dates.date_format,release_dates.human,release_dates.platform.name,release_dates.y,websites.url,websites.category,videos.name,videos.video_id;";
   const slugBody = lookup.igdbSlug ? [
     fields,
     `where slug = "${escapeIgdbString(lookup.igdbSlug)}";`,
@@ -233,6 +233,11 @@ async function igdbResult(game, query, hltbResults, lookup = {}, language = "en"
   const score = textScore + igdbQualityScore(game, hltbMatch);
   const storeLinks = storeLinksFromWebsites(game.websites);
   const description = fullDescription(game.summary || game.storyline || "");
+  const gameType = String(game.game_type?.name || "").toLowerCase();
+  const gameModes = (game.game_modes || []).map((mode) => String(mode?.name || "").toLowerCase());
+  const multiplayerModes = game.multiplayer_modes || [];
+  const coop = multiplayerModes.some((mode) => mode.onlinecoop || mode.offlinecoop || mode.lancoop || mode.campaigncoop || mode.splitscreen || mode.splitscreenonline);
+  const multiplayer = coop || gameModes.includes("multiplayer") || multiplayerModes.some((mode) => Number(mode.onlinemax || 0) > 1 || Number(mode.offlinemax || 0) > 1);
   return {
     id: game.id ? `igdb:${game.id}` : title,
     igdbId: game.id || null,
@@ -246,6 +251,9 @@ async function igdbResult(game, query, hltbResults, lookup = {}, language = "en"
     platform: firstPlatform((game.platforms || []).map((platform) => platform.name).join(", ")),
     platforms: (game.platforms || []).map((platform) => platform.name).filter(Boolean),
     genres: cleanGenreLabels((game.genres || []).map((genre) => genre.name).filter(Boolean), language),
+    dlc: /\b(dlc|expansion|standalone expansion)\b/.test(gameType),
+    multiplayer,
+    coop,
     developer: companyName(companies, "developer"),
     publisher: companyName(companies, "publisher"),
     description,
