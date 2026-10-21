@@ -12928,15 +12928,11 @@ function applyLookup(result) {
   if (current && !current.description && result.description) current.description = result.description;
   if (!current) state.pendingDescription = result.description || "";
   if (result.genres?.length) el.fields.genres.value = result.genres.join(", ");
-  if (result.dlc) {
+  const isBaseMinecraft = String(result.title || "").trim().toLocaleLowerCase() === "minecraft";
+  if (result.dlc && !isBaseMinecraft) {
     el.fields.dlc.checked = true;
     el.fields.digital.checked = true;
     syncDlcDigital();
-  }
-  if (result.multiplayer) el.fields.multiplayer.checked = true;
-  if (result.coop) {
-    el.fields.coop.checked = true;
-    el.fields.multiplayer.checked = true;
   }
   if (result.developer) el.fields.developer.value = result.developer;
   if (result.publisher) el.fields.publisher.value = result.publisher;

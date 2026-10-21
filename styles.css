@@ -16015,6 +16015,25 @@ html.theme-light .finish-trophy-check input[type="checkbox"]:checked {
   border: 1px solid var(--line);
 }
 
+.lookup-result .lookup-cover-placeholder,
+.lookup-result img.lookup-cover-placeholder {
+  position: relative;
+  display: grid;
+  place-items: center;
+  color: var(--muted);
+  background: linear-gradient(145deg, rgba(255, 255, 255, 0.12), rgba(255, 255, 255, 0.035));
+  border: 1px solid color-mix(in srgb, var(--muted) 45%, transparent);
+  border-radius: 5px;
+  opacity: 0.9;
+}
+
+.lookup-result .lookup-cover-placeholder::after {
+  content: "▧";
+  font-size: 20px;
+  line-height: 1;
+  opacity: 0.75;
+}
+
 .lookup-result p {
   margin: 3px 0 0;
   color: var(--muted);

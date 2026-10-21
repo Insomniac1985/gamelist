@@ -1247,9 +1247,19 @@ body.mobile-app-mode.shelf-page .shelf-grid.list-view .game-row-cover-preview {
 }
 
 .shelf-dialog .lookup-result .lookup-cover-placeholder {
-  background: color-mix(in srgb, var(--muted) 30%, transparent);
-  border: 1px solid var(--line);
-  opacity: 0.72;
+  display: grid;
+  place-items: center;
+  background: linear-gradient(145deg, rgba(255, 255, 255, 0.12), rgba(255, 255, 255, 0.035));
+  border: 1px solid color-mix(in srgb, var(--muted) 45%, transparent);
+  opacity: 0.9;
+}
+
+.shelf-dialog .lookup-result .lookup-cover-placeholder::after {
+  content: "▧";
+  color: var(--muted);
+  font-size: 20px;
+  line-height: 1;
+  opacity: 0.75;
 }
 
 .shelf-dialog .lookup-result.no-cover {

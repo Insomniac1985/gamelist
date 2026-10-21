@@ -2931,15 +2931,11 @@ async function chooseLookupResult(event) {
   el.fields.publisher.value = result.publisher || "";
   el.fields.developer.value = result.developer || "";
   el.fields.genre.value = (result.genres || []).join(", ");
-  if (result.dlc) {
+  const isBaseMinecraft = String(result.title || "").trim().toLocaleLowerCase() === "minecraft";
+  if (result.dlc && !isBaseMinecraft) {
     el.fields.dlc.checked = true;
     el.digitalInput.checked = true;
     syncShelfDigitalEditorMode(true);
-  }
-  if (result.multiplayer) el.gamelistMultiplayer.checked = true;
-  if (result.coop) {
-    el.gamelistCoop.checked = true;
-    el.gamelistMultiplayer.checked = true;
   }
   el.fields.cover.value = result.cover || "";
   syncShelfEditorCoverPreview();
