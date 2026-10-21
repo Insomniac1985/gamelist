@@ -112,6 +112,9 @@ const state = {
   canEdit: sessionStorage.getItem(SESSION_KEY) === "true",
   editingId: "",
   gamelistAddTarget: "shelf",
+  gamelistImportShelfId: "",
+  gamelistImportGameId: "",
+  autocompleteImport: false,
   lookupResults: [],
   filters: { query: "", platform: "all", region: "all", condition: "all", category: "all", tab: "all", sort: "platform", direction: "asc" },
   viewMode: loadSharedViewMode(),
@@ -347,7 +350,21 @@ function initEmbeddedAddGame() {
       applyTheme();
       populateEditorOptions();
       applyDocumentTranslations(currentLanguage());
-      openEditor(null, { digital: Boolean(options.digital), target: options.target });
+      const sourceShelfGame = options.shelfGameId
+        ? state.games.find((game) => game.id === options.shelfGameId)
+        : state.games.find((game) => normalizeSearchText(game.title) === normalizeSearchText(options.query || "")
+          && shortPlatform(game.platform) === shortPlatform(options.platform || ""));
+      const sourceGamelistGame = options.gamelistGameId
+        ? state.gamelistGames.find((game) => game.id === options.gamelistGameId)
+        : null;
+      openEditor(sourceShelfGame || sourceGamelistGame || null, {
+        digital: Boolean(options.digital),
+        target: options.target,
+        section: options.section,
+        autocomplete: Boolean(options.autocomplete),
+        importShelfId: options.shelfGameId || sourceShelfGame?.id || "",
+        importGameId: options.gamelistGameId || "",
+      });
       if (["backlog", "upcoming", "wanted"].includes(options.section)) {
         el.gamelistSection.value = options.section;
         syncShelfGamelistSectionButtons();
@@ -371,6 +388,7 @@ function applyEmbeddedEditorData({ shelf: shelfData, gamelist: gamelistData }) {
   state.layout = normalizeLayout(shelfData.layout || state.layout);
   state.favoriteGameIds = shelfFavoriteIdsFromSources(shelfData, gamelistData, loadDraft());
   state.gamelistGames = gamelistData.games;
+  rebuildGames();
 }
 
 function applyShelfSearchFromUrl() {
@@ -2272,7 +2290,7 @@ function handleShelfClick(event) {
   if (!game) return;
   if (action === "edit") state.canEdit ? openEditor(game) : openAuth();
   else if (action === "add-collection") state.canEdit ? openEditor(game) : openAuth();
-  else if (action === "add-backlog") state.canEdit ? addShelfGameToGamelistNew(game) : openAuth();
+  else if (action === "add-backlog") state.canEdit ? openShelfGameInGamelist(game) : openAuth();
   else if (action === "accept-preorder") state.canEdit ? acceptSyncedPreorder(game) : openAuth();
   else if (action === "add-wishlist-backlog") state.canEdit ? addSyncedWishlistToBacklog(game) : openAuth();
   else if (action === "edit-preorder") state.canEdit ? openPreorderInGamelistEditor(game) : openAuth();
@@ -2293,6 +2311,13 @@ function openPreorderInGamelistEditor(game) {
   const url = new URL("/", window.location.origin);
   url.searchParams.set("edit", game.id);
   window.location.href = url.href;
+}
+
+function openShelfGameInGamelist(game) {
+  openEditor(game, { target: "gamelist", section: "backlog", autocomplete: true, importShelfId: game.id });
+  el.lookupInput.value = game.title || "";
+  el.fields.title.value = game.title || "";
+  void lookupGame();
 }
 
 function openDetails(game) {
@@ -2349,7 +2374,10 @@ function openDetails(game) {
 function openEditor(game = null, options = {}) {
   if (!state.canEdit) return openAuth();
   shelfNewGameTouchedFields = new Set();
-  state.gamelistAddTarget = !game && options.target === "gamelist" ? "gamelist" : "shelf";
+  state.gamelistAddTarget = options.target === "gamelist" ? "gamelist" : "shelf";
+  state.gamelistImportShelfId = options.importShelfId || "";
+  state.gamelistImportGameId = options.importGameId || "";
+  state.autocompleteImport = Boolean(options.autocomplete);
   const digitalMode = Boolean(options.digital || isDigitalShelfGame(game));
   state.editingId = game?.id || "";
   el.digitalInput.checked = digitalMode;
@@ -2363,10 +2391,14 @@ function openEditor(game = null, options = {}) {
   el.lookupResults.hidden = false;
   el.lookupResults.innerHTML = "";
   el.lookupInput.value = game?.title || "";
+  el.lookupButton.classList.toggle("is-autocomplete", state.autocompleteImport);
+  el.lookupButton.title = state.autocompleteImport ? tt("Autocomplete game info") : tt("Fetch info");
+  el.lookupButton.setAttribute("aria-label", el.lookupButton.title);
   const values = game || { platform: "", country: defaultShelfCountry(), owners: defaultShelfOwners(), game: true };
   for (const [key, input] of Object.entries(el.fields)) if (!["dlc", "psPlus", "gamesWithGold"].includes(key)) input.value = values[key] ?? "";
   el.fields.additionDate.value = shelfDateInputValue(values.createdAt) || (game ? "" : shelfDateInputValue(new Date().toISOString()));
   el.fields.platform.value = values.platform ? platformDisplayName(values.platform) : "";
+  if (!el.fields.genre.value && Array.isArray(values.genres)) el.fields.genre.value = values.genres.join(", ");
   syncShelfEditorCoverPreview();
   el.fields.dlc.checked = Boolean(values.dlc);
   el.fields.psPlus.checked = Boolean(values.psPlus);
@@ -2383,7 +2415,7 @@ function openEditor(game = null, options = {}) {
   el.gamelistPreorderField.hidden = true;
   el.gamelistPreferredStore.value = values.preferredStore || "";
   syncShelfGamelistStoreIcons();
-  el.gamelistStatuses.value = (values.statuses || []).join(", ");
+  el.gamelistStatuses.value = (values.statuses || values.tags || []).join(", ");
   el.fields.owners.value = (values.owners || []).join(", ");
   const links = normalizedStoreLinks(values);
   el.fields.playstationUrl.value = links.playstation;
@@ -2398,7 +2430,11 @@ function openEditor(game = null, options = {}) {
   el.addForm.querySelectorAll("button[type='submit']").forEach((button) => { button.textContent = game?.pendingCollection ? "Add to Collection" : game ? "Save" : digitalMode ? "Add to Drive" : "Add to Shelf"; });
   syncShelfGamelistTargetPicker();
   syncShelfGamelistTargetMode();
-  el.editDelete.hidden = !game;
+  if (options.section && ["backlog", "upcoming", "wanted"].includes(options.section)) {
+    el.gamelistSection.value = options.section;
+    syncShelfGamelistSectionButtons();
+  }
+  el.editDelete.hidden = !game || isGamelistProjectionTarget();
   syncStyledSelects(el.addDialog, { activeValue: null });
   syncShelfEditorIcons();
   shelfEditorDirty = false;
@@ -2500,11 +2536,13 @@ function syncShelfGamelistTargetMode() {
 
 function syncShelfGamelistSectionForTarget() {
   if (state.gamelistAddTarget === "gamelist") {
-    const releaseDate = dateOnly(el.fields.releaseDate.value);
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    const futureRelease = Boolean(releaseDate) && new Date(`${releaseDate}T00:00:00`).getTime() > today.getTime();
-    el.gamelistSection.value = futureRelease ? "upcoming" : "wanted";
+    if (!state.gamelistImportShelfId && !state.gamelistImportGameId) {
+      const releaseDate = dateOnly(el.fields.releaseDate.value);
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      const futureRelease = Boolean(releaseDate) && new Date(`${releaseDate}T00:00:00`).getTime() > today.getTime();
+      el.gamelistSection.value = futureRelease ? "upcoming" : "wanted";
+    }
     syncShelfGamelistSectionButtons();
   }
   syncStyledSelect(el.gamelistSection);
@@ -2651,6 +2689,15 @@ async function lookupGame() {
       state.lookupResults = (gameData.results || []).slice(0, 12).map((result) => ({ ...result, lookupSource: "game" }));
       state.metadataLookupResults = state.lookupResults;
       renderShelfLookupResults();
+      if (state.autocompleteImport && state.lookupResults.length) {
+        const normalizedQuery = normalizeSearchText(query);
+        const exactIndex = state.lookupResults.findIndex((result) => [result.title, result.matchedTitle]
+          .some((title) => normalizeSearchText(title || "") === normalizedQuery));
+        const exactResultButton = exactIndex >= 0
+          ? el.lookupResults.querySelector(`[data-result-index="${exactIndex}"]`)
+          : null;
+        if (exactResultButton) await chooseLookupResult({ target: exactResultButton });
+      }
       return;
     }
     const directUrl = priceChartingPageUrl(query);
@@ -2690,7 +2737,8 @@ async function lookupGame() {
     requestAnimationFrame(() => el.lookupResults.classList.add("loaded"));
     el.lookupButton.disabled = false;
     el.lookupButton.classList.remove("is-loading");
-    el.lookupButton.title = "Fetch info";
+    el.lookupButton.title = state.autocompleteImport ? tt("Autocomplete game info") : tt("Fetch info");
+    el.lookupButton.setAttribute("aria-label", el.lookupButton.title);
   }
 }
 
@@ -3059,12 +3107,21 @@ async function saveGamelistTargetFromShelf() {
   const hasPreorder = el.gamelistPreorderCheck.checked;
   const section = hasPreorder ? "upcoming" : (el.gamelistSection.value || "wanted");
   const sectionOrders = state.gamelistGames.filter((game) => !game.deletedAt && game.section === section).map((game) => Number(game.order) || 0);
+  const importShelfId = state.gamelistImportShelfId;
+  const importGameId = state.gamelistImportGameId;
+  const existingImportIndex = state.gamelistGames.findIndex((item) => !item.deletedAt && (
+    (importGameId && item.id === importGameId)
+    || (importShelfId && (item.shelfId === importShelfId || item.id === `shelf-${importShelfId}`))
+  ));
+  const existingImport = existingImportIndex >= 0 ? state.gamelistGames[existingImportIndex] : null;
   const owners = splitValues(el.fields.owners.value).map(canonicalOwner).filter(Boolean);
   const platform = shortPlatform(canonicalShelfPlatform(el.fields.platform.value));
   const digital = Boolean(el.digitalInput.checked || el.fields.dlc.checked);
   const enteredLengthHours = Number(el.gamelistLength.value);
   const game = {
-    id: crypto.randomUUID(),
+    ...(existingImport || {}),
+    id: existingImport?.id || crypto.randomUUID(),
+    ...(importShelfId ? { shelfId: importShelfId } : {}),
     title,
     platform,
     section,
@@ -3105,14 +3162,20 @@ async function saveGamelistTargetFromShelf() {
     cover: rawCoverUrl(el.fields.cover.value.trim()),
     prices: [],
     order: Math.max(-1, ...sectionOrders) + 1,
-    createdAt: now,
+    createdAt: existingImport?.createdAt || now,
     editedAt: now,
     updatedAt: now,
   };
-  const nextGames = [game, ...state.gamelistGames];
+  delete game.preorderNewAddition;
+  delete game.preorderAcceptedFromShelfAt;
+  const nextGames = existingImportIndex >= 0
+    ? state.gamelistGames.map((item, index) => index === existingImportIndex ? game : item)
+    : [game, ...state.gamelistGames];
   try {
     await persistGamelistData(nextGames, state.gamelistSettings);
     state.gamelistGames = nextGames;
+    state.gamelistImportShelfId = "";
+    state.gamelistImportGameId = "";
     renderGamelistModules();
     renderLibrary();
     shelfEditorDirty = false;

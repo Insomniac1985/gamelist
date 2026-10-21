@@ -12357,6 +12357,18 @@ function markGameEdited(game, timestamp = new Date().toISOString()) {
 function moveToBacklog(id) {
   if (!state.canEdit) return;
   const game = getGame(id);
+  if (["upcoming", "wanted"].includes(game?.section)) {
+    void openGameAddFlow({
+      query: game.title,
+      platform: game.platform || "",
+      shelfGameId: game.shelfId ? String(game.shelfId) : "",
+      gamelistGameId: game.id,
+      target: "gamelist",
+      section: "backlog",
+      autocomplete: true,
+    });
+    return;
+  }
   const fromShelfAdditions = isShelfNewAddition(game);
   game.section = "backlog";
   if (fromShelfAdditions) game.acceptedFromShelfAt = new Date().toISOString();
