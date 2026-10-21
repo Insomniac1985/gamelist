@@ -99,7 +99,7 @@ const STRINGS = {
     "Shelf collection": "Colección de Shelf",
     "Add collecting info": "Añadir información de colección",
     "Turn on Shelf sync to add to Gamelist.": "Activa la sincronización de Shelf para añadir a Gamelist.",
-    "Edit Game": "Editar juego",
+    "Edit game": "Editar juego",
     "No description yet.": "Sin descripción todavía.",
     "No completed games tracked yet.": "Aún no hay juegos completados.",
     "Nothing on this shelf": "No hay nada en la Estantería",

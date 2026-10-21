@@ -963,6 +963,10 @@ function bindEvents() {
   if (toolbar && sectionTabs && "ResizeObserver" in window) {
     new ResizeObserver(syncSectionTabsStickyOffset).observe(toolbar);
   }
+  if (sectionTabs && el.board && "ResizeObserver" in window) {
+    new ResizeObserver(() => requestAnimationFrame(syncSectionTabsVisibility)).observe(el.board);
+  }
+  requestAnimationFrame(syncSectionTabsVisibility);
   window.addEventListener("keydown", (event) => {
     if (window.innerWidth < 761 || typeof event.key !== "string" || event.key.toLowerCase() !== "f" || event.repeat || event.isComposing) return;
     if (event.altKey || event.ctrlKey || event.metaKey || event.shiftKey) return;
@@ -1065,6 +1069,7 @@ function bindEvents() {
   window.addEventListener("scroll", () => {
     updateScrollTopButton();
     scheduleFocusedPlayingTrailerUpdate();
+    syncSectionTabsVisibility();
   }, { passive: true });
   window.addEventListener("resize", () => {
     schedulePlayingCardHeightSync();
@@ -6939,6 +6944,16 @@ function renderMobileTabs() {
     column.setAttribute("aria-hidden", String(columnIndex < 0 || column.id !== state.mobileSection));
   });
   document.body.dataset.mobileSection = state.mobileSection;
+  requestAnimationFrame(syncSectionTabsVisibility);
+}
+
+function syncSectionTabsVisibility() {
+  const tabs = document.querySelector(".mobile-section-tabs");
+  if (!tabs || !el.board) return;
+  const pastSection = !tabs.hidden && !el.board.hidden
+    && el.board.getBoundingClientRect().bottom <= tabs.getBoundingClientRect().bottom;
+  tabs.classList.toggle("is-past-section", pastSection);
+  tabs.inert = pastSection;
 }
 
 function syncMobileTabIndicator() {
@@ -11961,7 +11976,7 @@ function syncGameAddDestination() {
     button.textContent = tt(saveLabel);
   });
   el.dialogTitle.textContent = !isNewGame
-    ? tt("Edit Game")
+    ? tt("Edit game")
     : state.addDestination === "gamelist" && el.preorderCheck?.checked
       ? tt("Add a game preorder")
       : el.fields.digital.checked
@@ -12055,7 +12070,7 @@ async function openEditor(id = "") {
   state.pendingDescription = "";
   const game = state.games.find((item) => item.id === id) || blankGame();
   newGameListTouched = Boolean(id);
-  el.dialogTitle.textContent = id ? tt("Edit Game") : tt("Add game");
+  el.dialogTitle.textContent = id ? tt("Edit game") : tt("Add game");
   const saveLabel = id ? "Save" : "Add to Gamelist";
   el.gameDialogSaveButton.dataset.i18n = saveLabel;
   el.gameDialogSaveButton.textContent = tt(saveLabel);

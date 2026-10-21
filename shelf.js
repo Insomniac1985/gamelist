@@ -358,7 +358,8 @@ function initEmbeddedAddGame() {
       const sourceGamelistGame = options.gamelistGameId
         ? state.gamelistGames.find((game) => game.id === options.gamelistGameId)
         : null;
-      openEditor(sourceShelfGame || sourceGamelistGame || null, {
+      const sourceGame = sourceShelfGame || sourceGamelistGame;
+      openEditor(sourceGame ? { ...sourceGame, trophyName: sourceGamelistGame?.trophyName || sourceGame.trophyName || "" } : null, {
         digital: Boolean(options.digital),
         target: options.target,
         section: options.section,
@@ -2426,7 +2427,7 @@ function openEditor(game = null, options = {}) {
   el.fields.igdbUrl.value = values.igdbUrl || links.igdb;
   Object.entries(el.conditionFields).forEach(([key, input]) => { input.checked = conditionValue(values, key); });
   syncConditionInputs();
-  el.addForm.querySelector(".modal-head h2").textContent = tt(game?.pendingCollection ? "Add to Collection" : game ? "Edit Game" : digitalMode ? "Add a digital game" : "Add game");
+  el.addForm.querySelector(".modal-head h2").textContent = tt(game?.pendingCollection ? "Add to Collection" : game ? "Edit game" : digitalMode ? "Add a digital game" : "Add game");
   el.addForm.querySelectorAll("button[type='submit']").forEach((button) => { button.textContent = game?.pendingCollection ? "Add to Collection" : game ? "Save" : digitalMode ? "Add to Drive" : "Add to Shelf"; });
   syncShelfGamelistTargetPicker();
   syncShelfGamelistTargetMode();
@@ -2483,7 +2484,7 @@ function syncShelfDigitalEditorMode(digitalMode) {
   if (el.lookupLabelDigital) el.lookupLabelDigital.textContent = tt("Search DB or IGDB URL");
   el.lookupInput.placeholder = tt(digitalMode ? "Type a game name or paste an IGDB page" : "Game name or PriceCharting page");
   const game = state.games.find((item) => item.id === state.editingId);
-  el.addForm.querySelector(".modal-head h2").textContent = tt(game?.pendingCollection ? "Add to Collection" : game ? "Edit Game" : digitalMode ? "Add a digital game" : "Add game");
+  el.addForm.querySelector(".modal-head h2").textContent = tt(game?.pendingCollection ? "Add to Collection" : game ? "Edit game" : digitalMode ? "Add a digital game" : "Add game");
   el.addForm.querySelectorAll("button[type='submit']").forEach((button) => { button.textContent = game?.pendingCollection ? "Add to Collection" : game ? "Save" : digitalMode ? "Add to Drive" : "Add to Shelf"; });
   syncShelfEntitlementEditor();
   if (el.gamelistTargetPicker) syncShelfGamelistTargetMode();
@@ -2544,7 +2545,7 @@ function syncShelfGamelistTargetMode() {
     el.lookupLabelPhysical.textContent = tt("Search DB or PriceCharting");
     if (eyebrow) eyebrow.textContent = tt("Game data");
     const game = state.games.find((item) => item.id === state.editingId);
-    if (title) title.textContent = tt(game?.pendingCollection ? "Add to Collection" : game ? "Edit Game" : el.addForm.dataset.digital === "true" ? "Add a digital game" : "Add game");
+    if (title) title.textContent = tt(game?.pendingCollection ? "Add to Collection" : game ? "Edit game" : el.addForm.dataset.digital === "true" ? "Add a digital game" : "Add game");
     el.addForm.querySelector(".form-group h3").textContent = tt("Collecting Information");
     el.addForm.querySelectorAll("button[type='submit']").forEach((button) => { button.textContent = game?.pendingCollection ? tt("Add to Collection") : game ? tt("Save") : el.addForm.dataset.digital === "true" ? tt("Add to Drive") : tt("Add to Shelf"); });
     el.lookupInput.placeholder = tt(el.addForm.dataset.digital === "true" ? "Type a game name or paste an IGDB page" : "Game name or PriceCharting page");
@@ -3189,7 +3190,7 @@ async function saveGamelistTargetFromShelf() {
     startedAt: "",
     completedAt: "",
     genres: shelfOnlyImport ? [] : el.fields.genre.value.split(",").map((value) => value.trim()).filter(Boolean),
-    trophyName: shelfOnlyImport ? "" : el.fields.trophyName.value.trim(),
+    trophyName: el.fields.trophyName.value.trim(),
     developer: shelfOnlyImport ? "" : el.fields.developer.value.trim(),
     publisher: shelfOnlyImport ? "" : el.fields.publisher.value.trim(),
     igdbUrl: shelfOnlyImport ? "" : el.fields.igdbUrl.value.trim(),
@@ -3299,6 +3300,7 @@ async function addShelfGameToGamelist(game, { section = "new" } = {}) {
       storeLinks: game.storeLinks || {},
       lengthHours: game.lengthHours || (existingIndex >= 0 ? games[existingIndex].lengthHours : null) || null,
       hltbUrl: game.hltbUrl || game.howLongToBeatUrl || (existingIndex >= 0 ? games[existingIndex].hltbUrl : "") || "",
+      trophyName: game.trophyName || (existingIndex >= 0 ? games[existingIndex].trophyName : "") || "",
       replayCount: nextReplayCount,
       deletedAt: "",
       createdAt: existingIndex >= 0 ? games[existingIndex].createdAt : createdAt,
