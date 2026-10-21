@@ -7398,16 +7398,22 @@ function rowFor(game, section, options = {}) {
     else moveToBacklog(game.id);
   });
   row.querySelector(".row-setup-action")?.addEventListener("click", () => finishSetupGame(game.id));
+  row.querySelector(".stream-start-action")?.addEventListener("click", () => startPlaying(game.id, { stream: true }));
   row.querySelector(".row-delete-action")?.addEventListener("click", () => deleteGame(game.id));
   return row;
 }
 
 function rowPrimaryAction(game, section) {
-  if (section === "backlog") return `<button class="primary-button row-primary-action" type="button">${playIcon()}<span>${escapeHtml(tt("Play"))}</span></button>`;
+  if (section === "backlog") return `<button class="primary-button row-primary-action" type="button">${playIcon()}<span>${escapeHtml(tt("Play"))}</span></button>${backlogStreamAction(game)}`;
   if (section === "new") {
     return `<button class="primary-button row-primary-action" type="button">${playIcon()}<span>${escapeHtml(tt("Play"))}</span></button><button class="primary-button row-setup-action" type="button">${forwardIcon()}<span>${escapeHtml(tt("Setup"))}</span></button>`;
   }
   return `<button class="ghost-button row-primary-action row-backlog-action" type="button">${forwardIcon()}<span>${escapeHtml(tt("Backlog"))}</span></button>`;
+}
+
+function backlogStreamAction(game) {
+  if (!cleanTwitchUser(state.settings.twitchUser) || game.playing || game.completedAt) return "";
+  return `<button class="primary-button stream-start-action" type="button">${playIcon()}<span>${escapeHtml(tt("Stream"))}</span></button>`;
 }
 
 function rowCoreStats(game) {
@@ -9081,6 +9087,10 @@ function cardFor(game, options = {}) {
         if (game.playing) completeGame(game.id);
         else startPlaying(game.id);
       });
+      if (displaySection === "backlog") {
+        completeAction.insertAdjacentHTML("afterend", backlogStreamAction(game));
+        card.querySelector(".stream-start-action")?.addEventListener("click", () => startPlaying(game.id, { stream: true }));
+      }
     }
     if (trophyAction) {
       trophyAction.hidden = !game.playing;
@@ -12387,13 +12397,14 @@ function returnPlayingToBacklog(id) {
   moveToBacklog(id);
 }
 
-function startPlaying(id) {
+function startPlaying(id, { stream = false } = {}) {
   const game = getGame(id);
   if (!game || game.completedAt) return;
   if (isShelfNewAddition(game)) game.acceptedFromShelfAt = new Date().toISOString();
   game.section = "backlog";
   game.preorderNewAddition = false;
   game.playing = true;
+  if (stream) game.stream = true;
   game.startedAt = game.startedAt || todayDate();
   markGameEdited(game);
   upsertGame(game);

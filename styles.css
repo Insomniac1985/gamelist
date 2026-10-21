@@ -15915,6 +15915,20 @@ html.theme-light .finish-trophy-check input[type="checkbox"]:checked {
   border-color: rgba(183, 116, 255, 0.24);
 }
 
+.primary-button.stream-start-action,
+html.theme-light .primary-button.stream-start-action {
+  color: #1b1028;
+  background: #b774ff;
+  border-color: #b774ff;
+}
+
+.primary-button.stream-start-action:hover,
+html.theme-light .primary-button.stream-start-action:hover {
+  background: #c995ff;
+  border-color: #c995ff;
+  box-shadow: 0 0 0 3px rgba(183, 116, 255, 0.18);
+}
+
 .stream-check input[type="checkbox"] {
   border-color: rgba(183, 116, 255, 0.34);
 }
