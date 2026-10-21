@@ -12367,7 +12367,9 @@ function markGameEdited(game, timestamp = new Date().toISOString()) {
 function moveToBacklog(id) {
   if (!state.canEdit) return;
   const game = getGame(id);
-  if (["upcoming", "wanted"].includes(game?.section)) {
+  if (!game) return;
+  const skipCollectingInfo = Boolean(game.digital || game.dlc) && state.settings.shelfDigitalGames !== true;
+  if (["upcoming", "wanted"].includes(game.section) && !skipCollectingInfo) {
     void openGameAddFlow({
       query: game.title,
       platform: game.platform || "",
