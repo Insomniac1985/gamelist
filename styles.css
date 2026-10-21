@@ -15915,6 +15915,20 @@ html.theme-light .finish-trophy-check input[type="checkbox"]:checked {
   border-color: rgba(183, 116, 255, 0.24);
 }
 
+.primary-button.stream-start-action,
+html.theme-light .primary-button.stream-start-action {
+  color: #fff;
+  background: #b774ff;
+  border-color: #b774ff;
+}
+
+.primary-button.stream-start-action:hover,
+html.theme-light .primary-button.stream-start-action:hover {
+  background: #c995ff;
+  border-color: #c995ff;
+  box-shadow: 0 0 0 3px rgba(183, 116, 255, 0.18);
+}
+
 .stream-check input[type="checkbox"] {
   border-color: rgba(183, 116, 255, 0.34);
 }
@@ -16013,6 +16027,25 @@ html.theme-light .finish-trophy-check input[type="checkbox"]:checked {
   padding: 8px;
   background: rgba(255, 255, 255, 0.08);
   border: 1px solid var(--line);
+}
+
+.lookup-result .lookup-cover-placeholder,
+.lookup-result img.lookup-cover-placeholder {
+  position: relative;
+  display: grid;
+  place-items: center;
+  color: var(--muted);
+  background: linear-gradient(145deg, rgba(255, 255, 255, 0.12), rgba(255, 255, 255, 0.035));
+  border: 1px solid color-mix(in srgb, var(--muted) 45%, transparent);
+  border-radius: 5px;
+  opacity: 0.9;
+}
+
+.lookup-result .lookup-cover-placeholder::after {
+  content: "▧";
+  font-size: 20px;
+  line-height: 1;
+  opacity: 0.75;
 }
 
 .lookup-result p {

@@ -362,6 +362,7 @@ function initEmbeddedAddGame() {
         digital: Boolean(options.digital),
         target: options.target,
         section: options.section,
+        miniGamelistImport: Boolean(options.miniGamelistImport),
         autocomplete: Boolean(options.autocomplete),
         importShelfId: options.shelfGameId || sourceShelfGame?.id || "",
         importGameId: options.gamelistGameId || "",
@@ -371,7 +372,7 @@ function initEmbeddedAddGame() {
         syncShelfGamelistSectionButtons();
         syncStyledSelect(el.gamelistSection);
       }
-      if (options.query) {
+      if (options.query && !options.miniGamelistImport) {
         el.lookupInput.value = options.query;
         el.fields.title.value = options.query;
         shelfEditorDirty = true;
@@ -2291,7 +2292,7 @@ function handleShelfClick(event) {
   if (!game) return;
   if (action === "edit") state.canEdit ? openEditor(game) : openAuth();
   else if (action === "add-collection") state.canEdit ? openEditor(game) : openAuth();
-  else if (action === "add-backlog") state.canEdit ? openShelfGameInGamelist(game) : openAuth();
+  else if (action === "add-backlog") state.canEdit ? addShelfGameToGamelist(game, { section: "backlog" }) : openAuth();
   else if (action === "accept-preorder") state.canEdit ? acceptSyncedPreorder(game) : openAuth();
   else if (action === "add-wishlist-backlog") state.canEdit ? addSyncedWishlistToBacklog(game) : openAuth();
   else if (action === "edit-preorder") state.canEdit ? openPreorderInGamelistEditor(game) : openAuth();
@@ -2312,10 +2313,6 @@ function openPreorderInGamelistEditor(game) {
   const url = new URL("/", window.location.origin);
   url.searchParams.set("edit", game.id);
   window.location.href = url.href;
-}
-
-function openShelfGameInGamelist(game) {
-  openEditor(game, { target: "gamelist", section: "backlog", importShelfId: game.id, miniGamelistImport: true });
 }
 
 function openDetails(game) {
@@ -2375,9 +2372,10 @@ function openEditor(game = null, options = {}) {
   state.gamelistAddTarget = options.target === "gamelist" ? "gamelist" : "shelf";
   state.gamelistImportShelfId = options.importShelfId || "";
   state.gamelistImportGameId = options.importGameId || "";
-  state.autocompleteImport = Boolean(options.autocomplete);
+  state.autocompleteImport = Boolean(options.autocomplete && !options.miniGamelistImport);
   el.addDialog.classList.toggle("shelf-gamelist-import-mini", Boolean(options.miniGamelistImport));
   el.addForm.classList.toggle("shelf-gamelist-import-mini", Boolean(options.miniGamelistImport));
+  document.querySelector("#shelfGameDataDisclosure").open = !options.miniGamelistImport;
   renderShelfGamelistImportSummary(options.miniGamelistImport ? game : null);
   const digitalMode = Boolean(options.digital || isDigitalShelfGame(game));
   state.editingId = game?.id || "";
@@ -2531,8 +2529,9 @@ function syncShelfGamelistTargetMode() {
   const title = el.addForm.querySelector(".modal-head h2");
   const eyebrow = el.addForm.querySelector(".modal-head .eyebrow");
   if (active) {
-    if (eyebrow) eyebrow.textContent = el.addForm.classList.contains("shelf-gamelist-import-mini") ? tt("Shelf collection") : "GAME DATA";
-    if (title) title.textContent = el.gamelistSection.value === "backlog" ? "Add game to Backlog" : el.gamelistSection.value === "wanted" ? "Add available game" : "Add game";
+    const collectingInfo = el.addForm.classList.contains("shelf-gamelist-import-mini");
+    if (eyebrow) eyebrow.textContent = collectingInfo ? tt("Gamelist") : "GAME DATA";
+    if (title) title.textContent = collectingInfo ? tt("Add collecting info") : el.gamelistSection.value === "backlog" ? "Add game to Backlog" : el.gamelistSection.value === "wanted" ? "Add available game" : "Add game";
     el.addForm.querySelector(".form-group h3").textContent = tt("Collecting Information");
     el.addForm.querySelectorAll("button[type='submit']").forEach((button) => { button.textContent = tt(el.addForm.classList.contains("shelf-gamelist-import-mini") ? "Add to Gamelist and Shelf" : "Add to Gamelist"); });
     el.lookupLabelPhysical.textContent = tt("Search DB or IGDB URL");
@@ -2588,7 +2587,7 @@ function syncShelfGamelistSectionButtons() {
   syncGameListSlider(el.gamelistListPicker, el.gamelistSection.value);
   if (isGamelistProjectionTarget()) {
     const title = el.addForm.querySelector(".modal-head h2");
-    if (title) title.textContent = el.gamelistSection.value === "backlog" ? "Add game to Backlog" : el.gamelistSection.value === "wanted" ? "Add available game" : "Add game";
+    if (title) title.textContent = el.addForm.classList.contains("shelf-gamelist-import-mini") ? tt("Add collecting info") : el.gamelistSection.value === "backlog" ? "Add game to Backlog" : el.gamelistSection.value === "wanted" ? "Add available game" : "Add game";
   }
 }
 
@@ -2765,7 +2764,7 @@ async function lookupGame() {
 
 async function fetchGameMetadataData(query) {
   for (const title of gameMetadataQueries(query)) {
-    const params = new URLSearchParams({ q: title, lang: currentLanguage() });
+    const params = new URLSearchParams({ q: title, lang: currentLanguage(), v: "4" });
     const response = await fetch(`/api/search?${params}`);
     const data = response.ok ? await response.json() : { results: [] };
     if ((data.results || []).length) return data;
@@ -2931,15 +2930,11 @@ async function chooseLookupResult(event) {
   el.fields.publisher.value = result.publisher || "";
   el.fields.developer.value = result.developer || "";
   el.fields.genre.value = (result.genres || []).join(", ");
-  if (result.dlc) {
+  const isBaseMinecraft = String(result.title || "").trim().toLocaleLowerCase() === "minecraft";
+  if (result.dlc && !isBaseMinecraft) {
     el.fields.dlc.checked = true;
     el.digitalInput.checked = true;
     syncShelfDigitalEditorMode(true);
-  }
-  if (result.multiplayer) el.gamelistMultiplayer.checked = true;
-  if (result.coop) {
-    el.gamelistCoop.checked = true;
-    el.gamelistMultiplayer.checked = true;
   }
   el.fields.cover.value = result.cover || "";
   syncShelfEditorCoverPreview();
@@ -3115,6 +3110,7 @@ async function saveShelfEditor() {
     updatedAt: new Date().toISOString(), recordType: "Owned", releaseType: existing?.releaseType || "Official",
   };
   if (!game.title) return false;
+  if ((!existing || existing.pendingCollection) && !game.lengthHours) await fillShelfPlaytime(game);
   if (!digitalMode) applyManualCollectionValue(game, el.fields.price.value, existing);
   if (existing?.sourceRecord) state.overrides[game.id] = stripRuntimeFields(game);
   else {
@@ -3130,7 +3126,7 @@ async function saveShelfEditor() {
   rebuildGames();
   if (!embeddedGameEditor) renderAll();
   shelfEditorDirty = false;
-  if (digitalMode && state.gamelistSettings.shelfSync !== false && !game.gamelistId) await addShelfGameToGamelistNew(game);
+  if (digitalMode && state.gamelistSettings.shelfSync !== false && !game.gamelistId) await addShelfGameToGamelist(game);
   if (!embeddedGameEditor) closeDialog(el.addDialog);
   return true;
 }
@@ -3175,7 +3171,7 @@ async function saveGamelistTargetFromShelf() {
     releaseDate: el.fields.releaseDate.value,
     releaseText: el.gamelistReleaseText.value.trim(),
     releaseRefreshLocked: false,
-    lengthHours: shelfOnlyImport ? null : Number.isFinite(enteredLengthHours) && enteredLengthHours > 0 ? enteredLengthHours : state.pendingLengthHours || null,
+    lengthHours: shelfOnlyImport ? importedShelfGame.lengthHours || null : Number.isFinite(enteredLengthHours) && enteredLengthHours > 0 ? enteredLengthHours : state.pendingLengthHours || null,
     finishHours: 0,
     ratings: { gameplay: 0, story: 0, soundtrack: 0, graphics: 0, performance: 0 },
     notes: shelfOnlyImport ? importedShelfGame.notes || "" : "",
@@ -3244,50 +3240,81 @@ async function resetGame(game) {
   closeDialog(el.addDialog);
 }
 
-async function addShelfGameToGamelistNew(game) {
-  const password = sessionStorage.getItem(`${SESSION_KEY}:password`) || "";
-  const data = await fetch("/api/sync", { cache: "no-store" }).then((response) => response.ok ? response.json() : { games: [], settings: state.gamelistSettings }).catch(() => ({ games: [], settings: state.gamelistSettings }));
-  const games = Array.isArray(data.games) ? data.games : [];
-  const linkedGames = games.filter((item) => item.shelfId === game.id || item.id === `shelf-${game.id}`);
-  const existingIndex = games.findIndex((item) => (item.shelfId === game.id || item.id === `shelf-${game.id}`) && item.section === "new" && !item.deletedAt);
-  const nextReplayCount = existingIndex >= 0 ? (games[existingIndex].replayCount || 0) : nextShelfReplayCount(linkedGames);
-  const createdAt = new Date().toISOString();
-  const item = {
-    ...(existingIndex >= 0 ? games[existingIndex] : {}),
-    id: existingIndex >= 0 ? games[existingIndex].id : nextShelfBacklogId(game.id, games),
-    shelfId: game.id,
-    title: game.title,
-    platform: shortPlatform(game.platform),
-    section: "new",
-    digital: Boolean(game.digital || game.dlc),
-    dlc: Boolean(game.dlc),
-    psPlus: Boolean(game.psPlus),
-    gamesWithGold: Boolean(game.gamesWithGold),
-    playing: false,
-    platinum: false,
-    completedAt: "",
-    owners: Array.isArray(game.owners) ? game.owners : [],
-    statuses: [],
-    tags: cleanTransferTags(game.tags),
-    genres: String(game.genre || "").split(",").map((value) => value.trim()).filter(Boolean),
-    publisher: game.publisher || "",
-    developer: game.developer || "",
-    cover: game.cover || "",
-    releaseDate: game.releaseDate || "",
-    description: game.description || "",
-    storeLinks: game.storeLinks || {},
-    replayCount: nextReplayCount,
-    deletedAt: "",
-    createdAt: existingIndex >= 0 ? games[existingIndex].createdAt : createdAt,
-    updatedAt: createdAt,
-    order: existingIndex >= 0 ? games[existingIndex].order : 0,
-  };
-  const nextGames = existingIndex >= 0 ? games.map((entry, index) => index === existingIndex ? item : entry) : [item, ...games];
-  const response = await fetch("/api/sync", { method: "PUT", headers: { "Content-Type": "application/json", "x-edit-password": password }, body: JSON.stringify({ games: nextGames, settings: data.settings || state.gamelistSettings }) });
-  if (!response.ok) { showToast("Could not add this game to Gamelist.", "error"); return; }
-  state.gamelistGames = nextGames;
-  renderGamelistModules();
-  showToast("Added to Gamelist New additions.");
+async function fillShelfPlaytime(game) {
+  try {
+    const data = await fetchGameMetadataData(game.igdbUrl || game.title);
+    const titles = new Set(gameMetadataQueries(game.title).map(normalizeSearchText));
+    const result = (data.results || []).find((item) => [item.title, item.matchedTitle]
+      .some((title) => title && titles.has(normalizeSearchText(title))));
+    const hours = Number(result?.lengthHours);
+    if (Number.isFinite(hours) && hours > 0) {
+      game.lengthHours = hours;
+      if (!game.hltbUrl) game.hltbUrl = metadataHltbUrl(result);
+    }
+  } catch {
+    // A missing playtime estimate must not prevent adding the game to Shelf.
+  }
+}
+
+async function addShelfGameToGamelist(game, { section = "new" } = {}) {
+  try {
+    const password = sessionStorage.getItem(`${SESSION_KEY}:password`) || "";
+    const current = await fetch("/api/sync", { cache: "no-store" });
+    if (!current.ok) throw new Error("Could not load Gamelist.");
+    const data = await current.json();
+    if (!Array.isArray(data.games)) throw new Error("Could not load Gamelist.");
+    const games = data.games;
+    const linkedGames = games.filter((item) => item.shelfId === game.id || item.id === `shelf-${game.id}`);
+    const existingIndex = games.findIndex((item) => (item.shelfId === game.id || item.id === `shelf-${game.id}`)
+      && (item.section === "new" || (section === "backlog" && item.section === "backlog"))
+      && !item.playing && !item.completedAt && !item.deletedAt);
+    const nextReplayCount = existingIndex >= 0 ? (games[existingIndex].replayCount || 0) : nextShelfReplayCount(linkedGames);
+    const createdAt = new Date().toISOString();
+    const item = {
+      ...(existingIndex >= 0 ? games[existingIndex] : {}),
+      id: existingIndex >= 0 ? games[existingIndex].id : nextShelfBacklogId(game.id, games),
+      shelfId: game.id,
+      title: game.title,
+      platform: shortPlatform(game.platform),
+      section,
+      ...(section === "backlog" ? { acceptedFromShelfAt: createdAt } : {}),
+      digital: Boolean(game.digital || game.dlc),
+      dlc: Boolean(game.dlc),
+      psPlus: Boolean(game.psPlus),
+      gamesWithGold: Boolean(game.gamesWithGold),
+      playing: false,
+      platinum: false,
+      completedAt: "",
+      owners: Array.isArray(game.owners) ? game.owners : [],
+      statuses: [],
+      tags: cleanTransferTags(game.tags),
+      genres: String(game.genre || "").split(",").map((value) => value.trim()).filter(Boolean),
+      publisher: game.publisher || "",
+      developer: game.developer || "",
+      cover: game.cover || "",
+      releaseDate: game.releaseDate || "",
+      description: game.description || "",
+      storeLinks: game.storeLinks || {},
+      lengthHours: game.lengthHours || (existingIndex >= 0 ? games[existingIndex].lengthHours : null) || null,
+      hltbUrl: game.hltbUrl || game.howLongToBeatUrl || (existingIndex >= 0 ? games[existingIndex].hltbUrl : "") || "",
+      replayCount: nextReplayCount,
+      deletedAt: "",
+      createdAt: existingIndex >= 0 ? games[existingIndex].createdAt : createdAt,
+      updatedAt: createdAt,
+      order: existingIndex >= 0 && games[existingIndex].section === section ? games[existingIndex].order
+        : Math.max(-1, ...games.filter((item) => item.section === section && !item.deletedAt).map((item) => Number(item.order) || 0)) + 1,
+    };
+    const nextGames = existingIndex >= 0 ? games.map((entry, index) => index === existingIndex ? item : entry) : [item, ...games];
+    const response = await fetch("/api/sync", { method: "PUT", headers: { "Content-Type": "application/json", "x-edit-password": password }, body: JSON.stringify({ games: nextGames, settings: data.settings || state.gamelistSettings }) });
+    if (!response.ok) throw new Error("Could not add this game to Gamelist.");
+    state.gamelistGames = nextGames;
+    renderGamelistModules();
+    showToast(section === "backlog" ? "Added to Gamelist Backlog." : "Added to Gamelist New additions.");
+    return true;
+  } catch {
+    showToast("Could not add this game to Gamelist.", "error");
+    return false;
+  }
 }
 
 async function acceptSyncedPreorder(game) {
@@ -5238,7 +5265,7 @@ async function hydrateCompletedCovers(items) {
   await Promise.all(missing.map(async (item) => {
     const key = normalize(item.title);
     try {
-      const params = new URLSearchParams({ q: item.title, lang: currentLanguage() });
+      const params = new URLSearchParams({ q: item.title, lang: currentLanguage(), v: "4" });
       const response = await fetch(`/api/search?${params}`);
       const data = response.ok ? await response.json() : { results: [] };
       const result = (data.results || [])[0];
