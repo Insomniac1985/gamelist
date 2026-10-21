@@ -15454,6 +15454,7 @@ body.theme-kash
   white-space: nowrap;
 }
 
+#addGameForm.needs-collection-choice .shelf-add-collection-check,
 #addGameForm.needs-gamelist-preorder-store .shelf-gamelist-preorder-field input,
 #addGameForm.is-new-shelf-game.needs-title-field .shelf-title-field input,
 #addGameForm.is-new-shelf-game.needs-platform-field .shelf-console-field input,
@@ -15930,9 +15931,16 @@ html.theme-light .primary-button.stream-start-action {
 
 .primary-button.stream-start-action:hover,
 html.theme-light .primary-button.stream-start-action:hover {
-  background: #6b32a8;
-  border-color: #a16cda;
-  box-shadow: 0 0 0 3px rgba(183, 116, 255, 0.18);
+  background: color-mix(in srgb, #b774ff 28%, transparent);
+  border-color: color-mix(in srgb, #b774ff 48%, transparent);
+  box-shadow:
+    0 0 0 3px color-mix(in srgb, #b774ff 12%, transparent),
+    0 10px 28px color-mix(in srgb, #b774ff 12%, transparent);
+}
+
+html.theme-light .primary-button.stream-start-action:hover {
+  background: color-mix(in srgb, #b774ff 88%, #1f2937);
+  border-color: color-mix(in srgb, #b774ff 86%, rgba(31, 42, 61, 0.28));
 }
 
 .stream-check input[type="checkbox"] {

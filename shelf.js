@@ -4,7 +4,7 @@ import { applySiteTheme, normalizeThemeSettings, ownerCardColorClass, ownerColor
 import { applyDocumentTranslations, languageOptions, normalizeLanguage, t } from "./i18n.js";
 import { initShelfAccounts } from "./shelf-accounts.js";
 import { accountSettingsMarkup } from "./account-settings-ui.js";
-import { syncGameListControls, syncGameListSlider, syncCollectionCondition, syncStoreFieldIcon, SHELF_COUNTRIES } from "./game-editor-controls.js";
+import { syncGameListControls, syncGameListSlider, syncCollectionCondition, syncStoreFieldIcon, SHELF_COUNTRIES, preventImplicitGameSubmit } from "./game-editor-controls.js";
 
 document.querySelector("#shelfAccountsMount").innerHTML = accountSettingsMarkup();
 
@@ -527,6 +527,7 @@ function bindEvents() {
     event.preventDefault();
     showShelfEditorUnsavedDialog();
   });
+  el.addForm.addEventListener("keydown", preventImplicitGameSubmit);
   el.addForm.addEventListener("submit", saveEditor);
   el.addForm.addEventListener("input", (event) => { shelfEditorDirty = true; markShelfNewGameFieldTouched(event); });
   el.addForm.addEventListener("change", (event) => { shelfEditorDirty = true; markShelfNewGameFieldTouched(event); });
@@ -565,7 +566,10 @@ function bindEvents() {
   el.gamelistStream.addEventListener("change", () => {
     syncShelfGamelistPreorderStreamLayout();
   });
-  document.querySelector("#shelfAddCollectionInput").addEventListener("change", syncShelfGamelistTargetMode);
+  document.querySelector("#shelfAddCollectionInput").addEventListener("change", () => {
+    shelfNewGameTouchedFields.add("collection-choice");
+    syncShelfGamelistTargetMode();
+  });
   syncShelfGamelistPreorderStreamLayout();
   el.gamelistSection.addEventListener("change", syncShelfGamelistSectionButtons);
   document.querySelector("#editorUnsavedDialog [data-editor-unsaved-cancel]")?.addEventListener("click", () => closeDialog(document.querySelector("#editorUnsavedDialog")));
@@ -2549,7 +2553,7 @@ function syncShelfGamelistTargetMode() {
   if (active) {
     const collectingInfo = el.addForm.classList.contains("shelf-gamelist-import-mini");
     if (eyebrow) eyebrow.textContent = collectingInfo ? tt("Gamelist") : "GAME DATA";
-    if (title) title.textContent = collectingInfo ? tt("Add collecting info") : el.gamelistSection.value === "backlog" ? "Add game to Backlog" : el.gamelistSection.value === "wanted" ? "Add available game" : "Add game";
+    if (title) title.textContent = shelfGamelistAddTitle();
     el.addForm.querySelector(".form-group h3").textContent = tt("Collecting Information");
     el.addForm.querySelectorAll("button[type='submit']").forEach((button) => { button.textContent = tt(shelfCollectionEnabled() ? "Add to Gamelist and Shelf" : "Add to Gamelist"); });
     el.lookupLabelPhysical.textContent = tt("Search DB or IGDB URL");
@@ -2560,7 +2564,7 @@ function syncShelfGamelistTargetMode() {
     el.lookupLabelPhysical.textContent = tt("Search DB or PriceCharting");
     if (eyebrow) eyebrow.textContent = tt("Game data");
     const game = state.games.find((item) => item.id === state.editingId);
-    if (title) title.textContent = tt(game?.pendingCollection ? "Add to Collection" : game ? "Edit game" : el.addForm.dataset.digital === "true" ? "Add a digital game" : "Add game");
+    if (title) title.textContent = tt(game?.pendingCollection ? "Add to Collection" : game ? "Edit game" : "Add game to Shelf");
     el.addForm.querySelector(".form-group h3").textContent = tt("Collecting Information");
     el.addForm.querySelectorAll("button[type='submit']").forEach((button) => { button.textContent = game?.pendingCollection ? tt("Add to Collection") : game ? tt("Save") : el.addForm.dataset.digital === "true" ? tt("Add to Drive") : tt("Add to Shelf"); });
     el.lookupInput.placeholder = tt(el.addForm.dataset.digital === "true" ? "Type a game name or paste an IGDB page" : "Game name or PriceCharting page");
@@ -2600,12 +2604,20 @@ function syncShelfGamelistTargetIndicator() {
   }
 }
 
+function shelfGamelistAddTitle() {
+  if (el.addForm.classList.contains("shelf-gamelist-import-mini")) return tt("Add collecting info");
+  if (el.gamelistPreorderCheck.checked) return tt("Add a new preorder");
+  if (el.gamelistSection.value === "upcoming") return tt("Add upcoming game");
+  return tt(el.gamelistSection.value === "backlog" ? "Add game to Backlog" : "Add available game");
+}
+
 function syncShelfGamelistSectionButtons() {
   syncShelfGamelistPreorderVisibility();
   syncGameListSlider(el.gamelistListPicker, isGamelistProjectionTarget() ? el.gamelistSection.value : "collection");
+  syncShelfNewGameHighlights();
   if (isGamelistProjectionTarget()) {
     const title = el.addForm.querySelector(".modal-head h2");
-    if (title) title.textContent = el.addForm.classList.contains("shelf-gamelist-import-mini") ? tt("Add collecting info") : el.gamelistSection.value === "backlog" ? "Add game to Backlog" : el.gamelistSection.value === "wanted" ? "Add available game" : "Add game";
+    if (title) title.textContent = shelfGamelistAddTitle();
   }
 }
 
@@ -2690,6 +2702,8 @@ function markShelfNewGameFieldsTouched(keys) {
 }
 
 function syncShelfNewGameHighlights() {
+  el.addForm.classList.toggle("needs-collection-choice", !document.querySelector(".shelf-add-collection-check").hidden
+    && !shelfNewGameTouchedFields.has("collection-choice"));
   const isNewShelfGame = el.addForm.classList.contains("is-new-shelf-game");
   const projectionTarget = isGamelistProjectionTarget();
   const values = { title: el.fields.title.value.trim(), platform: el.fields.platform.value.trim(), "release-date": el.fields.releaseDate.value };

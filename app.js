@@ -3,7 +3,7 @@ import { normalizeSearchText, bindModalTouchGuard, createGameCardShell, bindActi
 import { applySiteTheme, normalizeThemeSettings, ownerCardColorClass, ownerColorClass, themeSettingsContent, bindThemeSettingsContent, readThemeSettingsContent } from "./theme-system.js";
 import { applyDocumentTranslations, languageOptions, normalizeLanguage, t } from "./i18n.js";
 import { accountSettingsMarkup } from "./account-settings-ui.js";
-import { syncGameListControls, syncGameListSlider, syncStoreFieldIcon } from "./game-editor-controls.js";
+import { syncGameListControls, syncGameListSlider, syncStoreFieldIcon, preventImplicitGameSubmit } from "./game-editor-controls.js";
 
 document.querySelector("#settingsAccountsMount").innerHTML = accountSettingsMarkup();
 
@@ -1423,6 +1423,7 @@ function bindEvents() {
     el.fields.length.value = approximatePlaytimeHours(el.fields.length.value) || "";
   });
   el.fields.replayCount.addEventListener("input", syncReplaySection);
+  el.form.addEventListener("keydown", preventImplicitGameSubmit);
   el.form.addEventListener("submit", saveFromForm);
   el.deleteButton.addEventListener("click", deleteCurrentGame);
   el.closeDialogButton.addEventListener("click", requestGameEditorClose);

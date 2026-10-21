@@ -2032,12 +2032,6 @@ body.mobile-app-mode .shelf-tabs button.active:hover {
 #addGameForm.gamelist-target-editor .shelf-gamelist-coop-field { grid-column: span 3; order: 9; }
 #addGameForm.gamelist-target-editor .shelf-entitlement-field { grid-column: span 4; order: 10; }
 .shelf-entitlement-grid-spacer { display: none; }
-#addGameForm.gamelist-target-editor.digital-game-editor.shelf-psplus-editor .shelf-entitlement-grid-spacer,
-#addGameForm.gamelist-target-editor.digital-game-editor.shelf-games-with-gold-editor .shelf-entitlement-grid-spacer {
-  display: block;
-  grid-column: span 8;
-  order: 10;
-}
 #addGameForm.gamelist-target-editor .shelf-gamelist-length-field { grid-column: span 4; order: 11; }
 #addGameForm.gamelist-target-editor .shelf-gamelist-preferred-store-field { grid-column: span 4; order: 13; }
 #addGameForm.gamelist-target-editor .shelf-owner-field { grid-column: span 6; order: 14; }
@@ -2083,9 +2077,6 @@ body.mobile-app-mode .shelf-tabs button.active:hover {
   box-sizing: border-box;
   min-height: 44px;
   padding: 8px 12px;
-  border-color: var(--accent);
-  background: color-mix(in srgb, var(--accent) 12%, transparent);
-  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent) 18%, transparent);
 }
 
 #shelfGamelistPreorderStreamRow.has-collection-option {
@@ -2108,20 +2099,27 @@ body.mobile-app-mode .shelf-tabs button.active:hover {
 }
 
 @media (min-width: 761px) {
-  #addGameForm.combined-collection-editor .shelf-editor-grid { --collection-extra-row: 6; }
-  #addGameForm.combined-collection-editor .shelf-editor-grid.has-editor-entitlement { --collection-extra-row: 7; }
-  #addGameForm.combined-collection-editor .shelf-editor-grid > .shelf-region-field { grid-column: 1 / span 4; grid-row: var(--collection-extra-row); }
-  #addGameForm.combined-collection-editor .shelf-editor-grid > .shelf-addition-field { grid-column: 5 / span 4; grid-row: var(--collection-extra-row); }
-  #addGameForm.combined-collection-editor .shelf-editor-grid > .shelf-value-field { grid-column: 9 / span 5; grid-row: var(--collection-extra-row); }
+  #addGameForm.combined-collection-editor .shelf-editor-grid { --collection-extra-row: 5; --collection-owner-offset: 3; }
+  #addGameForm.combined-collection-editor.digital-game-editor .shelf-editor-grid { --collection-owner-offset: 1; }
+  #addGameForm.combined-collection-editor .shelf-editor-grid > .shelf-region-field { grid-column: 1 / span 8; grid-row: var(--collection-extra-row); }
+  #addGameForm.combined-collection-editor .shelf-editor-grid > .shelf-addition-field { grid-column: 9 / span 8; grid-row: var(--collection-extra-row); }
+  #addGameForm.combined-collection-editor .shelf-editor-grid > .shelf-value-field { grid-column: 17 / span 9; grid-row: var(--collection-extra-row); }
   #addGameForm.combined-collection-editor .shelf-editor-grid > .shelf-condition-field { grid-column: 1 / -1; grid-row: calc(var(--collection-extra-row) + 1); }
   #addGameForm.combined-collection-editor .shelf-editor-grid > .shelf-condition-notes-field { grid-column: 1 / -1; grid-row: calc(var(--collection-extra-row) + 2); }
   #addGameForm.combined-collection-editor.digital-game-editor .shelf-editor-grid > .shelf-addition-field { grid-column: 1 / -1; }
-  #addGameForm.gamelist-target-editor.digital-tracking-disabled .shelf-editor-grid.unified-game-editor-grid > .shelf-console-field { grid-column: 8 / span 6; }
+  #addGameForm.combined-collection-editor .shelf-editor-grid > :is(.shelf-owner-field, .shelf-achievement-search-field) {
+    grid-row: calc(var(--collection-extra-row) + var(--collection-owner-offset)) !important;
+  }
+  #addGameForm.gamelist-target-editor.digital-tracking-disabled .shelf-editor-grid.unified-game-editor-grid > .shelf-console-field { grid-column: 14 / span 12; }
 }
 
 @media (max-width: 760px) {
   #addGameForm.combined-collection-editor .shelf-editor-grid > :is(.shelf-region-field, .shelf-addition-field, .shelf-value-field, .shelf-condition-field, .shelf-condition-notes-field) {
     order: 25;
+  }
+
+  #addGameForm.combined-collection-editor .shelf-editor-grid > :is(.shelf-owner-field, .shelf-achievement-search-field) {
+    order: 26;
   }
 
   #shelfGamelistListPicker [data-gamelist-section] {

@@ -117,3 +117,11 @@ export function syncStoreFieldIcon(input, slot) {
   image.src = icon;
   slot.append(image);
 }
+
+/** Enter in a field must not implicitly submit a game editor. */
+export function preventImplicitGameSubmit(event) {
+  if (event.key !== "Enter" || event.defaultPrevented || event.isComposing) return;
+  if (event.target.matches?.('input:not([type="submit"]):not([type="button"]):not([type="reset"])')) {
+    event.preventDefault();
+  }
+}
