@@ -4837,8 +4837,14 @@ body.dialog-open .floating-edit-actions {
   overflow: hidden;
   box-shadow: 0 18px 42px rgba(0, 0, 0, 0.28);
   transition:
+    opacity 180ms ease,
     top 180ms ease,
     transform 180ms ease;
+}
+
+.mobile-section-tabs.is-past-section {
+  opacity: 0;
+  pointer-events: none;
 }
 
 .mobile-section-tabs::before {
@@ -15917,15 +15923,15 @@ html.theme-light .finish-trophy-check input[type="checkbox"]:checked {
 
 .primary-button.stream-start-action,
 html.theme-light .primary-button.stream-start-action {
-  color: #fff;
-  background: #b774ff;
-  border-color: #b774ff;
+  color: #e3c9ff;
+  background: #592990;
+  border-color: #7944b5;
 }
 
 .primary-button.stream-start-action:hover,
 html.theme-light .primary-button.stream-start-action:hover {
-  background: #c995ff;
-  border-color: #c995ff;
+  background: #6b32a8;
+  border-color: #a16cda;
   box-shadow: 0 0 0 3px rgba(183, 116, 255, 0.18);
 }
 

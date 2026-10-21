@@ -3523,8 +3523,7 @@ textarea {
 #addGameForm.shelf-gamelist-import-mini .shelf-gamelist-flag,
 #addGameForm.shelf-gamelist-import-mini .shelf-gamelist-length-field,
 #addGameForm.shelf-gamelist-import-mini .shelf-gamelist-preferred-store-field,
-#addGameForm.shelf-gamelist-import-mini .shelf-gamelist-status-field,
-#addGameForm.shelf-gamelist-import-mini .shelf-achievement-search-field {
+#addGameForm.shelf-gamelist-import-mini .shelf-gamelist-status-field {
   display: none !important;
 }
 
@@ -3609,7 +3608,20 @@ textarea {
 
 @media (max-width: 760px) {
   #addGameForm.shelf-gamelist-import-mini .modal-head {
+    position: relative;
     flex-direction: column;
+  }
+
+  #addGameForm.shelf-gamelist-import-mini .modal-head > div:not(.modal-head-actions) {
+    width: 100%;
+    padding-right: 44px;
+    box-sizing: border-box;
+  }
+
+  #addGameForm.shelf-gamelist-import-mini #addClose {
+    position: absolute;
+    top: 0;
+    right: 0;
   }
 
   #addGameForm.shelf-gamelist-import-mini .modal-head-actions {
@@ -3618,6 +3630,7 @@ textarea {
 
   #addGameForm.shelf-gamelist-import-mini .modal-head-save {
     flex: 1;
+    width: 100%;
     min-width: 0;
     white-space: normal;
   }
