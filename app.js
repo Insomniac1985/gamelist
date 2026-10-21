@@ -13221,7 +13221,7 @@ async function fetchSearchResults(query) {
   const cached = searchCache.get(cacheKey);
   if (cached && (now - cached.timestamp) < SEARCH_CACHE_TTL) return cached.results;
   if (searchInflight.has(cacheKey)) return searchInflight.get(cacheKey);
-  const params = new URLSearchParams({ q: normalized, lang: language });
+  const params = new URLSearchParams({ q: normalized, lang: language, v: "2" });
   const request = fetch(`/api/search?${params}`)
     .then(async (response) => {
       if (!response.ok) return [];

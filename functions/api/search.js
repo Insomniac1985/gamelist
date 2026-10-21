@@ -20,6 +20,7 @@ export async function onRequestGet({ request, env = {} }) {
   const cacheUrl = new URL("/api/search", url.origin);
   cacheUrl.searchParams.set("q", normalize(query));
   cacheUrl.searchParams.set("lang", language);
+  cacheUrl.searchParams.set("v", "2");
   if (lookup.igdbSlug) cacheUrl.searchParams.set("slug", lookup.igdbSlug);
   const cacheKey = new Request(cacheUrl.toString(), { method: "GET" });
   const cached = await cache.match(cacheKey);
@@ -30,7 +31,7 @@ export async function onRequestGet({ request, env = {} }) {
 
 async function searchUncached(query, language, env, lookup, cache, cacheKey) {
   const igdb = await igdbCredentials(env);
-  const hltbLookupPromise = safeHltbResults(query, language);
+  const hltbLookupPromise = safeHltbResults(searchAlias(query), language);
   let igdbError = null;
   if (igdb) {
     try {
@@ -632,6 +633,7 @@ function searchAlias(query) {
   const value = String(query || "");
   const key = normalize(value).replace(/\s+/g, "");
   const aliases = {
+    "13sentinels": "13 Sentinels: Aegis Rim",
     baldursgate3: "Baldur's Gate 3",
     tmntshreddersrevenge: "Teenage Mutant Ninja Turtles Shredder's Revenge",
     diofieldchronicles: "The DioField Chronicle",

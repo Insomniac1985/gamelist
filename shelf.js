@@ -2765,7 +2765,7 @@ async function lookupGame() {
 
 async function fetchGameMetadataData(query) {
   for (const title of gameMetadataQueries(query)) {
-    const params = new URLSearchParams({ q: title, lang: currentLanguage() });
+    const params = new URLSearchParams({ q: title, lang: currentLanguage(), v: "2" });
     const response = await fetch(`/api/search?${params}`);
     const data = response.ok ? await response.json() : { results: [] };
     if ((data.results || []).length) return data;
@@ -5238,7 +5238,7 @@ async function hydrateCompletedCovers(items) {
   await Promise.all(missing.map(async (item) => {
     const key = normalize(item.title);
     try {
-      const params = new URLSearchParams({ q: item.title, lang: currentLanguage() });
+      const params = new URLSearchParams({ q: item.title, lang: currentLanguage(), v: "2" });
       const response = await fetch(`/api/search?${params}`);
       const data = response.ok ? await response.json() : { results: [] };
       const result = (data.results || [])[0];
