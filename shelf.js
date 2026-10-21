@@ -2502,7 +2502,8 @@ function isGamelistProjectionTarget() {
 function syncShelfGamelistTargetMode() {
   const target = state.gamelistAddTarget;
   const active = isGamelistProjectionTarget();
-  el.addForm.classList.toggle("gamelist-target-editor", active);
+  const collectingInfo = el.addForm.classList.contains("shelf-gamelist-import-mini");
+  el.addForm.classList.toggle("gamelist-target-editor", active && !collectingInfo);
   el.addForm.classList.toggle("gamelist-target-wishlist", target === "wishlist");
   el.addForm.classList.toggle("gamelist-target-preorder", target === "preorder");
   const digitalToggle = el.digitalInput.closest(".lookup-digital-check");

@@ -250,3 +250,47 @@ html.game-editor-embed body::before,
 html.game-editor-embed body::after,
 html.game-editor-embed body > :not(dialog):not(.toast-notification):not(.platform-logo-hover-overlay) { display: none !important; }
 html.game-editor-embed #addDialog::backdrop { background: transparent; backdrop-filter: none; }
+
+/* Use the same full-height mobile window for every game editor. */
+@media (max-width: 760px) {
+  :is(#gameDialog, #addDialog) {
+    position: fixed;
+    inset: 0 !important;
+    width: calc(100vw - 16px) !important;
+    max-width: calc(100vw - 16px) !important;
+    height: calc(100dvh - 16px) !important;
+    max-height: calc(100dvh - 16px) !important;
+    margin: auto !important;
+    padding: 0;
+    box-sizing: border-box;
+    overflow: hidden;
+    border-radius: 8px;
+    transform: none !important;
+  }
+
+  :is(#gameDialog, #addDialog) > :is(.modal, .add-modal) {
+    display: block;
+    width: 100%;
+    height: 100%;
+    max-height: 100% !important;
+    min-height: 0;
+    box-sizing: border-box;
+    overflow-x: hidden;
+    overflow-y: auto !important;
+    overscroll-behavior: contain;
+    touch-action: pan-y;
+    -webkit-overflow-scrolling: touch;
+    padding: calc(14px + env(safe-area-inset-top)) 10px
+      calc(14px + env(safe-area-inset-bottom));
+  }
+
+  body dialog.shared-add-game-host[open] {
+    inset: 0 !important;
+    width: 100vw !important;
+    max-width: 100vw !important;
+    height: 100dvh !important;
+    max-height: 100dvh !important;
+    margin: 0 !important;
+    border-radius: 0;
+  }
+}
