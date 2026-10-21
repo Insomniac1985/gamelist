@@ -371,7 +371,7 @@ function initEmbeddedAddGame() {
         syncShelfGamelistSectionButtons();
         syncStyledSelect(el.gamelistSection);
       }
-      if (options.query) {
+      if (options.query && !options.miniGamelistImport) {
         el.lookupInput.value = options.query;
         el.fields.title.value = options.query;
         shelfEditorDirty = true;
@@ -2375,7 +2375,7 @@ function openEditor(game = null, options = {}) {
   state.gamelistAddTarget = options.target === "gamelist" ? "gamelist" : "shelf";
   state.gamelistImportShelfId = options.importShelfId || "";
   state.gamelistImportGameId = options.importGameId || "";
-  state.autocompleteImport = Boolean(options.autocomplete);
+  state.autocompleteImport = Boolean(options.autocomplete && !options.miniGamelistImport);
   el.addDialog.classList.toggle("shelf-gamelist-import-mini", Boolean(options.miniGamelistImport));
   el.addForm.classList.toggle("shelf-gamelist-import-mini", Boolean(options.miniGamelistImport));
   renderShelfGamelistImportSummary(options.miniGamelistImport ? game : null);
