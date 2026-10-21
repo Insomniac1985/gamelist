@@ -2395,6 +2395,7 @@ function openEditor(game = null, options = {}) {
   el.lookupButton.setAttribute("aria-label", el.lookupButton.title);
   const values = game || { platform: "", country: defaultShelfCountry(), owners: defaultShelfOwners(), game: true };
   for (const [key, input] of Object.entries(el.fields)) if (!["dlc", "psPlus", "gamesWithGold"].includes(key)) input.value = values[key] ?? "";
+  el.fields.country.value = COUNTRY_OPTIONS.some(([country]) => country === values.country) ? values.country : defaultShelfCountry();
   el.fields.additionDate.value = shelfDateInputValue(values.createdAt) || (game ? "" : shelfDateInputValue(new Date().toISOString()));
   el.fields.platform.value = values.platform ? platformDisplayName(values.platform) : "";
   if (!el.fields.genre.value && Array.isArray(values.genres)) el.fields.genre.value = values.genres.join(", ");
@@ -2501,7 +2502,8 @@ function isGamelistProjectionTarget() {
 function syncShelfGamelistTargetMode() {
   const target = state.gamelistAddTarget;
   const active = isGamelistProjectionTarget();
-  el.addForm.classList.toggle("gamelist-target-editor", active);
+  const collectingInfo = el.addForm.classList.contains("shelf-gamelist-import-mini");
+  el.addForm.classList.toggle("gamelist-target-editor", active && !collectingInfo);
   el.addForm.classList.toggle("gamelist-target-wishlist", target === "wishlist");
   el.addForm.classList.toggle("gamelist-target-preorder", target === "preorder");
   const digitalToggle = el.digitalInput.closest(".lookup-digital-check");
