@@ -3503,6 +3503,10 @@ textarea {
   display: none !important;
 }
 
+#addGameForm.shelf-gamelist-import-mini.digital-tracking-disabled .lookup-digital-check {
+  display: none !important;
+}
+
 #addGameForm.shelf-gamelist-import-mini .shelf-gamelist-import-summary,
 #addGameForm.shelf-gamelist-import-mini #shelfGamelistListControls,
 #addGameForm.shelf-gamelist-import-mini #shelfGamelistPlacement,
@@ -3557,6 +3561,7 @@ textarea {
   width: 18px;
   height: 18px;
   flex: 0 0 18px;
+  color: var(--muted);
   fill: none;
   stroke: currentColor;
   stroke-width: 2;
@@ -3668,6 +3673,10 @@ textarea {
   #addGameForm.shelf-gamelist-import-mini .shelf-editor-grid > .shelf-dlc-field { grid-column: 2 / span 2; grid-row: 3 !important; margin: 0; }
   #addGameForm.shelf-gamelist-import-mini .shelf-editor-grid > .shelf-value-field { grid-column: 4 / span 4; grid-row: 3 !important; }
   #addGameForm.shelf-gamelist-import-mini .shelf-editor-grid > .shelf-owner-field { grid-column: 8 / span 6; grid-row: 3 !important; }
+
+  #addGameForm.shelf-gamelist-import-mini.digital-tracking-disabled .shelf-editor-grid > .shelf-console-field {
+    grid-column: 8 / span 6;
+  }
 }
 
 @media (max-width: 760px) {
