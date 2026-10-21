@@ -1,3 +1,4 @@
+import { syncMediaFormatToggle } from "./media-format-toggle.js";
 import { mountCollectionWorkspace } from "./collection-workspace.js";
 import { openSharedAddGame, warmSharedAddGame } from "./shared-add-game.js";
 import { normalizeSearchText, bindModalTouchGuard, createGameCardShell, bindActivityCardParallax, mountActivitySlider, mountTwitchPreview, mountReleaseCalendar, finishedGameMarkup, achievementCardMarkup, achievementDashboardMarkup, achievementPanelMarkup, completedCardMarkup, horizontalCarouselState, syncViewModeButton, slideHorizontalCarousel, comparePlayingGames, finishedDurationText, timeBadgeMarkup, guideLinksMarkup, storeButtonsMarkup, activityTrailerUrl, activityTrailerFrameMarkup, preloadPausedActivityTrailers, activityReleaseStatus, activityCoverOverride, activityAllowsPsnCardTrophies, formatFooterDate, formatFooterDateTime, formatFooterShortDate, confirmGameDelete } from "./activity-ui.js";
@@ -1898,7 +1899,7 @@ function normalizeSettings(settings = {}) {
     shelfSync: true,
     shelfSyncWishlist: settings.shelfSyncWishlist !== false,
     hidePageSwitch: false,
-    defaultList: ["backlog", "shelf", "drive", "upcoming", "wanted", "new"].includes(settings.defaultList) ? settings.defaultList : "backlog",
+    defaultList: settings.defaultList === "drive" ? "shelf" : ["backlog", "shelf", "upcoming", "wanted", "new"].includes(settings.defaultList) ? settings.defaultList : "backlog",
     streamFilterPriority: streamFilterPriorityForSettings(settings),
     prioritizeFinishedStream: streamFilterPriorityForSettings(settings) === "stream",
     hideNonStreamPlaying: settings.hideNonStreamPlaying === true,
@@ -2813,19 +2814,6 @@ function renderSettingsDialog() {
   document.querySelector("[data-import-csv='finished']")?.addEventListener("click", importYearlyStatsCsv);
   document.querySelector("[data-export-csv='yearly-stats']")?.addEventListener("click", exportYearlyStatsCsv);
   document.querySelector("[data-import-csv='yearly-stats']")?.addEventListener("click", importYearlyStatsCsv);
-  el.settingsDialog.querySelectorAll("[data-collection-export], [data-collection-import]").forEach(button => button.addEventListener("click", async () => {
-    await ensureCollectionWorkspace();
-    const digital = (button.dataset.collectionExport || button.dataset.collectionImport) === "digital";
-    const action = button.dataset.collectionExport ? (digital ? "exportDigital" : "exportPhysical") : (digital ? "importDigital" : "importPhysical");
-    await collectionUI?.[action]();
-  }));
-  el.settingsDialog.querySelector("[data-track-digital]")?.addEventListener("change", event => {
-    const select = el.settingsDialog.querySelector("[data-default-list]");
-    const drive = select.querySelector('option[value="drive"]');
-    if (event.target.checked && !drive) select.add(new Option(tt("Drive"), "drive"), 2);
-    if (!event.target.checked && drive) { if (select.value === "drive") select.value = "shelf"; drive.remove(); }
-    syncStyledSelect(select);
-  });
   applyLanguage();
   syncStyledSelects(el.settingsDialog, { activeValue: null });
 }
@@ -2843,6 +2831,7 @@ function settingsLayoutItem(key, index, options = {}) {
     latestFinished: "Last finished",
   }[key] || key;
   const wireClass = {
+    showcase: "wire-favorites",
     playing: "wire-playing",
     trophies: "wire-trophies",
     calendar: "wire-calendar",
@@ -5897,7 +5886,7 @@ function downloadCanvas(canvas, filename) {
 }
 
 function scrollToSearchArea() {
-  if (["shelf", "drive"].includes(state.mobileSection) && collectionUI) return collectionUI.search();
+  if (state.mobileSection === "shelf" && collectionUI) return collectionUI.search();
   document.querySelector(".toolbar")?.scrollIntoView({ behavior: "smooth", block: "start" });
   window.requestAnimationFrame(() => el.searchInput?.focus({ preventScroll: true }));
 }
@@ -6918,6 +6907,7 @@ function platformCounts(games) {
 }
 
 function renderMobileTabs() {
+  if (state.mobileSection === "drive") state.mobileSection = "shelf";
   if (!defaultCollectionListApplied) {
     state.mobileSection = state.settings.defaultList || "backlog";
   }
@@ -6975,7 +6965,7 @@ function syncMobileTabIndicator() {
 }
 
 function mobileSections() {
-  return [hasNewAdditions() || collectionUI?.pending().length ? "new" : "", "backlog", "shelf", state.settings.shelfDigitalGames === true ? "drive" : "", "upcoming", "wanted"].filter(Boolean);
+  return [hasNewAdditions() || collectionUI?.pending().length ? "new" : "", "backlog", "shelf", "upcoming", "wanted"].filter(Boolean);
 }
 
 function mobileSectionCounts() {
@@ -6992,7 +6982,6 @@ function mobileSectionLabel(section) {
     new: "New additions",
     backlog: "Backlog",
     shelf: "Shelf",
-    drive: "Drive",
     upcoming: "Radar",
     wanted: "Wishlist",
   }[section] || section;
@@ -7040,7 +7029,7 @@ function syncMobileSectionToResults() {
     || state.filters.platform !== "all"
     || state.filters.tag !== "all"
     || state.filters.preordered;
-  if (!hasActiveFilter || ["shelf", "drive", "new"].includes(state.mobileSection)) return;
+  if (!hasActiveFilter || ["shelf", "new"].includes(state.mobileSection)) return;
   const sections = state.filters.preordered ? mobileSections().filter((section) => section !== "new").sort((a, b) => ["upcoming", "backlog", "wanted"].indexOf(a) - ["upcoming", "backlog", "wanted"].indexOf(b)) : mobileSections();
   const hasCurrent = filteredGames().some((game) => (
     gameMatchesMobileSection(game, state.mobileSection)
@@ -12170,7 +12159,7 @@ async function openEditor(id = "") {
 function openGameAddFlow(options = {}) {
   const section = options.section || (["upcoming", "wanted"].includes(state.mobileSection) ? state.mobileSection : "collection");
   const collection = ["collection", "backlog"].includes(section) && !options.miniGamelistImport;
-  return openSharedAddGame({ ...options, section: section === "collection" ? "backlog" : section, target: collection ? "shelf" : "gamelist", digital: options.digital ?? state.mobileSection === "drive", settings: state.settings }, {
+  return openSharedAddGame({ ...options, section: section === "collection" ? "backlog" : section, target: collection ? "shelf" : "gamelist", digital: options.digital ?? (state.mobileSection === "shelf" && collectionMedia === "digital" && state.settings.shelfDigitalGames === true), settings: state.settings }, {
     beforeOpen: pauseAllPlayingTrailers,
     afterSave: async result => {
       await Promise.all([pullCloudData(), refreshCollectionData()]);
@@ -13353,7 +13342,7 @@ async function refreshPricesForGame(id, options = {}) {
 }
 
 async function refreshAllPrices() {
-  if (["shelf", "drive"].includes(state.mobileSection) && collectionUI) return collectionUI.refreshPrices();
+  if (state.mobileSection === "shelf" && collectionUI) return collectionUI.refreshPrices();
   if (!state.canEdit) return;
   const games = activeGames().filter((game) => ["upcoming", "wanted"].includes(game.section) && game.title && priceProvidersForGame(game).length);
   if (!games.length) {
@@ -13562,7 +13551,7 @@ function ensureCollectionWorkspace() {
 }
 
 function syncCollectionWorkspace() {
-  const collection = ["shelf", "drive"].includes(state.mobileSection);
+  const collection = state.mobileSection === "shelf";
   const pending = state.mobileSection === "new";
   const hidden = new Set(state.settings.hiddenSections);
   document.body.classList.toggle("collection-selected", collection);
@@ -13588,6 +13577,7 @@ function syncCollectionWorkspace() {
   }
   const mobileStats = document.querySelector("#mobileDockStats");
   if (mobileStats) mobileStats.hidden = false;
+  if (collection) collectionUI.finishedKpi(el.stats.querySelector("[data-stat-action='completed']"));
   collectionUI.syncMedia(collectionMedia);
   renderCollectionMedia();
 }
@@ -13600,12 +13590,12 @@ function setCollectionMedia(mode) {
 }
 
 function renderCollectionMedia() {
-  const root = document.querySelector("#collectionMediaToggle");
-  root.innerHTML = ["physical", "digital", "all"].map(mode => `<button class="icon-button ${collectionMedia === mode ? "active" : ""}" type="button" data-media="${mode}" aria-label="${escapeHtml(tt(mode === "physical" ? "Physical" : mode === "digital" ? "Digital" : "All"))}" aria-pressed="${collectionMedia === mode}" title="${escapeHtml(tt(mode === "physical" ? "Physical" : mode === "digital" ? "Digital" : "All"))}">${mode === "all" ? '<img src="assets/Icon.png" alt="">' : mode === "physical" ? mediaFormatBadge({ digital: false }) : mediaFormatBadge({ digital: true })}</button>`).join("");
-  if (!root.dataset.bound) {
-    root.dataset.bound = "true";
-    root.addEventListener("click", event => { const button = event.target.closest("[data-media]"); if (button) setCollectionMedia(button.dataset.media); });
-  }
+  syncMediaFormatToggle(document.querySelector("#collectionMediaToggle"), {
+    value: collectionMedia,
+    icon: mode => mode === "physical" ? physicalDiskIcon() : downloadBadgeIcon(),
+    translate: tt,
+    onChange: setCollectionMedia,
+  });
 }
 
 function gamelistAddedBadge(game) {
@@ -13614,14 +13604,32 @@ function gamelistAddedBadge(game) {
 }
 
 function collectionSettingsMarkup() {
-  const lists = [["backlog", "Backlog"], ["shelf", "Shelf"], ...(state.settings.shelfDigitalGames ? [["drive", "Drive"]] : []), ["upcoming", "Radar"], ["wanted", "Wishlist"]];
-  return `<article class="settings-layout-card"><div class="settings-theme-select"><span>${escapeHtml(tt("Default list"))}</span><select data-default-list>${lists.map(([value, label]) => `<option value="${value}" ${state.settings.defaultList === value ? "selected" : ""}>${escapeHtml(tt(label))}</option>`).join("")}</select></div></article>
-    <article class="settings-layout-card"><div class="settings-theme-select"><span>${escapeHtml(tt("Collection"))}</span>
-      <label class="check-filter toggle-check"><input data-track-digital type="checkbox" ${state.settings.shelfDigitalGames ? "checked" : ""}><span>${escapeHtml(tt("Track Digital Games (Drive)"))}</span></label>
-      <label class="check-filter toggle-check"><input data-collection-prices type="checkbox" ${state.settings.shelfHidePrices ? "" : "checked"}><span>${escapeHtml(tt("Show Prices"))}</span></label>
-      <label><span>${escapeHtml(tt("Default order"))} · ${escapeHtml(tt("Shelf"))}</span><select data-collection-order>${[["added", "Last added"], ["title", "Name"], ["platform", "Platform"], ["region", "Region"], ["value", "Value"]].map(([value, label]) => `<option value="${value}" ${state.settings.shelfDefaultOrder === value ? "selected" : ""}>${escapeHtml(tt(label))}</option>`).join("")}</select></label>
-      <div class="settings-data-actions"><button type="button" class="ghost-button" data-collection-export="physical">${escapeHtml(tt("Export"))} · ${escapeHtml(tt("Physical"))}</button><button type="button" class="ghost-button" data-collection-import="physical">${escapeHtml(tt("Import"))} · ${escapeHtml(tt("Physical"))}</button><button type="button" class="ghost-button" data-collection-export="digital">${escapeHtml(tt("Export"))} · ${escapeHtml(tt("Digital"))}</button><button type="button" class="ghost-button" data-collection-import="digital">${escapeHtml(tt("Import"))} · ${escapeHtml(tt("Digital"))}</button></div>
-    </div></article>`;
+  const lists = [["backlog", "Backlog"], ["shelf", "Shelf"], ["upcoming", "Radar"], ["wanted", "Wishlist"]];
+  const orders = [["added", "Last added"], ["title", "Name"], ["platform", "Platform"], ["region", "Region"], ["value", "Value"]];
+  const toggle = (attribute, label, checked) => `
+    <article class="settings-layout-card settings-sync-card settings-collection-setting">
+      <div class="settings-theme-select">
+        <span>${escapeHtml(tt("Collection"))}</span>
+        <div class="settings-check-field"><label class="check-filter toggle-check settings-visible-check">
+          <input ${attribute} type="checkbox" ${checked ? "checked" : ""}>
+          <span>${escapeHtml(tt(label))}</span>
+        </label></div>
+      </div>
+    </article>`;
+  return `
+    <article class="settings-layout-card settings-order-card settings-collection-setting">
+      <label class="settings-theme-select"><span>${escapeHtml(tt("Default list"))}</span>
+        <select data-default-list>${lists.map(([value, label]) => `<option value="${value}" ${state.settings.defaultList === value ? "selected" : ""}>${escapeHtml(tt(label))}</option>`).join("")}</select>
+      </label>
+    </article>
+    <article class="settings-layout-card settings-order-card settings-collection-setting">
+      <label class="settings-theme-select"><span>${escapeHtml(tt("Default order"))} · ${escapeHtml(tt("Shelf"))}</span>
+        <select data-collection-order>${orders.map(([value, label]) => `<option value="${value}" ${state.settings.shelfDefaultOrder === value ? "selected" : ""}>${escapeHtml(tt(label))}</option>`).join("")}</select>
+      </label>
+    </article>
+    ${toggle("data-track-digital", "Track Digital Games", state.settings.shelfDigitalGames)}
+    ${toggle("data-collection-prices", "Show Prices", !state.settings.shelfHidePrices)}
+  `;
 }
 
 function mergeCollectionStats(year) {

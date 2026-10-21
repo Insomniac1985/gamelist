@@ -1803,8 +1803,8 @@ function renderStats() {
   const symbol = ({ USD: "$", GBP: "\u00a3", JPY: "\u00a5", EUR: "\u20ac" })[currency] || "\u20ac";
   const valueText = currency === "EUR" ? `${Math.round(value).toLocaleString("en")}${symbol}` : `${symbol}${Math.round(value).toLocaleString("en")}`;
   const rows = [
-    [physicalGames.length, unifiedShelfScope ? "Shelf" : "Physical games", "stat-backlog", "shelf-start", addedThisYear(physicalGames)],
-    ...(state.gamelistSettings.shelfDigitalGames === true ? [[digitalGames.length, unifiedShelfScope ? "Drive" : "Digital games", "stat-digital", null, addedThisYear(digitalGames)]] : []),
+    [physicalGames.length, "Physical games", "stat-backlog", "shelf-start", addedThisYear(physicalGames)],
+    ...(state.gamelistSettings.shelfDigitalGames === true ? [[digitalGames.length, "Digital games", "stat-digital", null, addedThisYear(digitalGames)]] : []),
     [new Set((unifiedShelfScope ? ownedGames : physicalGames).map((game) => game.platform)).size, "Platforms", "stat-available"],
     ...(shelfPricesVisible() ? [[valueText, "Estimated physical", "stat-done"]] : []),
   ];
@@ -1814,11 +1814,12 @@ function renderStats() {
     const detail = hasDetail ? `<div class="stat-detail"><span>${escapeHtml(tt("{count} {item} in {year}", { count: yearCount, item, year: currentYear }))}</span><b>${escapeHtml(tt("Total {count}", { count: valueText }))}</b></div>` : "";
     return `<div class="stat ${className}${action ? " stat-action" : ""}"${action ? ` data-stat-action="${escapeHtml(action)}"` : ""}${hasDetail ? " data-stat-detail" : ""}${action || hasDetail ? ' role="button" tabindex="0"' : ""}><strong>${escapeHtml(valueText)}</strong><span>${escapeHtml(tt(label))}</span>${detail}</div>`;
   }).join("");
+  if (unifiedShelfScope && state.unifiedFinishedKpi) el.stats.prepend(state.unifiedFinishedKpi);
 }
 
 function handleStatsAction(event) {
   const stat = event.target.closest("[data-stat-action], [data-stat-detail]");
-  if (!stat) return;
+  if (!stat || unifiedShelfScope && stat.dataset.statAction === "completed") return;
   if (stat.dataset.statAction === "shelf-start") scrollToShelfLibrary();
   else stat.classList.toggle("detail-open");
 }
@@ -1826,7 +1827,7 @@ function handleStatsAction(event) {
 function handleStatsActionKeydown(event) {
   if (event.key !== "Enter" && event.key !== " ") return;
   const stat = event.target.closest("[data-stat-action], [data-stat-detail]");
-  if (!stat) return;
+  if (!stat || unifiedShelfScope && stat.dataset.statAction === "completed") return;
   event.preventDefault();
   if (stat.dataset.statAction === "shelf-start") scrollToShelfLibrary();
   else stat.classList.toggle("detail-open");
@@ -2063,11 +2064,12 @@ function syncShelfTabToSearchResults() {
 }
 
 function normalizedShelfTab(tab) {
+  if (unifiedShelfScope && tab === "drive") return "shelf";
   return ["shelf", "preorders", "wishlist", "new", "drive"].includes(tab) ? tab : "shelf";
 }
 
 function shelfTabs(pendingCount = 0, preorderCount = syncedPreorderGames().length, wishlistCount = syncedWishlistGames().length) {
-  if (unifiedShelfScope) return [pendingCount ? "new" : "", "shelf", ...(state.gamelistSettings.shelfDigitalGames === true ? ["drive"] : [])].filter(Boolean);
+  if (unifiedShelfScope) return [pendingCount ? "new" : "", "shelf"].filter(Boolean);
   const hasDigitalGames = state.games.some((game) => !game.deletedAt && !isPendingCollectionGame(game) && isDigitalShelfGame(game));
   return [pendingCount ? "new" : "", "shelf", state.gamelistSettings.shelfDigitalGames === true && hasDigitalGames ? "drive" : "", state.gamelistSettings.shelfShowPreorders !== false && preorderCount ? "preorders" : "", state.gamelistSettings.shelfSyncWishlist !== false && wishlistCount ? "wishlist" : ""].filter(Boolean);
 }
@@ -2134,10 +2136,10 @@ function filteredGamesForShelfTab(tab) {
     return !game.deletedAt
       && (!unifiedShelfScope || !state.unifiedMedia || state.unifiedMedia === "all" || (state.unifiedMedia === "digital") === isDigitalShelfGame(game))
       && (state.filters.platform === "all" || game.platform === state.filters.platform)
-      && (["drive", "preorders", "wishlist"].includes(normalizedTab) || state.filters.region === "all" || game.country === state.filters.region)
-      && (["drive", "preorders", "wishlist"].includes(normalizedTab) || conditionMatches(game, state.filters.condition))
+      && (["drive", "preorders", "wishlist"].includes(normalizedTab) || unifiedShelfScope && isDigitalShelfGame(game) || state.filters.region === "all" || game.country === state.filters.region)
+      && (["drive", "preorders", "wishlist"].includes(normalizedTab) || unifiedShelfScope && isDigitalShelfGame(game) || conditionMatches(game, state.filters.condition))
       && (state.filters.category === "all" || [...String(game.genre || "").split(","), ...(game.genres || [])].map((value) => value.trim()).includes(state.filters.category))
-      && (normalizedTab === "preorders" ? game.preorderProjection : normalizedTab === "wishlist" ? game.wishlistProjection : normalizedTab === "new" ? isPendingCollectionGame(game) : normalizedTab === "drive" ? !isPendingCollectionGame(game) && isDigitalShelfGame(game) : !isPendingCollectionGame(game) && !isDigitalShelfGame(game))
+      && (normalizedTab === "preorders" ? game.preorderProjection : normalizedTab === "wishlist" ? game.wishlistProjection : normalizedTab === "new" ? isPendingCollectionGame(game) : normalizedTab === "drive" ? !isPendingCollectionGame(game) && isDigitalShelfGame(game) : !isPendingCollectionGame(game) && (!isDigitalShelfGame(game) || unifiedShelfScope && state.gamelistSettings.shelfDigitalGames === true))
       && (!state.filters.query || haystack.includes(state.filters.query));
   }).sort(sorter(state.filters.sort));
 }
@@ -2146,10 +2148,11 @@ function filteredShelfStatsGames(options = {}) {
   return visibleShelfGames().filter((game) => {
     const haystack = normalizeSearchText(`${game.title} ${game.platform} ${game.publisher} ${game.developer} ${game.genre} ${game.notes} ${(game.tags || []).join(" ")} ${(game.owners || []).join(" ")}`);
     return !game.deletedAt
+      && (!unifiedShelfScope || state.gamelistSettings.shelfDigitalGames === true || !isDigitalShelfGame(game))
       && (!unifiedShelfScope || !state.unifiedMedia || state.unifiedMedia === "all" || (state.unifiedMedia === "digital") === isDigitalShelfGame(game))
       && (state.filters.platform === "all" || game.platform === state.filters.platform)
-      && (driveMode || state.filters.region === "all" || game.country === state.filters.region)
-      && (driveMode || conditionMatches(game, state.filters.condition))
+      && (driveMode || unifiedShelfScope && isDigitalShelfGame(game) || state.filters.region === "all" || game.country === state.filters.region)
+      && (driveMode || unifiedShelfScope && isDigitalShelfGame(game) || conditionMatches(game, state.filters.condition))
       && (state.filters.category === "all" || [...String(game.genre || "").split(","), ...(game.genres || [])].map((value) => value.trim()).includes(state.filters.category))
       && (!state.filters.query || haystack.includes(state.filters.query));
   });
@@ -2471,7 +2474,7 @@ function openEditor(game = null, options = {}) {
   Object.entries(el.conditionFields).forEach(([key, input]) => { input.checked = conditionValue(values, key); });
   syncConditionInputs();
   el.addForm.querySelector(".modal-head h2").textContent = tt(game?.pendingCollection ? "Add to Collection" : game ? "Edit game" : digitalMode ? "Add a digital game" : "Add game");
-  el.addForm.querySelectorAll("button[type='submit']").forEach((button) => { button.textContent = game?.pendingCollection ? "Add to Collection" : game ? "Save" : digitalMode ? "Add to Drive" : "Add to Shelf"; });
+  el.addForm.querySelectorAll("button[type='submit']").forEach((button) => { button.textContent = game?.pendingCollection ? "Add to Collection" : game ? "Save" : "Add to Shelf"; });
   syncShelfGamelistTargetPicker();
   syncShelfGamelistTargetMode();
   if (options.section && ["backlog", "upcoming", "wanted"].includes(options.section)) {
@@ -2528,7 +2531,7 @@ function syncShelfDigitalEditorMode(digitalMode) {
   el.lookupInput.placeholder = tt(digitalMode ? "Type a game name or paste an IGDB page" : "Game name or PriceCharting page");
   const game = state.games.find((item) => item.id === state.editingId);
   el.addForm.querySelector(".modal-head h2").textContent = tt(game?.pendingCollection ? "Add to Collection" : game ? "Edit game" : digitalMode ? "Add a digital game" : "Add game");
-  el.addForm.querySelectorAll("button[type='submit']").forEach((button) => { button.textContent = game?.pendingCollection ? "Add to Collection" : game ? "Save" : digitalMode ? "Add to Drive" : "Add to Shelf"; });
+  el.addForm.querySelectorAll("button[type='submit']").forEach((button) => { button.textContent = game?.pendingCollection ? "Add to Collection" : game ? "Save" : "Add to Shelf"; });
   syncShelfEntitlementEditor();
   if (el.gamelistTargetPicker) syncShelfGamelistTargetMode();
 }
@@ -2597,7 +2600,7 @@ function syncShelfGamelistTargetMode() {
     const game = state.games.find((item) => item.id === state.editingId);
     if (title) title.textContent = tt(game?.pendingCollection ? "Add to Collection" : game ? "Edit game" : "Add game to Shelf");
     el.addForm.querySelector(".form-group h3").textContent = tt("Collecting Information");
-    el.addForm.querySelectorAll("button[type='submit']").forEach((button) => { button.textContent = game?.pendingCollection ? tt("Add to Collection") : game ? tt("Save") : el.addForm.dataset.digital === "true" ? tt("Add to Drive") : tt("Add to Shelf"); });
+    el.addForm.querySelectorAll("button[type='submit']").forEach((button) => { button.textContent = game?.pendingCollection ? tt("Add to Collection") : game ? tt("Save") : tt("Add to Shelf"); });
     el.lookupInput.placeholder = tt(el.addForm.dataset.digital === "true" ? "Type a game name or paste an IGDB page" : "Game name or PriceCharting page");
     el.gamelistSection.disabled = false;
   }
@@ -6303,7 +6306,7 @@ function initUnifiedShelf() {
         state.unifiedCollectionFilters = null;
       }
       el.search.value = state.filters.query;
-      state.filters.tab = data.tab || "shelf";
+      state.filters.tab = normalizedShelfTab(data.tab || "shelf");
       state.unifiedMedia = data.media || "all";
       state.viewMode = data.view || "grid";
       if (state.unifiedDefaultOrder !== (data.settings.shelfDefaultOrder || "added")) { state.unifiedDefaultOrder = data.settings.shelfDefaultOrder || "added"; applyShelfDefaultOrder(state.unifiedDefaultOrder); }
@@ -6312,11 +6315,18 @@ function initUnifiedShelf() {
       rebuildGames();
       renderUnifiedShelf();
     },
-    select(tab, media = "all") { state.filters.tab = tab; state.unifiedMedia = media; renderUnifiedShelf(); },
+    select(tab, media = "all") { state.filters.tab = normalizedShelfTab(tab); state.unifiedMedia = media; renderUnifiedShelf(); },
     search: scrollToShelfSearch,
     view(mode) { state.viewMode = mode; renderUnifiedShelf(); },
     pending() { return state.canEdit ? state.games.filter(isPendingCollectionGame) : []; },
+    finishedKpi(node) {
+      if (!node) return;
+      el.stats.querySelector("[data-stat-action='completed']")?.remove();
+      state.unifiedFinishedKpi = node;
+      el.stats.prepend(node);
+    },
     years: shelfStatsYears,
+    translate: tt,
     mediaIcon(mode) { return mode === "physical" ? physicalDiskIcon() : downloadBadgeIcon(); },
     refreshPrices: refreshAllShelfPrices,
     stats(year, dialog, body) {

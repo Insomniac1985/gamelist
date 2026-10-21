@@ -13907,6 +13907,28 @@ html.theme-light .shelf-card-delete-action:hover {
   grid-column: span 2;
 }
 
+/* Collection preferences use the same field spans and controls as Details. */
+#settingsDialog .settings-detail-grid .settings-collection-setting {
+  align-self: start;
+  min-width: 0;
+}
+#settingsDialog .settings-collection-setting :is(.settings-theme-select, .settings-check-field, .platform-logo-select) {
+  min-width: 0;
+  width: 100%;
+  box-sizing: border-box;
+}
+#settingsDialog .settings-collection-setting .settings-visible-check {
+  gap: 8px;
+}
+#settingsDialog .settings-collection-setting .settings-visible-check input {
+  flex-shrink: 0;
+}
+#settingsDialog .settings-collection-setting .settings-visible-check span {
+  min-width: 0;
+  white-space: normal;
+  line-height: 1.25;
+}
+
 .settings-accounts-section .settings-detail-grid {
   grid-template-columns: minmax(0, 1fr);
 }
