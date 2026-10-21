@@ -95,6 +95,8 @@ const STRINGS = {
     "Add a game preorder": "Añadir juego en reserva",
     "Autocomplete game info": "Autocompletar datos del juego",
     "Add to Gamelist": "Añadir a Gamelist",
+    "Add to Gamelist and Shelf": "Añadir a Gamelist y Shelf",
+    "Shelf collection": "Colección de Shelf",
     "Turn on Shelf sync to add to Gamelist.": "Activa la sincronización de Shelf para añadir a Gamelist.",
     "Edit Game": "Editar juego",
     "No description yet.": "Sin descripción todavía.",
