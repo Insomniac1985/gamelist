@@ -20120,9 +20120,10 @@ body:not(.can-edit):not(.shelf-page)
   }
   :is(#releaseDialog, #shelfReleaseDialog) .release-dialog-list .game-card .card-actions {
     order: 0;
-    flex: 0 0 auto;
+    flex: 1 1 0;
     width: auto;
     max-width: none;
+    min-width: 0;
     margin: 0;
     padding-top: 0;
   }
@@ -20171,7 +20172,15 @@ body:not(.can-edit):not(.shelf-page)
     flex: 0 1 auto;
     gap: 6px;
     padding: 0 10px;
+    font-size: 14px;
     white-space: nowrap;
+  }
+  :is(#releaseDialog, #shelfReleaseDialog)
+    .release-dialog-list
+    .game-card
+    .card-actions
+    > .complete-action {
+    padding-inline: 14px;
   }
   :is(#releaseDialog, #shelfReleaseDialog)
     .release-dialog-list
