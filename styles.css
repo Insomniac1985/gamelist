@@ -17266,7 +17266,7 @@ html.theme-light .primary-button.stream-start-action:hover {
     flex-wrap: nowrap;
     align-items: center;
     min-width: 0;
-    min-height: 22px;
+    min-height: 31px;
     margin-top: 1px;
     gap: 4px;
     overflow-x: auto;
@@ -17282,8 +17282,8 @@ html.theme-light .primary-button.stream-start-action:hover {
   .playing-section .game-card.playing-card .meta > * {
     box-sizing: border-box;
     flex: 0 0 auto;
-    height: 22px;
-    min-height: 22px;
+    height: 31px;
+    min-height: 31px;
     white-space: nowrap;
   }
 
@@ -17299,6 +17299,10 @@ html.theme-light .primary-button.stream-start-action:hover {
   .playing-section .game-card.playing-card .meta > .history-date-pill strong {
     font-size: 9px;
     line-height: 1;
+  }
+
+  .playing-section .game-card.playing-card .meta > .history-date-pill strong {
+    font-size: 11px;
   }
 
   .playing-section .game-card.playing-card .play-dates {
@@ -19935,14 +19939,14 @@ body:not(.can-edit):not(.shelf-page)
 
 @media (max-width: 760px) {
   #backlog .card-list:not(.list-view)
-    .game-card:not(.playing-card):not(.has-price-footer)
+    .game-card:not(.playing-card)
     .card-actions:has(> .row-primary-action):not(:has(> .stream-start-action))
     > .row-primary-action {
     box-sizing: border-box;
-    flex: 0 0 104px;
-    width: 104px;
-    min-width: 104px;
-    max-width: 104px;
+    flex: 0 0 102px;
+    width: 102px;
+    min-width: 102px;
+    max-width: 102px;
     height: 42px;
     min-height: 42px;
     max-height: 42px;
