@@ -2694,8 +2694,8 @@ function settingsLayoutItem(key, index, options = {}) {
       <strong>${escapeHtml(title)}</strong>
       <div class="settings-layout-actions">
         ${fixed ? `<span class="settings-fixed-label">Fixed</span>` : `
-          <button class="ghost-button settings-layout-move" type="button" data-layout-key="${escapeHtml(key)}" data-layout-move="-1" ${index === 0 ? "disabled" : ""} title="Move up" aria-label="Move ${escapeHtml(title)} up">Up</button>
-          <button class="ghost-button settings-layout-move" type="button" data-layout-key="${escapeHtml(key)}" data-layout-move="1" ${index === state.settings.pageOrder.length - 1 ? "disabled" : ""} title="Move down" aria-label="Move ${escapeHtml(title)} down">Down</button>
+          <button class="icon-button settings-layout-move" type="button" data-layout-key="${escapeHtml(key)}" data-layout-move="-1" ${index === 0 ? "disabled" : ""} title="Move up" aria-label="Move ${escapeHtml(title)} up"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 19V5m-7 7 7-7 7 7"/></svg></button>
+          <button class="icon-button settings-layout-move" type="button" data-layout-key="${escapeHtml(key)}" data-layout-move="1" ${index === state.settings.pageOrder.length - 1 ? "disabled" : ""} title="Move down" aria-label="Move ${escapeHtml(title)} down"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14m7-7-7 7-7-7"/></svg></button>
         `}
         <label class="check-filter toggle-check settings-visible-check settings-layout-visibility" title="${visible ? "Hide" : "Show"} ${escapeHtml(title)}">
           <input type="checkbox" value="${escapeHtml(key)}" data-layout-hidden aria-label="${visible ? "Hide" : "Show"} ${escapeHtml(title)}" ${visible ? "checked" : ""}>
