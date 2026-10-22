@@ -3454,7 +3454,9 @@ function renderPlayingSection() {
   renderCompletedStreamToggle();
   el.playingList.innerHTML = "";
   games.forEach((game) => el.playingList.appendChild(cardFor(game, { staticCard: true, imagePriority: "eager" })));
-  const twitchCard = mountTwitchPreview(el.playingList, state.settings.twitchUser, games.some((game) => game.stream));
+  const twitchCard = state.canEdit
+    ? mountTwitchPreview(el.playingList, state.settings.twitchUser, games.some((game) => game.stream))
+    : null;
   el.playingSection.classList.toggle("playing-single", games.length + Number(Boolean(twitchCard)) === 1);
   preloadPausedActivityTrailers(el.playingList, escapeHtml);
   bindPlayingTrailerFocus();
@@ -3517,6 +3519,7 @@ function streamFilterModeMatches(game, mode = "all") {
 }
 
 function cycleCompletedStreamMode() {
+  if (!state.canEdit) return;
   const mode = normalizeStreamFilterMode(state.completedStreamMode);
   state.completedStreamMode = mode === "all" ? "stream" : mode === "stream" ? "nonstream" : "all";
   state.completedVisiblePages = 1;
@@ -3547,6 +3550,7 @@ function hasStreamGameInLog() {
 
 function renderStreamFilterToggle(button, { hidden = false } = {}) {
   if (!button) return;
+  hidden ||= !state.canEdit;
   const mode = normalizeStreamFilterMode(state.completedStreamMode);
   button.hidden = hidden;
   button.classList.toggle("active", mode !== "all");
@@ -7401,7 +7405,7 @@ function rowPrimaryAction(game, section) {
 }
 
 function backlogStreamAction(game) {
-  if (!cleanTwitchUser(state.settings.twitchUser) || game.playing || game.completedAt) return "";
+  if (!state.canEdit || !cleanTwitchUser(state.settings.twitchUser) || game.playing || game.completedAt) return "";
   return `<button class="primary-button stream-start-action" type="button" title="${escapeHtml(tt("Stream"))}" aria-label="${escapeHtml(tt("Stream"))}">${playIcon()}<span>${escapeHtml(tt("Stream"))}</span></button>`;
 }
 
@@ -12466,6 +12470,7 @@ function returnPlayingToBacklog(id) {
 }
 
 function startPlaying(id, { stream = false } = {}) {
+  if (!state.canEdit) return;
   const game = getGame(id);
   if (!game || game.completedAt) return;
   if (isShelfNewAddition(game)) game.acceptedFromShelfAt = new Date().toISOString();
