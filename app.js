@@ -13670,8 +13670,8 @@ function collectionSettingsMarkup() {
         <select data-default-list>${lists.map(([value, label]) => `<option value="${value}" ${state.settings.defaultList === value ? "selected" : ""}>${escapeHtml(tt(label))}</option>`).join("")}</select>
       </label>
     </article>
-    ${toggle("data-track-digital", "Track Digital Games", state.settings.shelfDigitalGames)}
-    ${toggle("data-collection-prices", "Show Prices", !state.settings.shelfHidePrices)}
+    ${toggle("data-track-digital", "Shelf Digital: Enable", state.settings.shelfDigitalGames)}
+    ${toggle("data-collection-prices", "Shelf Prices: Enable", !state.settings.shelfHidePrices)}
   `;
 }
 
