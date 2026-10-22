@@ -24608,14 +24608,6 @@ textarea {
   margin: 0 0 12px;
 }
 
-/* Highlight the logged-out Add Game action with the active theme color. */
-body:not(.can-edit) #loginButton,
-body:not(.can-edit) #mobileDockEdit {
-  color: var(--accent);
-  border-color: color-mix(in srgb, var(--accent) 58%, transparent);
-  background: color-mix(in srgb, var(--accent) 14%, var(--panel));
-}
-
 /* Keep tablet release calendars to two or three months total. */
 @media (min-width: 700px) and (max-width: 899px) {
   .release-months {
