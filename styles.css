@@ -8545,7 +8545,7 @@ body:not(.can-edit) .history-edit-action,
 body:not(.can-edit) #syncButton,
 body:not(.can-edit) #settingsButton,
 body:not(.can-edit) #fetchPricesButton {
-  display: none;
+  display: none !important;
 }
 
 body:not(.shelf-page):not(.can-edit)
