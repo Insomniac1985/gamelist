@@ -8,14 +8,18 @@ import { activityAllowsPsnCardTrophies, activityCoverOverride, activityTitleMatc
 const [appSource, shelfSource, shelfCss, shelfHtml, sharedCss, appHtml, collectionPriceSource, themeSource, swSource] = await Promise.all([
   readFile(new URL("../app.js", import.meta.url), "utf8"),
   readFile(new URL("../collection-ui.js", import.meta.url), "utf8"),
-  readFile(new URL("../shelf.css", import.meta.url), "utf8"),
+  readFile(new URL("../styles.css", import.meta.url), "utf8").then(css => css.split("/* Collection styles (formerly shelf.css). */")[1]),
   readFile(new URL("../collection-ui.html", import.meta.url), "utf8"),
-  readFile(new URL("../styles.css", import.meta.url), "utf8"),
+  readFile(new URL("../styles.css", import.meta.url), "utf8").then(css => css.split("/* Collection styles (formerly shelf.css). */")[0]),
   readFile(new URL("../index.html", import.meta.url), "utf8"),
   readFile(new URL("../functions/api/collection-price.js", import.meta.url), "utf8"),
   readFile(new URL("../theme-system.js", import.meta.url), "utf8"),
   readFile(new URL("../service-worker.js", import.meta.url), "utf8"),
 ]);
+assert.equal(typeof shelfCss, "string", "Collection rules must be included in styles.css");
+assert.doesNotMatch(shelfHtml, /id="(?:layoutDialog|shelfSettingsUnsavedDialog)"/, "Collection must use the main settings dialog");
+assert.doesNotMatch(appHtml + shelfHtml, /id="mobileDockSwitch"/, "Retired page-switch controls must not be rendered");
+assert.doesNotMatch(appSource + shelfSource, /function initPagePullTransition|PULL_NAVIGATION_KEY/, "Retired page-switch handlers must not be loaded");
 for (const source of [appSource, shelfSource]) {
   assert.match(source, /from "\.\/activity-ui\.js"/);
   for (const sharedBehavior of ["createGameCardShell", "bindActivityCardParallax", "finishedGameMarkup", "achievementCardMarkup", "achievementDashboardMarkup", "completedCardMarkup", "comparePlayingGames", "finishedDurationText", "activityTrailerUrl", "activityReleaseStatus"]) {
@@ -76,14 +80,12 @@ assert.match(sharedCss, /\.trophy-subtitle\s*\{[\s\S]*?font-size:\s*11px;/, "Lat
 assert.match(sharedCss, /\.platinum-title\s*\{[\s\S]*?font-family:\s*inherit;/, "Completed popup titles must use the normal UI font");
 assert.match(appSource, /card-trophy trophy-steam/, "Main Steam card achievements must use the neutral Steam tone");
 assert.match(shelfSource, /tone \|\| trophyTone/, "Shelf Steam card achievements must use the neutral Steam tone");
-assert.match(shelfHtml, /<dialog id="layoutDialog" class="settings-dialog">\s*<form class="settings-modal glass"/, "Shelf settings must use Main's centered settings overlay and modal classes");
-assert.doesNotMatch(shelfHtml, /id="layoutDialog" class="shelf-dialog"/, "Shelf settings must not use the taller, heavier Shelf overlay");
+
 assert.doesNotMatch(shelfHtml, /id="syncButton"/, "Shelf must not show the manual refresh button");
 assert.match(shelfHtml, /id="fetchPricesButton"/, "Shelf must keep the Fetch New Prices button");
 assert.match(shelfHtml, /<html lang="en" class="theme-booting">[\s\S]*?window\.__initialThemeReady/, "Shelf must resolve the saved shared theme before first paint");
 assert.match(shelfSource, /await window\.__initialThemeReady\?\.catch/, "Shelf must wait for the initial theme before rendering");
-assert.doesNotMatch(shelfSource, /const FIXED_LAYOUT/, "Shelf settings must allow Currently Playing and Last Finished to move");
-assert.match(shelfSource, /const DEFAULT_LAYOUT = \["playing", "latestFinished", "favorites", "trophies", "calendar", "kpis", "filters", "library"\]/, "Shelf settings must include playing, favorites, and calendar sections in the movable layout");
+
 assert.match(appSource, /mountReleaseCalendar\(el\.releaseCalendar/, "Main must render the release calendar through the shared module");
 assert.match(shelfSource, /mountReleaseCalendar\(el\.releaseCalendar/, "Shelf must render the release calendar through the shared module");
 assert.match(appSource + shelfSource, /mountReleaseCalendar[\s\S]*?releaseCalendarOffset/, "Calendar navigation must keep page-specific offsets while sharing renderer code");
@@ -96,15 +98,14 @@ assert.match(shelfSource, /closest\("\[data-module='latestFinished'\]"\)\.hidden
 assert.doesNotMatch(shelfHtml, /<option value="custom">Custom<\/option>/, "Shelf must not offer the Custom order filter");
 const shelfLibraryOrder = shelfHtml.match(/<select id="sortFilter">([\s\S]*?)<\/select>/)?.[1] || "";
 assert.doesNotMatch(shelfLibraryOrder, /value="time"/, "Shelf must not offer Time as a library order filter");
-for (const [value, label] of [["added", "Last added"], ["title", "Name"], ["platform", "Platform"], ["region", "Region"], ["value", "Value"]]) assert.match(shelfSource, new RegExp(`value: "${value}", label: "${label}"`), `Shelf settings must offer ${label} as a default order`);
+
 assert.match(shelfSource, /shelfDefaultOrder: el\.settingsDefaultOrder\.value/, "Shelf must persist its default independently from Main's order preference");
-for (const source of [appSource, shelfSource]) assert.match(source, /Sync games with Shelf/, "Main and Shelf settings must expose the shared sync setting");
+
 assert.match(appSource, /shelfSync: settings\.shelfSync !== false/, "Main must normalize Shelf Sync as enabled by default");
-assert.match(shelfSource, /shelfSync: document\.querySelector\("#shelfSettingsSync"\)\?\.checked !== false/, "Shelf must persist the shared Shelf Sync setting");
-assert.match(shelfSource, /shelfHidePrices: document\.querySelector\("#shelfSettingsShowPrices"\)\?\.checked === false/, "Shelf must persist the Show prices setting without changing price data");
+
 assert.match(shelfSource, /function shelfPricesVisible\(\)[\s\S]*?shelfHidePrices !== true/, "Shelf price visibility must be a display-only setting");
 assert.match(shelfHtml, /id="playstationUrlInput"[\s\S]*?id="nintendoUrlInput"[\s\S]*?id="steamUrlInput"[\s\S]*?id="xboxUrlInput"[\s\S]*?id="hltbUrlInput"/, "Shelf editor must use fixed website link slots");
-assert.match(shelfSource, /kpis: "Highlights", filters: "Search"/, "Shelf settings must use shorter Highlights and Search labels");
+
 assert.doesNotMatch(appSource, /stat\("New additions"/, "Main must not show a New additions KPI");
 assert.match(appSource, /function mobileSectionCounts\(\)/, "Main mobile tabs must show section counts");
 assert.match(appSource, /el\.board\.style\.setProperty\("--mobile-section-index", String\(index\)\)[\s\S]*?column\.classList\.toggle\("is-mobile-pane", columnIndex >= 0\)/, "Main mobile board must track New additions as a selectable mobile pane");
@@ -149,7 +150,7 @@ assert.match(shelfCss, /@media \(max-width: 760px\)[\s\S]*?\.shelf-grid \.game-c
 assert.match(shelfCss, /\.shelf-grid\.list-view \.game-row-actions-top\s*\{[\s\S]*?justify-content:\s*flex-end;[\s\S]*?\.shelf-grid\.list-view \.game-row-actions-bottom\s*\{[\s\S]*?display:\s*grid;/, "Shelf mobile list rows must place edit/delete on top and Add to Backlog below");
 assert.match(shelfCss, /@media \(max-width: 760px\)[\s\S]*?\.shelf-dialog \.detail-cover#detailCoverWrap\s*\{[\s\S]*?height:\s*var\(--shelf-cover-height, 520px\);/, "Shelf mobile detail cover must keep the exact measured frame without extra bottom space");
 assert.match(appSource, /<div class="settings-check-field">[\s\S]*?data-shelf-sync/, "Main Shelf Sync check must sit inside a field wrapper");
-assert.match(shelfSource, /<div class="settings-check-field">[\s\S]*?id="shelfSettingsSync"[\s\S]*?<div class="settings-check-field">[\s\S]*?id="shelfSettingsShowPrices"/, "Shelf Sync and Prices checks must sit inside field wrappers");
+
 assert.match(sharedCss, /\.settings-sync-card \.settings-visible-check\s*\{[\s\S]*?background-color: rgba\(255, 255, 255, 0\.07\);[\s\S]*?border: 1px solid rgba\(255, 255, 255, 0\.14\);/, "Shelf Sync and Prices checks must sit in dropdown-like controls");
 assert.match(sharedCss, /\.settings-sync-card \.settings-visible-check span\s*\{[\s\S]*?font-size:\s*11px;[\s\S]*?text-transform:\s*uppercase;/, "Shelf Sync and Prices check text must be sized like preference controls");
 assert.match(sharedCss, /\.settings-theme-card,[\s\S]*?--settings-control-height:\s*42px;[\s\S]*?\.settings-sync-card \.settings-visible-check\s*\{[\s\S]*?min-height:\s*var\(--settings-control-height\);[\s\S]*?\.settings-theme-select select\s*\{[\s\S]*?min-height:\s*var\(--settings-control-height, 42px\);/, "Settings check controls must match Theme and Default order dropdown height");
@@ -168,27 +169,11 @@ for (const source of [appSource, shelfSource]) assert.match(source, /showToast\(
 assert.match(shelfSource, /const collectionGames = visibleGames\.filter\(\(game\) => !isPendingCollectionGame\(game\)\)[\s\S]*?collectionGames\.reduce\(\(sum, game\) => sum \+ \(collectionValueFor\(game\) \|\| 0\), 0\)[\s\S]*?\[collectionGames\.length, "Physical games"/, "Shelf collection KPIs must exclude New additions until they are added to the collection");
 assert.match(shelfSource, /if \(type === "value"\) return \(a, b\) => direction \* \(collectionValueFor\(a\) - collectionValueFor\(b\)\)/, "Shelf value sorting must use the latest fetched condition value");
 for (const html of [appHtml, shelfHtml]) assert.doesNotMatch(html, /<nav class="nav-tabs"/, "Main and Shelf must not show the temporary cross-site navbar");
-for (const source of [appSource, shelfSource]) assert.match(source, /initPagePullTransition\(\{ targetLabel: "[^"]+", targetUrl: "[^"]+" \}\)/, "Main and Shelf must initialize the pull-down page transition");
+
 assert.match(sharedCss, /\*[\s\S]*?-webkit-tap-highlight-color:\s*transparent;[\s\S]*?@media \(hover: none\), \(pointer: coarse\)[\s\S]*?-webkit-touch-callout:\s*none;[\s\S]*?user-select:\s*none;/, "Mobile taps and drags must suppress default blue highlight and callouts");
-assert.match(sharedCss, /\.page-pull-switch[\s\S]*?transform:\s*translateX\(-50%\) translateY\(var\(--pull-handle-y, 0px\)\);[\s\S]*?touch-action:\s*none;/, "Pull switch handle must physically move with the pull gesture");
-assert.match(sharedCss, /\.page-pull-switch\.is-dragging\s*\{[\s\S]*?transition:\s*none;[\s\S]*?\.page-pull-switch::before[\s\S]*?height:\s*35px;[\s\S]*?background:\s*var\(--accent\);[\s\S]*?transform:\s*translateX\(-50%\) scaleX\(0\.42\) scaleY\(0\.17\);[\s\S]*?\.page-pull-switch span[\s\S]*?font-size:\s*13px;[\s\S]*?\.page-pull-switch:hover::before[\s\S]*?background:\s*var\(--accent\);[\s\S]*?transform:\s*translateX\(-50%\) scaleX\(1\) scaleY\(1\);/, "Pull switch must use a pure accent ultra-thin collapsed/35px expanded handle and smooth direct dragging");
-assert.match(sharedCss, /\.page-pull-curtain[\s\S]*?transform:\s*translateY\(calc\(-102% \+ var\(--pull-distance, 0px\)\)\);[\s\S]*?\.page-pull-preview[\s\S]*?width:\s*100vw;[\s\S]*?filter:\s*blur\(var\(--pull-blur, 10px\)\);[\s\S]*?\.page-pull-frame[\s\S]*?height:\s*100vh;[\s\S]*?pointer-events:\s*none;[\s\S]*?body\.page-switching \.page-pull-curtain[\s\S]*?transform:\s*translateY\(0\);/, "Pull-down page transition must use a full-viewport real blurred destination preview");
-for (const source of [appSource, shelfSource]) assert.match(source, /window\.innerHeight \* 0\.75[\s\S]*?--pull-handle-y[\s\S]*?--pull-blur[\s\S]*?\(1 - progress\) \* 10[\s\S]*?pull > window\.innerHeight \* 0\.75/, "Pull-down page transition must move the handle with the page and keep blur until three quarters of the viewport");
-for (const source of [appSource, shelfSource]) {
-  assert.match(source, /PULL_NAVIGATION_KEY[\s\S]*?sessionStorage\.setItem\(PULL_NAVIGATION_KEY[\s\S]*?localStorage\.setItem\(VERSION_STORAGE_KEY, siteVersion\.version\)[\s\S]*?pullNavigationUrl\(targetUrl\)/, "Pull-switch navigation must mark the transition and current version before leaving");
-  assert.match(source, /function pullNavigationUrl\(targetUrl\)[\s\S]*?searchParams\.set\("pull", "1"\)[\s\S]*?searchParams\.set\("v", siteVersion\.version\)/, "Pull-switch navigation must cache-bust the destination URL");
-  assert.match(source, /function consumeRecentPullNavigation\(\)[\s\S]*?searchParams\.get\("pull"\) === "1"[\s\S]*?history\.replaceState[\s\S]*?sessionStorage\.removeItem\(PULL_NAVIGATION_KEY\)/, "Pull-switch navigation must consume its transition marker and clean the landing URL");
-  assert.match(source, /const fromPullNavigation = consumeRecentPullNavigation\(\)[\s\S]*?if \(fromPullNavigation\) \{[\s\S]*?clearSiteCaches\(\)\.catch/, "Pull-switch navigation must avoid an immediate version reload on landing");
-}
-for (const html of [appHtml, shelfHtml]) {
-  assert.match(html, /html\.theme-booting:not\(\.from-pull-navigation\) body\{visibility:hidden\}/, "Pull-switch landings must not hide the destination during theme boot");
-  assert.match(html, /URLSearchParams\(location\.search\)\.get\("pull"\) === "1"[\s\S]*?from-pull-navigation/, "Pull-switch landings must mark the initial document before first paint");
-}
-assert.match(sharedCss, /@media \(max-width: 760px\)[\s\S]*?\.page-pull-switch\s*\{[\s\S]*?width:\s*min\(340px, calc\(100vw - 20px\)\);[\s\S]*?height:\s*25px;/, "Mobile pull handle must keep a compact grab target that avoids navbar buttons");
+
 for (const source of [appSource, shelfSource]) assert.match(source, /function formatShortDate\(value\)[\s\S]*?formatPillDate[\s\S]*?function formatLongDate\(value\)[\s\S]*?formatPillDate[\s\S]*?month:\s*"short",\s*day:\s*"2-digit",\s*year:\s*"numeric"/, "Main and Shelf date pills must render as Mon DD, YYYY");
-for (const source of [appSource, shelfSource]) assert.doesNotMatch(source, /page-pull-preview-title/, "Pull-down destination preview must not show large text");
-for (const source of [appSource, shelfSource]) assert.match(source, /pagePullPreviewMarkup\(targetUrl\)[\s\S]*?<iframe class="page-pull-frame" src="\$\{escapeHtml\(targetUrl\)\}"/, "Pull-down destination preview must use the real opposite page in an iframe");
-assert.match(sharedCss, /@media \(max-width: 760px\)[\s\S]*?\.topbar\s*\{[\s\S]*?padding:\s*28px 14px 12px;[\s\S]*?body\.page-pull-hover \.topbar,[\s\S]*?body\.page-pulling \.topbar\s*\{[\s\S]*?transform:\s*translateY\(16px\);/, "Mobile topbar must leave room for the pull-down handle and move down when its label is showing");
+
 assert.match(shelfSource, /state\.viewMode === "list"[\s\S]*?games\.map\(gameRow\)/, "Shelf list mode must render Main-style compact rows");
 assert.match(shelfSource, /syncViewModeButton\(el\.view, state\.viewMode/, "Shelf view control must show the current mode");
 assert.match(shelfCss, /\.shelf-page \.stats\s*\{[\s\S]*?display:\s*grid;[\s\S]*?grid-template-columns:\s*repeat\(2,\s*minmax\(0,\s*1fr\)\);[\s\S]*?\.shelf-page \.stats \.stat-done\s*\{\s*grid-column:\s*1 \/ -1;/, "Shelf mobile KPIs must show physical games and platforms on one row with value underneath");

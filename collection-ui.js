@@ -1,15 +1,11 @@
 import { embeddedGameEditor, connectEmbeddedGameEditor } from "./shared-add-game.js";
 import { normalizeSearchText, bindModalTouchGuard, createGameCardShell, bindActivityCardParallax, mountActivitySlider, mountTwitchPreview, mountReleaseCalendar, finishedGameMarkup, achievementCardMarkup, achievementDashboardMarkup, achievementPanelMarkup, completedCardMarkup, horizontalCarouselState, syncViewModeButton, slideHorizontalCarousel, comparePlayingGames, timeBadgeMarkup, guideLinksMarkup, storeButtonsMarkup, activityTrailerUrl, preloadPausedActivityTrailers, syncFocusedActivityTrailer, activityReleaseStatus, activityCoverOverride, activityLocalGameForTitle, activityTitleMatchScore, activityAllowsPsnCardTrophies, formatFooterDate, formatFooterDateTime, formatFooterShortDate, confirmGameDelete } from "./activity-ui.js";
-import { applySiteTheme, normalizeThemeSettings, ownerCardColorClass, ownerColorClass, themeSettingsContent, bindThemeSettingsContent, readThemeSettingsContent } from "./theme-system.js";
-import { applyDocumentTranslations, languageOptions, normalizeLanguage, t } from "./i18n.js";
-import { initShelfAccounts } from "./shelf-accounts.js";
-import { accountSettingsMarkup } from "./account-settings-ui.js";
+import { applySiteTheme, normalizeThemeSettings, ownerCardColorClass, ownerColorClass } from "./theme-system.js";
+import { applyDocumentTranslations, normalizeLanguage, t } from "./i18n.js";
 import { isPlayasiaStore, syncGameListControls, syncGameListSlider, syncCollectionCondition, syncStoreFieldIcon, SHELF_COUNTRIES, preventImplicitGameSubmit } from "./game-editor-controls.js";
 
 const unifiedShelfScope = window.__unifiedShelfScope;
 const document = unifiedShelfScope?.document || window.document;
-
-document.querySelector("#shelfAccountsMount").innerHTML = accountSettingsMarkup();
 
 mountActivitySlider(document.querySelector("[data-module='playing']"), { title: "shelfPlayingTitle", count: "shelfPlayingCount", previous: "shelfPlayingPrev", next: "shelfPlayingNext", list: "playingCarousel", finished: "shelfPlayingFinished", finishedList: "finishedCarousel" });
 splitShelfPlayingModules();
@@ -18,7 +14,7 @@ const SESSION_KEY = "gamelist-editor";
 const VERSION_STORAGE_KEY = "gamelist:site-version";
 const UPDATES_NOTIFICATION_STORAGE_KEY = "gamelist:updates-notification-version";
 const CACHE_HOUR_STORAGE_KEY = "gamelist:cache-hour";
-const PULL_NAVIGATION_KEY = "gamelist:pull-navigation";
+
 const VIEW_KEY = "gamelist:view-mode";
 const LEGACY_VIEW_KEY = "shelf:view-mode:v2";
 const LAYOUT_KEY = "shelf:layout:v2";
@@ -42,7 +38,7 @@ const siteVersion = { version: "", updatedAt: "", notificationVersion: 0 };
 let updatesPopupLoadPromise = null;
 let shelfStatsHoverCleanup = null;
 let shelfStatsMobileCleanup = null;
-const MODULE_NAMES = { playing: "Currently playing", latestFinished: "Last finished", favorites: "Showcase", trophies: "Achievements", calendar: "Calendar", kpis: "Highlights", filters: "Search", library: "Shelf" };
+
 const PLATFORM_OPTIONS = [
   "Steam",
   "Game Gear", "Gen", "DC",
@@ -189,7 +185,7 @@ const el = {
   footerCreditText: document.querySelector("#footerCreditText"),
   scrollTop: document.querySelector("#scrollTopButton"),
   floatingActions: document.querySelector("#floatingEditActions"), floatingAdd: document.querySelector("#floatingAddButton"), floatingSearch: document.querySelector("#floatingSearchButton"),
-  mobileActionDock: document.querySelector("#mobileActionDock"), mobileDockUp: document.querySelector("#mobileDockUp"), mobileDockAdd: document.querySelector("#mobileDockAdd"), mobileDockSearch: document.querySelector("#mobileDockSearch"), mobileDockSettings: document.querySelector("#mobileDockSettings"), mobileDockStats: document.querySelector("#mobileDockStats"), mobileDockSwitch: document.querySelector("#mobileDockSwitch"),
+  mobileActionDock: document.querySelector("#mobileActionDock"), mobileDockUp: document.querySelector("#mobileDockUp"), mobileDockAdd: document.querySelector("#mobileDockAdd"), mobileDockSearch: document.querySelector("#mobileDockSearch"), mobileDockSettings: document.querySelector("#mobileDockSettings"), mobileDockStats: document.querySelector("#mobileDockStats"),
   detailDialog: document.querySelector("#detailDialog"),
   detailClose: document.querySelector("#detailClose"),
   detailTitle: document.querySelector("#detailTitle"),
@@ -247,24 +243,9 @@ const el = {
     genre: document.querySelector("#genreInput"), cover: document.querySelector("#coverInput"), notes: document.querySelector("#notesInput"), description: document.querySelector("#shelfDescriptionInput"), igdbUrl: document.querySelector("#igdbUrlInput"),
   },
   conditionFields: { game: document.querySelector("#conditionGameInput"), manual: document.querySelector("#conditionManualInput"), box: document.querySelector("#conditionBoxInput"), other: document.querySelector("#conditionOtherInput"), sealed: document.querySelector("#conditionSealedInput") },
-  layoutDialog: document.querySelector("#layoutDialog"),
-  layoutForm: document.querySelector("#layoutForm"),
-  layoutClose: document.querySelector("#layoutClose"),
-  layoutList: document.querySelector("#layoutList"),
-  layoutDialogEyebrow: document.querySelector("#layoutDialogEyebrow"),
-  layoutDialogTitle: document.querySelector("#layoutDialogTitle"),
-  layoutDialogBackTitle: document.querySelector("#layoutDialogBackTitle"),
-  layoutDialogSectionTitle: document.querySelector("#layoutDialogSectionTitle"),
-  settingsHome: document.querySelector("#shelfSettingsHome"),
-  settingsThemeEditor: document.querySelector("#shelfSettingsThemeEditor"),
-  settingsDevHome: document.querySelector("#shelfSettingsDevHome"),
+
   platformOptions: document.querySelector("#shelfPlatformOptions"),
-  settingsDefaultOrder: document.querySelector("#shelfSettingsDefaultOrder"),
-  settingsCurrency: document.querySelector("#shelfSettingsCurrency"), settingsRegion: document.querySelector("#shelfSettingsRegion"),
-  settingsLanguage: document.querySelector("#shelfSettingsLanguage"),
-  settingsStores: document.querySelector("#shelfSettingsStores"),
-  settingsTwitchUser: document.querySelector("#settingsTwitchUser"), settingsDefaultOwner: document.querySelector("#shelfSettingsDefaultOwner"),
-  settingsDevFeatures: document.querySelector("#shelfSettingsDevFeatures"),
+
   showcaseDialog: document.querySelector("#showcaseDialog"), showcaseForm: document.querySelector("#showcaseForm"), showcaseClose: document.querySelector("#showcaseClose"),
   showcaseSelected: document.querySelector("#showcaseSelected"), showcaseSearch: document.querySelector("#showcaseSearch"), showcasePlatform: document.querySelector("#showcasePlatform"), showcaseRegion: document.querySelector("#showcaseRegion"), showcaseCategory: document.querySelector("#showcaseCategory"), showcaseDirection: document.querySelector("#showcaseSortDirection"), showcaseCount: document.querySelector("#showcaseCount"), showcaseList: document.querySelector("#showcaseList"),
   completedDialog: document.querySelector("#shelfCompletedDialog"), completedClose: document.querySelector("#shelfCompletedClose"), completedTitle: document.querySelector("#shelfCompletedTitle"), completedCount: document.querySelector("#shelfCompletedCount"), completedYear: document.querySelector("#shelfCompletedYear"), completedPlatform: document.querySelector("#shelfCompletedPlatform"), completedSort: document.querySelector("#shelfCompletedSort"), completedDirection: document.querySelector("#shelfCompletedDirection"), completedView: document.querySelector("#shelfCompletedView"), completedList: document.querySelector("#shelfCompletedList"),
@@ -278,10 +259,6 @@ const el = {
 let selectOverflowPopover = null;
 let selectMeasureContext = null;
 let platformLogoOverlay = null;
-let shelfSettingsDirty = false;
-let shelfSettingsExitDestination = "";
-let shelfSettingsSnapshot = null;
-let shelfSettingsLogoutRequested = false;
 
 init();
 
@@ -438,12 +415,7 @@ function bindEvents() {
     if (!el.mobileActionDock?.contains(event.target)) el.mobileDockSearch?.classList.remove("is-active");
   });
   el.mobileDockSettings?.addEventListener("click", openLayout);
-  el.mobileDockSwitch?.addEventListener("click", () => {
-    if (pageSwitchHidden()) return;
-    const transitionButton = document.querySelector(".page-pull-switch");
-    if (transitionButton) transitionButton.click();
-    else window.location.href = pullNavigationUrl("./");
-  });
+
   el.layoutButton.addEventListener("click", openLayout);
   el.showcaseEdit.addEventListener("click", openShowcaseEditor);
   el.syncButton?.addEventListener("click", syncShelfNow);
@@ -592,49 +564,6 @@ function bindEvents() {
   Object.values(el.conditionFields).forEach((input) => input.addEventListener("change", () => syncConditionInputs(input)));
   document.addEventListener("error", handleCoverImageError, true);
 
-  el.layoutClose.addEventListener("click", () => requestShelfSettingsExit("close"));
-  el.layoutDialog.addEventListener("click", (event) => {
-    if (event.target === el.layoutDialog) { event.preventDefault(); requestShelfSettingsExit("close"); return; }
-    const category = event.target.closest("[data-shelf-settings-panel]");
-    if (category) openShelfSettingsPanel(category.dataset.shelfSettingsPanel, category.querySelector(".settings-category-text strong")?.textContent.trim() || "Settings");
-    if (event.target.closest("[data-shelf-settings-back]")) requestShelfSettingsExit("back");
-  });
-  el.layoutDialog.addEventListener("cancel", (event) => { event.preventDefault(); requestShelfSettingsExit("close"); });
-  el.layoutDialog.addEventListener("close", () => {
-    if (el.mobileDockSettings) {
-      el.mobileDockSettings.disabled = false;
-      el.mobileDockSettings.classList.remove("is-active");
-      el.mobileDockSettings.setAttribute("aria-pressed", "false");
-    }
-  });
-  el.layoutForm.addEventListener("submit", saveLayout);
-  document.querySelector("#shelfSettingsLogoutButton")?.addEventListener("click", () => {
-    if (shelfSettingsDirty) {
-      shelfSettingsLogoutRequested = true;
-      requestShelfSettingsExit("close");
-      return;
-    }
-    closeDialog(el.layoutDialog);
-    toggleEditMode();
-  });
-  el.layoutForm.addEventListener("input", () => { shelfSettingsDirty = true; });
-  el.layoutForm.addEventListener("change", () => { shelfSettingsDirty = true; });
-  el.layoutForm.addEventListener("click", (event) => { if (event.target.closest("[data-layout-move], [data-owner-add], [data-owner-remove], [data-glow-option]")) shelfSettingsDirty = true; });
-  document.querySelector("#shelfSettingsUnsavedDialog [data-shelf-unsaved-cancel]")?.addEventListener("click", () => { document.querySelector("#shelfSettingsUnsavedDialog").close(); shelfSettingsExitDestination = ""; shelfSettingsLogoutRequested = false; });
-  document.querySelector("#shelfSettingsUnsavedDialog [data-shelf-unsaved-save]")?.addEventListener("click", async () => {
-    const destination = shelfSettingsExitDestination;
-    document.querySelector("#shelfSettingsUnsavedDialog").close();
-    shelfSettingsExitDestination = "";
-    await saveLayout({ preventDefault() {} }, { close: destination === "close" });
-  });
-  document.querySelector("#shelfSettingsUnsavedDialog [data-shelf-unsaved-discard]")?.addEventListener("click", () => {
-    const destination = shelfSettingsExitDestination;
-    document.querySelector("#shelfSettingsUnsavedDialog").close();
-    shelfSettingsExitDestination = "";
-    discardShelfSettingsChanges(destination);
-  });
-  document.querySelector("#shelfSettingsUnsavedDialog")?.addEventListener("cancel", () => { shelfSettingsExitDestination = ""; shelfSettingsLogoutRequested = false; });
-  el.layoutList.addEventListener("click", handleLayoutMove);
   el.showcaseClose.addEventListener("click", () => closeDialog(el.showcaseDialog));
   el.showcaseDialog.addEventListener("click", (event) => { if (event.target === el.showcaseDialog) closeDialog(el.showcaseDialog); });
   el.showcaseForm.addEventListener("submit", saveShowcase);
@@ -1267,7 +1196,7 @@ function renderChrome() {
   el.layoutButton.hidden = !state.canEdit;
   if (el.mobileDockSettings) el.mobileDockSettings.hidden = !state.canEdit;
   setSettingsAuthLoading(false);
-  if (el.mobileDockSwitch) el.mobileDockSwitch.hidden = pageSwitchHidden();
+
   if (el.syncButton) el.syncButton.hidden = true;
   const showPriceActions = state.canEdit && shelfPricesVisible();
   el.fetchPricesButton.hidden = !showPriceActions;
@@ -1357,214 +1286,6 @@ function applyLanguage() {
   if (el.playingTitle) el.playingTitle.textContent = tt("Currently playing");
   const latestFinishedTitle = el.playingFinished?.querySelector(".achievement-subtitle");
   if (latestFinishedTitle) latestFinishedTitle.textContent = tt("Last finished games");
-}
-
-function initPagePullTransition({ targetLabel, targetUrl }) {
-  if (pageSwitchHidden()) {
-    removePagePullTransition();
-    return;
-  }
-  const localizedTargetLabel = tt(targetLabel);
-  const existingButton = document.querySelector(".page-pull-switch");
-  if (existingButton) {
-    existingButton.setAttribute("aria-label", tt("Switch to {target}", { target: localizedTargetLabel }));
-    existingButton.innerHTML = `<span>${escapeHtml(localizedTargetLabel)}</span>`;
-    return;
-  }
-  const button = document.createElement("button");
-  button.className = "page-pull-switch";
-  button.type = "button";
-  button.setAttribute("aria-label", tt("Switch to {target}", { target: localizedTargetLabel }));
-  button.innerHTML = `<span>${escapeHtml(localizedTargetLabel)}</span>`;
-  const curtain = document.createElement("div");
-  curtain.className = "page-pull-curtain";
-  curtain.setAttribute("aria-hidden", "true");
-  curtain.innerHTML = pagePullPreviewMarkup(targetUrl);
-  document.body.append(button, curtain);
-  let startY = 0;
-  let startX = 0;
-  let dragging = false;
-  let pageDragArmed = false;
-  let pageDragging = false;
-  let moved = false;
-  const pagePullThreshold = () => Math.min(260, Math.max(150, window.innerHeight * 0.34));
-  const isAtPageTop = () => window.scrollY <= 2 && document.documentElement.scrollTop <= 2 && document.body.scrollTop <= 2;
-  const canStartPagePull = () => false;
-  const setPull = (distance) => {
-    const pull = Math.max(0, Math.min(window.innerHeight, distance));
-    const progress = Math.min(1, pull / pagePullThreshold());
-    document.body.style.setProperty("--pull-distance", `${pull}px`);
-    document.body.style.setProperty("--pull-handle-y", `${pull}px`);
-    document.body.style.setProperty("--pull-blur", `${Math.round((1 - progress) * 10)}px`);
-    document.body.style.setProperty("--pull-preview-opacity", `${0.48 + progress * 0.52}`);
-    document.body.style.setProperty("--pull-preview-scale", `${0.96 + progress * 0.04}`);
-    document.body.classList.toggle("page-pulling", pull > 6);
-    return pull;
-  };
-  const switchPage = () => {
-    if (document.body.classList.contains("page-switching") || document.body.classList.contains("page-switching-pending")) return;
-    const frame = curtain.querySelector(".page-pull-frame");
-    let committed = false;
-    const commit = () => {
-      if (committed) return;
-      committed = true;
-      document.body.classList.remove("page-switching-pending");
-      document.body.classList.add("page-switching");
-      document.body.classList.remove("page-pulling");
-      document.body.style.setProperty("--pull-distance", `${window.innerHeight}px`);
-      document.body.style.setProperty("--pull-handle-y", `${window.innerHeight}px`);
-      document.body.style.setProperty("--pull-blur", "0px");
-      document.body.style.setProperty("--pull-preview-opacity", "1");
-      document.body.style.setProperty("--pull-preview-scale", "1");
-      try {
-        sessionStorage.setItem(PULL_NAVIGATION_KEY, JSON.stringify({ version: siteVersion.version, at: Date.now() }));
-        if (siteVersion.version) localStorage.setItem(VERSION_STORAGE_KEY, siteVersion.version);
-      } catch {}
-      window.setTimeout(() => { window.location.href = pullNavigationUrl(targetUrl); }, 430);
-    };
-    if (frame?.dataset.loaded === "true") commit();
-    else {
-      document.body.classList.add("page-switching-pending");
-      document.body.classList.add("page-pulling");
-      frame?.addEventListener("load", commit, { once: true });
-      window.setTimeout(commit, 1800);
-    }
-  };
-  button.addEventListener("click", () => { if (!moved) switchPage(); moved = false; });
-  button.addEventListener("pointerenter", () => document.body.classList.add("page-pull-hover"));
-  button.addEventListener("pointerleave", () => { if (!dragging) document.body.classList.remove("page-pull-hover"); });
-  button.addEventListener("pointerdown", (event) => {
-    dragging = true;
-    pageDragging = false;
-    moved = false;
-    startY = event.clientY;
-    startX = event.clientX;
-    document.body.classList.add("page-pull-hover");
-    button.classList.add("is-dragging");
-    button.setPointerCapture?.(event.pointerId);
-  });
-  button.addEventListener("pointermove", (event) => {
-    if (!dragging) return;
-    const pull = setPull(event.clientY - startY);
-    moved = moved || pull > 8;
-  });
-  const endDrag = (event, threshold = window.innerHeight * 0.75) => {
-    if (!dragging) return;
-    dragging = false;
-    pageDragArmed = false;
-    pageDragging = false;
-    button.classList.remove("is-dragging");
-    document.body.classList.remove("page-pull-hover");
-    if (button.hasPointerCapture?.(event.pointerId)) button.releasePointerCapture(event.pointerId);
-    const pull = Number.parseFloat(document.body.style.getPropertyValue("--pull-distance")) || 0;
-    if (pull > threshold) switchPage();
-    else {
-      document.body.classList.remove("page-pulling");
-      document.body.style.setProperty("--pull-distance", "0px");
-      document.body.style.setProperty("--pull-handle-y", "0px");
-    }
-    window.setTimeout(() => { moved = false; }, 0);
-  };
-  button.addEventListener("pointerup", endDrag);
-  button.addEventListener("pointercancel", endDrag);
-  window.addEventListener("pointerdown", (event) => {
-    if (dragging || !canStartPagePull(event)) return;
-    pageDragArmed = true;
-    startY = event.clientY;
-    startX = event.clientX;
-    moved = false;
-  }, { passive: true });
-  window.addEventListener("pointermove", (event) => {
-    if (!pageDragArmed) return;
-    const distanceY = event.clientY - startY;
-    const distanceX = Math.abs(event.clientX - startX);
-    if (!pageDragging && (distanceY < 12 || distanceX > distanceY * 0.8)) return;
-    if (distanceY <= 0 || !isAtPageTop()) {
-      pageDragArmed = false;
-      return;
-    }
-    if (!pageDragging) {
-      pageDragging = true;
-      dragging = true;
-      document.body.classList.add("page-pull-hover");
-      button.classList.add("is-dragging");
-    }
-    event.preventDefault();
-    const pull = setPull(distanceY * 0.92);
-    moved = moved || pull > 8;
-  }, { passive: false });
-  window.addEventListener("pointerup", (event) => {
-    if (!pageDragArmed && !pageDragging) return;
-    endDrag(event, pagePullThreshold());
-  }, { passive: true });
-  window.addEventListener("pointercancel", (event) => {
-    if (!pageDragArmed && !pageDragging) return;
-    endDrag(event, pagePullThreshold());
-  }, { passive: true });
-  window.addEventListener("touchstart", (event) => {
-    if (dragging || event.touches.length !== 1 || !canStartPagePull(event)) return;
-    const touch = event.touches[0];
-    pageDragArmed = true;
-    startY = touch.clientY;
-    startX = touch.clientX;
-    moved = false;
-  }, { passive: true });
-  window.addEventListener("touchmove", (event) => {
-    if (!pageDragArmed || event.touches.length !== 1) return;
-    const touch = event.touches[0];
-    const distanceY = touch.clientY - startY;
-    const distanceX = Math.abs(touch.clientX - startX);
-    if (!pageDragging && (distanceY < 12 || distanceX > distanceY * 0.8)) return;
-    if (distanceY <= 0 || !isAtPageTop()) {
-      pageDragArmed = false;
-      return;
-    }
-    if (!pageDragging) {
-      pageDragging = true;
-      dragging = true;
-      document.body.classList.add("page-pull-hover");
-      button.classList.add("is-dragging");
-    }
-    event.preventDefault();
-    const pull = setPull(distanceY * 0.92);
-    moved = moved || pull > 8;
-  }, { passive: false });
-  const endTouchDrag = () => {
-    if (!pageDragArmed && !pageDragging) return;
-    endDrag({}, pagePullThreshold());
-  };
-  window.addEventListener("touchend", endTouchDrag, { passive: true });
-  window.addEventListener("touchcancel", endTouchDrag, { passive: true });
-}
-
-function syncPagePullTransition() {
-  if (window.self !== window.top) return;
-  if (pageSwitchHidden()) removePagePullTransition();
-  else initPagePullTransition({ targetLabel: "Gamelist", targetUrl: "./" });
-}
-
-function pageSwitchHidden() { return true; }
-
-function removePagePullTransition() {
-  document.querySelector(".page-pull-switch")?.remove();
-  document.querySelector(".page-pull-curtain")?.remove();
-  document.body.classList.remove("page-pull-hover", "page-pulling", "page-switching", "page-switching-pending");
-  document.body.style.removeProperty("--pull-distance");
-  document.body.style.removeProperty("--pull-handle-y");
-  document.body.style.removeProperty("--pull-blur");
-  document.body.style.removeProperty("--pull-preview-opacity");
-  document.body.style.removeProperty("--pull-preview-scale");
-}
-
-function pagePullPreviewMarkup(targetUrl) {
-  return `<div class="page-pull-preview"><iframe class="page-pull-frame" src="${escapeHtml(targetUrl)}" tabindex="-1" aria-hidden="true" onload="this.dataset.loaded='true'"></iframe></div>`;
-}
-
-function pullNavigationUrl(targetUrl) {
-  const url = new URL(targetUrl, window.location.href);
-  url.searchParams.set("pull", "1");
-  if (siteVersion.version) url.searchParams.set("v", siteVersion.version);
-  return url.href;
 }
 
 function syncDisplayMode() {
@@ -3621,203 +3342,13 @@ async function fetchEditorAuth(fallback = false) {
   }
 }
 
-function openShelfSettingsPanel(panelName, title) {
-  el.settingsHome.hidden = true;
-  el.layoutDialog.querySelectorAll("[data-shelf-settings-window]").forEach((panel) => { panel.hidden = panel.dataset.shelfSettingsWindow !== panelName; });
-  el.layoutDialogEyebrow.textContent = "Settings";
-  el.layoutDialogTitle.hidden = true;
-  el.layoutDialogSectionTitle.textContent = title;
-  el.layoutDialogBackTitle.hidden = false;
-  el.layoutDialog.classList.add("has-settings-window");
-  el.layoutDialog.querySelector(".settings-modal")?.scrollTo({ top: 0 });
-}
-
-function requestShelfSettingsExit(destination) {
-  if (!shelfSettingsDirty) {
-    finishShelfSettingsExit(destination);
-    return;
-  }
-  shelfSettingsExitDestination = destination;
-  const saveButton = document.querySelector("#shelfSettingsUnsavedDialog [data-shelf-unsaved-save]");
-  const discardButton = document.querySelector("#shelfSettingsUnsavedDialog [data-shelf-unsaved-discard]");
-  if (saveButton) saveButton.textContent = destination === "back" ? "Go back and save" : "Close and save";
-  if (discardButton) discardButton.textContent = destination === "back" ? "Go back without saving" : "Close without saving";
-  document.querySelector("#shelfSettingsUnsavedDialog")?.showModal();
-}
-
-function finishShelfSettingsExit(destination) {
-  if (destination === "close") {
-    closeDialog(el.layoutDialog);
-    if (shelfSettingsLogoutRequested) {
-      shelfSettingsLogoutRequested = false;
-      toggleEditMode();
-    }
-    return;
-  }
-  el.layoutDialog.querySelectorAll("[data-shelf-settings-window]").forEach((panel) => { panel.hidden = true; });
-  el.settingsHome.hidden = false;
-  el.layoutDialog.classList.remove("has-settings-window");
-  el.layoutDialogEyebrow.textContent = "Shelf settings";
-  el.layoutDialogTitle.hidden = false;
-  el.layoutDialogBackTitle.hidden = true;
-  el.layoutDialog.querySelector(".settings-modal")?.scrollTo({ top: 0 });
-}
-
-function discardShelfSettingsChanges(destination) {
-  if (shelfSettingsSnapshot) {
-    state.layout = structuredClone(shelfSettingsSnapshot.layout);
-    state.gamelistSettings = structuredClone(shelfSettingsSnapshot.settings);
-  }
-  shelfSettingsDirty = false;
-  applyLayout();
-  applyTheme();
-  renderLayoutEditor();
-  renderAll();
-  finishShelfSettingsExit(destination);
-}
-
 function openLayout() {
-  renderLayoutEditor();
-  shelfSettingsDirty = false;
-  shelfSettingsSnapshot = {
-    layout: structuredClone(state.layout),
-    settings: structuredClone(state.gamelistSettings),
-  };
-  el.layoutDialog.classList.remove("has-settings-window");
-  el.settingsHome.hidden = false;
-  el.layoutDialog.querySelectorAll("[data-shelf-settings-window]").forEach((panel) => { panel.hidden = true; });
-  el.layoutDialogTitle.hidden = false;
-  el.layoutDialogBackTitle.hidden = true;
-  el.layoutDialogEyebrow.textContent = "Shelf settings";
-  openDialog(el.layoutDialog);
-  if (el.mobileDockSettings) {
-    el.mobileDockSettings.disabled = true;
-    el.mobileDockSettings.classList.add("is-active");
-    el.mobileDockSettings.setAttribute("aria-pressed", "true");
-  }
-  initShelfAccounts(document.querySelector("[data-shelf-accounts]"), {
-    getSettings: () => state.gamelistSettings,
-    saveSettings: async (settings) => {
-      state.gamelistSettings = settings;
-      if (shelfSettingsSnapshot) shelfSettingsSnapshot.settings = structuredClone(settings);
-      localStorage.setItem("gamelist:settings:v1", JSON.stringify(settings));
-      await persistGamelistSettings();
-      localStorage.removeItem(ACHIEVEMENT_CACHE_KEY);
-      state.trophyActivity = null;
-      loadTrophyActivity();
-      applyTheme();
-      renderAll();
-    },
-  })?.refresh();
-}
-
-function renderLayoutEditor() {
-  el.layoutList.className = "settings-layout";
-  el.layoutList.innerHTML = [
-    ...state.layout.order.map((key, index) => settingsLayoutCard(key, index)),
-    settingsPageFeatureToggles(),
-  ].join("");
-  document.querySelector("#shelfSettingsCsvData").innerHTML = settingsCsvDataCard();
-  const isShabiiOwner = String(state.gamelistSettings.defaultOwner || "").trim().toLowerCase() === "shabii";
-  const devCard = settingsDevFeaturesCard("shelf");
-  if (el.settingsDevFeatures) el.settingsDevFeatures.innerHTML = isShabiiOwner ? "" : devCard;
-  if (el.settingsDevHome) {
-    el.settingsDevHome.hidden = !isShabiiOwner;
-    document.querySelector("#shelfSettingsDevHomeLinks").innerHTML = isShabiiOwner ? devCard : "";
-  }
-  const devCategory = document.querySelector("[data-shelf-settings-panel='dev']");
-  if (devCategory) devCategory.hidden = isShabiiOwner;
-  const defaultOrderOptions = [{ value: "added", label: tt("Last added") }, { value: "title", label: tt("Name") }, { value: "platform", label: tt("Platform") }, { value: "region", label: tt("Region") }, ...(shelfPricesVisible() ? [{ value: "value", label: tt("Value") }] : [])];
-  document.querySelector("#shelfSettingsPreferencesBeforeCurrency").innerHTML = [
-    settingsSelectCard("order", tt("Default order"), "shelfSettingsDefaultOrder", defaultOrderOptions),
-  ].join("");
-  document.querySelector("#shelfSettingsPreferencesAfterLanguage").innerHTML = [
-    settingsSelectCard("calendar", tt("Week starts"), "shelfSettingsWeekStart", WEEK_START_OPTIONS.map(([value, label]) => ({ value, label: tt(label) }))),
-    shelfStreamPriorityCard(), shelfHideNonStreamPlayingCard(),
-  ].join("");
-  el.settingsDefaultOrder = document.querySelector("#shelfSettingsDefaultOrder");
-  el.settingsWeekStart = document.querySelector("#shelfSettingsWeekStart");
-  const settings = normalizePriceSettings(state.gamelistSettings);
-  el.settingsDefaultOrder.value = shelfSortForDefault(state.gamelistSettings.shelfDefaultOrder ?? state.gamelistSettings.defaultOrder);
-  el.settingsWeekStart.value = normalizeWeekStart(state.gamelistSettings.weekStart);
-  el.settingsCurrency.value = settings.currency;
-  el.settingsRegion.value = settings.region;
-  el.settingsLanguage.innerHTML = languageOptions(state.gamelistSettings.language, escapeHtml);
-  el.settingsLanguage.value = currentLanguage();
-  el.settingsTwitchUser.value = state.gamelistSettings.twitchUser || "";
-  el.settingsDefaultOwner.value = state.gamelistSettings.defaultOwner || "";
-  el.settingsStores.innerHTML = STORE_OPTIONS.map((store) => `<label class="check-filter toggle-check settings-store-check"><input type="checkbox" value="${escapeHtml(store)}" ${settings.stores.includes(store) ? "checked" : ""}><img class="settings-store-icon" src="${escapeHtml(storeIcon(store))}" alt="" aria-hidden="true" loading="lazy"><span>${escapeHtml(store)}</span></label>`).join("");
-  el.settingsStores.querySelectorAll("input").forEach((input) => input.addEventListener("change", () => {
-    const checked = [...el.settingsStores.querySelectorAll("input:checked")];
-    if (checked.length > MAX_PRICE_STORES) input.checked = false;
-  }));
-  el.settingsThemeEditor.innerHTML = themeSettingsContent(state.gamelistSettings, tt);
-  bindThemeSettingsContent(el.settingsThemeEditor, tt);
-  document.querySelector("[data-export-csv='gamelist']")?.addEventListener("click", exportGamelistCsv);
-  document.querySelector("[data-import-csv='gamelist']")?.addEventListener("click", importGamelistCsv);
-  document.querySelector("[data-export-csv='shelf']")?.addEventListener("click", exportShelfPhysicalCsv);
-  document.querySelector("[data-import-csv='shelf']")?.addEventListener("click", importShelfPhysicalCsv);
-  document.querySelector("[data-export-csv='shelf-digital']")?.addEventListener("click", exportShelfDigitalCsv);
-  document.querySelector("[data-import-csv='shelf-digital']")?.addEventListener("click", importShelfDigitalCsv);
-  document.querySelector("[data-export-csv='goty']")?.addEventListener("click", exportGameOfTheYearCsv);
-  document.querySelector("[data-import-csv='goty']")?.addEventListener("click", importGameOfTheYearCsv);
-  document.querySelector("[data-export-csv='finished']")?.addEventListener("click", exportFinishedGamesCsv);
-  document.querySelector("[data-import-csv='finished']")?.addEventListener("click", importFinishedGamesCsv);
-  applyLanguage();
-  syncStyledSelects(el.layoutDialog, { activeValue: null });
-  syncStyledSelect(el.settingsRegion, { flags: true });
-}
-
-function settingsLayoutCard(key, index) {
-  const visible = !state.layout.hidden.includes(key);
-  const wire = { latestFinished: "latest-finished", kpis: "highlights", filters: "search", library: "list" }[key] || key;
-  const title = tt(MODULE_NAMES[key] || key);
-  return `<article class="settings-layout-card ${visible ? "" : "is-hidden-section"}" data-layout-key="${key}"><div class="settings-wire wire-${wire}" aria-hidden="true">${Array.from({ length: 6 }, () => "<span></span>").join("")}</div><strong>${escapeHtml(title)}</strong><div class="settings-layout-actions"><button class="icon-button" type="button" data-layout-move="-1" ${index === 0 ? "disabled" : ""} title="${escapeHtml(tt("Move up"))}" aria-label="${escapeHtml(tt("Move {title} up", { title }))}"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 19V5m-7 7 7-7 7 7"></path></svg></button><button class="icon-button" type="button" data-layout-move="1" ${index === state.layout.order.length - 1 ? "disabled" : ""} title="${escapeHtml(tt("Move down"))}" aria-label="${escapeHtml(tt("Move {title} down", { title }))}"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14m-7-7 7 7 7-7"></path></svg></button><label class="check-filter toggle-check settings-visible-check" title="${escapeHtml(visible ? tt("Visible") : tt("Hidden"))}"><input type="checkbox" data-layout-visible value="${key}" ${visible ? "checked" : ""}><span>${escapeHtml(visible ? tt("Show") : tt("Hide"))}</span></label></div></article>`;
-}
-
-function settingsSelectCard(type, title, id, options) {
-  const wireCount = type === "calendar" ? 5 : 3;
-  return `<article class="settings-layout-card settings-${type === "theme" ? "theme" : "order"}-card"><div class="settings-wire wire-${type}" aria-hidden="true">${Array.from({ length: wireCount }, () => "<span></span>").join("")}</div><label class="settings-theme-select"><span>${escapeHtml(title)}</span><select id="${id}">${options.map((option) => `<option value="${option.value}">${escapeHtml(option.label)}</option>`).join("")}</select></label></article>`;
+  // Collection settings use the main page's account handlers and save lifecycle.
+  unifiedShelfScope?.openSettings();
 }
 
 function normalizeWeekStart(value) {
   return WEEK_START_OPTIONS.some(([key]) => key === value) ? value : "monday";
-}
-
-function settingsPageFeatureToggles() {
-  return `<div class="settings-page-toggle-row"><label class="check-filter toggle-check settings-visible-check settings-page-toggle" title="${escapeHtml(tt("Track Digital Games (Drive)"))}"><input type="checkbox" id="shelfSettingsDigitalGames" ${state.gamelistSettings.shelfDigitalGames === true ? "checked" : ""}><span>${escapeHtml(tt("Track Digital Games (Drive)"))}</span></label><label class="check-filter toggle-check settings-visible-check settings-page-toggle" title="${escapeHtml(tt("Show Preorders on Shelf"))}"><input type="checkbox" id="shelfSettingsShowPreorders" ${state.gamelistSettings.shelfShowPreorders === false ? "" : "checked"}><span>${escapeHtml(tt("Show Preorders on Shelf"))}</span></label><label class="check-filter toggle-check settings-visible-check settings-page-toggle" title="${escapeHtml(tt("Show Prices"))}"><input type="checkbox" id="shelfSettingsShowPrices" ${state.gamelistSettings.shelfHidePrices ? "" : "checked"}><span>${escapeHtml(tt("Show Prices"))}</span></label><label class="check-filter toggle-check settings-visible-check settings-page-toggle" title="${escapeHtml(tt("Sync Wishlist"))}"><input type="checkbox" id="shelfSettingsSyncWishlist" ${state.gamelistSettings.shelfSyncWishlist === false ? "" : "checked"}><span>${escapeHtml(tt("Sync Wishlist"))}</span></label></div>`;
-}
-
-
-function shelfStreamPriorityCard() {
-  const priority = ["stream", "nonstream", "all"].includes(state.gamelistSettings.streamFilterPriority) ? state.gamelistSettings.streamFilterPriority : state.gamelistSettings.prioritizeFinishedStream ? "stream" : "all";
-  return `<article class="settings-layout-card settings-sync-card"><div class="settings-wire wire-finished" aria-hidden="true"><span></span><span></span><span></span></div><label class="settings-theme-select"><span>${escapeHtml(tt("Stream Filter Priority"))}</span><select id="shelfSettingsStreamPriority"><option value="stream" ${priority === "stream" ? "selected" : ""}>${escapeHtml(tt("Stream games"))}</option><option value="nonstream" ${priority === "nonstream" ? "selected" : ""}>${escapeHtml(tt("Non-stream games"))}</option><option value="all" ${priority === "all" ? "selected" : ""}>${escapeHtml(tt("All games"))}</option></select></label></article>`;
-}
-
-function shelfHideNonStreamPlayingCard() {
-  return `<article class="settings-layout-card settings-sync-card"><div class="settings-wire wire-playing" aria-hidden="true"><span></span><span></span><span></span></div><div class="settings-theme-select"><span>${escapeHtml(tt("Hide Non Stream Playing"))}</span><div class="settings-check-field"><label class="check-filter toggle-check settings-visible-check"><input type="checkbox" id="shelfSettingsHideNonStreamPlaying" ${state.gamelistSettings.hideNonStreamPlaying ? "checked" : ""}><span>${escapeHtml(tt("Enable"))}</span></label></div></div></article>`;
-}
-
-function settingsCsvDataCard() {
-  const rows = [
-    ["gamelist", "Gamelist games"],
-    ["shelf", "Shelf physical games"],
-    ["shelf-digital", "Shelf Digital Games"],
-    ["goty", "GOTY"],
-    ["finished", "Finished games"],
-  ];
-  return `<article class="settings-layout-card settings-data-card"><div class="settings-theme-select settings-csv-groups">${rows.map(([key, label]) => `<div class="settings-csv-row"><span>${escapeHtml(tt(label))}</span><div class="settings-data-actions"><button class="ghost-button" type="button" data-export-csv="${escapeHtml(key)}">${escapeHtml(tt("Export"))}</button><button class="ghost-button" type="button" data-import-csv="${escapeHtml(key)}">${escapeHtml(tt("Import"))}</button></div></div>`).join("")}</div></article>`;
-}
-
-function settingsDevFeaturesCard(kind) {
-  const links = [
-    { href: "/api/shelf-mass-add", label: "Mass add" },
-    { href: "/api/shelf-metadata", label: "Fill metadata" },
-    { href: "/api/shelf-price-audit", label: "Price audit" },
-    { href: "/api/shelf-import-digital", label: "Import Digital from Platforms" },
-    { href: "/api/shelf-covers", label: "Mass cover add" },
-  ].map((link) => `<a class="ghost-button settings-dev-link" href="${escapeHtml(link.href)}" target="_blank" rel="noreferrer" data-dev-feature="${escapeHtml(kind)}">${escapeHtml(tt(link.label))}</a>`).join("");
-  return `${links}<label class="check-filter toggle-check settings-visible-check settings-dev-toggle" title="${escapeHtml(tt("Force cache on page load"))}"><input type="checkbox" id="shelfSettingsForceCacheOnLoad" ${state.gamelistSettings.forceCacheOnLoad === true ? "checked" : ""}><span>${escapeHtml(tt("Force cache on page load"))}</span></label>`;
 }
 
 const CSV_NUMERIC_FIELDS = new Set(["order", "lengthHours", "replayCount", "numericPrice", "price", "estimatedValue", "purchasePrice"]);
@@ -4459,39 +3990,6 @@ async function persistShowcaseFavorites(ids) {
   return false;
 }
 
-function handleLayoutMove(event) {
-  const button = event.target.closest("[data-layout-move]");
-  const row = button?.closest("[data-layout-key]");
-  if (!button || !row) return;
-  const from = state.layout.order.indexOf(row.dataset.layoutKey);
-  const to = from + Number(button.dataset.layoutMove);
-  if (from < 0 || to < 0 || to >= state.layout.order.length) return;
-  [state.layout.order[from], state.layout.order[to]] = [state.layout.order[to], state.layout.order[from]];
-  renderLayoutEditor();
-}
-
-async function saveLayout(event, { close = true } = {}) {
-  event.preventDefault();
-  state.layout.hidden = LAYOUT_KEYS.filter((key) => !el.layoutList.querySelector(`[data-layout-visible][value="${key}"]`)?.checked);
-  localStorage.setItem(LAYOUT_KEY, JSON.stringify(state.layout));
-  const stores = [...el.settingsStores.querySelectorAll("input:checked")].map((input) => input.value).filter((store) => STORE_OPTIONS.includes(store)).slice(0, MAX_PRICE_STORES);
-  const streamPriority = document.querySelector("#shelfSettingsStreamPriority")?.value || "all";
-  const customThemeSettings = readThemeSettingsContent(el.settingsThemeEditor, state.gamelistSettings);
-  state.gamelistSettings = { ...state.gamelistSettings, customTheme: customThemeSettings, shelfDefaultOrder: el.settingsDefaultOrder.value, weekStart: normalizeWeekStart(el.settingsWeekStart?.value || state.gamelistSettings.weekStart), currency: el.settingsCurrency.value, region: el.settingsRegion.value, language: normalizeLanguage(el.settingsLanguage.value), twitchUser: el.settingsTwitchUser.value.trim(), defaultOwner: el.settingsDefaultOwner.value.trim(), stores, storeSettingsVersion: 2, shelfSync: true, shelfHidePrices: document.querySelector("#shelfSettingsShowPrices")?.checked === false, hidePageSwitch: false, streamFilterPriority: streamPriority, prioritizeFinishedStream: streamPriority === "stream", hideNonStreamPlaying: document.querySelector("#shelfSettingsHideNonStreamPlaying")?.checked === true, shelfDigitalGames: document.querySelector("#shelfSettingsDigitalGames")?.checked === true, shelfShowPreorders: document.querySelector("#shelfSettingsShowPreorders")?.checked !== false, shelfSyncWishlist: document.querySelector("#shelfSettingsSyncWishlist")?.checked !== false, forceCacheOnLoad: document.querySelector("#shelfSettingsForceCacheOnLoad")?.checked === true };
-  localStorage.setItem("gamelist:settings:v1", JSON.stringify(state.gamelistSettings));
-  applyShelfDefaultOrder(state.gamelistSettings.shelfDefaultOrder);
-  await Promise.all([persistShelf(), persistGamelistSettings()]);
-  applyLayout();
-  applyTheme();
-  syncPagePullTransition();
-  renderAll();
-  if (!state.layout.hidden.includes("trophies") && !state.trophyActivity) loadTrophyActivity();
-  shelfSettingsDirty = false;
-  shelfSettingsSnapshot = { layout: structuredClone(state.layout), settings: structuredClone(state.gamelistSettings) };
-  if (close) finishShelfSettingsExit("close");
-  else finishShelfSettingsExit("back");
-}
-
 function normalizePriceSettings(settings = {}) {
   const selectedStores = Array.isArray(settings.stores) ? settings.stores.filter((store) => STORE_OPTIONS.includes(store)) : DEFAULT_PRICE_STORES;
   const stores = selectedStores;
@@ -4513,12 +4011,6 @@ function defaultShelfOwners() {
 
 function shelfPricesVisible() {
   return state.gamelistSettings.shelfHidePrices !== true;
-}
-
-async function persistGamelistSettings() {
-  const password = sessionStorage.getItem(`${SESSION_KEY}:password`) || "";
-  const response = await fetch("/api/sync", { method: "PUT", headers: { "Content-Type": "application/json", "x-edit-password": password }, body: JSON.stringify({ settingsOnly: true, settings: state.gamelistSettings }) });
-  if (!response.ok) throw new Error("Price settings could not be synced");
 }
 
 function applyLayout() {
@@ -4953,7 +4445,6 @@ function physicalDiskIcon(platformClassName = "") {
   const src = ps5 ? "assets/platforms/disk-inverted.png" : "assets/platforms/disk.png";
   return `<img src="${src}" alt="" width="18" height="18" decoding="async">`;
 }
-
 
 function downloadBadgeIcon() {
   return `
@@ -6035,7 +5526,7 @@ function showSelectOverflowPopover(select) { if (!selectOverflowPopover) { selec
 function hideSelectOverflowPopover() { selectOverflowPopover?.classList.remove("visible"); }
 function showToast(message, tone = "info") { if (!message) return; const host = [...document.querySelectorAll("dialog[open]")].at(-1) || document.body; let toast = document.querySelector(".toast-notification"); if (!toast) { toast = document.createElement("div"); toast.className = "toast-notification"; toast.setAttribute("role", "status"); toast.setAttribute("aria-live", "polite"); } if (toast.parentElement !== host) host.appendChild(toast); window.clearTimeout(showToast.timer); toast.textContent = message; toast.classList.toggle("is-error", tone === "error"); toast.classList.remove("visible"); requestAnimationFrame(() => toast.classList.add("visible")); showToast.timer = window.setTimeout(() => toast.classList.remove("visible"), tone === "error" ? 4200 : 2800); }
 function registerServiceWorker() { if ("serviceWorker" in navigator) navigator.serviceWorker.register("/service-worker.js").catch(() => {}); }
-async function checkSiteVersion() { try { const fromPullNavigation = consumeRecentPullNavigation(); await clearSiteCachesForNewHour(); const response = await fetch(`/version.json?t=${Date.now()}`, { cache: "no-store" }); if (!response.ok) return false; const remote = await response.json(); applySiteVersion(remote); const remoteVersion = siteVersion.version; if (!remoteVersion) return false; const current = localStorage.getItem(VERSION_STORAGE_KEY); if (!current || current === remoteVersion) { localStorage.setItem(VERSION_STORAGE_KEY, remoteVersion); return false; } if (!forceCacheOnLoadEnabled()) return false; if (fromPullNavigation) { clearSiteCaches().catch(() => {}); localStorage.setItem(VERSION_STORAGE_KEY, remoteVersion); return false; } await clearSiteCaches(); localStorage.setItem(VERSION_STORAGE_KEY, remoteVersion); window.location.reload(); return true; } catch { return false; } }
+async function checkSiteVersion() { try { await clearSiteCachesForNewHour(); const response = await fetch(`/version.json?t=${Date.now()}`, { cache: "no-store" }); if (!response.ok) return false; const remote = await response.json(); applySiteVersion(remote); const remoteVersion = siteVersion.version; if (!remoteVersion) return false; const current = localStorage.getItem(VERSION_STORAGE_KEY); if (!current || current === remoteVersion) { localStorage.setItem(VERSION_STORAGE_KEY, remoteVersion); return false; } if (!forceCacheOnLoadEnabled()) return false; await clearSiteCaches(); localStorage.setItem(VERSION_STORAGE_KEY, remoteVersion); window.location.reload(); return true; } catch { return false; } }
 async function clearSiteCachesForNewHour() { const currentHour = currentCacheHour(); const previousHour = localStorage.getItem(CACHE_HOUR_STORAGE_KEY); if (!previousHour) { localStorage.setItem(CACHE_HOUR_STORAGE_KEY, currentHour); return; } if (previousHour === currentHour) return; await clearSiteCaches(); localStorage.setItem(CACHE_HOUR_STORAGE_KEY, currentHour); }
 function currentCacheHour() { return new Date().toISOString().slice(0, 13); }
 function forceCacheOnLoadEnabled() { try { return JSON.parse(localStorage.getItem("gamelist:settings:v1") || "{}")?.forceCacheOnLoad === true; } catch { return false; } }
@@ -6066,7 +5557,7 @@ async function loadUpdatesPopup() {
   }
   await updatesPopupLoadPromise;
 }
-function consumeRecentPullNavigation() { try { const url = new URL(window.location.href); const fromPullUrl = url.searchParams.get("pull") === "1"; if (fromPullUrl) { url.searchParams.delete("pull"); url.searchParams.delete("v"); window.history.replaceState({}, "", `${url.pathname}${url.search}${url.hash}`); } const value = JSON.parse(sessionStorage.getItem(PULL_NAVIGATION_KEY) || "{}"); sessionStorage.removeItem(PULL_NAVIGATION_KEY); return fromPullUrl || Date.now() - Number(value.at || 0) < 8000; } catch { return false; } }
+
 async function clearSiteCaches() { if ("caches" in window) { const keys = await caches.keys(); await Promise.all(keys.filter((key) => key.startsWith("gamelist-cache-")).map((key) => caches.delete(key))); } if ("serviceWorker" in navigator) { const registrations = await navigator.serviceWorker.getRegistrations(); await Promise.all(registrations.map((registration) => registration.update().catch(() => {}))); } }
 async function clearSiteCachesAndReload() { await clearSiteCaches(); localStorage.removeItem(ACHIEVEMENT_CACHE_KEY); if (siteVersion.version) localStorage.setItem(VERSION_STORAGE_KEY, siteVersion.version); window.location.reload(); }
 function stripRuntimeFields(game) { const { sourceRecord, ...clean } = game; return clean; }
@@ -6310,7 +5801,6 @@ function formatPillDate(value) { const date = String(value || "").match(/\d{4}-\
 function escapeCss(value) { return String(value).replace(/["'()\\]/g, "\\$&"); }
 function escapeHtml(value) { return String(value ?? "").replace(/[&<>'"]/g, (char) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", "'": "&#39;", '"': "&quot;" })[char]); }
 
-
 function clearShelfSpecificEditorData() {
   el.fields.country.value = defaultShelfCountry();
   el.fields.additionDate.value = shelfTodayInputValue();
@@ -6339,7 +5829,7 @@ function initUnifiedShelf() {
       state.overrides = data.shelf.overrides || {};
       state.updatedAt = data.shelf.updatedAt || "";
       state.gamelistGames = data.games;
-      state.gamelistSettings = { ...data.settings, hidePageSwitch: false };
+      state.gamelistSettings = { ...data.settings,  };
       state.canEdit = data.canEdit;
       applyUnifiedFilters(data.sharedFilters || {});
       state.filters.tab = normalizedShelfTab(data.tab || "shelf");
