@@ -24594,3 +24594,28 @@ textarea {
     display: none;
   }
 }
+
+/* Keep the four trophy rank bars compact inside narrower achievement cards. */
+@media (max-width: 800px) {
+  .rarity-graph {
+    box-sizing: border-box;
+    width: 100%;
+    min-width: 0;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 4px;
+    padding: 8px;
+  }
+
+  .rarity-graph .rarity-bar {
+    box-sizing: border-box;
+    width: 100%;
+    min-width: 0;
+    height: 52px;
+    font-size: 9px;
+  }
+
+  .rarity-graph .rarity-bar small {
+    font-size: clamp(7px, 1.5vw, 9px);
+    white-space: nowrap;
+  }
+}
