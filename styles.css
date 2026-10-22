@@ -16495,12 +16495,24 @@ html.theme-light .primary-button.stream-start-action:hover {
     align-items: center;
     gap: 8px;
     padding: 28px 14px 12px;
-    /* The header masks scrolling content while retaining its slide animation. */
-    background: linear-gradient(180deg, var(--bg) 0%, var(--bg) 62%, color-mix(in srgb, var(--bg) 82%, transparent) 84%, transparent 100%);
+    background: transparent !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
     backdrop-filter: none;
+    isolation: isolate;
     transition:
       transform 180ms ease,
       padding-top 180ms ease;
+  }
+
+  body > .topbar::before {
+    content: "";
+    position: absolute;
+    z-index: -1;
+    inset: -28px -14px -18px;
+    pointer-events: none;
+    background: linear-gradient(180deg, var(--bg) 0%, var(--bg) 74%, color-mix(in srgb, var(--bg) 88%, transparent) 91%, transparent 100%);
   }
 
   body.page-pull-hover .topbar,
@@ -18741,8 +18753,8 @@ body.page-pulling #mobileActionDock {
 }
 
 @media (max-width: 760px) {
-  .playing-section,
-  #gotySection {
+  main.shell:has(#gotySection:not([hidden])) #gotySection,
+  main.shell:not(:has(#gotySection:not([hidden]))) #playingSection:not([hidden]) {
     margin-top: 24px;
   }
 
@@ -19540,12 +19552,13 @@ body:not(.can-edit):not(.shelf-page) :is(#upcoming, #wanted) .price-refresh-acti
 /* Compact mobile list actions leave the text column room to breathe. */
 @media (max-width: 760px) {
   .card-list.list-view .game-row,
+  .shelf-grid.list-view .game-row,
   .card-list.list-view .game-row.new-addition-row {
-    grid-template-columns: 42px minmax(0, 1fr) 68px;
+    grid-template-columns: 42px minmax(0, 1fr) 132px;
     column-gap: 8px;
   }
   .card-list.list-view .game-row .game-row-actions {
-    width: 68px;
+    width: 132px;
     min-width: 0;
     gap: 4px;
   }
@@ -19567,13 +19580,64 @@ body:not(.can-edit):not(.shelf-page) :is(#upcoming, #wanted) .price-refresh-acti
     gap: 0;
   }
   .card-list.list-view .game-row .game-row-actions-bottom button > span {
-    display: none;
+    display: inline;
+  }
+  .card-list.list-view .game-row .game-row-actions-bottom button {
+    width: auto;
+    min-width: 0;
+    max-width: 100%;
+    flex: 1 1 0;
+    gap: 4px;
+    padding-inline: 5px;
+    font-size: 10px;
+    white-space: nowrap;
   }
   .card-list.list-view .game-row .game-row-actions button svg {
     display: block;
     width: 17px;
     height: 17px;
     flex: 0 0 17px;
+  }
+  .shelf-grid.list-view .game-row .game-row-actions {
+    width: 132px;
+    min-width: 0;
+    gap: 4px;
+  }
+  .shelf-grid.list-view .game-row .game-row-actions-bottom button > span {
+    display: inline;
+  }
+  .shelf-grid.list-view .game-row .game-row-actions-bottom button {
+    width: auto;
+    min-width: 0;
+    max-width: 100%;
+    flex: 1 1 0;
+    gap: 4px;
+    padding-inline: 5px;
+    font-size: 10px;
+    white-space: nowrap;
+  }
+}
+
+/* Keep action names visible on mobile cards in Backlog, Radar, and Wishlist. */
+@media (max-width: 760px) {
+  .card-list .game-card:not(.playing-card) .card-actions > button {
+    min-height: 48px;
+    height: auto;
+    flex-direction: column;
+    gap: 3px;
+    padding: 4px 3px;
+    font-size: 10px;
+    line-height: 1.05;
+    white-space: normal;
+  }
+  .card-list .game-card .card-actions .action-label,
+  .card-list .game-card .card-actions .backlog-action .action-label {
+    display: inline !important;
+    width: auto;
+    padding: 0;
+  }
+  .card-list .game-card .card-actions .stream-start-action > span {
+    display: inline !important;
   }
 }
 

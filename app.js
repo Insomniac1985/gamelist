@@ -9778,7 +9778,7 @@ function initMobileBrandOverlay() {
     const current = Math.max(0, window.scrollY);
     const delta = current - lastScroll;
     lastScroll = current;
-    if (!mobile.matches || current < 24) {
+    if (!mobile.matches || current <= 2) {
       distance = 0;
       direction = 0;
       setHidden(false);
@@ -9788,7 +9788,7 @@ function initMobileBrandOverlay() {
     const nextDirection = Math.sign(delta);
     distance = nextDirection === direction ? distance + Math.abs(delta) : Math.abs(delta);
     direction = nextDirection;
-    if (distance >= 8 && !header.contains(document.activeElement)) setHidden(direction > 0);
+    if (distance >= 8 && direction > 0 && !header.contains(document.activeElement)) setHidden(true);
   };
   window.addEventListener("scroll", () => {
     if (scheduled) return;
