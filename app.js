@@ -9686,10 +9686,12 @@ function initMobileBrandOverlay() {
 }
 
 function updateScrollTopButton() {
-  const visible = window.scrollY > 180 && !document.body.classList.contains("dialog-open");
+  const dialogOpen = document.body.classList.contains("dialog-open");
+  const visible = window.scrollY > 180 && !dialogOpen;
+  const showLoggedOutAddAction = !state.canEdit && window.innerWidth > 800 && !dialogOpen;
   const dockVisible = window.innerWidth >= 801 || window.scrollY > 180;
   el.scrollTopButton?.classList.toggle("visible", visible);
-  el.floatingEditActions?.classList.toggle("visible", visible);
+  el.floatingEditActions?.classList.toggle("visible", visible || showLoggedOutAddAction);
   el.mobileActionDock?.classList.toggle("visible", dockVisible);
   el.mobileDockUp?.classList.toggle("is-visible", visible);
 }
