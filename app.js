@@ -353,6 +353,7 @@ const el = {
   floatingSearchButton: document.querySelector("#floatingSearchButton"),
   mobileActionDock: document.querySelector("#mobileActionDock"),
   mobileDockAdd: document.querySelector("#mobileDockAdd"),
+  mobileDockEdit: document.querySelector("#mobileDockEdit"),
   mobileDockUp: document.querySelector("#mobileDockUp"),
   mobileDockSearch: document.querySelector("#mobileDockSearch"),
   mobileDockStats: document.querySelector("#mobileDockStats"),
@@ -994,6 +995,7 @@ function bindEvents() {
   el.addButton.addEventListener("click", quickAddGame);
   el.floatingAddButton.addEventListener("click", quickAddGame);
   el.mobileDockAdd?.addEventListener("click", quickAddGame);
+  el.mobileDockEdit?.addEventListener("click", toggleEditMode);
   el.searchButton?.addEventListener("click", scrollToSearchArea);
   el.floatingSearchButton?.addEventListener("click", scrollToSearchArea);
   el.mobileDockSearch?.addEventListener("click", () => {
@@ -1847,12 +1849,17 @@ function render() {
   applyLanguage();
   document.documentElement.classList.remove("theme-booting");
   document.body.classList.toggle("can-edit", state.canEdit);
-  document.body.classList.toggle("shabii-main-owner", isShabiiMainOwner());
+  const shabiiMainOwner = isShabiiMainOwner();
+  document.body.classList.toggle("shabii-main-owner", shabiiMainOwner);
   document.body.classList.toggle("list-view-mode", state.viewMode === "list");
   el.loginButton.innerHTML = state.canEdit ? `<span class="button-icon" aria-hidden="true">${exitIcon()}</span>` : pencilIcon();
   el.loginButton.title = state.canEdit ? tt("Stop Editing") : tt("Edit");
   el.loginButton.setAttribute("aria-label", el.loginButton.title);
   el.loginButton.hidden = state.canEdit;
+  if (el.mobileDockEdit) {
+    el.mobileDockEdit.hidden = state.canEdit || !shabiiMainOwner;
+    el.mobileDockEdit.innerHTML = pencilIcon();
+  }
   el.addButton.hidden = false;
   if (el.mobileDockAdd) el.mobileDockAdd.hidden = !state.canEdit;
   el.syncButton.hidden = !state.canEdit;
