@@ -17444,6 +17444,7 @@ html.theme-light .primary-button.stream-start-action:hover {
     grid-template-columns: minmax(0, 1fr);
     gap: 8px;
     padding: 4px 0 8px;
+    overflow: visible;
   }
 
   .playing-section .playing-panel > .twitch-preview-card {
@@ -17451,9 +17452,42 @@ html.theme-light .primary-button.stream-start-action:hover {
     grid-row: 2;
     width: 100%;
     max-width: 100%;
-    min-height: 214px;
-    padding: 10px 10px 78px;
+    min-height: 0;
+    padding: 10px;
     flex: none;
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-rows: auto auto;
+    gap: 9px;
+    overflow: visible;
+  }
+
+  .playing-section .playing-panel > .twitch-preview-card .twitch-preview-player {
+    grid-column: 1 / -1;
+    grid-row: 1;
+  }
+
+  .playing-section .playing-panel > .twitch-preview-card .twitch-preview-status {
+    top: -9px;
+    right: 12px;
+  }
+
+  .playing-section .playing-panel > .twitch-preview-card .twitch-preview-link {
+    grid-column: 1;
+    grid-row: 2;
+    min-width: 0;
+    margin-left: 0;
+  }
+
+  .playing-section .playing-panel > .twitch-preview-card .twitch-preview-toggle {
+    position: static;
+    grid-column: 2;
+    grid-row: 2;
+    align-self: center;
+    width: auto;
+    min-width: 34px;
+    height: 34px;
+    min-height: 34px;
+    padding: 0 9px;
   }
 
   .playing-section .playing-panel > .playing-list {
@@ -17470,6 +17504,7 @@ html.theme-light .primary-button.stream-start-action:hover {
     height: 56px;
     min-height: 56px;
     padding: 8px 52px 8px 12px;
+    overflow: visible;
   }
 
   .playing-section
@@ -17508,18 +17543,13 @@ html.theme-light .primary-button.stream-start-action:hover {
     .playing-panel
     > .twitch-preview-card.is-collapsed
     .twitch-preview-status {
-    position: static;
-    display: inline-flex;
-    flex: 0 1 auto;
-    width: auto;
+    top: -10px;
+    right: 12px;
+    bottom: auto;
+    left: auto;
     max-width: 96px;
-    margin: 0 0 0 auto;
-    overflow: hidden;
-    padding: 5px 8px;
     font-size: 9px;
-    text-overflow: ellipsis;
     transform: none;
-    white-space: nowrap;
   }
 
   .playing-section

@@ -114,9 +114,9 @@ export function mountTwitchPreview(list, username, enabled = true) {
       <span>${escapeActivityText(channel)}</span>
     </div>
     <div class="twitch-preview-player">
-      <span class="twitch-preview-status">Checking stream…</span>
       <span class="twitch-preview-loading">Loading Twitch preview…</span>
     </div>
+    <span class="twitch-preview-status">Checking stream…</span>
     <a class="twitch-preview-link" target="_blank" rel="noreferrer">
       <svg class="twitch-preview-link-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
         <path d="M6 0 1.7 4.3v15.4h5.1V24l4.3-4.3h3.4l7.8-7.7V0H6Zm14.6 11.1-3.4 3.4h-3.5l-3 3v-3H6.9V1.7h13.7v9.4ZM18 4.7v5.1h-1.7V4.7H18Zm-4.7 0v5.1h-1.7V4.7h1.7Z"/>
