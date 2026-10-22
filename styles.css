@@ -9533,6 +9533,13 @@ body.theme-kash .finished-stats-kpi.is-completed:focus-visible strong {
   gap: 8px;
 }
 
+@media (min-width: 801px) {
+  .twitch-preview-card.is-collapsed {
+    height: 420px;
+    min-height: 420px;
+  }
+}
+
 .twitch-preview-link {
   position: relative;
   z-index: 1;
@@ -9751,6 +9758,12 @@ body.theme-kash .finished-stats-kpi.is-completed:focus-visible strong {
   white-space: nowrap;
   margin-top: 120px;
   text-align: right;
+}
+
+@media (min-width: 801px) {
+  .twitch-preview-card.is-collapsed .twitch-preview-collapsed-logo span {
+    margin-top: 80px;
+  }
 }
 
 .twitch-preview-card.is-collapsed .twitch-preview-player {
