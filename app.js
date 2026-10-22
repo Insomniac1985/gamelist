@@ -3454,9 +3454,7 @@ function renderPlayingSection() {
   renderCompletedStreamToggle();
   el.playingList.innerHTML = "";
   games.forEach((game) => el.playingList.appendChild(cardFor(game, { staticCard: true, imagePriority: "eager" })));
-  const twitchCard = state.canEdit
-    ? mountTwitchPreview(el.playingList, state.settings.twitchUser, games.some((game) => game.stream))
-    : null;
+  const twitchCard = mountTwitchPreview(el.playingList, state.settings.twitchUser, games.some((game) => game.stream));
   el.playingSection.classList.toggle("playing-single", games.length + Number(Boolean(twitchCard)) === 1);
   preloadPausedActivityTrailers(el.playingList, escapeHtml);
   bindPlayingTrailerFocus();
@@ -3519,7 +3517,6 @@ function streamFilterModeMatches(game, mode = "all") {
 }
 
 function cycleCompletedStreamMode() {
-  if (!state.canEdit) return;
   const mode = normalizeStreamFilterMode(state.completedStreamMode);
   state.completedStreamMode = mode === "all" ? "stream" : mode === "stream" ? "nonstream" : "all";
   state.completedVisiblePages = 1;
@@ -3550,7 +3547,6 @@ function hasStreamGameInLog() {
 
 function renderStreamFilterToggle(button, { hidden = false } = {}) {
   if (!button) return;
-  hidden ||= !state.canEdit;
   const mode = normalizeStreamFilterMode(state.completedStreamMode);
   button.hidden = hidden;
   button.classList.toggle("active", mode !== "all");
