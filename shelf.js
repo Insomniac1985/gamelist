@@ -2409,7 +2409,7 @@ function openDetails(game) {
   bindCoverFrame(el.detailCover);
   const detailTags = visibleShelfTags(game, [...(game.tags || []), game.category && game.category !== "Game" ? game.category : "", ...String(game.genre || "").split(",")]);
   el.detailChips.innerHTML = detailTags.map((value) => `<span class="chip genre">${escapeHtml(value)}</span>`).join("");
-  el.detailDates.innerHTML = `${shelfReleaseDatePill(game, "Released")}${game.createdAt ? `<span class="history-pill history-date-pill"><small>Added</small><strong>${escapeHtml(formatDate(game.createdAt))}</strong></span>` : ""}`;
+  el.detailDates.innerHTML = `${shelfReleaseDatePill(game, "Released")}${game.createdAt && !["upcoming", "wanted"].includes(game.section) ? `<span class="history-pill history-date-pill"><small>Added</small><strong>${escapeHtml(formatDate(game.createdAt))}</strong></span>` : ""}`;
   el.detailDates.hidden = !el.detailDates.innerHTML;
   el.detailNote.hidden = !game.notes;
   el.detailNote.textContent = game.notes || "";
@@ -2473,7 +2473,9 @@ function openEditor(game = null, options = {}) {
   const values = game || { platform: "", country: defaultShelfCountry(), owners: defaultShelfOwners(), game: true };
   for (const [key, input] of Object.entries(el.fields)) if (!["dlc", "psPlus", "gamesWithGold"].includes(key)) input.value = values[key] ?? "";
   el.fields.country.value = COUNTRY_OPTIONS.some(([country]) => country === values.country) ? values.country : defaultShelfCountry();
-  el.fields.additionDate.value = shelfDateInputValue(options.miniGamelistImport && !options.importShelfId ? shelfTodayInputValue() : values.createdAt) || (game ? "" : shelfTodayInputValue());
+  const existingCollection = options.importShelfId && state.games.find(item => item.id === options.importShelfId && !item.pendingCollection);
+  const movingToBacklog = options.section === "backlog" && Boolean(options.importGameId) && !existingCollection;
+  el.fields.additionDate.value = movingToBacklog ? shelfTodayInputValue() : shelfDateInputValue(values.createdAt) || (game ? "" : shelfTodayInputValue());
   el.fields.platform.value = values.platform ? platformDisplayName(values.platform) : "";
   if (!el.fields.genre.value && Array.isArray(values.genres)) el.fields.genre.value = values.genres.join(", ");
   syncShelfEditorCoverPreview();
@@ -3318,6 +3320,10 @@ async function saveGamelistTargetFromShelf() {
     collectionGame.gamelistId = game.id;
     collectionGame.pendingCollection = false;
     collectionGame.lengthHours = game.lengthHours;
+    // A new collection entry starts when it is acquired, rather than when it was wishlisted.
+    if (existingImport && ["upcoming", "wanted"].includes(existingImport.section) && (!importedShelfGame || importedShelfGame.pendingCollection)) {
+      collectionGame.createdAt = game.backlogAddedAt || now;
+    }
     game.shelfId = collectionGame.id;
   }
   delete game.preorderNewAddition;
@@ -3393,7 +3399,7 @@ async function addShelfGameToGamelist(game, { section = "backlog" } = {}) {
       title: game.title,
       platform: shortPlatform(game.platform),
       section,
-      ...(section === "backlog" ? { acceptedFromShelfAt: createdAt } : {}),
+      ...(section === "backlog" ? { acceptedFromShelfAt: createdAt, backlogAddedAt: existingIndex >= 0 && games[existingIndex].section === "backlog" ? games[existingIndex].backlogAddedAt || games[existingIndex].createdAt || createdAt : createdAt } : {}),
       digital: Boolean(game.digital || game.dlc),
       dlc: Boolean(game.dlc),
       psPlus: Boolean(game.psPlus),
@@ -3463,6 +3469,7 @@ async function addSyncedWishlistToBacklog(game) {
   const nextGames = state.gamelistGames.map((item) => item.id === game.id ? {
     ...item,
     section: "backlog",
+    backlogAddedAt: now,
     prices: [],
     playing: false,
     editedAt: now,

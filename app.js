@@ -8845,7 +8845,7 @@ function completionTimeValue(game) {
 }
 
 function addedTimeValue(game) {
-  const time = Date.parse(game.createdAt || game.updatedAt || "");
+  const time = Date.parse(game.backlogAddedAt || game.createdAt || game.updatedAt || "");
   return Number.isNaN(time) ? 0 : time;
 }
 
@@ -12312,6 +12312,7 @@ async function saveCurrentFormGame() {
   const game = {
     ...(existing || blankGame()),
     id,
+    ...(section === "backlog" && existing && existing.section !== "backlog" ? { backlogAddedAt: editedAt } : {}),
     preorderNewAddition: finishingSetup ? false : Boolean(existing?.preorderNewAddition),
     title: el.fields.title.value.trim(),
     platform: canonicalPlatform(el.fields.platform.value),
@@ -12440,8 +12441,8 @@ function moveToBacklog(id) {
     return;
   }
   const fromShelfAdditions = isShelfNewAddition(game);
+  if (game.section !== "backlog") game.backlogAddedAt = new Date().toISOString();
   game.section = "backlog";
-  game.backlogAddedAt = new Date().toISOString();
   if (fromShelfAdditions) game.acceptedFromShelfAt = new Date().toISOString();
   game.preorderStore = "";
   game.prices = [];
@@ -12461,6 +12462,7 @@ function startPlaying(id, { stream = false } = {}) {
   const game = getGame(id);
   if (!game || game.completedAt) return;
   if (isShelfNewAddition(game)) game.acceptedFromShelfAt = new Date().toISOString();
+  if (["upcoming", "wanted", "new"].includes(game.section)) game.backlogAddedAt = new Date().toISOString();
   game.section = "backlog";
   game.preorderNewAddition = false;
   game.playing = true;
@@ -13637,7 +13639,8 @@ function renderCollectionMedia() {
 }
 
 function gamelistAddedBadge(game) {
-  if (!game.createdAt) return "";
+  if (["upcoming", "wanted"].includes(game.section)) return "";
+  if (!game.backlogAddedAt && !game.createdAt) return "";
   return `<span class="history-pill history-date-pill gamelist-added-pill"><small>${escapeHtml(tt("Added"))}</small><strong>${escapeHtml(formatShortDate(game.backlogAddedAt || game.createdAt))}</strong></span>`;
 }
 
