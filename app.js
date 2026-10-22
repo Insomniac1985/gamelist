@@ -2801,9 +2801,9 @@ function settingsCsvDataItem() {
               ${detail ? `<small class="settings-home-copy">${escapeHtml(tt(detail))}</small>` : ""}
             </div>
             <div class="settings-data-actions ${["gamelist", "shelf", "finished"].includes(key) ? "settings-data-actions-add" : ""}">
-              <button class="ghost-button" type="button" data-export-csv="${escapeHtml(key)}">${escapeHtml(tt("Export"))}</button>
-              <button class="ghost-button" type="button" data-import-csv="${escapeHtml(key)}">${escapeHtml(tt("Import"))}</button>
-              ${["gamelist", "shelf", "finished"].includes(key) ? `<button class="ghost-button" type="button" data-add-csv="${escapeHtml(key)}">${escapeHtml(tt("Add"))}</button>` : ""}
+              <button class="ghost-button" type="button" data-export-csv="${escapeHtml(key)}">${downloadIcon()}${escapeHtml(tt("Export"))}</button>
+              <button class="ghost-button" type="button" data-import-csv="${escapeHtml(key)}">${uploadIcon()}${escapeHtml(tt("Import"))}</button>
+              ${["gamelist", "shelf", "finished"].includes(key) ? `<button class="ghost-button" type="button" data-add-csv="${escapeHtml(key)}">${plusIcon()}${escapeHtml(tt("Add"))}</button>` : ""}
             </div>
           </div>
         `).join("")}
@@ -10805,6 +10805,16 @@ function downloadIcon() {
     <svg class="download-icon" viewBox="0 0 24 24" aria-hidden="true">
       <path d="M12 2.5v13.5"></path>
       <path d="M6.5 10.5l5.5 5.5 5.5-5.5"></path>
+      <path d="M4.5 20.5h15"></path>
+    </svg>
+  `;
+}
+
+function uploadIcon() {
+  return `
+    <svg class="download-icon" viewBox="0 0 24 24" aria-hidden="true">
+      <path d="M12 16V2.5"></path>
+      <path d="m6.5 8 5.5-5.5L17.5 8"></path>
       <path d="M4.5 20.5h15"></path>
     </svg>
   `;
