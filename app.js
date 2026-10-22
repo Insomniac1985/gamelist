@@ -2798,7 +2798,7 @@ function settingsCsvDataItem() {
           <div class="settings-csv-row">
             <div class="settings-csv-label">
               <span>${escapeHtml(tt(label))}</span>
-              ${detail ? `<small>${escapeHtml(tt(detail))}</small>` : ""}
+              ${detail ? `<small class="settings-home-copy">${escapeHtml(tt(detail))}</small>` : ""}
             </div>
             <div class="settings-data-actions ${["gamelist", "shelf", "finished"].includes(key) ? "settings-data-actions-add" : ""}">
               <button class="ghost-button" type="button" data-export-csv="${escapeHtml(key)}">${escapeHtml(tt("Export"))}</button>
