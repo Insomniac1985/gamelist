@@ -5992,6 +5992,11 @@ body.theme-kash
   scroll-snap-stop: always;
 }
 
+.playing-section
+  .game-card.playing-card:not(:has(.card-trophies:not([hidden]))) {
+  grid-template-rows: auto auto auto;
+}
+
 /* Let tablet playing cards shrink their poster column with the viewport.
    The desktop 300px minimum made portrait covers taller than the content
    column at 700–1100px, so cards with more metadata grew much taller. */
