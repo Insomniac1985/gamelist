@@ -2687,31 +2687,22 @@ function settingsLayoutItem(key, index, options = {}) {
     finished: "Finished games",
     latestFinished: "Last finished",
   }[key] || key;
-  const wireClass = {
-    showcase: "wire-favorites",
-    playing: "wire-playing",
-    trophies: "wire-trophies",
-    calendar: "wire-calendar",
-    highlights: "wire-highlights",
-    search: "wire-search",
-    gamelist: "wire-list",
-    finished: "wire-finished",
-    latestFinished: "wire-latest-finished",
-  }[key] || "";
   const fixed = Boolean(options.fixed);
   const visible = !(state.settings.hiddenSections || []).includes(key);
   return `
     <article class="settings-layout-card ${fixed ? "is-fixed" : ""} ${visible ? "" : "is-hidden-section"}" data-layout-key="${escapeHtml(key)}">
-      <div class="settings-wire ${wireClass}" aria-hidden="true">${Array.from({ length: 6 }, () => "<span></span>").join("")}</div>
       <strong>${escapeHtml(title)}</strong>
       <div class="settings-layout-actions">
         ${fixed ? `<span class="settings-fixed-label">Fixed</span>` : `
-          <button class="icon-button" type="button" data-layout-key="${escapeHtml(key)}" data-layout-move="-1" ${index === 0 ? "disabled" : ""} title="Move up" aria-label="Move ${escapeHtml(title)} up"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 19V5m-7 7 7-7 7 7"/></svg></button>
-          <button class="icon-button" type="button" data-layout-key="${escapeHtml(key)}" data-layout-move="1" ${index === state.settings.pageOrder.length - 1 ? "disabled" : ""} title="Move down" aria-label="Move ${escapeHtml(title)} down"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14m7-7-7 7-7-7"/></svg></button>
+          <button class="icon-button settings-layout-move" type="button" data-layout-key="${escapeHtml(key)}" data-layout-move="-1" ${index === 0 ? "disabled" : ""} title="Move up" aria-label="Move ${escapeHtml(title)} up"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 19V5m-7 7 7-7 7 7"/></svg></button>
+          <button class="icon-button settings-layout-move" type="button" data-layout-key="${escapeHtml(key)}" data-layout-move="1" ${index === state.settings.pageOrder.length - 1 ? "disabled" : ""} title="Move down" aria-label="Move ${escapeHtml(title)} down"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14m7-7-7 7-7-7"/></svg></button>
         `}
-        <label class="check-filter toggle-check settings-visible-check" title="${visible ? "Visible" : "Hidden"}">
-          <input type="checkbox" value="${escapeHtml(key)}" data-layout-hidden ${visible ? "checked" : ""}>
-          <span>${visible ? "Show" : "Hide"}</span>
+        <label class="check-filter toggle-check settings-visible-check settings-layout-visibility" title="${visible ? "Hide" : "Show"} ${escapeHtml(title)}">
+          <input type="checkbox" value="${escapeHtml(key)}" data-layout-hidden aria-label="${visible ? "Hide" : "Show"} ${escapeHtml(title)}" ${visible ? "checked" : ""}>
+          <svg class="settings-visibility-icon ${visible ? "is-visible" : "is-hidden"}" viewBox="0 0 24 24" aria-hidden="true">
+            ${visible ? '<path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/>' : '<path d="M3 3l18 18"/><path d="M10.6 5.2A10.8 10.8 0 0 1 12 5c6.5 0 10 7 10 7a16 16 0 0 1-3.1 3.9M6.2 6.2C3.5 8 2 12 2 12s3.5 7 10 7a10.8 10.8 0 0 0 4.2-.9"/><path d="M9.9 9.9a3 3 0 0 0 4.2 4.2"/>'}
+          </svg>
+          <span class="settings-visibility-sr-only">${visible ? "Hide" : "Show"} ${escapeHtml(title)}</span>
         </label>
       </div>
     </article>
@@ -2801,9 +2792,9 @@ function settingsCsvDataItem() {
               ${detail ? `<small class="settings-home-copy">${escapeHtml(tt(detail))}</small>` : ""}
             </div>
             <div class="settings-data-actions ${["gamelist", "shelf", "finished"].includes(key) ? "settings-data-actions-add" : ""}">
-              <button class="ghost-button" type="button" data-export-csv="${escapeHtml(key)}">${escapeHtml(tt("Export"))}</button>
-              <button class="ghost-button" type="button" data-import-csv="${escapeHtml(key)}">${escapeHtml(tt("Import"))}</button>
-              ${["gamelist", "shelf", "finished"].includes(key) ? `<button class="ghost-button" type="button" data-add-csv="${escapeHtml(key)}">${escapeHtml(tt("Add"))}</button>` : ""}
+              <button class="ghost-button" type="button" data-export-csv="${escapeHtml(key)}">${downloadIcon()}${escapeHtml(tt("Export"))}</button>
+              <button class="ghost-button" type="button" data-import-csv="${escapeHtml(key)}">${uploadIcon()}${escapeHtml(tt("Import"))}</button>
+              ${["gamelist", "shelf", "finished"].includes(key) ? `<button class="ghost-button" type="button" data-add-csv="${escapeHtml(key)}">${escapeHtml(tt("Add"))}${plusIcon()}</button>` : ""}
             </div>
           </div>
         `).join("")}
@@ -10805,6 +10796,16 @@ function downloadIcon() {
     <svg class="download-icon" viewBox="0 0 24 24" aria-hidden="true">
       <path d="M12 2.5v13.5"></path>
       <path d="M6.5 10.5l5.5 5.5 5.5-5.5"></path>
+      <path d="M4.5 20.5h15"></path>
+    </svg>
+  `;
+}
+
+function uploadIcon() {
+  return `
+    <svg class="download-icon" viewBox="0 0 24 24" aria-hidden="true">
+      <path d="M12 16V2.5"></path>
+      <path d="m6.5 8 5.5-5.5L17.5 8"></path>
       <path d="M4.5 20.5h15"></path>
     </svg>
   `;
