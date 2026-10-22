@@ -1,5 +1,5 @@
 import { syncMediaFormatToggle } from "./media-format-toggle.js";
-import { mountCollectionWorkspace } from "./collection-workspace.js";
+import { mountCollectionWorkspace, prepareCollectionWorkspace } from "./collection-workspace.js";
 import { openSharedAddGame, warmSharedAddGame } from "./shared-add-game.js";
 import { normalizeSearchText, bindModalTouchGuard, createGameCardShell, bindActivityCardParallax, mountActivitySlider, mountTwitchPreview, mountReleaseCalendar, finishedGameMarkup, achievementCardMarkup, achievementDashboardMarkup, achievementPanelMarkup, completedCardMarkup, horizontalCarouselState, syncViewModeButton, slideHorizontalCarousel, comparePlayingGames, finishedDurationText, timeBadgeMarkup, guideLinksMarkup, storeButtonsMarkup, activityTrailerUrl, activityTrailerFrameMarkup, preloadPausedActivityTrailers, activityReleaseStatus, activityCoverOverride, activityAllowsPsnCardTrophies, formatFooterDate, formatFooterDateTime, formatFooterShortDate, confirmGameDelete } from "./activity-ui.js";
 import { applySiteTheme, normalizeThemeSettings, ownerCardColorClass, ownerColorClass, themeSettingsContent, bindThemeSettingsContent, readThemeSettingsContent } from "./theme-system.js";
@@ -577,10 +577,10 @@ init();
 
 async function init() {
   if (await checkSiteVersion()) return;
+  const authPromise = fetch("/api/auth", { cache: "no-store" }).then((response) => response.json()).catch(() => ({}));
   const initialTheme = await window.__initialThemeReady?.catch(() => "shabii");
   registerServiceWorker();
   syncDisplayMode();
-  const authPromise = fetch("/api/auth", { cache: "no-store" }).then((response) => response.json()).catch(() => ({}));
   const authStatus = await authPromise;
   state.canEdit = Boolean(authStatus.ok);
   if (!state.canEdit) {
@@ -588,14 +588,15 @@ async function init() {
     sessionStorage.removeItem(`${SESSION_KEY}:password`);
   }
   document.body.classList.toggle("can-edit", state.canEdit);
-  if (state.canEdit) warmSharedAddGame();
   bindEvents();
   initRenderSettling();
   warmUiIcons();
   bindTextureParallax();
   await loadData();
   void logConsoleInfo(initialTheme, authStatus);
-  const cloudChanged = await pullCloudData();
+  const cloudPromise = pullCloudData();
+  void ensureCollectionWorkspace();
+  await cloudPromise;
   const requestedList = new URLSearchParams(location.search).get("list");
   state.mobileSection = ["backlog", "shelf", "upcoming", "wanted"].includes(requestedList) ? requestedList : state.settings.defaultList || "backlog";
   defaultCollectionListApplied = true;
@@ -613,7 +614,11 @@ async function init() {
   syncPagePullTransition();
   if (await maybeRenderGameOfTheYearExportPreview()) return;
   render();
-  if (cloudChanged) render();
+  if (state.canEdit) {
+    const warmEditor = () => warmSharedAddGame();
+    if ("requestIdleCallback" in window) window.requestIdleCallback(warmEditor, { timeout: 2500 });
+    else window.setTimeout(warmEditor, 500);
+  }
   void refreshPlayingCardPlaytime();
   window.setInterval(refreshPlayingCardPlaytime, 5 * 60 * 1000);
   const requestedParams = new URLSearchParams(location.search);
@@ -1127,7 +1132,7 @@ function bindEvents() {
   el.searchInput.addEventListener("input", (event) => {
     state.filters.query = normalizeSearchText(event.target.value);
     state.completedVisiblePages = 1;
-    render();
+    scheduleSearchRender();
   });
   el.platformFilter.addEventListener("change", (event) => {
     state.filters.platform = event.target.value;
@@ -2065,7 +2070,14 @@ async function persistCloud() {
   }
 }
 
+let searchRenderTimer;
+function scheduleSearchRender() {
+  window.clearTimeout(searchRenderTimer);
+  searchRenderTimer = window.setTimeout(render, 100);
+}
+
 function render() {
+  window.clearTimeout(searchRenderTimer);
   const libraryScrollAnchor = captureMobileLibraryScrollAnchor();
   applyTheme();
   applyLanguage();
@@ -2136,8 +2148,12 @@ function applyLanguage() {
   if (el.detailRatingTitle) el.detailRatingTitle.innerHTML = ownerRatingTitle();
 }
 
+let appliedThemeKey;
 function applyTheme() {
   const settings = normalizeSettings(state.settings);
+  const key = JSON.stringify(settings);
+  if (key === appliedThemeKey) return;
+  appliedThemeKey = key;
   const theme = applySiteTheme(settings, { page: "gamelist" });
   const twitchUrl = twitchChannelUrl(settings.twitchUser);
   el.brandLink?.setAttribute("aria-label", theme.title);
@@ -7397,7 +7413,15 @@ function renderSection(section) {
   if (!list) return;
   const games = filteredGames().filter((game) => (section === "new" ? isNewAdditionGame(game) : game.section === section) && !game.completedAt && !game.playing);
   if (column && section === "new") column.hidden = !canSeeNewAdditions() || !games.length;
+  // Inactive panes are rendered when selected, keeping list changes small.
+  if (section !== state.mobileSection) return;
   games.sort((a, b) => compareGames(a, b, section));
+  const signature = JSON.stringify([games, state.viewMode, state.canEdit, state.settings, manualDragEnabled(), state.filters.query, todayDate()]);
+  const previous = list.renderInputs;
+  if (previous?.signature === signature && previous.collection === collectionData
+      && previous.psn === state.psnActivity && previous.steam === state.steamActivity
+      && previous.xbox === state.xboxActivity) return;
+  list.renderInputs = { signature, collection: collectionData, psn: state.psnActivity, steam: state.steamActivity, xbox: state.xboxActivity };
   list.innerHTML = "";
   list.classList.toggle("list-view", state.viewMode === "list");
   if (!games.length) {
@@ -13690,19 +13714,30 @@ let collectionData = null;
 let collectionLoad = null;
 let collectionMedia = "all";
 let collectionRenderInputs = null;
+let collectionRefresh = null;
+let collectionDataSignature = "";
 let defaultCollectionListApplied = false;
 
-async function refreshCollectionData() {
-  const response = await fetch("/api/shelf", { cache: "no-store" });
-  if (!response.ok) throw new Error("Could not load your collection.");
-  collectionData = await response.json();
-  return collectionData;
+function refreshCollectionData() {
+  if (collectionRefresh) return collectionRefresh;
+  collectionRefresh = (async () => {
+    const response = await fetch("/api/shelf", { cache: "no-store" });
+    if (!response.ok) throw new Error("Could not load your collection.");
+    const data = await response.json();
+    const signature = JSON.stringify(data);
+    if (signature !== collectionDataSignature) {
+      collectionData = data;
+      collectionDataSignature = signature;
+    }
+    return collectionData;
+  })().finally(() => { collectionRefresh = null; });
+  return collectionRefresh;
 }
 
 function ensureCollectionWorkspace() {
   if (collectionLoad) return collectionLoad;
   collectionLoad = (async () => {
-    await refreshCollectionData();
+    await Promise.all([refreshCollectionData(), prepareCollectionWorkspace()]);
     const slots = Object.fromEntries(["showcase", "kpis", "toolbar", "library"].map(key => [key, document.querySelector("#collection" + key[0].toUpperCase() + key.slice(1))]));
     const stats = document.createElement("div");
     stats.hidden = true;

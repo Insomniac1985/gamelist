@@ -8319,6 +8319,8 @@ body:not(.can-edit) .top-actions-separator {
     display: grid;
     padding: 0;
     place-items: center;
+    transform: none !important;
+    transition: none !important;
   }
 
   #floatingStatsButton > :is(.graph-icon, .trophy-icon),
@@ -8340,15 +8342,13 @@ body:not(.can-edit) .top-actions-separator {
     transition-property: color, background, border-color, box-shadow;
   }
 
-  #floatingStatsButton.is-goty-shortcut .trophy-icon,
-  #completedStatsButton.is-goty-shortcut .trophy-icon {
+  #floatingStatsButton.is-goty-shortcut .trophy-icon {
     color: #ffe985 !important;
+    stroke: #ffe985 !important;
   }
 
   #floatingStatsButton.is-goty-shortcut:hover,
-  #floatingStatsButton.is-goty-shortcut:focus-visible,
-  #completedStatsButton.is-goty-shortcut:hover,
-  #completedStatsButton.is-goty-shortcut:focus-visible {
+  #floatingStatsButton.is-goty-shortcut:focus-visible {
     color: #302817 !important;
     background: #ffe985 !important;
     border-color: #ffe985 !important;
@@ -8356,10 +8356,9 @@ body:not(.can-edit) .top-actions-separator {
   }
 
   #floatingStatsButton.is-goty-shortcut:hover .trophy-icon,
-  #floatingStatsButton.is-goty-shortcut:focus-visible .trophy-icon,
-  #completedStatsButton.is-goty-shortcut:hover .trophy-icon,
-  #completedStatsButton.is-goty-shortcut:focus-visible .trophy-icon {
+  #floatingStatsButton.is-goty-shortcut:focus-visible .trophy-icon {
     color: #302817 !important;
+    stroke: #302817 !important;
   }
 }
 
@@ -18754,50 +18753,35 @@ html.theme-light .primary-button.stream-start-action:hover {
     transition-duration: 220ms;
   }
 
-  #mobileDockStats {
-    display: flex;
-    align-items: center;
-    justify-content: center;
+  /* Keep both shortcut icons centered throughout hover and keyboard focus. */
+  #mobileDockStats,
+  #mobileDockStats:hover,
+  #mobileDockStats:focus-visible {
+    display: grid;
+    width: 42px;
+    flex-basis: 42px;
+    place-items: center;
+    padding: 0;
     gap: 0;
     overflow: hidden;
-    transition:
-      flex-basis 420ms cubic-bezier(0.2, 0.8, 0.2, 1),
-      width 420ms cubic-bezier(0.2, 0.8, 0.2, 1),
-      padding 420ms cubic-bezier(0.2, 0.8, 0.2, 1),
-      gap 420ms cubic-bezier(0.2, 0.8, 0.2, 1),
-      background 140ms ease,
-      box-shadow 140ms ease;
+    transform: none;
+    transition: color 140ms ease, background 140ms ease, box-shadow 140ms ease;
   }
 
   #mobileDockStats > span {
-    display: inline-block;
-    width: 0;
-    overflow: hidden;
-    opacity: 0;
-    flex-shrink: 0;
-    font-weight: 900;
-    text-align: left;
-    white-space: nowrap;
-    transition:
-      width 420ms cubic-bezier(0.2, 0.8, 0.2, 1),
-      opacity 220ms ease;
+    display: none;
   }
 
-  #mobileDockStats:hover,
-  #mobileDockStats:focus-visible {
-    width: 208px;
-    flex-basis: 208px;
-    gap: 8px;
-    justify-content: flex-start;
-    padding-inline: 12px;
-    transition-duration: 220ms;
+  #mobileDockStats > :is(.graph-icon, .trophy-icon) {
+    margin: 0;
+    transform: none !important;
+    translate: none;
+    transition: none;
   }
 
-  #mobileDockStats:hover > span,
-  #mobileDockStats:focus-visible > span {
-    width: 152px;
-    opacity: 1;
-    transition-duration: 220ms;
+  #mobileDockStats.is-goty-shortcut .trophy-icon {
+    color: #ffe985 !important;
+    stroke: currentColor !important;
   }
 
   #mobileDockStats.is-goty-shortcut:hover,
@@ -18809,11 +18793,11 @@ html.theme-light .primary-button.stream-start-action:hover {
     box-shadow: 0 3px 24px rgba(255, 233, 133, 0.42) !important;
   }
 
-  #mobileDockStats.is-goty-shortcut .trophy-icon,
   #mobileDockStats.is-goty-shortcut:hover .trophy-icon,
   #mobileDockStats.is-goty-shortcut:focus-visible .trophy-icon,
   #mobileDockStats.is-goty-shortcut:active .trophy-icon {
     color: #302817 !important;
+    stroke: #302817 !important;
     transform: none !important;
   }
 
@@ -18857,7 +18841,6 @@ html.theme-light .primary-button.stream-start-action:hover {
 
   #mobileDockAdd,
   #mobileDockSwitch,
-  #mobileDockStats,
   #mobileDockGoty {
     transition-duration: 220ms, 220ms, 220ms, 220ms, 140ms, 140ms;
     transition-delay: 80ms;
@@ -18867,8 +18850,6 @@ html.theme-light .primary-button.stream-start-action:hover {
   #mobileDockAdd:focus-visible,
   #mobileDockSwitch:hover,
   #mobileDockSwitch:focus-visible,
-  #mobileDockStats:hover,
-  #mobileDockStats:focus-visible,
   #mobileDockGoty:hover,
   #mobileDockGoty:focus-visible {
     transition-duration: 190ms, 190ms, 190ms, 190ms, 140ms, 140ms;
@@ -18877,7 +18858,6 @@ html.theme-light .primary-button.stream-start-action:hover {
 
   #mobileDockAdd > span,
   #mobileDockSwitch > .mobile-switch-label,
-  #mobileDockStats > span,
   #mobileDockGoty > span {
     transition-duration: 180ms, 180ms;
     transition-delay: 80ms;
@@ -18887,8 +18867,6 @@ html.theme-light .primary-button.stream-start-action:hover {
   #mobileDockAdd:focus-visible > span,
   #mobileDockSwitch:hover > .mobile-switch-label,
   #mobileDockSwitch:focus-visible > .mobile-switch-label,
-  #mobileDockStats:hover > span,
-  #mobileDockStats:focus-visible > span,
   #mobileDockGoty:hover > span,
   #mobileDockGoty:focus-visible > span {
     transition-duration: 180ms, 180ms;

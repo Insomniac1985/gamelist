@@ -1,23 +1,24 @@
 import { syncMediaFormatToggle } from "./media-format-toggle.js";
 /** Mount shared collection components inside the unified Gamelist shell. */
 let workspacePromise;
+let assetsPromise;
+export function prepareCollectionWorkspace() {
+  return assetsPromise ||= Promise.all([
+    fetch('collection-ui.html').then(read),
+    ...['styles.css', 'shelf.css', 'game-editor-layout.css'].map(path => fetch(path).then(read)),
+  ]).catch(error => { assetsPromise = null; throw error; });
+}
 export function mountCollectionWorkspace(options) {
   return workspacePromise ||= mount(options).catch(error => { workspacePromise = null; throw error; });
 }
 
 async function mount({ slots, changed, openGame, mediaChanged, viewChanged, clearFilters }) {
-  const [markup, ...styles] = await Promise.all([
-    fetch('collection-ui.html').then(read),
-    ...['styles.css', 'shelf.css', 'game-editor-layout.css'].map(path => fetch(path).then(read)),
-  ]);
+  const [markup, ...styles] = await prepareCollectionWorkspace();
   const source = new DOMParser().parseFromString(markup, 'text/html');
   source.querySelectorAll('script').forEach(node => node.remove());
   const surfaces = [];
   const css = styles.join('\n').replace(/\bhtml(?=[\s.#:[>])/g, '.shelf-page').replace(/\bbody(?=[\s.#:[>])/g, '.shelf-page');
-  const surface = (host, name) => {
-    const shadow = host.attachShadow({ mode: 'open' });
-    const style = document.createElement('style');
-    style.textContent = css + `\n:host{display:block;min-width:0} :host([hidden]){display:none!important}
+  const surfaceCss = css + `\n:host{display:block;min-width:0} :host([hidden]){display:none!important}
       .shelf-page{background:transparent;min-height:0;margin:0;padding:0;overflow:visible;color:inherit}
       .shelf-page>.topbar,.shelf-page>.backdrop,.shelf-page>.site-footer,.shelf-page>.mobile-action-dock,
       .shelf-page>.floating-edit-actions,.shelf-page>.floating-search-button,.shelf-page>.scroll-top-button{display:none!important}
@@ -58,11 +59,24 @@ async function mount({ slots, changed, openGame, mediaChanged, viewChanged, clea
         .collection-view-controls{grid-column:2}
       }
     `;
+  // Parse the shared rules once rather than once per shadow surface.
+  const sharedSheet = "adoptedStyleSheets" in ShadowRoot.prototype && "replaceSync" in CSSStyleSheet.prototype
+    ? new CSSStyleSheet() : null;
+  sharedSheet?.replaceSync(surfaceCss);
+  const surface = (host, name) => {
+    const shadow = host.attachShadow({ mode: 'open' });
     const body = document.createElement('div');
     body.className = 'shelf-page';
     body.dataset.surface = name;
     const ownerStyle = document.createElement('style');
-    shadow.append(style, ownerStyle, body);
+    if (sharedSheet) {
+      shadow.adoptedStyleSheets = [sharedSheet];
+      shadow.append(ownerStyle, body);
+    } else {
+      const style = document.createElement('style');
+      style.textContent = surfaceCss;
+      shadow.append(style, ownerStyle, body);
+    }
     surfaces.push({ shadow, body, ownerStyle });
     // Keep keyboard shortcuts in the parent from firing while editing here.
     shadow.addEventListener('keydown', event => event.stopPropagation());
