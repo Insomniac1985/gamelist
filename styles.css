@@ -19484,3 +19484,34 @@ body:not(.can-edit):not(.shelf-page) :is(#upcoming, #wanted) .price-refresh-acti
     height: var(--toolbar-control-height);
   }
 }
+
+/* Keep the mobile playing actions in their own columns without overlap. */
+@media (max-width: 760px) {
+  .playing-section .game-card.playing-card h3 {
+    font-size: clamp(28px, 7vw, 40px);
+    line-height: 1.05;
+  }
+  .playing-section .game-card.playing-card .card-actions {
+    display: grid;
+    grid-template-columns: minmax(0, 0.95fr) minmax(0, 1.05fr) 36px;
+    gap: 5px;
+    width: 100%;
+    min-width: 0;
+    align-items: stretch;
+  }
+  .playing-section .game-card.playing-card .card-actions > button {
+    box-sizing: border-box;
+    width: 100%;
+    min-width: 0;
+    max-width: 100%;
+    height: 36px;
+    min-height: 36px;
+    padding: 0 6px;
+    gap: 5px;
+    white-space: nowrap;
+    font-size: clamp(10px, 2.8vw, 12px);
+  }
+  .playing-section .game-card.playing-card .card-actions > .complete-action { grid-column: 1; grid-row: 1; }
+  .playing-section .game-card.playing-card .card-actions > .playing-completed-action { grid-column: 2; grid-row: 1; }
+  .playing-section .game-card.playing-card .card-actions > .backlog-action { grid-column: 3; grid-row: 1; padding: 0; }
+}
