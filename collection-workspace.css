@@ -195,7 +195,7 @@ body[data-mobile-section="new"] #collectionLibrary:not([hidden]) + #new:not([hid
     content: "";
     position: absolute;
     z-index: -1;
-    inset: -88px -14px -18px;
+    inset: -112px -14px -18px;
     pointer-events: none;
     background:
       radial-gradient(circle at 78% 9%, var(--glow-primary), transparent 30%),
