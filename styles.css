@@ -16633,7 +16633,12 @@ html.theme-light .primary-button.stream-start-action:hover {
   }
 
   body.shabii-main-owner:not(.can-edit) .brand span:last-child {
-    font-size: clamp(20px, 5.5vw, 25px);
+    font-size: clamp(17px, 4.5vw, 20px);
+  }
+
+  body.shabii-main-owner:not(.can-edit) .brand-mark {
+    width: 40px;
+    height: 40px;
   }
 
   .top-actions {
