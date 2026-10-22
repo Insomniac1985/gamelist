@@ -216,7 +216,7 @@ const platinumMetaCache = loadPlatinumMetaCache();
 const initialSettings = loadLocalSettings();
 
 function defaultViewModeForDevice() {
-  return window.matchMedia?.("(max-width: 800px)")?.matches ? "list" : "grid";
+  return window.matchMedia?.("(max-width: 699px)")?.matches ? "list" : "grid";
 }
 
 function loadSharedViewMode() {
@@ -971,7 +971,7 @@ function bindEvents() {
   }
   requestAnimationFrame(syncSectionTabsVisibility);
   window.addEventListener("keydown", (event) => {
-    if (window.innerWidth < 801 || typeof event.key !== "string" || event.key.toLowerCase() !== "f" || event.repeat || event.isComposing) return;
+    if (window.innerWidth < 761 || typeof event.key !== "string" || event.key.toLowerCase() !== "f" || event.repeat || event.isComposing) return;
     if (event.altKey || event.ctrlKey || event.metaKey || event.shiftKey) return;
     const target = event.target;
     if (target instanceof HTMLElement && target.closest("input, textarea, select, [contenteditable='true'], [role='textbox'], dialog[open]")) return;
@@ -1066,7 +1066,7 @@ function bindEvents() {
     el.finishedStatsDialog.classList.remove("has-mini-overlay");
     document.querySelector(".finished-stats-hover-float")?.remove();
     el.finishedStatsBody?.querySelector(".finished-stats-floating-source")?.classList.remove("finished-stats-floating-source");
-    if (window.matchMedia("(max-width: 800px)").matches) el.mobileDockAdd?.classList.add("stats-just-closed");
+    if (window.matchMedia("(max-width: 699px)").matches) el.mobileDockAdd?.classList.add("stats-just-closed");
     syncScrollLock();
   });
   window.addEventListener("scroll", () => {
@@ -1510,7 +1510,7 @@ function scheduleBackgroundRefreshes() {
 
 function syncDisplayMode() {
   const standalone = window.matchMedia("(display-mode: standalone)").matches || window.navigator.standalone === true;
-  const mobile = window.matchMedia("(max-width: 800px)").matches;
+  const mobile = window.matchMedia("(max-width: 699px)").matches;
   document.body.classList.toggle("mobile-app-mode", standalone && mobile);
   scheduleMobilePaintRefresh();
 }
@@ -3485,7 +3485,7 @@ function mobilePlayingCountText(count) {
 
 function updatePlayingCountText(count = visiblePlayingGames().length) {
   if (!el.playingCount) return;
-  el.playingCount.textContent = window.matchMedia("(max-width: 800px)").matches
+  el.playingCount.textContent = window.matchMedia("(max-width: 699px)").matches
     ? mobilePlayingCountText(count)
     : playingCountText(count);
 }
@@ -3556,7 +3556,7 @@ function renderStreamFilterToggle(button, { hidden = false } = {}) {
   button.classList.toggle("is-non-stream", mode === "nonstream");
   button.innerHTML = mode === "all" ? allGamesIcon() : mode === "stream" ? streamPlayIcon() : streamPlayOffIcon();
   const tooltip = tt("Filter between stream and non-stream games");
-  if (window.matchMedia("(min-width: 801px)").matches) {
+  if (window.matchMedia("(min-width: 700px)").matches) {
     button.removeAttribute("title");
     button.dataset.tooltip = tooltip;
   } else {
@@ -3609,7 +3609,7 @@ function renderGameOfTheYear() {
   const categories = GAME_OF_YEAR_CATEGORIES;
   const candidateIds = new Set(candidates.map((game) => game.id));
   el.gotySection.hidden = false;
-  const mobileTitle = window.matchMedia("(max-width: 800px)").matches;
+  const mobileTitle = window.matchMedia("(max-width: 699px)").matches;
   const sectionTitle = mobileTitle
     ? `<span class="goty-title-label">${escapeHtml(tt("My GOTYs {year}", { year: "" }).trim())}</span><span class="goty-title-year">${escapeHtml(year)}</span>`
     : `<span>${escapeHtml(tt("My Games of the year {year}", { year }))}</span>`;
@@ -6860,7 +6860,7 @@ function renderMobileTabs() {
   mobileTabs?.style.setProperty("--mobile-tab-count", String(sections.length));
   mobileTabs?.style.setProperty("--mobile-tab-index", String(index));
   if (mobileTabs) {
-    mobileTabs.style.gridTemplateColumns = sections.includes("new") && window.matchMedia("(max-width: 800px)").matches ? `minmax(34px, 42px) repeat(${Math.max(1, sections.length - 1)}, minmax(0, 1fr))` : "";
+    mobileTabs.style.gridTemplateColumns = sections.includes("new") && window.matchMedia("(max-width: 699px)").matches ? `minmax(34px, 42px) repeat(${Math.max(1, sections.length - 1)}, minmax(0, 1fr))` : "";
     requestAnimationFrame(syncMobileTabIndicator);
   }
   el.board.style.setProperty("--mobile-section-count", String(sections.length));
@@ -6886,7 +6886,7 @@ function renderMobileTabs() {
 }
 
 function captureMobileLibraryScrollAnchor() {
-  if (!window.matchMedia("(max-width: 800px)").matches || document.body.classList.contains("dialog-open")) return null;
+  if (!window.matchMedia("(max-width: 699px)").matches || document.body.classList.contains("dialog-open")) return null;
   const previous = document.body.dataset.mobileSection;
   if (!previous || previous === state.mobileSection) return null;
   const toolbar = document.querySelector(".toolbar");
@@ -6957,7 +6957,7 @@ function canSeeNewAdditions() {
 }
 
 function handleBoardSwipeStart(event) {
-  if (!window.matchMedia("(max-width: 800px)").matches) return;
+  if (!window.matchMedia("(max-width: 699px)").matches) return;
   const touch = event.changedTouches?.[0];
   if (!touch) return;
   state.mobileSwipeStart = { x: touch.clientX, y: touch.clientY };
@@ -6966,7 +6966,7 @@ function handleBoardSwipeStart(event) {
 function handleBoardSwipeEnd(event) {
   const start = state.mobileSwipeStart;
   state.mobileSwipeStart = null;
-  if (!start || !window.matchMedia("(max-width: 800px)").matches) return;
+  if (!start || !window.matchMedia("(max-width: 699px)").matches) return;
   const touch = event.changedTouches?.[0];
   if (!touch) return;
   const dx = touch.clientX - start.x;
@@ -7524,7 +7524,7 @@ function renderCompleted() {
 }
 
 function bindCompletedCoverPreviews(list) {
-  if (state.viewMode !== "list" || !window.matchMedia("(min-width: 801px) and (hover: hover) and (pointer: fine)").matches) return;
+  if (state.viewMode !== "list" || !window.matchMedia("(min-width: 700px) and (hover: hover) and (pointer: fine)").matches) return;
   list.querySelectorAll(".completed-cover-wrap:not([hidden])").forEach((wrap) => {
     const source = wrap.querySelector(".completed-cover");
     if (!source?.src) return;
@@ -8365,7 +8365,7 @@ function bindFinishedStatsMobileOverlays(body = el.finishedStatsBody, dialog = e
   body?.querySelectorAll("[data-stats-overlay-title]").forEach((node) => {
     if (node.closest("[data-stats-source=collection]")) return;
     node.addEventListener("click", (event) => {
-      if (!window.matchMedia("(max-width: 800px)").matches) return;
+      if (!window.matchMedia("(max-width: 699px)").matches) return;
       if (event.target.closest(".finished-stats-breakdown")) return;
       const breakdown = node.querySelector(".finished-stats-breakdown");
       if (!breakdown?.innerHTML.trim()) return;
@@ -8390,7 +8390,7 @@ function bindFinishedStatsDesktopOverlays(dialog = el.finishedStatsDialog, body 
     closeTimer = setTimeout(closeFloatingOverlay, 90);
   };
   const openFloatingContent = (sourceNode, content, className = "") => {
-    if (window.matchMedia("(max-width: 800px)").matches || !content.trim()) return;
+    if (window.matchMedia("(max-width: 699px)").matches || !content.trim()) return;
     clearTimeout(closeTimer);
     document.querySelector(".finished-stats-hover-float")?.remove();
     body.querySelectorAll(".finished-stats-floating-source").forEach((node) => {
@@ -9653,7 +9653,7 @@ function initMobileBrandOverlay() {
   const header = document.querySelector("body > .topbar");
   const dock = el.mobileActionDock;
   if (!header || !dock) return;
-  const mobile = window.matchMedia("(max-width: 800px)");
+  const mobile = window.matchMedia("(max-width: 699px)");
   let lastScroll = Math.max(0, window.scrollY);
   let scheduled = false;
   const setHidden = hidden => {
@@ -9689,7 +9689,7 @@ function updateScrollTopButton() {
   const dialogOpen = document.body.classList.contains("dialog-open");
   const visible = window.scrollY > 180 && !dialogOpen;
   const showLoggedOutAddAction = !state.canEdit && window.innerWidth > 800 && !dialogOpen;
-  const dockVisible = window.innerWidth >= 801 || window.scrollY > 180;
+  const dockVisible = window.innerWidth >= 761 || window.scrollY > 180;
   el.scrollTopButton?.classList.toggle("visible", visible);
   el.floatingEditActions?.classList.toggle("visible", visible || showLoggedOutAddAction);
   el.mobileActionDock?.classList.toggle("visible", dockVisible);

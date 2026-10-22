@@ -240,7 +240,7 @@ html {
   scroll-behavior: smooth;
 }
 
-@media (max-width: 800px) {
+@media (max-width: 699px) {
   html {
     overflow-x: clip;
   }
@@ -1437,7 +1437,7 @@ html.theme-gradient .goty-section .column-head h2 .trophy-icon {
   transform: translateY(-42px);
 }
 
-@media (max-width: 800px) {
+@media (max-width: 699px) {
   #gotyDialog,
   #gotyStatsPreviewDialog {
     position: fixed;
@@ -1509,7 +1509,7 @@ html.theme-gradient .goty-section .column-head h2 .trophy-icon {
   }
 }
 
-@media (min-width: 801px) {
+@media (min-width: 700px) {
   .goty-dialog .goty-modal {
     max-height: calc(100dvh - clamp(16px, 3vw, 28px) - 96px);
   }
@@ -2324,7 +2324,7 @@ html.theme-gradient .goty-section .column-head h2 .trophy-icon {
     transform 180ms ease;
 }
 
-@media (min-width: 801px) {
+@media (min-width: 700px) {
   .goty-callout {
     bottom: clamp(16px, 3vw, 28px);
   }
@@ -3943,7 +3943,7 @@ body.dialog-open .floating-edit-actions {
   border-radius: 8px;
 }
 
-@media (min-width: 801px) {
+@media (min-width: 700px) {
   .release-months {
     background: var(--grid-fade), var(--grid-texture), var(--panel);
     background-size:
@@ -3967,7 +3967,7 @@ body.dialog-open .floating-edit-actions {
   }
 }
 
-@media (min-width: 801px) and (max-width: 899px) {
+@media (min-width: 700px) and (max-width: 899px) {
   .release-months {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
@@ -5196,7 +5196,7 @@ body[data-mobile-section="upcoming"] .column:not(#upcoming) {
   z-index: 0;
 }
 
-@media (min-width: 801px) {
+@media (min-width: 700px) {
   .card-list.list-view .game-row {
     grid-template-columns:
       42px minmax(145px, 230px) minmax(0, 2.2fr) minmax(120px, 0.8fr)
@@ -6127,7 +6127,7 @@ body.theme-kash
   border-radius: 3px;
 }
 
-@media (min-width: 801px) and (max-width: 1100px) {
+@media (min-width: 700px) and (max-width: 1100px) {
   .playing-section .card-trophy-list {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
@@ -8197,7 +8197,7 @@ body:not(.can-edit) .top-actions-separator {
   display: none;
 }
 
-@media (min-width: 801px) {
+@media (min-width: 700px) {
   .top-actions #syncButton {
     order: 1;
   }
@@ -8342,7 +8342,7 @@ body:not(.can-edit) .top-actions-separator {
   height: 23px;
 }
 
-@media (min-width: 801px) {
+@media (min-width: 700px) {
   #floatingStatsButton,
   #completedStatsButton {
     position: relative;
@@ -8483,7 +8483,7 @@ body.dialog-open .floating-search-button {
   display: none;
 }
 
-@media (min-width: 801px) {
+@media (min-width: 700px) {
   .playing-card .complete-action .check-icon,
   .playing-card .backlog-action .back-icon {
     display: block;
@@ -8690,7 +8690,7 @@ body:not(.can-edit) .game-card:focus-within .edit-action {
   min-width: 0;
 }
 
-@media (min-width: 801px) and (hover: hover) and (pointer: fine) {
+@media (min-width: 700px) and (hover: hover) and (pointer: fine) {
   .card-list:not(.list-view) .game-card .edit-action,
   .completed-list:not(.list-view) .completed-edit-action,
   .shelf-grid:not(.list-view) .game-card .edit-action {
@@ -8809,7 +8809,7 @@ body:not(.can-edit) .game-card:focus-within .edit-action {
   --rating-star-gap: 1px;
 }
 
-@media (max-width: 800px) {
+@media (max-width: 699px) {
   .completed-rating-stars .star-display {
     --rating-star-size: 11px;
   }
@@ -8936,7 +8936,7 @@ body:not(.can-edit) .game-card:focus-within .edit-action {
   height: 16px;
 }
 
-@media (min-width: 801px) {
+@media (min-width: 700px) {
   .completed-stream-toggle[data-tooltip],
   .playing-stream-toggle[data-tooltip] {
     position: relative;
@@ -9131,7 +9131,7 @@ body:not(.can-edit) .game-card:focus-within .edit-action {
   gap: 10px;
 }
 
-@media (min-width: 801px) {
+@media (min-width: 700px) {
   .finished-stats-kpis.is-grid-3 {
     grid-template-columns: repeat(3, minmax(0, 1fr));
   }
@@ -11064,7 +11064,7 @@ body.theme-kash .playing-finished-game.completed-trophy-card:hover {
   margin: 0;
 }
 
-@media (min-width: 801px) {
+@media (min-width: 700px) {
   .completed-list.list-view .completed-row {
     grid-template-columns: 42px minmax(145px, 230px) minmax(0, 1fr) auto;
     min-height: 64px;
@@ -11302,7 +11302,7 @@ dialog {
   padding: 0;
 }
 
-@media (min-width: 801px) {
+@media (min-width: 700px) {
   #gameDialog,
   #addDialog {
     width: min(1120px, calc(100vw - 64px));
@@ -11390,7 +11390,7 @@ dialog {
   margin-bottom: 16px;
 }
 
-@media (min-width: 801px) {
+@media (min-width: 700px) {
   #updatesDialog {
     width: min(920px, calc(100vw - 64px));
   }
@@ -12042,7 +12042,7 @@ html.theme-light .settings-category-card {
   );
 }
 
-@media (max-width: 800px) {
+@media (max-width: 699px) {
   .settings-dialog {
     width: calc(100vw - 16px);
     max-width: calc(100vw - 16px);
@@ -12121,7 +12121,7 @@ html.theme-light .settings-category-card {
   font-family: var(--display-title-font);
 }
 
-@media (max-width: 800px) {
+@media (max-width: 699px) {
   .settings-layout-card {
     min-width: 0;
   }
@@ -13234,7 +13234,7 @@ html.theme-light .platinum-highlight:active {
     0 16px 34px rgba(31, 42, 61, 0.2);
 }
 
-@media (min-width: 801px) {
+@media (min-width: 700px) {
   html.theme-light .release-months {
     background: var(--grid-fade), var(--grid-texture), var(--panel);
     background-size:
@@ -14364,7 +14364,7 @@ html.theme-light .shelf-card-delete-action:hover {
   border-radius: 4px;
 }
 
-@media (max-width: 800px) {
+@media (max-width: 699px) {
   .settings-store-list {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
@@ -14827,7 +14827,7 @@ body.theme-kash
   box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 12%, transparent);
 }
 
-@media (min-width: 801px) {
+@media (min-width: 700px) {
   .playing-section .card-trophy-meta {
     display: block;
   }
@@ -15276,7 +15276,7 @@ body.theme-kash
   justify-self: start;
 }
 
-@media (max-width: 800px) {
+@media (max-width: 699px) {
   .detail-rating-grid {
     grid-template-columns: repeat(auto-fit, minmax(130px, max-content));
     gap: 13px 16px;
@@ -15397,7 +15397,7 @@ body.theme-kash
   border: 1px solid rgba(255, 255, 255, 0.12);
 }
 
-@media (max-width: 800px) {
+@media (max-width: 699px) {
   .settings-page-toggle-row {
     grid-template-columns: 1fr;
   }
@@ -15748,7 +15748,7 @@ body.theme-kash
   grid-template-columns: repeat(3, minmax(0, 1fr));
 }
 
-@media (min-width: 801px) {
+@media (min-width: 700px) {
   .game-rating-grid {
     --rating-star-size: 25px;
     --rating-star-gap: 5px;
@@ -15763,7 +15763,7 @@ body.theme-kash
   grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
-@media (min-width: 801px) {
+@media (min-width: 700px) {
   .finish-rating-grid {
     --rating-star-size: 23px;
     --rating-star-gap: 4px;
@@ -16411,7 +16411,7 @@ html.theme-light .primary-button.stream-start-action:hover {
   }
 }
 
-@media (max-width: 800px) {
+@media (max-width: 699px) {
   body:not(.can-edit) #loginButton {
     display: none !important;
   }
@@ -18222,42 +18222,7 @@ html.theme-light .primary-button.stream-start-action:hover {
   }
 }
 
-@media (min-width: 700px) and (max-width: 800px) {
-  .playing-section .game-card.playing-card {
-    grid-template-rows: auto auto auto auto auto auto auto auto;
-  }
-
-  .playing-section .game-card.playing-card .card-trophies {
-    grid-column: 1 / -1;
-    grid-row: 7;
-    width: 100%;
-    margin-top: 4px;
-  }
-
-  .playing-section .game-card.playing-card .card-trophy-list {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 5px;
-  }
-
-  .playing-section .game-card.playing-card .card-trophy {
-    grid-template-columns: 30px minmax(0, 1fr);
-    align-content: center;
-    min-height: 48px;
-    text-align: left;
-  }
-
-  .playing-section .game-card.playing-card .card-trophy img {
-    width: 30px;
-    height: 30px;
-  }
-
-  .playing-section .game-card.playing-card .card-trophy span {
-    font-size: 9px;
-    text-align: left;
-  }
-}
-
-@media (width <= 800px) {
+@media (width <= 699px) {
   .completed-head-actions {
     display: flex;
     flex-wrap: wrap;
@@ -18574,7 +18539,7 @@ html.theme-light .primary-button.stream-start-action:hover {
   }
 }
 
-@media (min-width: 801px) {
+@media (min-width: 700px) {
   #mobileDockUp {
     display: grid !important;
     order: 1;
@@ -18886,7 +18851,7 @@ html.theme-light .primary-button.stream-start-action:hover {
   }
 }
 
-@media (max-width: 800px) {
+@media (max-width: 699px) {
   main.shell:has(#gotySection:not([hidden])) #gotySection,
   main.shell:not(:has(#gotySection:not([hidden])))
     #playingSection:not([hidden]) {
@@ -19024,7 +18989,7 @@ body.auth-checking #mobileDockSettings[aria-busy="true"] {
   transition: opacity 180ms ease;
 }
 
-@media (max-width: 800px) {
+@media (max-width: 699px) {
   #mobileDockGoty:hover,
   #mobileDockGoty:focus-visible,
   #mobileDockGoty:active,
@@ -19043,7 +19008,7 @@ body.auth-checking #mobileDockSettings[aria-busy="true"] {
   }
 }
 
-@media (min-width: 801px) {
+@media (min-width: 700px) {
   #gotyDialog[open] {
     position: fixed;
     inset: 8px !important;
@@ -19071,7 +19036,7 @@ body.auth-checking #mobileDockSettings[aria-busy="true"] {
   }
 }
 
-@media (max-width: 800px) {
+@media (max-width: 699px) {
   #gotyStatsPreviewDialog .goty-stats-preview-modal {
     display: flex !important;
     flex-direction: column;
@@ -19111,7 +19076,7 @@ body.auth-checking #mobileDockSettings[aria-busy="true"] {
   }
 }
 
-@media (min-width: 801px) {
+@media (min-width: 700px) {
   #gotyStatsPreviewDialog {
     height: calc(100dvh - 24px);
     max-height: calc(100dvh - 24px);
@@ -19146,7 +19111,7 @@ body.auth-checking #mobileDockSettings[aria-busy="true"] {
   }
 }
 
-@media (max-width: 800px) {
+@media (max-width: 699px) {
   #mobileDockAdd:not([hidden]) {
     color: #fff;
     background: var(--accent);
@@ -19428,7 +19393,7 @@ body:not(.can-edit):not(.shelf-page)
   display: none !important;
 }
 
-@media (min-width: 801px) {
+@media (min-width: 700px) {
   #addGameForm.gamelist-target-editor .shelf-editor-grid {
     grid-template-columns: 132px repeat(12, minmax(0, 1fr));
     align-items: end;
@@ -19538,7 +19503,7 @@ body:not(.can-edit):not(.shelf-page)
 #gameDialog.is-new-game .collection-form-grid > .release-text-field {
   grid-column: span 7;
 }
-@media (min-width: 801px) {
+@media (min-width: 700px) {
   .playing-finished-progress {
     grid-template-columns: 14px auto minmax(0, 1fr);
   }
@@ -19577,7 +19542,7 @@ body:not(.can-edit):not(.shelf-page)
   }
 }
 
-@media (max-width: 800px) {
+@media (max-width: 699px) {
   .playing-finished-game .playing-finished-progress strong {
     align-self: center;
     font-size: 10px;
@@ -19631,7 +19596,7 @@ body:not(.can-edit):not(.shelf-page)
 }
 
 /* Keep the mobile playing actions in their own columns without overlap. */
-@media (max-width: 800px) {
+@media (max-width: 699px) {
   .playing-section .game-card.playing-card h3 {
     font-size: clamp(28px, 7vw, 40px);
     line-height: 1.05;
@@ -19702,7 +19667,7 @@ body:not(.can-edit):not(.shelf-page)
 }
 
 /* Compact mobile list actions leave the text column room to breathe. */
-@media (max-width: 800px) {
+@media (max-width: 699px) {
   .card-list .game-card:not(.playing-card) .title-line > .edit-action,
   .card-list .game-card:not(.playing-card) .card-actions > .delete-action,
   .shelf-grid .game-card .title-line > .edit-action,
@@ -19836,7 +19801,7 @@ body:not(.can-edit):not(.shelf-page)
   }
 }
 
-@media (max-width: 800px) {
+@media (max-width: 699px) {
   #addGameForm .modal-head h2.mobile-two-line-title {
     line-height: 1.05;
     white-space: nowrap;
@@ -19917,7 +19882,7 @@ body:not(.can-edit):not(.shelf-page)
   }
 }
 
-@media (max-width: 800px) {
+@media (max-width: 699px) {
   .shelf-grid.list-view .game-row .psn-progress-pill {
     display: none;
   }
@@ -19927,7 +19892,7 @@ body:not(.can-edit):not(.shelf-page)
   }
 }
 
-@media (max-width: 800px) {
+@media (max-width: 699px) {
   #backlog
     .card-list:not(.list-view)
     .game-card:not(.playing-card)
@@ -19947,7 +19912,7 @@ body:not(.can-edit):not(.shelf-page)
 }
 
 /* Keep action names visible on mobile cards in Backlog, Radar, and Wishlist. */
-@media (max-width: 800px) {
+@media (max-width: 699px) {
   .card-list .game-card:not(.playing-card) .card-actions > button {
     min-height: 42px;
     height: 42px;
@@ -20059,7 +20024,7 @@ body:not(.can-edit):not(.shelf-page)
 }
 
 /* Keep prices beside card actions when the card has enough horizontal space. */
-@media (max-width: 800px) {
+@media (max-width: 699px) {
   .card-list:not(.list-view) .game-card.has-price-footer .card-footer {
     display: flex;
     flex-direction: row;
@@ -20110,7 +20075,7 @@ body:not(.can-edit):not(.shelf-page)
 }
 
 /* With no second line of tags, center badges over the full list row. */
-@media (min-width: 801px) {
+@media (min-width: 700px) {
   .game-row:has(> .game-row-tags:empty) > .game-row-core {
     grid-row: 1 / -1;
     align-self: center;
@@ -20174,7 +20139,7 @@ body:not(.can-edit):not(.shelf-page)
   }
 }
 
-@media (min-width: 801px) {
+@media (min-width: 700px) {
   .playing-section .game-card.playing-card .card-actions > .backlog-action {
     box-sizing: border-box;
     display: grid;
@@ -20201,7 +20166,7 @@ body:not(.can-edit):not(.shelf-page)
   }
 }
 
-@media (max-width: 800px) {
+@media (max-width: 699px) {
   :is(#releaseDialog, #shelfReleaseDialog)
     .release-dialog-list
     .game-card
@@ -20642,7 +20607,7 @@ body.theme-kash
   text-align: center;
 }
 
-@media (min-width: 801px) {
+@media (min-width: 700px) {
   .shelf-stats-body .finished-stats-kpis.is-shelf-one > .finished-stats-kpi,
   .shelf-stats-body .finished-stats-kpis.is-shelf-two > .finished-stats-kpi {
     justify-items: start;
@@ -20829,7 +20794,7 @@ body.theme-kash
   grid-auto-rows: minmax(92px, auto);
 }
 
-@media (max-width: 800px) {
+@media (max-width: 699px) {
   .shelf-stats-dialog {
     box-sizing: border-box;
     width: calc(100% - 14px);
@@ -20868,7 +20833,7 @@ body.theme-kash
   background: unset;
 }
 
-@media (max-width: 800px) {
+@media (max-width: 699px) {
   .shelf-page .detail-cover {
     max-height: unset;
   }
@@ -21682,7 +21647,7 @@ body.mobile-app-mode.shelf-page .shelf-grid.list-view .game-row-cover-preview {
   gap: 6px;
 }
 
-@media (min-width: 801px) {
+@media (min-width: 700px) {
   .shelf-grid.preorders-view.list-view .game-row {
     grid-template-columns:
       42px minmax(145px, 230px) minmax(0, 2.2fr) minmax(120px, 0.8fr)
@@ -22552,7 +22517,7 @@ body.mobile-app-mode .shelf-tabs button.active:hover {
   display: grid !important;
 }
 
-@media (min-width: 801px) {
+@media (min-width: 700px) {
   #addGameForm.combined-collection-editor .shelf-editor-grid {
     --collection-extra-row: 5;
     --collection-owner-offset: 3;
@@ -22610,7 +22575,7 @@ body.mobile-app-mode .shelf-tabs button.active:hover {
   }
 }
 
-@media (max-width: 800px) {
+@media (max-width: 699px) {
   #addGameForm.combined-collection-editor
     .shelf-editor-grid
     > :is(
@@ -22682,7 +22647,7 @@ body.mobile-app-mode .shelf-tabs button.active:hover {
   display: none !important;
 }
 
-@media (min-width: 801px) {
+@media (min-width: 700px) {
   #addGameForm .shelf-editor-grid > * {
     order: 30;
   }
@@ -22843,7 +22808,7 @@ body.mobile-app-mode .shelf-tabs button.active:hover {
   }
 }
 
-@media (max-width: 800px) {
+@media (max-width: 699px) {
   .shelf-editor-cover-preview {
     display: none !important;
   }
@@ -22866,7 +22831,7 @@ body.mobile-app-mode .shelf-tabs button.active:hover {
   grid-column: span 6;
 }
 
-@media (min-width: 801px) {
+@media (min-width: 700px) {
   .digital-game-editor .shelf-release-field,
   .digital-game-editor .shelf-owner-field {
     grid-column: 1 / span 6;
@@ -23459,7 +23424,7 @@ textarea {
   }
 }
 
-@media (min-width: 801px) and (max-width: 1300px) {
+@media (min-width: 700px) and (max-width: 1300px) {
   .shelf-toolbar {
     grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(
         0,
@@ -23493,7 +23458,7 @@ textarea {
   }
 }
 
-@media (max-width: 800px) {
+@media (max-width: 699px) {
   #addGameForm.gamelist-target-editor .shelf-entitlement-grid-spacer {
     display: none !important;
   }
@@ -24057,7 +24022,7 @@ textarea {
   object-fit: cover;
 }
 
-@media (max-width: 800px) {
+@media (max-width: 699px) {
   .shelf-dialog .detail-cover#detailCoverWrap {
     width: 100%;
     height: var(--shelf-cover-height, 520px);
@@ -24072,7 +24037,7 @@ textarea {
 }
 
 /* Keep the unified Gamelist editor aligned with the Shelf cover-first layout. */
-@media (min-width: 801px) {
+@media (min-width: 700px) {
   #addGameForm.gamelist-target-editor .shelf-editor-grid {
     position: relative;
     grid-template-columns: 160px repeat(12, minmax(0, 1fr));
@@ -24177,7 +24142,7 @@ textarea {
   }
 }
 
-@media (min-width: 801px) {
+@media (min-width: 700px) {
   #addGameForm:not(.gamelist-target-editor):not(.digital-tracking-disabled)
     .shelf-console-field {
     grid-column: 8 / span 4;
@@ -24370,7 +24335,7 @@ textarea {
   grid-column: 1 / -1;
 }
 
-@media (max-width: 800px) {
+@media (max-width: 699px) {
   #addGameForm.shelf-gamelist-import-mini .modal-head {
     position: relative;
     flex-direction: column;
@@ -24457,7 +24422,7 @@ textarea {
   display: none;
 }
 
-@media (max-width: 800px) {
+@media (max-width: 699px) {
   /* Shelf follows the shared markup: DLC, subscription, then release details. */
   #addGameForm.gamelist-target-editor .shelf-entitlement-field {
     order: 11;
@@ -24508,7 +24473,7 @@ textarea {
   }
 }
 
-@media (max-width: 800px) {
+@media (max-width: 699px) {
   .shelf-grid .status-pill {
     display: none !important;
   }
@@ -24528,7 +24493,7 @@ textarea {
 }
 
 /* The unified Shelf dialog lives inside .shelf-page rather than .shelf-dialog. */
-@media (max-width: 800px) {
+@media (max-width: 699px) {
   .shelf-page #detailDialog .detail-cover {
     box-sizing: border-box;
     display: block;
