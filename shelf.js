@@ -411,6 +411,10 @@ function loadSharedSettings() { try { return JSON.parse(localStorage.getItem("ga
 
 function bindEvents() {
   bindModalTouchGuard();
+  const gameDataDisclosure = document.querySelector("#shelfGameDataDisclosure");
+  gameDataDisclosure.addEventListener("toggle", () => {
+    if (gameDataDisclosure.dataset.lockedOpen === "true" && !gameDataDisclosure.open) gameDataDisclosure.open = true;
+  });
   syncStyledSelect(el.detailTrophySort);
   const shelfToolbar = document.querySelector(".shelf-toolbar");
   const shelfTabs = document.querySelector(".shelf-tabs");
@@ -2452,7 +2456,12 @@ function openEditor(game = null, options = {}) {
   state.autocompleteImport = Boolean(options.autocomplete && !options.miniGamelistImport);
   el.addDialog.classList.toggle("shelf-gamelist-import-mini", Boolean(options.miniGamelistImport));
   el.addForm.classList.toggle("shelf-gamelist-import-mini", Boolean(options.miniGamelistImport));
-  document.querySelector("#shelfGameDataDisclosure").open = !options.miniGamelistImport;
+  const gameDataDisclosure = document.querySelector("#shelfGameDataDisclosure");
+  const lockGameDataOpen = !game && !options.miniGamelistImport;
+  gameDataDisclosure.dataset.lockedOpen = String(lockGameDataOpen);
+  gameDataDisclosure.querySelector("summary").hidden = lockGameDataOpen;
+  document.querySelector("#shelfGameDataHeading").hidden = !lockGameDataOpen;
+  gameDataDisclosure.open = !options.miniGamelistImport;
   renderShelfGamelistImportSummary(options.miniGamelistImport ? game : null);
   const digitalMode = Boolean(options.digital || isDigitalShelfGame(game));
   state.editingId = game?.id || "";

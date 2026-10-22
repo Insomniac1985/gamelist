@@ -7455,16 +7455,16 @@ function rowFor(game, section, options = {}) {
 }
 
 function rowPrimaryAction(game, section) {
-  if (section === "backlog") return `<button class="primary-button row-primary-action" type="button">${playIcon()}<span>${escapeHtml(tt("Play"))}</span></button>${backlogStreamAction(game)}`;
+  if (section === "backlog") return `<button class="primary-button row-primary-action" type="button" title="${escapeHtml(tt("Play"))}" aria-label="${escapeHtml(tt("Play"))}">${playIcon()}<span>${escapeHtml(tt("Play"))}</span></button>${backlogStreamAction(game)}`;
   if (section === "new") {
-    return `<button class="primary-button row-primary-action" type="button">${playIcon()}<span>${escapeHtml(tt("Play"))}</span></button><button class="primary-button row-setup-action" type="button">${forwardIcon()}<span>${escapeHtml(tt("Setup"))}</span></button>`;
+    return `<button class="primary-button row-primary-action" type="button" title="${escapeHtml(tt("Play"))}" aria-label="${escapeHtml(tt("Play"))}">${playIcon()}<span>${escapeHtml(tt("Play"))}</span></button><button class="primary-button row-setup-action" type="button" title="${escapeHtml(tt("Setup"))}" aria-label="${escapeHtml(tt("Setup"))}">${forwardIcon()}<span>${escapeHtml(tt("Setup"))}</span></button>`;
   }
-  return `<button class="ghost-button row-primary-action row-backlog-action" type="button">${forwardIcon()}<span>${escapeHtml(tt("Backlog"))}</span></button>`;
+  return `<button class="ghost-button row-primary-action row-backlog-action" type="button" title="${escapeHtml(tt("Backlog"))}" aria-label="${escapeHtml(tt("Backlog"))}">${forwardIcon()}<span>${escapeHtml(tt("Backlog"))}</span></button>`;
 }
 
 function backlogStreamAction(game) {
   if (!cleanTwitchUser(state.settings.twitchUser) || game.playing || game.completedAt) return "";
-  return `<button class="primary-button stream-start-action" type="button">${playIcon()}<span>${escapeHtml(tt("Stream"))}</span></button>`;
+  return `<button class="primary-button stream-start-action" type="button" title="${escapeHtml(tt("Stream"))}" aria-label="${escapeHtml(tt("Stream"))}">${playIcon()}<span>${escapeHtml(tt("Stream"))}</span></button>`;
 }
 
 function rowCoreStats(game) {
