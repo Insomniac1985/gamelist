@@ -7069,13 +7069,6 @@ body.theme-kash .game-card.stream-card.completed-trophy-card {
   stroke-linejoin: round;
 }
 
-.coop-pill .coop-icon,
-.multiplayer-pill .online-globe-icon {
-  width: 12px;
-  height: 12px;
-  flex-basis: 12px;
-}
-
 .coop-icon {
   stroke-width: 2.5;
 }
@@ -10921,6 +10914,13 @@ body.theme-kash .playing-finished-game.completed-trophy-card:hover {
   height: 25px;
   min-height: 25px;
   padding: 0;
+}
+
+.completed-platform .coop-pill .coop-icon,
+.completed-platform .multiplayer-pill .online-globe-icon {
+  width: 12px;
+  height: 12px;
+  flex-basis: 12px;
 }
 
 .completed-platform .rating-score-star {
