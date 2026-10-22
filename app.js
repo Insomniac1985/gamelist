@@ -7532,12 +7532,11 @@ function renderCompleted() {
   if (el.completedStatsButton) {
     const hasFinishedGames = Boolean(finishedGamesForCurrentView().length);
     el.completedStatsButton.hidden = false;
-    el.completedStatsButton.innerHTML = graphIcon();
-    document.querySelector("#floatingStatsButton").innerHTML = graphIcon();
+    el.completedStatsButton.innerHTML = trophyIcon();
+    document.querySelector("#floatingStatsButton").innerHTML = trophyIcon();
     if (el.mobileDockStats) {
-      const gotyOnDock = Boolean(el.mobileDockGoty && !el.mobileDockGoty.hidden);
       el.mobileDockStats.hidden = false;
-      el.mobileDockStats.innerHTML = `${graphIcon()}<span>${escapeHtml(tt("Check statistics"))}</span>`;
+      el.mobileDockStats.innerHTML = `${trophyIcon()}<span>${escapeHtml(tt("Check statistics"))}</span>`;
     }
   }
   renderCompletedStreamToggle();
