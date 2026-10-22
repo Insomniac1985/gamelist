@@ -8273,12 +8273,6 @@ body:not(.can-edit) .top-actions-separator {
   height: 100%;
 }
 
-@media (min-width: 801px) {
-  body:not(.can-edit) .top-actions #loginButton {
-    display: none !important;
-  }
-}
-
 .top-search-button .search-icon {
   transform: translate(-0.5px, -0.5px);
 }
