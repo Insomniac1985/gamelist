@@ -2002,18 +2002,21 @@ function syncStatsShortcut() {
   if (el.completedStatsButton) {
     el.completedStatsButton.hidden = false;
     el.completedStatsButton.innerHTML = icon;
+    el.completedStatsButton.classList.toggle("is-goty-shortcut", useGoty);
     el.completedStatsButton.title = title;
     el.completedStatsButton.setAttribute("aria-label", label);
   }
   const floating = document.querySelector("#floatingStatsButton");
   if (floating) {
     floating.innerHTML = icon;
+    floating.classList.toggle("is-goty-shortcut", useGoty);
     floating.title = title;
     floating.setAttribute("aria-label", label);
   }
   if (el.mobileDockStats) {
     el.mobileDockStats.hidden = false;
     el.mobileDockStats.innerHTML = `${icon}<span>${escapeHtml(tt(useGoty ? "Check my GOTYs" : "Check statistics"))}</span>`;
+    el.mobileDockStats.classList.toggle("is-goty-shortcut", useGoty);
     el.mobileDockStats.dataset.i18nTitle = useGoty ? "Games of the year" : "Stats";
     el.mobileDockStats.dataset.i18nAriaLabel = useGoty ? "Set up Games of the year" : "Finished games stats";
     el.mobileDockStats.title = title;
@@ -2036,6 +2039,7 @@ function syncMobileDockGoty() {
       || !state.gotyDockDismissed
       || !candidates.length
       || isSetUp
+      || shouldUseGotyStatsShortcut()
       || Boolean(el.gotyDialog?.open);
     button.innerHTML = `${trophyIcon()}<span>${escapeHtml(tt("Check my GOTYs"))}</span>`;
     button.title = tt("Check my GOTYs");
@@ -9125,6 +9129,7 @@ function cardFor(game, options = {}) {
   const playDates = card.querySelector(".play-dates");
   playDates.innerHTML = playDatesFor(game, { includePastRelease: Boolean(options.includePastRelease), includeRelease: !releaseDialog, includePreorder: true, includeCalendarState: releaseDialog }).join("");
   playDates.hidden = !playDates.innerHTML;
+  if (game.playing && !releaseDialog) syncPlayingCardDatePills(card);
   card.querySelector(".chips").innerHTML = cardChipsFor(game).join("");
   const trophyStrip = card.querySelector(".card-trophies");
   trophyStrip.innerHTML = game.playing && !releaseDialog ? cardTrophiesFor(game) : "";
@@ -10462,7 +10467,14 @@ function updateCardAchievementUi(gameId) {
   if (!game) return;
   document.querySelectorAll(`.game-card[data-id="${CSS.escape(gameId)}"]`).forEach((card) => {
     const meta = card.querySelector(".meta");
-    if (meta) meta.innerHTML = metaFor(game, { includePsn: !game.playing }).join("");
+    if (meta) {
+      meta.innerHTML = metaFor(game, { includePsn: !game.playing }).join("");
+      if (game.playing && card.classList.contains("playing-card")) {
+        const playDates = card.querySelector(".play-dates");
+        playDates.innerHTML = playDatesFor(game, { includePreorder: true }).join("");
+        syncPlayingCardDatePills(card);
+      }
+    }
     const trophyStrip = card.querySelector(".card-trophies");
     if (trophyStrip) {
       trophyStrip.innerHTML = game.playing ? cardTrophiesFor(game) : "";
@@ -10487,6 +10499,14 @@ function syncPlayingCardTrophyLayout(card, trophyStrip, game) {
   const playDates = card.querySelector(".play-dates");
   if (guideRow && playDates) playDates.insertAdjacentElement("afterend", guideRow);
   trophyStrip.hidden = !trophyStrip.querySelector(".card-trophy-head, .card-trophy-list");
+}
+
+function syncPlayingCardDatePills(card) {
+  const meta = card?.querySelector(".meta");
+  const playDates = card?.querySelector(".play-dates");
+  if (!meta || !playDates) return;
+  while (playDates.firstElementChild) meta.append(playDates.firstElementChild);
+  playDates.hidden = true;
 }
 
 function normalizeTitleForMatch(value) {
@@ -10572,7 +10592,9 @@ async function refreshPlayingCardPlaytime() {
     const hours = await linkedPlatformPlaytimeHours(game);
     if (hours == null || !Number.isFinite(hours) || hours <= 0) return;
     state.cardPlaytime[game.id] = Math.ceil(hours);
-    document.querySelectorAll(`.game-card[data-id="${CSS.escape(game.id)}"] .play-dates`).forEach((dates) => {
+    document.querySelectorAll(`.game-card[data-id="${CSS.escape(game.id)}"]`).forEach((card) => {
+      const dates = card.classList.contains("playing-card") ? card.querySelector(".meta") : card.querySelector(".play-dates");
+      if (!dates) return;
       const value = state.cardPlaytime[game.id];
       let pill = dates.querySelector(".live-playtime-pill");
       if (!pill) {
@@ -10586,7 +10608,7 @@ async function refreshPlayingCardPlaytime() {
       pill.dataset.comparison = comparison;
       pill.removeAttribute("title");
       pill.setAttribute("aria-label", comparison);
-      dates.hidden = false;
+      if (!card.classList.contains("playing-card")) dates.hidden = false;
     });
   }));
 }
