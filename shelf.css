@@ -3831,6 +3831,46 @@ textarea {
   .shelf-grid .status-pill { display: none !important; }
 }
 
+/* The unified Shelf dialog lives inside .shelf-page rather than .shelf-dialog. */
+@media (max-width: 760px) {
+  .shelf-page #detailDialog .detail-cover#detailCoverWrap {
+    box-sizing: border-box;
+    display: block;
+    width: 100%;
+    max-width: none;
+    height: auto;
+    max-height: none;
+    aspect-ratio: auto;
+    padding: 0;
+    margin: 38px 0 0;
+    border: 0;
+    background: transparent;
+  }
+  .shelf-page #detailDialog .detail-cover#detailCoverWrap img#detailCover {
+    display: block;
+    width: 100%;
+    height: auto;
+    max-width: none;
+    max-height: none;
+    object-fit: contain;
+  }
+
+  .shelf-page .shelf-grid .game-card .edit-action,
+  .shelf-page .shelf-grid .game-card .shelf-card-delete-action {
+    box-sizing: border-box;
+    width: 42px;
+    min-width: 42px;
+    max-width: 42px;
+    height: 42px;
+    min-height: 42px;
+    max-height: 42px;
+    aspect-ratio: 1;
+    flex: 0 0 42px;
+    padding: 0;
+  }
+  .shelf-page .shelf-grid .game-card .card-actions { gap: 8px; }
+}
+
 /* Use identical top-level spacing for Collection, Radar and Wishlist. */
 #addGameForm:not(.shelf-gamelist-import-mini) > .lookup-row,
 #addGameForm:not(.shelf-gamelist-import-mini) > .lookup-results,
