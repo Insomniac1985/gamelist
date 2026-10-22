@@ -5992,9 +5992,12 @@ body.theme-kash
   scroll-snap-stop: always;
 }
 
-.playing-section
-  .game-card.playing-card:not(:has(.card-trophies:not([hidden]))) {
-  grid-template-rows: auto auto auto;
+@media (min-width: 700px) {
+  .playing-section
+    .game-card.playing-card:not(:has(.card-trophies:not([hidden]))) {
+    grid-template-rows: auto;
+    align-content: start;
+  }
 }
 
 /* Let tablet playing cards shrink their poster column with the viewport.
