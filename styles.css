@@ -24851,6 +24851,23 @@ textarea {
     margin-top: 8px;
   }
 
+  .mobile-section-tabs button[data-mobile-section="new"] {
+    min-width: 0;
+    padding: 0;
+  }
+
+  .mobile-section-tabs button[data-mobile-section="new"] .label {
+    display: none;
+  }
+
+  .mobile-section-tabs button[data-mobile-section="new"] .count {
+    min-width: 18px;
+    height: 18px;
+    padding: 0 4px;
+    border-radius: 5px;
+    font-size: 9px;
+  }
+
   .completed-list .completed-rating-breakdown,
   .completed-list .completed-platform .rating-score-pill {
     display: none !important;
