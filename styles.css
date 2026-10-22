@@ -8534,7 +8534,16 @@ body:not(.can-edit) #fetchPricesButton {
   display: none;
 }
 
-body:not(.shelf-page):not(.can-edit) :is(.backlog-action, .bought-action, .row-backlog-action, .delete-action, .row-delete-action, .price-refresh-action, #fetchPricesButton) {
+body:not(.shelf-page):not(.can-edit)
+  :is(
+    .backlog-action,
+    .bought-action,
+    .row-backlog-action,
+    .delete-action,
+    .row-delete-action,
+    .price-refresh-action,
+    #fetchPricesButton
+  ) {
   display: none !important;
 }
 
@@ -10988,7 +10997,8 @@ body.theme-kash .playing-finished-game.completed-trophy-card:hover {
   }
 
   .completed-list.list-view .completed-row:has(.completed-cover-wrap:hover),
-  .completed-list.list-view .completed-row:has(.completed-cover-wrap:focus-within) {
+  .completed-list.list-view
+    .completed-row:has(.completed-cover-wrap:focus-within) {
     z-index: 30;
   }
 
@@ -11019,12 +11029,16 @@ body.theme-kash .playing-finished-game.completed-trophy-card:hover {
     background: rgba(8, 9, 12, 0.92);
     border: 1px solid rgba(255, 225, 101, 0.26);
     border-radius: 7px;
-    box-shadow: 0 18px 40px rgba(0, 0, 0, 0.48), 0 0 0 3px rgba(255, 225, 101, 0.1);
+    box-shadow:
+      0 18px 40px rgba(0, 0, 0, 0.48),
+      0 0 0 3px rgba(255, 225, 101, 0.1);
     opacity: 0;
     pointer-events: none;
     transform: scale(0.82);
     transform-origin: top left;
-    transition: opacity 160ms ease, transform 160ms ease;
+    transition:
+      opacity 160ms ease,
+      transform 160ms ease;
     z-index: 2147483647;
   }
 
@@ -13927,7 +13941,9 @@ html.theme-light .shelf-card-delete-action:hover {
   align-self: start;
   min-width: 0;
 }
-#settingsDialog .settings-collection-setting :is(.settings-theme-select, .settings-check-field, .platform-logo-select) {
+#settingsDialog
+  .settings-collection-setting
+  :is(.settings-theme-select, .settings-check-field, .platform-logo-select) {
   min-width: 0;
   width: 100%;
   box-sizing: border-box;
@@ -14561,7 +14577,9 @@ body.theme-kash
   padding-left: 9px;
 }
 
-.detail-trophy-tools :is(.platform-logo-button, .platform-logo-option) .platform-logo-choice-label {
+.detail-trophy-tools
+  :is(.platform-logo-button, .platform-logo-option)
+  .platform-logo-choice-label {
   top: 0;
   margin: 0;
   align-self: center;
@@ -16086,7 +16104,11 @@ html.theme-light .primary-button.stream-start-action:hover {
   display: grid;
   place-items: center;
   color: var(--muted);
-  background: linear-gradient(145deg, rgba(255, 255, 255, 0.12), rgba(255, 255, 255, 0.035));
+  background: linear-gradient(
+    145deg,
+    rgba(255, 255, 255, 0.12),
+    rgba(255, 255, 255, 0.035)
+  );
   border: 1px solid color-mix(in srgb, var(--muted) 45%, transparent);
   border-radius: 5px;
   opacity: 0.9;
@@ -16220,7 +16242,9 @@ html.theme-light .primary-button.stream-start-action:hover {
 
 @media (max-width: 1300px) {
   .toolbar {
-    grid-template-columns: minmax(0, 1fr) 132px minmax(0, 1fr) var(--toolbar-control-height);
+    grid-template-columns: minmax(0, 1fr) 132px minmax(0, 1fr) var(
+        --toolbar-control-height
+      );
   }
 
   .toolbar .search {
@@ -16525,11 +16549,16 @@ html.theme-light .primary-button.stream-start-action:hover {
     content: "";
     position: absolute;
     z-index: -1;
+    scale: 1.7;
     inset: -88px -14px -18px;
     pointer-events: none;
     background:
       radial-gradient(circle at 78% 9%, var(--glow-primary), transparent 30%),
-      radial-gradient(circle at 11% 84%, var(--glow-secondary), transparent 34%),
+      radial-gradient(
+        circle at 11% 84%,
+        var(--glow-secondary),
+        transparent 34%
+      ),
       linear-gradient(120deg, rgba(255, 255, 255, 0.04), transparent 38%),
       var(--custom-backdrop-image) top left / cover repeat,
       var(--bg);
@@ -16540,7 +16569,12 @@ html.theme-light .primary-button.stream-start-action:hover {
       calc(var(--backdrop-x) * 0.45) calc(var(--backdrop-y) * 0.45),
       center;
     background-attachment: fixed;
-    -webkit-mask-image: linear-gradient(0deg, #000 0%, #000 38%, transparent 100%);
+    -webkit-mask-image: linear-gradient(
+      0deg,
+      #000 0%,
+      #000 38%,
+      transparent 100%
+    );
     mask-image: linear-gradient(0deg, #000 0%, #000 38%, transparent 100%);
   }
 
@@ -18786,7 +18820,8 @@ body.page-pulling #mobileActionDock {
 
 @media (max-width: 760px) {
   main.shell:has(#gotySection:not([hidden])) #gotySection,
-  main.shell:not(:has(#gotySection:not([hidden]))) #playingSection:not([hidden]) {
+  main.shell:not(:has(#gotySection:not([hidden])))
+    #playingSection:not([hidden]) {
     margin-top: 24px;
   }
 
@@ -19172,7 +19207,9 @@ body:not(.shelf-page) #wanted .price-refresh-action {
 body:not(.can-edit):not(.shelf-page) .price-refresh-action {
   display: none !important;
 }
-body:not(.can-edit):not(.shelf-page) :is(#upcoming, #wanted) .price-refresh-action {
+body:not(.can-edit):not(.shelf-page)
+  :is(#upcoming, #wanted)
+  .price-refresh-action {
   display: none !important;
 }
 .completed-row,
@@ -19576,8 +19613,17 @@ body:not(.can-edit):not(.shelf-page) :is(#upcoming, #wanted) .price-refresh-acti
     white-space: nowrap;
     font-size: clamp(10px, 2.8vw, 12px);
   }
-  .playing-section .game-card.playing-card .card-actions > .complete-action { grid-column: 1; grid-row: 1; }
-  .playing-section .game-card.playing-card .card-actions > .playing-completed-action { grid-column: 2; grid-row: 1; }
+  .playing-section .game-card.playing-card .card-actions > .complete-action {
+    grid-column: 1;
+    grid-row: 1;
+  }
+  .playing-section
+    .game-card.playing-card
+    .card-actions
+    > .playing-completed-action {
+    grid-column: 2;
+    grid-row: 1;
+  }
   .playing-section .game-card.playing-card .card-actions > .backlog-action {
     grid-column: 3;
     grid-row: 1;
@@ -19594,12 +19640,20 @@ body:not(.can-edit):not(.shelf-page) :is(#upcoming, #wanted) .price-refresh-acti
     padding: 0;
     gap: 0;
   }
-  .playing-section .game-card.playing-card .card-actions > .backlog-action .back-icon {
+  .playing-section
+    .game-card.playing-card
+    .card-actions
+    > .backlog-action
+    .back-icon {
     display: block !important;
     width: 16px;
     height: 16px;
   }
-  .playing-section .game-card.playing-card .card-actions > .backlog-action .action-label {
+  .playing-section
+    .game-card.playing-card
+    .card-actions
+    > .backlog-action
+    .action-label {
     display: none !important;
   }
 }
@@ -19637,7 +19691,9 @@ body:not(.can-edit):not(.shelf-page) :is(#upcoming, #wanted) .price-refresh-acti
     min-width: 0;
     gap: 4px;
   }
-  .card-list.list-view .game-row :is(.game-row-actions-top, .game-row-actions-bottom) {
+  .card-list.list-view
+    .game-row
+    :is(.game-row-actions-top, .game-row-actions-bottom) {
     display: flex;
     justify-content: flex-end;
     gap: 4px;
@@ -19668,11 +19724,35 @@ body:not(.can-edit):not(.shelf-page) :is(#upcoming, #wanted) .price-refresh-acti
     white-space: nowrap;
   }
   .card-list.list-view .game-row .game-row-actions-bottom .row-backlog-action,
-  .shelf-grid.list-view .game-row .game-row-actions-bottom .shelf-add-backlog-action {
+  .shelf-grid.list-view
+    .game-row
+    .game-row-actions-bottom
+    .shelf-add-backlog-action {
     width: max-content;
     max-width: 100%;
     flex: 0 0 auto;
     padding-inline: 8px;
+  }
+  .card-list.list-view .game-row-core .mobile-preorder-tag {
+    display: inline-flex;
+    min-width: 0;
+    flex: 0 1 auto;
+    white-space: nowrap;
+  }
+  .card-list.list-view .game-row-core .release-pill {
+    gap: 2px;
+    padding-inline: 4px;
+    font-size: 9px;
+    white-space: nowrap;
+  }
+  .card-list.list-view .game-row-core .release-pill strong {
+    font-size: 9px;
+  }
+  .card-list.list-view .game-row-core .mobile-preorder-tag .preorder-chip {
+    gap: 3px;
+    padding-inline: 4px;
+    font-size: 9px;
+    white-space: nowrap;
   }
   .card-list.list-view .game-row .game-row-actions button svg {
     display: block;
@@ -19746,8 +19826,8 @@ body:not(.can-edit):not(.shelf-page) :is(#upcoming, #wanted) .price-refresh-acti
     min-width: max-content;
     max-width: 100%;
     flex: 0 0 auto !important;
-    gap: 6px;
-    padding: 8px 12px !important;
+    gap: 8px;
+    padding: 8px 16px !important;
   }
 }
 
@@ -19757,7 +19837,10 @@ body:not(.can-edit):not(.shelf-page) :is(#upcoming, #wanted) .price-refresh-acti
     padding-right: 0;
     grid-template-columns: minmax(0, 1fr) auto;
   }
-  .card-list:not(.list-view) .game-card:not(.playing-card) .title-line > .edit-action {
+  .card-list:not(.list-view)
+    .game-card:not(.playing-card)
+    .title-line
+    > .edit-action {
     position: static;
     justify-self: end;
     width: 32px;
@@ -19765,7 +19848,9 @@ body:not(.can-edit):not(.shelf-page) :is(#upcoming, #wanted) .price-refresh-acti
     height: 32px;
     min-height: 32px;
   }
-  .card-list:not(.list-view) .game-card:not(.playing-card):not(.has-price-footer) .card-actions {
+  .card-list:not(.list-view)
+    .game-card:not(.playing-card):not(.has-price-footer)
+    .card-actions {
     display: flex;
     flex-flow: row wrap;
     align-items: stretch;
@@ -19775,7 +19860,10 @@ body:not(.can-edit):not(.shelf-page) :is(#upcoming, #wanted) .price-refresh-acti
     max-width: 100%;
     gap: 8px;
   }
-  .card-list:not(.list-view) .game-card:not(.playing-card):not(.has-price-footer) .card-actions > button {
+  .card-list:not(.list-view)
+    .game-card:not(.playing-card):not(.has-price-footer)
+    .card-actions
+    > button {
     box-sizing: border-box;
     flex: 1 1 0;
     width: auto;
@@ -19785,7 +19873,10 @@ body:not(.can-edit):not(.shelf-page) :is(#upcoming, #wanted) .price-refresh-acti
     padding: 6px 8px;
     white-space: nowrap;
   }
-  .card-list:not(.list-view) .game-card:not(.playing-card):not(.has-price-footer) .card-actions > .icon-only-button {
+  .card-list:not(.list-view)
+    .game-card:not(.playing-card):not(.has-price-footer)
+    .card-actions
+    > .icon-only-button {
     flex: 0 0 36px;
     width: 36px;
     min-width: 36px;
@@ -19807,7 +19898,10 @@ body:not(.can-edit):not(.shelf-page) :is(#upcoming, #wanted) .price-refresh-acti
     flex: none;
     align-self: stretch;
     width: 100%;
-    grid-template-columns: repeat(var(--price-columns, 4), minmax(0, 1fr)) !important;
+    grid-template-columns: repeat(
+      var(--price-columns, 4),
+      minmax(0, 1fr)
+    ) !important;
   }
   .card-list:not(.list-view) .game-card.has-price-footer .card-actions {
     order: 2;
@@ -19819,13 +19913,19 @@ body:not(.can-edit):not(.shelf-page) :is(#upcoming, #wanted) .price-refresh-acti
     margin: 0;
     gap: 8px;
   }
-  .card-list:not(.list-view) .game-card.has-price-footer .card-actions > .bought-action {
+  .card-list:not(.list-view)
+    .game-card.has-price-footer
+    .card-actions
+    > .bought-action {
     flex: 1 1 0;
     min-width: 0;
     height: 36px;
     min-height: 36px;
   }
-  .card-list:not(.list-view) .game-card.has-price-footer .card-actions > .icon-only-button {
+  .card-list:not(.list-view)
+    .game-card.has-price-footer
+    .card-actions
+    > .icon-only-button {
     flex: 0 0 36px;
     width: 36px;
     min-width: 36px;
@@ -19863,7 +19963,10 @@ body:not(.can-edit):not(.shelf-page) :is(#upcoming, #wanted) .price-refresh-acti
     flex: none;
     align-self: stretch;
     width: 100%;
-    grid-template-columns: repeat(var(--price-columns, 4), minmax(0, 1fr)) !important;
+    grid-template-columns: repeat(
+      var(--price-columns, 4),
+      minmax(0, 1fr)
+    ) !important;
   }
   .card-list:not(.list-view) .game-card.has-price-footer .card-actions {
     order: 2;
@@ -19875,13 +19978,19 @@ body:not(.can-edit):not(.shelf-page) :is(#upcoming, #wanted) .price-refresh-acti
     margin: 0;
     gap: 8px;
   }
-  .card-list:not(.list-view) .game-card.has-price-footer .card-actions > .bought-action {
+  .card-list:not(.list-view)
+    .game-card.has-price-footer
+    .card-actions
+    > .bought-action {
     flex: 1 1 0;
     min-width: 0;
     height: 36px;
     min-height: 36px;
   }
-  .card-list:not(.list-view) .game-card.has-price-footer .card-actions > .icon-only-button {
+  .card-list:not(.list-view)
+    .game-card.has-price-footer
+    .card-actions
+    > .icon-only-button {
     flex: 0 0 36px;
     width: 36px;
     min-width: 36px;
@@ -19907,7 +20016,11 @@ body:not(.can-edit):not(.shelf-page) :is(#upcoming, #wanted) .price-refresh-acti
     padding: 0;
     gap: 0;
   }
-  .playing-section .game-card.playing-card .card-actions > .backlog-action .back-icon {
+  .playing-section
+    .game-card.playing-card
+    .card-actions
+    > .backlog-action
+    .back-icon {
     display: block;
     width: 18px;
     height: 18px;
@@ -19929,7 +20042,11 @@ body:not(.can-edit):not(.shelf-page) :is(#upcoming, #wanted) .price-refresh-acti
     max-width: none;
     margin: 0;
   }
-  #releaseDialog .release-dialog-list .game-card .card-actions > .backlog-action {
+  #releaseDialog
+    .release-dialog-list
+    .game-card
+    .card-actions
+    > .backlog-action {
     box-sizing: border-box;
     display: grid;
     place-items: center;
@@ -19943,10 +20060,19 @@ body:not(.can-edit):not(.shelf-page) :is(#upcoming, #wanted) .price-refresh-acti
     padding: 0;
     gap: 0;
   }
-  #releaseDialog .release-dialog-list .game-card .card-actions > .backlog-action .action-label {
+  #releaseDialog
+    .release-dialog-list
+    .game-card
+    .card-actions
+    > .backlog-action
+    .action-label {
     display: none !important;
   }
-  #releaseDialog .release-dialog-list .game-card .card-actions > :is(.complete-action, .stream-start-action) {
+  #releaseDialog
+    .release-dialog-list
+    .game-card
+    .card-actions
+    > :is(.complete-action, .stream-start-action) {
     display: inline-flex;
     flex-direction: row;
     align-items: center;
@@ -19962,11 +20088,25 @@ body:not(.can-edit):not(.shelf-page) :is(#upcoming, #wanted) .price-refresh-acti
     padding: 0 10px;
     white-space: nowrap;
   }
-  #releaseDialog .release-dialog-list .game-card .card-actions > .complete-action .action-label,
-  #releaseDialog .release-dialog-list .game-card .card-actions > .stream-start-action > span {
+  #releaseDialog
+    .release-dialog-list
+    .game-card
+    .card-actions
+    > .complete-action
+    .action-label,
+  #releaseDialog
+    .release-dialog-list
+    .game-card
+    .card-actions
+    > .stream-start-action
+    > span {
     display: inline !important;
   }
-  #releaseDialog .release-dialog-list .game-card .card-actions > .stream-start-action {
+  #releaseDialog
+    .release-dialog-list
+    .game-card
+    .card-actions
+    > .stream-start-action {
     color: #e3c9ff;
     background: #592990;
     border-color: #7944b5;
@@ -19977,6 +20117,9 @@ body:not(.can-edit):not(.shelf-page) :is(#upcoming, #wanted) .price-refresh-acti
     width: auto;
     min-width: 0;
     margin: 0;
-    grid-template-columns: repeat(var(--price-columns, 1), minmax(0, 1fr)) !important;
+    grid-template-columns: repeat(
+      var(--price-columns, 1),
+      minmax(0, 1fr)
+    ) !important;
   }
 }

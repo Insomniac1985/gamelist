@@ -3343,18 +3343,28 @@ textarea {
     order: 2;
   }
   .shelf-grid.list-view .game-row-actions .icon-button {
+    box-sizing: border-box;
     width: 32px;
     min-width: 32px;
+    max-width: 32px;
     height: 32px;
     min-height: 32px;
+    max-height: 32px;
+    flex: 0 0 32px;
+    aspect-ratio: 1;
     padding: 0;
   }
   .shelf-grid.list-view .game-row-actions .row-edit-action,
   .shelf-grid.list-view .game-row-actions .row-delete-action {
+    box-sizing: border-box;
     width: 32px;
     min-width: 32px;
+    max-width: 32px;
     height: 32px;
     min-height: 32px;
+    max-height: 32px;
+    flex: 0 0 32px;
+    aspect-ratio: 1;
     padding: 0;
   }
   .shelf-grid.list-view .game-row-actions .shelf-add-backlog-action,
@@ -3840,10 +3850,43 @@ textarea {
 
 @media (max-width: 760px) {
   .shelf-grid .status-pill { display: none !important; }
+  .shelf-grid.list-view .game-row-core .shelf-progress-pill {
+    box-sizing: border-box;
+    max-width: 100%;
+    min-width: 0;
+    overflow: hidden;
+    flex-wrap: nowrap;
+    white-space: nowrap;
+  }
 }
 
 /* The unified Shelf dialog lives inside .shelf-page rather than .shelf-dialog. */
 @media (max-width: 760px) {
+  .shelf-page #detailDialog .detail-cover {
+    box-sizing: border-box;
+    display: block;
+    align-self: stretch;
+    justify-self: stretch;
+    width: 100% !important;
+    min-width: 0;
+    max-width: 100% !important;
+    height: auto !important;
+    max-height: none !important;
+    aspect-ratio: auto !important;
+    padding: 0;
+    margin: 38px 0 0;
+    border: 0;
+    background: transparent;
+  }
+  .shelf-page #detailDialog .detail-cover img#detailCover {
+    display: block;
+    width: 100% !important;
+    height: auto !important;
+    max-width: 100% !important;
+    max-height: none !important;
+    object-fit: contain;
+  }
+
   .shelf-page #detailDialog[data-projection="true"] .detail-cover {
     box-sizing: border-box;
     display: block;
