@@ -4,7 +4,7 @@ body.collection-selected .board > .column { display: none !important; }
 #collectionLibrary[hidden], #collectionToolbar[hidden], #collectionShowcase[hidden], #collectionKpis[hidden], #stats[hidden] { display: none !important; }
 #collectionLibrary { min-width: 0; margin-bottom: 20px; }
 #collectionToolbar { min-width: 0; margin-bottom: 0; }
-#collectionShowcase { min-width: 0; }
+#collectionShowcase { min-width: 0; overflow: visible; }
 #mobileDockSwitch, .page-pull-switch, .page-pull-curtain { display: none !important; }
 .gamelist-added-pill { display: inline-flex; }
 .mobile-section-tabs { overflow-x: auto; scrollbar-width: none; }

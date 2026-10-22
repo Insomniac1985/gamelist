@@ -24,6 +24,7 @@ async function mount({ slots, changed, openGame, mediaChanged, viewChanged, clea
       .shelf-page>.floating-edit-actions,.shelf-page>.floating-search-button,.shelf-page>.scroll-top-button{display:none!important}
       .shelf-tabs{display:none!important}.shelf-toolbar{margin:0}.shelf-library{margin:0}
       .shelf-favorites-section{margin:0 0 24px}.highlights-section{margin:0}
+      .shelf-page[data-surface="showcase"],.shelf-page[data-surface="showcase"] .shelf-favorites-section{overflow:visible}
       .shell.shelf-shell{display:none!important}.shelf-page.dialog-open{overflow:visible}
       .shelf-page .highlights-section{margin:0!important}
       .shelf-library{min-width:0;background:transparent;border:0;box-shadow:none;padding:0}
