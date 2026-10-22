@@ -1858,7 +1858,7 @@ function render() {
   el.loginButton.hidden = state.canEdit;
   if (el.mobileDockEdit) {
     el.mobileDockEdit.hidden = state.canEdit;
-    el.mobileDockEdit.innerHTML = plusIcon();
+    el.mobileDockEdit.innerHTML = `${plusIcon()}<span>${escapeHtml(tt("Add Game"))}</span>`;
     el.mobileDockEdit.title = tt("Add Game");
     el.mobileDockEdit.setAttribute("aria-label", tt("Add Game"));
   }
