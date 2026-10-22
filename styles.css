@@ -19829,6 +19829,17 @@ body:not(.can-edit):not(.shelf-page)
     width: auto;
     padding: 0;
   }
+  .card-list:not(.list-view)
+    .game-card:not(.playing-card)
+    .card-actions
+    > button:not(.icon-only-button) {
+    flex-direction: row;
+    gap: 6px;
+    padding: 8px 12px;
+    font-size: 13px;
+    line-height: 1.2;
+    white-space: nowrap;
+  }
   .card-list .game-card .card-actions .stream-start-action > span {
     display: inline !important;
   }
@@ -20060,7 +20071,7 @@ body:not(.can-edit):not(.shelf-page)
     .release-dialog-list
     .game-card
     .card-actions
-    > :is(.backlog-action, .delete-action) {
+    > :is(.backlog-action, .bought-action, .delete-action) {
     box-sizing: border-box;
     display: grid;
     place-items: center;
@@ -20079,7 +20090,7 @@ body:not(.can-edit):not(.shelf-page)
     .release-dialog-list
     .game-card
     .card-actions
-    > .backlog-action
+    > :is(.backlog-action, .bought-action)
     .action-label {
     display: none !important;
   }
@@ -20088,20 +20099,19 @@ body:not(.can-edit):not(.shelf-page)
     .game-card
     .card-actions
     > :is(.complete-action, .stream-start-action) {
-    box-sizing: border-box;
-    display: grid;
-    place-items: center;
+    display: inline-flex;
+    flex-direction: row;
+    align-items: center;
     justify-content: center;
-    width: 42px;
-    min-width: 42px;
-    max-width: 42px;
+    width: max-content;
+    min-width: 0;
+    max-width: 100%;
     height: 42px;
     min-height: 42px;
     max-height: 42px;
-    flex: 0 0 42px;
-    aspect-ratio: 1;
-    gap: 0;
-    padding: 0;
+    flex: 0 1 auto;
+    gap: 6px;
+    padding: 0 10px;
     white-space: nowrap;
   }
   :is(#releaseDialog, #shelfReleaseDialog)
@@ -20116,7 +20126,7 @@ body:not(.can-edit):not(.shelf-page)
     .card-actions
     > .stream-start-action
     > span {
-    display: none !important;
+    display: inline !important;
   }
   :is(#releaseDialog, #shelfReleaseDialog)
     .release-dialog-list
