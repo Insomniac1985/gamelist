@@ -596,8 +596,15 @@ async function init() {
   await loadData();
   void logConsoleInfo(initialTheme, authStatus);
   const cloudChanged = await pullCloudData();
-  state.mobileSection = state.settings.defaultList || "backlog";
+  const requestedList = new URLSearchParams(location.search).get("list");
+  state.mobileSection = ["backlog", "shelf", "upcoming", "wanted"].includes(requestedList) ? requestedList : state.settings.defaultList || "backlog";
   defaultCollectionListApplied = true;
+  const requestedSearch = new URLSearchParams(location.search).get("search");
+  if (requestedSearch) {
+    el.searchInput.value = requestedSearch;
+    state.filters.query = normalizeSearchText(requestedSearch);
+  }
+  if (new URLSearchParams(location.search).get("tab") === "drive" && state.settings.shelfDigitalGames === true) collectionMedia = "digital";
   void ensureCollectionWorkspace();
   window.addEventListener("focus", () => {
     if (!collectionUI || document.hidden || document.querySelector("dialog[open]")) return;
@@ -960,6 +967,7 @@ async function clearSiteCachesAndReload() {
 }
 
 function bindEvents() {
+  initMobileBrandOverlay();
   bindModalTouchGuard();
   syncStyledSelect(el.detailTrophySort);
   const toolbar = document.querySelector(".toolbar");
@@ -1013,6 +1021,7 @@ function bindEvents() {
   });
   el.mobileActionDock?.addEventListener("click", (event) => {
     const action = event.target.closest(".mobile-dock-action");
+    el.mobileDockAdd?.classList.remove("stats-just-closed");
     if (action && action !== el.mobileDockSearch) el.mobileDockSearch?.classList.remove("is-active");
   });
   document.addEventListener("pointerdown", (event) => {
@@ -1028,7 +1037,7 @@ function bindEvents() {
     if (pageSwitchHidden()) return;
     const transitionButton = document.querySelector(".page-pull-switch");
     if (transitionButton) transitionButton.click();
-    else window.location.href = pullNavigationUrl("shelf");
+    else { state.mobileSection = "shelf"; render(); }
   });
   el.settingsDialog?.querySelectorAll("[data-settings-panel]").forEach((button) => {
     button.addEventListener("click", () => {
@@ -1078,6 +1087,7 @@ function bindEvents() {
     el.finishedStatsDialog.classList.remove("has-mini-overlay");
     document.querySelector(".finished-stats-hover-float")?.remove();
     el.finishedStatsBody?.querySelector(".finished-stats-floating-source")?.classList.remove("finished-stats-floating-source");
+    if (window.matchMedia("(max-width: 760px)").matches) el.mobileDockAdd?.classList.add("stats-just-closed");
     syncScrollLock();
   });
   window.addEventListener("scroll", () => {
@@ -6909,7 +6919,8 @@ function platformCounts(games) {
 function renderMobileTabs() {
   if (state.mobileSection === "drive") state.mobileSection = "shelf";
   if (!defaultCollectionListApplied) {
-    state.mobileSection = state.settings.defaultList || "backlog";
+    const requestedList = new URLSearchParams(location.search).get("list");
+    state.mobileSection = ["backlog", "shelf", "upcoming", "wanted"].includes(requestedList) ? requestedList : state.settings.defaultList || "backlog";
   }
   const sections = mobileSections();
   const counts = mobileSectionCounts();
@@ -9437,7 +9448,8 @@ function bindDetailShelfSearch(game) {
     if (!target) return;
     if (event.type === "keydown" && event.key !== "Enter" && event.key !== " ") return;
     event.preventDefault();
-    const url = new URL("shelf", window.location.href);
+    const url = new URL("/", window.location.href);
+    url.searchParams.set("list", "shelf");
     url.searchParams.set("search", game.title);
     if (digital) url.searchParams.set("tab", "drive");
     window.location.href = url.href;
@@ -9743,6 +9755,49 @@ function updateDetailTrophyEdges() {
   scroller.classList.toggle("detail-trophy-at-start", !hasOverflow || list.scrollTop <= 2);
   scroller.classList.toggle("detail-trophy-at-end", !hasOverflow || list.scrollTop >= maxScroll);
   scroller.classList.toggle("detail-trophy-has-overflow", hasOverflow);
+}
+
+function initMobileBrandOverlay() {
+  const header = document.querySelector("body > .topbar");
+  const dock = el.mobileActionDock;
+  if (!header || !dock) return;
+  const mobile = window.matchMedia("(max-width: 760px)");
+  let lastScroll = Math.max(0, window.scrollY);
+  let direction = 0;
+  let distance = 0;
+  let scheduled = false;
+  const setHidden = hidden => {
+    header.classList.toggle("is-scroll-hidden", hidden);
+    header.inert = hidden;
+  };
+  const measureDock = () => {
+    if (mobile.matches) document.documentElement.style.setProperty("--mobile-control-height", `${dock.getBoundingClientRect().height}px`);
+  };
+  const update = () => {
+    scheduled = false;
+    const current = Math.max(0, window.scrollY);
+    const delta = current - lastScroll;
+    lastScroll = current;
+    if (!mobile.matches || current < 24) {
+      distance = 0;
+      direction = 0;
+      setHidden(false);
+      return;
+    }
+    if (document.body.classList.contains("dialog-open") || Math.abs(delta) < 1) return;
+    const nextDirection = Math.sign(delta);
+    distance = nextDirection === direction ? distance + Math.abs(delta) : Math.abs(delta);
+    direction = nextDirection;
+    if (distance >= 8 && !header.contains(document.activeElement)) setHidden(direction > 0);
+  };
+  window.addEventListener("scroll", () => {
+    if (scheduled) return;
+    scheduled = true;
+    requestAnimationFrame(update);
+  }, { passive: true });
+  mobile.addEventListener("change", () => { lastScroll = Math.max(0, window.scrollY); setHidden(false); measureDock(); });
+  new ResizeObserver(measureDock).observe(dock);
+  measureDock();
 }
 
 function updateScrollTopButton() {

@@ -140,7 +140,7 @@ function runnerHtml(settings = {}) {
       <label>Batch size <input id="limit" type="number" min="1" max="50" value="10"></label>
       <label>Platform <select id="platform"><option value="all">All platforms</option></select></label>
       <button class="primary" id="start" type="button">Accept pending additions</button>
-      <a href="/shelf">Back to Shelf</a>
+      <a href="/?list=shelf">Back to Shelf</a>
     </div>
     <div class="bar"><span id="bar"></span></div>
     <pre id="log"></pre>

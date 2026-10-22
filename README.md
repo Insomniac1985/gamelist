@@ -5,12 +5,7 @@
 
 Gamelist is a personal game backlog and collection tracker. It runs as a self-hosted static frontend served by a Cloudflare Worker, with saved data stored in Cloudflare KV.
 
-The app has two main connected pages/modes:
-
-- <img src="assets/Icon.png" alt="Gamelist" width="18" align="center"> `/` for the main game backlog, preorder, release, and completion status tracker.
-- <img src="assets/Icon_shelf.png" alt="Shelf" width="18" align="center"> `/shelf` for the physical and digital collection tracker and organizer.
-
-Both pages share edit mode, themes, account settings, price-store settings, and achievement integrations. Enabling _Shelf Sync_ inside settings, links your Shelf or Gamelist additions letting you easily get them synced on the other tracking service. You can also track your preorder or wishlisted games between pages so you can easily access it without worring on which "mode" you are on.
+The app uses one unified page at `/`, with **Backlog**, **Shelf**, **Radar**, and **Wishlist** tabs. Physical and digital collection tracking, Showcase, statistics, edit mode, account settings, price stores, and achievements all live in Gamelist. The old `/shelf` address redirects to the Shelf tab.
 
 Made and designed by <img src="assets/shabii_logo.png" alt="Shabii" width="18" align="center"> [Shabii](https://x.com/Shabii_exe) with the help of ChatGPT Codex.
 
@@ -282,45 +277,26 @@ When those are both set, Gamelist and Shelf add a Twitch preview as the first ca
 
 ## <img src="assets/Icon.png" alt="Gamelist" width="22" align="center"> Common tasks
 
-### Add a game to your gamelist
+### Add a game
 
-1. Enter **Edit mode**.
-2. Click **Add Game**.
-3. Search by title or paste an IGDB game URL.
-4. Choose **Backlog**, **Upcoming**, or **Available** with the selector. Search results with a future release date select Upcoming; released games select Available.
-5. Add platform, owners, preorder store, release date, store links, cover, notes...
-6. Save.
+1. Enter **Edit mode** and click **Add Game**.
+2. Choose **Collection**, **Radar**, or **Wishlist**.
+3. Search by title or paste a supported game URL.
+4. For Collection, enable **Add to backlog** to add the game to both Backlog and Shelf. Leave it off to add only to Shelf.
+5. Fill in game and collecting information, then save.
 
-When editing a game, its existing **List** dropdown remains in the form. In Shelf, the **Add game to** selector lets you add the game directly to Shelf, Wishlist, or Preorder. Wishlist picks Upcoming for a future release date and Available otherwise. Preorder requires a store before saving.
+Preorders are managed in Radar. A preorder store and release date can create a calendar event when Google Calendar is configured.
 
-If Google Calendar is configured, adding a new preorder store to an upcoming/wanted game with a release date can create a preorder calendar event.
+### Browse your collection
 
-### Add a a physical game to your Shelf collection
+Select **Shelf** in Gamelist's list tabs. Physical and digital games share the same collection, with a format control to filter Physical, Digital, or All. Digital tracking can be enabled in **Settings → Page design**.
 
-1. Click the **top handle** or drag it down to access the **Shelf**.
-2. Enter **Edit mode**.
-3. Click **Add Game**.
-4. Search by title, paste a PriceCharting url, paste a IGDB url.
-5. Set platform, region, owners, condition, publisher/developer, genre, cover, notes...
-6. Save.
+Collection settings, statistics, Showcase, imports, exports, and developer tools are part of Gamelist. The standalone Shelf page has been removed; old Shelf links open the Shelf tab in Gamelist. Collection records and saved settings are retained.
 
-New physical games can sync into the Gamelist as setup-needed backlog/new-addition entries when Shelf Sync is enabled.
+### Add a digital game to your collection
 
-### Use Shelf Wishlist and Preorders
-
-Enable **Sync games with Shelf** in **Settings → Gamelist page layout** (the same setting is available in Shelf settings). In **Settings → Shelf page layout**, turn on **Sync Wishlist** and **Show Preorders on Shelf** to show those tabs.
-
-- **Wishlist** shows Gamelist games in Available or Upcoming that do not have a preorder store set. From Shelf, you can move a Wishlist game to the Gamelist Backlog, view its Gamelist details and prices, or remove it.
-- **Preorders** shows games with a preorder store set. From Shelf, you can accept a preorder into the Gamelist Backlog, view its details and prices, edit it in Gamelist, or remove it.
-- **Add game to Wishlist or Preorder** from the Shelf form syncs the entry to Gamelist. Preorder requires a store; the form selects Upcoming automatically. Wishlist uses the release date to select Upcoming or Available.
-- Digital games appear in these synced views when digital games are enabled for Shelf tracking.
-
-The tabs and actions follow the Gamelist data, so moving a game between sections or adding/removing a preorder is reflected on Shelf.
-
-### Add a a digital game to your Drive (Shelf) collection
-
-1. Click the **top handle** or drag it down to access the **Shelf**.
-2. Inside settings make sure **Digital games** is checked.
+1. Select **Shelf** in Gamelist.
+2. In settings, enable **Track Digital Games**.
 3. Enter **Edit mode**.
 4. Click **Add Game**.
 5. Search by title or paste an IGDB game URL.

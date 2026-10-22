@@ -7,9 +7,9 @@ import { activityAllowsPsnCardTrophies, activityCoverOverride, activityTitleMatc
 
 const [appSource, shelfSource, shelfCss, shelfHtml, sharedCss, appHtml, collectionPriceSource, themeSource, swSource] = await Promise.all([
   readFile(new URL("../app.js", import.meta.url), "utf8"),
-  readFile(new URL("../shelf.js", import.meta.url), "utf8"),
+  readFile(new URL("../collection-ui.js", import.meta.url), "utf8"),
   readFile(new URL("../shelf.css", import.meta.url), "utf8"),
-  readFile(new URL("../shelf.html", import.meta.url), "utf8"),
+  readFile(new URL("../collection-ui.html", import.meta.url), "utf8"),
   readFile(new URL("../styles.css", import.meta.url), "utf8"),
   readFile(new URL("../index.html", import.meta.url), "utf8"),
   readFile(new URL("../functions/api/collection-price.js", import.meta.url), "utf8"),

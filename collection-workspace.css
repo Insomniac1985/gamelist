@@ -24,7 +24,8 @@ body.collection-selected .board > .column { display: none !important; }
 }
 @media (max-width: 760px) {
   .mobile-section-tabs { grid-template-columns: repeat(var(--mobile-tab-count), minmax(62px, 1fr)) !important; }
-  .mobile-section-tabs button { font-size: 11px; padding-inline: 6px; }
+  .mobile-section-tabs button { font-size: 14px; padding-inline: 6px; }
+  .mobile-section-tabs button:not([data-mobile-section="new"]) .label { display: inline; }
   #collectionMediaToggle { justify-content: flex-end; }
   #collectionLibrary { width: 100%; }
 }
@@ -156,5 +157,126 @@ body[data-mobile-section="new"] #collectionLibrary:not([hidden]) + #new:not([hid
     grid-column: 4;
     justify-self: end;
     width: max-content;
+  }
+}
+
+/* Mobile branding floats behind the controls instead of taking up page space. */
+@media (max-width: 760px) {
+  body > .topbar {
+    position: fixed;
+    inset: auto auto calc(max(6px, env(safe-area-inset-bottom)) + var(--mobile-control-height, 68px) - 8px) 50%;
+    z-index: 19;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto auto;
+    align-items: center;
+    width: 95%;
+    min-height: 60px;
+    max-width: 95%;
+    margin: 0;
+    padding: 10px 12px 18px;
+    gap: 8px;
+    border: 1px solid var(--line);
+    border-radius: 15px 15px 10px 10px;
+    background: var(--panel);
+    box-shadow: 0 -8px 28px rgba(0, 0, 0, .18);
+    backdrop-filter: blur(16px) saturate(1.15);
+    -webkit-backdrop-filter: blur(16px) saturate(1.15);
+    opacity: 1;
+    transform: translate(-50%, 0) scale(1);
+    transform-origin: center bottom;
+    transition: opacity 220ms ease, transform 280ms cubic-bezier(.22,1,.36,1), filter 220ms ease;
+  }
+  body > .topbar .brand { min-width: 0; min-height: 32px; margin: 0; gap: 10px; }
+  body > .topbar .brand-mark { width: 32px !important; height: 32px !important; max-width: 32px; max-height: 32px; }
+  body > .topbar .brand span:last-child { margin: 0; font-size: clamp(13px, 3.6vw, 16px); line-height: 1.2; }
+  body > .topbar .brand-version-chip { grid-column: auto; grid-row: auto; margin: 0; font-size: 9px; }
+  body > .topbar .top-actions { display: contents; }
+  body > .topbar .top-actions > :not(#loginButton) { display: none !important; }
+  body > .topbar #loginButton { width: 32px; height: 32px; min-height: 32px; padding: 0; }
+  body > .topbar.is-scroll-hidden,
+  body.dialog-open > .topbar {
+    opacity: 0;
+    transform: translate(-50%, 24px) scale(.97);
+    filter: blur(4px);
+    pointer-events: none;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    body > .topbar { transition: opacity 100ms linear; }
+  }
+}
+
+/* Give search more room while keeping Preorder at its compact desktop width. */
+@media (min-width: 761px) {
+  .toolbar:not(.collection-toolbar) {
+    grid-template-columns: minmax(0, 1fr) 132px minmax(0, 1fr) calc(var(--toolbar-control-height) * 2 + 6px);
+  }
+  .toolbar:not(.collection-toolbar) > .search { grid-column: 1 !important; grid-row: 1; }
+  .toolbar:not(.collection-toolbar) > .toolbar-check { grid-column: 2 !important; grid-row: 1; width: 132px; }
+  .toolbar:not(.collection-toolbar) > label:has(#platformFilter) { grid-column: 3 / span 2 !important; grid-row: 1; }
+  .toolbar:not(.collection-toolbar) > label:has(#tagFilter) { grid-column: 1 !important; grid-row: 2; }
+  .toolbar:not(.collection-toolbar) > .order-label { grid-column: 2 / span 2 !important; grid-row: 2; }
+  .toolbar:not(.collection-toolbar) > .library-view-controls { grid-column: 4; grid-row: 2; }
+}
+
+@media (min-width: 761px) {
+  .toolbar.collection-toolbar {
+    grid-template-columns: repeat(3, minmax(0, 1fr)) minmax(150px, 1.15fr) calc(var(--toolbar-control-height) * 2 + 6px);
+  }
+  .toolbar.collection-toolbar > .search { grid-column: 1 / span 3 !important; grid-row: 1; }
+  .toolbar.collection-toolbar > label:has(#platformFilter) { grid-column: 4 / span 2 !important; grid-row: 1; }
+  .toolbar.collection-toolbar > label:has(#tagFilter) { grid-column: 1 !important; grid-row: 2; }
+  .toolbar.collection-toolbar > label:has(#collectionRegionFilter) { grid-column: 2 !important; grid-row: 2; }
+  .toolbar.collection-toolbar > label:has(#collectionConditionFilter) { grid-column: 3 !important; grid-row: 2; }
+  .toolbar.collection-toolbar > .order-label { grid-column: 4 !important; grid-row: 2; }
+  .toolbar.collection-toolbar > .library-view-controls { grid-column: 5; grid-row: 2; }
+}
+
+/* Keep the full toolbar on one line on regular desktop screens. */
+@media (min-width: 1001px) {
+  .toolbar:not(.collection-toolbar) {
+    grid-template-columns: minmax(180px, 1.35fr) 132px minmax(150px, 1.1fr) minmax(130px, .9fr) minmax(220px, 1.45fr) calc(var(--toolbar-control-height) * 2 + 6px);
+  }
+  .toolbar.collection-toolbar {
+    grid-template-columns: minmax(180px, 1.35fr) minmax(140px, 1fr) minmax(120px, .85fr) minmax(120px, .85fr) minmax(120px, .85fr) minmax(190px, 1.35fr) calc(var(--toolbar-control-height) * 2 + 6px);
+  }
+  .toolbar > .search,
+  .toolbar > .toolbar-check,
+  .toolbar > label:has(#platformFilter),
+  .toolbar > label:has(#tagFilter),
+  .toolbar > label:has(#collectionRegionFilter),
+  .toolbar > label:has(#collectionConditionFilter),
+  .toolbar > .order-label,
+  .toolbar > .library-view-controls {
+    grid-row: 1 !important;
+  }
+  .toolbar:not(.collection-toolbar) > .tag-filter,
+  .toolbar.collection-toolbar > .tag-filter { grid-column: auto !important; }
+  .toolbar > .search { grid-column: 1 !important; }
+  .toolbar:not(.collection-toolbar) > .toolbar-check { grid-column: 2 !important; }
+  .toolbar:not(.collection-toolbar) > label:has(#platformFilter) { grid-column: 3 !important; }
+  .toolbar:not(.collection-toolbar) > label:has(#tagFilter) { grid-column: 4 !important; }
+  .toolbar:not(.collection-toolbar) > .order-label { grid-column: 5 !important; }
+  .toolbar.collection-toolbar > label:has(#platformFilter) { grid-column: 2 !important; }
+  .toolbar.collection-toolbar > label:has(#tagFilter) { grid-column: 3 !important; }
+  .toolbar.collection-toolbar > label:has(#collectionRegionFilter) { grid-column: 4 !important; }
+  .toolbar.collection-toolbar > label:has(#collectionConditionFilter) { grid-column: 5 !important; }
+  .toolbar.collection-toolbar > .order-label { grid-column: 6 !important; }
+  .toolbar > .library-view-controls { grid-column: -2 !important; }
+}
+
+/* Fill every allocated filter cell; only icon controls keep a fixed width. */
+@media (min-width: 761px) {
+  .toolbar { justify-items: stretch; grid-auto-flow: row dense; }
+  .toolbar > label,
+  .toolbar .search-field,
+  .toolbar .order-control,
+  .toolbar .platform-logo-select {
+    justify-self: stretch;
+    width: 100%;
+    max-width: none;
+  }
+  .toolbar > .library-view-controls {
+    width: calc(var(--toolbar-control-height) * 2 + 6px);
+    justify-content: flex-end;
   }
 }

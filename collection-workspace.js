@@ -1,6 +1,5 @@
 import { syncMediaFormatToggle } from "./media-format-toggle.js";
-/** Mount the existing Shelf UI in scoped surfaces, using its original markup,
- * styles, renderers and event handlers. The legacy Shelf page remains intact. */
+/** Mount shared collection components inside the unified Gamelist shell. */
 let workspacePromise;
 export function mountCollectionWorkspace(options) {
   return workspacePromise ||= mount(options).catch(error => { workspacePromise = null; throw error; });
@@ -8,7 +7,7 @@ export function mountCollectionWorkspace(options) {
 
 async function mount({ slots, changed, openGame, mediaChanged, viewChanged, clearFilters }) {
   const [markup, ...styles] = await Promise.all([
-    fetch('shelf.html').then(read),
+    fetch('collection-ui.html').then(read),
     ...['styles.css', 'shelf.css', 'game-editor-layout.css'].map(path => fetch(path).then(read)),
   ]);
   const source = new DOMParser().parseFromString(markup, 'text/html');
@@ -125,7 +124,7 @@ async function mount({ slots, changed, openGame, mediaChanged, viewChanged, clea
   };
   renderMedia();
   window.__unifiedShelfScope = { document: scopeDocument, changed, openGame, viewChanged, clearFilters, ready(value) { api = value; resolveReady(); } };
-  await import('./shelf.js');
+  await import('./collection-ui.js');
   await ready;
   setMedia(media);
   const syncTheme = () => {
