@@ -68,6 +68,11 @@ export function syncCollectionCondition(inputs, changed) {
   inputs.sealed.disabled = false;
 }
 
+/** Recognize Playasia names consistently across editors and cards. */
+export function isPlayasiaStore(value) {
+  return ["playasia", "playasiacom", "wwwplayasiacom"].includes(String(value || "").toLowerCase().replace(/[^a-z0-9]/g, ""));
+}
+
 /** Use the same store favicons in preorder and preferred-store fields on either page. */
 export function syncStoreFieldIcon(input, slot) {
   if (!input || !slot) return;
@@ -75,6 +80,7 @@ export function syncStoreFieldIcon(input, slot) {
   const key = raw.toLowerCase().replace(/[^a-z0-9]/g, "");
   const stores = [
     [["amazon"], "Amazon", "assets/stores/amazon.ico"],
+    [["playasia", "playasiacom", "wwwplayasiacom"], "Playasia", "assets/stores/playasia.ico"],
     [["ebay"], "eBay", "https://www.ebay.com/favicon.ico"],
     [["kickstarter", "kickstater", "kicstarter", "kickstart"], "Kickstarter", "https://www.kickstarter.com/favicon.ico"],
     [["game", "gamees"], "GAME.es", "assets/stores/game.ico"],

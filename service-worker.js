@@ -1,4 +1,4 @@
-const CACHE_VERSION = "gamelist-cache-v635";
+const CACHE_VERSION = "gamelist-cache-v636";
 const STATIC_CACHE = `${CACHE_VERSION}:static`;
 const MEDIA_CACHE = `${CACHE_VERSION}:media`;
 const STATIC_ASSETS = [
@@ -17,9 +17,7 @@ const STATIC_ASSETS = [
   "/theme-system.js",
   "/i18n.js",
   "/collection-ui.html",
-  "/shelf.css",
   "/collection-ui.js",
-  "/shelf-accounts.js",
   "/account-settings-ui.js",
   "/assets/backdrop.png",
   "/assets/backdrop_light.png",
@@ -73,6 +71,7 @@ const STATIC_ASSETS = [
   "/assets/sites/wikipedia.ico",
   "/assets/stores/amazon.ico",
   "/assets/stores/game.ico",
+  "/assets/stores/playasia.ico",
   "/assets/stores/limited-run-games.png",
   "/assets/stores/retroisland.png",
   "/assets/stores/square-enix-store.png",

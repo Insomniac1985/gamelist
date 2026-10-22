@@ -5,7 +5,7 @@ import { normalizeSearchText, bindModalTouchGuard, createGameCardShell, bindActi
 import { applySiteTheme, normalizeThemeSettings, ownerCardColorClass, ownerColorClass, themeSettingsContent, bindThemeSettingsContent, readThemeSettingsContent } from "./theme-system.js";
 import { applyDocumentTranslations, languageOptions, normalizeLanguage, t } from "./i18n.js";
 import { accountSettingsMarkup } from "./account-settings-ui.js";
-import { syncGameListControls, syncGameListSlider, syncStoreFieldIcon, preventImplicitGameSubmit } from "./game-editor-controls.js";
+import { isPlayasiaStore, syncGameListControls, syncGameListSlider, syncStoreFieldIcon, preventImplicitGameSubmit } from "./game-editor-controls.js";
 
 document.querySelector("#settingsAccountsMount").innerHTML = accountSettingsMarkup();
 
@@ -27,7 +27,7 @@ const VERSION_STORAGE_KEY = "gamelist:site-version";
 const UPDATES_NOTIFICATION_STORAGE_KEY = "gamelist:updates-notification-version";
 const GOTY_DOCK_DISMISSED_KEY = "gamelist:goty-dock-dismissed";
 const CACHE_HOUR_STORAGE_KEY = "gamelist:cache-hour";
-const PULL_NAVIGATION_KEY = "gamelist:pull-navigation";
+
 const STORE_OPTIONS = ["Amazon", "eBay", "GAME.es", "Xtralife", "Retro Island NY", "GameStop", "Walmart"];
 const CURRENCY_OPTIONS = ["EUR", "USD", "GBP", "JPY"];
 const REGION_OPTIONS = ["ES", "IT", "IE", "FR", "PT", "JP", "MX", "US", "UK"];
@@ -95,7 +95,7 @@ const DEFAULT_SETTINGS = {
   defaultOwner: "User",
   shelfSync: true,
   shelfSyncWishlist: true,
-  hidePageSwitch: false,
+
   streamFilterPriority: "all",
   prioritizeFinishedStream: false,
   hideNonStreamPlaying: false,
@@ -358,7 +358,7 @@ const el = {
   mobileDockStats: document.querySelector("#mobileDockStats"),
   mobileDockGoty: document.querySelector("#mobileDockGoty"),
   mobileDockSettings: document.querySelector("#mobileDockSettings"),
-  mobileDockSwitch: document.querySelector("#mobileDockSwitch"),
+
   mobileTabs: document.querySelectorAll("[data-mobile-section]"),
   board: document.querySelector(".board"),
   detailDialog: document.querySelector("#detailDialog"),
@@ -572,7 +572,6 @@ const el = {
 renderRatingInputs(el.playingRatingGrid, "edit");
 renderRatingInputs(el.finishRatingGrid, "finish");
 
-
 init();
 
 async function init() {
@@ -611,7 +610,7 @@ async function init() {
     if (!collectionUI || document.hidden || document.querySelector("dialog[open]")) return;
     void Promise.all([refreshCollectionData(), pullCloudData()]).then(() => render()).catch(() => {});
   });
-  syncPagePullTransition();
+
   if (await maybeRenderGameOfTheYearExportPreview()) return;
   render();
   if (state.canEdit) {
@@ -767,7 +766,6 @@ function registerServiceWorker() {
 
 async function checkSiteVersion() {
   try {
-    const fromPullNavigation = consumeRecentPullNavigation();
     await clearSiteCachesForNewHour();
     const response = await fetch(`/version.json?t=${Date.now()}`, { cache: "no-store" });
     if (!response.ok) return false;
@@ -785,11 +783,6 @@ async function checkSiteVersion() {
       return false;
     }
     if (!forceCacheOnLoadEnabled()) return false;
-    if (fromPullNavigation) {
-      clearSiteCaches().catch(() => {});
-      localStorage.setItem(VERSION_STORAGE_KEY, remoteVersion);
-      return false;
-    }
     await clearSiteCaches();
     localStorage.setItem(VERSION_STORAGE_KEY, remoteVersion);
     window.location.reload();
@@ -934,23 +927,6 @@ function consoleVersionLabel() {
     : "unknown";
 }
 
-function consumeRecentPullNavigation() {
-  try {
-    const url = new URL(window.location.href);
-    const fromPullUrl = url.searchParams.get("pull") === "1";
-    if (fromPullUrl) {
-      url.searchParams.delete("pull");
-      url.searchParams.delete("v");
-      window.history.replaceState({}, "", `${url.pathname}${url.search}${url.hash}`);
-    }
-    const value = JSON.parse(sessionStorage.getItem(PULL_NAVIGATION_KEY) || "{}");
-    sessionStorage.removeItem(PULL_NAVIGATION_KEY);
-    return fromPullUrl || Date.now() - Number(value.at || 0) < 8000;
-  } catch {
-    return false;
-  }
-}
-
 async function clearSiteCaches() {
   if ("caches" in window) {
     const keys = await caches.keys();
@@ -1038,12 +1014,7 @@ function bindEvents() {
   el.syncButton.addEventListener("click", syncNow);
   el.settingsButton?.addEventListener("click", openSettingsDialog);
   el.mobileDockSettings?.addEventListener("click", openSettingsDialog);
-  el.mobileDockSwitch?.addEventListener("click", () => {
-    if (pageSwitchHidden()) return;
-    const transitionButton = document.querySelector(".page-pull-switch");
-    if (transitionButton) transitionButton.click();
-    else { state.mobileSection = "shelf"; render(); }
-  });
+
   el.settingsDialog?.querySelectorAll("[data-settings-panel]").forEach((button) => {
     button.addEventListener("click", () => {
       const panel = button.dataset.settingsPanel;
@@ -1508,214 +1479,6 @@ function bindEvents() {
   window.matchMedia("(display-mode: standalone)").addEventListener?.("change", syncDisplayMode);
 }
 
-function initPagePullTransition({ targetLabel, targetUrl }) {
-  if (pageSwitchHidden()) {
-    removePagePullTransition();
-    return;
-  }
-  const localizedTargetLabel = tt(targetLabel);
-  const existingButton = document.querySelector(".page-pull-switch");
-  if (existingButton) {
-    existingButton.setAttribute("aria-label", tt("Switch to {target}", { target: localizedTargetLabel }));
-    existingButton.innerHTML = `<span>${escapeHtml(localizedTargetLabel)}</span>`;
-    return;
-  }
-  const button = document.createElement("button");
-  button.className = "page-pull-switch";
-  button.type = "button";
-  button.setAttribute("aria-label", tt("Switch to {target}", { target: localizedTargetLabel }));
-  button.innerHTML = `<span>${escapeHtml(localizedTargetLabel)}</span>`;
-  const curtain = document.createElement("div");
-  curtain.className = "page-pull-curtain";
-  curtain.setAttribute("aria-hidden", "true");
-  curtain.innerHTML = pagePullPreviewMarkup(targetUrl);
-  document.body.append(button, curtain);
-  let startY = 0;
-  let startX = 0;
-  let dragging = false;
-  let pageDragArmed = false;
-  let pageDragging = false;
-  let moved = false;
-  const pagePullThreshold = () => Math.min(260, Math.max(150, window.innerHeight * 0.34));
-  const isAtPageTop = () => window.scrollY <= 2 && document.documentElement.scrollTop <= 2 && document.body.scrollTop <= 2;
-  const canStartPagePull = () => false;
-  const setPull = (distance) => {
-    const pull = Math.max(0, Math.min(window.innerHeight, distance));
-    const progress = Math.min(1, pull / pagePullThreshold());
-    document.body.style.setProperty("--pull-distance", `${pull}px`);
-    document.body.style.setProperty("--pull-handle-y", `${pull}px`);
-    document.body.style.setProperty("--pull-blur", `${Math.round((1 - progress) * 10)}px`);
-    document.body.style.setProperty("--pull-preview-opacity", `${0.48 + progress * 0.52}`);
-    document.body.style.setProperty("--pull-preview-scale", `${0.96 + progress * 0.04}`);
-    document.body.classList.toggle("page-pulling", pull > 6);
-    return pull;
-  };
-  const switchPage = () => {
-    if (document.body.classList.contains("page-switching") || document.body.classList.contains("page-switching-pending")) return;
-    const frame = curtain.querySelector(".page-pull-frame");
-    let committed = false;
-    const commit = () => {
-      if (committed) return;
-      committed = true;
-      document.body.classList.remove("page-switching-pending");
-      document.body.classList.add("page-switching");
-      document.body.classList.remove("page-pulling");
-      document.body.style.setProperty("--pull-distance", `${window.innerHeight}px`);
-      document.body.style.setProperty("--pull-handle-y", `${window.innerHeight}px`);
-      document.body.style.setProperty("--pull-blur", "0px");
-      document.body.style.setProperty("--pull-preview-opacity", "1");
-      document.body.style.setProperty("--pull-preview-scale", "1");
-      try {
-        sessionStorage.setItem(PULL_NAVIGATION_KEY, JSON.stringify({ version: siteVersion.version, at: Date.now() }));
-        if (siteVersion.version) localStorage.setItem(VERSION_STORAGE_KEY, siteVersion.version);
-      } catch {}
-      window.setTimeout(() => { window.location.href = pullNavigationUrl(targetUrl); }, 430);
-    };
-    if (frame?.dataset.loaded === "true") commit();
-    else {
-      document.body.classList.add("page-switching-pending");
-      document.body.classList.add("page-pulling");
-      frame?.addEventListener("load", commit, { once: true });
-      window.setTimeout(commit, 1800);
-    }
-  };
-  button.addEventListener("click", () => { if (!moved) switchPage(); moved = false; });
-  button.addEventListener("pointerenter", () => document.body.classList.add("page-pull-hover"));
-  button.addEventListener("pointerleave", () => { if (!dragging) document.body.classList.remove("page-pull-hover"); });
-  button.addEventListener("pointerdown", (event) => {
-    dragging = true;
-    pageDragging = false;
-    moved = false;
-    startY = event.clientY;
-    startX = event.clientX;
-    document.body.classList.add("page-pull-hover");
-    button.classList.add("is-dragging");
-    button.setPointerCapture?.(event.pointerId);
-  });
-  button.addEventListener("pointermove", (event) => {
-    if (!dragging) return;
-    const pull = setPull(event.clientY - startY);
-    moved = moved || pull > 8;
-  });
-  const endDrag = (event, threshold = window.innerHeight * 0.75) => {
-    if (!dragging) return;
-    dragging = false;
-    pageDragArmed = false;
-    pageDragging = false;
-    button.classList.remove("is-dragging");
-    document.body.classList.remove("page-pull-hover");
-    if (button.hasPointerCapture?.(event.pointerId)) button.releasePointerCapture(event.pointerId);
-    const pull = Number.parseFloat(document.body.style.getPropertyValue("--pull-distance")) || 0;
-    if (pull > threshold) switchPage();
-    else {
-      document.body.classList.remove("page-pulling");
-      document.body.style.setProperty("--pull-distance", "0px");
-      document.body.style.setProperty("--pull-handle-y", "0px");
-    }
-    window.setTimeout(() => { moved = false; }, 0);
-  };
-  button.addEventListener("pointerup", endDrag);
-  button.addEventListener("pointercancel", endDrag);
-  window.addEventListener("pointerdown", (event) => {
-    if (dragging || !canStartPagePull(event)) return;
-    pageDragArmed = true;
-    startY = event.clientY;
-    startX = event.clientX;
-    moved = false;
-  }, { passive: true });
-  window.addEventListener("pointermove", (event) => {
-    if (!pageDragArmed) return;
-    const distanceY = event.clientY - startY;
-    const distanceX = Math.abs(event.clientX - startX);
-    if (!pageDragging && (distanceY < 12 || distanceX > distanceY * 0.8)) return;
-    if (distanceY <= 0 || !isAtPageTop()) {
-      pageDragArmed = false;
-      return;
-    }
-    if (!pageDragging) {
-      pageDragging = true;
-      dragging = true;
-      document.body.classList.add("page-pull-hover");
-      button.classList.add("is-dragging");
-    }
-    event.preventDefault();
-    const pull = setPull(distanceY * 0.92);
-    moved = moved || pull > 8;
-  }, { passive: false });
-  window.addEventListener("pointerup", (event) => {
-    if (!pageDragArmed && !pageDragging) return;
-    endDrag(event, pagePullThreshold());
-  }, { passive: true });
-  window.addEventListener("pointercancel", (event) => {
-    if (!pageDragArmed && !pageDragging) return;
-    endDrag(event, pagePullThreshold());
-  }, { passive: true });
-  window.addEventListener("touchstart", (event) => {
-    if (dragging || event.touches.length !== 1 || !canStartPagePull(event)) return;
-    const touch = event.touches[0];
-    pageDragArmed = true;
-    startY = touch.clientY;
-    startX = touch.clientX;
-    moved = false;
-  }, { passive: true });
-  window.addEventListener("touchmove", (event) => {
-    if (!pageDragArmed || event.touches.length !== 1) return;
-    const touch = event.touches[0];
-    const distanceY = touch.clientY - startY;
-    const distanceX = Math.abs(touch.clientX - startX);
-    if (!pageDragging && (distanceY < 12 || distanceX > distanceY * 0.8)) return;
-    if (distanceY <= 0 || !isAtPageTop()) {
-      pageDragArmed = false;
-      return;
-    }
-    if (!pageDragging) {
-      pageDragging = true;
-      dragging = true;
-      document.body.classList.add("page-pull-hover");
-      button.classList.add("is-dragging");
-    }
-    event.preventDefault();
-    const pull = setPull(distanceY * 0.92);
-    moved = moved || pull > 8;
-  }, { passive: false });
-  const endTouchDrag = () => {
-    if (!pageDragArmed && !pageDragging) return;
-    endDrag({}, pagePullThreshold());
-  };
-  window.addEventListener("touchend", endTouchDrag, { passive: true });
-  window.addEventListener("touchcancel", endTouchDrag, { passive: true });
-}
-
-function syncPagePullTransition() {
-  removePagePullTransition();
-}
-
-function pageSwitchHidden() {
-  return true;
-}
-
-function removePagePullTransition() {
-  document.querySelector(".page-pull-switch")?.remove();
-  document.querySelector(".page-pull-curtain")?.remove();
-  document.body.classList.remove("page-pull-hover", "page-pulling", "page-switching", "page-switching-pending");
-  document.body.style.removeProperty("--pull-distance");
-  document.body.style.removeProperty("--pull-handle-y");
-  document.body.style.removeProperty("--pull-blur");
-  document.body.style.removeProperty("--pull-preview-opacity");
-  document.body.style.removeProperty("--pull-preview-scale");
-}
-
-function pagePullPreviewMarkup(targetUrl) {
-  return `<div class="page-pull-preview"><iframe class="page-pull-frame" src="${escapeHtml(targetUrl)}" tabindex="-1" aria-hidden="true" onload="this.dataset.loaded='true'"></iframe></div>`;
-}
-
-function pullNavigationUrl(targetUrl) {
-  const url = new URL(targetUrl, window.location.href);
-  url.searchParams.set("pull", "1");
-  if (siteVersion.version) url.searchParams.set("v", siteVersion.version);
-  return url.href;
-}
-
 function warmUiIcons() {
   UI_ICON_URLS.slice(0, 4).forEach((url) => {
     const image = new Image();
@@ -1924,7 +1687,7 @@ function normalizeSettings(settings = {}) {
     defaultOwner: cleanOwnerLabel(settings.defaultOwner) || DEFAULT_SETTINGS.defaultOwner,
     shelfSync: true,
     shelfSyncWishlist: settings.shelfSyncWishlist !== false,
-    hidePageSwitch: false,
+
     defaultList: settings.defaultList === "drive" ? "shelf" : ["backlog", "shelf", "upcoming", "wanted", "new"].includes(settings.defaultList) ? settings.defaultList : "backlog",
     streamFilterPriority: streamFilterPriorityForSettings(settings),
     prioritizeFinishedStream: streamFilterPriorityForSettings(settings) === "stream",
@@ -2094,7 +1857,7 @@ function render() {
   if (el.settingsButton) el.settingsButton.hidden = !state.canEdit;
   if (el.mobileDockSettings) el.mobileDockSettings.hidden = !state.canEdit;
   setSettingsAuthLoading(false);
-  if (el.mobileDockSwitch) el.mobileDockSwitch.hidden = pageSwitchHidden();
+
   if (el.fetchDataButton) el.fetchDataButton.hidden = true;
   el.fetchPricesButton.hidden = !state.canEdit;
   if (state.canEdit && !el.fetchPricesButton.disabled) el.fetchPricesButton.innerHTML = `${currencyIcon()}<span class="button-label">${escapeHtml(tt("Fetch New Prices"))}</span>`;
@@ -2981,7 +2744,6 @@ function settingsWeekStartItem() {
   `;
 }
 
-
 function settingsPrioritizeFinishedStreamItem() {
   const priority = streamFilterPriorityForSettings(state.settings);
   return `
@@ -3543,7 +3305,7 @@ async function saveSettingsFromForm(event, { close = true } = {}) {
     stores,
     defaultOwner: el.settingsDefaultOwner.value,
     shelfSync: true,
-    hidePageSwitch: false,
+
     defaultList: el.settingsDialog.querySelector("[data-default-list]")?.value || "backlog",
     shelfDigitalGames: el.settingsDialog.querySelector("[data-track-digital]")?.checked === true,
     shelfHidePrices: el.settingsDialog.querySelector("[data-collection-prices]")?.checked === false,
@@ -3568,7 +3330,7 @@ async function saveSettingsFromForm(event, { close = true } = {}) {
   }
   refreshAchievements();
   render();
-  syncPagePullTransition();
+
   if (previousCurrency !== state.settings.currency) await refreshAllPrices();
   if (!close) finishSettingsExit("back");
 }
@@ -7930,7 +7692,6 @@ function finishedStatsMarkup(year, games, completed) {
   `;
 }
 
-
 function finishedStatsTopGamesCarouselMarkup(games = [], mode = "time") {
   const normalizedMode = normalizeTopGamesCarouselMode(mode);
   const topGames = finishedStatsTopGames(games, normalizedMode).slice(0, 10);
@@ -9470,7 +9231,7 @@ function openDetail(id, options = {}) {
   el.detailStudio.innerHTML = `${visibleOwnerTags(game).map(ownerBadge).join("")}${studioText(game) ? `<span>${escapeHtml(studioText(game))}</span>` : ""}`;
   el.detailStudio.hidden = !el.detailStudio.innerHTML;
   el.detailMeta.innerHTML = metaFor(game, { includePsn: false, includeOwners: false, includeAdded: false }).join("");
-  bindDetailShelfSearch(game);
+
   const detailDates = playDatesFor(game, { includePastRelease: true, includePreorder: true, includeAdded: true });
   if (game.playing) detailDates.push(calendarStateForGame(game));
   el.detailDates.innerHTML = detailDates.join("");
@@ -9496,33 +9257,6 @@ function openDetail(id, options = {}) {
   renderDetailTrophies(game);
   el.detailDialog.showModal();
   syncScrollLock();
-}
-
-function bindDetailShelfSearch(game) {
-  el.detailMeta.onclick = null;
-  el.detailMeta.onkeydown = null;
-  if (pageSwitchHidden()) return;
-  const digital = game.digital === true;
-  const targets = el.detailMeta.querySelectorAll(digital ? ".platform-badge, .digital-pill" : ".platform-badge, .physical-pill");
-  targets.forEach((target) => {
-    target.classList.add("detail-shelf-search-link");
-    target.setAttribute("role", "link");
-    target.tabIndex = 0;
-    target.title = tt("Find {title} in {target}", { title: game.title, target: tt(digital ? "Drive" : "Shelf") });
-  });
-  const navigate = (event) => {
-    const target = event.target.closest(".detail-shelf-search-link");
-    if (!target) return;
-    if (event.type === "keydown" && event.key !== "Enter" && event.key !== " ") return;
-    event.preventDefault();
-    const url = new URL("/", window.location.href);
-    url.searchParams.set("list", "shelf");
-    url.searchParams.set("search", game.title);
-    if (digital) url.searchParams.set("tab", "drive");
-    window.location.href = url.href;
-  };
-  el.detailMeta.onclick = navigate;
-  el.detailMeta.onkeydown = navigate;
 }
 
 async function renderDetailTrophies(game) {
@@ -10600,7 +10334,7 @@ function playDatesFor(game, options = {}) {
   if (options.includePreorder && game.preorderStore) values.push(preorderChip(game.preorderStore));
   else if (options.includePreorder && game.preferredStore) values.push(preferredPreorderChip(game.preferredStore));
   if (options.includeAdded) values.push(gamelistAddedBadge(game));
-  if (game.startedAt) values.push(`<span class="history-pill history-date-pill"><small>${escapeHtml(tt("Started"))}</small><strong>${escapeHtml(formatDate(game.startedAt))}</strong></span>`);
+  if (game.startedAt) values.push(`<span class="history-pill history-date-pill started-date-pill"><small>${escapeHtml(tt("Started"))}</small><strong>${escapeHtml(formatDate(game.startedAt))}</strong></span>`);
   const livePlaytime = game.playing ? Number(state.cardPlaytime[game.id]) : 0;
   if (livePlaytime > 0) values.push(livePlaytimePill(game, livePlaytime));
   if (game.completedAt) values.push(`<span class="history-pill history-date-pill"><small>${escapeHtml(tt("Finished"))}</small><strong>${escapeHtml(formatDate(game.completedAt))}</strong></span>`);
@@ -11236,12 +10970,13 @@ function cardChipsFor(game) {
 function preorderChip(store) {
   const kickstarter = isKickstarterStore(store);
   const displayStore = kickstarter ? "Kickstarter" : store;
-  const icon = kickstarter ? `<img class="preorder-store-icon" src="${escapeHtml(storeIcon(store))}" alt="" width="14" height="14" decoding="async">` : shoppingBagIcon();
+  const icon = kickstarter || isPlayasiaStore(store) ? `<img class="preorder-store-icon" src="${escapeHtml(storeIcon(store))}" alt="" width="14" height="14" decoding="async">` : shoppingBagIcon();
   return `<span class="chip accent preorder-chip${kickstarter ? " preorder-chip-kickstarter" : ""}" title="${escapeHtml(tt("Preordered: {store}", { store: displayStore }))}">${icon}${escapeHtml(displayStore)}</span>`;
 }
 
 function preferredPreorderChip(store) {
-  return `<span class="chip preferred-preorder-chip" title="${escapeHtml(tt("Preferred preorder store: {store}", { store }))}">${escapeHtml(tt("Preferred: {store}", { store }))}</span>`;
+  const icon = isPlayasiaStore(store) ? `<img class="preorder-store-icon" src="${escapeHtml(storeIcon(store))}" alt="" width="14" height="14" decoding="async">` : "";
+  return `<span class="chip preferred-preorder-chip" title="${escapeHtml(tt("Preferred preorder store: {store}", { store }))}">${icon}${escapeHtml(tt("Preferred: {store}", { store }))}</span>`;
 }
 
 function chip(label, type = "") {
@@ -12019,6 +11754,7 @@ function xboxSearchUrl(query, region = state.settings.region) {
 
 function storeIcon(store) {
   const normalizedStore = normalizeTag(store);
+  if (isPlayasiaStore(store)) return "assets/stores/playasia.ico";
   if (store.startsWith("Amazon")) return "assets/stores/amazon.ico";
   if (store === "eBay") return "https://www.ebay.com/favicon.ico";
   if (isKickstarterStore(store)) return "https://www.kickstarter.com/favicon.ico";
@@ -13708,7 +13444,6 @@ function escapeHtml(value) {
   }[char]));
 }
 
-
 let collectionUI = null;
 let collectionData = null;
 let collectionLoad = null;
@@ -13743,7 +13478,7 @@ function ensureCollectionWorkspace() {
     stats.hidden = true;
     document.body.append(stats);
     slots.stats = stats;
-    collectionUI = await mountCollectionWorkspace({ slots, openGame: openDetail, mediaChanged: setCollectionMedia, viewChanged: mode => { state.viewMode = mode; saveSharedViewMode(mode); render(); }, clearFilters: () => {
+    collectionUI = await mountCollectionWorkspace({ slots, openGame: openDetail, openSettings: openSettingsDialog, mediaChanged: setCollectionMedia, viewChanged: mode => { state.viewMode = mode; saveSharedViewMode(mode); render(); }, clearFilters: () => {
       Object.assign(state.filters, { query: "", platform: "all", tag: "all", region: "all", condition: "all", preordered: false });
       el.searchInput.value = "";
       render();
@@ -13870,7 +13605,6 @@ function mergeCollectionStats(year) {
   el.finishedStatsBody.append(...periods);
   collection.bind();
 }
-
 
 let collectionRecordSnapshot = null;
 function collectionRecords() {

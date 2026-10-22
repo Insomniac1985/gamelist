@@ -5,14 +5,14 @@ let assetsPromise;
 export function prepareCollectionWorkspace() {
   return assetsPromise ||= Promise.all([
     fetch('collection-ui.html').then(read),
-    ...['styles.css', 'shelf.css', 'game-editor-layout.css'].map(path => fetch(path).then(read)),
+    ...['styles.css', 'game-editor-layout.css'].map(path => fetch(path).then(read)),
   ]).catch(error => { assetsPromise = null; throw error; });
 }
 export function mountCollectionWorkspace(options) {
   return workspacePromise ||= mount(options).catch(error => { workspacePromise = null; throw error; });
 }
 
-async function mount({ slots, changed, openGame, mediaChanged, viewChanged, clearFilters }) {
+async function mount({ slots, changed, openGame, openSettings, mediaChanged, viewChanged, clearFilters }) {
   const [markup, ...styles] = await prepareCollectionWorkspace();
   const source = new DOMParser().parseFromString(markup, 'text/html');
   source.querySelectorAll('script').forEach(node => node.remove());
@@ -137,7 +137,7 @@ async function mount({ slots, changed, openGame, mediaChanged, viewChanged, clea
     mediaChanged?.(media);
   };
   renderMedia();
-  window.__unifiedShelfScope = { document: scopeDocument, changed, openGame, viewChanged, clearFilters, ready(value) { api = value; resolveReady(); } };
+  window.__unifiedShelfScope = { document: scopeDocument, changed, openGame, openSettings, viewChanged, clearFilters, ready(value) { api = value; resolveReady(); } };
   await import('./collection-ui.js');
   await ready;
   setMedia(media);

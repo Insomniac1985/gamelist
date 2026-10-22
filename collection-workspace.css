@@ -5,7 +5,6 @@ body.collection-selected .board > .column { display: none !important; }
 #collectionLibrary { min-width: 0; margin-bottom: 20px; }
 #collectionToolbar { min-width: 0; margin-bottom: 0; }
 #collectionShowcase { min-width: 0; overflow: visible; }
-#mobileDockSwitch, .page-pull-switch, .page-pull-curtain { display: none !important; }
 .gamelist-added-pill { display: inline-flex; }
 .mobile-section-tabs { overflow-x: auto; scrollbar-width: none; }
 .mobile-section-tabs button { min-width: 0; }
@@ -80,7 +79,7 @@ body[data-mobile-section="new"] #new > .column-head { display: none; }
 body[data-mobile-section="new"] #collectionLibrary:not([hidden]) + #new:not([hidden]) { margin-top: 12px; }
 .unified-new-head[hidden] { display: none !important; }
 @media (min-width: 761px) {
-  .toolbar { position: sticky; top: calc(20px + var(--pull-ui-offset,0px)); }
+  .toolbar { position: sticky; top: calc(20px + 0px); }
 }
 
 #collectionKpis { margin-bottom: 0; }
