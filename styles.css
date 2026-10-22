@@ -24866,6 +24866,15 @@ textarea {
 }
 
 @media (min-width: 700px) and (max-width: 800px) {
+  #searchButton {
+    display: none !important;
+  }
+
+  #mobileDockSearch {
+    display: grid !important;
+    order: 0;
+  }
+
   .mobile-section-tabs,
   .shelf-tabs {
     top: 20px;
