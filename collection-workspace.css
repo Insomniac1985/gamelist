@@ -82,7 +82,7 @@ body[data-mobile-section="new"] #collectionLibrary:not([hidden]) + #new:not([hid
   .toolbar { position: sticky; top: calc(20px + var(--pull-ui-offset,0px)); }
 }
 
-#collectionKpis { margin-bottom: 14px; }
+#collectionKpis { margin-bottom: 0; }
 @media (min-width: 761px) and (max-width: 1000px) {
   .toolbar > label { grid-column: auto !important; }
   .toolbar > .search { grid-column: 1 / -1 !important; }
