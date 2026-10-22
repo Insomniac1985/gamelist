@@ -1852,10 +1852,13 @@ function render() {
   const shabiiMainOwner = isShabiiMainOwner();
   document.body.classList.toggle("shabii-main-owner", shabiiMainOwner);
   document.body.classList.toggle("list-view-mode", state.viewMode === "list");
-  el.loginButton.innerHTML = state.canEdit ? `<span class="button-icon" aria-hidden="true">${exitIcon()}</span>` : plusIcon();
-  el.loginButton.title = state.canEdit ? tt("Stop Editing") : tt("Add Game");
+  el.loginButton.innerHTML = state.canEdit ? `<span class="button-icon" aria-hidden="true">${exitIcon()}</span>` : pencilIcon();
+  el.loginButton.title = state.canEdit ? tt("Stop Editing") : tt("Log in to edit");
   el.loginButton.setAttribute("aria-label", el.loginButton.title);
   el.loginButton.hidden = state.canEdit;
+  el.floatingAddButton.innerHTML = plusIcon();
+  el.floatingAddButton.title = tt("Add Game");
+  el.floatingAddButton.setAttribute("aria-label", tt("Add Game"));
   if (el.mobileDockEdit) {
     el.mobileDockEdit.hidden = state.canEdit;
     el.mobileDockEdit.innerHTML = `${plusIcon()}<span>${escapeHtml(tt("Add Game"))}</span>`;

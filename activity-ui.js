@@ -81,10 +81,27 @@ export function mountActivitySlider(section, ids) {
 }
 
 const TWITCH_PREVIEW_HIDDEN_KEY = "gamelist:twitch-preview-hidden";
+let twitchPreviewPlacementResizeBound = false;
+
+function syncTwitchPreviewPlacement() {
+  const mobile = window.matchMedia("(max-width: 699px)").matches;
+  document.querySelectorAll(".playing-panel > .playing-list").forEach((list) => {
+    const panel = list.parentElement;
+    const preview = list.querySelector(":scope > .twitch-preview-card")
+      || panel.querySelector(":scope > .twitch-preview-card");
+    if (!preview) return;
+    if (mobile) panel.append(preview);
+    else if (preview.parentElement !== list) list.prepend(preview);
+  });
+}
 
 export function mountTwitchPreview(list, username, enabled = true) {
+  if (!list) return null;
+  const panel = list.parentElement;
+  panel?.querySelector(":scope > .twitch-preview-card")?.remove();
+  list.querySelector(":scope > .twitch-preview-card")?.remove();
   const channel = cleanTwitchUsername(username);
-  if (!list || !enabled || !channel) return null;
+  if (!enabled || !channel) return null;
   const hidden = twitchPreviewHidden();
   const card = document.createElement("article");
   card.className = "twitch-preview-card glass";
@@ -97,9 +114,9 @@ export function mountTwitchPreview(list, username, enabled = true) {
       <span>${escapeActivityText(channel)}</span>
     </div>
     <div class="twitch-preview-player">
-      <span class="twitch-preview-status">Checking stream…</span>
       <span class="twitch-preview-loading">Loading Twitch preview…</span>
     </div>
+    <span class="twitch-preview-status">Checking stream…</span>
     <a class="twitch-preview-link" target="_blank" rel="noreferrer">
       <svg class="twitch-preview-link-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
         <path d="M6 0 1.7 4.3v15.4h5.1V24l4.3-4.3h3.4l7.8-7.7V0H6Zm14.6 11.1-3.4 3.4h-3.5l-3 3v-3H6.9V1.7h13.7v9.4ZM18 4.7v5.1h-1.7V4.7H18Zm-4.7 0v5.1h-1.7V4.7h1.7Z"/>
@@ -119,6 +136,11 @@ export function mountTwitchPreview(list, username, enabled = true) {
   card.querySelector(".twitch-preview-link").href = channelUrl;
   bindTwitchPreviewToggle(card, channel);
   list.prepend(card);
+  syncTwitchPreviewPlacement();
+  if (!twitchPreviewPlacementResizeBound) {
+    window.addEventListener("resize", syncTwitchPreviewPlacement, { passive: true });
+    twitchPreviewPlacementResizeBound = true;
+  }
   hydrateTwitchPreview(card, channel, { loadPlayer: !hidden });
   return card;
 }
