@@ -2469,7 +2469,9 @@ function openEditor(game = null, options = {}) {
   el.fields.igdbUrl.value = values.igdbUrl || links.igdb;
   Object.entries(el.conditionFields).forEach(([key, input]) => { input.checked = conditionValue(values, key); });
   syncConditionInputs();
-  el.addForm.querySelector(".modal-head h2").textContent = tt(game?.pendingCollection ? "Add to Collection" : game ? "Edit game" : digitalMode ? "Add a digital game" : "Add game");
+  const title = el.addForm.querySelector(".modal-head h2");
+  if (!game && !digitalMode) setShelfEditorTitle(title, tt("Add game to Shelf"), [tt("Add game"), tt("to Shelf")]);
+  else setShelfEditorTitle(title, tt(game?.pendingCollection ? "Add to Collection" : game ? "Edit game" : "Add a digital game"));
   el.addForm.querySelectorAll("button[type='submit']").forEach((button) => { button.textContent = game?.pendingCollection ? "Add to Collection" : game ? "Save" : "Add to Shelf"; });
   syncShelfGamelistTargetPicker();
   syncShelfGamelistTargetMode();
@@ -2526,7 +2528,9 @@ function syncShelfDigitalEditorMode(digitalMode) {
   if (el.lookupLabelDigital) el.lookupLabelDigital.textContent = tt("Search DB or IGDB URL");
   el.lookupInput.placeholder = tt(digitalMode ? "Type a game name or paste an IGDB page" : "Game name or PriceCharting page");
   const game = state.games.find((item) => item.id === state.editingId);
-  el.addForm.querySelector(".modal-head h2").textContent = tt(game?.pendingCollection ? "Add to Collection" : game ? "Edit game" : digitalMode ? "Add a digital game" : "Add game");
+  const title = el.addForm.querySelector(".modal-head h2");
+  if (!game && !digitalMode) setShelfEditorTitle(title, tt("Add game to Shelf"), [tt("Add game"), tt("to Shelf")]);
+  else setShelfEditorTitle(title, tt(game?.pendingCollection ? "Add to Collection" : game ? "Edit game" : "Add a digital game"));
   el.addForm.querySelectorAll("button[type='submit']").forEach((button) => { button.textContent = game?.pendingCollection ? "Add to Collection" : game ? "Save" : "Add to Shelf"; });
   syncShelfEntitlementEditor();
   if (el.gamelistTargetPicker) syncShelfGamelistTargetMode();
@@ -2583,11 +2587,16 @@ function syncShelfGamelistTargetMode() {
   if (active) {
     const collectingInfo = el.addForm.classList.contains("shelf-gamelist-import-mini");
     if (eyebrow) eyebrow.textContent = collectingInfo ? tt("Gamelist") : "GAME DATA";
-    if (title) title.textContent = shelfGamelistAddTitle();
+    if (title) {
+      const titleText = shelfGamelistAddTitle();
+      setShelfEditorTitle(title, titleText, target === "wishlist" ? [tt("Add game"), tt("to Wishlist")] : []);
+    }
     el.addForm.querySelector(".form-group h3").textContent = tt("Collecting Information");
     const saveLabel = shelfCollectionEnabled()
       ? "Add to Backlog and Shelf"
-      : "Add to Gamelist";
+      : ["upcoming", "wanted"].includes(el.gamelistSection.value)
+        ? "Add game"
+        : "Add to Gamelist";
     el.addForm.querySelectorAll("button[type='submit']").forEach((button) => { button.textContent = tt(saveLabel); });
     el.lookupLabelPhysical.textContent = tt("Search DB or IGDB URL");
     el.lookupInput.placeholder = tt("Type a game name or paste an IGDB page");
@@ -2597,7 +2606,10 @@ function syncShelfGamelistTargetMode() {
     el.lookupLabelPhysical.textContent = tt("Search DB or PriceCharting");
     if (eyebrow) eyebrow.textContent = tt("Game data");
     const game = state.games.find((item) => item.id === state.editingId);
-    if (title) title.textContent = tt(game?.pendingCollection ? "Add to Collection" : game ? "Edit game" : "Add game to Shelf");
+    if (title) {
+      const titleText = tt(game?.pendingCollection ? "Add to Collection" : game ? "Edit game" : "Add game to Shelf");
+      setShelfEditorTitle(title, titleText, !game ? [tt("Add game"), tt("to Shelf")] : []);
+    }
     el.addForm.querySelector(".form-group h3").textContent = tt("Collecting Information");
     el.addForm.querySelectorAll("button[type='submit']").forEach((button) => { button.textContent = game?.pendingCollection ? tt("Add to Collection") : game ? tt("Save") : tt("Add to Shelf"); });
     el.lookupInput.placeholder = tt(el.addForm.dataset.digital === "true" ? "Type a game name or paste an IGDB page" : "Game name or PriceCharting page");
@@ -2645,13 +2657,24 @@ function shelfGamelistAddTitle() {
   return tt(el.gamelistSection.value === "backlog" ? "Add game to Backlog" : "Add available game");
 }
 
+function setShelfEditorTitle(title, text, mobileLines = []) {
+  if (!title) return;
+  title.classList.toggle("mobile-two-line-title", mobileLines.length === 2);
+  title.innerHTML = mobileLines.length === 2
+    ? `${escapeHtml(mobileLines[0])} <br class="mobile-title-break">${escapeHtml(mobileLines[1])}`
+    : escapeHtml(text);
+}
+
 function syncShelfGamelistSectionButtons() {
   syncShelfGamelistPreorderVisibility();
   syncGameListSlider(el.gamelistListPicker, !isGamelistProjectionTarget() || el.gamelistSection.value === "backlog" ? "collection" : el.gamelistSection.value);
   syncShelfNewGameHighlights();
   if (isGamelistProjectionTarget()) {
     const title = el.addForm.querySelector(".modal-head h2");
-    if (title) title.textContent = shelfGamelistAddTitle();
+    if (title) {
+      const titleText = shelfGamelistAddTitle();
+      setShelfEditorTitle(title, titleText, state.gamelistAddTarget === "wishlist" ? [tt("Add game"), tt("to Wishlist")] : []);
+    }
   }
 }
 

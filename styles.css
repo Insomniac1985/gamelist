@@ -19460,6 +19460,10 @@ body:not(.can-edit):not(.shelf-page)
   display: none !important;
 }
 
+#addGameForm .mobile-title-break {
+  display: none;
+}
+
 .shelf-gamelist-list-picker[hidden] {
   display: none !important;
 }
@@ -19873,6 +19877,16 @@ body:not(.can-edit):not(.shelf-page)
 }
 
 @media (max-width: 760px) {
+  #addGameForm .modal-head h2.mobile-two-line-title {
+    font-size: clamp(18px, 5.6vw, 27px);
+    line-height: 1.05;
+    white-space: nowrap;
+  }
+
+  #addGameForm .modal-head h2.mobile-two-line-title .mobile-title-break {
+    display: initial;
+  }
+
   #gameForm.gamelist-target-editor.gamelist-target-wishlist .modal-head h2 {
     max-width: 18ch;
     display: -webkit-box;
@@ -19893,9 +19907,9 @@ body:not(.can-edit):not(.shelf-page)
     bottom: 4px;
   }
   #gameAddTargetPicker .shelf-gamelist-target-options button {
-    height: 56px;
+    height: 44px;
     min-height: 32px;
-    max-height: 56px;
+    max-height: 44px;
     padding: 0 7px;
     font-size: 15px;
     white-space: normal;
@@ -19909,9 +19923,9 @@ body:not(.can-edit):not(.shelf-page)
     bottom: 4px;
   }
   #shelfGamelistListPicker .shelf-gamelist-target-options button {
-    height: 56px;
+    height: 44px;
     min-height: 32px;
-    max-height: 56px;
+    max-height: 44px;
     padding: 0 7px;
     font-size: 15px;
     white-space: normal;
