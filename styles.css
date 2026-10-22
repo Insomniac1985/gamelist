@@ -8312,6 +8312,33 @@ body:not(.can-edit) .top-actions-separator {
   height: 23px;
 }
 
+@media (min-width: 761px) {
+  #floatingStatsButton:hover,
+  #floatingStatsButton:focus-visible {
+    transform: none;
+  }
+
+  #floatingStatsButton :is(.graph-icon, .trophy-icon),
+  #floatingStatsButton:hover :is(.graph-icon, .trophy-icon),
+  #floatingStatsButton:focus-visible :is(.graph-icon, .trophy-icon) {
+    transform: none;
+  }
+
+  #floatingStatsButton.is-goty-shortcut:hover,
+  #floatingStatsButton.is-goty-shortcut:focus-visible {
+    color: #302817;
+    background: #ffe985;
+    border-color: #ffe985;
+    box-shadow: 0 3px 24px rgba(255, 233, 133, 0.42);
+  }
+
+  #floatingStatsButton.is-goty-shortcut:hover .trophy-icon,
+  #floatingStatsButton.is-goty-shortcut:focus-visible .trophy-icon {
+    color: #302817;
+    transform: none;
+  }
+}
+
 #mobileDockGoty .trophy-icon {
   width: 23px;
   height: 23px;
@@ -16969,7 +16996,7 @@ html.theme-light .primary-button.stream-start-action:hover {
   }
 
   .mobile-section-tabs button {
-    min-height: 32px;
+    min-height: 38px;
     font-size: 14px;
     line-height: 1;
   }
@@ -17254,7 +17281,7 @@ html.theme-light .primary-button.stream-start-action:hover {
   .playing-section .game-card.playing-card .studio-line {
     grid-column: 1 / -1;
     grid-row: 3;
-    margin-top: -6px;
+    margin-top: -3px;
     font-size: 12px;
     line-height: 1;
   }
@@ -17285,6 +17312,10 @@ html.theme-light .primary-button.stream-start-action:hover {
     height: 31px;
     min-height: 31px;
     white-space: nowrap;
+  }
+
+  .playing-section .game-card.playing-card .meta > .rating-score-pill {
+    display: none;
   }
 
   .playing-section .game-card.playing-card .play-dates {
@@ -18745,6 +18776,23 @@ html.theme-light .primary-button.stream-start-action:hover {
     transition-duration: 220ms;
   }
 
+  #mobileDockStats.is-goty-shortcut:hover,
+  #mobileDockStats.is-goty-shortcut:focus-visible,
+  #mobileDockStats.is-goty-shortcut:active {
+    color: #302817 !important;
+    background: #ffe985 !important;
+    border-color: #ffe985 !important;
+    box-shadow: 0 3px 24px rgba(255, 233, 133, 0.42) !important;
+  }
+
+  #mobileDockStats.is-goty-shortcut .trophy-icon,
+  #mobileDockStats.is-goty-shortcut:hover .trophy-icon,
+  #mobileDockStats.is-goty-shortcut:focus-visible .trophy-icon,
+  #mobileDockStats.is-goty-shortcut:active .trophy-icon {
+    color: #302817 !important;
+    transform: none !important;
+  }
+
   #mobileDockGoty {
     display: flex;
     align-items: center;
@@ -19456,6 +19504,10 @@ body:not(.can-edit):not(.shelf-page)
   display: none !important;
 }
 
+#addGameForm .mobile-title-break {
+  display: none;
+}
+
 .shelf-gamelist-list-picker[hidden] {
   display: none !important;
 }
@@ -19791,7 +19843,7 @@ body:not(.can-edit):not(.shelf-page)
   .card-list.list-view .game-row .game-row-actions-bottom button {
     width: auto;
     min-width: 0;
-    max-width: 100%;
+    max-width: 80px;
     flex: 1 1 0;
     gap: 4px;
     padding-inline: 5px;
@@ -19869,6 +19921,21 @@ body:not(.can-edit):not(.shelf-page)
 }
 
 @media (max-width: 760px) {
+  #addGameForm .modal-head h2.mobile-two-line-title {
+    font-size: clamp(18px, 5.6vw, 27px);
+    line-height: 1.05;
+    white-space: nowrap;
+  }
+
+  #addGameForm .modal-head h2.mobile-two-line-title-shelf,
+  #addGameForm .modal-head h2.mobile-two-line-title-backlog {
+    font-size: 30px;
+  }
+
+  #addGameForm .modal-head h2.mobile-two-line-title .mobile-title-break {
+    display: initial;
+  }
+
   #gameForm.gamelist-target-editor.gamelist-target-wishlist .modal-head h2 {
     max-width: 18ch;
     display: -webkit-box;
@@ -19889,13 +19956,35 @@ body:not(.can-edit):not(.shelf-page)
     bottom: 4px;
   }
   #gameAddTargetPicker .shelf-gamelist-target-options button {
+    height: 44px;
     min-height: 32px;
+    max-height: 44px;
+    padding: 0 7px;
+    font-size: 15px;
+    white-space: normal;
+  }
+  #shelfGamelistListPicker .shelf-gamelist-target-options {
+    gap: 4px;
+    padding: 4px;
+  }
+  #shelfGamelistListPicker .shelf-gamelist-target-indicator {
+    top: 4px;
+    bottom: 4px;
+  }
+  #shelfGamelistListPicker .shelf-gamelist-target-options button {
+    height: 44px;
+    min-height: 32px;
+    max-height: 44px;
     padding: 0 7px;
     font-size: 15px;
     white-space: normal;
   }
 
-  #backlog .card-list:not(.list-view) .game-card:not(.playing-card) .card-actions > .delete-action {
+  #backlog
+    .card-list:not(.list-view)
+    .game-card:not(.playing-card)
+    .card-actions
+    > .delete-action {
     box-sizing: border-box;
     width: 48px;
     min-width: 48px;
@@ -19907,20 +19996,30 @@ body:not(.can-edit):not(.shelf-page)
     aspect-ratio: 1;
     padding: 0;
   }
-  #backlog .card-list:not(.list-view) .game-card:not(.playing-card) .card-actions > .delete-action svg {
+  #backlog
+    .card-list:not(.list-view)
+    .game-card:not(.playing-card)
+    .card-actions
+    > .delete-action
+    svg {
     width: 20px;
     height: 20px;
   }
 }
 
 @media (max-width: 760px) {
+  .shelf-grid.list-view .game-row .psn-progress-pill {
+    display: none;
+  }
+
   .shelf-grid:not(.list-view) .shelf-add-backlog-action {
     padding: 10px 18px;
   }
 }
 
 @media (max-width: 760px) {
-  #backlog .card-list:not(.list-view)
+  #backlog
+    .card-list:not(.list-view)
     .game-card:not(.playing-card)
     .card-actions:has(> .row-primary-action):not(:has(> .stream-start-action))
     > .row-primary-action {
@@ -19984,7 +20083,10 @@ body:not(.can-edit):not(.shelf-page)
     gap: 8px;
     padding: 8px 16px !important;
   }
-  .card-list .game-card:not(.playing-card) .card-actions:has(> .row-primary-action):not(:has(> .stream-start-action)) > .row-primary-action {
+  .card-list
+    .game-card:not(.playing-card)
+    .card-actions:has(> .row-primary-action):not(:has(> .stream-start-action))
+    > .row-primary-action {
     flex: 0 0 auto;
     width: max-content;
     min-width: 0;
@@ -20190,7 +20292,10 @@ body:not(.can-edit):not(.shelf-page)
 }
 
 @media (max-width: 760px) {
-  :is(#releaseDialog, #shelfReleaseDialog) .release-dialog-list .game-card .card-footer {
+  :is(#releaseDialog, #shelfReleaseDialog)
+    .release-dialog-list
+    .game-card
+    .card-footer {
     grid-column: 1 / -1;
     display: flex;
     align-items: center;
@@ -20198,7 +20303,10 @@ body:not(.can-edit):not(.shelf-page)
     width: 100%;
     min-width: 0;
   }
-  :is(#releaseDialog, #shelfReleaseDialog) .release-dialog-list .game-card .card-actions {
+  :is(#releaseDialog, #shelfReleaseDialog)
+    .release-dialog-list
+    .game-card
+    .card-actions {
     order: 0;
     flex: 0 0 auto;
     width: auto;
@@ -20293,7 +20401,10 @@ body:not(.can-edit):not(.shelf-page)
     background: #592990;
     border-color: #7944b5;
   }
-  :is(#releaseDialog, #shelfReleaseDialog) .release-dialog-list .game-card .prices {
+  :is(#releaseDialog, #shelfReleaseDialog)
+    .release-dialog-list
+    .game-card
+    .prices {
     order: 1;
     grid-column: auto;
     flex: 1 1 0;
