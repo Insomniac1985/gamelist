@@ -19926,6 +19926,12 @@ body:not(.can-edit):not(.shelf-page)
     gap: 8px;
     padding: 8px 16px !important;
   }
+  .card-list .game-card:not(.playing-card) .card-actions:has(> .row-primary-action):not(:has(> .stream-start-action)) > .row-primary-action {
+    flex: 0 0 auto;
+    width: max-content;
+    min-width: 0;
+    padding-inline: 18px;
+  }
 }
 
 /* Let one- and two-column library cards size their actions within the card. */

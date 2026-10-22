@@ -3850,6 +3850,11 @@ textarea {
 
 @media (max-width: 760px) {
   .shelf-grid .status-pill { display: none !important; }
+  .shelf-grid.list-view .game-row-core {
+    min-width: 0;
+    max-width: 100%;
+    overflow: hidden;
+  }
   .shelf-grid.list-view .game-row-core .shelf-progress-pill {
     box-sizing: border-box;
     max-width: 100%;
