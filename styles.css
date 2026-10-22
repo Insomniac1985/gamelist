@@ -5992,6 +5992,14 @@ body.theme-kash
   scroll-snap-stop: always;
 }
 
+@media (min-width: 700px) {
+  .playing-section
+    .game-card.playing-card:not(:has(.card-trophies:not([hidden]))) {
+    grid-template-rows: auto;
+    align-content: start;
+  }
+}
+
 /* Let tablet playing cards shrink their poster column with the viewport.
    The desktop 300px minimum made portrait covers taller than the content
    column at 700–1100px, so cards with more metadata grew much taller. */
@@ -9525,6 +9533,13 @@ body.theme-kash .finished-stats-kpi.is-completed:focus-visible strong {
   gap: 8px;
 }
 
+@media (min-width: 801px) {
+  .twitch-preview-card.is-collapsed {
+    height: 420px;
+    min-height: 420px;
+  }
+}
+
 .twitch-preview-link {
   position: relative;
   z-index: 1;
@@ -9561,15 +9576,18 @@ body.theme-kash .finished-stats-kpi.is-completed:focus-visible strong {
 
 .twitch-preview-card.is-collapsed .twitch-preview-status {
   position: absolute;
-  left: 33px;
-  bottom: 0;
+  top: auto;
+  right: auto;
+  left: 34px;
+  bottom: 50px;
   width: max-content;
+  height: auto;
   max-width: none;
   margin: 0;
   font-size: 10px;
   transform: rotate(-90deg);
   transform-origin: left center;
-  padding: 5px 13px 8px 13px;
+  padding: 8px 13px 8px 13px;
 }
 
 .twitch-preview-status.is-live {
@@ -9740,6 +9758,12 @@ body.theme-kash .finished-stats-kpi.is-completed:focus-visible strong {
   white-space: nowrap;
   margin-top: 120px;
   text-align: right;
+}
+
+@media (min-width: 801px) {
+  .twitch-preview-card.is-collapsed .twitch-preview-collapsed-logo span {
+    margin-top: 80px;
+  }
 }
 
 .twitch-preview-card.is-collapsed .twitch-preview-player {
@@ -12115,7 +12139,8 @@ html.theme-light .settings-category-card {
 }
 
 .settings-window-panel[data-settings-window="design"] > .settings-detail-title,
-.settings-window-panel[data-settings-window="design"] > .settings-section:not(:first-child) {
+.settings-window-panel[data-settings-window="design"]
+  > .settings-section:not(:first-child) {
   padding-top: 16px;
   border-top: 1px solid var(--line);
 }
@@ -17461,14 +17486,20 @@ html.theme-light .primary-button.stream-start-action:hover {
     overflow: visible;
   }
 
-  .playing-section .playing-panel > .twitch-preview-card .twitch-preview-player {
+  .playing-section
+    .playing-panel
+    > .twitch-preview-card
+    .twitch-preview-player {
     grid-column: 1 / -1;
     grid-row: 1;
   }
 
-  .playing-section .playing-panel > .twitch-preview-card .twitch-preview-status {
-    top: -9px;
-    right: 12px;
+  .playing-section
+    .playing-panel
+    > .twitch-preview-card
+    .twitch-preview-status {
+    top: 18px;
+    right: 20px;
   }
 
   .playing-section .playing-panel > .twitch-preview-card .twitch-preview-link {
@@ -17478,7 +17509,10 @@ html.theme-light .primary-button.stream-start-action:hover {
     margin-left: 0;
   }
 
-  .playing-section .playing-panel > .twitch-preview-card .twitch-preview-toggle {
+  .playing-section
+    .playing-panel
+    > .twitch-preview-card
+    .twitch-preview-toggle {
     position: static;
     grid-column: 2;
     grid-row: 2;
@@ -17543,19 +17577,14 @@ html.theme-light .primary-button.stream-start-action:hover {
     .playing-panel
     > .twitch-preview-card.is-collapsed
     .twitch-preview-status {
-    top: -10px;
-    right: 12px;
-    bottom: auto;
-    left: auto;
-    max-width: 96px;
-    font-size: 9px;
-    transform: none;
+    display: none;
   }
 
   .playing-section
     .playing-panel
     > .twitch-preview-card.is-collapsed
     .twitch-preview-toggle {
+    position: absolute;
     top: 50%;
     right: 10px;
     bottom: auto;
@@ -18806,11 +18835,11 @@ html.theme-light .primary-button.stream-start-action:hover {
       background: transparent;
       box-shadow: none;
     }
-    body:not(.can-edit) .mobile-action-dock:has(
-        .mobile-dock-action:not(#mobileDockEdit):hover
-      )
+    body:not(.can-edit)
+      .mobile-action-dock:has(.mobile-dock-action:not(#mobileDockEdit):hover)
       #mobileDockEdit:not(:hover),
-    body:not(.can-edit) .mobile-action-dock:has(
+    body:not(.can-edit)
+      .mobile-action-dock:has(
         .mobile-dock-action:not(#mobileDockEdit):focus-visible
       )
       #mobileDockEdit:not(:hover):not(:focus-visible) {
@@ -19324,17 +19353,14 @@ body.auth-checking #mobileDockSettings[aria-busy="true"] {
     box-shadow: none;
   }
 
-  body:not(.can-edit) .mobile-action-dock:has(
-      .mobile-dock-action:not(#mobileDockEdit):active
-    )
+  body:not(.can-edit)
+    .mobile-action-dock:has(.mobile-dock-action:not(#mobileDockEdit):active)
     #mobileDockEdit:not(:active),
-  body:not(.can-edit) .mobile-action-dock:has(
-      .mobile-dock-action:not(#mobileDockEdit):focus
-    )
+  body:not(.can-edit)
+    .mobile-action-dock:has(.mobile-dock-action:not(#mobileDockEdit):focus)
     #mobileDockEdit:not(:focus),
-  body:not(.can-edit) .mobile-action-dock:has(
-      .mobile-dock-action:not(#mobileDockEdit).is-active
-    )
+  body:not(.can-edit)
+    .mobile-action-dock:has(.mobile-dock-action:not(#mobileDockEdit).is-active)
     #mobileDockEdit:not(.is-active) {
     background: transparent;
     box-shadow: none;
@@ -23638,10 +23664,9 @@ textarea {
 
 @media (min-width: 700px) and (max-width: 1300px) {
   .shelf-toolbar {
-    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(
-        0,
-        1.5fr
-      ) minmax(0, 0.75fr) minmax(0, 0.75fr) var(--toolbar-control-height);
+    grid-template-columns:
+      minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1.5fr)
+      minmax(0, 0.75fr) minmax(0, 0.75fr) var(--toolbar-control-height);
   }
   .shelf-toolbar .search {
     grid-column: span 2;
@@ -24837,6 +24862,23 @@ textarea {
   .shelf-tabs {
     top: 20px;
     margin-top: 8px;
+  }
+
+  .mobile-section-tabs button[data-mobile-section="new"] {
+    min-width: 0;
+    padding: 0;
+  }
+
+  .mobile-section-tabs button[data-mobile-section="new"] .label {
+    display: none;
+  }
+
+  .mobile-section-tabs button[data-mobile-section="new"] .count {
+    min-width: 18px;
+    height: 18px;
+    padding: 0 4px;
+    border-radius: 5px;
+    font-size: 9px;
   }
 
   .completed-list .completed-rating-breakdown,
