@@ -3805,3 +3805,31 @@ textarea {
     height: var(--toolbar-control-height);
   }
 }
+
+/* Share the standard card link buttons and leave room before the description. */
+#detailDialog #detailLinks {
+  margin: 12px 0 14px;
+}
+#detailDialog #detailLinks:empty {
+  display: none;
+}
+
+.shelf-add-backlog-action .shelf-backlog-mobile-label {
+  display: none;
+}
+@media (max-width: 760px) {
+  .shelf-add-backlog-action .shelf-backlog-desktop-label {
+    display: none;
+  }
+  .shelf-add-backlog-action .shelf-backlog-mobile-label {
+    display: inline;
+  }
+}
+
+/* Use identical top-level spacing for Collection, Radar and Wishlist. */
+#addGameForm:not(.shelf-gamelist-import-mini) > .lookup-row,
+#addGameForm:not(.shelf-gamelist-import-mini) > .lookup-results,
+#addGameForm:not(.shelf-gamelist-import-mini) > #shelfGamelistListPicker,
+#addGameForm:not(.shelf-gamelist-import-mini) > #shelfGamelistListControls {
+  margin: 0 0 12px;
+}

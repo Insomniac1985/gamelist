@@ -38,9 +38,6 @@ async function mount({ slots, changed, openGame, mediaChanged, viewChanged, clea
       #shelfStats .stat[data-stat-action="completed"]{--stat-color:var(--accent);--stat-glow:color-mix(in srgb,var(--accent) 26%,transparent)}
       #shelfStats .stat-available{--stat-color:var(--accent-2);--stat-glow:color-mix(in srgb,var(--accent-2) 26%,transparent)}
       #detailDialog #detailDescription{font-family:"Cascadia Code",monospace;font-size:14px;font-weight:400;line-height:1.55;letter-spacing:normal;text-transform:none;white-space:pre-line}
-      #detailDialog .store-links{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:12px 0 0}
-      #detailDialog .store-button{display:inline-flex;align-items:center;gap:8px;min-height:40px;padding:8px 12px;max-width:100%;box-sizing:border-box;text-decoration:none;font-family:inherit;line-height:1.25}
-      #detailDialog .store-button img{width:20px;height:20px;object-fit:contain;flex:0 0 20px}
       #showcaseDialog .modal-head-save{display:inline-flex!important}
       #showcaseDialog .showcase-toolbar{position:relative;z-index:30;overflow:visible}
       #showcaseDialog .showcase-toolbar .platform-logo-select.is-open{z-index:40}
