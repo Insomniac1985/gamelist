@@ -8313,6 +8313,25 @@ body:not(.can-edit) .top-actions-separator {
 }
 
 @media (min-width: 761px) {
+  #floatingStatsButton {
+    position: relative;
+    display: grid;
+    padding: 0;
+    place-items: center;
+  }
+
+  #floatingStatsButton > :is(.graph-icon, .trophy-icon) {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    margin: 0;
+    translate: -50% -50%;
+  }
+
+  #floatingStatsButton.is-goty-shortcut .trophy-icon {
+    color: #ffe985;
+  }
+
   #floatingStatsButton:hover,
   #floatingStatsButton:focus-visible {
     transform: none;
@@ -19922,14 +19941,8 @@ body:not(.can-edit):not(.shelf-page)
 
 @media (max-width: 760px) {
   #addGameForm .modal-head h2.mobile-two-line-title {
-    font-size: clamp(18px, 5.6vw, 27px);
     line-height: 1.05;
     white-space: nowrap;
-  }
-
-  #addGameForm .modal-head h2.mobile-two-line-title-shelf,
-  #addGameForm .modal-head h2.mobile-two-line-title-backlog {
-    font-size: 30px;
   }
 
   #addGameForm .modal-head h2.mobile-two-line-title .mobile-title-break {
