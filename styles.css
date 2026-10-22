@@ -7703,7 +7703,8 @@ a.time-pill {
   stroke-linejoin: round;
 }
 
-.preorder-chip .preorder-store-icon {
+.preorder-chip .preorder-store-icon,
+.preferred-preorder-chip .preorder-store-icon {
   width: 14px;
   height: 14px;
   flex: 0 0 auto;

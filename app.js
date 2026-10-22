@@ -5,7 +5,7 @@ import { normalizeSearchText, bindModalTouchGuard, createGameCardShell, bindActi
 import { applySiteTheme, normalizeThemeSettings, ownerCardColorClass, ownerColorClass, themeSettingsContent, bindThemeSettingsContent, readThemeSettingsContent } from "./theme-system.js";
 import { applyDocumentTranslations, languageOptions, normalizeLanguage, t } from "./i18n.js";
 import { accountSettingsMarkup } from "./account-settings-ui.js";
-import { syncGameListControls, syncGameListSlider, syncStoreFieldIcon, preventImplicitGameSubmit } from "./game-editor-controls.js";
+import { isPlayasiaStore, syncGameListControls, syncGameListSlider, syncStoreFieldIcon, preventImplicitGameSubmit } from "./game-editor-controls.js";
 
 document.querySelector("#settingsAccountsMount").innerHTML = accountSettingsMarkup();
 
@@ -11236,12 +11236,13 @@ function cardChipsFor(game) {
 function preorderChip(store) {
   const kickstarter = isKickstarterStore(store);
   const displayStore = kickstarter ? "Kickstarter" : store;
-  const icon = kickstarter ? `<img class="preorder-store-icon" src="${escapeHtml(storeIcon(store))}" alt="" width="14" height="14" decoding="async">` : shoppingBagIcon();
+  const icon = kickstarter || isPlayasiaStore(store) ? `<img class="preorder-store-icon" src="${escapeHtml(storeIcon(store))}" alt="" width="14" height="14" decoding="async">` : shoppingBagIcon();
   return `<span class="chip accent preorder-chip${kickstarter ? " preorder-chip-kickstarter" : ""}" title="${escapeHtml(tt("Preordered: {store}", { store: displayStore }))}">${icon}${escapeHtml(displayStore)}</span>`;
 }
 
 function preferredPreorderChip(store) {
-  return `<span class="chip preferred-preorder-chip" title="${escapeHtml(tt("Preferred preorder store: {store}", { store }))}">${escapeHtml(tt("Preferred: {store}", { store }))}</span>`;
+  const icon = isPlayasiaStore(store) ? `<img class="preorder-store-icon" src="${escapeHtml(storeIcon(store))}" alt="" width="14" height="14" decoding="async">` : "";
+  return `<span class="chip preferred-preorder-chip" title="${escapeHtml(tt("Preferred preorder store: {store}", { store }))}">${icon}${escapeHtml(tt("Preferred: {store}", { store }))}</span>`;
 }
 
 function chip(label, type = "") {
@@ -12019,6 +12020,7 @@ function xboxSearchUrl(query, region = state.settings.region) {
 
 function storeIcon(store) {
   const normalizedStore = normalizeTag(store);
+  if (isPlayasiaStore(store)) return "assets/stores/playasia.ico";
   if (store.startsWith("Amazon")) return "assets/stores/amazon.ico";
   if (store === "eBay") return "https://www.ebay.com/favicon.ico";
   if (isKickstarterStore(store)) return "https://www.kickstarter.com/favicon.ico";

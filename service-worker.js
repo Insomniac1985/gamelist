@@ -73,6 +73,7 @@ const STATIC_ASSETS = [
   "/assets/sites/wikipedia.ico",
   "/assets/stores/amazon.ico",
   "/assets/stores/game.ico",
+  "/assets/stores/playasia.ico",
   "/assets/stores/limited-run-games.png",
   "/assets/stores/retroisland.png",
   "/assets/stores/square-enix-store.png",

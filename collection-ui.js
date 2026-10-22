@@ -4,7 +4,7 @@ import { applySiteTheme, normalizeThemeSettings, ownerCardColorClass, ownerColor
 import { applyDocumentTranslations, languageOptions, normalizeLanguage, t } from "./i18n.js";
 import { initShelfAccounts } from "./shelf-accounts.js";
 import { accountSettingsMarkup } from "./account-settings-ui.js";
-import { syncGameListControls, syncGameListSlider, syncCollectionCondition, syncStoreFieldIcon, SHELF_COUNTRIES, preventImplicitGameSubmit } from "./game-editor-controls.js";
+import { isPlayasiaStore, syncGameListControls, syncGameListSlider, syncCollectionCondition, syncStoreFieldIcon, SHELF_COUNTRIES, preventImplicitGameSubmit } from "./game-editor-controls.js";
 
 const unifiedShelfScope = window.__unifiedShelfScope;
 const document = unifiedShelfScope?.document || window.document;
@@ -2257,7 +2257,7 @@ function gamelistPreorderPrices(game) {
 function preorderProjectionChip(store) {
   const kickstarter = isKickstarterStore(store);
   const displayStore = kickstarter ? "Kickstarter" : store;
-  const icon = kickstarter ? `<img class="preorder-store-icon" src="${escapeHtml(storeIcon(store))}" alt="" width="14" height="14" decoding="async">` : shoppingBagIcon();
+  const icon = kickstarter || isPlayasiaStore(store) ? `<img class="preorder-store-icon" src="${escapeHtml(storeIcon(store))}" alt="" width="14" height="14" decoding="async">` : shoppingBagIcon();
   return `<span class="chip accent preorder-chip${kickstarter ? " preorder-chip-kickstarter" : ""}" title="${escapeHtml(`Preordered: ${displayStore}`)}">${icon}${escapeHtml(displayStore)}</span>`;
 }
 
@@ -5821,7 +5821,7 @@ function storePricesMarkup(prices, currency) {
 function placeholderStorePrices(settings = normalizePriceSettings(state.gamelistSettings)) {
   return settings.stores.map((store) => ({ store, price: "", numericPrice: null, url: "" }));
 }
-function storeIcon(store) { const normalizedStore = normalizeTag(store); if (String(store).startsWith("Amazon")) return "assets/stores/amazon.ico"; if (store === "eBay") return "https://www.ebay.com/favicon.ico"; if (isKickstarterStore(store)) return "https://www.kickstarter.com/favicon.ico"; if (store === "Xtralife") return "assets/stores/xtralife.ico"; if (store === "GAME.es") return "assets/stores/game.ico"; if (store === "Retro Island NY") return "assets/stores/retroisland.png"; if (normalizedStore === "limitedrun" || normalizedStore === "limitedrungames" || normalizedStore === "lrg") return "assets/stores/limited-run-games.png"; if (["squareenix", "squareenixstore", "sqex", "sqexstore"].includes(normalizedStore.replace(/[^a-z0-9]/g, ""))) return "assets/stores/square-enix-store.png"; if (store === "GameStop") return "https://www.gamestop.com/favicon.ico"; if (store === "Walmart") return "https://www.walmart.com/favicon.ico"; if (String(store).startsWith("Nintendo")) return "assets/sites/nintendo.png"; if (String(store).startsWith("PlayStation")) return "assets/sites/playstation.png"; if (store === "Steam") return "assets/sites/steam.png"; if (store === "Xbox") return "assets/platforms/xbox.png"; return "assets/Icon.png"; }
+function storeIcon(store) { const normalizedStore = normalizeTag(store); if (isPlayasiaStore(store)) return "assets/stores/playasia.ico"; if (String(store).startsWith("Amazon")) return "assets/stores/amazon.ico"; if (store === "eBay") return "https://www.ebay.com/favicon.ico"; if (isKickstarterStore(store)) return "https://www.kickstarter.com/favicon.ico"; if (store === "Xtralife") return "assets/stores/xtralife.ico"; if (store === "GAME.es") return "assets/stores/game.ico"; if (store === "Retro Island NY") return "assets/stores/retroisland.png"; if (normalizedStore === "limitedrun" || normalizedStore === "limitedrungames" || normalizedStore === "lrg") return "assets/stores/limited-run-games.png"; if (["squareenix", "squareenixstore", "sqex", "sqexstore"].includes(normalizedStore.replace(/[^a-z0-9]/g, ""))) return "assets/stores/square-enix-store.png"; if (store === "GameStop") return "https://www.gamestop.com/favicon.ico"; if (store === "Walmart") return "https://www.walmart.com/favicon.ico"; if (String(store).startsWith("Nintendo")) return "assets/sites/nintendo.png"; if (String(store).startsWith("PlayStation")) return "assets/sites/playstation.png"; if (store === "Steam") return "assets/sites/steam.png"; if (store === "Xbox") return "assets/platforms/xbox.png"; return "assets/Icon.png"; }
 function isKickstarterStore(store) { return ["kickstarter", "kickstater", "kicstarter", "kickstart"].includes(normalizeTag(store).replace(/[^a-z0-9]+/g, "")); }
 function renderPriceDetails(game) {
   const prices = game.collectionPrices || {};
