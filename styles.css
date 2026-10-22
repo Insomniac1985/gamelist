@@ -17467,8 +17467,8 @@ html.theme-light .primary-button.stream-start-action:hover {
   }
 
   .playing-section .playing-panel > .twitch-preview-card .twitch-preview-status {
-    top: -9px;
-    right: 12px;
+    top: 18px;
+    right: 20px;
   }
 
   .playing-section .playing-panel > .twitch-preview-card .twitch-preview-link {
@@ -17543,13 +17543,7 @@ html.theme-light .primary-button.stream-start-action:hover {
     .playing-panel
     > .twitch-preview-card.is-collapsed
     .twitch-preview-status {
-    top: -10px;
-    right: 12px;
-    bottom: auto;
-    left: auto;
-    max-width: 96px;
-    font-size: 9px;
-    transform: none;
+    display: none;
   }
 
   .playing-section
