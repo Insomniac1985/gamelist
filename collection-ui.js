@@ -6330,6 +6330,7 @@ function initUnifiedShelf() {
       const sourceChanged = state.unifiedShelfData !== data.shelf;
       const settingsChanged = state.unifiedSettingsKey !== settingsKey;
       const listChanged = state.unifiedListData !== data.games;
+      const authChanged = state.canEdit !== data.canEdit;
       state.unifiedShelfData = data.shelf;
       state.unifiedSettingsKey = settingsKey;
       state.unifiedListData = data.games;
@@ -6346,7 +6347,7 @@ function initUnifiedShelf() {
       state.viewMode = data.view || "grid";
       state.layout = normalizeLayout(data.shelf.layout || state.layout);
       if (sourceChanged) rebuildGames();
-      if (sourceChanged || settingsChanged || listChanged) {
+      if (sourceChanged || settingsChanged || listChanged || authChanged) {
         state.unifiedCardCache = new Map();
         state.unifiedRevision = (state.unifiedRevision || 0) + 1;
         state.favoriteGameIds = shelfFavoriteIdsFromSources(data.shelf, { settings: data.settings });
