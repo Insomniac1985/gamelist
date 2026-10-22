@@ -995,7 +995,7 @@ function bindEvents() {
   el.addButton.addEventListener("click", quickAddGame);
   el.floatingAddButton.addEventListener("click", quickAddGame);
   el.mobileDockAdd?.addEventListener("click", quickAddGame);
-  el.mobileDockEdit?.addEventListener("click", toggleEditMode);
+  el.mobileDockEdit?.addEventListener("click", quickAddGame);
   el.searchButton?.addEventListener("click", scrollToSearchArea);
   el.floatingSearchButton?.addEventListener("click", scrollToSearchArea);
   el.mobileDockSearch?.addEventListener("click", () => {
@@ -1858,7 +1858,9 @@ function render() {
   el.loginButton.hidden = state.canEdit;
   if (el.mobileDockEdit) {
     el.mobileDockEdit.hidden = state.canEdit;
-    el.mobileDockEdit.innerHTML = pencilIcon();
+    el.mobileDockEdit.innerHTML = plusIcon();
+    el.mobileDockEdit.title = tt("Add Game");
+    el.mobileDockEdit.setAttribute("aria-label", tt("Add Game"));
   }
   el.addButton.hidden = false;
   if (el.mobileDockAdd) el.mobileDockAdd.hidden = !state.canEdit;
