@@ -2004,6 +2004,7 @@ async function persistCloud() {
 }
 
 function render() {
+  const libraryScrollAnchor = captureMobileLibraryScrollAnchor();
   applyTheme();
   applyLanguage();
   document.documentElement.classList.remove("theme-booting");
@@ -2052,6 +2053,7 @@ function render() {
   updateScrollTopButton();
   maybePromptGameOfTheYear();
   syncCollectionWorkspace();
+  restoreMobileLibraryScrollAnchor(libraryScrollAnchor);
   scheduleRenderSettle("render");
 }
 
@@ -6939,8 +6941,32 @@ function renderMobileTabs() {
     column.setAttribute("aria-hidden", String(columnIndex < 0 || column.id !== state.mobileSection));
   });
   document.body.dataset.mobileSection = state.mobileSection;
-  if (window.innerWidth <= 760) el.mobileTabs.forEach(button => { if (button.classList.contains("active")) button.scrollIntoView({ block: "nearest", inline: "nearest" }); });
+  if (window.innerWidth <= 760 && mobileTabs) {
+    const active = mobileTabs.querySelector("button.active:not([hidden])");
+    if (active) {
+      const tabsRect = mobileTabs.getBoundingClientRect();
+      const activeRect = active.getBoundingClientRect();
+      if (activeRect.left < tabsRect.left) mobileTabs.scrollLeft += activeRect.left - tabsRect.left;
+      else if (activeRect.right > tabsRect.right) mobileTabs.scrollLeft += activeRect.right - tabsRect.right;
+    }
+  }
   requestAnimationFrame(syncSectionTabsVisibility);
+}
+
+function captureMobileLibraryScrollAnchor() {
+  if (!window.matchMedia("(max-width: 760px)").matches || document.body.classList.contains("dialog-open")) return null;
+  const previous = document.body.dataset.mobileSection;
+  if (!previous || previous === state.mobileSection) return null;
+  const toolbar = document.querySelector(".toolbar");
+  if (!toolbar || toolbar.hidden) return null;
+  return { top: el.board.getBoundingClientRect().top };
+}
+
+function restoreMobileLibraryScrollAnchor(anchor) {
+  if (!anchor) return;
+  const delta = el.board.getBoundingClientRect().top - anchor.top;
+  // Keep the list at its previous screen position as the filter rows grow or shrink.
+  if (Math.abs(delta) > 1) window.scrollBy({ top: delta, left: 0, behavior: "instant" });
 }
 
 function syncSectionTabsVisibility() {
