@@ -24706,3 +24706,10 @@ textarea {
     white-space: nowrap;
   }
 }
+
+@media (min-width: 700px) and (max-width: 800px) {
+  .completed-list .completed-rating-breakdown,
+  .completed-list .completed-platform .rating-score-pill {
+    display: none !important;
+  }
+}
