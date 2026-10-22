@@ -3826,6 +3826,10 @@ textarea {
   }
 }
 
+@media (max-width: 760px) {
+  .shelf-grid .status-pill { display: none !important; }
+}
+
 /* Use identical top-level spacing for Collection, Radar and Wishlist. */
 #addGameForm:not(.shelf-gamelist-import-mini) > .lookup-row,
 #addGameForm:not(.shelf-gamelist-import-mini) > .lookup-results,

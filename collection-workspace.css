@@ -19,7 +19,7 @@ body.collection-selected .board > .column { display: none !important; }
 #mobileDockGoty { order: 5; }
 #mobileDockUp { order: 6; }
 #finishedStatsBody > [data-stats-source="collection"] { margin-top: 20px; }
-@media (min-width: 1001px) {
+@media (min-width: 1301px) {
   .toolbar { grid-template-columns: minmax(180px, 2fr) auto repeat(2, minmax(100px, 1fr)) minmax(140px, 1fr) auto auto; }
 }
 @media (max-width: 760px) {
@@ -41,7 +41,7 @@ body.collection-selected .board > .column { display: none !important; }
 .library-view-controls > .view-toggle { width: var(--toolbar-control-height); min-width: var(--toolbar-control-height); height: var(--toolbar-control-height); }
 .toolbar .platform-logo-button { width: 100%; min-width: 0; }
 .toolbar .platform-logo-choice-label { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-@media (min-width: 1001px) {
+@media (min-width: 1301px) {
   .toolbar { grid-template-columns: minmax(180px, 2fr) auto repeat(2,minmax(100px,1fr)) minmax(140px,1fr) auto; }
   .toolbar.collection-toolbar { grid-template-columns: minmax(180px,2fr) repeat(4,minmax(90px,1fr)) minmax(130px,1fr) auto; }
 }
@@ -116,6 +116,11 @@ body[data-mobile-section="new"] #collectionLibrary:not([hidden]) + #new:not([hid
   .board { margin-top: 0; }
 }
 
+@media (max-width: 760px) {
+  .card-list .status-pill,
+  .shelf-grid .status-pill { display: none !important; }
+}
+
 /* Reset the old toolbar placements together at intermediate widths. */
 .toolbar > label,
 .toolbar .search-field,
@@ -172,7 +177,7 @@ body[data-mobile-section="new"] #collectionLibrary:not([hidden]) + #new:not([hid
     width: 95%;
     min-height: 60px;
     max-width: 95%;
-    margin: 0;
+    margin: 0 0 14px;
     padding: 10px 12px 18px;
     gap: 8px;
     border: 0;
@@ -193,7 +198,8 @@ body[data-mobile-section="new"] #collectionLibrary:not([hidden]) + #new:not([hid
     z-index: -1;
     inset: -12px -14px -18px;
     pointer-events: none;
-    background: linear-gradient(180deg, var(--bg) 0%, var(--bg) 74%, color-mix(in srgb, var(--bg) 88%, transparent) 91%, transparent 100%);
+    background: var(--custom-backdrop-image) center / cover repeat, var(--bg);
+    background-attachment: fixed;
   }
   body > .topbar .brand { min-width: 0; min-height: 32px; margin: 0; gap: 10px; }
   body > .topbar .brand-mark { width: 32px !important; height: 32px !important; max-width: 32px; max-height: 32px; }
@@ -241,14 +247,15 @@ body[data-mobile-section="new"] #collectionLibrary:not([hidden]) + #new:not([hid
 }
 
 /* Keep the full toolbar on one line on regular desktop screens. */
-@media (min-width: 1001px) {
+@media (min-width: 1301px) {
   .toolbar:not(.collection-toolbar) {
     grid-template-columns: minmax(180px, 1.35fr) 132px minmax(150px, 1.1fr) minmax(130px, .9fr) minmax(220px, 1.45fr) calc(var(--toolbar-control-height) * 2 + 6px);
   }
   .toolbar.collection-toolbar {
     grid-template-columns: minmax(180px, 1.35fr) minmax(140px, 1fr) minmax(120px, .85fr) minmax(120px, .85fr) minmax(120px, .85fr) minmax(190px, 1.35fr) calc(var(--toolbar-control-height) * 2 + 6px);
   }
-  .toolbar > .search,
+  .toolbar:not(.collection-toolbar) > .search,
+  .toolbar.collection-toolbar > .search,
   .toolbar > .toolbar-check,
   .toolbar > label:has(#platformFilter),
   .toolbar > label:has(#tagFilter),
@@ -260,11 +267,12 @@ body[data-mobile-section="new"] #collectionLibrary:not([hidden]) + #new:not([hid
   }
   .toolbar:not(.collection-toolbar) > .tag-filter,
   .toolbar.collection-toolbar > .tag-filter { grid-column: auto !important; }
-  .toolbar > .search { grid-column: 1 !important; }
+  .toolbar:not(.collection-toolbar) > .search { grid-column: 1 !important; }
   .toolbar:not(.collection-toolbar) > .toolbar-check { grid-column: 2 !important; }
   .toolbar:not(.collection-toolbar) > label:has(#platformFilter) { grid-column: 3 !important; }
   .toolbar:not(.collection-toolbar) > label:has(#tagFilter) { grid-column: 4 !important; }
   .toolbar:not(.collection-toolbar) > .order-label { grid-column: 5 !important; }
+  .toolbar.collection-toolbar > .search { grid-column: 1 !important; }
   .toolbar.collection-toolbar > label:has(#platformFilter) { grid-column: 2 !important; }
   .toolbar.collection-toolbar > label:has(#tagFilter) { grid-column: 3 !important; }
   .toolbar.collection-toolbar > label:has(#collectionRegionFilter) { grid-column: 4 !important; }

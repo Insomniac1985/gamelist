@@ -16512,7 +16512,8 @@ html.theme-light .primary-button.stream-start-action:hover {
     z-index: -1;
     inset: -28px -14px -18px;
     pointer-events: none;
-    background: linear-gradient(180deg, var(--bg) 0%, var(--bg) 74%, color-mix(in srgb, var(--bg) 88%, transparent) 91%, transparent 100%);
+    background: var(--custom-backdrop-image) center / cover repeat, var(--bg);
+    background-attachment: fixed;
   }
 
   body.page-pull-hover .topbar,
@@ -19592,6 +19593,13 @@ body:not(.can-edit):not(.shelf-page) :is(#upcoming, #wanted) .price-refresh-acti
     font-size: 10px;
     white-space: nowrap;
   }
+  .card-list.list-view .game-row .game-row-actions-bottom .row-backlog-action,
+  .shelf-grid.list-view .game-row .game-row-actions-bottom .shelf-add-backlog-action {
+    width: max-content;
+    max-width: 100%;
+    flex: 0 0 auto;
+    padding-inline: 8px;
+  }
   .card-list.list-view .game-row .game-row-actions button svg {
     display: block;
     width: 17px;
@@ -19615,6 +19623,19 @@ body:not(.can-edit):not(.shelf-page) :is(#upcoming, #wanted) .price-refresh-acti
     padding-inline: 5px;
     font-size: 10px;
     white-space: nowrap;
+  }
+  .shelf-grid .shelf-add-backlog-action {
+    width: max-content !important;
+    max-width: 100%;
+    flex: 0 0 auto;
+    padding: 6px 10px;
+    gap: 6px;
+  }
+  .shelf-grid .shelf-add-backlog-action .shelf-backlog-desktop-label {
+    display: none !important;
+  }
+  .shelf-grid .shelf-add-backlog-action .shelf-backlog-mobile-label {
+    display: inline !important;
   }
 }
 
