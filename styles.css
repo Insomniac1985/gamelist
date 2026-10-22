@@ -17367,6 +17367,10 @@ html.theme-light .primary-button.stream-start-action:hover {
     font-size: clamp(24px, 8vw, 31px);
   }
 
+  body.shabii-main-owner:not(.can-edit) .playing-section .column-head h2 {
+    font-size: clamp(32px, 9.5vw, 40px);
+  }
+
   html.theme-font-antique .completed > .column-head h2 {
     font-size: clamp(21px, 7vw, 28px);
   }
