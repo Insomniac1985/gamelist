@@ -3370,7 +3370,7 @@ async function importGamelistCsv() {
     }
     if (!window.confirm(`Import ${rows.length} games from CSV? This replaces the current Gamelist games.`)) return;
     const now = new Date().toISOString();
-    const nextGames = rows.map((row, index) => ({ ...row, id: row.id || csvImportedId("gamelist", index), updatedAt: row.updatedAt || now }));
+    const nextGames = rows.map((row, index) => ({ ...row, id: row.id || csvImportedId("gamelist", index), pendingCollection: false, updatedAt: row.updatedAt || now }));
     await persistGamelistData(nextGames, state.gamelistSettings);
     state.gamelistGames = nextGames;
     renderGamelistModules();
@@ -3402,7 +3402,7 @@ async function importShelfPhysicalCsv() {
     state.additions = [...digitalGames];
     state.overrides = {};
     rows.forEach((row, index) => {
-      const game = normalizeShelfCsvGame(stripRuntimeFields({ ...row, id: row.id || csvImportedId("shelf", index), updatedAt: row.updatedAt || now }));
+      const game = normalizeShelfCsvGame(stripRuntimeFields({ ...row, id: row.id || csvImportedId("shelf", index), pendingCollection: false, updatedAt: row.updatedAt || now }));
       if (row.sourceRecord === true) state.sourceGames.push(game);
       else state.additions.push(game);
     });
@@ -3432,7 +3432,7 @@ async function importShelfDigitalCsv() {
     const physicalGames = state.games.filter((game) => !isDigitalShelfGame(game)).map((game) => stripRuntimeFields(game));
     state.sourceGames = [];
     state.overrides = {};
-    state.additions = [...physicalGames, ...rows.map((row, index) => normalizeShelfCsvGame(stripRuntimeFields({ ...row, id: row.id || csvImportedId("shelf-digital", index), digital: true, updatedAt: row.updatedAt || now })))];
+    state.additions = [...physicalGames, ...rows.map((row, index) => normalizeShelfCsvGame(stripRuntimeFields({ ...row, id: row.id || csvImportedId("shelf-digital", index), digital: true, pendingCollection: false, updatedAt: row.updatedAt || now })))];
     await persistShelf();
     rebuildGames();
     renderAll();
@@ -3545,7 +3545,7 @@ async function importGameOfTheYearCsv() {
       showToast(tt("No GOTY picks found in that CSV."), "error");
       return;
     }
-    if (!window.confirm(tt("Import GOTY picks from {count} CSV rows? This updates saved Games of the year picks.", { count: rows.length }))) return;
+    if (!window.confirm(tt("Import GOTY picks from {count} CSV rows? This replaces all saved Games of the year picks.", { count: rows.length }))) return;
     const imported = {};
     rows.forEach((row) => {
       const year = String(row.year || "").match(/\b(19|20)\d{2}\b/)?.[0];
@@ -3561,10 +3561,9 @@ async function importGameOfTheYearCsv() {
       return;
     }
     const now = new Date().toISOString();
-    const nextGameOfTheYear = { ...(state.gamelistSettings.gameOfTheYear || {}) };
+    const nextGameOfTheYear = {};
     years.forEach((year) => {
-      const previous = nextGameOfTheYear[year]?.picks || {};
-      const picks = Object.fromEntries(GAME_OF_YEAR_CATEGORIES.map(([key]) => [key, imported[year].picks[key] || previous[key] || ""]));
+      const picks = Object.fromEntries(GAME_OF_YEAR_CATEGORIES.map(([key]) => [key, imported[year].picks[key] || ""]));
       nextGameOfTheYear[year] = {
         picks,
         published: gameOfTheYearComplete(picks),
