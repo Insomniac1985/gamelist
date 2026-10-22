@@ -17287,24 +17287,6 @@ html.theme-light .primary-button.stream-start-action:hover {
     white-space: nowrap;
   }
 
-  .playing-section .game-card.playing-card .meta > .history-date-pill {
-    flex-direction: row;
-    align-items: center;
-    gap: 3px;
-    padding: 2px 5px;
-    line-height: 1;
-  }
-
-  .playing-section .game-card.playing-card .meta > .history-date-pill small,
-  .playing-section .game-card.playing-card .meta > .history-date-pill strong {
-    font-size: 9px;
-    line-height: 1;
-  }
-
-  .playing-section .game-card.playing-card .meta > .history-date-pill strong {
-    font-size: 11px;
-  }
-
   .playing-section .game-card.playing-card .play-dates {
     grid-column: 1 / -1;
     grid-row: 5;
