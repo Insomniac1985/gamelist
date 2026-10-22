@@ -12039,6 +12039,12 @@ html.theme-light .settings-category-card {
   gap: 9px;
 }
 
+.settings-window-panel[data-settings-window="design"] > .settings-detail-title,
+.settings-window-panel[data-settings-window="design"] > .settings-section:not(:first-child) {
+  padding-top: 16px;
+  border-top: 1px solid var(--line);
+}
+
 .settings-section h3 {
   margin: 0;
   color: var(--accent-2);
