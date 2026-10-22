@@ -1028,6 +1028,7 @@ function bindEvents() {
       el.settingsDialog.querySelectorAll("[data-settings-window]").forEach((section) => {
         section.hidden = section.dataset.settingsWindow !== panel;
       });
+      el.settingsDialog.classList.toggle("settings-data-active", panel === "data");
       el.settingsDialog.classList.add("has-settings-window");
       el.settingsDialog.querySelector(".settings-modal")?.scrollTo({ top: 0 });
     });
@@ -1964,6 +1965,7 @@ function applyPageOrder() {
 function openSettingsDialog() {
   if (!state.canEdit) return;
   el.settingsDialog.querySelectorAll("[data-settings-window]").forEach((section) => { section.hidden = true; });
+  el.settingsDialog.classList.remove("settings-data-active");
   const settingsHome = document.querySelector("#settingsHome");
   if (settingsHome) settingsHome.hidden = false;
   el.settingsDialog.classList.remove("has-settings-window");
@@ -2007,6 +2009,7 @@ function finishSettingsExit(destination) {
     return;
   }
   el.settingsDialog.querySelectorAll("[data-settings-window]").forEach((section) => { section.hidden = true; });
+  el.settingsDialog.classList.remove("settings-data-active");
   const home = document.querySelector("#settingsHome");
   if (home) home.hidden = false;
   el.settingsDialog.classList.remove("has-settings-window");

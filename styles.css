@@ -11679,6 +11679,10 @@ body.dialog-open .toolbar {
   > .modal-actions {
   display: flex;
 }
+.settings-dialog.settings-data-active .modal-head-save,
+.settings-dialog.settings-data-active .settings-modal > .modal-actions {
+  display: none !important;
+}
 
 .settings-home {
   display: grid;
