@@ -2786,7 +2786,7 @@ function settingsHideNonStreamPlayingItem() {
 
 function settingsCsvDataItem() {
   const rows = [
-    ["gamelist", "Gamelist games (Backlog, Radar, Wishlist)"],
+    ["gamelist", "Gamelist games", "Backlog, Radar, Wishlist"],
     ["shelf", "Shelf Games"],
     ["finished", "Finished games"],
     ["goty", "GOTY"],
@@ -2794,15 +2794,18 @@ function settingsCsvDataItem() {
   return `
     <article class="settings-layout-card settings-data-card">
       <div class="settings-theme-select settings-csv-groups">
-        ${rows.map(([key, label]) => `
+        ${rows.map(([key, label, detail]) => `
           <div class="settings-csv-row">
-            <span>${escapeHtml(tt(label))}</span>
-        <div class="settings-data-actions ${["gamelist", "shelf", "finished"].includes(key) ? "settings-data-actions-add" : ""}">
+            <div class="settings-csv-label">
+              <span>${escapeHtml(tt(label))}</span>
+              ${detail ? `<small class="settings-home-copy">${escapeHtml(tt(detail))}</small>` : ""}
+            </div>
+            <div class="settings-data-actions ${["gamelist", "shelf", "finished"].includes(key) ? "settings-data-actions-add" : ""}">
               <button class="ghost-button" type="button" data-export-csv="${escapeHtml(key)}">${escapeHtml(tt("Export"))}</button>
               <button class="ghost-button" type="button" data-import-csv="${escapeHtml(key)}">${escapeHtml(tt("Import"))}</button>
               ${["gamelist", "shelf", "finished"].includes(key) ? `<button class="ghost-button" type="button" data-add-csv="${escapeHtml(key)}">${escapeHtml(tt("Add"))}</button>` : ""}
             </div>
-        </div>
+          </div>
         `).join("")}
       </div>
     </article>
@@ -13651,13 +13654,13 @@ function gamelistAddedBadge(game) {
 
 function collectionSettingsMarkup() {
   const lists = [["backlog", "Backlog"], ["shelf", "Shelf"], ["upcoming", "Radar"], ["wanted", "Wishlist"]];
-  const toggle = (attribute, label, checked) => `
+  const toggle = (attribute, title, checked) => `
     <article class="settings-layout-card settings-sync-card settings-collection-setting">
       <div class="settings-theme-select">
-        <span>${escapeHtml(tt("Collection"))}</span>
+        <span>${escapeHtml(tt(title))}</span>
         <div class="settings-check-field"><label class="check-filter toggle-check settings-visible-check">
           <input ${attribute} type="checkbox" ${checked ? "checked" : ""}>
-          <span>${escapeHtml(tt(label))}</span>
+          <span>${escapeHtml(tt("Enable"))}</span>
         </label></div>
       </div>
     </article>`;
@@ -13667,8 +13670,8 @@ function collectionSettingsMarkup() {
         <select data-default-list>${lists.map(([value, label]) => `<option value="${value}" ${state.settings.defaultList === value ? "selected" : ""}>${escapeHtml(tt(label))}</option>`).join("")}</select>
       </label>
     </article>
-    ${toggle("data-track-digital", "Track Digital Games", state.settings.shelfDigitalGames)}
-    ${toggle("data-collection-prices", "Show Prices", !state.settings.shelfHidePrices)}
+    ${toggle("data-track-digital", "Shelf Digital", state.settings.shelfDigitalGames)}
+    ${toggle("data-collection-prices", "Shelf Prices", !state.settings.shelfHidePrices)}
   `;
 }
 
