@@ -12481,6 +12481,31 @@ html.theme-light .settings-category-card {
   width: 100%;
   min-height: var(--settings-control-height, 42px);
   padding-inline: 10px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.055);
+  font-family: var(--font-body, "Avenir Next", "Segoe UI", sans-serif);
+  font-size: 13px;
+  font-weight: 750;
+  letter-spacing: 0.01em;
+  transition: transform 150ms ease, background-color 150ms ease, border-color 150ms ease, box-shadow 150ms ease;
+}
+
+.settings-data-actions .ghost-button:hover {
+  transform: translateY(-1px);
+  border-color: color-mix(in srgb, var(--accent) 72%, var(--line));
+  background: color-mix(in srgb, var(--accent) 16%, transparent);
+  box-shadow: 0 5px 14px color-mix(in srgb, var(--accent) 16%, transparent);
+}
+
+.settings-data-actions .ghost-button:active {
+  transform: translateY(0);
+  box-shadow: none;
+}
+
+.settings-data-actions .ghost-button:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
 }
 
 .settings-csv-data {
@@ -12514,15 +12539,30 @@ html.theme-light .settings-category-card {
   border-radius: 12px;
 }
 
-.settings-csv-row > span {
+.settings-csv-label {
   display: block;
   padding: 2px 0;
+  text-align: center;
+}
+
+.settings-csv-label > span {
   color: var(--text);
   font-size: 14px;
   font-weight: 900;
   line-height: 1.3;
-  text-align: center;
   text-transform: uppercase;
+}
+
+.settings-csv-label > small {
+  display: block;
+  margin-top: 4px;
+  color: var(--muted);
+  font-family: var(--font-body, "Avenir Next", "Segoe UI", sans-serif);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.015em;
+  line-height: 1.3;
+  text-transform: none;
 }
 
 html.theme-light .settings-csv-row {

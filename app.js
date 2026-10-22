@@ -2786,7 +2786,7 @@ function settingsHideNonStreamPlayingItem() {
 
 function settingsCsvDataItem() {
   const rows = [
-    ["gamelist", "Gamelist games (Backlog, Radar, Wishlist)"],
+    ["gamelist", "Gamelist games", "Backlog, Radar, Wishlist"],
     ["shelf", "Shelf Games"],
     ["finished", "Finished games"],
     ["goty", "GOTY"],
@@ -2794,15 +2794,18 @@ function settingsCsvDataItem() {
   return `
     <article class="settings-layout-card settings-data-card">
       <div class="settings-theme-select settings-csv-groups">
-        ${rows.map(([key, label]) => `
+        ${rows.map(([key, label, detail]) => `
           <div class="settings-csv-row">
-            <span>${escapeHtml(tt(label))}</span>
-        <div class="settings-data-actions ${["gamelist", "shelf", "finished"].includes(key) ? "settings-data-actions-add" : ""}">
+            <div class="settings-csv-label">
+              <span>${escapeHtml(tt(label))}</span>
+              ${detail ? `<small>${escapeHtml(tt(detail))}</small>` : ""}
+            </div>
+            <div class="settings-data-actions ${["gamelist", "shelf", "finished"].includes(key) ? "settings-data-actions-add" : ""}">
               <button class="ghost-button" type="button" data-export-csv="${escapeHtml(key)}">${escapeHtml(tt("Export"))}</button>
               <button class="ghost-button" type="button" data-import-csv="${escapeHtml(key)}">${escapeHtml(tt("Import"))}</button>
               ${["gamelist", "shelf", "finished"].includes(key) ? `<button class="ghost-button" type="button" data-add-csv="${escapeHtml(key)}">${escapeHtml(tt("Add"))}</button>` : ""}
             </div>
-        </div>
+          </div>
         `).join("")}
       </div>
     </article>
