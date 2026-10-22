@@ -298,6 +298,7 @@ function initEmbeddedAddGame() {
       openEditor(sourceGame ? { ...sourceGame, trophyName: sourceGamelistGame?.trophyName || sourceGame.trophyName || "" } : null, {
         digital: Boolean(options.digital),
         target: options.target,
+        addToBacklog: Boolean(options.addToBacklog),
         section: options.section,
         miniGamelistImport: Boolean(options.miniGamelistImport),
         autocomplete: Boolean(options.autocomplete),
@@ -2128,7 +2129,7 @@ function openEditor(game = null, options = {}) {
   state.gamelistImportShelfId = options.importShelfId || "";
   state.gamelistImportGameId = options.importGameId || "";
   state.gamelistSectionTouched = Boolean(options.section);
-  document.querySelector("#shelfAddCollectionInput").checked = false;
+  document.querySelector("#shelfAddCollectionInput").checked = Boolean(options.addToBacklog);
   state.autocompleteImport = Boolean(options.autocomplete && !options.miniGamelistImport);
   el.addDialog.classList.toggle("shelf-gamelist-import-mini", Boolean(options.miniGamelistImport));
   el.addForm.classList.toggle("shelf-gamelist-import-mini", Boolean(options.miniGamelistImport));
@@ -2174,7 +2175,7 @@ function openEditor(game = null, options = {}) {
   el.gamelistStream.checked = Boolean(values.stream);
   syncShelfGamelistPreorderStreamLayout();
   el.gamelistLength.value = values.lengthHours ?? "";
-  el.gamelistSection.value = "wanted";
+  el.gamelistSection.value = options.section || "wanted";
   el.gamelistPreorderCheck.checked = false;
   el.gamelistPreorderField.hidden = true;
   el.gamelistPreferredStore.value = values.preferredStore || "";

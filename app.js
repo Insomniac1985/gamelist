@@ -12087,9 +12087,10 @@ async function openEditor(id = "") {
 }
 
 function openGameAddFlow(options = {}) {
-  const section = options.section || (["upcoming", "wanted"].includes(state.mobileSection) ? state.mobileSection : "collection");
+  const section = options.section || (["backlog", "upcoming", "wanted"].includes(state.mobileSection) ? state.mobileSection : "collection");
+  const addToBacklog = section === "backlog" && !options.miniGamelistImport;
   const collection = ["collection", "backlog"].includes(section) && !options.miniGamelistImport;
-  return openSharedAddGame({ ...options, section: section === "collection" ? "backlog" : section, target: collection ? "shelf" : "gamelist", digital: options.digital ?? (state.mobileSection === "shelf" && collectionMedia === "digital" && state.settings.shelfDigitalGames === true), settings: state.settings }, {
+  return openSharedAddGame({ ...options, addToBacklog, section: section === "collection" ? "backlog" : section, target: collection && !addToBacklog ? "shelf" : "gamelist", digital: options.digital ?? (state.mobileSection === "shelf" && collectionMedia === "digital" && state.settings.shelfDigitalGames === true), settings: state.settings }, {
     beforeOpen: pauseAllPlayingTrailers,
     afterSave: async result => {
       await Promise.all([pullCloudData(), refreshCollectionData()]);
