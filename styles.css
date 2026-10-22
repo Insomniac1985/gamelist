@@ -7069,6 +7069,13 @@ body.theme-kash .game-card.stream-card.completed-trophy-card {
   stroke-linejoin: round;
 }
 
+.coop-pill .coop-icon,
+.multiplayer-pill .online-globe-icon {
+  width: 12px;
+  height: 12px;
+  flex-basis: 12px;
+}
+
 .coop-icon {
   stroke-width: 2.5;
 }
