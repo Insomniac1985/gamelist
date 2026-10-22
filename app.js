@@ -1856,13 +1856,16 @@ function render() {
   el.loginButton.title = state.canEdit ? tt("Stop Editing") : tt("Add Game");
   el.loginButton.setAttribute("aria-label", el.loginButton.title);
   el.loginButton.hidden = state.canEdit;
+  el.floatingAddButton.innerHTML = state.canEdit ? plusIcon() : pencilIcon();
+  el.floatingAddButton.title = state.canEdit ? tt("Add Game") : tt("Log in to edit");
+  el.floatingAddButton.setAttribute("aria-label", el.floatingAddButton.title);
   if (el.mobileDockEdit) {
     el.mobileDockEdit.hidden = state.canEdit;
     el.mobileDockEdit.innerHTML = `${plusIcon()}<span>${escapeHtml(tt("Add Game"))}</span>`;
     el.mobileDockEdit.title = tt("Add Game");
     el.mobileDockEdit.setAttribute("aria-label", tt("Add Game"));
   }
-  el.addButton.hidden = false;
+  el.addButton.hidden = !state.canEdit;
   if (el.mobileDockAdd) el.mobileDockAdd.hidden = !state.canEdit;
   el.syncButton.hidden = !state.canEdit;
   if (el.settingsButton) el.settingsButton.hidden = !state.canEdit;
