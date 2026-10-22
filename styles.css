@@ -17341,6 +17341,10 @@ html.theme-light .primary-button.stream-start-action:hover {
     display: none;
   }
 
+  .playing-section .game-card.playing-card .started-date-pill {
+    display: none;
+  }
+
   .playing-section .game-card.playing-card .play-dates {
     grid-column: 1 / -1;
     grid-row: 5;

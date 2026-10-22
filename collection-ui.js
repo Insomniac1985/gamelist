@@ -4651,7 +4651,7 @@ function openGamelistDetails(sourceGame) {
   el.detailMeta.innerHTML = `${platformBadge(game.platform, { title: game.title })}${mediaFormatBadge(game)}${dlcBadge(game)}${entitlementBadge(game)}${preorderPlaytimePill(game)}`;
   el.detailDates.innerHTML = [
     shelfReleaseDatePill(game, "Releases"),
-    game.startedAt ? `<span class="history-pill history-date-pill"><small>${escapeHtml(tt("Started"))}</small><strong>${escapeHtml(formatShortDate(game.startedAt))}</strong></span>` : "",
+    game.startedAt ? `<span class="history-pill history-date-pill started-date-pill"><small>${escapeHtml(tt("Started"))}</small><strong>${escapeHtml(formatShortDate(game.startedAt))}</strong></span>` : "",
     game.playing && state.cardPlaytime[game.id] ? shelfLivePlaytimePill(game, state.cardPlaytime[game.id]) : "",
     game.playing ? shelfCalendarStateBadge(game) : "",
   ].join("");
@@ -4726,7 +4726,7 @@ function gamelistProjectionCard(game, options = {}) {
   card.querySelector(".meta").innerHTML = projectionMeta(game, { includePast: isReleaseDialog, includeProgress: neutralReleaseCard, includeRelease: !isReleaseDialog, includeCalendarState: isReleaseDialog && !game.playing });
   const dates = card.querySelector(".play-dates");
   dates.innerHTML = [
-    game.startedAt && !neutralReleaseCard ? `<span class="history-pill history-date-pill"><small>Started</small><strong>${escapeHtml(formatShortDate(game.startedAt))}</strong></span>` : "",
+    game.startedAt && !neutralReleaseCard ? `<span class="history-pill history-date-pill started-date-pill"><small>Started</small><strong>${escapeHtml(formatShortDate(game.startedAt))}</strong></span>` : "",
     game.playing && !neutralReleaseCard && state.cardPlaytime[game.id] ? shelfLivePlaytimePill(game, state.cardPlaytime[game.id]) : "",
     isReleaseDialog && game.preorderStore ? preorderProjectionChip(game.preorderStore) : "",
   ].join("");

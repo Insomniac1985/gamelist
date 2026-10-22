@@ -10600,7 +10600,7 @@ function playDatesFor(game, options = {}) {
   if (options.includePreorder && game.preorderStore) values.push(preorderChip(game.preorderStore));
   else if (options.includePreorder && game.preferredStore) values.push(preferredPreorderChip(game.preferredStore));
   if (options.includeAdded) values.push(gamelistAddedBadge(game));
-  if (game.startedAt) values.push(`<span class="history-pill history-date-pill"><small>${escapeHtml(tt("Started"))}</small><strong>${escapeHtml(formatDate(game.startedAt))}</strong></span>`);
+  if (game.startedAt) values.push(`<span class="history-pill history-date-pill started-date-pill"><small>${escapeHtml(tt("Started"))}</small><strong>${escapeHtml(formatDate(game.startedAt))}</strong></span>`);
   const livePlaytime = game.playing ? Number(state.cardPlaytime[game.id]) : 0;
   if (livePlaytime > 0) values.push(livePlaytimePill(game, livePlaytime));
   if (game.completedAt) values.push(`<span class="history-pill history-date-pill"><small>${escapeHtml(tt("Finished"))}</small><strong>${escapeHtml(formatDate(game.completedAt))}</strong></span>`);
