@@ -18,7 +18,7 @@ body.collection-selected .board > .column { display: none !important; }
 #mobileDockSettings { order: 4; }
 #mobileDockGoty { order: 5; }
 #mobileDockUp { order: 6; }
-#finishedStatsBody > [data-stats-source="collection"] { margin-top: 20px; }
+#finishedStatsBody > [data-stats-source="collection"] { margin-top: 6px; }
 @media (min-width: 1301px) {
   .toolbar { grid-template-columns: minmax(180px, 2fr) auto repeat(2, minmax(100px, 1fr)) minmax(140px, 1fr) auto auto; }
 }
