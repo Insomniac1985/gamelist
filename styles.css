@@ -16355,7 +16355,7 @@ html.theme-light .primary-button.stream-start-action:hover {
 }
 
 @media (max-width: 760px) {
-  body.shabii-main-owner:not(.can-edit) #loginButton {
+  body:not(.can-edit) #loginButton {
     display: none !important;
   }
 

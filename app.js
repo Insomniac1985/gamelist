@@ -1857,7 +1857,7 @@ function render() {
   el.loginButton.setAttribute("aria-label", el.loginButton.title);
   el.loginButton.hidden = state.canEdit;
   if (el.mobileDockEdit) {
-    el.mobileDockEdit.hidden = state.canEdit || !shabiiMainOwner;
+    el.mobileDockEdit.hidden = state.canEdit;
     el.mobileDockEdit.innerHTML = pencilIcon();
   }
   el.addButton.hidden = false;
