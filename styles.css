@@ -12587,17 +12587,24 @@ html.theme-light .settings-csv-row {
 .settings-dev-group {
   display: grid;
   gap: 8px;
-  padding-top: 12px;
-  border-top: 1px solid var(--line);
+  padding: 12px;
+  background: rgba(255, 255, 255, 0.045);
+  border: 1px solid var(--line);
+  border-radius: 12px;
 }
 
 .settings-dev-group h4 {
   margin: 0;
-  color: var(--accent-2);
+  color: var(--text);
   font-size: 12px;
   font-weight: 900;
   letter-spacing: 0.08em;
   text-transform: uppercase;
+}
+
+html.theme-light .settings-dev-group {
+  background: rgba(211, 221, 234, 0.58);
+  border-color: rgba(31, 42, 61, 0.28);
 }
 
 .settings-dev-group-links {
