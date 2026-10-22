@@ -2679,11 +2679,6 @@ function renderSettingsDialog() {
   document.querySelector("[data-add-csv='shelf']")?.addEventListener("click", addShelfGamesCsv);
   document.querySelector("[data-export-csv='goty']")?.addEventListener("click", exportGameOfTheYearCsv);
   document.querySelector("[data-import-csv='goty']")?.addEventListener("click", importGameOfTheYearCsv);
-  document.querySelector("[data-export-csv='finished']")?.addEventListener("click", exportYearlyStatsCsv);
-  document.querySelector("[data-import-csv='finished']")?.addEventListener("click", importYearlyStatsCsv);
-  document.querySelector("[data-add-csv='finished']")?.addEventListener("click", addFinishedGamesCsv);
-  document.querySelector("[data-export-csv='yearly-stats']")?.addEventListener("click", exportYearlyStatsCsv);
-  document.querySelector("[data-import-csv='yearly-stats']")?.addEventListener("click", importYearlyStatsCsv);
   applyLanguage();
   syncStyledSelects(el.settingsDialog, { activeValue: null });
 }
@@ -2790,9 +2785,8 @@ function settingsHideNonStreamPlayingItem() {
 
 function settingsCsvDataItem() {
   const rows = [
-    ["gamelist", "Gamelist games", "Backlog, Radar, Wishlist"],
+    ["gamelist", "Gamelist games", "Backlog, Radar, Wishlist, Finished"],
     ["shelf", "Shelf Games"],
-    ["finished", "Finished games"],
     ["goty", "GOTY"],
   ];
   return `
@@ -2804,10 +2798,10 @@ function settingsCsvDataItem() {
               <span>${escapeHtml(tt(label))}</span>
               ${detail ? `<small class="settings-home-copy">${escapeHtml(tt(detail))}</small>` : ""}
             </div>
-            <div class="settings-data-actions ${["gamelist", "shelf", "finished"].includes(key) ? "settings-data-actions-add" : ""}">
+            <div class="settings-data-actions ${["gamelist", "shelf"].includes(key) ? "settings-data-actions-add" : ""}">
               <button class="ghost-button" type="button" data-export-csv="${escapeHtml(key)}">${downloadIcon()}${escapeHtml(tt("Export"))}</button>
               <button class="ghost-button" type="button" data-import-csv="${escapeHtml(key)}">${uploadIcon()}${escapeHtml(tt("Import"))}</button>
-              ${["gamelist", "shelf", "finished"].includes(key) ? `<button class="ghost-button" type="button" data-add-csv="${escapeHtml(key)}">${escapeHtml(tt("Add"))}${plusIcon()}</button>` : ""}
+              ${["gamelist", "shelf"].includes(key) ? `<button class="ghost-button" type="button" data-add-csv="${escapeHtml(key)}">${escapeHtml(tt("Add"))}${plusIcon()}</button>` : ""}
             </div>
           </div>
         `).join("")}
@@ -2987,6 +2981,7 @@ async function importGamelistCsv() {
     state.games = normalizeGameRecords(rows.map((row, index) => ({
       ...row,
       id: row.id || csvImportedId("gamelist", index),
+      pendingCollection: false,
       updatedAt: row.updatedAt || new Date().toISOString(),
     })));
     persistLocal(false);
@@ -3329,7 +3324,7 @@ async function importGameOfTheYearCsv() {
       showToast(tt("No GOTY picks found in that CSV."), "error");
       return;
     }
-    if (!window.confirm(tt("Import GOTY picks from {count} CSV rows? This updates saved Games of the year picks.", { count: rows.length }))) return;
+    if (!window.confirm(tt("Import GOTY picks from {count} CSV rows? This replaces all saved Games of the year picks.", { count: rows.length }))) return;
     const imported = {};
     rows.forEach((row) => {
       const year = String(row.year || "").match(/\b(19|20)\d{2}\b/)?.[0];
@@ -3345,10 +3340,9 @@ async function importGameOfTheYearCsv() {
       return;
     }
     const now = new Date().toISOString();
-    const nextGameOfTheYear = { ...(state.settings.gameOfTheYear || {}) };
+    const nextGameOfTheYear = {};
     years.forEach((year) => {
-      const previous = nextGameOfTheYear[year]?.picks || {};
-      const picks = Object.fromEntries(GAME_OF_YEAR_CATEGORIES.map(([key]) => [key, imported[year].picks[key] || previous[key] || ""]));
+      const picks = Object.fromEntries(GAME_OF_YEAR_CATEGORIES.map(([key]) => [key, imported[year].picks[key] || ""]));
       const candidates = gameOfTheYearCandidateGames(year);
       const categories = gameOfTheYearCategoriesForYear(year, candidates);
       nextGameOfTheYear[year] = {
