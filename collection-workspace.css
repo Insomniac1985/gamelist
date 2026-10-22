@@ -31,7 +31,7 @@ body.collection-selected .board > .column { display: none !important; }
 
 /* One persistent toolbar serves every list. */
 .highlights-section { margin-bottom: 14px; }
-.board { margin-top: 0; }
+.board { margin-top: 18px; }
 .board > .column > .column-head { margin-top: 0; padding-top: 0; }
 .toolbar { min-width: 0; align-self: start; }
 .toolbar [hidden] { display: none !important; }
@@ -87,4 +87,15 @@ body[data-mobile-section="new"] #collectionLibrary:not([hidden]) + #new:not([hid
   .toolbar > label { grid-column: auto !important; }
   .toolbar > .search { grid-column: 1 / -1 !important; }
   .toolbar > .order-label { grid-column: 1 / span 3 !important; }
+}
+
+/* Radar keeps the preorder summary on its own line beneath the game count. */
+#upcomingCount {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 6px;
+}
+#upcomingCount > .preorder-count-pill {
+  margin: 0;
 }
