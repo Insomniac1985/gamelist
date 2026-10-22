@@ -24718,6 +24718,12 @@ textarea {
 }
 
 @media (min-width: 700px) and (max-width: 800px) {
+  .mobile-section-tabs,
+  .shelf-tabs {
+    top: 20px;
+    margin-top: 8px;
+  }
+
   .completed-list .completed-rating-breakdown,
   .completed-list .completed-platform .rating-score-pill {
     display: none !important;

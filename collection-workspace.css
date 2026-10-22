@@ -82,6 +82,14 @@ body[data-mobile-section="new"] #collectionLibrary:not([hidden]) + #new:not([hid
   .toolbar { position: sticky; top: calc(20px + 0px); }
 }
 
+/* At tablet widths let filters scroll away while library tabs stay pinned. */
+@media (min-width: 700px) and (max-width: 800px) {
+  .toolbar,
+  .toolbar.collection-toolbar {
+    position: static;
+  }
+}
+
 #collectionKpis { margin-bottom: 0; }
 @media (min-width: 700px) and (max-width: 1000px) {
   .toolbar > label { grid-column: auto !important; }
