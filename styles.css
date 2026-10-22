@@ -12469,6 +12469,10 @@ html.theme-light .settings-category-card {
   gap: 8px;
 }
 
+.settings-data-actions-add {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
 .settings-data-actions .ghost-button {
   width: 100%;
   min-height: var(--settings-control-height, 42px);

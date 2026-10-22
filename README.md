@@ -321,10 +321,10 @@ If you have a Twitch username set in Settings, the poster footer can include you
 
 Both pages have **Your data** controls at the bottom of Settings, after Store selection.
 
-- **Gamelist games** exports/imports the digital backlog and finished game list.
-- **Shelf physical games** exports/imports the physical collection.
+- **Gamelist games** exports/imports the digital backlog and finished game list; **Add** appends CSV rows without replacing current games.
+- **Shelf games (physical and digital)** exports/imports the full Shelf collection in one CSV; **Add** appends rows from a CSV while keeping existing games.
 - **GOTY** exports/imports saved Games of the year picks by year and category.
-- **Finished games** exports/imports the completed-game fields that power the yearly stats views.
+- **Finished games** exports/imports the completed-game fields that power the yearly stats views; **Add** creates new completed Gamelist entries from CSV rows.
 - Arrays and objects, such as owners, tags, store links, prices, and metadata, are preserved as JSON text inside CSV cells.
 
 This can allow you to safely create a backup of your collection and data.

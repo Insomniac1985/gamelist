@@ -2657,14 +2657,15 @@ function renderSettingsDialog() {
   });
   document.querySelector("[data-export-csv='gamelist']")?.addEventListener("click", exportGamelistCsv);
   document.querySelector("[data-import-csv='gamelist']")?.addEventListener("click", importGamelistCsv);
+  document.querySelector("[data-add-csv='gamelist']")?.addEventListener("click", addGamelistCsv);
   document.querySelector("[data-export-csv='shelf']")?.addEventListener("click", exportShelfPhysicalCsv);
   document.querySelector("[data-import-csv='shelf']")?.addEventListener("click", importShelfPhysicalCsv);
-  document.querySelector("[data-export-csv='shelf-digital']")?.addEventListener("click", exportShelfDigitalCsv);
-  document.querySelector("[data-import-csv='shelf-digital']")?.addEventListener("click", importShelfDigitalCsv);
+  document.querySelector("[data-add-csv='shelf']")?.addEventListener("click", addShelfGamesCsv);
   document.querySelector("[data-export-csv='goty']")?.addEventListener("click", exportGameOfTheYearCsv);
   document.querySelector("[data-import-csv='goty']")?.addEventListener("click", importGameOfTheYearCsv);
   document.querySelector("[data-export-csv='finished']")?.addEventListener("click", exportYearlyStatsCsv);
   document.querySelector("[data-import-csv='finished']")?.addEventListener("click", importYearlyStatsCsv);
+  document.querySelector("[data-add-csv='finished']")?.addEventListener("click", addFinishedGamesCsv);
   document.querySelector("[data-export-csv='yearly-stats']")?.addEventListener("click", exportYearlyStatsCsv);
   document.querySelector("[data-import-csv='yearly-stats']")?.addEventListener("click", importYearlyStatsCsv);
   applyLanguage();
@@ -2783,8 +2784,7 @@ function settingsHideNonStreamPlayingItem() {
 function settingsCsvDataItem() {
   const rows = [
     ["gamelist", "Gamelist games"],
-    ["shelf", "Shelf physical games"],
-    ["shelf-digital", "Shelf Digital Games"],
+    ["shelf", "Shelf games (physical and digital)"],
     ["goty", "GOTY"],
     ["finished", "Finished games"],
   ];
@@ -2794,9 +2794,10 @@ function settingsCsvDataItem() {
         ${rows.map(([key, label]) => `
           <div class="settings-csv-row">
             <span>${escapeHtml(tt(label))}</span>
-        <div class="settings-data-actions">
+        <div class="settings-data-actions ${["gamelist", "shelf", "finished"].includes(key) ? "settings-data-actions-add" : ""}">
               <button class="ghost-button" type="button" data-export-csv="${escapeHtml(key)}">${escapeHtml(tt("Export"))}</button>
               <button class="ghost-button" type="button" data-import-csv="${escapeHtml(key)}">${escapeHtml(tt("Import"))}</button>
+              ${["gamelist", "shelf", "finished"].includes(key) ? `<button class="ghost-button" type="button" data-add-csv="${escapeHtml(key)}">${escapeHtml(tt("Add"))}</button>` : ""}
             </div>
         </div>
         `).join("")}
@@ -2967,6 +2968,39 @@ async function importGamelistCsv() {
   }
 }
 
+async function addGamelistCsv() {
+  const file = await pickCsvFile();
+  if (!file) return;
+  try {
+    const rows = csvToObjects(await file.text());
+    if (!rows.length) {
+      showToast("No games found in that CSV.", "error");
+      return;
+    }
+    if (!window.confirm(`Add ${rows.length} games to the Gamelist? Existing games will be kept.`)) return;
+    const usedIds = new Set(state.games.map((game) => String(game.id || "")));
+    const now = new Date().toISOString();
+    const additions = rows.map((row, index) => {
+      let id = String(row.id || "").trim();
+      if (!id || usedIds.has(id)) {
+        const baseId = csvImportedId("gamelist", index);
+        id = baseId;
+        let suffix = 1;
+        while (usedIds.has(id)) id = `${baseId}-${suffix++}`;
+      }
+      usedIds.add(id);
+      return { ...row, id, updatedAt: row.updatedAt || now };
+    });
+    state.games = normalizeGameRecords([...state.games, ...additions]);
+    persistLocal(false);
+    await persistCloud();
+    render();
+    showToast(`Added ${additions.length} games to the Gamelist.`);
+  } catch (error) {
+    showToast(error?.message || "Gamelist CSV add failed.", "error");
+  }
+}
+
 async function shelfPayloadForCsv() {
   return fetch("/api/shelf", { cache: "no-store" })
     .then((response) => response.ok ? response.json() : null)
@@ -3035,11 +3069,11 @@ function csvBoolean(value, fallback = false) {
 async function exportShelfPhysicalCsv() {
   const data = await shelfPayloadForCsv();
   const records = [
-    ...data.sourceGames.filter((game) => !isDigitalShelfCsvGame(game)).map((game) => ({ ...shelfCsvRecord(game), sourceRecord: true })),
-    ...data.games.filter((game) => !isDigitalShelfCsvGame(game)).map((game) => ({ ...shelfCsvRecord(game), sourceRecord: false })),
+    ...data.sourceGames.map((game) => ({ ...shelfCsvRecord(game), sourceRecord: true })),
+    ...data.games.map((game) => ({ ...shelfCsvRecord(game), sourceRecord: false })),
   ];
-  downloadCsv(records, `shelf-physical-games-${dateStamp()}.csv`);
-  showToast(`Exported ${records.length} shelf physical games.`);
+  downloadCsv(records, `shelf-games-${dateStamp()}.csv`);
+  showToast(`Exported ${records.length} Shelf games.`);
 }
 
 async function importShelfPhysicalCsv() {
@@ -3048,17 +3082,15 @@ async function importShelfPhysicalCsv() {
   try {
     const rows = csvToObjects(await file.text());
     if (!rows.length) {
-      showToast("No shelf physical games found in that CSV.", "error");
+      showToast("No Shelf games found in that CSV.", "error");
       return;
     }
-    if (!window.confirm(`Import ${rows.length} shelf physical games from CSV? This replaces the current Shelf physical games.`)) return;
+    if (!window.confirm(`Import ${rows.length} Shelf games from CSV? This replaces the current physical and digital Shelf games.`)) return;
     const now = new Date().toISOString();
     const next = await shelfPayloadForCsv();
-    const digitalSourceGames = next.sourceGames.filter(isDigitalShelfCsvGame);
-    const digitalGames = next.games.filter(isDigitalShelfCsvGame);
-    next.sourceGames = digitalSourceGames;
-    next.games = digitalGames;
-    next.overrides = Object.fromEntries(Object.entries(next.overrides).filter(([id]) => digitalSourceGames.some((game) => game.id === id)));
+    next.sourceGames = [];
+    next.games = [];
+    next.overrides = {};
     rows.forEach((row, index) => {
       const game = normalizeShelfCsvGame({ ...row, id: row.id || csvImportedId("shelf", index), updatedAt: row.updatedAt || now });
       if (row.sourceRecord === true) next.sourceGames.push(game);
@@ -3070,52 +3102,47 @@ async function importShelfPhysicalCsv() {
       headers: { "Content-Type": "application/json", "x-edit-password": password },
       body: JSON.stringify(next),
     });
-    if (!response.ok) throw new Error("Shelf physical games could not be imported.");
-    showToast(`Imported ${rows.length} shelf physical games.`);
+    if (!response.ok) throw new Error("Shelf games could not be imported.");
+    showToast(`Imported ${rows.length} Shelf games.`);
   } catch (error) {
-    showToast(error?.message || "Shelf physical games CSV import failed.", "error");
+    showToast(error?.message || "Shelf games CSV import failed.", "error");
   }
 }
 
-function isDigitalShelfCsvGame(game) {
-  return Boolean(game?.digital || game?.dlc);
-}
-
-async function exportShelfDigitalCsv() {
-  const data = await shelfPayloadForCsv();
-  const records = [
-    ...data.sourceGames.filter(isDigitalShelfCsvGame).map((game) => ({ ...shelfCsvRecord(game), sourceRecord: true })),
-    ...data.games.filter(isDigitalShelfCsvGame).map((game) => ({ ...shelfCsvRecord(game), sourceRecord: false })),
-  ];
-  downloadCsv(records, `shelf-digital-games-${dateStamp()}.csv`);
-  showToast(`Exported ${records.length} shelf digital games.`);
-}
-
-async function importShelfDigitalCsv() {
+async function addShelfGamesCsv() {
   const file = await pickCsvFile();
   if (!file) return;
   try {
     const rows = csvToObjects(await file.text());
-    if (!rows.length) { showToast("No shelf digital games found in that CSV.", "error"); return; }
-    if (!window.confirm(`Import ${rows.length} shelf digital games from CSV? This replaces only the current Shelf digital games.`)) return;
-    const now = new Date().toISOString();
+    if (!rows.length) {
+      showToast("No Shelf games found in that CSV.", "error");
+      return;
+    }
+    if (!window.confirm(`Add ${rows.length} games to the Shelf? Existing Shelf games will be kept.`)) return;
     const next = await shelfPayloadForCsv();
-    const physicalSourceGames = next.sourceGames.filter((game) => !isDigitalShelfCsvGame(game));
-    const physicalGames = next.games.filter((game) => !isDigitalShelfCsvGame(game));
-    next.sourceGames = physicalSourceGames;
-    next.games = physicalGames;
-    next.overrides = Object.fromEntries(Object.entries(next.overrides).filter(([id]) => physicalSourceGames.some((game) => game.id === id)));
+    const usedIds = new Set([...next.sourceGames, ...next.games].map((game) => String(game.id || "")));
+    const now = new Date().toISOString();
     rows.forEach((row, index) => {
-      const game = normalizeShelfCsvGame({ ...row, id: row.id || csvImportedId("shelf-digital", index), digital: true, updatedAt: row.updatedAt || now });
-      if (row.sourceRecord === true) next.sourceGames.push(game);
-      else next.games.push(game);
+      let id = String(row.id || "").trim();
+      if (!id || usedIds.has(id)) {
+        const baseId = csvImportedId("shelf", index);
+        id = baseId;
+        let suffix = 1;
+        while (usedIds.has(id)) id = `${baseId}-${suffix++}`;
+      }
+      usedIds.add(id);
+      next.games.push(normalizeShelfCsvGame({ ...row, id, updatedAt: row.updatedAt || now }));
     });
     const password = sessionStorage.getItem(`${SESSION_KEY}:password`) || "";
-    const response = await fetch("/api/shelf", { method: "PUT", headers: { "Content-Type": "application/json", "x-edit-password": password }, body: JSON.stringify(next) });
-    if (!response.ok) throw new Error("Shelf digital games could not be imported.");
-    showToast(`Imported ${rows.length} shelf digital games.`);
+    const response = await fetch("/api/shelf", {
+      method: "PUT",
+      headers: { "Content-Type": "application/json", "x-edit-password": password },
+      body: JSON.stringify(next),
+    });
+    if (!response.ok) throw new Error("Shelf games could not be added.");
+    showToast(`Added ${rows.length} games to the Shelf.`);
   } catch (error) {
-    showToast(error?.message || "Shelf digital games CSV import failed.", "error");
+    showToast(error?.message || "Shelf games CSV add failed.", "error");
   }
 }
 
@@ -3183,6 +3210,43 @@ async function importYearlyStatsCsv() {
     showToast(`Imported finished data for ${changed} games.`);
   } catch (error) {
     showToast(error?.message || "Finished games CSV import failed.", "error");
+  }
+}
+
+async function addFinishedGamesCsv() {
+  const file = await pickCsvFile();
+  if (!file) return;
+  try {
+    const rows = csvToObjects(await file.text());
+    const additions = rows.filter((row) => String(row.title || "").trim() && String(row.completedAt || "").trim());
+    if (!additions.length) {
+      showToast("No completed games found in that CSV.", "error");
+      return;
+    }
+    if (!window.confirm(`Add ${additions.length} completed games to the Gamelist? Existing games will be kept.`)) return;
+    const usedIds = new Set(state.games.map((game) => String(game.id || "")));
+    const now = new Date().toISOString();
+    const newGames = additions.map((row, index) => {
+      const gameRow = { ...row };
+      delete gameRow.year;
+      let id = String(gameRow.id || "").trim();
+      if (!id || usedIds.has(id)) {
+        const baseId = csvImportedId("finished", index);
+        id = baseId;
+        let suffix = 1;
+        while (usedIds.has(id)) id = `${baseId}-${suffix++}`;
+      }
+      usedIds.add(id);
+      return { ...gameRow, id, section: "backlog", updatedAt: gameRow.updatedAt || now };
+    });
+    state.games = normalizeGameRecords([...state.games, ...newGames]);
+    persistLocal(false);
+    await persistCloud();
+    render();
+    const skipped = rows.length - additions.length;
+    showToast(`Added ${newGames.length} completed games${skipped ? `; skipped ${skipped} incomplete rows` : ""}.`);
+  } catch (error) {
+    showToast(error?.message || "Finished games CSV add failed.", "error");
   }
 }
 
