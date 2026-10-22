@@ -9487,7 +9487,6 @@ body.theme-kash .finished-stats-kpi.is-completed:focus-visible strong {
   display: grid;
   grid-template-rows: auto auto;
   flex: 0 0 min(860px, calc(100vw - clamp(54px, 9vw, 112px)));
-  min-height: 548px;
   align-content: center;
   padding: 14px;
   gap: 20px;
@@ -9547,10 +9546,11 @@ body.theme-kash .finished-stats-kpi.is-completed:focus-visible strong {
   }
 
   .playing-section .twitch-preview-card:not(.is-collapsed) {
-    flex: 0 0 var(
-      --twitch-preview-open-width,
-      min(860px, calc(100vw - clamp(54px, 9vw, 112px)))
-    );
+    flex: 0 0
+      var(
+        --twitch-preview-open-width,
+        min(860px, calc(100vw - clamp(54px, 9vw, 112px)))
+      );
   }
 }
 
