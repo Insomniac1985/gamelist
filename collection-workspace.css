@@ -24,7 +24,8 @@ body.collection-selected .board > .column { display: none !important; }
 }
 @media (max-width: 760px) {
   .mobile-section-tabs { grid-template-columns: repeat(var(--mobile-tab-count), minmax(62px, 1fr)) !important; }
-  .mobile-section-tabs button { font-size: 11px; padding-inline: 6px; }
+  .mobile-section-tabs button { font-size: 14px; padding-inline: 6px; }
+  .mobile-section-tabs button:not([data-mobile-section="new"]) .label { display: inline; }
   #collectionMediaToggle { justify-content: flex-end; }
   #collectionLibrary { width: 100%; }
 }
@@ -228,6 +229,39 @@ body[data-mobile-section="new"] #collectionLibrary:not([hidden]) + #new:not([hid
   .toolbar.collection-toolbar > label:has(#collectionConditionFilter) { grid-column: 3 !important; grid-row: 2; }
   .toolbar.collection-toolbar > .order-label { grid-column: 4 !important; grid-row: 2; }
   .toolbar.collection-toolbar > .library-view-controls { grid-column: 5; grid-row: 2; }
+}
+
+/* Keep the full toolbar on one line on regular desktop screens. */
+@media (min-width: 1001px) {
+  .toolbar:not(.collection-toolbar) {
+    grid-template-columns: minmax(180px, 1.35fr) 132px minmax(150px, 1.1fr) minmax(130px, .9fr) minmax(220px, 1.45fr) calc(var(--toolbar-control-height) * 2 + 6px);
+  }
+  .toolbar.collection-toolbar {
+    grid-template-columns: minmax(180px, 1.35fr) minmax(140px, 1fr) minmax(120px, .85fr) minmax(120px, .85fr) minmax(120px, .85fr) minmax(190px, 1.35fr) calc(var(--toolbar-control-height) * 2 + 6px);
+  }
+  .toolbar > .search,
+  .toolbar > .toolbar-check,
+  .toolbar > label:has(#platformFilter),
+  .toolbar > label:has(#tagFilter),
+  .toolbar > label:has(#collectionRegionFilter),
+  .toolbar > label:has(#collectionConditionFilter),
+  .toolbar > .order-label,
+  .toolbar > .library-view-controls {
+    grid-row: 1 !important;
+  }
+  .toolbar:not(.collection-toolbar) > .tag-filter,
+  .toolbar.collection-toolbar > .tag-filter { grid-column: auto !important; }
+  .toolbar > .search { grid-column: 1 !important; }
+  .toolbar:not(.collection-toolbar) > .toolbar-check { grid-column: 2 !important; }
+  .toolbar:not(.collection-toolbar) > label:has(#platformFilter) { grid-column: 3 !important; }
+  .toolbar:not(.collection-toolbar) > label:has(#tagFilter) { grid-column: 4 !important; }
+  .toolbar:not(.collection-toolbar) > .order-label { grid-column: 5 !important; }
+  .toolbar.collection-toolbar > label:has(#platformFilter) { grid-column: 2 !important; }
+  .toolbar.collection-toolbar > label:has(#tagFilter) { grid-column: 3 !important; }
+  .toolbar.collection-toolbar > label:has(#collectionRegionFilter) { grid-column: 4 !important; }
+  .toolbar.collection-toolbar > label:has(#collectionConditionFilter) { grid-column: 5 !important; }
+  .toolbar.collection-toolbar > .order-label { grid-column: 6 !important; }
+  .toolbar > .library-view-controls { grid-column: -2 !important; }
 }
 
 /* Fill every allocated filter cell; only icon controls keep a fixed width. */

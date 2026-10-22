@@ -1021,6 +1021,7 @@ function bindEvents() {
   });
   el.mobileActionDock?.addEventListener("click", (event) => {
     const action = event.target.closest(".mobile-dock-action");
+    el.mobileDockAdd?.classList.remove("stats-just-closed");
     if (action && action !== el.mobileDockSearch) el.mobileDockSearch?.classList.remove("is-active");
   });
   document.addEventListener("pointerdown", (event) => {
@@ -1086,6 +1087,7 @@ function bindEvents() {
     el.finishedStatsDialog.classList.remove("has-mini-overlay");
     document.querySelector(".finished-stats-hover-float")?.remove();
     el.finishedStatsBody?.querySelector(".finished-stats-floating-source")?.classList.remove("finished-stats-floating-source");
+    if (window.matchMedia("(max-width: 760px)").matches) el.mobileDockAdd?.classList.add("stats-just-closed");
     syncScrollLock();
   });
   window.addEventListener("scroll", () => {

@@ -16495,7 +16495,9 @@ html.theme-light .primary-button.stream-start-action:hover {
     align-items: center;
     gap: 8px;
     padding: 28px 14px 12px;
-    background: linear-gradient(179deg, #00000075, transparent);
+    /* The header masks scrolling content while retaining its slide animation. */
+    background: linear-gradient(180deg, var(--bg) 0%, var(--bg) 62%, color-mix(in srgb, var(--bg) 82%, transparent) 84%, transparent 100%);
+    backdrop-filter: none;
     transition:
       transform 180ms ease,
       padding-top 180ms ease;
@@ -18739,6 +18741,25 @@ body.page-pulling #mobileActionDock {
 }
 
 @media (max-width: 760px) {
+  .playing-section,
+  #gotySection {
+    margin-top: 24px;
+  }
+
+  #finishedStatsTitle {
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    overflow: hidden;
+    line-height: 1.12;
+  }
+
+  #mobileDockAdd.stats-just-closed {
+    color: #fff !important;
+    background: var(--accent) !important;
+    box-shadow: 0 3px 24px color-mix(in srgb, var(--accent) 42%, transparent) !important;
+  }
+
   body:not(.shelf-page) dialog[open],
   body.shelf-page dialog[open] {
     width: calc(100vw - 16px) !important;
