@@ -17448,7 +17448,7 @@ html.theme-light .primary-button.stream-start-action:hover {
 
   .playing-section .playing-panel > .twitch-preview-card {
     box-sizing: border-box;
-    grid-row: 1;
+    grid-row: 2;
     width: 100%;
     max-width: 100%;
     min-height: 214px;
@@ -17457,6 +17457,7 @@ html.theme-light .primary-button.stream-start-action:hover {
   }
 
   .playing-section .playing-panel > .playing-list {
+    grid-row: 1;
     width: 100%;
     min-width: 0;
   }

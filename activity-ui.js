@@ -90,7 +90,7 @@ function syncTwitchPreviewPlacement() {
     const preview = list.querySelector(":scope > .twitch-preview-card")
       || panel.querySelector(":scope > .twitch-preview-card");
     if (!preview) return;
-    if (mobile) panel.insertBefore(preview, list);
+    if (mobile) panel.append(preview);
     else if (preview.parentElement !== list) list.prepend(preview);
   });
 }
