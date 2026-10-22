@@ -16969,7 +16969,7 @@ html.theme-light .primary-button.stream-start-action:hover {
   }
 
   .mobile-section-tabs button {
-    min-height: 32px;
+    min-height: 38px;
     font-size: 14px;
     line-height: 1;
   }
@@ -19893,7 +19893,9 @@ body:not(.can-edit):not(.shelf-page)
     bottom: 4px;
   }
   #gameAddTargetPicker .shelf-gamelist-target-options button {
+    height: 56px;
     min-height: 32px;
+    max-height: 56px;
     padding: 0 7px;
     font-size: 15px;
     white-space: normal;
