@@ -9487,7 +9487,6 @@ body.theme-kash .finished-stats-kpi.is-completed:focus-visible strong {
   display: grid;
   grid-template-rows: auto auto;
   flex: 0 0 min(860px, calc(100vw - clamp(54px, 9vw, 112px)));
-  min-height: 548px;
   align-content: center;
   padding: 14px;
   gap: 20px;
@@ -9535,8 +9534,23 @@ body.theme-kash .finished-stats-kpi.is-completed:focus-visible strong {
 
 @media (min-width: 801px) {
   .twitch-preview-card.is-collapsed {
-    height: 420px;
-    min-height: 420px;
+    height: auto;
+    min-height: 0;
+    align-self: stretch;
+  }
+
+  .playing-section .twitch-preview-card {
+    height: auto;
+    min-height: 0;
+    align-self: stretch;
+  }
+
+  .playing-section .twitch-preview-card:not(.is-collapsed) {
+    flex: 0 0
+      var(
+        --twitch-preview-open-width,
+        min(860px, calc(100vw - clamp(54px, 9vw, 112px)))
+      );
   }
 }
 
@@ -9745,7 +9759,7 @@ body.theme-kash .finished-stats-kpi.is-completed:focus-visible strong {
 .twitch-preview-card.is-collapsed .twitch-preview-collapsed-logo span {
   display: block;
   width: 300px;
-  max-width: 300px;
+  min-width: 300px;
   color: #d7b8ff;
   font-size: 20px;
   font-weight: 900;
@@ -9758,12 +9772,6 @@ body.theme-kash .finished-stats-kpi.is-completed:focus-visible strong {
   white-space: nowrap;
   margin-top: 120px;
   text-align: right;
-}
-
-@media (min-width: 801px) {
-  .twitch-preview-card.is-collapsed .twitch-preview-collapsed-logo span {
-    margin-top: 80px;
-  }
 }
 
 .twitch-preview-card.is-collapsed .twitch-preview-player {
@@ -24858,6 +24866,15 @@ textarea {
 }
 
 @media (min-width: 700px) and (max-width: 800px) {
+  #searchButton {
+    display: none !important;
+  }
+
+  #mobileDockSearch {
+    display: grid !important;
+    order: 0;
+  }
+
   .mobile-section-tabs,
   .shelf-tabs {
     top: 20px;
