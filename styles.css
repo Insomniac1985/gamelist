@@ -16520,10 +16520,21 @@ html.theme-light .primary-button.stream-start-action:hover {
     z-index: -1;
     inset: -88px -14px -18px;
     pointer-events: none;
-    background: var(--custom-backdrop-image) center / cover repeat, var(--bg);
+    background:
+      radial-gradient(circle at 78% 9%, var(--glow-primary), transparent 30%),
+      radial-gradient(circle at 11% 84%, var(--glow-secondary), transparent 34%),
+      linear-gradient(120deg, rgba(255, 255, 255, 0.04), transparent 38%),
+      var(--custom-backdrop-image) top left / cover repeat,
+      var(--bg);
+    background-position:
+      calc(78% + var(--backdrop-x)) calc(9% + var(--backdrop-y)),
+      calc(11% - var(--backdrop-x)) calc(84% - var(--backdrop-y)),
+      calc(50% + var(--grid-x)) calc(50% + var(--grid-y)),
+      calc(var(--backdrop-x) * 0.45) calc(var(--backdrop-y) * 0.45),
+      center;
     background-attachment: fixed;
-    -webkit-mask-image: linear-gradient(180deg, transparent 0%, #000 62%, #000 100%);
-    mask-image: linear-gradient(180deg, transparent 0%, #000 62%, #000 100%);
+    -webkit-mask-image: linear-gradient(0deg, #000 0%, #000 38%, transparent 100%);
+    mask-image: linear-gradient(0deg, #000 0%, #000 38%, transparent 100%);
   }
 
   body.page-pull-hover .topbar,
@@ -19563,16 +19574,18 @@ body:not(.can-edit):not(.shelf-page) :is(#upcoming, #wanted) .price-refresh-acti
   .playing-section .game-card.playing-card .card-actions > .backlog-action {
     grid-column: 3;
     grid-row: 1;
-    display: inline-flex;
-    width: max-content;
-    min-width: max-content;
-    max-width: 100%;
+    display: grid;
+    place-items: center;
+    box-sizing: border-box;
+    width: 42px;
+    min-width: 42px;
+    max-width: 42px;
     height: 42px;
     min-height: 42px;
     max-height: 42px;
-    flex-direction: row;
-    gap: 6px;
-    padding: 6px 10px;
+    aspect-ratio: 1;
+    padding: 0;
+    gap: 0;
   }
   .playing-section .game-card.playing-card .card-actions > .backlog-action .back-icon {
     display: block !important;
@@ -19580,7 +19593,7 @@ body:not(.can-edit):not(.shelf-page) :is(#upcoming, #wanted) .price-refresh-acti
     height: 16px;
   }
   .playing-section .game-card.playing-card .card-actions > .backlog-action .action-label {
-    display: inline !important;
+    display: none !important;
   }
 }
 
