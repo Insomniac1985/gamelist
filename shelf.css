@@ -1979,6 +1979,11 @@ body.mobile-app-mode .shelf-tabs button.active:hover {
   display: none;
 }
 
+/* An unused search-results row must not add a second gap above the selector. */
+#addGameForm > .lookup-results:empty {
+  display: none !important;
+}
+
 .lookup-row .lookup-digital-check {
   align-items: center;
   justify-content: flex-start;

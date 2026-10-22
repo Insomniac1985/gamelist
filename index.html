@@ -358,6 +358,8 @@
           <span data-i18n="Category">Category</span>
           <select id="tagFilter"></select>
         </label>
+        <label class="collection-filter-field" hidden><span data-i18n="Region">Region</span><select id="collectionRegionFilter"><option value="all" data-i18n="All regions">All regions</option></select></label>
+        <label class="collection-filter-field" hidden><span data-i18n="Condition">Condition</span><select id="collectionConditionFilter"><option value="all" data-i18n="All conditions">All conditions</option><option value="complete" data-i18n="Complete">Complete</option><option value="complete-plus" data-i18n="Complete +">Complete +</option><option value="loose" data-i18n="Loose">Loose</option><option value="sealed" data-i18n="Sealed">Sealed</option></select></label>
         <label class="order-label">
           <span data-i18n="Order">Order</span>
           <div class="order-control">
@@ -369,12 +371,16 @@
               <option value="platform" data-i18n="Platform">Platform</option>
               <option value="playtime" data-i18n="Playtime">Playtime</option>
               <option value="rating" data-i18n="Rating">Rating</option>
+              <option value="region" data-i18n="Region">Region</option>
+              <option value="value" data-i18n="Value">Value</option>
             </select>
             <button class="direction-toggle" id="sortDirectionButton" type="button" title="Sort ascending" aria-label="Sort ascending"><svg class="sort-arrow-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 19V5m-7 7 7-7 7 7"></path></svg></button>
           </div>
         </label>
-        <button class="icon-button view-toggle" id="viewToggleButton" type="button" title="Show as list" aria-label="Show as list"></button>
-        <div id="collectionMediaToggle" class="unified-media-toggle" role="group" aria-label="Collection format"></div>
+        <div class="library-view-controls">
+          <button class="icon-button view-toggle" id="viewToggleButton" type="button" title="Show as list" aria-label="Show as list"></button>
+          <div id="collectionMediaToggle" class="unified-media-toggle" role="group" aria-label="Collection format"></div>
+        </div>
       </section>
 
       <section id="collectionToolbar" hidden></section>
@@ -387,6 +393,10 @@
       </nav>
 
       <section class="board" aria-live="polite">
+        <div class="column-head unified-new-head" id="unifiedNewHead" hidden>
+          <h2 data-i18n="New additions">New additions</h2>
+          <span id="unifiedNewCount"></span>
+        </div>
         <section id="collectionLibrary" hidden></section>
         <article class="column" id="new" hidden>
           <div class="column-head">
@@ -958,6 +968,10 @@
             </label>
             <button class="icon-button" id="finishedStatsCloseButton" type="button" title="Close">×</button>
           </div>
+        </div>
+        <div class="stats-source-slider" id="statsSourceSlider" role="group" aria-label="Statistics source">
+          <button type="button" data-stats-source-tab="gamelist" class="active" aria-pressed="true" data-i18n="Gamelist">Gamelist</button>
+          <button type="button" data-stats-source-tab="collection" aria-pressed="false" data-i18n="Collection">Collection</button>
         </div>
         <div class="finished-stats-body" id="finishedStatsBody"></div>
       </article>
