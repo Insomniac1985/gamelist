@@ -13654,13 +13654,13 @@ function gamelistAddedBadge(game) {
 
 function collectionSettingsMarkup() {
   const lists = [["backlog", "Backlog"], ["shelf", "Shelf"], ["upcoming", "Radar"], ["wanted", "Wishlist"]];
-  const toggle = (attribute, label, checked) => `
+  const toggle = (attribute, title, checked) => `
     <article class="settings-layout-card settings-sync-card settings-collection-setting">
       <div class="settings-theme-select">
-        <span>${escapeHtml(tt("Collection"))}</span>
+        <span>${escapeHtml(tt(title))}</span>
         <div class="settings-check-field"><label class="check-filter toggle-check settings-visible-check">
           <input ${attribute} type="checkbox" ${checked ? "checked" : ""}>
-          <span>${escapeHtml(tt(label))}</span>
+          <span>${escapeHtml(tt("Enable"))}</span>
         </label></div>
       </div>
     </article>`;
@@ -13670,8 +13670,8 @@ function collectionSettingsMarkup() {
         <select data-default-list>${lists.map(([value, label]) => `<option value="${value}" ${state.settings.defaultList === value ? "selected" : ""}>${escapeHtml(tt(label))}</option>`).join("")}</select>
       </label>
     </article>
-    ${toggle("data-track-digital", "Shelf Digital: Enable", state.settings.shelfDigitalGames)}
-    ${toggle("data-collection-prices", "Shelf Prices: Enable", !state.settings.shelfHidePrices)}
+    ${toggle("data-track-digital", "Shelf Digital", state.settings.shelfDigitalGames)}
+    ${toggle("data-collection-prices", "Shelf Prices", !state.settings.shelfHidePrices)}
   `;
 }
 
