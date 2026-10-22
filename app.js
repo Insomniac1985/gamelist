@@ -2783,10 +2783,10 @@ function settingsHideNonStreamPlayingItem() {
 
 function settingsCsvDataItem() {
   const rows = [
-    ["gamelist", "Gamelist games"],
-    ["shelf", "Shelf games (physical and digital)"],
-    ["goty", "GOTY"],
+    ["gamelist", "Gamelist games (Backlog, Radar, Wishlist)"],
+    ["shelf", "Shelf Games"],
     ["finished", "Finished games"],
+    ["goty", "GOTY"],
   ];
   return `
     <article class="settings-layout-card settings-data-card">
