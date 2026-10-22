@@ -987,7 +987,7 @@ function bindEvents() {
     }
     scrollToGameList();
   });
-  el.loginButton.addEventListener("click", toggleEditMode);
+  el.loginButton.addEventListener("click", () => state.canEdit ? toggleEditMode() : quickAddGame());
   document.querySelector("#settingsLogoutButton")?.addEventListener("click", () => {
     el.settingsDialog.close();
     toggleEditMode();
@@ -1852,8 +1852,8 @@ function render() {
   const shabiiMainOwner = isShabiiMainOwner();
   document.body.classList.toggle("shabii-main-owner", shabiiMainOwner);
   document.body.classList.toggle("list-view-mode", state.viewMode === "list");
-  el.loginButton.innerHTML = state.canEdit ? `<span class="button-icon" aria-hidden="true">${exitIcon()}</span>` : pencilIcon();
-  el.loginButton.title = state.canEdit ? tt("Stop Editing") : tt("Edit");
+  el.loginButton.innerHTML = state.canEdit ? `<span class="button-icon" aria-hidden="true">${exitIcon()}</span>` : plusIcon();
+  el.loginButton.title = state.canEdit ? tt("Stop Editing") : tt("Add Game");
   el.loginButton.setAttribute("aria-label", el.loginButton.title);
   el.loginButton.hidden = state.canEdit;
   if (el.mobileDockEdit) {
