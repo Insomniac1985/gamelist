@@ -3457,8 +3457,9 @@ textarea {
 
 @media (max-width: 760px) {
   .shelf-dialog .detail-cover#detailCoverWrap {
-    width: min(100%, var(--shelf-cover-width, 360px));
+    width: 100%;
     height: var(--shelf-cover-height, 520px);
+    max-width: 100%;
     margin: 38px 0 0;
   }
 

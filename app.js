@@ -9763,8 +9763,6 @@ function initMobileBrandOverlay() {
   if (!header || !dock) return;
   const mobile = window.matchMedia("(max-width: 760px)");
   let lastScroll = Math.max(0, window.scrollY);
-  let direction = 0;
-  let distance = 0;
   let scheduled = false;
   const setHidden = hidden => {
     header.classList.toggle("is-scroll-hidden", hidden);
@@ -9779,16 +9777,11 @@ function initMobileBrandOverlay() {
     const delta = current - lastScroll;
     lastScroll = current;
     if (!mobile.matches || current <= 2) {
-      distance = 0;
-      direction = 0;
       setHidden(false);
       return;
     }
     if (document.body.classList.contains("dialog-open") || Math.abs(delta) < 1) return;
-    const nextDirection = Math.sign(delta);
-    distance = nextDirection === direction ? distance + Math.abs(delta) : Math.abs(delta);
-    direction = nextDirection;
-    if (distance >= 8 && direction > 0 && !header.contains(document.activeElement)) setHidden(true);
+    if (current >= 160 && !header.contains(document.activeElement)) setHidden(true);
   };
   window.addEventListener("scroll", () => {
     if (scheduled) return;

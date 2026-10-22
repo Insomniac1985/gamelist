@@ -5185,6 +5185,14 @@ body[data-mobile-section="upcoming"] .column:not(#upcoming) {
   background: rgba(255, 255, 255, 0.07);
 }
 
+/* Match Shelf's flat hover treatment for Gamelist list rows. */
+.card-list.list-view .game-row:is(:hover, :focus-within) {
+  border-color: var(--line) !important;
+  background: rgba(255, 255, 255, 0.05) !important;
+  box-shadow: none !important;
+  transform: none !important;
+}
+
 .game-row.owner-card-judy {
   background:
     linear-gradient(
@@ -17861,6 +17869,9 @@ html.theme-light .primary-button.stream-start-action:hover {
   }
 
   .detail-cover {
+    width: 100%;
+    max-width: none;
+    justify-self: stretch;
     margin-top: 38px;
     min-height: 0;
   }
@@ -19552,6 +19563,26 @@ body:not(.can-edit):not(.shelf-page) :is(#upcoming, #wanted) .price-refresh-acti
 
 /* Compact mobile list actions leave the text column room to breathe. */
 @media (max-width: 760px) {
+  .card-list .game-card:not(.playing-card) .title-line > .edit-action,
+  .card-list .game-card:not(.playing-card) .card-actions > .delete-action,
+  .shelf-grid .game-card .title-line > .edit-action,
+  .shelf-grid .game-card .card-actions > .shelf-card-delete-action {
+    box-sizing: border-box;
+    width: 42px;
+    min-width: 42px;
+    max-width: 42px;
+    height: 42px;
+    min-height: 42px;
+    max-height: 42px;
+    aspect-ratio: 1;
+    flex: 0 0 42px;
+    padding: 0;
+  }
+  .card-list .game-card:not(.playing-card) .card-actions,
+  .shelf-grid .game-card .card-actions {
+    gap: 8px;
+  }
+
   .card-list.list-view .game-row,
   .shelf-grid.list-view .game-row,
   .card-list.list-view .game-row.new-addition-row {
@@ -19642,14 +19673,21 @@ body:not(.can-edit):not(.shelf-page) :is(#upcoming, #wanted) .price-refresh-acti
 /* Keep action names visible on mobile cards in Backlog, Radar, and Wishlist. */
 @media (max-width: 760px) {
   .card-list .game-card:not(.playing-card) .card-actions > button {
-    min-height: 48px;
-    height: auto;
+    min-height: 42px;
+    height: 42px;
+    max-height: 42px;
     flex-direction: column;
     gap: 3px;
     padding: 4px 3px;
     font-size: 10px;
     line-height: 1.05;
     white-space: normal;
+  }
+  .shelf-grid .game-card .card-actions > button:not(.icon-only-button) {
+    min-height: 42px;
+    height: 42px;
+    max-height: 42px;
+    box-sizing: border-box;
   }
   .card-list .game-card .card-actions .action-label,
   .card-list .game-card .card-actions .backlog-action .action-label {
@@ -19659,6 +19697,12 @@ body:not(.can-edit):not(.shelf-page) :is(#upcoming, #wanted) .price-refresh-acti
   }
   .card-list .game-card .card-actions .stream-start-action > span {
     display: inline !important;
+  }
+  .card-list .game-card .card-actions > .stream-start-action {
+    width: max-content;
+    max-width: 100%;
+    flex: 0 0 auto;
+    padding-inline: 8px;
   }
 }
 
