@@ -82,6 +82,12 @@ export default {
 
   async fetch(request, env, ctx) {
     const url = new URL(request.url);
+    if (["/shelf", "/shelf/", "/shelf.html"].includes(url.pathname)) {
+      url.pathname = "/";
+      url.searchParams.delete("editor");
+      url.searchParams.set("list", "shelf");
+      return Response.redirect(url.toString(), 301);
+    }
     const module = routes[url.pathname];
     if (module) {
       const method = request.method.toLowerCase();

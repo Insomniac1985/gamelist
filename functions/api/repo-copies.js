@@ -5,7 +5,7 @@ const ORIGINAL_FULL_NAME = "ShabiiEXE/Gamelist";
 const CACHE_MS = 15 * 60 * 1000;
 const GITHUB_API = "https://api.github.com";
 const GITLAB_API = "https://gitlab.com/api/v4";
-const REQUIRED_FILES = new Set(["app.js", "shelf.js", "worker.js", "wrangler.toml", "README.md"]);
+const REQUIRED_FILES = new Set(["app.js", "collection-ui.js", "worker.js", "wrangler.toml", "README.md"]);
 const README_MARKERS = [
   "github.com/ShabiiEXE/Gamelist",
   "https://github.com/ShabiiEXE/Gamelist",

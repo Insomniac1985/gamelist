@@ -150,7 +150,7 @@ function runnerHtml({ apply = false, force = false, autorun = false, settings = 
       <label><input id="applyMode" type="checkbox" ${apply ? "checked" : ""}>Save covers</label>
       <label><input id="forceMode" type="checkbox" ${force ? "checked" : ""}>Refresh existing covers</label>
       <button class="primary" id="start">Start</button>
-      <a href="/shelf">Back to Shelf</a>
+      <a href="/?list=shelf">Back to Shelf</a>
     </div>
     <div class="bar"><span id="bar"></span></div>
     <div class="lists">
@@ -251,7 +251,7 @@ function authHtml(settings = {}) {
   <main>
     <h1>Unauthorized</h1>
     <p>Log into edit mode first, then open this link again.</p>
-    <div class="actions"><a href="/shelf">Go to Shelf</a></div>
+    <div class="actions"><a href="/?list=shelf">Go to Shelf</a></div>
   </main>
 </body>
 </html>`;
@@ -270,7 +270,7 @@ function errorHtml(message, settings = {}) {
   <main>
     <h1>Mass Cover Add</h1>
     <p>${escapeHtml(message)}</p>
-    <div class="actions"><a href="/shelf">Back to Shelf</a></div>
+    <div class="actions"><a href="/?list=shelf">Back to Shelf</a></div>
   </main>
 </body>
 </html>`;

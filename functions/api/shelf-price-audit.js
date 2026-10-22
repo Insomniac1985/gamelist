@@ -110,7 +110,7 @@ function auditHtml({ dollars, zeros, settings }) {
   <main>
     <h1>Shelf Price Audit</h1>
     <p>Games listed here either display in USD, have no saved currency so they can appear as dollars, or have their displayed collection value at 0.00.</p>
-    <div class="actions"><a href="/shelf">Back to Shelf</a><a href="/api/shelf-price-audit?format=json">JSON</a><button id="copy" type="button">Copy Console List</button></div>
+    <div class="actions"><a href="/?list=shelf">Back to Shelf</a><a href="/api/shelf-price-audit?format=json">JSON</a><button id="copy" type="button">Copy Console List</button></div>
     <div class="lists">
       ${auditSection("Dollars / missing currency", dollars)}
       ${auditSection("Displayed as 0.00", zeros)}

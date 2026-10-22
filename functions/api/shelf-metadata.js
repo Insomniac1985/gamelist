@@ -320,7 +320,7 @@ function runnerHtml(settings = {}) {
       <label><input id="pricecharting" type="checkbox" checked> PriceCharting</label>
       <label><input id="pending" type="checkbox"> Include pending</label>
       <button class="primary" id="start" type="button">Fill missing metadata</button>
-      <a href="/shelf">Back to Shelf</a>
+      <a href="/?list=shelf">Back to Shelf</a>
     </div>
     <div class="bar"><span id="bar"></span></div>
     <pre id="log"></pre>

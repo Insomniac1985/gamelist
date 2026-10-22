@@ -285,56 +285,11 @@ let shelfSettingsLogoutRequested = false;
 
 init();
 
+// Collection browsing is hosted by Gamelist; only the shared editor has a document entry.
 async function init() {
   if (unifiedShelfScope) return initUnifiedShelf();
   if (embeddedGameEditor) return initEmbeddedAddGame();
-  if (await checkSiteVersion()) return;
-  await window.__initialThemeReady?.catch(() => "shabii");
-  applyTheme();
-  document.documentElement.classList.remove("theme-booting");
-  registerServiceWorker();
-  syncDisplayMode();
-  bindTextureParallax();
-  populateEditorOptions();
-  bindEvents();
-  initRenderSettling();
-  hydrateModuleCache();
-  const [shelfData, auth] = await Promise.all([
-    fetch("/api/shelf", { cache: "no-store" }).then((response) => response.ok ? response.json() : null).catch(() => null),
-    fetchEditorAuth(),
-  ]);
-  const gamelistData = await fetch(auth ? "/api/sync" : "/api/sync?shelfProjections=1", { cache: "no-store" }).then((response) => response.ok ? response.json() : null).catch(() => null);
-  const draft = loadDraft();
-  if (shelfData) removeLocalStorageItem(LOCAL_DRAFT_KEY);
-  state.sourceGames = shelfData?.sourceGames || draft.sourceGames || [];
-  state.additions = shelfData?.games || draft.games || [];
-  state.overrides = shelfData?.overrides || draft.overrides || {};
-  state.layout = normalizeLayout(shelfData?.layout || state.layout);
-  state.favoriteGameIds = shelfFavoriteIdsFromSources(shelfData, gamelistData, draft);
-  state.canEdit = auth;
-  if (!state.canEdit) {
-    sessionStorage.removeItem(SESSION_KEY);
-    sessionStorage.removeItem(`${SESSION_KEY}:password`);
-  }
-  state.updatedAt = shelfData?.updatedAt || "";
-  state.gamelistGames = gamelistData?.games || [];
-  const sharedSettings = loadSharedSettings();
-  const remoteSettings = gamelistData?.settings || {};
-  state.gamelistSettings = { ...sharedSettings, ...remoteSettings };
-  if (!Object.prototype.hasOwnProperty.call(remoteSettings, "twitchUser")) {
-    state.gamelistSettings.twitchUser = sharedSettings.twitchUser || "";
-  }
-  localStorage.setItem("gamelist:settings:v1", JSON.stringify(state.gamelistSettings));
-  syncPagePullTransition();
-  applyShelfDefaultOrder(state.gamelistSettings.shelfDefaultOrder ?? state.gamelistSettings.defaultOrder);
-  applyTheme();
-  loadTrophyActivity();
-  rebuildGames();
-  applyShelfSearchFromUrl();
-  renderAll();
-  void refreshShelfPlayingCardPlaytime();
-  window.setInterval(refreshShelfPlayingCardPlaytime, 5 * 60 * 1000);
-  maybeShowUpdatesPopup();
+  window.location.replace("/?list=shelf");
 }
 
 function initEmbeddedAddGame() {

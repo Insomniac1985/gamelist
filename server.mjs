@@ -50,6 +50,14 @@ const types = {
 
 const server = http.createServer(async (req, res) => {
   const url = new URL(req.url, `http://${req.headers.host || "localhost"}`);
+  if (["/shelf", "/shelf/", "/shelf.html"].includes(url.pathname)) {
+    url.pathname = "/";
+    url.searchParams.delete("editor");
+    url.searchParams.set("list", "shelf");
+    res.writeHead(301, { Location: `${url.pathname}${url.search}` });
+    res.end();
+    return;
+  }
   if (url.pathname === "/api/search") return sendFunction(res, search, req, url);
   if (url.pathname === "/api/prices") return sendFunction(res, prices, req, url);
   if (url.pathname === "/api/cover") return sendFunction(res, cover, req, url);
@@ -110,7 +118,7 @@ function sendJson(res, data, status = 200) {
 
 async function sendFile(res, pathname) {
   const decoded = decodeURIComponent(pathname);
-  const safePath = pathname === "/" || decoded === "/goty-export" || decoded === "/goty-export/" ? "/index.html" : decoded === "/shelf" ? "/shelf.html" : decoded;
+  const safePath = pathname === "/" || decoded === "/goty-export" || decoded === "/goty-export/" ? "/index.html" : decoded;
   const filePath = path.normalize(path.join(root, safePath));
   if (!filePath.startsWith(root) || !existsSync(filePath)) {
     res.writeHead(404, { "Content-Type": "text/plain" });

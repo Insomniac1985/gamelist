@@ -1,4 +1,4 @@
-/** Host the native Shelf add editor so both pages run the same form and save code. */
+/** Host the shared game editor used by the unified Gamelist and collection. */
 export const embeddedGameEditor = window.parent !== window && new URLSearchParams(location.search).get("editor") === "1";
 
 let editorHost;
@@ -38,7 +38,7 @@ export function warmSharedAddGame() {
     if (!editor.ready) return finish({ saved: false });
     frame.contentWindow?.postMessage({ type: "game-editor:request-close" }, location.origin);
   });
-  frame.src = "shelf.html?editor=1";
+  frame.src = "collection-ui.html?editor=1";
   host.append(frame);
   document.body.append(host);
   return editor;
