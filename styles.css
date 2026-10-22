@@ -5991,6 +5991,16 @@ body.theme-kash
   scroll-snap-stop: always;
 }
 
+/* Let tablet playing cards shrink their poster column with the viewport.
+   The desktop 300px minimum made portrait covers taller than the content
+   column at 700–1100px, so cards with more metadata grew much taller. */
+@media (min-width: 700px) and (max-width: 1100px) {
+  .playing-section .game-card {
+    grid-template-columns: clamp(210px, 26vw, 286px) minmax(0, 1fr);
+    min-height: clamp(420px, 48vw, 500px);
+  }
+}
+
 .playing-section.playing-single .game-card {
   flex-basis: 100%;
   width: 100%;
