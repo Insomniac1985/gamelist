@@ -14159,6 +14159,11 @@ html.theme-light .shelf-card-delete-action:hover {
   margin-top: 12px;
 }
 
+.release-dialog-list .game-card .card-actions {
+  margin-top: 0;
+  padding-top: 0;
+}
+
 .year-tabs {
   display: flex;
   flex-wrap: wrap;
@@ -16542,15 +16547,21 @@ html.theme-light .primary-button.stream-start-action:hover {
     isolation: isolate;
     transition:
       transform 180ms ease,
-      padding-top 180ms ease;
+      padding-top 180ms ease,
+      opacity 140ms ease;
+  }
+
+  body > .topbar.is-scroll-hidden {
+    opacity: 0;
+    pointer-events: none;
   }
 
   body > .topbar::before {
     content: "";
     position: absolute;
     z-index: -1;
-    scale: 1.7;
-    inset: -88px -14px -18px;
+    scale: 1.35;
+    inset: -48px -14px -10px;
     pointer-events: none;
     background:
       radial-gradient(circle at 78% 9%, var(--glow-primary), transparent 30%),
@@ -19885,30 +19896,31 @@ body:not(.can-edit):not(.shelf-page)
   }
 }
 
-/* Single-column price cards show prices above a full-width action row. */
+/* Keep prices beside card actions when the card has enough horizontal space. */
 @media (max-width: 760px) {
   .card-list:not(.list-view) .game-card.has-price-footer .card-footer {
     display: flex;
-    flex-direction: column;
-    align-items: stretch;
-    gap: 10px;
+    flex-direction: row;
+    align-items: center;
+    gap: 8px;
   }
   .card-list:not(.list-view) .game-card.has-price-footer .prices {
     order: 1;
-    flex: none;
-    align-self: stretch;
-    width: 100%;
+    flex: 1 1 0;
+    align-self: center;
+    width: auto;
+    min-width: 0;
     grid-template-columns: repeat(
       var(--price-columns, 4),
       minmax(0, 1fr)
     ) !important;
   }
   .card-list:not(.list-view) .game-card.has-price-footer .card-actions {
-    order: 2;
+    order: 0;
     display: flex;
     flex-flow: row nowrap;
-    align-self: stretch;
-    width: 100%;
+    align-self: center;
+    width: auto;
     min-width: 0;
     margin: 0;
     gap: 8px;
@@ -19951,7 +19963,7 @@ body:not(.can-edit):not(.shelf-page)
   container-name: price-card;
   container-type: inline-size;
 }
-@container price-card (max-width: 560px) {
+@container price-card (max-width: 440px) {
   .card-list:not(.list-view) .game-card.has-price-footer .card-footer {
     display: flex;
     flex-direction: column;
@@ -20028,7 +20040,7 @@ body:not(.can-edit):not(.shelf-page)
 }
 
 @media (max-width: 760px) {
-  #releaseDialog .release-dialog-list .game-card .card-footer {
+  :is(#releaseDialog, #shelfReleaseDialog) .release-dialog-list .game-card .card-footer {
     grid-column: 1 / -1;
     display: flex;
     align-items: center;
@@ -20036,17 +20048,19 @@ body:not(.can-edit):not(.shelf-page)
     width: 100%;
     min-width: 0;
   }
-  #releaseDialog .release-dialog-list .game-card .card-actions {
+  :is(#releaseDialog, #shelfReleaseDialog) .release-dialog-list .game-card .card-actions {
+    order: 0;
     flex: 0 0 auto;
     width: auto;
     max-width: none;
     margin: 0;
+    padding-top: 0;
   }
-  #releaseDialog
+  :is(#releaseDialog, #shelfReleaseDialog)
     .release-dialog-list
     .game-card
     .card-actions
-    > .backlog-action {
+    > :is(.backlog-action, .delete-action) {
     box-sizing: border-box;
     display: grid;
     place-items: center;
@@ -20057,10 +20071,11 @@ body:not(.can-edit):not(.shelf-page)
     min-height: 42px;
     max-height: 42px;
     flex: 0 0 42px;
+    aspect-ratio: 1;
     padding: 0;
     gap: 0;
   }
-  #releaseDialog
+  :is(#releaseDialog, #shelfReleaseDialog)
     .release-dialog-list
     .game-card
     .card-actions
@@ -20068,41 +20083,51 @@ body:not(.can-edit):not(.shelf-page)
     .action-label {
     display: none !important;
   }
-  #releaseDialog
+  :is(#releaseDialog, #shelfReleaseDialog)
     .release-dialog-list
     .game-card
     .card-actions
     > :is(.complete-action, .stream-start-action) {
-    display: inline-flex;
-    flex-direction: row;
-    align-items: center;
+    box-sizing: border-box;
+    display: grid;
+    place-items: center;
     justify-content: center;
-    width: max-content;
-    min-width: 0;
-    max-width: 100%;
+    width: 42px;
+    min-width: 42px;
+    max-width: 42px;
     height: 42px;
     min-height: 42px;
     max-height: 42px;
-    flex: 0 1 auto;
-    gap: 6px;
-    padding: 0 10px;
+    flex: 0 0 42px;
+    aspect-ratio: 1;
+    gap: 0;
+    padding: 0;
     white-space: nowrap;
   }
-  #releaseDialog
+  :is(#releaseDialog, #shelfReleaseDialog)
     .release-dialog-list
     .game-card
     .card-actions
     > .complete-action
     .action-label,
-  #releaseDialog
+  :is(#releaseDialog, #shelfReleaseDialog)
     .release-dialog-list
     .game-card
     .card-actions
     > .stream-start-action
     > span {
-    display: inline !important;
+    display: none !important;
   }
-  #releaseDialog
+  :is(#releaseDialog, #shelfReleaseDialog)
+    .release-dialog-list
+    .game-card
+    .card-actions
+    > .complete-action {
+    color: #fff;
+    background: var(--accent);
+    border-color: var(--accent);
+  }
+  :is(#releaseDialog, #shelfReleaseDialog)
     .release-dialog-list
     .game-card
     .card-actions
@@ -20111,7 +20136,8 @@ body:not(.can-edit):not(.shelf-page)
     background: #592990;
     border-color: #7944b5;
   }
-  #releaseDialog .release-dialog-list .game-card .prices {
+  :is(#releaseDialog, #shelfReleaseDialog) .release-dialog-list .game-card .prices {
+    order: 1;
     grid-column: auto;
     flex: 1 1 0;
     width: auto;

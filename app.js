@@ -9781,7 +9781,7 @@ function initMobileBrandOverlay() {
       return;
     }
     if (document.body.classList.contains("dialog-open") || Math.abs(delta) < 1) return;
-    if (current >= 160 && !header.contains(document.activeElement)) setHidden(true);
+    if (current >= 120 && !header.contains(document.activeElement)) setHidden(true);
   };
   window.addEventListener("scroll", () => {
     if (scheduled) return;
