@@ -6034,7 +6034,7 @@ body.theme-kash
 
 .playing-section .game-main {
   align-self: stretch;
-  justify-content: flex-start;
+  justify-content: flex-end;
   padding: 8px 8px 0;
 }
 
