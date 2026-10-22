@@ -8323,8 +8323,8 @@ body:not(.can-edit) .top-actions-separator {
 
   #floatingStatsButton > :is(.graph-icon, .trophy-icon),
   #completedStatsButton > :is(.graph-icon, .trophy-icon) {
-    position: absolute;
-    inset: 0;
+    position: static;
+    inset: auto;
     margin: 0;
     transform: none !important;
     translate: none !important;
