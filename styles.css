@@ -9571,8 +9571,8 @@ body.theme-kash .finished-stats-kpi.is-completed:focus-visible strong {
   position: absolute;
   top: auto;
   right: auto;
-  left: 33px;
-  bottom: 0;
+  left: 34px;
+  bottom: 50px;
   width: max-content;
   height: auto;
   max-width: none;
@@ -9580,7 +9580,7 @@ body.theme-kash .finished-stats-kpi.is-completed:focus-visible strong {
   font-size: 10px;
   transform: rotate(-90deg);
   transform-origin: left center;
-  padding: 5px 13px 8px 13px;
+  padding: 8px 13px 8px 13px;
 }
 
 .twitch-preview-status.is-live {
@@ -12126,7 +12126,8 @@ html.theme-light .settings-category-card {
 }
 
 .settings-window-panel[data-settings-window="design"] > .settings-detail-title,
-.settings-window-panel[data-settings-window="design"] > .settings-section:not(:first-child) {
+.settings-window-panel[data-settings-window="design"]
+  > .settings-section:not(:first-child) {
   padding-top: 16px;
   border-top: 1px solid var(--line);
 }
@@ -17472,12 +17473,18 @@ html.theme-light .primary-button.stream-start-action:hover {
     overflow: visible;
   }
 
-  .playing-section .playing-panel > .twitch-preview-card .twitch-preview-player {
+  .playing-section
+    .playing-panel
+    > .twitch-preview-card
+    .twitch-preview-player {
     grid-column: 1 / -1;
     grid-row: 1;
   }
 
-  .playing-section .playing-panel > .twitch-preview-card .twitch-preview-status {
+  .playing-section
+    .playing-panel
+    > .twitch-preview-card
+    .twitch-preview-status {
     top: 18px;
     right: 20px;
   }
@@ -17489,7 +17496,10 @@ html.theme-light .primary-button.stream-start-action:hover {
     margin-left: 0;
   }
 
-  .playing-section .playing-panel > .twitch-preview-card .twitch-preview-toggle {
+  .playing-section
+    .playing-panel
+    > .twitch-preview-card
+    .twitch-preview-toggle {
     position: static;
     grid-column: 2;
     grid-row: 2;
@@ -18812,11 +18822,11 @@ html.theme-light .primary-button.stream-start-action:hover {
       background: transparent;
       box-shadow: none;
     }
-    body:not(.can-edit) .mobile-action-dock:has(
-        .mobile-dock-action:not(#mobileDockEdit):hover
-      )
+    body:not(.can-edit)
+      .mobile-action-dock:has(.mobile-dock-action:not(#mobileDockEdit):hover)
       #mobileDockEdit:not(:hover),
-    body:not(.can-edit) .mobile-action-dock:has(
+    body:not(.can-edit)
+      .mobile-action-dock:has(
         .mobile-dock-action:not(#mobileDockEdit):focus-visible
       )
       #mobileDockEdit:not(:hover):not(:focus-visible) {
@@ -19330,17 +19340,14 @@ body.auth-checking #mobileDockSettings[aria-busy="true"] {
     box-shadow: none;
   }
 
-  body:not(.can-edit) .mobile-action-dock:has(
-      .mobile-dock-action:not(#mobileDockEdit):active
-    )
+  body:not(.can-edit)
+    .mobile-action-dock:has(.mobile-dock-action:not(#mobileDockEdit):active)
     #mobileDockEdit:not(:active),
-  body:not(.can-edit) .mobile-action-dock:has(
-      .mobile-dock-action:not(#mobileDockEdit):focus
-    )
+  body:not(.can-edit)
+    .mobile-action-dock:has(.mobile-dock-action:not(#mobileDockEdit):focus)
     #mobileDockEdit:not(:focus),
-  body:not(.can-edit) .mobile-action-dock:has(
-      .mobile-dock-action:not(#mobileDockEdit).is-active
-    )
+  body:not(.can-edit)
+    .mobile-action-dock:has(.mobile-dock-action:not(#mobileDockEdit).is-active)
     #mobileDockEdit:not(.is-active) {
     background: transparent;
     box-shadow: none;
@@ -23644,10 +23651,9 @@ textarea {
 
 @media (min-width: 700px) and (max-width: 1300px) {
   .shelf-toolbar {
-    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(
-        0,
-        1.5fr
-      ) minmax(0, 0.75fr) minmax(0, 0.75fr) var(--toolbar-control-height);
+    grid-template-columns:
+      minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1.5fr)
+      minmax(0, 0.75fr) minmax(0, 0.75fr) var(--toolbar-control-height);
   }
   .shelf-toolbar .search {
     grid-column: span 2;
