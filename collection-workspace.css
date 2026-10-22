@@ -109,3 +109,8 @@ body[data-mobile-section="new"] #collectionLibrary:not([hidden]) + #new:not([hid
   box-sizing: border-box;
   min-height: var(--library-heading-min-height);
 }
+
+@media (max-width: 760px) {
+  .mobile-section-tabs { margin-bottom: 6px; }
+  .board { margin-top: 0; }
+}
