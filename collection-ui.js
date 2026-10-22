@@ -3402,7 +3402,7 @@ async function importShelfPhysicalCsv() {
     state.additions = [...digitalGames];
     state.overrides = {};
     rows.forEach((row, index) => {
-      const game = normalizeShelfCsvGame(stripRuntimeFields({ ...row, id: row.id || csvImportedId("shelf", index), updatedAt: row.updatedAt || now }));
+      const game = normalizeShelfCsvGame(stripRuntimeFields({ ...row, id: row.id || csvImportedId("shelf", index), pendingCollection: false, updatedAt: row.updatedAt || now }));
       if (row.sourceRecord === true) state.sourceGames.push(game);
       else state.additions.push(game);
     });
@@ -3432,7 +3432,7 @@ async function importShelfDigitalCsv() {
     const physicalGames = state.games.filter((game) => !isDigitalShelfGame(game)).map((game) => stripRuntimeFields(game));
     state.sourceGames = [];
     state.overrides = {};
-    state.additions = [...physicalGames, ...rows.map((row, index) => normalizeShelfCsvGame(stripRuntimeFields({ ...row, id: row.id || csvImportedId("shelf-digital", index), digital: true, updatedAt: row.updatedAt || now })))];
+    state.additions = [...physicalGames, ...rows.map((row, index) => normalizeShelfCsvGame(stripRuntimeFields({ ...row, id: row.id || csvImportedId("shelf-digital", index), digital: true, pendingCollection: false, updatedAt: row.updatedAt || now })))];
     await persistShelf();
     rebuildGames();
     renderAll();

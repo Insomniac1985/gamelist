@@ -3122,7 +3122,7 @@ async function importShelfPhysicalCsv() {
     next.games = [];
     next.overrides = {};
     rows.forEach((row, index) => {
-      const game = normalizeShelfCsvGame({ ...row, id: row.id || csvImportedId("shelf", index), updatedAt: row.updatedAt || now });
+      const game = normalizeShelfCsvGame({ ...row, id: row.id || csvImportedId("shelf", index), pendingCollection: false, updatedAt: row.updatedAt || now });
       if (row.sourceRecord === true) next.sourceGames.push(game);
       else next.games.push(game);
     });
