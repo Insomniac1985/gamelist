@@ -82,6 +82,32 @@ export function mountActivitySlider(section, ids) {
 
 const TWITCH_PREVIEW_HIDDEN_KEY = "gamelist:twitch-preview-hidden";
 let twitchPreviewPlacementResizeBound = false;
+const twitchPreviewSizingObservers = new WeakMap();
+
+function syncTwitchPreviewSize(list, card) {
+  if (!card.isConnected) return;
+  if (!window.matchMedia("(min-width: 801px)").matches) {
+    card.style.removeProperty("--twitch-preview-open-width");
+    return;
+  }
+  const peerHeight = Math.max(
+    0,
+    ...[...list.querySelectorAll(":scope > .game-card.playing-card")]
+      .map((peer) => peer.getBoundingClientRect().height),
+  );
+  if (!peerHeight) return;
+  const width = Math.min(860, Math.max(400, (peerHeight - 84) * (16 / 9)));
+  card.style.setProperty("--twitch-preview-open-width", `${width}px`);
+}
+
+function observeTwitchPreviewSize(list, card) {
+  if (typeof ResizeObserver !== "function") return;
+  twitchPreviewSizingObservers.get(list)?.disconnect();
+  const observer = new ResizeObserver(() => syncTwitchPreviewSize(list, card));
+  observer.observe(list);
+  twitchPreviewSizingObservers.set(list, observer);
+  syncTwitchPreviewSize(list, card);
+}
 
 function syncTwitchPreviewPlacement() {
   const mobile = window.matchMedia("(max-width: 699px)").matches;
@@ -97,6 +123,7 @@ function syncTwitchPreviewPlacement() {
 
 export function mountTwitchPreview(list, username, enabled = true) {
   if (!list) return null;
+  twitchPreviewSizingObservers.get(list)?.disconnect();
   const panel = list.parentElement;
   panel?.querySelector(":scope > .twitch-preview-card")?.remove();
   list.querySelector(":scope > .twitch-preview-card")?.remove();
@@ -137,6 +164,7 @@ export function mountTwitchPreview(list, username, enabled = true) {
   bindTwitchPreviewToggle(card, channel);
   list.prepend(card);
   syncTwitchPreviewPlacement();
+  observeTwitchPreviewSize(list, card);
   if (!twitchPreviewPlacementResizeBound) {
     window.addEventListener("resize", syncTwitchPreviewPlacement, { passive: true });
     twitchPreviewPlacementResizeBound = true;
