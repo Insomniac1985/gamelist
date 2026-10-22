@@ -8310,12 +8310,6 @@ body:not(.can-edit) .top-actions-separator {
   display: none;
 }
 
-@media (hover: hover) and (pointer: fine) {
-  #mobileDockEdit {
-    display: none !important;
-  }
-}
-
 #mobileDockUp {
   display: none !important;
 }
