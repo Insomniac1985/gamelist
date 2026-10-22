@@ -287,11 +287,9 @@ When those are both set, Gamelist and Shelf add a Twitch preview as the first ca
 
 Preorders are managed in Radar. A preorder store and release date can create a calendar event when Google Calendar is configured.
 
-### Browse your collection
+### <img src="assets/Icon_shelf.png" alt="Shelf logo" width="22" align="center"> Browse your game collection
 
 Select **Shelf** in Gamelist's list tabs. Physical and digital games share the same collection, with a format control to filter Physical, Digital, or All. Digital tracking can be enabled in **Settings → Page design**.
-
-Collection settings, statistics, Showcase, imports, exports, and developer tools are part of Gamelist. Showcase is a page component where you can feature up to five games from Shelf. The standalone Shelf page has been removed; old Shelf links open the Shelf tab in Gamelist. Collection records and saved settings are retained.
 
 ### Add a digital game to your collection
 
