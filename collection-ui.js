@@ -2589,11 +2589,11 @@ function syncShelfGamelistTargetMode() {
     if (eyebrow) eyebrow.textContent = collectingInfo ? tt("Gamelist") : "GAME DATA";
     if (title) {
       const titleText = shelfGamelistAddTitle();
-      setShelfEditorTitle(title, titleText, target === "wishlist" ? [tt("Add game"), tt("to Wishlist")] : []);
+      setShelfEditorTitle(title, titleText, shelfGamelistMobileTitleParts());
     }
     el.addForm.querySelector(".form-group h3").textContent = tt("Collecting Information");
     const saveLabel = shelfCollectionEnabled()
-      ? "Add to Backlog and Shelf"
+      ? (window.matchMedia("(max-width: 760px)").matches ? "Add game" : "Add to Backlog and Shelf")
       : ["upcoming", "wanted"].includes(el.gamelistSection.value)
         ? "Add game"
         : "Add to Gamelist";
@@ -2660,9 +2660,18 @@ function shelfGamelistAddTitle() {
 function setShelfEditorTitle(title, text, mobileLines = []) {
   if (!title) return;
   title.classList.toggle("mobile-two-line-title", mobileLines.length === 2);
+  title.classList.toggle("mobile-two-line-title-shelf", mobileLines.length === 2 && mobileLines[1] === tt("to Shelf"));
+  title.classList.toggle("mobile-two-line-title-backlog", mobileLines.length === 2 && mobileLines[1] === tt("to Backlog"));
   title.innerHTML = mobileLines.length === 2
     ? `${escapeHtml(mobileLines[0])} <br class="mobile-title-break">${escapeHtml(mobileLines[1])}`
     : escapeHtml(text);
+}
+
+function shelfGamelistMobileTitleParts() {
+  if (isGamelistProjectionTarget() && el.gamelistSection.value === "backlog") return [tt("Add game"), tt("to Backlog")];
+  if (isGamelistProjectionTarget() && el.gamelistSection.value === "upcoming") return [tt("Add game"), tt("to Radar")];
+  if (isGamelistProjectionTarget() && el.gamelistSection.value === "wanted") return [tt("Add game"), tt("to Wishlist")];
+  return [];
 }
 
 function syncShelfGamelistSectionButtons() {
@@ -2673,7 +2682,7 @@ function syncShelfGamelistSectionButtons() {
     const title = el.addForm.querySelector(".modal-head h2");
     if (title) {
       const titleText = shelfGamelistAddTitle();
-      setShelfEditorTitle(title, titleText, state.gamelistAddTarget === "wishlist" ? [tt("Add game"), tt("to Wishlist")] : []);
+      setShelfEditorTitle(title, titleText, shelfGamelistMobileTitleParts());
     }
   }
 }

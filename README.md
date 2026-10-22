@@ -5,7 +5,7 @@
 
 Gamelist is a personal game backlog and collection tracker. It runs as a self-hosted static frontend served by a Cloudflare Worker, with saved data stored in Cloudflare KV.
 
-The app uses one unified page at `/`, with **Backlog**, **Shelf**, **Radar**, and **Wishlist** tabs. Physical and digital collection tracking, Showcase, statistics, edit mode, account settings, price stores, and achievements all live in Gamelist. The old `/shelf` address redirects to the Shelf tab.
+The app lets you switch between **Backlog**, **Shelf**, **Radar**, and **Wishlist** tabs.
 
 Made and designed by <img src="assets/shabii_logo.png" alt="Shabii" width="18" align="center"> [Shabii](https://x.com/Shabii_exe) with the help of ChatGPT Codex.
 
@@ -23,7 +23,7 @@ Email: <a href="mailto:shabiimitjans@gmail.com">shabiimitjans@gmail.com</a>
 - Playtime estimates from linked PlayStation, Steam, Xbox and Nintendo accounts.
 - Trophy and achievement dashboards for PlayStation, Steam, and Xbox, plus Nintendo account connection.
 - Customize themes and module order.
-- Responsive layouts and a mobile action dock for quick access to common actions.
+- Responsive layouts and the new mobile UI keep Backlog, Shelf, Radar, Wishlist, and quick actions together in one place.
 - Easily export and import your game data.
 
 ---
@@ -282,7 +282,7 @@ When those are both set, Gamelist and Shelf add a Twitch preview as the first ca
 1. Enter **Edit mode** and click **Add Game**.
 2. Choose **Collection**, **Radar**, or **Wishlist**.
 3. Search by title or paste a supported game URL.
-4. For Collection, enable **Add to backlog** to add the game to both Backlog and Shelf. Leave it off to add only to Shelf.
+4. For Collection, turn on **Add to backlog** to add the game to both Backlog and Shelf. The button says **Add to Backlog and Shelf**. Leave it off to add only to Shelf.
 5. Fill in game and collecting information, then save.
 
 Preorders are managed in Radar. A preorder store and release date can create a calendar event when Google Calendar is configured.
@@ -291,7 +291,7 @@ Preorders are managed in Radar. A preorder store and release date can create a c
 
 Select **Shelf** in Gamelist's list tabs. Physical and digital games share the same collection, with a format control to filter Physical, Digital, or All. Digital tracking can be enabled in **Settings → Page design**.
 
-Collection settings, statistics, Showcase, imports, exports, and developer tools are part of Gamelist. The standalone Shelf page has been removed; old Shelf links open the Shelf tab in Gamelist. Collection records and saved settings are retained.
+Collection settings, statistics, Showcase, imports, exports, and developer tools are part of Gamelist. Showcase is a page component where you can feature up to five games from Shelf. The standalone Shelf page has been removed; old Shelf links open the Shelf tab in Gamelist. Collection records and saved settings are retained.
 
 ### Add a digital game to your collection
 
