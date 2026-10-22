@@ -114,3 +114,41 @@ body[data-mobile-section="new"] #collectionLibrary:not([hidden]) + #new:not([hid
   .mobile-section-tabs { margin-bottom: 6px; }
   .board { margin-top: 0; }
 }
+
+/* Reset the old toolbar placements together at intermediate widths. */
+.toolbar > label,
+.toolbar .search-field,
+.toolbar .order-control {
+  width: 100%;
+  min-width: 0;
+}
+.toolbar .library-view-controls :is(.view-toggle, .media-format-toggle),
+.toolbar .order-control > .direction-toggle {
+  box-sizing: border-box;
+  width: var(--toolbar-control-height);
+  min-width: var(--toolbar-control-height);
+  max-width: var(--toolbar-control-height);
+  height: var(--toolbar-control-height);
+  min-height: var(--toolbar-control-height);
+  max-height: var(--toolbar-control-height);
+  aspect-ratio: 1;
+  flex: 0 0 var(--toolbar-control-height);
+  padding: 0;
+}
+@media (min-width: 761px) and (max-width: 1300px) {
+  .toolbar, .toolbar.collection-toolbar {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+  .toolbar > label {
+    grid-column: auto !important;
+    align-self: end;
+  }
+  .toolbar > .search { grid-column: 1 / -1 !important; }
+  .toolbar:not(.collection-toolbar) > label:has(#tagFilter) { grid-column: span 2 !important; }
+  .toolbar > .order-label { grid-column: 1 / span 3 !important; }
+  .toolbar > .library-view-controls {
+    grid-column: 4;
+    justify-self: end;
+    width: max-content;
+  }
+}

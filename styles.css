@@ -19650,3 +19650,48 @@ body:not(.can-edit):not(.shelf-page) :is(#upcoming, #wanted) .price-refresh-acti
     display: none;
   }
 }
+
+/* React to each card's width, including narrow two- and three-column grids. */
+.card-list:not(.list-view) .game-card.has-price-footer {
+  container-name: price-card;
+  container-type: inline-size;
+}
+@container price-card (max-width: 560px) {
+  .card-list:not(.list-view) .game-card.has-price-footer .card-footer {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+  }
+  .card-list:not(.list-view) .game-card.has-price-footer .prices {
+    order: 1;
+    flex: none;
+    align-self: stretch;
+    width: 100%;
+    grid-template-columns: repeat(var(--price-columns, 4), minmax(0, 1fr)) !important;
+  }
+  .card-list:not(.list-view) .game-card.has-price-footer .card-actions {
+    order: 2;
+    display: flex;
+    flex-flow: row nowrap;
+    align-self: stretch;
+    width: 100%;
+    min-width: 0;
+    margin: 0;
+    gap: 8px;
+  }
+  .card-list:not(.list-view) .game-card.has-price-footer .card-actions > .bought-action {
+    flex: 1 1 0;
+    min-width: 0;
+    height: 36px;
+    min-height: 36px;
+  }
+  .card-list:not(.list-view) .game-card.has-price-footer .card-actions > .icon-only-button {
+    flex: 0 0 36px;
+    width: 36px;
+    min-width: 36px;
+    height: 36px;
+    min-height: 36px;
+    padding: 0;
+  }
+}
