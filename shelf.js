@@ -5791,7 +5791,7 @@ function linkLabel(value) {
 }
 function siteClass(value) {
   const label = normalize(linkLabel(value)).replace(/ /g, "-");
-  return label ? `store-${label}` : "";
+  return label === "howlongtobeat" ? "store-hltb" : label ? `store-${label}` : "";
 }
 function siteIcon(value) { const host = (() => { try { return new URL(value).hostname; } catch { return ""; } })(); if (host.includes("playstation")) return "assets/sites/playstation.png"; if (host.includes("nintendo")) return "assets/sites/nintendo.png"; if (host.includes("steam")) return "assets/sites/steam.png"; if (host.includes("howlongtobeat")) return "assets/sites/howlongtobeat.png"; return host ? `https://${host}/favicon.ico` : "assets/Icon.png"; }
 function renderSavedStorePrices(game) {

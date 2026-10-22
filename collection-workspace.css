@@ -99,3 +99,13 @@ body[data-mobile-section="new"] #collectionLibrary:not([hidden]) + #new:not([hid
 #upcomingCount > .preorder-count-pill {
   margin: 0;
 }
+
+/* Reserve the same heading height, including space for Radar's preorder pill. */
+.board {
+  --library-heading-min-height: max(68px, calc(var(--display-title-size, 38px) * var(--display-title-line-height, 1.05) + 12px));
+}
+.board > .column > .column-head,
+.board > .unified-new-head {
+  box-sizing: border-box;
+  min-height: var(--library-heading-min-height);
+}

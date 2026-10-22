@@ -27,7 +27,7 @@ async function mount({ slots, changed, openGame, mediaChanged, viewChanged, clea
       .shell.shelf-shell{display:none!important}.shelf-page.dialog-open{overflow:visible}
       .shelf-page .highlights-section{margin:0!important}
       .shelf-library{min-width:0;background:transparent;border:0;box-shadow:none;padding:0}
-      .shelf-library>.column-head{margin:0;padding:0 2px 12px;justify-content:space-between;min-height:0}
+      .shelf-library>.column-head{margin:0;padding:0 2px 12px;justify-content:space-between;box-sizing:border-box;min-height:var(--library-heading-min-height,68px)}
       :host([data-list="new"]) .shelf-library>.column-head{display:none}
       .shelf-page.theme-uppercase-titles .shelf-library>.column-head h2{text-transform:uppercase}
       .shelf-page.theme-gradient .shelf-library>.column-head h2{background:linear-gradient(135deg,var(--title-gradient-start,var(--accent)),var(--title-gradient-end,var(--accent)));background-clip:text;-webkit-background-clip:text}
