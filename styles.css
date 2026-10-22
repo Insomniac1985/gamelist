@@ -17287,6 +17287,10 @@ html.theme-light .primary-button.stream-start-action:hover {
     white-space: nowrap;
   }
 
+  .playing-section .game-card.playing-card .meta > .rating-score-pill {
+    display: none;
+  }
+
   .playing-section .game-card.playing-card .play-dates {
     grid-column: 1 / -1;
     grid-row: 5;
@@ -19791,7 +19795,7 @@ body:not(.can-edit):not(.shelf-page)
   .card-list.list-view .game-row .game-row-actions-bottom button {
     width: auto;
     min-width: 0;
-    max-width: 100%;
+    max-width: 67px;
     flex: 1 1 0;
     gap: 4px;
     padding-inline: 5px;
@@ -19895,7 +19899,11 @@ body:not(.can-edit):not(.shelf-page)
     white-space: normal;
   }
 
-  #backlog .card-list:not(.list-view) .game-card:not(.playing-card) .card-actions > .delete-action {
+  #backlog
+    .card-list:not(.list-view)
+    .game-card:not(.playing-card)
+    .card-actions
+    > .delete-action {
     box-sizing: border-box;
     width: 48px;
     min-width: 48px;
@@ -19907,7 +19915,12 @@ body:not(.can-edit):not(.shelf-page)
     aspect-ratio: 1;
     padding: 0;
   }
-  #backlog .card-list:not(.list-view) .game-card:not(.playing-card) .card-actions > .delete-action svg {
+  #backlog
+    .card-list:not(.list-view)
+    .game-card:not(.playing-card)
+    .card-actions
+    > .delete-action
+    svg {
     width: 20px;
     height: 20px;
   }
@@ -19920,7 +19933,8 @@ body:not(.can-edit):not(.shelf-page)
 }
 
 @media (max-width: 760px) {
-  #backlog .card-list:not(.list-view)
+  #backlog
+    .card-list:not(.list-view)
     .game-card:not(.playing-card)
     .card-actions:has(> .row-primary-action):not(:has(> .stream-start-action))
     > .row-primary-action {
@@ -19984,7 +19998,10 @@ body:not(.can-edit):not(.shelf-page)
     gap: 8px;
     padding: 8px 16px !important;
   }
-  .card-list .game-card:not(.playing-card) .card-actions:has(> .row-primary-action):not(:has(> .stream-start-action)) > .row-primary-action {
+  .card-list
+    .game-card:not(.playing-card)
+    .card-actions:has(> .row-primary-action):not(:has(> .stream-start-action))
+    > .row-primary-action {
     flex: 0 0 auto;
     width: max-content;
     min-width: 0;
@@ -20190,7 +20207,10 @@ body:not(.can-edit):not(.shelf-page)
 }
 
 @media (max-width: 760px) {
-  :is(#releaseDialog, #shelfReleaseDialog) .release-dialog-list .game-card .card-footer {
+  :is(#releaseDialog, #shelfReleaseDialog)
+    .release-dialog-list
+    .game-card
+    .card-footer {
     grid-column: 1 / -1;
     display: flex;
     align-items: center;
@@ -20198,7 +20218,10 @@ body:not(.can-edit):not(.shelf-page)
     width: 100%;
     min-width: 0;
   }
-  :is(#releaseDialog, #shelfReleaseDialog) .release-dialog-list .game-card .card-actions {
+  :is(#releaseDialog, #shelfReleaseDialog)
+    .release-dialog-list
+    .game-card
+    .card-actions {
     order: 0;
     flex: 0 0 auto;
     width: auto;
@@ -20293,7 +20316,10 @@ body:not(.can-edit):not(.shelf-page)
     background: #592990;
     border-color: #7944b5;
   }
-  :is(#releaseDialog, #shelfReleaseDialog) .release-dialog-list .game-card .prices {
+  :is(#releaseDialog, #shelfReleaseDialog)
+    .release-dialog-list
+    .game-card
+    .prices {
     order: 1;
     grid-column: auto;
     flex: 1 1 0;
