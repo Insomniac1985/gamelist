@@ -6886,7 +6886,7 @@ function renderMobileTabs() {
 }
 
 function captureMobileLibraryScrollAnchor() {
-  if (!window.matchMedia("(max-width: 699px)").matches || document.body.classList.contains("dialog-open")) return null;
+  if (!window.matchMedia("(max-width: 800px)").matches || document.body.classList.contains("dialog-open")) return null;
   const previous = document.body.dataset.mobileSection;
   if (!previous || previous === state.mobileSection) return null;
   const toolbar = document.querySelector(".toolbar");
