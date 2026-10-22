@@ -12061,6 +12061,7 @@ html.theme-light .settings-category-card {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
   gap: 7px;
+  font-family: var(--display-title-font);
 }
 
 @media (max-width: 760px) {
