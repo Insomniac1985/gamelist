@@ -12182,7 +12182,7 @@ html.theme-light .settings-category-card {
     gap: 6px;
   }
   .settings-layout .settings-layout-actions {
-    justify-content: flex-start;
+    justify-content: flex-end;
   }
   .settings-layout .settings-layout-actions .settings-visible-check {
     margin-left: 0;
