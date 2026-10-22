@@ -28,3 +28,63 @@ body.collection-selected .board > .column { display: none !important; }
   #collectionMediaToggle { justify-content: flex-end; }
   #collectionLibrary { width: 100%; }
 }
+
+/* One persistent toolbar serves every list. */
+.highlights-section { margin-bottom: 14px; }
+.board { margin-top: 0; }
+.board > .column > .column-head { margin-top: 0; padding-top: 0; }
+.toolbar { min-width: 0; align-self: start; }
+.toolbar [hidden] { display: none !important; }
+.toolbar > label, .toolbar .order-control, .toolbar .platform-logo-select { min-width: 0; }
+.library-view-controls { display: flex; gap: 6px; align-items: flex-end; justify-self: end; align-self: end; }
+.library-view-controls > .view-toggle { width: var(--toolbar-control-height); min-width: var(--toolbar-control-height); height: var(--toolbar-control-height); }
+.toolbar .platform-logo-button { width: 100%; min-width: 0; }
+.toolbar .platform-logo-choice-label { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+@media (min-width: 1001px) {
+  .toolbar { grid-template-columns: minmax(180px, 2fr) auto repeat(2,minmax(100px,1fr)) minmax(140px,1fr) auto; }
+  .toolbar.collection-toolbar { grid-template-columns: minmax(180px,2fr) repeat(4,minmax(90px,1fr)) minmax(130px,1fr) auto; }
+}
+@media (min-width: 761px) and (max-width: 1000px) {
+  .toolbar { grid-template-columns: repeat(4,minmax(0,1fr)); }
+  .toolbar > .search { grid-column: 1 / -1; }
+  .toolbar > .order-label { grid-column: 1 / span 3; }
+  .toolbar > .library-view-controls { grid-column: 4; }
+}
+@media (max-width: 760px) {
+  .toolbar, .toolbar.collection-toolbar { grid-template-columns: minmax(0,1fr) auto !important; }
+  .toolbar > label { grid-column: 1 / -1 !important; width: 100%; min-width: 0; }
+  .toolbar > .order-label { grid-column: 1 !important; }
+  .toolbar > .library-view-controls { grid-column: 2; }
+  .toolbar .order-control { width: 100%; grid-template-columns: minmax(0,1fr) var(--toolbar-control-height); }
+  .library-view-controls .unified-media-toggle > .media-format-toggle { width: var(--toolbar-control-height); min-width: var(--toolbar-control-height); }
+  .stats .stat:nth-child(5):last-child { grid-column: 1 / -1; }
+}
+
+.stats-source-slider { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 6px; padding: 5px; margin: 0 0 18px; border: 1px solid var(--line); border-radius: 10px; background: var(--panel); }
+.stats-source-slider button { min-height: 42px; border: 0; border-radius: 7px; background: transparent; color: var(--muted); font: inherit; font-weight: 800; cursor: pointer; transition: background 160ms ease,color 160ms ease; }
+.stats-source-slider button.active { background: var(--accent); color: #fff; }
+.stats-source-slider button:not(.active):hover { background: color-mix(in srgb,var(--accent) 12%,transparent); color: var(--text); }
+@media (min-width: 761px) {
+  #mobileDockStats, #mobileDockStats:hover, #mobileDockStats:focus, #mobileDockStats.is-active { width: 42px !important; min-width: 42px !important; max-width: 42px !important; flex: 0 0 42px !important; padding: 0 !important; }
+  #mobileDockStats span { display: none !important; }
+  #floatingStatsButton, #floatingStatsButton:hover { width: 48px; min-width: 48px; max-width: 48px; }
+  #floatingStatsButton span { display: none !important; }
+}
+
+/* Keep the list shell identical when changing the selected library. */
+.board > .column, #collectionLibrary { min-width: 0; margin: 0; padding: 0; border: 0; background: transparent; box-shadow: none; }
+.board > .column > .column-head, .board > .unified-new-head { margin: 0; padding: 0 2px 12px; }
+.unified-new-head h2 { margin: 0; font-family: var(--display-title-font); font-size: var(--display-title-size, clamp(28px,2.5vw,38px)); font-weight: 900; line-height: var(--display-title-line-height,1.05); letter-spacing: var(--display-title-letter-spacing,0); }
+body[data-mobile-section="new"] #new > .column-head { display: none; }
+body[data-mobile-section="new"] #collectionLibrary:not([hidden]) + #new:not([hidden]) { margin-top: 12px; }
+.unified-new-head[hidden] { display: none !important; }
+@media (min-width: 761px) {
+  .toolbar { position: sticky; top: calc(20px + var(--pull-ui-offset,0px)); }
+}
+
+#collectionKpis { margin-bottom: 14px; }
+@media (min-width: 761px) and (max-width: 1000px) {
+  .toolbar > label { grid-column: auto !important; }
+  .toolbar > .search { grid-column: 1 / -1 !important; }
+  .toolbar > .order-label { grid-column: 1 / span 3 !important; }
+}

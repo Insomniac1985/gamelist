@@ -1979,6 +1979,11 @@ body.mobile-app-mode .shelf-tabs button.active:hover {
   display: none;
 }
 
+/* An unused search-results row must not add a second gap above the selector. */
+#addGameForm > .lookup-results:empty {
+  display: none !important;
+}
+
 .lookup-row .lookup-digital-check {
   align-items: center;
   justify-content: flex-start;
@@ -3086,14 +3091,19 @@ textarea {
     font-size: 10.5px;
     line-height: 1.15;
   }
-  .favorite-cover-row,
+  .favorite-cover-row {
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: clamp(4px, 1.5vw, 8px);
+  }
+  .favorite-cover-row .favorite-cover-card {
+    width: 100%;
+    border-radius: 6px;
+  }
+  .favorite-cover-row .favorite-cover-card > img {
+    border-radius: inherit;
+  }
   .showcase-selected {
     grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-  .favorite-cover-row .favorite-cover-card:nth-child(5) {
-    grid-column: 1 / -1;
-    justify-self: center;
-    width: calc((100% - 12px) / 2);
   }
   .showcase-picker-grid {
     grid-template-columns: repeat(auto-fill, minmax(88px, 1fr));

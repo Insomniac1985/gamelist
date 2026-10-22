@@ -84,7 +84,6 @@ const DEFAULT_SETTINGS = {
   defaultList: "backlog",
   shelfDigitalGames: false,
   shelfHidePrices: false,
-  shelfDefaultOrder: "added",
   psnUser: "",
   microsoftUser: "",
   steamUser: "",
@@ -254,7 +253,7 @@ const state = {
   cardPlaytime: {},
   platinumCoverCache: loadPlatinumCoverCache(),
   settings: initialSettings,
-  filters: { query: "", platform: "all", tag: "all", sort: mainSortForDefault(initialSettings.defaultOrder), direction: "asc", preordered: false },
+  filters: { query: "", platform: "all", tag: "all", region: "all", condition: "all", sort: mainSortForDefault(initialSettings.defaultOrder), direction: ["added", "value", "rating"].includes(mainSortForDefault(initialSettings.defaultOrder)) ? "desc" : "asc", preordered: false },
   sortTouched: false,
   viewMode: loadSharedViewMode(),
   editingId: "",
@@ -281,6 +280,7 @@ const state = {
   platinumViewMode: localStorage.getItem(PLATINUM_VIEW_MODE_KEY) === "list" ? "list" : "grid",
   releaseCalendarOffset: 0,
   finishedStatsStreamMode: "all",
+  statsSource: "gamelist",
   topGamesCarouselMode: "time",
   detailTrophyRequest: "",
   detailReturnToHistory: false,
@@ -1129,10 +1129,12 @@ function bindEvents() {
     state.completedVisiblePages = 1;
     render();
   });
+  document.querySelector("#collectionRegionFilter").addEventListener("change", event => { state.filters.region = event.target.value; render(); });
+  document.querySelector("#collectionConditionFilter").addEventListener("change", event => { state.filters.condition = event.target.value; render(); });
   el.sortFilter.addEventListener("change", (event) => {
     state.sortTouched = true;
     state.filters.sort = event.target.value;
-    if (state.filters.sort === "added") state.filters.direction = "desc";
+    if (["added", "value", "rating"].includes(state.filters.sort)) state.filters.direction = "desc";
     state.completedVisiblePages = 1;
     render();
   });
@@ -1160,6 +1162,13 @@ function bindEvents() {
   el.completedYearFilter?.addEventListener("change", handleCompletedYearChange);
   el.completedStreamToggleButton?.addEventListener("click", cycleCompletedStreamMode);
   el.completedStatsButton?.addEventListener("click", () => openFinishedStatsDialog(state.completedYear || "all", { streamMode: state.completedStreamMode }));
+  document.querySelector("#statsSourceSlider").addEventListener("click", event => {
+    const button = event.target.closest("[data-stats-source-tab]");
+    if (!button) return;
+    state.statsSource = button.dataset.statsSourceTab;
+    openUnifiedStatsYear("all");
+    if (state.statsSource === "collection") void ensureCollectionWorkspace().then(() => { if (el.finishedStatsDialog.open) openUnifiedStatsYear("all"); });
+  });
   el.finishedStatsYearSelect?.addEventListener("change", () => {
     renderFinishedStatsDialog(el.finishedStatsYearSelect.value || "all");
   });
@@ -1843,7 +1852,7 @@ function persistLocalSettings() {
 
 function mainSortForDefault(value) {
   if (value === "name") return "title";
-  return value === "time" ? "time" : "custom";
+  return ["custom", "time", "added", "title", "platform", "region", "value", "playtime", "rating"].includes(value) ? value : "custom";
 }
 
 function listSortForDefault(value) {
@@ -1858,6 +1867,7 @@ function gotyOrderForDefault(value) {
 
 function applyDefaultOrder(value) {
   state.filters.sort = mainSortForDefault(value);
+  state.filters.direction = ["added", "value", "rating"].includes(state.filters.sort) ? "desc" : "asc";
   state.platinumSort = listSortForDefault(value);
   state.gotyPickerOrder = gotyOrderForDefault(value);
 }
@@ -1885,7 +1895,7 @@ function normalizeSettings(settings = {}) {
     hiddenSections,
     theme: THEMES[settings.theme] || settings.theme === "custom" ? settings.theme : DEFAULT_SETTINGS.theme,
     customTheme: normalizeThemeSettings(settings),
-    defaultOrder: ["custom", "time", "name"].includes(settings.defaultOrder) ? settings.defaultOrder : DEFAULT_SETTINGS.defaultOrder,
+    defaultOrder: ["custom", "time", "name", "title", "added", "platform", "region", "value", "playtime", "rating"].includes(settings.defaultOrder) ? settings.defaultOrder : DEFAULT_SETTINGS.defaultOrder,
     psnUser: cleanPsnUser(settings.psnUser),
     microsoftUser: cleanMicrosoftUser(settings.microsoftUser),
     steamUser: cleanSteamUser(settings.steamUser),
@@ -2873,19 +2883,8 @@ function moveSettingsLayoutItem(key, delta) {
 }
 
 function settingsDefaultOrderItem() {
-  return `
-    <article class="settings-layout-card settings-order-card" data-layout-key="default-order">
-      <div class="settings-wire wire-order" aria-hidden="true"><span></span><span></span><span></span><span></span><span></span><span></span></div>
-      <label class="settings-theme-select">
-        <span>${escapeHtml(tt("Default order"))}</span>
-        <select data-default-order aria-label="${escapeHtml(tt("Default list order"))}">
-          <option value="custom" ${state.settings.defaultOrder === "custom" ? "selected" : ""}>${escapeHtml(tt("Custom"))}</option>
-          <option value="time" ${state.settings.defaultOrder === "time" ? "selected" : ""}>${escapeHtml(tt("Time"))}</option>
-          <option value="name" ${state.settings.defaultOrder === "name" ? "selected" : ""}>${escapeHtml(tt("Name"))}</option>
-        </select>
-      </label>
-    </article>
-  `;
+  const orders = [["custom", "Custom"], ["time", "Time"], ["added", "Last added"], ["name", "Name"], ["platform", "Platform"], ["region", "Region"], ["value", "Value"], ["playtime", "Playtime"], ["rating", "Rating"]];
+  return `<article class="settings-layout-card settings-order-card" data-layout-key="default-order"><label class="settings-theme-select"><span>${escapeHtml(tt("Default order"))}</span><select data-default-order aria-label="${escapeHtml(tt("Default list order"))}">${orders.map(([value, label]) => `<option value="${value}" ${state.settings.defaultOrder === value ? "selected" : ""}>${escapeHtml(tt(label))}</option>`).join("")}</select></label></article>`;
 }
 
 function settingsWeekStartItem() {
@@ -3468,7 +3467,7 @@ async function saveSettingsFromForm(event, { close = true } = {}) {
     defaultList: el.settingsDialog.querySelector("[data-default-list]")?.value || "backlog",
     shelfDigitalGames: el.settingsDialog.querySelector("[data-track-digital]")?.checked === true,
     shelfHidePrices: el.settingsDialog.querySelector("[data-collection-prices]")?.checked === false,
-    shelfDefaultOrder: el.settingsDialog.querySelector("[data-collection-order]")?.value || "added",
+    shelfDefaultOrder: el.settingsDialog.querySelector("[data-default-order]")?.value || state.settings.defaultOrder,
     streamFilterPriority: normalizeStreamFilterMode(el.settingsDialog.querySelector("[data-stream-filter-priority]")?.value),
     prioritizeFinishedStream: normalizeStreamFilterMode(el.settingsDialog.querySelector("[data-stream-filter-priority]")?.value) === "stream",
     hideNonStreamPlaying: el.settingsDialog.querySelector("[data-hide-non-stream-playing]")?.checked === true,
@@ -5886,7 +5885,6 @@ function downloadCanvas(canvas, filename) {
 }
 
 function scrollToSearchArea() {
-  if (state.mobileSection === "shelf" && collectionUI) return collectionUI.search();
   document.querySelector(".toolbar")?.scrollIntoView({ behavior: "smooth", block: "start" });
   window.requestAnimationFrame(() => el.searchInput?.focus({ preventScroll: true }));
 }
@@ -7028,7 +7026,10 @@ function syncMobileSectionToResults() {
   const hasActiveFilter = Boolean(state.filters.query)
     || state.filters.platform !== "all"
     || state.filters.tag !== "all"
-    || state.filters.preordered;
+    || state.filters.preordered
+    || state.filters.region !== "all"
+    || state.filters.condition !== "all"
+    || collectionMedia !== "all";
   if (!hasActiveFilter || ["shelf", "new"].includes(state.mobileSection)) return;
   const sections = state.filters.preordered ? mobileSections().filter((section) => section !== "new").sort((a, b) => ["upcoming", "backlog", "wanted"].indexOf(a) - ["upcoming", "backlog", "wanted"].indexOf(b)) : mobileSections();
   const hasCurrent = filteredGames().some((game) => (
@@ -7043,17 +7044,24 @@ function syncMobileSectionToResults() {
     && !game.playing
   )));
   if (next) state.mobileSection = next;
+  else if (collectionUI?.matches(state.filters, collectionMedia)) state.mobileSection = "shelf";
 }
 
 function renderFilters() {
-  const active = state.games.filter((game) => !game.deletedAt);
+  const active = [...state.games, ...collectionRecords()].filter((game) => !game.deletedAt);
   if (state.filters.platform !== "all") state.filters.platform = canonicalPlatform(state.filters.platform);
   const platforms = orderedPlatforms(unique(active.map((game) => platformFilterGroup(game.platform)).filter(Boolean)));
-  const genres = unique(active.flatMap((game) => game.genres || []));
+  const genres = unique(active.flatMap(game => [...(game.genres || []), ...String(game.genre || "").split(",").map(value => value.trim()).filter(Boolean)]));
   fillSelect(el.platformFilter, ["all", ...platforms], state.filters.platform, tt("All platforms"));
   fillSelect(el.tagFilter, ["all", ...genres], state.filters.tag, tt("All categories"));
   syncStyledSelect(el.platformFilter, { logos: true, activeValue: "all" });
   syncStyledSelect(el.tagFilter, { activeValue: "all" });
+  const region = document.querySelector("#collectionRegionFilter");
+  fillSelect(region, ["all", ...unique(collectionRecords().map(game => game.country).filter(Boolean))], state.filters.region, tt("All regions"));
+  const condition = document.querySelector("#collectionConditionFilter");
+  condition.value = state.filters.condition;
+  syncStyledSelect(region, { activeValue: "all" });
+  syncStyledSelect(condition, { activeValue: "all" });
   syncStyledSelect(el.sortFilter, { activeValue: null });
 }
 
@@ -7075,6 +7083,9 @@ function fillSelect(select, values, selected, allLabel) {
 
 function syncStyledSelect(select, options = {}) {
   if (!select) return;
+  const signature = JSON.stringify([[...select.options].map(option => [option.value, option.textContent, option.hidden, option.disabled, option.dataset.flag]), select.value, options]);
+  if (select.dataset.controlSignature === signature && select.nextElementSibling?.classList.contains("platform-logo-select")) return;
+  select.dataset.controlSignature = signature;
   const useLogos = Boolean(options.logos);
   select.classList.add(useLogos ? "native-platform-filter" : "native-styled-select");
   let control = select.nextElementSibling;
@@ -7438,7 +7449,7 @@ function rowCoreStats(game) {
     mediaFormatBadge(game),
     game.dlc ? dlcBadge(game) : "",
     entitlementBadge(game),
-    gamelistAddedBadge(game),
+    (!game.playing && game.section !== "backlog") ? gamelistAddedBadge(game) : "",
     game.coop ? coopBadge() : "",
     game.multiplayer && !game.coop ? multiplayerBadge() : "",
     game.emulator ? `<span class="emulator-pill">${escapeHtml(tt("Emulator"))}</span>` : "",
@@ -7712,7 +7723,7 @@ function openUnifiedStatsYear(year) {
 }
 
 function finishedStatsYears() {
-  return [...new Set([...completedYears(finishedStatsBaseGames()), ...(collectionUI?.years() || [])])].sort((a, b) => Number(b) - Number(a));
+  return state.statsSource === "collection" ? collectionUI?.years() || [] : completedYears(finishedStatsBaseGames());
 }
 
 function renderFinishedStatsDialog(year = "all", { preserveAll = true } = {}) {
@@ -7727,9 +7738,13 @@ function renderFinishedStatsDialog(year = "all", { preserveAll = true } = {}) {
       ? (scope === "all" ? tt("Non-stream games") : tt("Non-stream games {year}", { year: scope }))
       : (scope === "all" ? tt("Finished games") : tt("Finished {year}", { year: scope }));
   el.finishedStatsBody.innerHTML = games.length || completed.length ? finishedStatsMarkup(scope, games, completed) : "";
-  mergeCollectionStats(scope);
+  if (state.statsSource === "collection") {
+    el.finishedStatsBody.innerHTML = "";
+    mergeCollectionStats(scope);
+  }
   if (!el.finishedStatsBody.children.length) el.finishedStatsBody.innerHTML = `<div class="empty">${escapeHtml(tt("No statistics for this year."))}</div>`;
-  el.finishedStatsTitle.textContent = scope === "all" ? tt("Statistics") : `${tt("Statistics")} ${scope}`;
+  if (state.statsSource === "collection") el.finishedStatsTitle.textContent = scope === "all" ? tt("All your game collection") : tt("Games added on {year}", { year: scope });
+  syncStatsSourceSlider();
   el.finishedStatsBody.querySelector("[data-stats-action='completed']")?.addEventListener("click", () => {
     openPlatinumDialog(scope);
   });
@@ -8716,6 +8731,8 @@ function sortedCompletedGames(games) {
     if (state.filters.sort === "platform") {
       return direction * (stringCompare(canonicalPlatform(a.platform), canonicalPlatform(b.platform)) || stringCompare(a.title, b.title));
     }
+    if (state.filters.sort === "region") return direction * (stringCompare(collectionRecordFor(a)?.country || "", collectionRecordFor(b)?.country || "") || stringCompare(a.title, b.title));
+    if (state.filters.sort === "value") return direction * (collectionRecordValue(a) - collectionRecordValue(b) || stringCompare(a.title, b.title));
     if (state.filters.sort === "added") {
       return direction * (addedTimeValue(a) - addedTimeValue(b) || stringCompare(a.title, b.title));
     }
@@ -8828,7 +8845,7 @@ function completionTimeValue(game) {
 }
 
 function addedTimeValue(game) {
-  const time = Date.parse(game.createdAt || game.updatedAt || "");
+  const time = Date.parse(game.backlogAddedAt || game.createdAt || game.updatedAt || "");
   return Number.isNaN(time) ? 0 : time;
 }
 
@@ -8938,6 +8955,9 @@ function filteredGames(options = {}) {
     if (game.deletedAt) return false;
     if (collectionMedia !== "all" && (collectionMedia === "digital") !== Boolean(game.digital || game.dlc)) return false;
     if (game.section === "new" && !canSeeNewAdditions()) return false;
+    const collected = collectionRecordFor(game);
+    if (state.filters.region !== "all" && !(game.digital || game.dlc) && collected?.country !== state.filters.region) return false;
+    if (state.filters.condition !== "all" && !collectionConditionMatches(collected, state.filters.condition)) return false;
     const haystack = [
       game.title,
       game.platform,
@@ -9345,9 +9365,9 @@ function openDetail(id, options = {}) {
   el.detailTitle.className = `${el.detailTitle.className.replace(/\bowner-[\w-]+/g, "").trim()} ${ownerTitleClasses(owners)}`.trim();
   el.detailStudio.innerHTML = `${visibleOwnerTags(game).map(ownerBadge).join("")}${studioText(game) ? `<span>${escapeHtml(studioText(game))}</span>` : ""}`;
   el.detailStudio.hidden = !el.detailStudio.innerHTML;
-  el.detailMeta.innerHTML = metaFor(game, { includePsn: false, includeOwners: false }).join("");
+  el.detailMeta.innerHTML = metaFor(game, { includePsn: false, includeOwners: false, includeAdded: false }).join("");
   bindDetailShelfSearch(game);
-  const detailDates = playDatesFor(game, { includePastRelease: true, includePreorder: true });
+  const detailDates = playDatesFor(game, { includePastRelease: true, includePreorder: true, includeAdded: true });
   if (game.playing) detailDates.push(calendarStateForGame(game));
   el.detailDates.innerHTML = detailDates.join("");
   el.detailDates.hidden = !el.detailDates.innerHTML;
@@ -9753,7 +9773,7 @@ function metaFor(game, options = {}) {
   values.push(mediaFormatBadge(game));
   if (game.dlc) values.push(dlcBadge(game));
   values.push(entitlementBadge(game));
-  values.push(gamelistAddedBadge(game));
+  if (options.includeAdded !== false && !game.playing && game.section !== "backlog") values.push(gamelistAddedBadge(game));
   if (game.emulator) values.push(`<span class="emulator-pill">Emulator</span>`);
   if (game.coop) values.push(coopBadge());
   if (game.multiplayer && !game.coop) values.push(multiplayerBadge());
@@ -10423,6 +10443,7 @@ function playDatesFor(game, options = {}) {
   if (release) values.push(releaseStatusPill(release));
   if (options.includePreorder && game.preorderStore) values.push(preorderChip(game.preorderStore));
   else if (options.includePreorder && game.preferredStore) values.push(preferredPreorderChip(game.preferredStore));
+  if (options.includeAdded) values.push(gamelistAddedBadge(game));
   if (game.startedAt) values.push(`<span class="history-pill history-date-pill"><small>${escapeHtml(tt("Started"))}</small><strong>${escapeHtml(formatDate(game.startedAt))}</strong></span>`);
   const livePlaytime = game.playing ? Number(state.cardPlaytime[game.id]) : 0;
   if (livePlaytime > 0) values.push(livePlaytimePill(game, livePlaytime));
@@ -10533,6 +10554,8 @@ function compareGames(a, b, section) {
   if (state.filters.sort === "platform") {
     return direction * (stringCompare(canonicalPlatform(a.platform), canonicalPlatform(b.platform)) || stringCompare(a.title, b.title));
   }
+  if (state.filters.sort === "region") return direction * (stringCompare(collectionRecordFor(a)?.country || "", collectionRecordFor(b)?.country || "") || stringCompare(a.title, b.title));
+  if (state.filters.sort === "value") return direction * (collectionRecordValue(a) - collectionRecordValue(b) || stringCompare(a.title, b.title));
   if (state.filters.sort === "added") {
     return direction * (addedTimeValue(a) - addedTimeValue(b) || stringCompare(a.title, b.title));
   }
@@ -12289,6 +12312,7 @@ async function saveCurrentFormGame() {
   const game = {
     ...(existing || blankGame()),
     id,
+    ...(section === "backlog" && existing && existing.section !== "backlog" ? { backlogAddedAt: editedAt } : {}),
     preorderNewAddition: finishingSetup ? false : Boolean(existing?.preorderNewAddition),
     title: el.fields.title.value.trim(),
     platform: canonicalPlatform(el.fields.platform.value),
@@ -12417,8 +12441,8 @@ function moveToBacklog(id) {
     return;
   }
   const fromShelfAdditions = isShelfNewAddition(game);
+  if (game.section !== "backlog") game.backlogAddedAt = new Date().toISOString();
   game.section = "backlog";
-  game.backlogAddedAt = new Date().toISOString();
   if (fromShelfAdditions) game.acceptedFromShelfAt = new Date().toISOString();
   game.preorderStore = "";
   game.prices = [];
@@ -12438,6 +12462,7 @@ function startPlaying(id, { stream = false } = {}) {
   const game = getGame(id);
   if (!game || game.completedAt) return;
   if (isShelfNewAddition(game)) game.acceptedFromShelfAt = new Date().toISOString();
+  if (["upcoming", "wanted", "new"].includes(game.section)) game.backlogAddedAt = new Date().toISOString();
   game.section = "backlog";
   game.preorderNewAddition = false;
   game.playing = true;
@@ -13536,7 +13561,11 @@ function ensureCollectionWorkspace() {
     stats.hidden = true;
     document.body.append(stats);
     slots.stats = stats;
-    collectionUI = await mountCollectionWorkspace({ slots, openGame: openDetail, mediaChanged: setCollectionMedia, viewChanged: mode => { state.viewMode = mode; saveSharedViewMode(mode); render(); }, changed: async () => {
+    collectionUI = await mountCollectionWorkspace({ slots, openGame: openDetail, mediaChanged: setCollectionMedia, viewChanged: mode => { state.viewMode = mode; saveSharedViewMode(mode); render(); }, clearFilters: () => {
+      Object.assign(state.filters, { query: "", platform: "all", tag: "all", region: "all", condition: "all", preordered: false });
+      el.searchInput.value = "";
+      render();
+    }, changed: async () => {
       await Promise.all([refreshCollectionData(), pullCloudData()]);
       render();
     } });
@@ -13555,25 +13584,36 @@ function syncCollectionWorkspace() {
   const pending = state.mobileSection === "new";
   const hidden = new Set(state.settings.hiddenSections);
   document.body.classList.toggle("collection-selected", collection);
-  document.querySelector("#collectionToolbar").hidden = !collection || hidden.has("search");
-  document.querySelector(".toolbar").hidden = collection || hidden.has("search");
+  document.querySelector("#collectionToolbar").hidden = true;
+  const toolbar = document.querySelector(".toolbar");
+  toolbar.hidden = hidden.has("search");
+  toolbar.classList.toggle("collection-toolbar", collection);
+  toolbar.querySelectorAll(".collection-filter-field").forEach(field => { field.hidden = !collection; });
+  el.preorderedFilter.closest("label").hidden = collection;
   document.querySelector("#collectionKpis").hidden = !collection;
   el.stats.hidden = collection;
   const library = document.querySelector("#collectionLibrary");
   library.hidden = !(collection || pending && collectionUI?.pending().length);
+  library.dataset.list = pending ? "new" : "shelf";
+  document.querySelector("#unifiedNewHead").hidden = !pending;
   document.querySelector("#collectionShowcase").hidden = hidden.has("showcase");
   const order = new Map(state.settings.pageOrder.map((key, index) => [key, index + 1]));
   document.querySelector("#collectionShowcase").style.order = String(order.get("showcase") || 1);
   document.querySelector("#collectionToolbar").style.order = String(order.get("search") || 4);
-  document.querySelector(".mobile-section-tabs").style.setProperty("--toolbar-sticky-height", collection ? "0px" : `${document.querySelector(".toolbar").getBoundingClientRect().height}px`);
+  document.querySelector(".mobile-section-tabs").style.setProperty("--toolbar-sticky-height", `${toolbar.getBoundingClientRect().height}px`);
   if (!collectionUI) { void ensureCollectionWorkspace(); return; }
-  const inputs = [collectionData, state.games, state.settings, state.canEdit, pending ? "new" : collection ? state.mobileSection : "shelf", collectionMedia, state.viewMode, pending ? JSON.stringify(state.filters) : ""];
+  const inputs = [collectionData, state.games, state.settings, state.canEdit, pending ? "new" : collection ? state.mobileSection : "shelf", collectionMedia, state.viewMode, JSON.stringify(state.filters)];
   if (!collectionRenderInputs || inputs.some((value, index) => value !== collectionRenderInputs[index])) {
     collectionRenderInputs = inputs;
-    collectionUI.update({ shelf: collectionData || {}, games: state.games, settings: state.settings, canEdit: state.canEdit, tab: inputs[4], media: collectionMedia, view: state.viewMode, pendingFilters: pending ? state.filters : null });
+    collectionUI.update({ shelf: collectionData || {}, games: state.games, settings: state.settings, canEdit: state.canEdit, tab: inputs[4], media: collectionMedia, view: state.viewMode, sharedFilters: state.filters });
     const selected = state.mobileSection;
     renderMobileTabs();
     if (selected !== state.mobileSection) return syncCollectionWorkspace();
+  }
+  if (pending) {
+    const nativeCount = filteredGames().filter(game => isNewAdditionGame(game) && !game.completedAt && !game.playing).length;
+    const count = nativeCount + (library.hidden ? 0 : collectionUI.visibleCount());
+    document.querySelector("#unifiedNewCount").textContent = tt("{count} {item}", { count, item: tt(count === 1 ? "game" : "games") });
   }
   const mobileStats = document.querySelector("#mobileDockStats");
   if (mobileStats) mobileStats.hidden = false;
@@ -13599,13 +13639,13 @@ function renderCollectionMedia() {
 }
 
 function gamelistAddedBadge(game) {
-  if (!game.createdAt) return "";
+  if (["upcoming", "wanted"].includes(game.section)) return "";
+  if (!game.backlogAddedAt && !game.createdAt) return "";
   return `<span class="history-pill history-date-pill gamelist-added-pill"><small>${escapeHtml(tt("Added"))}</small><strong>${escapeHtml(formatShortDate(game.backlogAddedAt || game.createdAt))}</strong></span>`;
 }
 
 function collectionSettingsMarkup() {
   const lists = [["backlog", "Backlog"], ["shelf", "Shelf"], ["upcoming", "Radar"], ["wanted", "Wishlist"]];
-  const orders = [["added", "Last added"], ["title", "Name"], ["platform", "Platform"], ["region", "Region"], ["value", "Value"]];
   const toggle = (attribute, label, checked) => `
     <article class="settings-layout-card settings-sync-card settings-collection-setting">
       <div class="settings-theme-select">
@@ -13620,11 +13660,6 @@ function collectionSettingsMarkup() {
     <article class="settings-layout-card settings-order-card settings-collection-setting">
       <label class="settings-theme-select"><span>${escapeHtml(tt("Default list"))}</span>
         <select data-default-list>${lists.map(([value, label]) => `<option value="${value}" ${state.settings.defaultList === value ? "selected" : ""}>${escapeHtml(tt(label))}</option>`).join("")}</select>
-      </label>
-    </article>
-    <article class="settings-layout-card settings-order-card settings-collection-setting">
-      <label class="settings-theme-select"><span>${escapeHtml(tt("Default order"))} · ${escapeHtml(tt("Shelf"))}</span>
-        <select data-collection-order>${orders.map(([value, label]) => `<option value="${value}" ${state.settings.shelfDefaultOrder === value ? "selected" : ""}>${escapeHtml(tt(label))}</option>`).join("")}</select>
       </label>
     </article>
     ${toggle("data-track-digital", "Track Digital Games", state.settings.shelfDigitalGames)}
@@ -13652,4 +13687,43 @@ function mergeCollectionStats(year) {
   periods.forEach(node => { node.dataset.statsSource = "collection"; });
   el.finishedStatsBody.append(...periods);
   collection.bind();
+}
+
+
+let collectionRecordSnapshot = null;
+function collectionRecords() {
+  const data = collectionData || {};
+  const digital = state.settings.shelfDigitalGames === true;
+  if (collectionRecordSnapshot?.data === data && collectionRecordSnapshot.digital === digital) return collectionRecordSnapshot.records;
+  const records = [...(data.sourceGames || []).map(game => ({ ...game, ...(data.overrides?.[game.id] || {}) })), ...(data.games || [])].filter(game => !game.deletedAt && (digital || !(game.digital || game.dlc)));
+  collectionRecordSnapshot = { data, digital, records, byId: new Map(records.map(game => [game.id, game])), byGamelist: new Map(records.filter(game => game.gamelistId).map(game => [game.gamelistId, game])) };
+  return records;
+}
+function collectionRecordFor(game) {
+  collectionRecords();
+  return collectionRecordSnapshot.byId.get(game.shelfId) || collectionRecordSnapshot.byGamelist.get(game.id);
+}
+
+function collectionRecordValue(game) {
+  const record = collectionRecordFor(game);
+  if (!record) return 0;
+  const key = collectionConditionMatches(record, "sealed") ? "sealed" : collectionConditionMatches(record, "loose") ? "loose" : "complete";
+  return Number(record.collectionPrices?.[key] ?? record.price) || 0;
+}
+
+function collectionConditionMatches(game, condition) {
+  if (!game) return false;
+  if (game.digital || game.dlc) return true;
+  const old = String(game.ownership || "").toLowerCase();
+  const value = key => typeof game[key] === "boolean" ? game[key] : key === "game" ? true : key === "box" ? /cib|boxed|new/.test(old) : key === "manual" ? /cib/.test(old) : key === "other" ? /\+/.test(old) : /new|sealed/.test(old);
+  const label = value("sealed") ? "sealed" : value("game") && value("box") ? value("manual") || value("other") ? "complete-plus" : "complete" : "loose";
+  return condition === "all" || label === condition;
+}
+
+function syncStatsSourceSlider() {
+  document.querySelectorAll("[data-stats-source-tab]").forEach(button => {
+    const active = button.dataset.statsSourceTab === state.statsSource;
+    button.classList.toggle("active", active);
+    button.setAttribute("aria-pressed", String(active));
+  });
 }

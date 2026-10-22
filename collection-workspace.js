@@ -6,7 +6,7 @@ export function mountCollectionWorkspace(options) {
   return workspacePromise ||= mount(options).catch(error => { workspacePromise = null; throw error; });
 }
 
-async function mount({ slots, changed, openGame, mediaChanged, viewChanged }) {
+async function mount({ slots, changed, openGame, mediaChanged, viewChanged, clearFilters }) {
   const [markup, ...styles] = await Promise.all([
     fetch('shelf.html').then(read),
     ...['styles.css', 'shelf.css', 'game-editor-layout.css'].map(path => fetch(path).then(read)),
@@ -25,7 +25,28 @@ async function mount({ slots, changed, openGame, mediaChanged, viewChanged }) {
       .shelf-tabs{display:none!important}.shelf-toolbar{margin:0}.shelf-library{margin:0}
       .shelf-favorites-section{margin:0 0 24px}.highlights-section{margin:0}
       .shell.shelf-shell{display:none!important}.shelf-page.dialog-open{overflow:visible}
-      .shelf-library>.column-head{justify-content:flex-end} [hidden]{display:none!important}
+      .shelf-page .highlights-section{margin:0!important}
+      .shelf-library{min-width:0;background:transparent;border:0;box-shadow:none;padding:0}
+      .shelf-library>.column-head{margin:0;padding:0 2px 12px;justify-content:space-between;min-height:0}
+      :host([data-list="new"]) .shelf-library>.column-head{display:none}
+      .shelf-page.theme-uppercase-titles .shelf-library>.column-head h2{text-transform:uppercase}
+      .shelf-page.theme-gradient .shelf-library>.column-head h2{background:linear-gradient(135deg,var(--title-gradient-start,var(--accent)),var(--title-gradient-end,var(--accent)));background-clip:text;-webkit-background-clip:text}
+      .shelf-grid{gap:12px;align-items:stretch;grid-template-columns:repeat(3,minmax(0,1fr))}
+      .shelf-grid.list-view{grid-template-columns:minmax(0,1fr);gap:8px}
+      @media(max-width:1120px){.shelf-grid:not(.list-view){grid-template-columns:repeat(2,minmax(0,1fr))}}
+      @media(max-width:760px){.shelf-grid:not(.list-view){grid-template-columns:minmax(0,1fr)}.shelf-grid.list-view{gap:7px}}
+      #shelfStats .stat[data-stat-action="completed"]{--stat-color:var(--accent);--stat-glow:color-mix(in srgb,var(--accent) 26%,transparent)}
+      #shelfStats .stat-available{--stat-color:var(--accent-2);--stat-glow:color-mix(in srgb,var(--accent-2) 26%,transparent)}
+      #detailDialog #detailDescription{font-family:"Cascadia Code",monospace;font-size:14px;font-weight:400;line-height:1.55;letter-spacing:normal;text-transform:none;white-space:pre-line}
+      #detailDialog .store-links{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:12px 0 0}
+      #detailDialog .store-button{display:inline-flex;align-items:center;gap:8px;min-height:40px;padding:8px 12px;max-width:100%;box-sizing:border-box;text-decoration:none;font-family:inherit;line-height:1.25}
+      #detailDialog .store-button img{width:20px;height:20px;object-fit:contain;flex:0 0 20px}
+      #showcaseDialog .modal-head-save{display:inline-flex!important}
+      #showcaseDialog .showcase-toolbar{position:relative;z-index:30;overflow:visible}
+      #showcaseDialog .showcase-toolbar .platform-logo-select.is-open{z-index:40}
+      #showcaseDialog .showcase-picker-grid{position:relative;z-index:1}
+      @media(max-width:760px){.shelf-page .stats .stat:nth-child(5):last-child{grid-column:1/-1;width:100%}}
+      [hidden]{display:none!important}
       .collection-view-controls{display:flex;align-items:flex-end;gap:6px;justify-self:end}
       .collection-view-controls .view-toggle{flex:0 0 42px}
       .shelf-toolbar{grid-template-columns:2fr repeat(4,minmax(80px,1fr)) minmax(120px,1fr) auto}
@@ -43,8 +64,9 @@ async function mount({ slots, changed, openGame, mediaChanged, viewChanged }) {
     const body = document.createElement('div');
     body.className = 'shelf-page';
     body.dataset.surface = name;
-    shadow.append(style, body);
-    surfaces.push({ shadow, body });
+    const ownerStyle = document.createElement('style');
+    shadow.append(style, ownerStyle, body);
+    surfaces.push({ shadow, body, ownerStyle });
     // Keep keyboard shortcuts in the parent from firing while editing here.
     shadow.addEventListener('keydown', event => event.stopPropagation());
     return body;
@@ -104,16 +126,17 @@ async function mount({ slots, changed, openGame, mediaChanged, viewChanged }) {
     mediaChanged?.(media);
   };
   renderMedia();
-  window.__unifiedShelfScope = { document: scopeDocument, changed, openGame, viewChanged, ready(value) { api = value; resolveReady(); } };
+  window.__unifiedShelfScope = { document: scopeDocument, changed, openGame, viewChanged, clearFilters, ready(value) { api = value; resolveReady(); } };
   await import('./shelf.js');
   await ready;
   setMedia(media);
   const syncTheme = () => {
     const classes = [...document.body.classList, ...document.documentElement.classList].filter(name => name.startsWith('theme-') || ['can-edit', 'mobile-app-mode'].includes(name));
-    surfaces.forEach(({ body }) => { body.lang = document.documentElement.lang; body.className = ['shelf-page', ...classes, ...(body.classList.contains('dialog-open') ? ['dialog-open'] : [])].join(' '); });
+    surfaces.forEach(({ body, ownerStyle }) => { const ownerCss = document.querySelector('#customOwnerColorStyles')?.textContent || ''; if (ownerStyle.textContent !== ownerCss) ownerStyle.textContent = ownerCss; body.lang = document.documentElement.lang; body.className = ['shelf-page', ...classes, ...(body.classList.contains('dialog-open') ? ['dialog-open'] : [])].join(' '); });
   };
   new MutationObserver(syncTheme).observe(document.body, { attributes: true, attributeFilter: ['class'] });
   new MutationObserver(syncTheme).observe(document.documentElement, { attributes: true, attributeFilter: ['class', 'lang'] });
+  new MutationObserver(syncTheme).observe(document.head, { childList: true, subtree: true, characterData: true });
   const syncDialogLock = () => document.body.classList.toggle('dialog-open', queryAll('dialog[open]').length > 0 || document.querySelector('dialog[open]') !== null);
   roots().forEach(root => {
     root.addEventListener('close', syncDialogLock, true);
