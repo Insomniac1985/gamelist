@@ -1322,7 +1322,7 @@ body.mobile-app-mode.shelf-page .shelf-grid.list-view .game-row-cover-preview {
 }
 
 .shelf-grid.list-view .game-row-actions-top {
-  gap: 9px;
+  gap: 6px;
 }
 
 @media (min-width: 761px) {
@@ -3246,6 +3246,17 @@ textarea {
       );
     min-height: 214px;
   }
+  .shelf-grid .game-card.preorder-projection-card .play-dates {
+    width: 100%;
+    min-width: 0;
+    flex-wrap: nowrap;
+    align-items: center;
+    gap: 4px;
+  }
+  .shelf-grid .game-card.preorder-projection-card .play-dates > * {
+    flex: 0 1 auto;
+    white-space: nowrap;
+  }
   .shelf-grid.preorders-view .game-card {
     grid-template-columns: 96px minmax(0, 1fr);
     min-height: 214px;
@@ -3314,7 +3325,7 @@ textarea {
   .shelf-grid.list-view .game-row-actions-top {
     display: flex;
     justify-content: flex-end;
-    column-gap: 9px;
+    column-gap: 4px;
     row-gap: 5px;
   }
   .shelf-grid.list-view .game-row-actions-bottom {
@@ -3332,18 +3343,28 @@ textarea {
     order: 2;
   }
   .shelf-grid.list-view .game-row-actions .icon-button {
-    width: 34px;
-    min-width: 34px;
-    height: 34px;
-    min-height: 34px;
+    box-sizing: border-box;
+    width: 32px;
+    min-width: 32px;
+    max-width: 32px;
+    height: 32px;
+    min-height: 32px;
+    max-height: 32px;
+    flex: 0 0 32px;
+    aspect-ratio: 1;
     padding: 0;
   }
   .shelf-grid.list-view .game-row-actions .row-edit-action,
   .shelf-grid.list-view .game-row-actions .row-delete-action {
-    width: 34px;
-    min-width: 34px;
-    height: 34px;
-    min-height: 34px;
+    box-sizing: border-box;
+    width: 32px;
+    min-width: 32px;
+    max-width: 32px;
+    height: 32px;
+    min-height: 32px;
+    max-height: 32px;
+    flex: 0 0 32px;
+    aspect-ratio: 1;
     padding: 0;
   }
   .shelf-grid.list-view .game-row-actions .shelf-add-backlog-action,
@@ -3829,29 +3850,65 @@ textarea {
 
 @media (max-width: 760px) {
   .shelf-grid .status-pill { display: none !important; }
+  .shelf-grid.list-view .game-row-core .shelf-progress-pill {
+    box-sizing: border-box;
+    max-width: 100%;
+    min-width: 0;
+    overflow: hidden;
+    flex-wrap: nowrap;
+    white-space: nowrap;
+  }
 }
 
 /* The unified Shelf dialog lives inside .shelf-page rather than .shelf-dialog. */
 @media (max-width: 760px) {
-  .shelf-page #detailDialog .detail-cover#detailCoverWrap {
+  .shelf-page #detailDialog .detail-cover {
     box-sizing: border-box;
     display: block;
-    width: 100%;
-    max-width: none;
-    height: auto;
-    max-height: none;
-    aspect-ratio: auto;
+    align-self: stretch;
+    justify-self: stretch;
+    width: 100% !important;
+    min-width: 0;
+    max-width: 100% !important;
+    height: auto !important;
+    max-height: none !important;
+    aspect-ratio: auto !important;
     padding: 0;
     margin: 38px 0 0;
     border: 0;
     background: transparent;
   }
-  .shelf-page #detailDialog .detail-cover#detailCoverWrap img#detailCover {
+  .shelf-page #detailDialog .detail-cover img#detailCover {
     display: block;
-    width: 100%;
-    height: auto;
-    max-width: none;
-    max-height: none;
+    width: 100% !important;
+    height: auto !important;
+    max-width: 100% !important;
+    max-height: none !important;
+    object-fit: contain;
+  }
+
+  .shelf-page #detailDialog[data-projection="true"] .detail-cover {
+    box-sizing: border-box;
+    display: block;
+    align-self: stretch;
+    justify-self: stretch;
+    width: 100% !important;
+    min-width: 0;
+    max-width: 100% !important;
+    height: auto !important;
+    max-height: none !important;
+    aspect-ratio: auto !important;
+    padding: 0;
+    margin: 38px 0 0;
+    border: 0;
+    background: transparent;
+  }
+  .shelf-page #detailDialog[data-projection="true"] .detail-cover img#detailCover {
+    display: block;
+    width: 100% !important;
+    height: auto !important;
+    max-width: 100% !important;
+    max-height: none !important;
     object-fit: contain;
   }
 
