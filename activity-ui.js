@@ -81,10 +81,27 @@ export function mountActivitySlider(section, ids) {
 }
 
 const TWITCH_PREVIEW_HIDDEN_KEY = "gamelist:twitch-preview-hidden";
+let twitchPreviewPlacementResizeBound = false;
+
+function syncTwitchPreviewPlacement() {
+  const mobile = window.matchMedia("(max-width: 699px)").matches;
+  document.querySelectorAll(".playing-panel > .playing-list").forEach((list) => {
+    const panel = list.parentElement;
+    const preview = list.querySelector(":scope > .twitch-preview-card")
+      || panel.querySelector(":scope > .twitch-preview-card");
+    if (!preview) return;
+    if (mobile) panel.insertBefore(preview, list);
+    else if (preview.parentElement !== list) list.prepend(preview);
+  });
+}
 
 export function mountTwitchPreview(list, username, enabled = true) {
+  if (!list) return null;
+  const panel = list.parentElement;
+  panel?.querySelector(":scope > .twitch-preview-card")?.remove();
+  list.querySelector(":scope > .twitch-preview-card")?.remove();
   const channel = cleanTwitchUsername(username);
-  if (!list || !enabled || !channel) return null;
+  if (!enabled || !channel) return null;
   const hidden = twitchPreviewHidden();
   const card = document.createElement("article");
   card.className = "twitch-preview-card glass";
@@ -119,6 +136,11 @@ export function mountTwitchPreview(list, username, enabled = true) {
   card.querySelector(".twitch-preview-link").href = channelUrl;
   bindTwitchPreviewToggle(card, channel);
   list.prepend(card);
+  syncTwitchPreviewPlacement();
+  if (!twitchPreviewPlacementResizeBound) {
+    window.addEventListener("resize", syncTwitchPreviewPlacement, { passive: true });
+    twitchPreviewPlacementResizeBound = true;
+  }
   hydrateTwitchPreview(card, channel, { loadPlayer: !hidden });
   return card;
 }
