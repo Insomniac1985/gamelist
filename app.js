@@ -2803,7 +2803,7 @@ function settingsCsvDataItem() {
             <div class="settings-data-actions ${["gamelist", "shelf", "finished"].includes(key) ? "settings-data-actions-add" : ""}">
               <button class="ghost-button" type="button" data-export-csv="${escapeHtml(key)}">${downloadIcon()}${escapeHtml(tt("Export"))}</button>
               <button class="ghost-button" type="button" data-import-csv="${escapeHtml(key)}">${uploadIcon()}${escapeHtml(tt("Import"))}</button>
-              ${["gamelist", "shelf", "finished"].includes(key) ? `<button class="ghost-button" type="button" data-add-csv="${escapeHtml(key)}">${plusIcon()}${escapeHtml(tt("Add"))}</button>` : ""}
+              ${["gamelist", "shelf", "finished"].includes(key) ? `<button class="ghost-button" type="button" data-add-csv="${escapeHtml(key)}">${escapeHtml(tt("Add"))}${plusIcon()}</button>` : ""}
             </div>
           </div>
         `).join("")}
