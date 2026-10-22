@@ -155,7 +155,7 @@
   margin: 0;
 }
 
-@media (min-width: 761px) {
+@media (min-width: 700px) {
   :is(#gameDialog:not(.shelf-destination-selected), #addGameForm.gamelist-target-editor:not(.shelf-gamelist-import-mini)) .unified-game-editor-grid {
     grid-template-columns: 160px repeat(24, minmax(0, 1fr));
     grid-template-rows: repeat(3, 72px);
@@ -207,7 +207,7 @@
   #gameDialog .unified-game-editor-grid > .notes-field { grid-column: 1 / -1; grid-row: 7; }
 }
 
-@media (max-width: 760px) {
+@media (max-width: 699px) {
   #gameDialog .unified-game-editor-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   #gameDialog .unified-game-editor-grid > * { grid-column: 1 / -1; }
   #gameDialog .unified-game-editor-grid > :is(.dlc-check, .emulator-check, .multiplayer-check, .coop-check) { grid-column: span 1 !important; }
@@ -224,13 +224,13 @@
 }
 
 /* Editing keeps list selection between the collecting details and owner fields. */
-@media (min-width: 761px) {
+@media (min-width: 700px) {
   #gameDialog:not(.is-new-game) .unified-game-editor-grid > #gameListControls { grid-column: 1 / -1; grid-row: 5; }
   #gameDialog:not(.is-new-game) .collection-form-grid.unified-game-editor-grid > :is(.owners-field, .trophy-search-field) { grid-row: 6; }
   #gameDialog:not(.is-new-game) .unified-game-editor-grid > .notes-field { grid-row: 8; }
 }
 
-@media (max-width: 760px) {
+@media (max-width: 699px) {
   #gameDialog:not(.is-new-game) .unified-game-editor-grid > #gameListControls { order: 21; }
   #gameDialog:not(.is-new-game) .collection-form-grid.unified-game-editor-grid > :is(.owners-field, .trophy-search-field) { order: 22; }
   #gameDialog:not(.is-new-game) .unified-game-editor-grid > .notes-field { order: 23; }
@@ -262,7 +262,7 @@ html.game-editor-embed body > :not(dialog):not(.toast-notification):not(.platfor
 html.game-editor-embed #addDialog::backdrop { background: transparent; backdrop-filter: none; }
 
 /* Use the same full-height mobile window for every game editor. */
-@media (max-width: 760px) {
+@media (max-width: 699px) {
   :is(#gameDialog, #addDialog) {
     position: fixed;
     inset: 0 !important;
