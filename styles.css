@@ -16632,6 +16632,10 @@ html.theme-light .primary-button.stream-start-action:hover {
     white-space: nowrap;
   }
 
+  body.shabii-main-owner:not(.can-edit) .brand span:last-child {
+    font-size: clamp(20px, 5.5vw, 25px);
+  }
+
   .top-actions {
     display: flex;
     grid-column: 2;
@@ -17369,10 +17373,6 @@ html.theme-light .primary-button.stream-start-action:hover {
 
   html.theme-font-antique .playing-section .column-head h2 {
     font-size: clamp(24px, 8vw, 31px);
-  }
-
-  body.shabii-main-owner:not(.can-edit) .playing-section .column-head h2 {
-    font-size: clamp(32px, 9.5vw, 40px);
   }
 
   html.theme-font-antique .completed > .column-head h2 {
