@@ -17550,6 +17550,7 @@ html.theme-light .primary-button.stream-start-action:hover {
     .playing-panel
     > .twitch-preview-card.is-collapsed
     .twitch-preview-toggle {
+    position: absolute;
     top: 50%;
     right: 10px;
     bottom: auto;
