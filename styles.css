@@ -12059,30 +12059,16 @@ html.theme-light .settings-category-card {
 
 .settings-layout {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 10px;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 7px;
 }
 
 @media (max-width: 760px) {
-  .settings-layout {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
   .settings-layout-card {
     min-width: 0;
   }
   .settings-layout-actions {
-    justify-content: center;
-    flex-wrap: wrap;
     gap: 4px;
-  }
-  .settings-layout-actions .settings-visible-check {
-    margin-left: 0;
-  }
-  .settings-layout-actions .icon-button {
-    width: 28px;
-    min-width: 28px;
-    height: 28px;
-    min-height: 28px;
   }
 }
 
@@ -12096,15 +12082,95 @@ html.theme-light .settings-category-card {
   border-radius: 8px;
 }
 
+.settings-layout .settings-layout-card {
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+  min-height: 48px;
+  padding: 7px 12px;
+  border-radius: 10px;
+}
+
 .settings-layout-card.is-hidden-section {
   opacity: 0.55;
 }
 
 .settings-layout-card strong {
-  min-height: 16px;
+  min-height: 0;
   font-size: 13px;
   line-height: 1.2;
-  text-align: center;
+  text-align: left;
+}
+
+.settings-layout-move {
+  min-height: 30px;
+  padding: 4px 9px;
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.settings-layout-visibility {
+  position: relative;
+  display: grid;
+  width: 38px;
+  min-width: 38px;
+  height: 30px;
+  min-height: 30px;
+  margin-left: auto;
+  padding: 0;
+  place-items: center;
+}
+
+.settings-layout-visibility input[type="checkbox"] {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  min-width: 1px;
+  min-height: 1px;
+  margin: 0;
+  opacity: 0;
+}
+
+.settings-visibility-icon {
+  width: 19px;
+  height: 19px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  pointer-events: none;
+}
+
+.settings-layout-visibility input:focus-visible + .settings-visibility-icon {
+  outline: 2px solid var(--accent-2);
+  outline-offset: 4px;
+  border-radius: 3px;
+}
+
+.settings-visibility-sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+@media (max-width: 520px) {
+  .settings-layout .settings-layout-card {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 6px;
+  }
+  .settings-layout .settings-layout-actions {
+    justify-content: flex-start;
+  }
+  .settings-layout .settings-layout-actions .settings-visible-check {
+    margin-left: 0;
+  }
 }
 
 .settings-wire {
