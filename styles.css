@@ -17452,6 +17452,7 @@ html.theme-light .primary-button.stream-start-action:hover {
     width: 100%;
     max-width: 100%;
     min-height: 214px;
+    padding: 10px 10px 78px;
     flex: none;
   }
 
