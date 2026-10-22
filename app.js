@@ -1858,7 +1858,7 @@ function render() {
   el.loginButton.hidden = state.canEdit;
   if (el.mobileDockEdit) {
     el.mobileDockEdit.hidden = state.canEdit;
-    el.mobileDockEdit.innerHTML = plusIcon();
+    el.mobileDockEdit.innerHTML = `${plusIcon()}<span>${escapeHtml(tt("Add Game"))}</span>`;
     el.mobileDockEdit.title = tt("Add Game");
     el.mobileDockEdit.setAttribute("aria-label", tt("Add Game"));
   }
@@ -6886,7 +6886,7 @@ function renderMobileTabs() {
 }
 
 function captureMobileLibraryScrollAnchor() {
-  if (!window.matchMedia("(max-width: 699px)").matches || document.body.classList.contains("dialog-open")) return null;
+  if (!window.matchMedia("(max-width: 800px)").matches || document.body.classList.contains("dialog-open")) return null;
   const previous = document.body.dataset.mobileSection;
   if (!previous || previous === state.mobileSection) return null;
   const toolbar = document.querySelector(".toolbar");
@@ -9686,10 +9686,12 @@ function initMobileBrandOverlay() {
 }
 
 function updateScrollTopButton() {
-  const visible = window.scrollY > 180 && !document.body.classList.contains("dialog-open");
+  const dialogOpen = document.body.classList.contains("dialog-open");
+  const visible = window.scrollY > 180 && !dialogOpen;
+  const showLoggedOutAddAction = !state.canEdit && window.innerWidth > 800 && !dialogOpen;
   const dockVisible = window.innerWidth >= 761 || window.scrollY > 180;
   el.scrollTopButton?.classList.toggle("visible", visible);
-  el.floatingEditActions?.classList.toggle("visible", visible);
+  el.floatingEditActions?.classList.toggle("visible", visible || showLoggedOutAddAction);
   el.mobileActionDock?.classList.toggle("visible", dockVisible);
   el.mobileDockUp?.classList.toggle("is-visible", visible);
 }

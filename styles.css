@@ -2988,6 +2988,28 @@ button.achievement-kpi {
   align-items: end;
 }
 
+@media (max-width: 520px) {
+  .rarity-graph {
+    min-width: 0;
+    width: 100%;
+    box-sizing: border-box;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 3px;
+    padding: 8px;
+  }
+
+  .rarity-graph .rarity-bar {
+    min-width: 0;
+    height: 56px;
+    font-size: 9px;
+  }
+
+  .rarity-graph .rarity-bar small {
+    font-size: clamp(7px, 2.4vw, 9px);
+    white-space: nowrap;
+  }
+}
+
 .rarity-bar {
   position: relative;
   display: grid;
@@ -5969,6 +5991,16 @@ body.theme-kash
   scroll-snap-stop: always;
 }
 
+/* Let tablet playing cards shrink their poster column with the viewport.
+   The desktop 300px minimum made portrait covers taller than the content
+   column at 700–1100px, so cards with more metadata grew much taller. */
+@media (min-width: 700px) and (max-width: 1100px) {
+  .playing-section .game-card {
+    grid-template-columns: clamp(210px, 26vw, 286px) minmax(0, 1fr);
+    min-height: clamp(420px, 48vw, 500px);
+  }
+}
+
 .playing-section.playing-single .game-card {
   flex-basis: 100%;
   width: 100%;
@@ -8088,6 +8120,13 @@ html.theme-light #floatingAddButton:hover {
   border-color: color-mix(in srgb, var(--accent) 72%, #ffffff) !important;
 }
 
+/* Keep the logged-out overlay add action identical to the normal add control. */
+body:not(.can-edit) #floatingAddButton {
+  color: #ffffff;
+  background: var(--accent);
+  border-color: transparent;
+}
+
 .icon-button.view-toggle {
   align-self: end;
   width: var(--toolbar-control-height);
@@ -8263,7 +8302,7 @@ body:not(.can-edit) .top-actions-separator {
 }
 
 .floating-search-button {
-  display: none;
+  display: grid;
 }
 
 .mobile-action-dock {
@@ -8290,6 +8329,12 @@ body:not(.can-edit) .top-actions-separator {
 
 #mobileDockAdd[hidden] {
   display: none !important;
+}
+
+body:not(.can-edit) #mobileDockEdit:not([hidden]) {
+  color: #ffffff;
+  background: var(--accent);
+  box-shadow: 0 3px 24px color-mix(in srgb, var(--accent) 32%, transparent);
 }
 
 #mobileDockGoty[hidden] {
@@ -18619,6 +18664,23 @@ html.theme-light .primary-button.stream-start-action:hover {
     box-shadow: 0 3px 24px color-mix(in srgb, var(--accent) 32%, transparent);
   }
 
+  body:not(.can-edit) #mobileDockEdit:not([hidden]) {
+    display: flex;
+    color: #ffffff;
+    background: var(--accent);
+    box-shadow: 0 3px 24px color-mix(in srgb, var(--accent) 32%, transparent);
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    transition:
+      flex-basis 420ms cubic-bezier(0.2, 0.8, 0.2, 1),
+      width 420ms cubic-bezier(0.2, 0.8, 0.2, 1),
+      padding 420ms cubic-bezier(0.2, 0.8, 0.2, 1),
+      gap 420ms cubic-bezier(0.2, 0.8, 0.2, 1),
+      background 140ms ease,
+      box-shadow 140ms ease;
+  }
+
   @media (hover: hover) and (pointer: fine) {
     .mobile-action-dock:has(.mobile-dock-action:not(#mobileDockAdd):hover)
       #mobileDockAdd:not(:hover),
@@ -18629,9 +18691,32 @@ html.theme-light .primary-button.stream-start-action:hover {
       background: transparent;
       box-shadow: none;
     }
+    body:not(.can-edit) .mobile-action-dock:has(
+        .mobile-dock-action:not(#mobileDockEdit):hover
+      )
+      #mobileDockEdit:not(:hover),
+    body:not(.can-edit) .mobile-action-dock:has(
+        .mobile-dock-action:not(#mobileDockEdit):focus-visible
+      )
+      #mobileDockEdit:not(:hover):not(:focus-visible) {
+      background: transparent;
+      box-shadow: none;
+    }
   }
 
   #mobileDockAdd > span {
+    display: inline-block;
+    width: 0;
+    overflow: hidden;
+    opacity: 0;
+    font-weight: 900;
+    white-space: nowrap;
+    transition:
+      width 420ms cubic-bezier(0.2, 0.8, 0.2, 1),
+      opacity 220ms ease;
+  }
+
+  body:not(.can-edit) #mobileDockEdit > span {
     display: inline-block;
     width: 0;
     overflow: hidden;
@@ -18656,6 +18741,24 @@ html.theme-light .primary-button.stream-start-action:hover {
 
   #mobileDockAdd:hover > span,
   #mobileDockAdd:focus-visible > span {
+    width: 104px;
+    opacity: 1;
+    transition-duration: 220ms;
+  }
+
+  body:not(.can-edit) #mobileDockEdit:not([hidden]):hover,
+  body:not(.can-edit) #mobileDockEdit:not([hidden]):focus-visible {
+    width: 160px;
+    flex-basis: 160px;
+    gap: 8px;
+    flex-direction: row-reverse;
+    justify-content: flex-start;
+    padding-inline: 12px;
+    transition-duration: 220ms;
+  }
+
+  body:not(.can-edit) #mobileDockEdit:hover > span,
+  body:not(.can-edit) #mobileDockEdit:focus-visible > span {
     width: 104px;
     opacity: 1;
     transition-duration: 220ms;
@@ -19102,6 +19205,22 @@ body.auth-checking #mobileDockSettings[aria-busy="true"] {
     #mobileDockAdd:not(:focus),
   .mobile-action-dock:has(.mobile-dock-action:not(#mobileDockAdd).is-active)
     #mobileDockAdd:not(.is-active) {
+    background: transparent;
+    box-shadow: none;
+  }
+
+  body:not(.can-edit) .mobile-action-dock:has(
+      .mobile-dock-action:not(#mobileDockEdit):active
+    )
+    #mobileDockEdit:not(:active),
+  body:not(.can-edit) .mobile-action-dock:has(
+      .mobile-dock-action:not(#mobileDockEdit):focus
+    )
+    #mobileDockEdit:not(:focus),
+  body:not(.can-edit) .mobile-action-dock:has(
+      .mobile-dock-action:not(#mobileDockEdit).is-active
+    )
+    #mobileDockEdit:not(.is-active) {
     background: transparent;
     box-shadow: none;
   }
@@ -24549,4 +24668,58 @@ textarea {
 #addGameForm:not(.shelf-gamelist-import-mini) > #shelfGamelistListPicker,
 #addGameForm:not(.shelf-gamelist-import-mini) > #shelfGamelistListControls {
   margin: 0 0 12px;
+}
+
+/* Keep tablet release calendars to two or three months total. */
+@media (min-width: 700px) and (max-width: 899px) {
+  .release-months {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .release-month:nth-child(2) {
+    display: grid;
+  }
+  .release-month:nth-child(n + 3) {
+    display: none;
+  }
+}
+
+@media (min-width: 900px) and (max-width: 1100px) {
+  .release-months {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+  .release-month:nth-child(n + 4) {
+    display: none;
+  }
+}
+
+/* Keep the four trophy rank bars compact inside narrower achievement cards. */
+@media (max-width: 800px) {
+  .rarity-graph {
+    box-sizing: border-box;
+    width: 100%;
+    min-width: 0;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 4px;
+    padding: 8px;
+  }
+
+  .rarity-graph .rarity-bar {
+    box-sizing: border-box;
+    width: 100%;
+    min-width: 0;
+    height: 52px;
+    font-size: 9px;
+  }
+
+  .rarity-graph .rarity-bar small {
+    font-size: clamp(7px, 1.5vw, 9px);
+    white-space: nowrap;
+  }
+}
+
+@media (min-width: 700px) and (max-width: 800px) {
+  .completed-list .completed-rating-breakdown,
+  .completed-list .completed-platform .rating-score-pill {
+    display: none !important;
+  }
 }

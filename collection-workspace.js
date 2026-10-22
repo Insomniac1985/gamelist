@@ -58,6 +58,18 @@ async function mount({ slots, changed, openGame, openSettings, mediaChanged, vie
         .shelf-toolbar>label{grid-column:1/-1!important}.shelf-toolbar>.order-label{grid-column:1!important}
         .collection-view-controls{grid-column:2}
       }
+      @media(min-width:700px) and (max-width:800px){
+        .shelf-toolbar{grid-template-columns:repeat(6,minmax(0,1fr)) 90px;gap:8px}
+        .shelf-toolbar>label{width:100%;min-width:0}
+        .shelf-toolbar>.search{grid-column:1/span 3!important;grid-row:1!important}
+        .shelf-toolbar>label:has(#platformFilter){grid-column:4/span 2!important;grid-row:1!important}
+        .shelf-toolbar>label:has(#regionFilter){grid-column:6/span 2!important;grid-row:1!important}
+        .shelf-toolbar>label:has(#categoryFilter){grid-column:1/span 2!important;grid-row:2!important}
+        .shelf-toolbar>label:has(#conditionFilter){grid-column:3/span 2!important;grid-row:2!important}
+        .shelf-toolbar>.order-label{grid-column:5/span 2!important;grid-row:2!important}
+        .shelf-toolbar>.collection-view-controls{grid-column:7!important;grid-row:2!important;width:100%;justify-self:end}
+        .shelf-toolbar .order-control{width:100%;min-width:0}
+      }
     `;
   // Parse the shared rules once rather than once per shadow surface.
   const sharedSheet = "adoptedStyleSheets" in ShadowRoot.prototype && "replaceSync" in CSSStyleSheet.prototype
