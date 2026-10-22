@@ -9566,9 +9566,12 @@ body.theme-kash .finished-stats-kpi.is-completed:focus-visible strong {
 
 .twitch-preview-card.is-collapsed .twitch-preview-status {
   position: absolute;
+  top: auto;
+  right: auto;
   left: 33px;
   bottom: 0;
   width: max-content;
+  height: auto;
   max-width: none;
   margin: 0;
   font-size: 10px;
