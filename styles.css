@@ -17254,7 +17254,7 @@ html.theme-light .primary-button.stream-start-action:hover {
   .playing-section .game-card.playing-card .studio-line {
     grid-column: 1 / -1;
     grid-row: 3;
-    margin-top: -6px;
+    margin-top: -3px;
     font-size: 12px;
     line-height: 1;
   }
