@@ -16627,7 +16627,7 @@ html.theme-light .primary-button.stream-start-action:hover {
     display: block;
     min-width: 0;
     overflow: hidden;
-    margin-left: 20px;
+    margin-left: 28px;
     text-overflow: ellipsis;
     white-space: nowrap;
   }
