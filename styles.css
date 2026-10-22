@@ -8313,29 +8313,53 @@ body:not(.can-edit) .top-actions-separator {
 }
 
 @media (min-width: 761px) {
-  #floatingStatsButton:hover,
-  #floatingStatsButton:focus-visible {
-    transform: none;
+  #floatingStatsButton,
+  #completedStatsButton {
+    position: relative;
+    display: grid;
+    padding: 0;
+    place-items: center;
   }
 
-  #floatingStatsButton :is(.graph-icon, .trophy-icon),
-  #floatingStatsButton:hover :is(.graph-icon, .trophy-icon),
-  #floatingStatsButton:focus-visible :is(.graph-icon, .trophy-icon) {
-    transform: none;
+  #floatingStatsButton > :is(.graph-icon, .trophy-icon),
+  #completedStatsButton > :is(.graph-icon, .trophy-icon) {
+    position: static;
+    inset: auto;
+    margin: 0;
+    transform: none !important;
+    translate: none !important;
+    transition: none !important;
+    animation: none !important;
+  }
+
+  #floatingStatsButton:hover,
+  #floatingStatsButton:focus-visible,
+  #completedStatsButton:hover,
+  #completedStatsButton:focus-visible {
+    transform: none !important;
+    transition-property: color, background, border-color, box-shadow;
+  }
+
+  #floatingStatsButton.is-goty-shortcut .trophy-icon,
+  #completedStatsButton.is-goty-shortcut .trophy-icon {
+    color: #ffe985 !important;
   }
 
   #floatingStatsButton.is-goty-shortcut:hover,
-  #floatingStatsButton.is-goty-shortcut:focus-visible {
-    color: #302817;
-    background: #ffe985;
-    border-color: #ffe985;
-    box-shadow: 0 3px 24px rgba(255, 233, 133, 0.42);
+  #floatingStatsButton.is-goty-shortcut:focus-visible,
+  #completedStatsButton.is-goty-shortcut:hover,
+  #completedStatsButton.is-goty-shortcut:focus-visible {
+    color: #302817 !important;
+    background: #ffe985 !important;
+    border-color: #ffe985 !important;
+    box-shadow: 0 3px 24px rgba(255, 233, 133, 0.42) !important;
   }
 
   #floatingStatsButton.is-goty-shortcut:hover .trophy-icon,
-  #floatingStatsButton.is-goty-shortcut:focus-visible .trophy-icon {
-    color: #302817;
-    transform: none;
+  #floatingStatsButton.is-goty-shortcut:focus-visible .trophy-icon,
+  #completedStatsButton.is-goty-shortcut:hover .trophy-icon,
+  #completedStatsButton.is-goty-shortcut:focus-visible .trophy-icon {
+    color: #302817 !important;
   }
 }
 
@@ -19922,14 +19946,8 @@ body:not(.can-edit):not(.shelf-page)
 
 @media (max-width: 760px) {
   #addGameForm .modal-head h2.mobile-two-line-title {
-    font-size: clamp(18px, 5.6vw, 27px);
     line-height: 1.05;
     white-space: nowrap;
-  }
-
-  #addGameForm .modal-head h2.mobile-two-line-title-shelf,
-  #addGameForm .modal-head h2.mobile-two-line-title-backlog {
-    font-size: 30px;
   }
 
   #addGameForm .modal-head h2.mobile-two-line-title .mobile-title-break {

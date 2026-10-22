@@ -1171,7 +1171,7 @@ function bindEvents() {
   });
   el.completedYearFilter?.addEventListener("change", handleCompletedYearChange);
   el.completedStreamToggleButton?.addEventListener("click", cycleCompletedStreamMode);
-  el.completedStatsButton?.addEventListener("click", () => openStatsOrGameOfTheYear({ year: state.completedYear || "all", streamMode: state.completedStreamMode }));
+  el.completedStatsButton?.addEventListener("click", () => openFinishedStatsDialog(state.completedYear || "all", { streamMode: state.completedStreamMode }));
   document.querySelector("#statsSourceSlider").addEventListener("click", event => {
     const button = event.target.closest("[data-stats-source-tab]");
     if (!button) return;
@@ -2002,10 +2002,10 @@ function syncStatsShortcut() {
   const label = tt(useGoty ? "Set up Games of the year" : "Finished games stats");
   if (el.completedStatsButton) {
     el.completedStatsButton.hidden = false;
-    el.completedStatsButton.innerHTML = icon;
-    el.completedStatsButton.classList.toggle("is-goty-shortcut", useGoty);
-    el.completedStatsButton.title = title;
-    el.completedStatsButton.setAttribute("aria-label", label);
+    el.completedStatsButton.innerHTML = graphIcon();
+    el.completedStatsButton.classList.remove("is-goty-shortcut");
+    el.completedStatsButton.title = tt("Stats");
+    el.completedStatsButton.setAttribute("aria-label", tt("Finished games stats"));
   }
   const floating = document.querySelector("#floatingStatsButton");
   if (floating) {
