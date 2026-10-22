@@ -1378,6 +1378,7 @@ function bindEvents() {
   el.fields.section.addEventListener("change", () => {
     markNewGameListTouched();
     syncDialogPriceVisibility();
+    syncGameDialogSaveButtons();
   });
   el.form.addEventListener("pointerdown", (event) => {
     if (event.target?.closest?.(".list-field")) markNewGameListTouched();
@@ -12102,6 +12103,23 @@ function syncGameAddTargetPicker() {
   }
   syncGamePreorderStreamLayout();
   syncGameListSlider(picker, el.fields.section.value);
+  syncGameDialogSaveButtons();
+}
+
+function syncGameDialogSaveButtons() {
+  const isNewGame = !state.editingId && el.dialog.classList.contains("is-new-game");
+  const saveLabel = !isNewGame
+    ? "Save"
+    : state.addDestination === "shelf"
+      ? "Add to Shelf"
+      : ["upcoming", "wanted"].includes(el.fields.section.value)
+        ? "Add game"
+        : "Add to Gamelist";
+  [el.gameDialogSaveButton, el.gameDialogBottomSaveButton].forEach((button) => {
+    if (!button) return;
+    button.dataset.i18n = saveLabel;
+    button.textContent = tt(saveLabel);
+  });
 }
 
 function syncGamePreorderStreamLayout() {
@@ -12142,11 +12160,7 @@ function syncGameAddDestination() {
     options.style.setProperty("--target-left", `${activeButton.offsetLeft}px`);
     options.style.setProperty("--target-width", `${activeButton.offsetWidth}px`);
   });
-  const saveLabel = isNewGame ? (shelfTarget ? "Add to Shelf" : "Add to Gamelist") : "Save";
-  [el.gameDialogSaveButton, el.gameDialogBottomSaveButton].forEach((button) => {
-    button.dataset.i18n = saveLabel;
-    button.textContent = tt(saveLabel);
-  });
+  syncGameDialogSaveButtons();
   el.dialogTitle.textContent = !isNewGame
     ? tt("Edit game")
     : state.addDestination === "gamelist" && el.preorderCheck?.checked

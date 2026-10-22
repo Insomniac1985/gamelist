@@ -2585,7 +2585,10 @@ function syncShelfGamelistTargetMode() {
     if (eyebrow) eyebrow.textContent = collectingInfo ? tt("Gamelist") : "GAME DATA";
     if (title) title.textContent = shelfGamelistAddTitle();
     el.addForm.querySelector(".form-group h3").textContent = tt("Collecting Information");
-    el.addForm.querySelectorAll("button[type='submit']").forEach((button) => { button.textContent = tt(shelfCollectionEnabled() ? "Add to Gamelist and Shelf" : "Add to Gamelist"); });
+    const saveLabel = shelfCollectionEnabled()
+      ? "Add to Backlog and Shelf"
+      : "Add to Gamelist";
+    el.addForm.querySelectorAll("button[type='submit']").forEach((button) => { button.textContent = tt(saveLabel); });
     el.lookupLabelPhysical.textContent = tt("Search DB or IGDB URL");
     el.lookupInput.placeholder = tt("Type a game name or paste an IGDB page");
     syncShelfGamelistSectionForTarget();

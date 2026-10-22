@@ -106,6 +106,7 @@ const STRINGS = {
     "Add a new preorder": "Añadir nueva reserva",
     "Only collection": "Solo colección",
     "Add to Gamelist and Shelf": "Añadir a Gamelist y Shelf",
+    "Add to Backlog and Shelf": "Añadir a Backlog y Shelf",
     "Shelf collection": "Colección de Shelf",
     "Add collecting info": "Añadir información de colección",
     "Turn on Shelf sync to add to Gamelist.": "Activa la sincronización de Shelf para añadir a Gamelist.",

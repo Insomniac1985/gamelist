@@ -19900,6 +19900,22 @@ body:not(.can-edit):not(.shelf-page)
     font-size: 15px;
     white-space: normal;
   }
+  #shelfGamelistListPicker .shelf-gamelist-target-options {
+    gap: 4px;
+    padding: 4px;
+  }
+  #shelfGamelistListPicker .shelf-gamelist-target-indicator {
+    top: 4px;
+    bottom: 4px;
+  }
+  #shelfGamelistListPicker .shelf-gamelist-target-options button {
+    height: 56px;
+    min-height: 32px;
+    max-height: 56px;
+    padding: 0 7px;
+    font-size: 15px;
+    white-space: normal;
+  }
 
   #backlog
     .card-list:not(.list-view)
