@@ -19540,7 +19540,7 @@ body:not(.can-edit):not(.shelf-page) :is(#upcoming, #wanted) .price-refresh-acti
   }
   .playing-section .game-card.playing-card .card-actions {
     display: grid;
-    grid-template-columns: minmax(0, 0.95fr) minmax(0, 1.05fr) 36px;
+    grid-template-columns: minmax(0, 0.95fr) minmax(0, 1.05fr) max-content;
     gap: 5px;
     width: 100%;
     min-width: 0;
@@ -19560,7 +19560,28 @@ body:not(.can-edit):not(.shelf-page) :is(#upcoming, #wanted) .price-refresh-acti
   }
   .playing-section .game-card.playing-card .card-actions > .complete-action { grid-column: 1; grid-row: 1; }
   .playing-section .game-card.playing-card .card-actions > .playing-completed-action { grid-column: 2; grid-row: 1; }
-  .playing-section .game-card.playing-card .card-actions > .backlog-action { grid-column: 3; grid-row: 1; padding: 0; }
+  .playing-section .game-card.playing-card .card-actions > .backlog-action {
+    grid-column: 3;
+    grid-row: 1;
+    display: inline-flex;
+    width: max-content;
+    min-width: max-content;
+    max-width: 100%;
+    height: 42px;
+    min-height: 42px;
+    max-height: 42px;
+    flex-direction: row;
+    gap: 6px;
+    padding: 6px 10px;
+  }
+  .playing-section .game-card.playing-card .card-actions > .backlog-action .back-icon {
+    display: block !important;
+    width: 16px;
+    height: 16px;
+  }
+  .playing-section .game-card.playing-card .card-actions > .backlog-action .action-label {
+    display: inline !important;
+  }
 }
 
 /* Compact mobile list actions leave the text column room to breathe. */
@@ -19847,5 +19868,28 @@ body:not(.can-edit):not(.shelf-page) :is(#upcoming, #wanted) .price-refresh-acti
     height: 36px;
     min-height: 36px;
     padding: 0;
+  }
+}
+
+@media (min-width: 761px) {
+  .playing-section .game-card.playing-card .card-actions > .backlog-action {
+    box-sizing: border-box;
+    display: grid;
+    place-items: center;
+    width: 42px;
+    min-width: 42px;
+    max-width: 42px;
+    height: 42px;
+    min-height: 42px;
+    max-height: 42px;
+    aspect-ratio: 1;
+    flex: 0 0 42px;
+    padding: 0;
+    gap: 0;
+  }
+  .playing-section .game-card.playing-card .card-actions > .backlog-action .back-icon {
+    display: block;
+    width: 18px;
+    height: 18px;
   }
 }
