@@ -19829,14 +19829,30 @@ body:not(.can-edit):not(.shelf-page)
 }
 
 @media (max-width: 760px) {
-  #addGameForm.gamelist-target-editor.gamelist-target-wishlist .modal-head h2 {
-    max-width: 14ch;
+  #gameForm.gamelist-target-editor.gamelist-target-wishlist .modal-head h2 {
+    max-width: 18ch;
     display: -webkit-box;
     overflow: hidden;
+    font-size: 30px;
     line-height: 1.05;
     text-wrap: balance;
     -webkit-box-orient: vertical;
     -webkit-line-clamp: 2;
+  }
+
+  #gameAddTargetPicker .shelf-gamelist-target-options {
+    gap: 4px;
+    padding: 4px;
+  }
+  #gameAddTargetPicker .shelf-gamelist-target-indicator {
+    top: 4px;
+    bottom: 4px;
+  }
+  #gameAddTargetPicker .shelf-gamelist-target-options button {
+    min-height: 32px;
+    padding: 0 7px;
+    font-size: 15px;
+    white-space: normal;
   }
 
   #backlog .card-list:not(.list-view) .game-card:not(.playing-card) .card-actions > .delete-action {
@@ -20120,10 +20136,9 @@ body:not(.can-edit):not(.shelf-page)
   }
   :is(#releaseDialog, #shelfReleaseDialog) .release-dialog-list .game-card .card-actions {
     order: 0;
-    flex: 1 1 0;
+    flex: 0 0 auto;
     width: auto;
     max-width: none;
-    min-width: 0;
     margin: 0;
     padding-top: 0;
   }
