@@ -24615,3 +24615,25 @@ body:not(.can-edit) #mobileDockEdit {
   border-color: color-mix(in srgb, var(--accent) 58%, transparent);
   background: color-mix(in srgb, var(--accent) 14%, var(--panel));
 }
+
+/* Keep tablet release calendars to two or three months total. */
+@media (min-width: 700px) and (max-width: 899px) {
+  .release-months {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .release-month:nth-child(2) {
+    display: grid;
+  }
+  .release-month:nth-child(n + 3) {
+    display: none;
+  }
+}
+
+@media (min-width: 900px) and (max-width: 1100px) {
+  .release-months {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+  .release-month:nth-child(n + 4) {
+    display: none;
+  }
+}
