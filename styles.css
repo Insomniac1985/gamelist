@@ -1118,7 +1118,7 @@ html.theme-gradient .goty-section .column-head h2 .trophy-icon {
 
 .goty-edit-button .pencil-icon,
 .goty-save-button .download-icon,
-.completed-stats-button .graph-icon {
+.completed-stats-button :is(.graph-icon, .trophy-icon) {
   width: 18px;
   height: 18px;
   min-width: 18px;
@@ -8293,6 +8293,25 @@ body:not(.can-edit) .top-actions-separator {
   height: 21px;
 }
 
+#mobileDockStats .trophy-icon {
+  width: 21px;
+  height: 21px;
+}
+
+.floating-action-button .trophy-icon {
+  width: 23px;
+  height: 23px;
+}
+
+.is-goty-shortcut .trophy-icon {
+  color: #ffe985;
+}
+
+#floatingStatsButton .graph-icon {
+  width: 23px;
+  height: 23px;
+}
+
 #mobileDockGoty .trophy-icon {
   width: 23px;
   height: 23px;
@@ -8493,7 +8512,7 @@ body.can-edit #loginButton .pause-icon {
 
 .goty-edit-button .pencil-icon,
 .goty-save-button .download-icon,
-.completed-stats-button .graph-icon {
+.completed-stats-button :is(.graph-icon, .trophy-icon) {
   width: 18px;
   height: 18px;
   min-width: 18px;
@@ -17243,8 +17262,47 @@ html.theme-light .primary-button.stream-start-action:hover {
   .playing-section .game-card.playing-card .meta {
     grid-column: 1 / -1;
     grid-row: 4;
+    display: flex;
+    flex-wrap: nowrap;
+    align-items: center;
+    min-width: 0;
+    min-height: 31px;
     margin-top: 1px;
     gap: 4px;
+    overflow-x: auto;
+    overflow-y: hidden;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .playing-section .game-card.playing-card .meta::-webkit-scrollbar {
+    display: none;
+  }
+
+  .playing-section .game-card.playing-card .meta > * {
+    box-sizing: border-box;
+    flex: 0 0 auto;
+    height: 31px;
+    min-height: 31px;
+    white-space: nowrap;
+  }
+
+  .playing-section .game-card.playing-card .meta > .history-date-pill {
+    flex-direction: row;
+    align-items: center;
+    gap: 3px;
+    padding: 2px 5px;
+    line-height: 1;
+  }
+
+  .playing-section .game-card.playing-card .meta > .history-date-pill small,
+  .playing-section .game-card.playing-card .meta > .history-date-pill strong {
+    font-size: 9px;
+    line-height: 1;
+  }
+
+  .playing-section .game-card.playing-card .meta > .history-date-pill strong {
+    font-size: 11px;
   }
 
   .playing-section .game-card.playing-card .play-dates {
@@ -19879,6 +19937,24 @@ body:not(.can-edit):not(.shelf-page)
   }
 }
 
+@media (max-width: 760px) {
+  #backlog .card-list:not(.list-view)
+    .game-card:not(.playing-card)
+    .card-actions:has(> .row-primary-action):not(:has(> .stream-start-action))
+    > .row-primary-action {
+    box-sizing: border-box;
+    flex: 0 0 102px;
+    width: 102px;
+    min-width: 102px;
+    max-width: 102px;
+    height: 42px;
+    min-height: 42px;
+    max-height: 42px;
+    margin-left: auto;
+    padding: 6px 10px;
+  }
+}
+
 /* Keep action names visible on mobile cards in Backlog, Radar, and Wishlist. */
 @media (max-width: 760px) {
   .card-list .game-card:not(.playing-card) .card-actions > button {
@@ -19925,6 +20001,12 @@ body:not(.can-edit):not(.shelf-page)
     flex: 0 0 auto !important;
     gap: 8px;
     padding: 8px 16px !important;
+  }
+  .card-list .game-card:not(.playing-card) .card-actions:has(> .row-primary-action):not(:has(> .stream-start-action)) > .row-primary-action {
+    flex: 0 0 auto;
+    width: max-content;
+    min-width: 0;
+    padding-inline: 18px;
   }
 }
 

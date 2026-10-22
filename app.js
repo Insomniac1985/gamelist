@@ -1027,8 +1027,8 @@ function bindEvents() {
   document.addEventListener("pointerdown", (event) => {
     if (!el.mobileActionDock?.contains(event.target)) el.mobileDockSearch?.classList.remove("is-active");
   });
-  document.querySelector("#floatingStatsButton")?.addEventListener("click", () => openFinishedStatsDialog("all", { yearPicker: true }));
-  el.mobileDockStats?.addEventListener("click", () => openFinishedStatsDialog("all", { yearPicker: true }));
+  document.querySelector("#floatingStatsButton")?.addEventListener("click", () => openStatsOrGameOfTheYear());
+  el.mobileDockStats?.addEventListener("click", () => openStatsOrGameOfTheYear());
   el.mobileDockGoty?.addEventListener("click", () => openGameOfTheYearDialogWithAutofillLoading(currentGameOfTheYear(), { force: true, autoPick: true }));
   el.syncButton.addEventListener("click", syncNow);
   el.settingsButton?.addEventListener("click", openSettingsDialog);
@@ -1171,7 +1171,7 @@ function bindEvents() {
   });
   el.completedYearFilter?.addEventListener("change", handleCompletedYearChange);
   el.completedStreamToggleButton?.addEventListener("click", cycleCompletedStreamMode);
-  el.completedStatsButton?.addEventListener("click", () => openFinishedStatsDialog(state.completedYear || "all", { streamMode: state.completedStreamMode }));
+  el.completedStatsButton?.addEventListener("click", () => openStatsOrGameOfTheYear({ year: state.completedYear || "all", streamMode: state.completedStreamMode }));
   document.querySelector("#statsSourceSlider").addEventListener("click", event => {
     const button = event.target.closest("[data-stats-source-tab]");
     if (!button) return;
@@ -1971,30 +1971,81 @@ function gameOfTheYearCategoriesValid(picks = {}, categories = GAME_OF_YEAR_CATE
   });
 }
 
-function syncMobileDockGoty() {
-  const button = el.mobileDockGoty;
-  if (!button) return;
-  const year = currentGameOfTheYear();
+function gameOfTheYearIsSetUp(year = currentGameOfTheYear()) {
   const candidates = gameOfTheYearCandidateGames(year);
   const picks = state.settings.gameOfTheYear?.[year]?.picks || {};
-  const isSetUp = candidates.length > 0
+  return candidates.length > 0
     && gameOfTheYearCategoriesValid(picks, gameOfTheYearCategoriesForYear(year, candidates), candidates);
+}
+
+function shouldUseGotyStatsShortcut() {
+  return state.canEdit
+    && gameOfTheYearVisible()
+    && state.gotyDockDismissed
+    && gameOfTheYearCandidateGames(currentGameOfTheYear()).length > 0
+    && !gameOfTheYearIsSetUp();
+}
+
+function openStatsOrGameOfTheYear({ year = "all", streamMode = "all", yearPicker = true } = {}) {
+  if (shouldUseGotyStatsShortcut()) {
+    void openGameOfTheYearDialogWithAutofillLoading(currentGameOfTheYear(), { force: true, autoPick: true });
+    return;
+  }
+  openFinishedStatsDialog(year, { yearPicker, streamMode });
+}
+
+function syncStatsShortcut() {
+  const useGoty = shouldUseGotyStatsShortcut();
+  const icon = useGoty ? trophyIcon() : graphIcon();
+  const title = tt(useGoty ? "Games of the year" : "Stats");
+  const label = tt(useGoty ? "Set up Games of the year" : "Finished games stats");
+  if (el.completedStatsButton) {
+    el.completedStatsButton.hidden = false;
+    el.completedStatsButton.innerHTML = icon;
+    el.completedStatsButton.classList.toggle("is-goty-shortcut", useGoty);
+    el.completedStatsButton.title = title;
+    el.completedStatsButton.setAttribute("aria-label", label);
+  }
+  const floating = document.querySelector("#floatingStatsButton");
+  if (floating) {
+    floating.innerHTML = icon;
+    floating.classList.toggle("is-goty-shortcut", useGoty);
+    floating.title = title;
+    floating.setAttribute("aria-label", label);
+  }
+  if (el.mobileDockStats) {
+    el.mobileDockStats.hidden = false;
+    el.mobileDockStats.innerHTML = `${icon}<span>${escapeHtml(tt(useGoty ? "Check my GOTYs" : "Check statistics"))}</span>`;
+    el.mobileDockStats.classList.toggle("is-goty-shortcut", useGoty);
+    el.mobileDockStats.dataset.i18nTitle = useGoty ? "Games of the year" : "Stats";
+    el.mobileDockStats.dataset.i18nAriaLabel = useGoty ? "Set up Games of the year" : "Finished games stats";
+    el.mobileDockStats.title = title;
+    el.mobileDockStats.setAttribute("aria-label", label);
+  }
+}
+
+function syncMobileDockGoty() {
+  const button = el.mobileDockGoty;
+  const year = currentGameOfTheYear();
+  const candidates = gameOfTheYearCandidateGames(year);
+  const isSetUp = gameOfTheYearIsSetUp(year);
   if (isSetUp) {
     state.gotyDockDismissed = false;
     localStorage.removeItem(GOTY_DOCK_DISMISSED_KEY);
   }
-  button.hidden = !state.canEdit
-    || !gameOfTheYearVisible()
-    || !state.gotyDockDismissed
-    || !candidates.length
-    || isSetUp
-    || Boolean(el.gotyDialog?.open);
-  button.innerHTML = `${trophyIcon()}<span>${escapeHtml(tt("Check my GOTYs"))}</span>`;
-  button.title = tt("Check my GOTYs");
-  button.setAttribute("aria-label", tt("Check my GOTYs"));
-  if (el.mobileDockStats) {
-    el.mobileDockStats.hidden = false;
+  if (button) {
+    button.hidden = !state.canEdit
+      || !gameOfTheYearVisible()
+      || !state.gotyDockDismissed
+      || !candidates.length
+      || isSetUp
+      || shouldUseGotyStatsShortcut()
+      || Boolean(el.gotyDialog?.open);
+    button.innerHTML = `${trophyIcon()}<span>${escapeHtml(tt("Check my GOTYs"))}</span>`;
+    button.title = tt("Check my GOTYs");
+    button.setAttribute("aria-label", tt("Check my GOTYs"));
   }
+  syncStatsShortcut();
 }
 
 async function persistCloud() {
@@ -7529,17 +7580,7 @@ function renderCompleted() {
   state.completedYear = selectedYear;
   if (state.completedYear !== "all" && !years.includes(state.completedYear)) state.completedYear = "all";
   renderCompletedYearFilter(years);
-  if (el.completedStatsButton) {
-    const hasFinishedGames = Boolean(finishedGamesForCurrentView().length);
-    el.completedStatsButton.hidden = false;
-    el.completedStatsButton.innerHTML = graphIcon();
-    document.querySelector("#floatingStatsButton").innerHTML = graphIcon();
-    if (el.mobileDockStats) {
-      const gotyOnDock = Boolean(el.mobileDockGoty && !el.mobileDockGoty.hidden);
-      el.mobileDockStats.hidden = false;
-      el.mobileDockStats.innerHTML = `${graphIcon()}<span>${escapeHtml(tt("Check statistics"))}</span>`;
-    }
-  }
+  syncStatsShortcut();
   renderCompletedStreamToggle();
   const filteredFinishedGames = filteredGames({ applyPreorder: false }).filter((game) => game.completedAt && finishedStreamFilterMatches(game));
   const visibleFinishedGames = filteredFinishedGames.filter((game) => state.completedYear === "all" || completionYear(game) === state.completedYear);
@@ -9088,6 +9129,7 @@ function cardFor(game, options = {}) {
   const playDates = card.querySelector(".play-dates");
   playDates.innerHTML = playDatesFor(game, { includePastRelease: Boolean(options.includePastRelease), includeRelease: !releaseDialog, includePreorder: true, includeCalendarState: releaseDialog }).join("");
   playDates.hidden = !playDates.innerHTML;
+  if (game.playing && !releaseDialog) syncPlayingCardDatePills(card);
   card.querySelector(".chips").innerHTML = cardChipsFor(game).join("");
   const trophyStrip = card.querySelector(".card-trophies");
   trophyStrip.innerHTML = game.playing && !releaseDialog ? cardTrophiesFor(game) : "";
@@ -10425,7 +10467,14 @@ function updateCardAchievementUi(gameId) {
   if (!game) return;
   document.querySelectorAll(`.game-card[data-id="${CSS.escape(gameId)}"]`).forEach((card) => {
     const meta = card.querySelector(".meta");
-    if (meta) meta.innerHTML = metaFor(game, { includePsn: !game.playing }).join("");
+    if (meta) {
+      meta.innerHTML = metaFor(game, { includePsn: !game.playing }).join("");
+      if (game.playing && card.classList.contains("playing-card")) {
+        const playDates = card.querySelector(".play-dates");
+        playDates.innerHTML = playDatesFor(game, { includePreorder: true }).join("");
+        syncPlayingCardDatePills(card);
+      }
+    }
     const trophyStrip = card.querySelector(".card-trophies");
     if (trophyStrip) {
       trophyStrip.innerHTML = game.playing ? cardTrophiesFor(game) : "";
@@ -10450,6 +10499,14 @@ function syncPlayingCardTrophyLayout(card, trophyStrip, game) {
   const playDates = card.querySelector(".play-dates");
   if (guideRow && playDates) playDates.insertAdjacentElement("afterend", guideRow);
   trophyStrip.hidden = !trophyStrip.querySelector(".card-trophy-head, .card-trophy-list");
+}
+
+function syncPlayingCardDatePills(card) {
+  const meta = card?.querySelector(".meta");
+  const playDates = card?.querySelector(".play-dates");
+  if (!meta || !playDates) return;
+  while (playDates.firstElementChild) meta.append(playDates.firstElementChild);
+  playDates.hidden = true;
 }
 
 function normalizeTitleForMatch(value) {
@@ -10535,7 +10592,9 @@ async function refreshPlayingCardPlaytime() {
     const hours = await linkedPlatformPlaytimeHours(game);
     if (hours == null || !Number.isFinite(hours) || hours <= 0) return;
     state.cardPlaytime[game.id] = Math.ceil(hours);
-    document.querySelectorAll(`.game-card[data-id="${CSS.escape(game.id)}"] .play-dates`).forEach((dates) => {
+    document.querySelectorAll(`.game-card[data-id="${CSS.escape(game.id)}"]`).forEach((card) => {
+      const dates = card.classList.contains("playing-card") ? card.querySelector(".meta") : card.querySelector(".play-dates");
+      if (!dates) return;
       const value = state.cardPlaytime[game.id];
       let pill = dates.querySelector(".live-playtime-pill");
       if (!pill) {
@@ -10549,7 +10608,7 @@ async function refreshPlayingCardPlaytime() {
       pill.dataset.comparison = comparison;
       pill.removeAttribute("title");
       pill.setAttribute("aria-label", comparison);
-      dates.hidden = false;
+      if (!card.classList.contains("playing-card")) dates.hidden = false;
     });
   }));
 }
