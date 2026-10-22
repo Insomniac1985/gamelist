@@ -12538,6 +12538,40 @@ html.theme-light .settings-csv-row {
   gap: 8px;
 }
 
+.settings-dev-groups {
+  display: grid;
+  width: 100%;
+  gap: 16px;
+}
+
+.settings-dev-group {
+  display: grid;
+  gap: 8px;
+  padding-top: 12px;
+  border-top: 1px solid var(--line);
+}
+
+.settings-dev-group h4 {
+  margin: 0;
+  color: var(--accent-2);
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.settings-dev-group-links {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.settings-dev-preferences .settings-dev-toggle {
+  min-height: 38px;
+  margin-left: 0;
+}
+
 .settings-dev-link {
   min-height: 38px;
   padding-inline: 12px;

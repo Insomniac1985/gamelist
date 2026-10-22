@@ -2810,29 +2810,49 @@ function settingsCsvDataItem() {
 }
 
 function settingsDevFeaturesItem(kind) {
-  const links = [
-    { href: "/api/gamelist-mass-add", label: "Mass add" },
-    { href: "/api/gamelist-metadata", label: "Fill metadata" },
-    { href: "/api/secret-status", label: "Integration health" },
-    { href: "/api/shelf-mass-add", label: "Collection: Mass add" },
-    { href: "/api/shelf-metadata", label: "Collection: Fill metadata" },
-    { href: "/api/shelf-price-audit", label: "Collection: Price audit" },
-    { href: "/api/shelf-import-digital", label: "Import Digital from Platforms" },
-    { href: "/api/shelf-covers", label: "Collection: Mass cover add" },
-  ].map((link) => `
+  const groups = [
+    { label: "Gamelist", links: [
+      { href: "/api/gamelist-mass-add", label: "Mass add" },
+      { href: "/api/gamelist-metadata", label: "Fill metadata" },
+    ] },
+    { label: "Collection", links: [
+      { href: "/api/shelf-mass-add", label: "Mass add" },
+      { href: "/api/shelf-metadata", label: "Fill metadata" },
+      { href: "/api/shelf-price-audit", label: "Price audit" },
+      { href: "/api/shelf-import-digital", label: "Import Digital from Platforms" },
+      { href: "/api/shelf-covers", label: "Mass cover add" },
+    ] },
+    { label: "Diagnostics", links: [
+      { href: "/api/secret-status", label: "Integration health" },
+    ] },
+  ];
+  const linkMarkup = (link) => `
     <a class="ghost-button settings-dev-link" href="${escapeHtml(link.href)}" target="_blank" rel="noreferrer" data-dev-feature="${escapeHtml(kind)}">
       ${escapeHtml(tt(link.label))}
     </a>
-  `).join("");
-  return `${links}
-    <label class="check-filter toggle-check settings-visible-check settings-dev-toggle" title="${escapeHtml(tt("Force cache on page load"))}">
-      <input type="checkbox" id="settingsForceCacheOnLoad" ${state.settings.forceCacheOnLoad ? "checked" : ""}>
-      <span>${escapeHtml(tt("Force cache on page load"))}</span>
-    </label>
-    <label class="check-filter toggle-check settings-visible-check settings-dev-toggle" title="${escapeHtml(tt("Always show Game of the year"))}">
-      <input type="checkbox" id="settingsGotyAlwaysShow" ${state.settings.gotyAlwaysShow ? "checked" : ""}>
-      <span>${escapeHtml(tt("Always show Game of the year"))}</span>
-    </label>
+  `;
+  return `
+    <div class="settings-dev-groups">
+      ${groups.map((group) => `
+        <section class="settings-dev-group">
+          <h4>${escapeHtml(tt(group.label))}</h4>
+          <div class="settings-dev-group-links">${group.links.map(linkMarkup).join("")}</div>
+        </section>
+      `).join("")}
+      <section class="settings-dev-group">
+        <h4>${escapeHtml(tt("Preferences"))}</h4>
+        <div class="settings-dev-group-links settings-dev-preferences">
+          <label class="check-filter toggle-check settings-visible-check settings-dev-toggle" title="${escapeHtml(tt("Force cache on page load"))}">
+            <input type="checkbox" id="settingsForceCacheOnLoad" ${state.settings.forceCacheOnLoad ? "checked" : ""}>
+            <span>${escapeHtml(tt("Force cache on page load"))}</span>
+          </label>
+          <label class="check-filter toggle-check settings-visible-check settings-dev-toggle" title="${escapeHtml(tt("Always show Game of the year"))}">
+            <input type="checkbox" id="settingsGotyAlwaysShow" ${state.settings.gotyAlwaysShow ? "checked" : ""}>
+            <span>${escapeHtml(tt("Always show Game of the year"))}</span>
+          </label>
+        </div>
+      </section>
+    </div>
   `;
 }
 
