@@ -316,9 +316,11 @@ function runnerHtml(settings = {}) {
     <div class="row">
       <label class="control">Batch size <input id="limit" type="number" min="1" max="25" value="5"></label>
       <label class="control">Platform <select id="platform"><option value="all">All platforms</option></select></label>
+      <label class="control">Media <select id="media"><option value="all">All</option><option value="physical">Physical</option><option value="digital">Digital</option></select></label>
       <label><input id="igdb" type="checkbox" checked> IGDB</label>
       <label><input id="pricecharting" type="checkbox" checked> PriceCharting</label>
       <label><input id="pending" type="checkbox"> Include pending</label>
+      <label><input id="without-picture" type="checkbox"> Missing data only</label>
       <button class="primary" id="start" type="button">Fill missing metadata</button>
       <a href="/?list=shelf">Back to Shelf</a>
     </div>
@@ -333,7 +335,9 @@ function runnerHtml(settings = {}) {
     const igdb = document.querySelector("#igdb");
     const pricecharting = document.querySelector("#pricecharting");
     const pending = document.querySelector("#pending");
+    const withoutPicture = document.querySelector("#without-picture");
     const platform = document.querySelector("#platform");
+    const media = document.querySelector("#media");
     const password = () => sessionStorage.getItem("gamelist-editor:password") || "";
     const line = (text) => { log.textContent += text + "\\n"; log.scrollTop = log.scrollHeight; };
     const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
@@ -350,6 +354,8 @@ function runnerHtml(settings = {}) {
     const platformKey = (value) => String(value || "").trim().toLowerCase();
     const platformLabel = (value) => String(value || "").trim() || "Unknown";
     const matchesPlatform = (game) => platform.value === "all" || platformKey(game.platform) === platform.value;
+    const isDigital = (game) => Boolean(game.digital || game.dlc);
+    const matchesMedia = (game) => media.value === "all" || (media.value === "digital" ? isDigital(game) : !isDigital(game));
     async function hydratePlatforms() {
       const shelf = await fetch("/api/shelf", { cache: "no-store" }).then((response) => readJson(response, "GET /api/shelf"));
       const games = [...(shelf.sourceGames || []), ...(shelf.games || [])];
@@ -374,7 +380,7 @@ function runnerHtml(settings = {}) {
         const shelf = await fetch("/api/shelf", { cache: "no-store" }).then((response) => readJson(response, "GET /api/shelf"));
         const games = [...(shelf.sourceGames || []), ...(shelf.games || [])];
         const queue = games
-          .filter((game) => game.title && (pending.checked || !game.pendingCollection) && matchesPlatform(game))
+          .filter((game) => game.title && (pending.checked || !game.pendingCollection) && matchesPlatform(game) && matchesMedia(game) && (!withoutPicture.checked || !String(game.cover || "").trim()))
           .map((game) => ({ game, needsIgdb: igdb.checked && missingIgdb(game), needsPrice: pricecharting.checked && missingPrice(game) }))
           .filter((item) => item.needsIgdb || item.needsPrice);
         const ids = queue.map((item) => item.game.id);

@@ -2813,15 +2813,15 @@ function settingsCsvDataItem() {
 function settingsDevFeaturesItem(kind) {
   const groups = [
     { label: "Gamelist", links: [
-      { href: "/api/gamelist-mass-add", label: "Mass add" },
       { href: "/api/gamelist-metadata", label: "Fill metadata" },
+      { href: "/api/gamelist-mass-add", label: "Mass Import New Additions" },
     ] },
     { label: "Collection", links: [
-      { href: "/api/shelf-mass-add", label: "Mass add" },
       { href: "/api/shelf-metadata", label: "Fill metadata" },
       { href: "/api/shelf-price-audit", label: "Price audit" },
       { href: "/api/shelf-import-digital", label: "Import Digital from Platforms" },
       { href: "/api/shelf-covers", label: "Mass cover add" },
+      { href: "/api/shelf-mass-add", label: "Mass Import New Additions" },
     ] },
     { label: "Diagnostics", links: [
       { href: "/api/secret-status", label: "Integration health" },
