@@ -1,4 +1,4 @@
-import { bindCardHoverSounds, scrollWithSound } from "./card-hover-sound.js";
+import { bindCardHoverSounds, scrollWithSound, setSoundsDisabled } from "./card-hover-sound.js";
 import { renderBatchedList } from "./batched-list.js";
 import { embeddedGameEditor, connectEmbeddedGameEditor } from "./shared-add-game.js";
 import { normalizeSearchText, bindModalTouchGuard, createGameCardShell, bindActivityCardParallax, mountActivitySlider, mountTwitchPreview, mountReleaseCalendar, finishedGameMarkup, achievementCardMarkup, achievementDashboardMarkup, achievementPanelMarkup, completedCardMarkup, horizontalCarouselState, syncViewModeButton, slideHorizontalCarousel, comparePlayingGames, timeBadgeMarkup, guideLinksMarkup, storeButtonsMarkup, activityTrailerUrl, preloadPausedActivityTrailers, syncFocusedActivityTrailer, activityReleaseStatus, activityCoverOverride, activityLocalGameForTitle, activityTitleMatchScore, activityAllowsPsnCardTrophies, formatFooterDate, formatFooterDateTime, formatFooterShortDate, confirmGameDelete } from "./activity-ui.js";
@@ -1446,6 +1446,7 @@ async function fetchCollectionPriceData(game, settings) {
 
 function applyTheme() {
   if (unifiedShelfScope) return;
+  setSoundsDisabled(state.gamelistSettings.disableSounds === true);
   state.gamelistSettings.customTheme = normalizeThemeSettings(state.gamelistSettings);
   const theme = applySiteTheme(state.gamelistSettings, { page: "shelf" });
   const twitchUrl = twitchChannelUrl(state.gamelistSettings.twitchUser);

@@ -11,12 +11,13 @@ function updateAudioStatus() {
   $("#postureStatus").textContent = status.postureSupported
     ? `Device posture: ${status.posture}. Fold/unfold transitions play once audio is enabled.`
     : "Device posture is unavailable in this browser. Use the Fold and Unfold previews to test the sounds.";
-  $("#audioStatus").textContent = !status.supported ? "Audio unsupported" : running ? "Audio ready" : `Audio ${status.state}`;
-  $("#audioStatus").classList.toggle("ready", running);
+  $("#audioStatus").textContent = !status.supported ? "Audio unsupported" : status.disabled ? "Sounds disabled" : running ? "Audio ready" : `Audio ${status.state}`;
+  $("#audioStatus").classList.toggle("ready", running && !status.disabled);
   $("#engineState").textContent = !status.supported ? "Unsupported" : status.state;
   $("#sampleRate").textContent = status.sampleRate ? `${(status.sampleRate / 1000).toFixed(1)} kHz` : "—";
   $("#enableAudio").textContent = running ? "Test audio ↗" : "Enable audio ↗";
   if (!status.supported) $("#audioHelp").textContent = "This browser does not support Web Audio. Open this page in a browser with Web Audio support.";
+  else if (status.disabled) $("#audioHelp").textContent = "Sounds are disabled in Settings. Check Enable under Sounds and save to resume playback.";
   else if (running) $("#audioHelp").textContent = "Audio is running. Each entry below confirms a sound was scheduled by the app’s audio engine.";
 }
 
