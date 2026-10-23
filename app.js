@@ -1,3 +1,4 @@
+import { bindCardHoverSounds, playRatingSound } from "./card-hover-sound.js";
 import { renderBatchedList, stopBatchedList } from "./batched-list.js";
 import { syncMediaFormatToggle } from "./media-format-toggle.js";
 import { mountCollectionWorkspace, prepareCollectionWorkspace } from "./collection-workspace.js";
@@ -590,6 +591,7 @@ async function init() {
   }
   document.body.classList.toggle("can-edit", state.canEdit);
   bindEvents();
+  bindCardHoverSounds(document);
   initRenderSettling();
   warmUiIcons();
   bindTextureParallax();
@@ -2826,6 +2828,7 @@ function settingsDevFeaturesItem(kind) {
     ] },
     { label: "Diagnostics", links: [
       { href: "/api/secret-status", label: "Integration health" },
+      { href: "/dev-sounds.html", label: "Sound lab" },
     ] },
   ];
   const linkMarkup = (link) => `
@@ -11406,14 +11409,18 @@ function renderRatingInputs(container, namePrefix) {
     </fieldset>
   `).join("");
   container.querySelectorAll(".rating-row").forEach((row) => {
-    row.addEventListener("change", () => {
-      setRatingRowValue(row, row.querySelector("input:checked")?.value);
+    row.addEventListener("change", (event) => {
+      const previous = normalizeRatingValue(row.dataset.ratingValue);
+      const next = normalizeRatingValue(row.querySelector("input:checked")?.value);
+      setRatingRowValue(row, next);
+      playRatingSound(next, previous, event);
     });
     row.querySelectorAll("[data-rating-step]").forEach((button) => {
-      button.addEventListener("click", () => {
+      button.addEventListener("click", (event) => {
         const current = normalizeRatingValue(row.querySelector("input:checked")?.value);
         const next = normalizeRatingValue(current + Number(button.dataset.ratingStep || 0));
         setRatingInputValue(row, next);
+        playRatingSound(next, current, event);
       });
     });
   });

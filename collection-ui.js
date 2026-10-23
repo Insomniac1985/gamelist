@@ -1,3 +1,4 @@
+import { bindCardHoverSounds } from "./card-hover-sound.js";
 import { renderBatchedList } from "./batched-list.js";
 import { embeddedGameEditor, connectEmbeddedGameEditor } from "./shared-add-game.js";
 import { normalizeSearchText, bindModalTouchGuard, createGameCardShell, bindActivityCardParallax, mountActivitySlider, mountTwitchPreview, mountReleaseCalendar, finishedGameMarkup, achievementCardMarkup, achievementDashboardMarkup, achievementPanelMarkup, completedCardMarkup, horizontalCarouselState, syncViewModeButton, slideHorizontalCarousel, comparePlayingGames, timeBadgeMarkup, guideLinksMarkup, storeButtonsMarkup, activityTrailerUrl, preloadPausedActivityTrailers, syncFocusedActivityTrailer, activityReleaseStatus, activityCoverOverride, activityLocalGameForTitle, activityTitleMatchScore, activityAllowsPsnCardTrophies, formatFooterDate, formatFooterDateTime, formatFooterShortDate, confirmGameDelete } from "./activity-ui.js";
@@ -271,6 +272,7 @@ async function init() {
 }
 
 function initEmbeddedAddGame() {
+  bindCardHoverSounds(document);
   applyTheme();
   document.documentElement.classList.remove("theme-booting");
   populateEditorOptions();
@@ -5803,6 +5805,7 @@ function clearShelfSpecificEditorData() {
 function initUnifiedShelf() {
   populateEditorOptions();
   bindEvents();
+  bindCardHoverSounds(document);
   initRenderSettling();
   unifiedShelfScope.ready({
     update(data) {
