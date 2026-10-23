@@ -17,17 +17,19 @@
     </header>
 
     <section class="preset-panel" aria-label="Console sound presets">
-      <div class="preset-heading"><span class="eyebrow">Console-inspired presets</span><span class="tag">3DS is the app default</span></div>
-      <div class="presets"><button data-profile="ds" data-sound-preview="" aria-pressed="false"><strong>DS</strong><small>Crisp & playful</small></button><button data-profile="3ds" data-sound-preview="" aria-pressed="true"><strong>3DS</strong><small>Soft & glassy</small></button><button data-profile="ps2" data-sound-preview="" aria-pressed="false"><strong>PS2</strong><small>Low & spacious</small></button><button data-profile="dreamcast" data-sound-preview="" aria-pressed="false"><strong>Dreamcast</strong><small>Bright & warm</small></button></div>
-      <p class="hint" id="presetDescription">Rounded glassy taps, gentle chimes, and soft airy movement.</p><p class="preset-note">Original synthesized sounds. Preset changes here apply only to this test page.</p>
+      <div class="preset-heading"><span class="eyebrow">Console-inspired presets</span><span class="tag">App mix is the default</span></div>
+      <div class="presets"><button data-profile="mixed" data-sound-preview="" aria-pressed="true"><strong>App mix</strong><small>3DS ratings + PS2</small></button><button data-profile="ds" data-sound-preview="" aria-pressed="false"><strong>DS</strong><small>Crisp & playful</small></button><button data-profile="3ds" data-sound-preview="" aria-pressed="false"><strong>3DS</strong><small>Soft & glassy</small></button><button data-profile="ps2" data-sound-preview="" aria-pressed="false"><strong>PS2</strong><small>Low & spacious</small></button><button data-profile="dreamcast" data-sound-preview="" aria-pressed="false"><strong>Dreamcast</strong><small>Bright & warm</small></button></div>
+      <p class="hint" id="presetDescription">3DS rating chimes with PS2 clicks, hover, navigation, fold, and bubbly slider sounds.</p><p class="preset-note">Original synthesized sounds. Preset changes here apply only to this test page.</p>
     </section>
 
     <section class="preview-strip" aria-label="Sound previews">
       <span class="eyebrow">Quick listen</span>
       <button data-sound-preview="hover">↗ Hover snap <small>35ms</small></button>
-      <button data-sound-preview="click">● Button click <small id="clickDuration">90ms</small></button>
+      <button data-sound-preview="click">● Button click <small id="clickDuration">144ms</small></button>
       <button data-sound-preview="navigation">⌘ Navigation <small>+25% pitch</small></button>
       <button data-sound-preview="swipe">⇢ Slider swish <small>180ms</small></button>
+      <button data-sound-preview="fold">↙ Fold <small>Closing chime</small></button>
+      <button data-sound-preview="unfold">↗ Unfold <small>Opening chime</small></button>
     </section>
 
     <div class="workspace">
@@ -76,7 +78,8 @@
 
       <aside class="panel diagnostics" aria-labelledby="diagnosticsTitle">
         <div class="panel-head"><div><p class="eyebrow">Live diagnostics</p><h2 id="diagnosticsTitle">Playback log</h2></div><span id="soundCount" class="readout">0</span></div>
-        <dl class="audio-facts"><div><dt>Audio engine</dt><dd id="engineState">Locked</dd></div><div><dt>Sound preset</dt><dd id="presetState">3DS</dd></div><div><dt>Sample rate</dt><dd id="sampleRate">—</dd></div><div><dt>Last sound</dt><dd id="lastSound">—</dd></div></dl>
+        <p class="hint" id="postureStatus">Checking device posture support…</p>
+        <dl class="audio-facts"><div><dt>Audio engine</dt><dd id="engineState">Locked</dd></div><div><dt>Sound preset</dt><dd id="presetState">App mix</dd></div><div><dt>Sample rate</dt><dd id="sampleRate">—</dd></div><div><dt>Last sound</dt><dd id="lastSound">—</dd></div></dl>
         <p id="audioHelp" class="hint">Enable audio to start. Hover requires a mouse; the preview buttons also work on touch screens.</p>
         <div class="log-head"><span class="eyebrow">Latest events</span><button class="quiet" id="clearLog" data-sound-preview="">Clear log</button></div>
         <ol id="soundLog" class="sound-log" aria-label="Sound playback events"><li class="log-empty">Waiting for your first interaction.</li></ol>

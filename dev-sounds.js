@@ -1,13 +1,16 @@
 import { bindCardHoverSounds, getSoundStatus, subscribeSoundDiagnostics, previewSound, playRatingSound, SOUND_PROFILES, setSoundProfile } from "./card-hover-sound.js";
 
 const $ = selector => document.querySelector(selector);
-const names = { hover: "Hover snap", click: "Button click", navigation: "Navigation click", rating: "Rating tone", swipe: "Slider swish", "audio-state": "Audio state", "audio-error": "Audio unavailable", profile: "Preset changed" };
+const names = { hover: "Hover snap", click: "Button click", navigation: "Navigation click", rating: "Rating tone", swipe: "Slider swish", "audio-state": "Audio state", "audio-error": "Audio unavailable", profile: "Preset changed", fold: "Fold chime", unfold: "Unfold chime", posture: "Device posture" };
 let total = 0;
 let rating = 0;
 
 function updateAudioStatus() {
   const status = getSoundStatus();
   const running = status.state === "running";
+  $("#postureStatus").textContent = status.postureSupported
+    ? `Device posture: ${status.posture}. Fold/unfold transitions play once audio is enabled.`
+    : "Device posture is unavailable in this browser. Use the Fold and Unfold previews to test the sounds.";
   $("#audioStatus").textContent = !status.supported ? "Audio unsupported" : running ? "Audio ready" : `Audio ${status.state}`;
   $("#audioStatus").classList.toggle("ready", running);
   $("#engineState").textContent = !status.supported ? "Unsupported" : status.state;
@@ -30,7 +33,7 @@ subscribeSoundDiagnostics(event => {
   if (event.type === "swipe") details.push(event.direction > 0 ? "Next slide · rising sweep" : "Previous slide · falling sweep");
   if (event.frequency) details.push(`${Math.round(event.frequency)} Hz`);
   if (event.duration) details.push(`${event.duration}ms`);
-  if (!isSound) details.push(event.type === "profile" ? SOUND_PROFILES[event.profile].label : event.state);
+  if (!isSound) details.push(event.type === "profile" ? SOUND_PROFILES[event.profile].label : event.type === "posture" ? event.posture : event.state);
   if (isSound) details.push(SOUND_PROFILES[event.profile].label);
   const item = document.createElement("li");
   const title = document.createElement("div");

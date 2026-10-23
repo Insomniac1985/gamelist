@@ -36,6 +36,11 @@ const unsubscribe = sound.subscribeSoundDiagnostics(event => events.push(event))
 assert.equal(sound.getSoundStatus().state, "locked", "Reading diagnostics must not create an audio context");
 sound.previewSound("click", { isTrusted: false });
 assert.equal(audio, undefined, "Scripted interactions must stay silent");
+assert.equal(sound.getSoundStatus().profile, "mixed", "App must default to the selected console mix");
+sound.previewSound("click", trusted);
+assert.equal(events.at(-1).frequency, sound.SOUND_PROFILES.ps2.click, "Default button sounds must use PS2");
+sound.playRatingSound(5, 0, trusted);
+assert.equal(events.at(-1).frequency, sound.SOUND_PROFILES["3ds"].rating * 4, "Default ratings must use 3DS");
 const ratingPitches = new Set();
 
 for (const profile of Object.keys(sound.SOUND_PROFILES)) {
@@ -71,6 +76,12 @@ for (const profile of Object.keys(sound.SOUND_PROFILES)) {
   assert.equal(events.at(-1).type, "hover");
   sound.previewSound("swipe", trusted);
   assert.equal(events.at(-1).type, "swipe");
+  sound.previewSound("fold", trusted);
+  assert.equal(events.at(-1).type, "fold");
+  assert.ok(audio.voices.at(-6).frequency.end > audio.voices.at(-2).frequency.end, "Fold notes must descend");
+  sound.previewSound("unfold", trusted);
+  assert.equal(events.at(-1).type, "unfold");
+  assert.ok(audio.voices.at(-6).frequency.end < audio.voices.at(-2).frequency.end, "Unfold notes must ascend");
 }
 assert.equal(ratingPitches.size, 4, "Each console preset must have its own pitch range");
 assert.ok(audio.volumes.every(volume => volume.gain.peak <= 0.1), "Individual voices must keep their quiet UI envelope");
@@ -86,4 +97,29 @@ globalThis.window = {};
 const unsupported = await import("../card-hover-sound.js?unsupported-test");
 assert.equal(unsupported.getSoundStatus().supported, false);
 assert.doesNotThrow(() => unsupported.previewSound("click", trusted));
-console.log("UI sound tests passed: four presets, pitch scaling, rating direction, unchanged/programmatic silence, diagnostic lifecycle, unsupported audio.");
+
+const postureListeners = [];
+const posture = { type: "continuous", addEventListener(type, listener) { postureListeners.push(listener); } };
+globalThis.window = { AudioContext: TestAudioContext, navigator: { devicePosture: posture }, document: { visibilityState: "visible" } };
+const foldable = await import("../card-hover-sound.js?posture-test");
+const changes = [];
+foldable.subscribeSoundDiagnostics(event => changes.push(event));
+foldable.bindCardHoverSounds({ addEventListener() {} });
+foldable.bindCardHoverSounds({ addEventListener() {} });
+assert.equal(postureListeners.length, 1, "Main and Shelf must share one posture listener");
+assert.equal(changes.length, 0, "Initial posture must be silent");
+const transition = value => { posture.type = value; postureListeners[0](); };
+transition("folded");
+assert.equal(changes.filter(event => event.duration).length, 0, "Sensor events must not unlock audio");
+foldable.previewSound("click", trusted);
+changes.length = 0;
+transition("continuous");
+assert.equal(changes.filter(event => event.type === "unfold").length, 1);
+transition("continuous");
+assert.equal(changes.filter(event => event.type === "unfold").length, 1, "Duplicate posture events must stay silent");
+transition("folded");
+assert.equal(changes.filter(event => event.type === "fold").length, 1);
+window.document.visibilityState = "hidden";
+transition("continuous");
+assert.equal(changes.filter(event => event.type === "unfold").length, 1, "Hidden pages must stay silent");
+console.log("UI sound tests passed: console presets and app mix, pitch scaling, ratings, fold/unfold direction and detection, duplicate/background/locked silence, diagnostics, unsupported audio.");

@@ -102,7 +102,7 @@ footer { display: flex; justify-content: space-between; gap: 16px; margin-top: 3
 
 .preset-panel { margin-bottom: 20px; padding: 20px; border: 1px solid var(--line); border-radius: 12px; background: #19191f99; }
 .preset-heading { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 14px; }
-.presets { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; margin-bottom: 12px; }
+.presets { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 10px; margin-bottom: 12px; }
 .presets button { text-align: left; padding: 14px 16px; }
 .presets strong { display: block; font-size: 14px; }
 .presets small { display: block; margin-top: 2px; font-size: 10px; color: var(--muted); }
@@ -110,3 +110,5 @@ footer { display: flex; justify-content: space-between; gap: 16px; margin-top: 3
 .presets button[aria-pressed="true"] strong { color: var(--accent); }
 .preset-note { margin-top: 5px; font-size: 9px; color: #696975; }
 @media (max-width: 760px) { .presets { grid-template-columns: repeat(2, minmax(0, 1fr)); } .preset-panel { padding: 16px; } .preset-heading .tag { font-size: 8px; } }
+
+.preview-strip { flex-wrap: wrap; }

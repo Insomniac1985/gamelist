@@ -6,6 +6,7 @@ const sliderButtonSelector = ".playing-slider-button, .goty-stats-preview-nav, .
 const boundRoots = new WeakSet();
 const handledEvents = new WeakSet();
 const sliderStates = new WeakMap();
+const sliderInputEvents = new WeakSet();
 const diagnosticListeners = new Set();
 export const SOUND_PROFILES = {
   ds: { label: "DS", description: "Crisp, tiny digital clicks and playful handheld notes.", shape: "square", click: 780, end: 520, gain: 0.025, tail: 0.055, harmonic: 2, shimmer: 0.005, hover: 1550, noise: 0.035, rating: 392, ratingShape: "triangle", ratingTail: 0.11, low: 900, high: 3400 },
@@ -13,7 +14,14 @@ export const SOUND_PROFILES = {
   ps2: { label: "PS2", description: "Lower, spacious tones with a floating harmonic tail.", shape: "sine", click: 310, end: 207, gain: 0.06, tail: 0.12, harmonic: 1.5, shimmer: 0.02, hover: 760, noise: 0.025, rating: 196, ratingShape: "sine", ratingTail: 0.18, low: 350, high: 1700 },
   dreamcast: { label: "Dreamcast", description: "Bright arcade-like taps and a warm, optimistic chime.", shape: "triangle", click: 880, end: 1320, gain: 0.05, tail: 0.08, harmonic: 1.5, shimmer: 0.018, hover: 1800, noise: 0.04, rating: 440, ratingShape: "sine", ratingTail: 0.11, low: 900, high: 3200 },
 };
-let soundProfile = "3ds";
+SOUND_PROFILES.mixed = {
+  ...SOUND_PROFILES.ps2,
+  label: "App mix", description: "3DS rating chimes with PS2 clicks, hover, navigation, fold, and bubbly slider sounds.",
+  rating: SOUND_PROFILES["3ds"].rating,
+  ratingShape: SOUND_PROFILES["3ds"].ratingShape,
+  ratingTail: SOUND_PROFILES["3ds"].ratingTail,
+};
+let soundProfile = "mixed";
 
 export function setSoundProfile(profile) {
   if (!Object.hasOwn(SOUND_PROFILES, profile)) return false;
@@ -26,6 +34,7 @@ let context;
 let snapBuffer;
 let swipeBuffer;
 let lastPlayed = -Infinity;
+let postureBound = false;
 
 export function getSoundStatus() {
   return {
@@ -33,6 +42,8 @@ export function getSoundStatus() {
     state: context?.state || "locked",
     sampleRate: context?.sampleRate || null,
     profile: soundProfile,
+    postureSupported: Boolean(window.navigator?.devicePosture),
+    posture: window.navigator?.devicePosture?.type || null,
   };
 }
 
@@ -108,7 +119,7 @@ export function playRatingSound(value, previousValue, event) {
   const rating = Math.max(0, Math.min(5, Number(value) || 0));
   withAudio(event, () => {
     if (context?.state !== "running") return;
-    const style = SOUND_PROFILES[soundProfile];
+    const style = SOUND_PROFILES[soundProfile === "mixed" ? "3ds" : soundProfile];
     const frequency = style.rating * 2 ** (rating / 2.5);
     const start = frequency * (value > previousValue ? 0.88 : 1.12);
     playVoice(start, frequency, style.ratingShape, 0.065, style.ratingTail);
@@ -163,12 +174,12 @@ function playSwipe(direction) {
   source.buffer = swipeBuffer;
   const filter = context.createBiquadFilter();
   filter.type = "bandpass";
-  filter.Q.value = 0.65;
+  filter.Q.value = 1.6;
   filter.frequency.setValueAtTime(direction > 0 ? style.low : style.high, now);
   filter.frequency.exponentialRampToValueAtTime(direction > 0 ? style.high : style.low, now + 0.15);
   const volume = context.createGain();
   volume.gain.setValueAtTime(0, now);
-  volume.gain.linearRampToValueAtTime(0.075, now + 0.035);
+  volume.gain.linearRampToValueAtTime(0.025, now + 0.035);
   volume.gain.exponentialRampToValueAtTime(0.001, now + 0.175);
   source.connect(filter).connect(volume).connect(context.destination);
   source.onended = () => {
@@ -178,7 +189,45 @@ function playSwipe(direction) {
   };
   source.start(now);
   source.stop(now + 0.18);
+  const bubbles = direction > 0 ? [0.75, 1, 1.3] : [1.3, 1, 0.75];
+  bubbles.forEach((ratio, index) => {
+    const pitch = style.click * 1.7 * ratio;
+    playVoice(pitch * 0.55, pitch, "sine", 0.035 - index * 0.005, 0.09, index * 0.045);
+  });
   reportSound("swipe", { direction, duration: 180 });
+}
+
+function playFold(unfolding) {
+  if (context?.state !== "running") return;
+  const style = SOUND_PROFILES[soundProfile];
+  const base = style.rating * 1.5;
+  const notes = unfolding ? [1, 1.25, 1.5] : [1.25, 1, 0.75];
+  notes.forEach((ratio, index) => {
+    const frequency = base * ratio;
+    const delay = index * 0.07;
+    playVoice(frequency * (unfolding ? 0.95 : 1.05), frequency, "sine", 0.045, 0.16, delay);
+    playVoice(frequency * style.harmonic, frequency * style.harmonic, "sine", style.shimmer * 0.5, 0.18, delay);
+  });
+  reportSound(unfolding ? "unfold" : "fold", { frequency: base, duration: 320 });
+}
+
+function bindPostureSounds() {
+  // The shared editor iframe must not duplicate the top-level page's posture sound.
+  if (postureBound || (window.top && window.top !== window)) return;
+  const posture = window.navigator?.devicePosture;
+  if (!posture?.addEventListener) return;
+  postureBound = true;
+  let previous = posture.type;
+  posture.addEventListener("change", () => {
+    const next = posture.type;
+    if (!["folded", "continuous"].includes(next) || next === previous) return;
+    const wasKnown = ["folded", "continuous"].includes(previous);
+    previous = next;
+    reportSound("posture");
+    if (!wasKnown || window.document?.visibilityState !== "visible") return;
+    // Never unlock or queue sound from a sensor event; audio needs prior interaction.
+    playFold(next === "continuous");
+  });
 }
 
 /** The developer lab previews the same generators used by real interactions. */
@@ -189,33 +238,62 @@ export function previewSound(type, event) {
     else if (type === "click") playClick(false);
     else if (type === "navigation") playClick(true);
     else if (type === "swipe") playSwipe(1);
+    else if (type === "fold") playFold(false);
+    else if (type === "unfold") playFold(true);
   });
 }
 
+function finishSlider(list, state) {
+  window.clearTimeout(state.timer);
+  state.timer = 0;
+  state.left = state.observedLeft = list.scrollLeft;
+  state.sounded = false;
+  state.armedUntil = 0;
+}
+
 function armSlider(event) {
-  if (!event.isTrusted) return;
+  if (!event.isTrusted || sliderInputEvents.has(event)) return;
   const path = event.composedPath();
+  const isButton = path.some(node => node.matches?.(sliderButtonSelector));
+  if (event.type === "click" && !isButton) return;
   let list = path.find(node => node.matches?.(sliderSelector));
-  if (!list && path.some(node => node.matches?.(sliderButtonSelector))) {
+  if (!list && isButton) {
     const section = path.find(node => node.matches?.(".playing-current, .goty-picker-field, .goty-stats-preview-strip, .finished-stats-playtime-strip"));
     list = section?.querySelector(sliderSelector);
   }
   if (!list) return;
+  sliderInputEvents.add(event);
   let state = sliderStates.get(list);
   if (!state) {
-    state = { left: list.scrollLeft, sounded: false, timer: 0 };
+    state = { left: list.scrollLeft, observedLeft: list.scrollLeft, sounded: false, timer: 0, generation: 0, lastWheel: -Infinity };
     sliderStates.set(list, state);
   }
   if (event.type === "pointerover") return;
-  // Passive wheel handlers may run after compositor scrolling has already started.
-  if (event.type !== "wheel" && !state.sounded && performance.now() > (state.armedUntil || 0)) state.left = list.scrollLeft;
-  state.armedUntil = performance.now() + 1500;
+  const now = performance.now();
+  const wheelDirection = Math.sign(event.deltaX || 0);
+  const newGesture = event.type !== "wheel" || !state.armedUntil
+    || now > state.armedUntil || now - state.lastWheel > 180
+    || wheelDirection !== state.wheelDirection;
+  if (newGesture) {
+    window.clearTimeout(state.timer);
+    state.timer = 0;
+    state.generation++;
+    // Passive wheel handlers can run after compositor scrolling starts.
+    state.left = event.type === "wheel" ? state.observedLeft : list.scrollLeft;
+    state.sounded = false;
+  }
+  if (event.type === "wheel") {
+    state.lastWheel = now;
+    state.wheelDirection = wheelDirection;
+  }
+  state.armedUntil = now + 2000;
 }
 
 function sliderScrolled(event) {
   const list = event.target;
   const state = sliderStates.get(list);
   if (!state) return;
+  state.observedLeft = list.scrollLeft;
   if (!state.armedUntil || performance.now() > state.armedUntil) {
     state.left = list.scrollLeft;
     return;
@@ -226,23 +304,27 @@ function sliderScrolled(event) {
     state.sounded = true;
   }
   window.clearTimeout(state.timer);
+  const generation = state.generation;
   state.timer = window.setTimeout(() => {
-    state.left = list.scrollLeft;
-    state.sounded = false;
-    state.armedUntil = 0;
-  }, 150);
+    if (state.generation === generation) finishSlider(list, state);
+  }, 180);
 }
 
 /** Delegation also covers cards appended by batch loading and shadow-root Shelf cards. */
 export function bindCardHoverSounds(root) {
   if (boundRoots.has(root)) return;
   boundRoots.add(root);
+  bindPostureSounds();
   root.addEventListener("pointerdown", unlockAudio, { capture: true, passive: true });
   root.addEventListener("keydown", unlockAudio, { capture: true, passive: true });
-  for (const type of ["pointerover", "pointerdown", "wheel", "keydown"]) {
+  for (const type of ["pointerover", "pointerdown", "wheel", "keydown", "click"]) {
     root.addEventListener(type, armSlider, { capture: true, passive: true });
   }
   root.addEventListener("scroll", sliderScrolled, { capture: true, passive: true });
+  root.addEventListener("scrollend", event => {
+    const state = sliderStates.get(event.target);
+    if (state?.sounded) finishSlider(event.target, state);
+  }, { capture: true, passive: true });
   root.addEventListener("click", event => {
     if (!event.isTrusted || handledEvents.has(event)) return;
     const path = event.composedPath();
