@@ -16,20 +16,19 @@
       <div class="audio-controls"><span id="audioStatus" class="status">Audio locked</span><button class="primary" id="enableAudio" data-sound-preview="click">Enable audio ↗</button><small>Click once to enable playback, then try the controls below.</small></div>
     </header>
 
-    <section class="preset-panel" aria-label="Console sound presets">
-      <div class="preset-heading"><span class="eyebrow">Console-inspired presets</span><span class="tag">App mix is the default</span></div>
-      <div class="presets"><button data-profile="mixed" data-sound-preview="" aria-pressed="true"><strong>App mix</strong><small>3DS ratings + PS2</small></button><button data-profile="ds" data-sound-preview="" aria-pressed="false"><strong>DS</strong><small>Crisp & playful</small></button><button data-profile="3ds" data-sound-preview="" aria-pressed="false"><strong>3DS</strong><small>Soft & glassy</small></button><button data-profile="ps2" data-sound-preview="" aria-pressed="false"><strong>PS2</strong><small>Low & spacious</small></button><button data-profile="dreamcast" data-sound-preview="" aria-pressed="false"><strong>Dreamcast</strong><small>Bright & warm</small></button></div>
-      <p class="hint" id="presetDescription">3DS rating chimes with PS2 clicks, hover, navigation, fold, and bubbly slider sounds.</p><p class="preset-note">Original synthesized sounds. Preset changes here apply only to this test page.</p>
-    </section>
+    <section class="sound-set" aria-label="Custom sound set"><div class="preset-heading"><span class="eyebrow">The Gamelist sound set</span><span class="tag">Custom</span></div><p class="hint">3DS-inspired ratings. PS2-inspired clicks and navigation. Soft swishes with a hint of bubbles, short open/close notes, and distinct game actions.</p></section>
 
     <section class="preview-strip" aria-label="Sound previews">
       <span class="eyebrow">Quick listen</span>
-      <button data-sound-preview="hover">↗ Hover snap <small>35ms</small></button>
-      <button data-sound-preview="click">● Button click <small id="clickDuration">144ms</small></button>
+      <button data-sound-preview="hover">↗ Hover click <small>28ms</small></button>
+      <button data-sound-preview="click">● Button click <small>144ms</small></button>
       <button data-sound-preview="navigation">⌘ Navigation <small>+25% pitch</small></button>
       <button data-sound-preview="swipe">⇢ Slider swish <small>180ms</small></button>
-      <button data-sound-preview="fold">↙ Fold <small>Closing chime</small></button>
-      <button data-sound-preview="unfold">↗ Unfold <small>Opening chime</small></button>
+      <button data-sound-preview="fold">↙ Fold <small>Close click</small></button>
+      <button data-sound-preview="unfold">↗ Unfold <small>Open click</small></button>
+      <button data-sound-preview="congrats">✦ GOTY congrats <small>Celebration</small></button>
+      <button data-sound-preview="bounce-up">↑ Arrive up <small>Soft bounce</small></button>
+      <button data-sound-preview="bounce-down">↓ Arrive down <small>Lower pitch</small></button>
     </section>
 
     <div class="workspace">
@@ -61,14 +60,16 @@
         </section>
 
         <section class="panel" aria-labelledby="hoverTitle">
-          <div class="panel-head"><div><p class="eyebrow">03 / Cards</p><h2 id="hoverTitle">Hover & enter</h2></div><span class="tag">35ms snap</span></div>
-          <p class="hint">Enter a card to hear the snap. Click or tap to test the opening sound.</p>
-          <div class="hover-targets"><button class="game-card"><span class="card-icon">▶</span><span><small>Currently playing</small><strong>Continue the adventure</strong></span><span>↗</span></button><button class="playing-finished-game"><span class="card-icon">✓</span><span><small>Last finished</small><strong>Another one complete</strong></span><span>↗</span></button><button class="completed-row"><span class="card-icon">★</span><span><small>Finished games</small><strong>A perfect ending</strong></span><span>↗</span></button></div>
+          <div class="panel-head"><div><p class="eyebrow">03 / Cards</p><h2 id="hoverTitle">Hover & enter</h2></div><span class="tag">28ms click</span></div>
+          <p class="hint">Currently Playing card bodies stay silent. Other cards use the hover click. Click or tap to test opening.</p>
+          <div class="hover-targets"><button class="game-card playing-card"><span class="card-icon">▶</span><span><small>Currently playing</small><strong>Continue the adventure</strong></span><span>↗</span></button><button class="playing-finished-game"><span class="card-icon">✓</span><span><small>Last finished</small><strong>Another one complete</strong></span><span>↗</span></button><button class="completed-row"><span class="card-icon">★</span><span><small>Finished games</small><strong>A perfect ending</strong></span><span>↗</span></button></div>
           <p class="detail" id="cardResult" role="status">Sample cards only; no games will be changed.</p>
         </section>
 
+        <section class="panel" aria-labelledby="actionsTitle"><div class="panel-head"><div><p class="eyebrow">04 / Game actions</p><h2 id="actionsTitle">Distinct action cues</h2></div></div><p class="hint">Hover and click each action. Checks use a click when toggled.</p><div class="action-tests"><button data-sound-action="playing">▶ Playing</button><button data-sound-action="stream">▸ Stream</button><button data-sound-action="backlog">↳ Add to backlog</button><button data-sound-action="complete">✓ Complete</button><button data-sound-action="add-game">＋ Add game</button><button data-sound-action="delete">× Delete</button><label class="check-filter"><input type="checkbox"> Test checkbox</label><label class="sr-only" for="calendarTest">Calendar selector</label><input id="calendarTest" type="date" aria-label="Calendar selector"></div></section>
+        <section class="panel" aria-labelledby="sectionsTitle"><div class="panel-head"><div><p class="eyebrow">05 / Sections & stats</p><h2 id="sectionsTitle">Section transitions</h2></div></div><div class="test-tabs"><button data-stats-source-tab="gamelist" aria-pressed="true">Gamelist</button><button data-stats-source-tab="collection" aria-pressed="false">Collection</button></div><div class="test-kpis"><article class="stat" tabindex="0"><strong>128</strong><span>Games</span></article><article class="finished-stats-kpi" tabindex="0"><strong>42</strong><span>Finished</span></article></div><button id="testScrollDown">Jump to page bottom ↓</button></section>
         <section class="panel" aria-labelledby="navigationTitle">
-          <div class="panel-head"><div><p class="eyebrow">04 / Navigation</p><h2 id="navigationTitle">Overlay simulator</h2></div><span class="tag">+25% pitch</span></div>
+          <div class="panel-head"><div><p class="eyebrow">06 / Navigation</p><h2 id="navigationTitle">Overlay simulator</h2></div><span class="tag">+25% pitch</span></div>
           <p class="hint">Compare these higher-pitched navigation controls with the regular button.</p>
           <nav class="mobile-action-dock" aria-label="Test navigation"><button aria-current="page">▦ Library</button><button>▥ Stats</button><button>⚙ Settings</button></nav>
           <div class="comparison"><button id="regularButton">Regular button</button><button disabled>Disabled button</button></div>
@@ -79,14 +80,14 @@
       <aside class="panel diagnostics" aria-labelledby="diagnosticsTitle">
         <div class="panel-head"><div><p class="eyebrow">Live diagnostics</p><h2 id="diagnosticsTitle">Playback log</h2></div><span id="soundCount" class="readout">0</span></div>
         <p class="hint" id="postureStatus">Checking device posture support…</p>
-        <dl class="audio-facts"><div><dt>Audio engine</dt><dd id="engineState">Locked</dd></div><div><dt>Sound preset</dt><dd id="presetState">App mix</dd></div><div><dt>Sample rate</dt><dd id="sampleRate">—</dd></div><div><dt>Last sound</dt><dd id="lastSound">—</dd></div></dl>
+        <dl class="audio-facts"><div><dt>Audio engine</dt><dd id="engineState">Locked</dd></div><div><dt>Sound set</dt><dd>Custom</dd></div><div><dt>Sample rate</dt><dd id="sampleRate">—</dd></div><div><dt>Last sound</dt><dd id="lastSound">—</dd></div></dl>
         <p id="audioHelp" class="hint">Enable audio to start. Hover requires a mouse; the preview buttons also work on touch screens.</p>
         <div class="log-head"><span class="eyebrow">Latest events</span><button class="quiet" id="clearLog" data-sound-preview="">Clear log</button></div>
         <ol id="soundLog" class="sound-log" aria-label="Sound playback events"><li class="log-empty">Waiting for your first interaction.</li></ol>
         <p class="footnote">Logs record sounds scheduled by the audio engine. If events appear but you hear nothing, check your device volume and whether this tab is muted.</p>
       </aside>
     </div>
-    <footer>Gamelist / Sound lab <span>Test interactions only · no library data is loaded or saved</span></footer>
+    <footer id="pageBottom"><button id="testScrollUp" class="scroll-top-button">Back to top ↑</button> Gamelist / Sound lab <span>Test interactions only · no library data is loaded or saved</span></footer>
   </main>
 </body>
 </html>

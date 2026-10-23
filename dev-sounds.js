@@ -1,7 +1,7 @@
-import { bindCardHoverSounds, getSoundStatus, subscribeSoundDiagnostics, previewSound, playRatingSound, SOUND_PROFILES, setSoundProfile } from "./card-hover-sound.js";
+import { bindCardHoverSounds, getSoundStatus, subscribeSoundDiagnostics, previewSound, playRatingSound, CUSTOM_SOUND, scrollWithSound } from "./card-hover-sound.js";
 
 const $ = selector => document.querySelector(selector);
-const names = { hover: "Hover snap", click: "Button click", navigation: "Navigation click", rating: "Rating tone", swipe: "Slider swish", "audio-state": "Audio state", "audio-error": "Audio unavailable", profile: "Preset changed", fold: "Fold chime", unfold: "Unfold chime", posture: "Device posture" };
+const names = { hover: "Hover click", click: "Button click", navigation: "Navigation click", rating: "Rating tone", swipe: "Slider swish", "audio-state": "Audio state", "audio-error": "Audio unavailable", profile: "Preset changed", fold: "Close click", unfold: "Open click", posture: "Device posture" };
 let total = 0;
 let rating = 0;
 
@@ -14,7 +14,6 @@ function updateAudioStatus() {
   $("#audioStatus").textContent = !status.supported ? "Audio unsupported" : running ? "Audio ready" : `Audio ${status.state}`;
   $("#audioStatus").classList.toggle("ready", running);
   $("#engineState").textContent = !status.supported ? "Unsupported" : status.state;
-  $("#presetState").textContent = SOUND_PROFILES[status.profile].label;
   $("#sampleRate").textContent = status.sampleRate ? `${(status.sampleRate / 1000).toFixed(1)} kHz` : "—";
   $("#enableAudio").textContent = running ? "Test audio ↗" : "Enable audio ↗";
   if (!status.supported) $("#audioHelp").textContent = "This browser does not support Web Audio. Open this page in a browser with Web Audio support.";
@@ -33,8 +32,8 @@ subscribeSoundDiagnostics(event => {
   if (event.type === "swipe") details.push(event.direction > 0 ? "Next slide · rising sweep" : "Previous slide · falling sweep");
   if (event.frequency) details.push(`${Math.round(event.frequency)} Hz`);
   if (event.duration) details.push(`${event.duration}ms`);
-  if (!isSound) details.push(event.type === "profile" ? SOUND_PROFILES[event.profile].label : event.type === "posture" ? event.posture : event.state);
-  if (isSound) details.push(SOUND_PROFILES[event.profile].label);
+  if (!isSound) details.push(event.type === "posture" ? event.posture : event.state);
+  if (isSound) details.push("Custom");
   const item = document.createElement("li");
   const title = document.createElement("div");
   title.className = "log-title";
@@ -58,15 +57,6 @@ updateAudioStatus();
 document.querySelectorAll("[data-sound-preview]").forEach(button => {
   if (button.dataset.soundPreview) button.addEventListener("click", event => previewSound(button.dataset.soundPreview, event));
 });
-document.querySelectorAll("[data-profile]").forEach(button => button.addEventListener("click", event => {
-  setSoundProfile(button.dataset.profile);
-  document.querySelectorAll("[data-profile]").forEach(item => item.setAttribute("aria-pressed", String(item === button)));
-  const style = SOUND_PROFILES[button.dataset.profile];
-  $("#presetDescription").textContent = style.description;
-  $("#clickDuration").textContent = `${Math.round(style.tail * 1.2 * 1000)}ms`;
-  $("#ratingDetail").textContent = `${rating} / 5 · ${Math.round(style.rating * 2 ** (rating / 2.5))} Hz · ${style.label} preset`;
-  previewSound("click", event);
-}));
 $("#clearLog").addEventListener("click", () => {
   $("#soundLog").replaceChildren();
   total = 0;
@@ -79,7 +69,7 @@ function setRating(value, event) {
   rating = Math.max(0, Math.min(5, Math.round(Number(value) * 2) / 2));
   $("#ratingRange").value = String(rating);
   $("#ratingOutput").innerHTML = `${rating}<span>/5</span>`;
-  $("#ratingDetail").textContent = `${rating} / 5 · ${Math.round(SOUND_PROFILES[getSoundStatus().profile].rating * 2 ** (rating / 2.5))} Hz${rating === previous ? " · unchanged" : rating > previous ? " · rising tone" : " · falling tone"}`;
+  $("#ratingDetail").textContent = `${rating} / 5 · ${Math.round(CUSTOM_SOUND.rating * 2 ** (rating / 2.5))} Hz${rating === previous ? " · unchanged" : rating > previous ? " · rising tone" : " · falling tone"}`;
   document.querySelectorAll("[data-rate]").forEach(button => {
     const star = Number(button.dataset.rate);
     button.classList.toggle("selected", rating >= star);
@@ -126,3 +116,14 @@ document.querySelectorAll(".mobile-action-dock button").forEach(button => button
   button.setAttribute("aria-current", "page");
   $("#navigationResult").textContent = `${button.textContent.trim()} selected · navigation pitch is 25% higher.`;
 }));
+
+for (const type of ["playing", "stream", "backlog", "complete", "delete", "add-game"]) {
+  names[type] = type === "add-game" ? "Add game cheer" : `${type[0].toUpperCase()}${type.slice(1)} action`;
+  names[`hover-${type}`] = `${names[type]} hover`;
+}
+Object.assign(names, { congrats: "GOTY congratulations", "bounce-up": "Arrived at top", "bounce-down": "Arrived below" });
+document.querySelectorAll(".test-tabs button").forEach(button => button.addEventListener("click", () => {
+  document.querySelectorAll(".test-tabs button").forEach(item => item.setAttribute("aria-pressed", String(item === button)));
+}));
+$("#testScrollDown").addEventListener("click", () => scrollWithSound($("#pageBottom")));
+$("#testScrollUp").addEventListener("click", () => scrollWithSound(0));

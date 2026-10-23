@@ -36,62 +36,39 @@ const unsubscribe = sound.subscribeSoundDiagnostics(event => events.push(event))
 assert.equal(sound.getSoundStatus().state, "locked", "Reading diagnostics must not create an audio context");
 sound.previewSound("click", { isTrusted: false });
 assert.equal(audio, undefined, "Scripted interactions must stay silent");
-assert.equal(sound.getSoundStatus().profile, "mixed", "App must default to the selected console mix");
+assert.equal(sound.getSoundStatus().profile, "custom");
+
 sound.previewSound("click", trusted);
-assert.equal(events.at(-1).frequency, sound.SOUND_PROFILES.ps2.click, "Default button sounds must use PS2");
-sound.playRatingSound(5, 0, trusted);
-assert.equal(events.at(-1).frequency, sound.SOUND_PROFILES["3ds"].rating * 4, "Default ratings must use 3DS");
-const ratingPitches = new Set();
-
-for (const profile of Object.keys(sound.SOUND_PROFILES)) {
-  assert.ok(sound.setSoundProfile(profile));
-  sound.previewSound("click", trusted);
-  const click = events.at(-1);
-  assert.equal(click.type, "click");
-  assert.equal(click.profile, profile);
-  assert.equal(audio.voices.at(-2).type, sound.SOUND_PROFILES[profile].shape);
-  sound.previewSound("navigation", trusted);
-  assert.equal(events.at(-1).frequency / click.frequency, 1.25, "Navigation must remain 25% higher across presets");
-
-  let previous = -1;
-  let previousPitch = 0;
-  for (let value = 0; value <= 5; value += 0.5) {
-    sound.playRatingSound(value, previous, trusted);
-    const event = events.at(-1);
-    assert.equal(event.type, "rating");
-    assert.ok(event.frequency > previousPitch, "Every half-star increase must raise the rating pitch");
-    const voice = audio.voices.at(-2);
-    assert.ok(voice.frequency.start < voice.frequency.end, "Increasing scores must glide upward");
-    previous = value;
-    previousPitch = event.frequency;
-  }
-  ratingPitches.add(previousPitch);
-  sound.playRatingSound(1, 5, trusted);
-  assert.ok(audio.voices.at(-2).frequency.start > audio.voices.at(-2).frequency.end, "Decreasing scores must glide downward");
-  const count = events.length;
-  sound.playRatingSound(5, 5, trusted);
-  assert.equal(events.length, count, "Unchanged ratings must not play a tone");
-  audio.currentTime += 1;
-  sound.previewSound("hover", trusted);
-  assert.equal(events.at(-1).type, "hover");
-  sound.previewSound("swipe", trusted);
-  assert.equal(events.at(-1).type, "swipe");
-  sound.previewSound("fold", trusted);
-  assert.equal(events.at(-1).type, "fold");
-  assert.ok(audio.voices.at(-6).frequency.end > audio.voices.at(-2).frequency.end, "Fold notes must descend");
-  sound.previewSound("unfold", trusted);
-  assert.equal(events.at(-1).type, "unfold");
-  assert.ok(audio.voices.at(-6).frequency.end < audio.voices.at(-2).frequency.end, "Unfold notes must ascend");
+assert.equal(events.at(-1).frequency, 310, "Clicks must retain the PS2-style voice");
+sound.previewSound("navigation", trusted);
+assert.equal(events.at(-1).frequency, 310 * 1.25);
+let previous = -1;
+let previousPitch = 0;
+for (let value = 0; value <= 5; value += 0.5) {
+  sound.playRatingSound(value, previous, trusted);
+  const event = events.at(-1);
+  assert.equal(event.type, "rating");
+  assert.ok(event.frequency > previousPitch);
+  assert.ok(audio.voices.at(-2).frequency.start < audio.voices.at(-2).frequency.end);
+  previous = value;
+  previousPitch = event.frequency;
 }
-assert.equal(ratingPitches.size, 4, "Each console preset must have its own pitch range");
-assert.ok(audio.volumes.every(volume => volume.gain.peak <= 0.1), "Individual voices must keep their quiet UI envelope");
-const current = sound.getSoundStatus().profile;
-assert.equal(sound.setSoundProfile("invalid"), false);
-assert.equal(sound.getSoundStatus().profile, current);
+assert.equal(previousPitch, 330 * 4, "Ratings must retain the 3DS voice");
+sound.playRatingSound(1, 5, trusted);
+assert.ok(audio.voices.at(-2).frequency.start > audio.voices.at(-2).frequency.end);
+let count = events.length;
+sound.playRatingSound(1, 1, trusted);
+assert.equal(events.length, count, "Unchanged ratings stay silent");
+for (const type of ["hover", "swipe", "fold", "unfold", "playing", "stream", "backlog", "complete", "delete", "add-game", "congrats", "bounce-up", "bounce-down", "calendar"]) {
+  audio.currentTime += 1;
+  sound.previewSound(type, trusted);
+  assert.equal(events.at(-1).type, type, `${type} must have a distinct diagnostic event`);
+}
+assert.ok(audio.volumes.every(volume => volume.gain.peak <= 0.1));
 unsubscribe();
-const count = events.length;
+count = events.length;
 sound.previewSound("click", trusted);
-assert.equal(events.length, count, "Diagnostic subscribers must be removable");
+assert.equal(events.length, count);
 
 globalThis.window = {};
 const unsupported = await import("../card-hover-sound.js?unsupported-test");
@@ -122,4 +99,36 @@ assert.equal(changes.filter(event => event.type === "fold").length, 1);
 window.document.visibilityState = "hidden";
 transition("continuous");
 assert.equal(changes.filter(event => event.type === "unfold").length, 1, "Hidden pages must stay silent");
-console.log("UI sound tests passed: console presets and app mix, pitch scaling, ratings, fold/unfold direction and detection, duplicate/background/locked silence, diagnostics, unsupported audio.");
+console.log("UI sound tests passed: custom action cues, pitch scaling, ratings, fold/unfold detection, duplicate/background/locked silence, diagnostics, unsupported audio.");
+
+// Regress the consecutive-slider bug: a new movement must invalidate the old reset timer.
+globalThis.window = { AudioContext: TestAudioContext, setTimeout, clearTimeout, document: { visibilityState: "visible" } };
+const sliders = await import("../card-hover-sound.js?slider-regression");
+const rootListeners = new Map();
+const root = { addEventListener(type, fn) { const list = rootListeners.get(type) || []; list.push(fn); rootListeners.set(type, list); } };
+const carousel = { scrollLeft: 0 };
+const arrow = { matches: selector => selector.includes(".playing-slider-button") };
+const section = { matches: selector => selector.includes(".playing-current"), querySelector: () => carousel };
+const emit = (type, target = arrow) => {
+  const event = { type, isTrusted: true, target, composedPath: () => [arrow, section] };
+  for (const listener of rootListeners.get(type) || []) listener(event);
+};
+const swishes = [];
+sliders.subscribeSoundDiagnostics(event => { if (event.type === "swipe") swishes.push(event); });
+sliders.bindCardHoverSounds(root);
+sliders.previewSound("click", trusted);
+for (let i = 0; i < 8; i++) {
+  emit("pointerdown");
+  emit("click");
+  carousel.scrollLeft += 100;
+  emit("scroll", carousel);
+  await new Promise(resolve => setTimeout(resolve, 20));
+}
+assert.equal(swishes.length, 8, "Every consecutive movement must sound, even before the old timer settles");
+emit("scrollend", carousel);
+emit("click");
+emit("scroll", carousel);
+assert.equal(swishes.length, 8, "Clicking at an edge without moving must stay silent");
+await new Promise(resolve => setTimeout(resolve, 200));
+assert.equal(swishes.length, 8, "Settling must not replay a sound");
+console.log("Consecutive slider regression tests passed (eight rapid moves, edge silence, stale timers).");
