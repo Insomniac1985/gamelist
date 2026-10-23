@@ -129,12 +129,12 @@ function runnerHtml(settings = {}) {
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Shelf Mass Add</title>
+  <title>Shelf Mass Import New Additions</title>
   ${runnerStyle({ maxWidth: "900px", settings, page: "shelf" })}
 </head>
 <body>
   <main>
-    <h1>Shelf Mass Add</h1>
+    <h1>Shelf Mass Import New Additions</h1>
     <p>This accepts pending Shelf New additions into the physical collection in small batches.</p>
     <div class="row">
       <label>Batch size <input id="limit" type="number" min="1" max="50" value="10"></label>

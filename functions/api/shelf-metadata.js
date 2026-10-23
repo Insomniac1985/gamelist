@@ -320,6 +320,7 @@ function runnerHtml(settings = {}) {
       <label><input id="igdb" type="checkbox" checked> IGDB</label>
       <label><input id="pricecharting" type="checkbox" checked> PriceCharting</label>
       <label><input id="pending" type="checkbox"> Include pending</label>
+      <label><input id="without-picture" type="checkbox"> Missing data only</label>
       <button class="primary" id="start" type="button">Fill missing metadata</button>
       <a href="/?list=shelf">Back to Shelf</a>
     </div>
@@ -334,6 +335,7 @@ function runnerHtml(settings = {}) {
     const igdb = document.querySelector("#igdb");
     const pricecharting = document.querySelector("#pricecharting");
     const pending = document.querySelector("#pending");
+    const withoutPicture = document.querySelector("#without-picture");
     const platform = document.querySelector("#platform");
     const media = document.querySelector("#media");
     const password = () => sessionStorage.getItem("gamelist-editor:password") || "";
@@ -378,7 +380,7 @@ function runnerHtml(settings = {}) {
         const shelf = await fetch("/api/shelf", { cache: "no-store" }).then((response) => readJson(response, "GET /api/shelf"));
         const games = [...(shelf.sourceGames || []), ...(shelf.games || [])];
         const queue = games
-          .filter((game) => game.title && (pending.checked || !game.pendingCollection) && matchesPlatform(game) && matchesMedia(game))
+          .filter((game) => game.title && (pending.checked || !game.pendingCollection) && matchesPlatform(game) && matchesMedia(game) && (!withoutPicture.checked || !String(game.cover || "").trim()))
           .map((game) => ({ game, needsIgdb: igdb.checked && missingIgdb(game), needsPrice: pricecharting.checked && missingPrice(game) }))
           .filter((item) => item.needsIgdb || item.needsPrice);
         const ids = queue.map((item) => item.game.id);

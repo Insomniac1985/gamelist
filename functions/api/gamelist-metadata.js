@@ -160,7 +160,9 @@ function runnerHtml(settings = {}) {
     <div class="row">
       <label class="control">Batch size <input id="limit" type="number" min="1" max="25" value="5"></label>
       <label class="control">Platform <select id="platform"><option value="all">All platforms</option></select></label>
+      <label class="control">Media <select id="media"><option value="all">All</option><option value="physical">Physical</option><option value="digital">Digital</option></select></label>
       <label><input id="completed" type="checkbox"> Include completed</label>
+      <label><input id="without-picture" type="checkbox"> Missing data only</label>
       <button class="primary" id="start" type="button">Fill missing metadata</button>
       <a href="/">Back to Gamelist</a>
     </div>
@@ -174,6 +176,8 @@ function runnerHtml(settings = {}) {
     const limit = document.querySelector("#limit");
     const completed = document.querySelector("#completed");
     const platform = document.querySelector("#platform");
+    const media = document.querySelector("#media");
+    const withoutPicture = document.querySelector("#without-picture");
     const password = () => sessionStorage.getItem("gamelist-editor:password") || "";
     const line = (text) => { log.textContent += text + "\\n"; log.scrollTop = log.scrollHeight; };
     const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
@@ -187,6 +191,8 @@ function runnerHtml(settings = {}) {
     const platformKey = (value) => String(value || "").trim().toLowerCase();
     const platformLabel = (value) => String(value || "").trim() || "Unknown";
     const matchesPlatform = (game) => platform.value === "all" || platformKey(game.platform) === platform.value;
+    const isDigital = (game) => Boolean(game.digital || game.dlc);
+    const matchesMedia = (game) => media.value === "all" || (media.value === "digital" ? isDigital(game) : !isDigital(game));
     async function hydratePlatforms() {
       const data = await fetch("/api/sync", { cache: "no-store" }).then((response) => readJson(response, "GET /api/sync"));
       const platforms = [...new Map((data.games || []).map((game) => [platformKey(game.platform), platformLabel(game.platform)]).filter(([key]) => key)).entries()].sort((a, b) => a[1].localeCompare(b[1]));
@@ -199,7 +205,7 @@ function runnerHtml(settings = {}) {
       log.textContent = "";
       try {
         const data = await fetch("/api/sync", { cache: "no-store" }).then((response) => readJson(response, "GET /api/sync"));
-        const queue = (data.games || []).filter((game) => game.title && (completed.checked || !game.completedAt) && matchesPlatform(game) && missingMetadata(game));
+        const queue = (data.games || []).filter((game) => game.title && (completed.checked || !game.completedAt) && matchesPlatform(game) && matchesMedia(game) && (!withoutPicture.checked || !String(game.cover || "").trim()) && missingMetadata(game));
         const ids = queue.map((game) => game.id);
         if (!ids.length) { line("No Gamelist games are missing metadata for the selected platform."); return; }
         const size = Math.max(1, Math.min(25, Number(limit.value) || 5));
