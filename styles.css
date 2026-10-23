@@ -4537,6 +4537,7 @@ body.dialog-open .floating-edit-actions {
 }
 
 .platform-logo-choice {
+  margin: 0;
   position: relative;
   z-index: 2;
   display: flex;
@@ -4599,7 +4600,6 @@ body.dialog-open .floating-edit-actions {
   height: 22px;
   flex-basis: 22px;
   overflow: visible;
-  transform: translateY(2px);
 }
 .settings-region-flag-icon img {
   display: block;
@@ -4642,7 +4642,6 @@ body.dialog-open .floating-edit-actions {
   min-width: 0;
   font-size: 14px;
   line-height: 1;
-  top: 2px;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -5159,6 +5158,13 @@ body[data-mobile-section="upcoming"] .column:not(#upcoming) {
 .column-head span {
   color: var(--muted);
   margin-bottom: 7px;
+}
+
+.list-load-more {
+  grid-column: 1 / -1;
+  justify-self: center;
+  margin: 12px 0;
+  min-height: 42px;
 }
 
 .card-list {

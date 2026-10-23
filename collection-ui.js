@@ -1,3 +1,4 @@
+import { renderBatchedList } from "./batched-list.js";
 import { embeddedGameEditor, connectEmbeddedGameEditor } from "./shared-add-game.js";
 import { normalizeSearchText, bindModalTouchGuard, createGameCardShell, bindActivityCardParallax, mountActivitySlider, mountTwitchPreview, mountReleaseCalendar, finishedGameMarkup, achievementCardMarkup, achievementDashboardMarkup, achievementPanelMarkup, completedCardMarkup, horizontalCarouselState, syncViewModeButton, slideHorizontalCarousel, comparePlayingGames, timeBadgeMarkup, guideLinksMarkup, storeButtonsMarkup, activityTrailerUrl, preloadPausedActivityTrailers, syncFocusedActivityTrailer, activityReleaseStatus, activityCoverOverride, activityLocalGameForTitle, activityTitleMatchScore, activityAllowsPsnCardTrophies, formatFooterDate, formatFooterDateTime, formatFooterShortDate, confirmGameDelete } from "./activity-ui.js";
 import { applySiteTheme, normalizeThemeSettings, ownerCardColorClass, ownerColorClass } from "./theme-system.js";
@@ -1713,45 +1714,34 @@ function renderLibrary() {
   if (unifiedShelfScope) {
     el.tabs.hidden = true;
     el.libraryTitle.hidden = false;
-    const signature = JSON.stringify([state.unifiedRevision || 0, state.viewMode, state.filters.tab, games.map(game => game.id)]);
-    if (state.unifiedLibrarySignature !== signature) {
-      state.unifiedLibrarySignature = signature;
-      state.unifiedCardCache ||= new Map();
-      const fragment = document.createDocumentFragment();
-      games.forEach((game, index) => {
-        const key = `${state.viewMode}:${game.id}`;
-        let node = state.unifiedCardCache.get(key);
-        if (!node) {
-          if (state.viewMode === "list") {
-            const template = document.createElement("template");
-            template.innerHTML = gameRow(game);
-            node = template.content.firstElementChild;
-            node.querySelectorAll(".game-row-cover").forEach(bindRowCoverFrame);
-          } else node = gameCard(game, { imagePriority: index < 6 ? "eager" : "lazy" });
-          state.unifiedCardCache.set(key, node);
-        }
-        fragment.append(node);
-      });
-      el.shelf.replaceChildren(fragment);
-      settleAfterImages(el.shelf);
-    }
+    const signature = JSON.stringify([state.unifiedRevision || 0, state.viewMode, state.filters, state.unifiedMedia, games.map(game => game.id)]);
     el.empty.hidden = games.length > 0;
-    if (state.viewMode === "list") requestAnimationFrame(updateShelfRowTitleOverflow);
-    return;
+    if (state.unifiedLibrarySignature === signature) return;
+    state.unifiedLibrarySignature = signature;
+    state.unifiedCardCache ||= new Map();
   }
-  el.shelf.innerHTML = "";
-  if (state.viewMode === "list") {
-    el.shelf.innerHTML = games.map(gameRow).join("");
-    el.shelf.querySelectorAll(".game-row-cover").forEach(bindRowCoverFrame);
-    requestAnimationFrame(updateShelfRowTitleOverflow);
-  } else {
-    const fragment = document.createDocumentFragment();
-    games.forEach((game, index) => fragment.appendChild(gameCard(game, { imagePriority: index < 6 ? "eager" : "lazy" })));
-    el.shelf.appendChild(fragment);
-  }
+  renderBatchedList(el.shelf, games, {
+    resetKey: JSON.stringify([state.viewMode, state.filters, state.unifiedMedia]),
+    loadMoreLabel: tt("Show more"),
+    createItem: (game, index) => {
+      const key = `${state.viewMode}:${game.id}`;
+      let node = unifiedShelfScope ? state.unifiedCardCache.get(key) : null;
+      if (!node) {
+        if (state.viewMode === "list") {
+          const template = document.createElement("template");
+          template.innerHTML = gameRow(game);
+          node = template.content.firstElementChild;
+          node.querySelectorAll(".game-row-cover").forEach(bindRowCoverFrame);
+        } else node = gameCard(game, { imagePriority: index < 6 ? "eager" : "lazy" });
+        if (unifiedShelfScope) state.unifiedCardCache.set(key, node);
+      }
+      node.hidden = false;
+      return node;
+    },
+    beforeAppend: settleAfterImages,
+    afterAppend: () => scheduleRenderSettle("library"),
+  });
   el.empty.hidden = games.length > 0;
-  settleAfterImages(el.shelf);
-  scheduleRenderSettle("library");
 }
 
 function syncShelfTabIndicator() {
