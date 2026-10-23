@@ -4599,7 +4599,6 @@ body.dialog-open .floating-edit-actions {
   height: 22px;
   flex-basis: 22px;
   overflow: visible;
-  transform: translateY(2px);
 }
 .settings-region-flag-icon img {
   display: block;
@@ -4642,7 +4641,6 @@ body.dialog-open .floating-edit-actions {
   min-width: 0;
   font-size: 14px;
   line-height: 1;
-  top: 2px;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;

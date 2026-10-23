@@ -5,7 +5,7 @@ import { normalizeSearchText, bindModalTouchGuard, createGameCardShell, bindActi
 import { applySiteTheme, normalizeThemeSettings, ownerCardColorClass, ownerColorClass, themeSettingsContent, bindThemeSettingsContent, readThemeSettingsContent } from "./theme-system.js";
 import { applyDocumentTranslations, languageOptions, normalizeLanguage, t } from "./i18n.js";
 import { accountSettingsMarkup } from "./account-settings-ui.js";
-import { isPlayasiaStore, syncGameListControls, syncGameListSlider, syncStoreFieldIcon, preventImplicitGameSubmit } from "./game-editor-controls.js";
+import { isPlayasiaStore, syncGameListControls, syncGameListSlider, syncStoreFieldIcon, SHELF_COUNTRIES, preventImplicitGameSubmit } from "./game-editor-controls.js";
 
 document.querySelector("#settingsAccountsMount").innerHTML = accountSettingsMarkup();
 
@@ -7015,7 +7015,7 @@ function renderFilters() {
   fillSelect(region, ["all", ...unique(collectionRecords().map(game => game.country).filter(Boolean))], state.filters.region, tt("All regions"));
   const condition = document.querySelector("#collectionConditionFilter");
   condition.value = state.filters.condition;
-  syncStyledSelect(region, { activeValue: "all" });
+  syncStyledSelect(region, { flags: true, activeValue: "all" });
   syncStyledSelect(condition, { activeValue: "all" });
   syncStyledSelect(el.sortFilter, { activeValue: null });
 }
@@ -7052,7 +7052,9 @@ function syncStyledSelect(select, options = {}) {
   const selectOptions = [...select.options].map((option) => ({
     value: option.value,
     label: option.textContent.trim(),
-    flag: option.dataset.flag || "",
+    flag: option.dataset.flag || (options.flags && option.value && option.value !== "all"
+      ? `assets/flags/${SHELF_COUNTRIES.find(([country]) => country === option.value)?.[2] || "world"}.svg`
+      : ""),
     selected: option.selected,
     disabled: option.disabled || option.hidden,
     fontFamily: option.style.fontFamily || "",

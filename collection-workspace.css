@@ -269,10 +269,10 @@ body[data-mobile-section="new"] #collectionLibrary:not([hidden]) + #new:not([hid
 /* Keep the full toolbar on one line on regular desktop screens. */
 @media (min-width: 1301px) {
   .toolbar:not(.collection-toolbar) {
-    grid-template-columns: minmax(180px, 1.35fr) 132px minmax(150px, 1.1fr) minmax(130px, .9fr) minmax(220px, 1.45fr) calc(var(--toolbar-control-height) * 2 + 6px);
+    grid-template-columns: minmax(180px, 2.05fr) 132px minmax(150px, 1.1fr) minmax(130px, .9fr) minmax(190px, .75fr) calc(var(--toolbar-control-height) * 2 + 6px);
   }
   .toolbar.collection-toolbar {
-    grid-template-columns: minmax(180px, 1.35fr) minmax(140px, 1fr) minmax(120px, .85fr) minmax(120px, .85fr) minmax(120px, .85fr) minmax(190px, 1.35fr) calc(var(--toolbar-control-height) * 2 + 6px);
+    grid-template-columns: minmax(180px, 1.35fr) minmax(140px, 1.45fr) minmax(120px, .85fr) minmax(120px, .85fr) minmax(120px, .85fr) minmax(190px, .9fr) calc(var(--toolbar-control-height) * 2 + 6px);
   }
   .toolbar:not(.collection-toolbar) > .search,
   .toolbar.collection-toolbar > .search,
