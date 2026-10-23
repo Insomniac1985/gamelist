@@ -4537,6 +4537,7 @@ body.dialog-open .floating-edit-actions {
 }
 
 .platform-logo-choice {
+  margin: 0;
   position: relative;
   z-index: 2;
   display: flex;
