@@ -8,6 +8,7 @@ const STRINGS = {
     "Site settings": "Ajustes del sitio",
     "Shelf settings": "Ajustes de Estantería",
     Settings: "Ajustes",
+    "Show more": "Mostrar más",
     Save: "Guardar",
     Close: "Cerrar",
     "Log in to edit": "Inicia sesión para editar",

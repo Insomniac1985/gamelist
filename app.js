@@ -1,3 +1,4 @@
+import { renderBatchedList, stopBatchedList } from "./batched-list.js";
 import { syncMediaFormatToggle } from "./media-format-toggle.js";
 import { mountCollectionWorkspace, prepareCollectionWorkspace } from "./collection-workspace.js";
 import { openSharedAddGame, warmSharedAddGame } from "./shared-add-game.js";
@@ -7274,25 +7275,27 @@ function renderSection(section) {
       && previous.psn === state.psnActivity && previous.steam === state.steamActivity
       && previous.xbox === state.xboxActivity) return;
   list.renderInputs = { signature, collection: collectionData, psn: state.psnActivity, steam: state.steamActivity, xbox: state.xboxActivity };
-  list.innerHTML = "";
   list.classList.toggle("list-view", state.viewMode === "list");
   if (!games.length) {
+    stopBatchedList(list);
     const query = el.searchInput.value.trim();
     list.innerHTML = emptyGamesMarkup(query);
     list.querySelector("[data-add-search]")?.addEventListener("click", () => addGameFromSearch(query, section));
     return;
   }
-  const fragment = document.createDocumentFragment();
-  games.forEach((game, index) => {
-    fragment.appendChild(state.viewMode === "list"
+  renderBatchedList(list, games, {
+    resetKey: JSON.stringify([section, state.viewMode, state.filters, collectionMedia]),
+    loadMoreLabel: tt("Show more"),
+    createItem: (game, index) => state.viewMode === "list"
       ? rowFor(game, section, { imagePriority: index < 10 ? "eager" : "lazy" })
-      : cardFor(game, { imagePriority: index < 6 ? "eager" : "lazy", displaySection: section }));
+      : cardFor(game, { imagePriority: index < 6 ? "eager" : "lazy", displaySection: section }),
+    canLoad: () => !state.draggingId && section === state.mobileSection,
+    beforeAppend: settleAfterImages,
+    afterAppend: (nodes) => {
+      if (manualDragEnabled()) setupDrag(list, nodes);
+      scheduleRenderSettle(`section:${section}`);
+    },
   });
-  list.appendChild(fragment);
-  if (state.viewMode === "list") requestAnimationFrame(() => updateRowTitleOverflow(list));
-  if (manualDragEnabled()) setupDrag(list);
-  settleAfterImages(list);
-  scheduleRenderSettle(`section:${section}`);
 }
 
 function manualDragEnabled() {
@@ -12733,8 +12736,8 @@ function nextOrder(section) {
     .map((game) => Number(game.order) || 0)) + 1;
 }
 
-function setupDrag(list) {
-  list.querySelectorAll(".game-card, .game-row").forEach((item) => {
+function setupDrag(list, items) {
+  items.forEach((item) => {
     item.addEventListener("dragstart", () => {
       state.draggingId = item.dataset.id;
       item.classList.add("dragging");
@@ -12749,7 +12752,7 @@ function setupDrag(list) {
       const dragging = list.querySelector(".dragging");
       const after = getDragAfterElement(list, event.clientY);
       if (!dragging) return;
-      if (after == null) list.appendChild(dragging);
+      if (after == null) list.insertBefore(dragging, list.querySelector(".list-load-more"));
       else list.insertBefore(dragging, after);
     });
   });
@@ -12768,8 +12771,14 @@ function getDragAfterElement(container, y) {
 function saveSectionOrder(list) {
   const editedAt = new Date().toISOString();
   let changed = false;
-  [...list.querySelectorAll(".game-card, .game-row")].forEach((item, index) => {
-    const game = getGame(item.dataset.id);
+  const visibleIds = [...list.querySelectorAll(".game-card, .game-row")].map(item => item.dataset.id);
+  const visible = new Set(visibleIds);
+  const section = list.dataset.section;
+  const remaining = state.games.filter(game => !game.deletedAt
+    && (section === "new" ? isNewAdditionGame(game) : game.section === section)
+    && !game.completedAt && !game.playing && !visible.has(game.id)
+  ).sort((a, b) => compareGames(a, b, section));
+  [...visibleIds.map(getGame), ...remaining].forEach((game, index) => {
     if (!game || game.order === index) return;
     game.order = index;
     markGameEdited(game, editedAt);
