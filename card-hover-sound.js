@@ -16,6 +16,23 @@ export const CUSTOM_SOUND = Object.freeze({
 const style = CUSTOM_SOUND;
 let suppressHoverUntil = 0;
 
+function readSoundsDisabled() {
+  try { return JSON.parse(window.localStorage?.getItem("gamelist:settings:v1") || "{}")?.disableSounds === true; }
+  catch { return false; }
+}
+let soundsDisabled = readSoundsDisabled();
+let outputGain;
+export function setSoundsDisabled(disabled) {
+  const next = disabled === true;
+  if (soundsDisabled === next) return;
+  soundsDisabled = next;
+  if (outputGain) outputGain.gain.setValueAtTime(next ? 0 : 1, context.currentTime);
+  reportSound("audio-state");
+}
+window.addEventListener?.("storage", event => {
+  if (event.key === "gamelist:settings:v1" || event.key === null) setSoundsDisabled(readSoundsDisabled());
+});
+
 let context;
 let swipeBuffer;
 let lastPlayed = -Infinity;
@@ -24,6 +41,7 @@ let postureBound = false;
 export function getSoundStatus() {
   return {
     supported: Boolean(window.AudioContext || window.webkitAudioContext),
+    disabled: soundsDisabled,
     state: context?.state || "locked",
     sampleRate: context?.sampleRate || null,
     profile: "custom",
@@ -44,12 +62,15 @@ function reportSound(type, detail = {}) {
 }
 
 function unlockAudio(event) {
-  if (!event.isTrusted) return;
+  if (!event.isTrusted || soundsDisabled) return;
   const AudioContext = window.AudioContext || window.webkitAudioContext;
   if (!AudioContext) return;
   try {
     if (!context) {
       context = new AudioContext();
+      outputGain = context.createGain();
+      outputGain.gain.value = soundsDisabled ? 0 : 1;
+      outputGain.connect(context.destination);
       context.addEventListener("statechange", () => reportSound("audio-state"));
       reportSound("audio-state");
     }
@@ -73,14 +94,14 @@ function playVoice(start, end, shape, gain, duration, delay = 0) {
   volume.gain.setValueAtTime(0, now);
   volume.gain.linearRampToValueAtTime(gain, now + 0.004);
   volume.gain.exponentialRampToValueAtTime(0.001, now + duration - 0.005);
-  tone.connect(filter).connect(volume).connect(context.destination);
+  tone.connect(filter).connect(volume).connect(outputGain);
   tone.onended = () => { tone.disconnect(); filter.disconnect(); volume.disconnect(); };
   tone.start(now);
   tone.stop(now + duration);
 }
 
 function playClick(higherPitch) {
-  if (context?.state !== "running") return;
+  if (soundsDisabled || context?.state !== "running") return;
   const pitch = higherPitch ? 1.25 : 1;
   playVoice(style.click * pitch, style.end * pitch, style.shape, style.gain, style.tail);
   playVoice(style.click * pitch * style.harmonic, style.end * pitch * style.harmonic, "sine", style.shimmer, style.tail * 1.2);
@@ -102,7 +123,7 @@ export function playRatingSound(value, previousValue, event) {
   if (!event?.isTrusted || value === previousValue) return;
   const rating = Math.max(0, Math.min(5, Number(value) || 0));
   withAudio(event, () => {
-    if (context?.state !== "running") return;
+    if (soundsDisabled || context?.state !== "running") return;
     const frequency = style.rating * 2 ** (rating / 2.5);
     const start = frequency * (value > previousValue ? 0.88 : 1.12);
     playVoice(start, frequency, style.ratingShape, 0.065, style.ratingTail);
@@ -112,7 +133,7 @@ export function playRatingSound(value, previousValue, event) {
 }
 
 function playSnap() {
-  if (context?.state !== "running") return;
+  if (soundsDisabled || context?.state !== "running") return;
   const now = context.currentTime;
   if (now - lastPlayed < 0.06) return;
   lastPlayed = now;
@@ -122,7 +143,7 @@ function playSnap() {
 }
 
 function playAction(type, hover = false) {
-  if (context?.state !== "running") return;
+  if (soundsDisabled || context?.state !== "running") return;
   const notes = {
     playing: [440, 660], stream: [520, 780], backlog: [460, 330],
     complete: [660, 880], delete: [180, 95], "add-game": [620, 830, 990],
@@ -134,7 +155,7 @@ function playAction(type, hover = false) {
 }
 
 export function playUiSound(type, { direction = 1 } = {}) {
-  if (context?.state !== "running") return;
+  if (soundsDisabled || context?.state !== "running") return;
   if (type === "swipe") { playSwipe(direction); return; }
   if (type === "fold" || type === "unfold") { playFold(type === "unfold"); return; }
   if (type === "hover") { playSnap(); return; }
@@ -196,7 +217,7 @@ export function scrollWithSound(target) {
 }
 
 function playSwipe(direction) {
-  if (context?.state !== "running") return;
+  if (soundsDisabled || context?.state !== "running") return;
   const now = context.currentTime;
   if (!swipeBuffer) {
     swipeBuffer = context.createBuffer(1, Math.ceil(context.sampleRate * 0.18), context.sampleRate);
@@ -214,7 +235,7 @@ function playSwipe(direction) {
   volume.gain.setValueAtTime(0, now);
   volume.gain.linearRampToValueAtTime(0.045, now + 0.035);
   volume.gain.exponentialRampToValueAtTime(0.001, now + 0.175);
-  source.connect(filter).connect(volume).connect(context.destination);
+  source.connect(filter).connect(volume).connect(outputGain);
   source.onended = () => {
     source.disconnect();
     filter.disconnect();
@@ -225,14 +246,14 @@ function playSwipe(direction) {
   const bubbles = direction > 0 ? [0.9, 1.1] : [1.1, 0.9];
   bubbles.forEach((ratio, index) => {
     const pitch = style.click * 1.7 * ratio;
-    playVoice(pitch * 0.82, pitch, "sine", 0.014 - index * 0.003, 0.085, index * 0.055);
+    playVoice(pitch * 0.82, pitch, "sine", 0.006 - index * 0.0015, 0.085, index * 0.055);
   });
   suppressHoverUntil = performance.now() + 260;
   reportSound("swipe", { direction, duration: 180 });
 }
 
 function playFold(unfolding) {
-  if (context?.state !== "running") return;
+  if (soundsDisabled || context?.state !== "running") return;
   const start = unfolding ? 310 : 440;
   const end = unfolding ? 465 : 220;
   playVoice(start, end, "sine", 0.055, 0.105);

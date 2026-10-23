@@ -64,7 +64,20 @@ for (const type of ["hover", "swipe", "fold", "unfold", "playing", "stream", "ba
   sound.previewSound(type, trusted);
   assert.equal(events.at(-1).type, type, `${type} must have a distinct diagnostic event`);
 }
-assert.ok(audio.volumes.every(volume => volume.gain.peak <= 0.1));
+assert.ok(audio.volumes.filter(volume => volume.gain.peak != null).every(volume => volume.gain.peak <= 0.1));
+sound.setSoundsDisabled(true);
+assert.equal(sound.getSoundStatus().disabled, true);
+const voicesBeforeMute = audio.voices.length;
+const mutedCount = events.filter(event => event.duration).length;
+for (const type of ["click", "hover", "swipe", "fold", "unfold", "congrats", "add-game", "bounce-up"]) sound.previewSound(type, trusted);
+sound.playRatingSound(5, 0, trusted);
+assert.equal(audio.voices.length, voicesBeforeMute, "Muted interactions must not create voices");
+assert.equal(events.filter(event => event.duration).length, mutedCount);
+assert.equal(audio.volumes[0].gain.start, 0, "Master output must silence already scheduled voices");
+sound.setSoundsDisabled(false);
+assert.equal(audio.volumes[0].gain.start, 1);
+sound.previewSound("click", trusted);
+assert.ok(audio.voices.length > voicesBeforeMute);
 unsubscribe();
 count = events.length;
 sound.previewSound("click", trusted);

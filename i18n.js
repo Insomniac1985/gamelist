@@ -318,6 +318,8 @@ const STRINGS = {
     "Hide switch": "Ocultar cambio",
     "Prioratizes Finished Stream": "Priorizar terminados en stream",
     "Hide non stream playing": "Ocultar jugando que no sean stream",
+    Sounds: "Sonidos",
+    "Show Shelf Prices": "Mostrar precios de Estantería",
     "Dev features": "Funciones de desarrollo",
     "Mass add": "Añadir en masa",
     "Fill metadata": "Rellenar metadatos",
