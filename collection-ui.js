@@ -1,4 +1,4 @@
-import { bindCardHoverSounds } from "./card-hover-sound.js";
+import { bindCardHoverSounds, scrollWithSound } from "./card-hover-sound.js";
 import { renderBatchedList } from "./batched-list.js";
 import { embeddedGameEditor, connectEmbeddedGameEditor } from "./shared-add-game.js";
 import { normalizeSearchText, bindModalTouchGuard, createGameCardShell, bindActivityCardParallax, mountActivitySlider, mountTwitchPreview, mountReleaseCalendar, finishedGameMarkup, achievementCardMarkup, achievementDashboardMarkup, achievementPanelMarkup, completedCardMarkup, horizontalCarouselState, syncViewModeButton, slideHorizontalCarousel, comparePlayingGames, timeBadgeMarkup, guideLinksMarkup, storeButtonsMarkup, activityTrailerUrl, preloadPausedActivityTrailers, syncFocusedActivityTrailer, activityReleaseStatus, activityCoverOverride, activityLocalGameForTitle, activityTitleMatchScore, activityAllowsPsnCardTrophies, formatFooterDate, formatFooterDateTime, formatFooterShortDate, confirmGameDelete } from "./activity-ui.js";
@@ -424,7 +424,7 @@ function bindEvents() {
   el.showcaseEdit.addEventListener("click", openShowcaseEditor);
   el.syncButton?.addEventListener("click", syncShelfNow);
   el.fetchPricesButton.addEventListener("click", refreshAllShelfPrices);
-  el.scrollTop.addEventListener("click", () => window.scrollTo({ top: 0, behavior: "smooth" }));
+  el.scrollTop.addEventListener("click", () => scrollWithSound(0));
   el.mobileDockUp?.addEventListener("click", () => el.scrollTop.click());
   el.footerUpdate.addEventListener("click", clearSiteCachesAndReload);
   el.footerVersion.addEventListener("click", clearSiteCachesAndReload);
@@ -1457,12 +1457,12 @@ function applyTheme() {
 }
 
 function scrollToShelfLibrary() {
-  document.querySelector("[data-module='library']")?.scrollIntoView({ behavior: "smooth", block: "start" });
+  scrollWithSound(document.querySelector("[data-module='library']"));
   el.shelf.scrollTo?.({ top: 0, left: 0, behavior: "smooth" });
 }
 
 function scrollToShelfSearch() {
-  document.querySelector(".shelf-toolbar")?.scrollIntoView({ behavior: "smooth", block: "start" });
+  scrollWithSound(document.querySelector(".shelf-toolbar"));
   window.requestAnimationFrame(() => el.search?.focus({ preventScroll: true }));
 }
 

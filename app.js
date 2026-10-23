@@ -1,4 +1,4 @@
-import { bindCardHoverSounds, playRatingSound } from "./card-hover-sound.js";
+import { bindCardHoverSounds, playRatingSound, playUiSound, scrollWithSound } from "./card-hover-sound.js";
 import { renderBatchedList, stopBatchedList } from "./batched-list.js";
 import { syncMediaFormatToggle } from "./media-format-toggle.js";
 import { mountCollectionWorkspace, prepareCollectionWorkspace } from "./collection-workspace.js";
@@ -1212,7 +1212,7 @@ function bindEvents() {
   el.brandVersion?.addEventListener("click", clearSiteCachesAndReload);
   el.scrollTopButton.addEventListener("click", () => {
     if (document.body.classList.contains("dialog-open")) return;
-    window.scrollTo({ top: 0, behavior: "smooth" });
+    scrollWithSound(0);
   });
   el.mobileDockUp?.addEventListener("click", () => el.scrollTopButton.click());
   el.detailCloseButton.addEventListener("click", () => el.detailDialog.close());
@@ -3928,6 +3928,7 @@ function showGameOfTheYearAutofillLoading(games = []) {
   return new Promise((resolve) => {
     window.setTimeout(() => {
       window.clearInterval(timer);
+      if (overlay.isConnected) playUiSound("congrats");
       overlay.classList.remove("visible");
       window.setTimeout(() => {
         overlay.remove();
@@ -5819,16 +5820,16 @@ function downloadCanvas(canvas, filename) {
 }
 
 function scrollToSearchArea() {
-  document.querySelector(".toolbar")?.scrollIntoView({ behavior: "smooth", block: "start" });
+  scrollWithSound(document.querySelector(".toolbar"));
   window.requestAnimationFrame(() => el.searchInput?.focus({ preventScroll: true }));
 }
 
 function scrollToGameList() {
-  document.querySelector("#backlog")?.scrollIntoView({ behavior: "smooth", block: "start" });
+  scrollWithSound(document.querySelector("#backlog"));
 }
 
 function scrollToFinishedSection() {
-  document.querySelector("#completed")?.scrollIntoView({ behavior: "smooth", block: "start" });
+  scrollWithSound(document.querySelector("#completed"));
 }
 
 function bindLatestFinishedHeading() {
@@ -6756,7 +6757,7 @@ function completedStatDetail(year, yearCount, total, completedYearCount, expansi
 }
 
 function scrollToCompletedSection() {
-  document.querySelector("#completed")?.scrollIntoView({ behavior: "smooth", block: "start" });
+  scrollWithSound(document.querySelector("#completed"));
 }
 
 function sectionCountLabel(section, games, count) {
@@ -6977,6 +6978,7 @@ function handleBoardSwipeEnd(event) {
   const index = sections.indexOf(state.mobileSection);
   const next = dx < 0 ? sections[index + 1] : sections[index - 1];
   if (!next) return;
+  playUiSound("swipe", { direction: dx < 0 ? 1 : -1 });
   state.mobileSection = next;
   render();
 }
