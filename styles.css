@@ -20396,14 +20396,15 @@ body:not(.can-edit):not(.shelf-page)
     box-sizing: border-box;
     display: grid;
     place-items: center;
-    width: 42px;
-    min-width: 42px;
-    max-width: 42px;
-    height: 42px;
-    min-height: 42px;
-    max-height: 42px;
-    aspect-ratio: 1;
-    flex: 0 0 42px;
+    width: 36px;
+    min-width: 36px;
+    max-width: 36px;
+    align-self: stretch;
+    height: auto;
+    min-height: 36px;
+    max-height: none;
+    aspect-ratio: auto;
+    flex: 0 0 36px;
     padding: 0;
     gap: 0;
   }

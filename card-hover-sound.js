@@ -225,7 +225,7 @@ function playSwipe(direction) {
   const bubbles = direction > 0 ? [0.9, 1.1] : [1.1, 0.9];
   bubbles.forEach((ratio, index) => {
     const pitch = style.click * 1.7 * ratio;
-    playVoice(pitch * 0.82, pitch, "sine", 0.014 - index * 0.003, 0.085, index * 0.055);
+    playVoice(pitch * 0.82, pitch, "sine", 0.006 - index * 0.0015, 0.085, index * 0.055);
   });
   suppressHoverUntil = performance.now() + 260;
   reportSound("swipe", { direction, duration: 180 });
