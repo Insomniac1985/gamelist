@@ -613,7 +613,8 @@ html.theme-font-mata {
   width: 18px;
   height: 12px;
   background: var(--accent);
-  -webkit-mask: url("assets/branding/shabii_logo.png") center / contain no-repeat;
+  -webkit-mask: url("assets/branding/shabii_logo.png") center / contain
+    no-repeat;
   mask: url("assets/branding/shabii_logo.png") center / contain no-repeat;
 }
 
@@ -4443,8 +4444,8 @@ body.dialog-open .floating-edit-actions {
   background-repeat: no-repeat;
   background-size: 14px 14px;
   background:
-    url("/assets/icons/navigation/dropdown-chevron.svg")
-      right 15px center / 14px 14px no-repeat,
+    url("/assets/icons/navigation/dropdown-chevron.svg") right 15px center /
+      14px 14px no-repeat,
     rgba(255, 255, 255, 0.07);
   border: 1px solid rgba(255, 255, 255, 0.14);
   border-radius: 7px;
@@ -4463,8 +4464,8 @@ body.dialog-open .floating-edit-actions {
   border-color: color-mix(in srgb, var(--accent) 68%, transparent);
   background-color: rgba(255, 255, 255, 0.07);
   background:
-    url("/assets/icons/navigation/dropdown-chevron-hover.svg")
-      right 15px center / 14px 14px no-repeat,
+    url("/assets/icons/navigation/dropdown-chevron-hover.svg") right 15px
+      center / 14px 14px no-repeat,
     rgba(255, 255, 255, 0.07);
   box-shadow:
     inset 0 0 0 1px rgba(255, 255, 255, 0.08),
@@ -4726,8 +4727,7 @@ body.dialog-open .floating-edit-actions {
 .check-filter input[type="checkbox"]:checked {
   border-color: color-mix(in srgb, var(--accent) 72%, transparent);
   background:
-    center / 15px 15px no-repeat
-      url("/assets/icons/status/checkbox-check.svg"),
+    center / 15px 15px no-repeat url("/assets/icons/status/checkbox-check.svg"),
     var(--accent);
   box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.14);
 }
@@ -5064,8 +5064,8 @@ textarea:hover {
 
 select:hover {
   background:
-    url("/assets/icons/navigation/dropdown-chevron-hover.svg")
-      right 15px center / 14px 14px no-repeat,
+    url("/assets/icons/navigation/dropdown-chevron-hover.svg") right 15px
+      center / 14px 14px no-repeat,
     rgba(255, 255, 255, 0.08);
   box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 8%, transparent);
 }
@@ -5084,8 +5084,8 @@ select {
   background-repeat: no-repeat;
   background-size: 14px 14px;
   background:
-    url("/assets/icons/navigation/dropdown-chevron.svg")
-      right 15px center / 14px 14px no-repeat,
+    url("/assets/icons/navigation/dropdown-chevron.svg") right 15px center /
+      14px 14px no-repeat,
     rgba(255, 255, 255, 0.07);
   transition:
     background-color 160ms ease,
@@ -5109,8 +5109,8 @@ select.is-active {
   color: #ffffff;
   border-color: color-mix(in srgb, var(--accent) 68%, transparent);
   background:
-    url("/assets/icons/navigation/dropdown-chevron-active.svg")
-      right 15px center / 14px 14px no-repeat,
+    url("/assets/icons/navigation/dropdown-chevron-active.svg") right 15px
+      center / 14px 14px no-repeat,
     linear-gradient(
       135deg,
       color-mix(in srgb, var(--accent) 22%, transparent),
@@ -8935,7 +8935,9 @@ body:not(.can-edit) .game-card:focus-within .edit-action {
   line-height: 1;
 }
 
-.completed-year-control :is(.platform-logo-button, .platform-logo-option) .platform-logo-choice {
+.completed-year-control
+  :is(.platform-logo-button, .platform-logo-option)
+  .platform-logo-choice {
   display: flex;
   align-items: center;
   align-self: center;
@@ -8950,7 +8952,9 @@ body:not(.can-edit) .game-card:focus-within .edit-action {
   margin-bottom: 0;
 }
 
-.completed-year-control :is(.platform-logo-button, .platform-logo-option) .platform-logo-choice-label {
+.completed-year-control
+  :is(.platform-logo-button, .platform-logo-option)
+  .platform-logo-choice-label {
   align-self: center;
   height: auto;
   line-height: 1;
@@ -13239,8 +13243,7 @@ html.theme-light .stream-check input[type="checkbox"] {
 html.theme-light .check-filter input[type="checkbox"]:checked,
 html.theme-light .stream-check input[type="checkbox"]:checked {
   background:
-    center / 15px 15px no-repeat
-      url("/assets/icons/status/checkbox-check.svg"),
+    center / 15px 15px no-repeat url("/assets/icons/status/checkbox-check.svg"),
     var(--accent);
   border-color: color-mix(in srgb, var(--accent) 72%, rgba(17, 24, 39, 0.28));
   box-shadow: inset 0 0 0 3px rgba(255, 255, 255, 0.72);
@@ -16150,8 +16153,7 @@ html.theme-light .playing-achievements-check input[type="checkbox"]:checked,
 html.theme-light .finish-trophy-check input[type="checkbox"]:checked {
   border-color: rgba(255, 233, 133, 0.82);
   background:
-    center / 15px 15px no-repeat
-      url("/assets/icons/status/checkbox-check.svg"),
+    center / 15px 15px no-repeat url("/assets/icons/status/checkbox-check.svg"),
     #ffe985;
   box-shadow:
     inset 0 0 0 1px rgba(255, 255, 255, 0.28),
@@ -16216,8 +16218,7 @@ html.theme-light .primary-button.stream-start-action:hover {
 .stream-check input[type="checkbox"]:checked {
   border-color: rgba(183, 116, 255, 0.72);
   background:
-    center / 15px 15px no-repeat
-      url("/assets/icons/status/checkbox-check.svg"),
+    center / 15px 15px no-repeat url("/assets/icons/status/checkbox-check.svg"),
     #b774ff;
 }
 
@@ -16698,8 +16699,13 @@ html.theme-light .primary-button.stream-start-action:hover {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
-  .settings-window-panel[data-settings-window="design"] .settings-detail-grid .settings-detail-compact,
-  .settings-window-panel[data-settings-window="design"] .settings-detail-grid .settings-preference-row > article {
+  .settings-window-panel[data-settings-window="design"]
+    .settings-detail-grid
+    .settings-detail-compact,
+  .settings-window-panel[data-settings-window="design"]
+    .settings-detail-grid
+    .settings-preference-row
+    > article {
     grid-column: auto;
   }
 
@@ -19780,7 +19786,10 @@ body:not(.can-edit):not(.shelf-page)
   white-space: normal;
 }
 
-#addGameForm .modal-head h2.collection-action-two-line-title .mobile-title-break {
+#addGameForm
+  .modal-head
+  h2.collection-action-two-line-title
+  .mobile-title-break {
   display: initial;
 }
 
@@ -22517,8 +22526,7 @@ body.mobile-app-mode .shelf-tabs button.active:hover {
 .condition-sealed input[type="checkbox"]:checked {
   border-color: #f7df69;
   background:
-    center / 15px 15px no-repeat
-      url("/assets/icons/status/checkbox-check.svg"),
+    center / 15px 15px no-repeat url("/assets/icons/status/checkbox-check.svg"),
     linear-gradient(135deg, #ffe982, #c8920a);
   box-shadow:
     0 0 0 3px rgba(247, 223, 105, 0.12),
@@ -22753,7 +22761,8 @@ body.mobile-app-mode .shelf-tabs button.active:hover {
 }
 
 #addGameForm:not(.gamelist-target-editor) .shelf-release-text-field,
-#addGameForm:not(.gamelist-target-editor) .shelf-gamelist-flag:not(.shelf-gamelist-stream-field),
+#addGameForm:not(.gamelist-target-editor)
+  .shelf-gamelist-flag:not(.shelf-gamelist-stream-field),
 #addGameForm:not(.gamelist-target-editor) .shelf-gamelist-length-field,
 #addGameForm:not(.gamelist-target-editor) .shelf-gamelist-preferred-store-field,
 #addGameForm:not(.gamelist-target-editor) .shelf-gamelist-status-field {
@@ -22932,7 +22941,8 @@ body.mobile-app-mode .shelf-tabs button.active:hover {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
-  #shelfGamelistPreorderStreamRow.has-playing-option.has-stream .shelf-add-collection-check {
+  #shelfGamelistPreorderStreamRow.has-playing-option.has-stream
+    .shelf-add-collection-check {
     grid-column: 1 / -1;
   }
 }
@@ -23387,8 +23397,7 @@ textarea {
 .condition-editor .condition-sealed input[type="checkbox"]:checked {
   border-color: #f7df69;
   background:
-    center / 15px 15px no-repeat
-      url("/assets/icons/status/checkbox-check.svg"),
+    center / 15px 15px no-repeat url("/assets/icons/status/checkbox-check.svg"),
     linear-gradient(135deg, #ffe982, #c8920a);
   box-shadow:
     0 0 0 3px rgba(247, 223, 105, 0.12),
@@ -24670,7 +24679,8 @@ textarea {
 #addGameForm.shelf-gamelist-import-mini .shelf-gamelist-import-summary,
 #addGameForm.shelf-gamelist-import-mini #shelfGamelistPlacement,
 #addGameForm.shelf-gamelist-import-mini .shelf-release-text-field,
-#addGameForm.shelf-gamelist-import-mini .shelf-gamelist-flag:not(.shelf-gamelist-stream-field),
+#addGameForm.shelf-gamelist-import-mini
+  .shelf-gamelist-flag:not(.shelf-gamelist-stream-field),
 #addGameForm.shelf-gamelist-import-mini .shelf-gamelist-length-field,
 #addGameForm.shelf-gamelist-import-mini .shelf-gamelist-preferred-store-field,
 #addGameForm.shelf-gamelist-import-mini .shelf-gamelist-status-field {
@@ -25090,7 +25100,9 @@ textarea {
 }
 
 /* Leave room for the descenders in the shared dropdown typeface. */
-.platform-logo-select :is(.platform-logo-button, .platform-logo-option) .platform-logo-choice-label {
+.platform-logo-select
+  :is(.platform-logo-button, .platform-logo-option)
+  .platform-logo-choice-label {
   line-height: 1.4;
   padding-block: 1px;
 }
@@ -25107,13 +25119,17 @@ textarea {
 
 .game-card.playing-card.has-key-art::before {
   inset: 0;
-  background: linear-gradient(90deg, rgba(7, 8, 12, .82), rgba(7, 8, 12, .42)), var(--card-art) center / cover no-repeat;
+  background:
+    linear-gradient(90deg, rgba(7, 8, 12, 0.82), rgba(7, 8, 12, 0.42)),
+    var(--card-art) center / cover no-repeat;
   filter: none;
-  opacity: .6;
+  opacity: 0.6;
 }
 
 @media (max-width: 699px) {
-  .mobile-section-tabs button { font-size: 12px; }
+  .mobile-section-tabs button {
+    font-size: 12px;
+  }
   .completed > .column-head {
     grid-template-columns: minmax(0, 1fr) auto;
     align-items: end;
@@ -25123,7 +25139,6 @@ textarea {
   html.theme-font-antique .completed > .column-head h2 {
     width: min-content;
     max-width: 100%;
-    font-size: clamp(15px, 4.6vw, 21px);
     line-height: 1.12;
     overflow-wrap: normal;
   }
@@ -25145,8 +25160,11 @@ textarea {
     font-size: 13px !important;
     font-weight: 760;
     line-height: 1 !important;
+    height: 13px;
   }
-  .playing-section .playing-head-actions { gap: 5px 7px; }
+  .playing-section .playing-head-actions {
+    gap: 5px 7px;
+  }
   .playing-section .playing-head-actions > button {
     box-sizing: border-box;
     width: 36px;
@@ -25158,16 +25176,26 @@ textarea {
     flex: 0 0 36px;
     padding: 0;
   }
-  .playing-section .playing-head-actions > span { margin-bottom: 0; }
-  .playing-section .game-card.playing-card .card-actions { gap: 7px; }
+  .playing-section .playing-head-actions > span {
+    margin-bottom: 0;
+  }
+  .playing-section .game-card.playing-card .card-actions {
+    gap: 7px;
+  }
   .playing-section .game-card.playing-card.has-art::before {
     display: block !important;
   }
-  .playing-section .game-card.playing-card .card-trailer { display: none !important; }
-  :is(#gameDialog, #addDialog) :is(.editor-cover, .shelf-editor-cover-preview) { display: none !important; }
+  .playing-section .game-card.playing-card .card-trailer {
+    display: none !important;
+  }
+  :is(#gameDialog, #addDialog) :is(.editor-cover, .shelf-editor-cover-preview) {
+    display: none !important;
+  }
 }
 
-.release-calendar { touch-action: pan-y; }
+.release-calendar {
+  touch-action: pan-y;
+}
 
 @media (min-width: 1101px) and (max-width: 1919px) {
   .release-month:nth-child(n + 5) {
