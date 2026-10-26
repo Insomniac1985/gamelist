@@ -74,6 +74,7 @@ async function fetchGameMetadata(game, env, language) {
 function mergeMetadata(game, data, options) {
   const next = { ...game };
   setField(next, "cover", data.cover, options);
+  setField(next, "keyArt", data.keyArt, options);
   setField(next, "releaseDate", data.releaseDate, options);
   setField(next, "publisher", data.publisher, options);
   setField(next, "developer", data.developer, options);

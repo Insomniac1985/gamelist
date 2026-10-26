@@ -14,7 +14,7 @@ export async function onRequestGet({ request, env }) {
     )).map((game) => ({
       id: game.id, title: game.title, platform: game.platform, section: game.section,
       preorderStore: game.preorderStore || "", digital: Boolean(game.digital), dlc: Boolean(game.dlc),
-      cover: game.cover || "", releaseDate: game.releaseDate || "", description: game.description || "",
+      cover: game.cover || "", keyArt: game.keyArt || "", trailerUrl: game.trailerUrl || "", releaseDate: game.releaseDate || "", description: game.description || "",
       genres: Array.isArray(game.genres) ? game.genres : [], publisher: game.publisher || "",
       developer: game.developer || "", owners: Array.isArray(game.owners) ? game.owners : [],
       tags: Array.isArray(game.tags) ? game.tags : [], country: game.country || "", storeLinks: game.storeLinks || {},

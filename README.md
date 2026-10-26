@@ -1,5 +1,5 @@
 <h1>
-  <img src="assets/Icon.png" alt="Gamelist logo" width="42" align="center">
+  <img src="assets/branding/Icon.png" alt="Gamelist logo" width="42" align="center">
   <span style="color: #e92841;">Gamelist</span>
 </h1>
 
@@ -7,7 +7,7 @@ Gamelist is a personal game backlog and collection tracker. It runs as a self-ho
 
 The app lets you switch between **Backlog**, **Shelf**, **Radar**, and **Wishlist** tabs.
 
-Made and designed by <img src="assets/shabii_logo.png" alt="Shabii" width="18" align="center"> [Shabii](https://x.com/Shabii_exe) with the help of ChatGPT Codex.
+Made and designed by <img src="assets/branding/shabii_logo.png" alt="Shabii" width="18" align="center"> [Shabii](https://x.com/Shabii_exe) with the help of ChatGPT Codex.
 
 For suggestions, questions, updates, new features, or patches:
 Email: <a href="mailto:shabiimitjans@gmail.com">shabiimitjans@gmail.com</a>
@@ -29,7 +29,7 @@ Email: <a href="mailto:shabiimitjans@gmail.com">shabiimitjans@gmail.com</a>
 ---
 
 <h1>
-  <img src="assets/Icon.png" alt="Gamelist logo" width="42" align="center">
+  <img src="assets/branding/Icon.png" alt="Gamelist logo" width="42" align="center">
   <span style="color: #e92841;">How To Setup Your Own Gamelist</span>
 </h1>
 
@@ -227,7 +227,7 @@ GOOGLE_CALENDAR_ID
 
 ---
 
-## <img src="assets/Icon.png" alt="Gamelist" width="22" align="center"> First run
+## <img src="assets/branding/Icon.png" alt="Gamelist" width="22" align="center"> First run
 
 1. Deploy the website.
 2. Open it.
@@ -275,7 +275,7 @@ To enable it:
 
 When those are both set, Gamelist and Shelf add a Twitch preview as the first carousel item. If the channel is live, it embeds the current stream. If the channel is offline, it tries to show the latest saved stream instead. The card links directly to the configured Twitch channel.
 
-## <img src="assets/Icon.png" alt="Gamelist" width="22" align="center"> Common tasks
+## <img src="assets/branding/Icon.png" alt="Gamelist" width="22" align="center"> Common tasks
 
 ### Add a game
 
@@ -287,7 +287,7 @@ When those are both set, Gamelist and Shelf add a Twitch preview as the first ca
 
 Preorders are managed in Radar. A preorder store and release date can create a calendar event when Google Calendar is configured.
 
-### <img src="assets/Icon_shelf.png" alt="Shelf logo" width="22" align="center"> Browse your game collection
+### <img src="assets/branding/Icon_shelf.png" alt="Shelf logo" width="22" align="center"> Browse your game collection
 
 Select **Shelf** in Gamelist's list tabs. Physical and digital games share the same collection, with a format control to filter Physical, Digital, or All. Digital tracking can be enabled in **Settings → Page design**.
 

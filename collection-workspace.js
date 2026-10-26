@@ -1,4 +1,5 @@
 import { syncMediaFormatToggle } from "./media-format-toggle.js";
+import { hydrateSvgAssets } from "./svg-assets.js";
 /** Mount shared collection components inside the unified Gamelist shell. */
 let workspacePromise;
 let assetsPromise;
@@ -15,6 +16,7 @@ export function mountCollectionWorkspace(options) {
 async function mount({ slots, changed, openGame, openSettings, mediaChanged, viewChanged, clearFilters }) {
   const [markup, ...styles] = await prepareCollectionWorkspace();
   const source = new DOMParser().parseFromString(markup, 'text/html');
+  hydrateSvgAssets(source);
   source.querySelectorAll('script').forEach(node => node.remove());
   const surfaces = [];
   const css = styles.join('\n').replace(/\bhtml(?=[\s.#:[>])/g, '.shelf-page').replace(/\bbody(?=[\s.#:[>])/g, '.shelf-page');

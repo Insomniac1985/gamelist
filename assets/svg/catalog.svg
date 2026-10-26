@@ -1,0 +1,415 @@
+<svg xmlns="http://www.w3.org/2000/svg"><defs>
+<!-- asset:charts/finished-stats-bell-area-2:full -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" aria-hidden="true">
+      <path class="finished-stats-bell-area" d="{{0}}"></path>
+      <path class="finished-stats-bell-line" d="{{1}}"></path>
+    </svg>
+<!-- /asset -->
+<!-- asset:charts/finished-stats-bell-area:full -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" aria-hidden="true"><path class="finished-stats-bell-area" d="M 8 88 C 28 72 38 42 50 42 C 62 42 72 72 92 88 Z"></path><path class="finished-stats-bell-line" d="M 8 88 C 28 72 38 42 50 42 C 62 42 72 72 92 88"></path></svg>
+<!-- /asset -->
+<!-- asset:charts/finished-stats-pie-segment-2:fragment -->
+<svg xmlns="http://www.w3.org/2000/svg" data-svg-fragment="true" viewBox="0 0 24 24"><g class="finished-stats-pie-segment finished-stats-pie-segment-{{0}}" data-segment-label="{{1}}" style="--slice-opacity:{{2}}" tabindex="0">{{3}}</g></svg>
+<!-- /asset -->
+<!-- asset:charts/finished-stats-pie-segment:fragment -->
+<svg xmlns="http://www.w3.org/2000/svg" data-svg-fragment="true" viewBox="0 0 24 24"><g class="finished-stats-pie-segment finished-stats-pie-segment-{{0}}" style="--slice-opacity:{{1}}" tabindex="0">{{2}}</g></svg>
+<!-- /asset -->
+<!-- asset:charts/finished-stats-pie-shape-2:fragment -->
+<svg xmlns="http://www.w3.org/2000/svg" data-svg-fragment="true" viewBox="0 0 24 24"><path class="finished-stats-pie-shape" d="M 50 50 L {{0}} {{1}} A 46 46 0 {{2}} 1 {{3}} {{4}} Z" fill="{{5}}" stroke="rgba(255,255,255,.22)" stroke-width="0.9"></path></svg>
+<!-- /asset -->
+<!-- asset:charts/finished-stats-pie-shape:fragment -->
+<svg xmlns="http://www.w3.org/2000/svg" data-svg-fragment="true" viewBox="0 0 24 24"><circle class="finished-stats-pie-shape" cx="50" cy="50" r="46" fill="{{0}}" stroke="rgba(255,255,255,.22)" stroke-width="0.9"></circle></svg>
+<!-- /asset -->
+<!-- asset:charts/goty-export-platform-pie:full -->
+<svg xmlns="http://www.w3.org/2000/svg" class="goty-export-platform-pie" viewBox="0 0 220 220" aria-hidden="true">
+            {{0}}
+          </svg>
+<!-- /asset -->
+<!-- asset:charts/goty-export-platform-slice-2:fragment -->
+<svg xmlns="http://www.w3.org/2000/svg" data-svg-fragment="true" viewBox="0 0 24 24"><path class="goty-export-platform-slice" d="M 110 110 L {{0}} {{1}} A 96 96 0 {{2}} 1 {{3}} {{4}} Z" fill="{{5}}"></path></svg>
+<!-- /asset -->
+<!-- asset:charts/goty-export-platform-slice:fragment -->
+<svg xmlns="http://www.w3.org/2000/svg" data-svg-fragment="true" viewBox="0 0 24 24"><circle class="goty-export-platform-slice" cx="110" cy="110" r="96" fill="{{0}}"></circle></svg>
+<!-- /asset -->
+<!-- asset:charts/price-graph-2:fragment -->
+<svg xmlns="http://www.w3.org/2000/svg" data-svg-fragment="true" viewBox="0 0 24 24"><text x="24" y="145" fill="rgba(255,255,255,.48)" font-size="10">{{0}}</text></svg>
+<!-- /asset -->
+<!-- asset:charts/price-graph-3:fragment -->
+<svg xmlns="http://www.w3.org/2000/svg" data-svg-fragment="true" viewBox="0 0 24 24"><polyline points="{{0}}" fill="none" stroke="var(--accent)" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+<!-- /asset -->
+<!-- asset:charts/price-graph-4:fragment -->
+<svg xmlns="http://www.w3.org/2000/svg" data-svg-fragment="true" viewBox="0 0 24 24"><line x1="24" y1="126" x2="576" y2="126" stroke="rgba(255,255,255,.14)"/></svg>
+<!-- /asset -->
+<!-- asset:charts/price-graph:fragment -->
+<svg xmlns="http://www.w3.org/2000/svg" data-svg-fragment="true" viewBox="0 0 24 24"><text x="576" y="145" fill="rgba(255,255,255,.48)" font-size="10" text-anchor="end">{{0}}</text></svg>
+<!-- /asset -->
+<!-- asset:charts/price-history-graph:full -->
+<svg xmlns="http://www.w3.org/2000/svg" id="detailPriceGraph" class="price-history-graph" viewBox="0 0 600 150" role="img" aria-label="Collection value history" data-i18n-aria-label="Collection value history"></svg>
+<!-- /asset -->
+<!-- asset:charts/price-history-point:fragment -->
+<svg xmlns="http://www.w3.org/2000/svg" data-svg-fragment="true" viewBox="0 0 24 24"><g class="price-history-point"><circle cx="{{0}}" cy="{{1}}" r="12" fill="transparent"></circle><circle cx="{{2}}" cy="{{3}}" r="4" fill="var(--accent)"></circle><g class="price-history-tooltip" transform="translate({{4}} {{5}})"><rect width="102" height="38" rx="7"></rect><text x="10" y="15">{{6}}</text><text class="price-history-tooltip-price" x="10" y="30">{{7}}</text></g></g></svg>
+<!-- /asset -->
+<!-- asset:charts/shelf-stats-pie-markup:full -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" role="img" aria-label="{{0}}">{{1}}</svg>
+<!-- /asset -->
+<!-- asset:charts/stats-pie-markup-2:full -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" role="img" aria-label="Stats breakdown">{{0}}</svg>
+<!-- /asset -->
+<!-- asset:charts/stats-pie-markup:full -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" aria-hidden="true"><circle cx="50" cy="50" r="46" fill="rgba(255,255,255,.08)"></circle></svg>
+<!-- /asset -->
+<!-- asset:icons/actions/autocomplete-cone:full -->
+<svg xmlns="http://www.w3.org/2000/svg" class="autocomplete-cone-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h16l-6.2 7.1v5.2L10.2 19v-6.9L4 5Z"></path><path d="m18.2 3 .6 1.8 1.8.6-1.8.6-.6 1.8-.6-1.8-1.8-.6 1.8-.6.6-1.8Z"></path></svg>
+<!-- /asset -->
+<!-- asset:icons/actions/back:full -->
+<svg xmlns="http://www.w3.org/2000/svg" class="back-icon" viewBox="0 0 24 24" aria-hidden="true">
+      <path d="M10 6 4 12l6 6"></path>
+      <path d="M4 12h10a6 6 0 0 1 6 6"></path>
+    </svg>
+<!-- /asset -->
+<!-- asset:icons/actions/check-2:full -->
+<svg xmlns="http://www.w3.org/2000/svg" class="check-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5 9.5 17 19 7"></path></svg>
+<!-- /asset -->
+<!-- asset:icons/actions/check:full -->
+<svg xmlns="http://www.w3.org/2000/svg" class="check-icon" viewBox="0 0 24 24" aria-hidden="true">
+      <path d="M5 12.5l4.2 4.2L19 7"></path>
+    </svg>
+<!-- /asset -->
+<!-- asset:icons/actions/collection-ui:full -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 5 7 7-7 7"></path></svg>
+<!-- /asset -->
+<!-- asset:icons/actions/dollar-2:full -->
+<svg xmlns="http://www.w3.org/2000/svg" class="dollar-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M16.8 7.2c-1.1-1-2.7-1.7-4.8-1.7-2.8 0-4.8 1.4-4.8 3.5 0 5.3 9.8 2.1 9.8 7 0 2.1-2 3.5-5 3.5-2.3 0-4.2-.8-5.4-2"></path><path d="M12 3v18"></path></svg>
+<!-- /asset -->
+<!-- asset:icons/actions/dollar:full -->
+<svg xmlns="http://www.w3.org/2000/svg" class="dollar-icon" viewBox="0 0 24 24" aria-hidden="true">
+      <path d="M12 4.5v15"></path>
+      <path d="M16.4 7.4c-.9-.8-2.2-1.2-3.8-1.2h-1.1c-2.2 0-3.7 1.2-3.7 2.9 0 1.8 1.4 2.6 3.7 3.1l1.4.3c2.2.5 3.5 1.3 3.5 3.1 0 1.7-1.5 2.9-3.8 2.9h-1.1c-1.7 0-3-.4-4-1.3"></path>
+    </svg>
+<!-- /asset -->
+<!-- asset:icons/actions/download-2:full -->
+<svg xmlns="http://www.w3.org/2000/svg" class="download-icon" viewBox="0 0 24 24" aria-hidden="true">
+      <path d="M12 16V2.5"></path>
+      <path d="m6.5 8 5.5-5.5L17.5 8"></path>
+      <path d="M4.5 20.5h15"></path>
+    </svg>
+<!-- /asset -->
+<!-- asset:icons/actions/download-badge:full -->
+<svg xmlns="http://www.w3.org/2000/svg" class="download-badge-icon" viewBox="0 0 24 24" aria-hidden="true">
+      <rect x="5" y="4.5" width="14" height="15" rx="3"></rect>
+      <path d="M12 7.5v6.5"></path>
+      <path d="M9.5 11.8 12 14.3l2.5-2.5"></path>
+      <path d="M8.8 17h6.4"></path>
+    </svg>
+<!-- /asset -->
+<!-- asset:icons/actions/download:full -->
+<svg xmlns="http://www.w3.org/2000/svg" class="download-icon" viewBox="0 0 24 24" aria-hidden="true">
+      <path d="M12 2.5v13.5"></path>
+      <path d="M6.5 10.5l5.5 5.5 5.5-5.5"></path>
+      <path d="M4.5 20.5h15"></path>
+    </svg>
+<!-- /asset -->
+<!-- asset:icons/actions/euro:full -->
+<svg xmlns="http://www.w3.org/2000/svg" class="euro-icon" viewBox="0 0 24 24" aria-hidden="true">
+      <path d="M19 5.5A7 7 0 0 0 8.2 7.1 7.4 7.4 0 0 0 7 12a7.4 7.4 0 0 0 1.2 4.9A7 7 0 0 0 19 18.5"></path>
+      <path d="M4 10h10"></path>
+      <path d="M4 14h10"></path>
+    </svg>
+<!-- /asset -->
+<!-- asset:icons/actions/exit-2:full -->
+<svg xmlns="http://www.w3.org/2000/svg" class="exit-icon" viewBox="0 0 24 24"><path d="M10 5H6.8A2.8 2.8 0 0 0 4 7.8v8.4A2.8 2.8 0 0 0 6.8 19H10"></path><path d="M14 8l4 4-4 4"></path><path d="M8 12h10"></path></svg>
+<!-- /asset -->
+<!-- asset:icons/actions/exit:full -->
+<svg xmlns="http://www.w3.org/2000/svg" class="exit-icon" viewBox="0 0 24 24" aria-hidden="true">
+      <path d="M10 5H6.8A2.8 2.8 0 0 0 4 7.8v8.4A2.8 2.8 0 0 0 6.8 19H10"></path>
+      <path d="M14 8l4 4-4 4"></path>
+      <path d="M8 12h10"></path>
+    </svg>
+<!-- /asset -->
+<!-- asset:icons/actions/forward-2:full -->
+<svg xmlns="http://www.w3.org/2000/svg" class="forward-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m14 6 6 6-6 6"></path><path d="M20 12H10a6 6 0 0 0-6 6"></path></svg>
+<!-- /asset -->
+<!-- asset:icons/actions/forward:full -->
+<svg xmlns="http://www.w3.org/2000/svg" class="forward-icon" viewBox="0 0 24 24" aria-hidden="true">
+      <path d="m10 6-6 6 6 6"></path>
+      <path d="M4 12h10a6 6 0 0 1 6 6"></path>
+    </svg>
+<!-- /asset -->
+<!-- asset:icons/actions/glow-select:full -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true"><path d="m7 10 5 5 5-5"></path></svg>
+<!-- /asset -->
+<!-- asset:icons/actions/graph:full -->
+<svg xmlns="http://www.w3.org/2000/svg" class="graph-icon" viewBox="0 0 24 24" aria-hidden="true">
+      <path d="M4 19h16"></path>
+      <path d="M7 16V9"></path>
+      <path d="M12 16V5"></path>
+      <path d="M17 16v-4"></path>
+    </svg>
+<!-- /asset -->
+<!-- asset:icons/actions/index-2:full -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m9 5 7 7-7 7"/></svg>
+<!-- /asset -->
+<!-- asset:icons/actions/index-3:full -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m8 5-6 7 6 7M16 5l6 7-6 7M14 3l-4 18"/></svg>
+<!-- /asset -->
+<!-- asset:icons/actions/index-4:full -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M6 3h9l4 4v14H6zM14 3v5h5M9 12h7M9 16h7"/></svg>
+<!-- /asset -->
+<!-- asset:icons/actions/index-5:full -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><circle cx="10" cy="7" r="4"/><path d="M3 21v-2a5 5 0 0 1 5-5h4a5 5 0 0 1 5 5v2M19 8v6m3-3h-6"/></svg>
+<!-- /asset -->
+<!-- asset:icons/actions/index-6:full -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 20h4l11-11a2.8 2.8 0 0 0-4-4L4 16v4Z"/><path d="M13.5 6.5l4 4"/><path d="M13 20h7"/></svg>
+<!-- /asset -->
+<!-- asset:icons/actions/index:full -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 11a8.1 8.1 0 0 0-14.9-4L3 10"></path><path d="M3 4v6h6"></path><path d="M4 13a8.1 8.1 0 0 0 14.9 4L21 14"></path><path d="M21 20v-6h-6"></path></svg>
+<!-- /asset -->
+<!-- asset:icons/actions/pause-2:full -->
+<svg xmlns="http://www.w3.org/2000/svg" class="pause-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5v14M16 5v14"></path></svg>
+<!-- /asset -->
+<!-- asset:icons/actions/pause:full -->
+<svg xmlns="http://www.w3.org/2000/svg" class="pause-icon" viewBox="0 0 24 24" aria-hidden="true">
+      <path d="M8 4.5v15"></path>
+      <path d="M16 4.5v15"></path>
+    </svg>
+<!-- /asset -->
+<!-- asset:icons/actions/pencil:full -->
+<svg xmlns="http://www.w3.org/2000/svg" class="pencil-icon" viewBox="0 0 24 24" aria-hidden="true">
+      <path d="M4 20h4l11-11a2.8 2.8 0 0 0-4-4L4 16v4Z"></path>
+      <path d="M13.5 6.5l4 4"></path>
+    </svg>
+<!-- /asset -->
+<!-- asset:icons/actions/play-2:full -->
+<svg xmlns="http://www.w3.org/2000/svg" class="play-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m8 5 11 7-11 7Z"></path></svg>
+<!-- /asset -->
+<!-- asset:icons/actions/play-3:full -->
+<svg xmlns="http://www.w3.org/2000/svg" class="play-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m8 5 11 7-11 7V5Z"></path></svg>
+<!-- /asset -->
+<!-- asset:icons/actions/play:full -->
+<svg xmlns="http://www.w3.org/2000/svg" class="play-icon" viewBox="0 0 24 24" aria-hidden="true">
+      <path d="M8 5.5v13l11-6.5-11-6.5Z"></path>
+    </svg>
+<!-- /asset -->
+<!-- asset:icons/actions/playing-finished-date:full -->
+<svg xmlns="http://www.w3.org/2000/svg" class="playing-finished-date-icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="5.5" width="16" height="15" rx="3"></rect><path d="M8 3.5v4"></path><path d="M16 3.5v4"></path><path d="M4 10h16"></path></svg>
+<!-- /asset -->
+<!-- asset:icons/actions/playing-finished-progress:full -->
+<svg xmlns="http://www.w3.org/2000/svg" class="playing-finished-progress-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 4h8v4a4 4 0 0 1-8 0V4Z"></path><path d="M8 6H5a3 3 0 0 0 3 3"></path><path d="M16 6h3a3 3 0 0 1-3 3"></path><path d="M12 12v4"></path><path d="M9 20h6"></path><path d="M10 16h4v4h-4z"></path></svg>
+<!-- /asset -->
+<!-- asset:icons/actions/plus-2:full -->
+<svg xmlns="http://www.w3.org/2000/svg" class="plus-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"></path></svg>
+<!-- /asset -->
+<!-- asset:icons/actions/plus-3:full -->
+<svg xmlns="http://www.w3.org/2000/svg" class="plus-icon" viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M12 5v14"></path>
+          <path d="M5 12h14"></path>
+        </svg>
+<!-- /asset -->
+<!-- asset:icons/actions/plus:full -->
+<svg xmlns="http://www.w3.org/2000/svg" class="plus-icon" viewBox="0 0 24 24">
+      <path d="M12 5v14"></path>
+      <path d="M5 12h14"></path>
+    </svg>
+<!-- /asset -->
+<!-- asset:icons/actions/pound:full -->
+<svg xmlns="http://www.w3.org/2000/svg" class="pound-icon" viewBox="0 0 24 24" aria-hidden="true">
+      <path d="M8 20h9"></path>
+      <path d="M7 13h8"></path>
+      <path d="M16.5 6.6A4.4 4.4 0 0 0 12.8 5C10.5 5 9 6.5 9 8.8V20"></path>
+    </svg>
+<!-- /asset -->
+<!-- asset:icons/actions/shopping-bag-2:full -->
+<svg xmlns="http://www.w3.org/2000/svg" class="shopping-bag-icon preordered-filter-icon" viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M6.5 8.5h11l1 12h-13l1-12Z"></path>
+            <path d="M9 8.5V7a3 3 0 0 1 6 0v1.5"></path>
+          </svg>
+<!-- /asset -->
+<!-- asset:icons/actions/shopping-bag:full -->
+<svg xmlns="http://www.w3.org/2000/svg" class="shopping-bag-icon" viewBox="0 0 24 24" aria-hidden="true">
+      <path d="M6.5 8.5h11l1 12h-13l1-12Z"></path>
+      <path d="M9 8.5V7a3 3 0 0 1 6 0v1.5"></path>
+    </svg>
+<!-- /asset -->
+<!-- asset:icons/actions/sound-2:full -->
+<svg xmlns="http://www.w3.org/2000/svg" class="sound-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M11 5 6 9H3v6h3l5 4V5Z"></path><path d="M15 8a6 6 0 0 1 0 8M18 5a10 10 0 0 1 0 14"></path></svg>
+<!-- /asset -->
+<!-- asset:icons/actions/sound:full -->
+<svg xmlns="http://www.w3.org/2000/svg" class="sound-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M11 5 6 9H3v6h3l5 4V5Z"></path><path d="m16 9 5 6m0-6-5 6"></path></svg>
+<!-- /asset -->
+<!-- asset:icons/actions/trash:full -->
+<svg xmlns="http://www.w3.org/2000/svg" class="trash-icon" viewBox="0 0 24 24" aria-hidden="true">
+      <path d="M3 6h18"></path>
+      <path d="M8 6V4h8v2"></path>
+      <path d="M19 6l-1 14H6L5 6"></path>
+      <path d="M10 11v5"></path>
+      <path d="M14 11v5"></path>
+    </svg>
+<!-- /asset -->
+<!-- asset:icons/actions/view-2:full -->
+<svg xmlns="http://www.w3.org/2000/svg" class="view-icon" viewBox="0 0 24 24" aria-hidden="true">
+      <rect x="4.5" y="4.5" width="5.5" height="5.5"></rect>
+      <rect x="14" y="4.5" width="5.5" height="5.5"></rect>
+      <rect x="4.5" y="14" width="5.5" height="5.5"></rect>
+      <rect x="14" y="14" width="5.5" height="5.5"></rect>
+    </svg>
+<!-- /asset -->
+<!-- asset:icons/actions/view-3:full -->
+<svg xmlns="http://www.w3.org/2000/svg" class="view-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 7h14M5 12h14M5 17h14"></path></svg>
+<!-- /asset -->
+<!-- asset:icons/actions/view-4:full -->
+<svg xmlns="http://www.w3.org/2000/svg" class="view-icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="6" height="6" rx="1"></rect><rect x="14" y="4" width="6" height="6" rx="1"></rect><rect x="4" y="14" width="6" height="6" rx="1"></rect><rect x="14" y="14" width="6" height="6" rx="1"></rect></svg>
+<!-- /asset -->
+<!-- asset:icons/actions/view:full -->
+<svg xmlns="http://www.w3.org/2000/svg" class="view-icon" viewBox="0 0 24 24" aria-hidden="true">
+      <path d="M5 7h14"></path>
+      <path d="M5 12h14"></path>
+      <path d="M5 17h14"></path>
+    </svg>
+<!-- /asset -->
+<!-- asset:icons/actions/wishlist:full -->
+<svg xmlns="http://www.w3.org/2000/svg" class="wishlist-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1.1-1.1a5.5 5.5 0 0 0-7.8 7.8l1.1 1.1L12 21l7.8-7.5 1.1-1.1a5.5 5.5 0 0 0-.1-7.8Z"></path></svg>
+<!-- /asset -->
+<!-- asset:icons/actions/yen:full -->
+<svg xmlns="http://www.w3.org/2000/svg" class="yen-icon" viewBox="0 0 24 24" aria-hidden="true">
+      <path d="M6 4l6 8 6-8"></path>
+      <path d="M12 12v8"></path>
+      <path d="M8 12h8"></path>
+      <path d="M8 16h8"></path>
+    </svg>
+<!-- /asset -->
+<!-- asset:icons/brands/stream-play-off:full -->
+<svg xmlns="http://www.w3.org/2000/svg" class="stream-play-off-icon twitch-filter-icon" viewBox="0 0 24 24" aria-hidden="true">{{0}}<path class="stream-play-off-slash-cut" d="M2 22 22 2"></path><path class="stream-play-off-slash" d="M2 22 22 2"></path></svg>
+<!-- /asset -->
+<!-- asset:icons/brands/stream-play:full -->
+<svg xmlns="http://www.w3.org/2000/svg" class="stream-play-icon twitch-filter-icon" viewBox="0 0 24 24" aria-hidden="true">{{0}}</svg>
+<!-- /asset -->
+<!-- asset:icons/brands/twitch-filter-logo-path:fragment -->
+<svg xmlns="http://www.w3.org/2000/svg" data-svg-fragment="true" viewBox="0 0 24 24"><path class="twitch-filter-logo-path" d="M6 0 1.7 4.3v15.4h5.1V24l4.3-4.3h3.4l7.8-7.7V0H6Zm14.6 11.1-3.4 3.4h-3.5l-3 3v-3H6.9V1.7h13.7v9.4ZM18 4.7v5.1h-1.7V4.7H18Zm-4.7 0v5.1h-1.7V4.7h1.7Z"></path></svg>
+<!-- /asset -->
+<!-- asset:icons/brands/twitch-preview-eye:full -->
+<svg xmlns="http://www.w3.org/2000/svg" class="twitch-preview-eye" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+          <path d="M12 5c5.2 0 8.8 4.2 10 7-1.2 2.8-4.8 7-10 7S3.2 14.8 2 12c1.2-2.8 4.8-7 10-7Zm0 2C8.1 7 5.3 9.8 4.2 12c1.1 2.2 3.9 5 7.8 5s6.7-2.8 7.8-5C18.7 9.8 15.9 7 12 7Zm0 2.2a2.8 2.8 0 1 1 0 5.6 2.8 2.8 0 0 1 0-5.6Z"/>
+        </svg>
+<!-- /asset -->
+<!-- asset:icons/brands/twitch-preview-link:full -->
+<svg xmlns="http://www.w3.org/2000/svg" class="twitch-preview-link-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+        <path d="M6 0 1.7 4.3v15.4h5.1V24l4.3-4.3h3.4l7.8-7.7V0H6Zm14.6 11.1-3.4 3.4h-3.5l-3 3v-3H6.9V1.7h13.7v9.4ZM18 4.7v5.1h-1.7V4.7H18Zm-4.7 0v5.1h-1.7V4.7h1.7Z"/>
+      </svg>
+<!-- /asset -->
+<!-- asset:icons/brands/twitch-preview-logo:full -->
+<svg xmlns="http://www.w3.org/2000/svg" class="twitch-preview-logo-icon" viewBox="0 0 24 24" focusable="false"><path d="M6 0 1.7 4.3v15.4h5.1V24l4.3-4.3h3.4l7.8-7.7V0H6Zm14.6 11.1-3.4 3.4h-3.5l-3 3v-3H6.9V1.7h13.7v9.4ZM18 4.7v5.1h-1.7V4.7H18Zm-4.7 0v5.1h-1.7V4.7h1.7Z"/></svg>
+<!-- /asset -->
+<!-- asset:icons/navigation/dropdown-chevron-active:full -->
+<svg width='14' height='14' viewBox='0 0 14 14' xmlns='http://www.w3.org/2000/svg'><path d='M3.5 5.25 7 8.75l3.5-3.5' fill='none' stroke='#ffffff' stroke-opacity='.92' stroke-width='1.7' stroke-linecap='round' stroke-linejoin='round'/></svg>
+<!-- /asset -->
+<!-- asset:icons/navigation/dropdown-chevron-hover:full -->
+<svg width='14' height='14' viewBox='0 0 14 14' xmlns='http://www.w3.org/2000/svg'><path d='M3.5 5.25 7 8.75l3.5-3.5' fill='none' stroke='#f6f7fb' stroke-opacity='.9' stroke-width='1.7' stroke-linecap='round' stroke-linejoin='round'/></svg>
+<!-- /asset -->
+<!-- asset:icons/navigation/dropdown-chevron:full -->
+<svg width='14' height='14' viewBox='0 0 14 14' xmlns='http://www.w3.org/2000/svg'><path d='M3.5 5.25 7 8.75l3.5-3.5' fill='none' stroke='#f6f7fb' stroke-opacity='.78' stroke-width='1.7' stroke-linecap='round' stroke-linejoin='round'/></svg>
+<!-- /asset -->
+<!-- asset:icons/navigation/reload:full -->
+<svg xmlns="http://www.w3.org/2000/svg" class="reload-icon" viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M19 8.2A7.2 7.2 0 1 0 20.1 14"></path>
+            <path d="M19.2 3.8v4.8h-4.8"></path>
+          </svg>
+<!-- /asset -->
+<!-- asset:icons/navigation/scroll-top:full -->
+<svg xmlns="http://www.w3.org/2000/svg" class="scroll-top-icon" viewBox="0 0 24 24" aria-hidden="true"><polyline points="6 14 12 8 18 14"></polyline></svg>
+<!-- /asset -->
+<!-- asset:icons/navigation/search-2:full -->
+<svg xmlns="http://www.w3.org/2000/svg" class="search-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.5"></circle><path d="m16 16 4 4"></path></svg>
+<!-- /asset -->
+<!-- asset:icons/navigation/search-3:full -->
+<svg xmlns="http://www.w3.org/2000/svg" class="search-icon" viewBox="0 0 24 24">
+              <circle cx="11" cy="11" r="6.5"></circle>
+              <path d="m16 16 4 4"></path>
+            </svg>
+<!-- /asset -->
+<!-- asset:icons/navigation/search-mobile:full -->
+<svg xmlns="http://www.w3.org/2000/svg" class="search-mobile-icon search-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.5"></circle><path d="m16 16 4 4"></path></svg>
+<!-- /asset -->
+<!-- asset:icons/navigation/search:full -->
+<svg xmlns="http://www.w3.org/2000/svg" class="search-icon" viewBox="0 0 24 24" aria-hidden="true">
+              <circle cx="11" cy="11" r="7"></circle>
+              <path d="M16.5 16.5 21 21"></path>
+            </svg>
+<!-- /asset -->
+<!-- asset:icons/navigation/sort-arrow-2:full -->
+<svg xmlns="http://www.w3.org/2000/svg" class="sort-arrow-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 19V5m-7 7 7-7 7 7"></path></svg>
+<!-- /asset -->
+<!-- asset:icons/navigation/sort-arrow:full -->
+<svg xmlns="http://www.w3.org/2000/svg" class="sort-arrow-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="{{0}}"></path></svg>
+<!-- /asset -->
+<!-- asset:icons/settings/settings-layout-item-2:full -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 19V5m-7 7 7-7 7 7"/></svg>
+<!-- /asset -->
+<!-- asset:icons/settings/settings-layout-item-3:fragment -->
+<svg xmlns="http://www.w3.org/2000/svg" data-svg-fragment="true" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/></svg>
+<!-- /asset -->
+<!-- asset:icons/settings/settings-layout-item-4:fragment -->
+<svg xmlns="http://www.w3.org/2000/svg" data-svg-fragment="true" viewBox="0 0 24 24"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/></svg>
+<!-- /asset -->
+<!-- asset:icons/settings/settings-layout-item-5:fragment -->
+<svg xmlns="http://www.w3.org/2000/svg" data-svg-fragment="true" viewBox="0 0 24 24"><path d="M3 3l18 18"/><path d="M10.6 5.2A10.8 10.8 0 0 1 12 5c6.5 0 10 7 10 7a16 16 0 0 1-3.1 3.9M6.2 6.2C3.5 8 2 12 2 12s3.5 7 10 7a10.8 10.8 0 0 0 4.2-.9"/><path d="M9.9 9.9a3 3 0 0 0 4.2 4.2"/></svg>
+<!-- /asset -->
+<!-- asset:icons/settings/settings-layout-item:full -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14m7-7-7 7-7-7"/></svg>
+<!-- /asset -->
+<!-- asset:icons/settings/settings-main-back-glyph:full -->
+<svg xmlns="http://www.w3.org/2000/svg" class="settings-main-back-glyph" viewBox="0 0 24 24" aria-hidden="true"><path d="m15 18-6-6 6-6"/></svg>
+<!-- /asset -->
+<!-- asset:icons/settings/settings-visibility:full -->
+<svg xmlns="http://www.w3.org/2000/svg" class="settings-visibility-icon {{0}}" viewBox="0 0 24 24" aria-hidden="true">
+            {{1}}
+          </svg>
+<!-- /asset -->
+<!-- asset:icons/settings/settings:full -->
+<svg xmlns="http://www.w3.org/2000/svg" class="settings-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h10M18 6h2M4 12h2M10 12h10M4 18h10M18 18h2"></path><circle cx="16" cy="6" r="2"></circle><circle cx="8" cy="12" r="2"></circle><circle cx="16" cy="18" r="2"></circle></svg>
+<!-- /asset -->
+<!-- asset:icons/status/alert-tag:full -->
+<svg xmlns="http://www.w3.org/2000/svg" class="alert-tag-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4.5v10.5"></path><circle cx="12" cy="19" r="1.5"></circle></svg>
+<!-- /asset -->
+<!-- asset:icons/status/calendar-mini:full -->
+<svg xmlns="http://www.w3.org/2000/svg" class="calendar-mini-icon" viewBox="0 0 24 24" aria-hidden="true">
+      <rect x="4" y="5.5" width="16" height="15" rx="3"></rect>
+      <path d="M8 3.5v4"></path>
+      <path d="M16 3.5v4"></path>
+      <path d="M4 10h16"></path>
+    </svg>
+<!-- /asset -->
+<!-- asset:icons/status/checkbox-check:full -->
+<svg width='15' height='15' viewBox='0 0 15 15' xmlns='http://www.w3.org/2000/svg'><path d='M3.4 7.6 6.3 10.5 11.8 4.8' fill='none' stroke='#fff' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'/></svg>
+<!-- /asset -->
+<!-- asset:icons/status/clock:full -->
+<svg xmlns="http://www.w3.org/2000/svg" class="clock-icon" viewBox="0 0 24 24" aria-hidden="true" stroke-linecap="round" stroke-linejoin="round">
+      <circle cx="12" cy="12" r="8.5"></circle>
+      <path d="M12 7.5V12l3.2 2"></path>
+    </svg>
+<!-- /asset -->
+<!-- asset:icons/status/coop:full -->
+<svg xmlns="http://www.w3.org/2000/svg" class="coop-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="8" cy="8" r="3"></circle><circle cx="16" cy="8" r="3"></circle><path d="M2.8 19c.4-4 2.1-6 5.2-6s4.8 2 5.2 6"></path><path d="M10.8 19c.4-4 2.1-6 5.2-6s4.8 2 5.2 6"></path></svg>
+<!-- /asset -->
+<!-- asset:icons/status/online-globe:full -->
+<svg xmlns="http://www.w3.org/2000/svg" class="online-globe-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8"></circle><path d="M4 12h16"></path><path d="M12 4c2.1 2.2 3.2 4.8 3.2 8s-1.1 5.8-3.2 8"></path><path d="M12 4c-2.1 2.2-3.2 4.8-3.2 8s1.1 5.8 3.2 8"></path></svg>
+<!-- /asset -->
+<!-- asset:icons/status/playing-finished-clock:full -->
+<svg xmlns="http://www.w3.org/2000/svg" class="playing-finished-clock-icon" viewBox="0 0 24 24" aria-hidden="true" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.5"></circle><path d="M12 7.5V12l3.2 2"></path></svg>
+<!-- /asset -->
+<!-- asset:icons/status/rounded-star-svg:full -->
+<svg xmlns="http://www.w3.org/2000/svg" class="{{0}}" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M12 2.75c.3 0 .58.17.71.44l2.48 5.02 5.54.8c.3.04.55.25.65.54.09.29.02.6-.2.81l-4.01 3.91.95 5.52a.8.8 0 0 1-1.16.84L12 18.02l-4.95 2.6a.8.8 0 0 1-1.16-.84l.95-5.52-4.01-3.91a.8.8 0 0 1 .44-1.35l5.54-.8 2.48-5.02c.13-.27.41-.44.71-.44Z"></path></svg>
+<!-- /asset -->
+<!-- asset:icons/status/rounded-star:full -->
+<svg xmlns="http://www.w3.org/2000/svg" class="rounded-star-icon" viewBox="0 0 24 24"><path d="M12 2.8 14.9 8.7l6.5.9-4.7 4.6 1.1 6.5L12 17.6l-5.8 3.1 1.1-6.5-4.7-4.6 6.5-.9L12 2.8Z"></path></svg>
+<!-- /asset -->
+<!-- asset:icons/status/trophy:full -->
+<svg xmlns="http://www.w3.org/2000/svg" class="trophy-icon" viewBox="0 0 24 24" aria-hidden="true">
+      <path d="M8 4h8v4a4 4 0 0 1-8 0V4Z"></path>
+      <path d="M8 6H5a3 3 0 0 0 3 3"></path>
+      <path d="M16 6h3a3 3 0 0 1-3 3"></path>
+      <path d="M12 12v4"></path>
+      <path d="M9 20h6"></path>
+      <path d="M10 16h4v4h-4z"></path>
+    </svg>
+<!-- /asset -->
+</defs></svg>

@@ -1,3 +1,4 @@
+import { svgAsset } from "./svg-assets.js";
 export const FONT_OPTIONS = [
   { value: "", label: "Default", family: "Cascadia Code" },
   { value: "antique", label: "Antique Olive Nord", family: "Antique Olive Nord" },
@@ -28,8 +29,8 @@ const DEFAULT_THEME = {
   accentFont: "",
   gamelistIcon: "",
   shelfIcon: "",
-  appIcon: "assets/app-Icon.png",
-  appIconMonochrome: "assets/app-Icon-monochrome.png",
+  appIcon: "assets/branding/app-icons/app-Icon.png",
+  appIconMonochrome: "assets/branding/app-icons/app-Icon-monochrome.png",
   ownerColors: [],
 };
 
@@ -42,10 +43,10 @@ const PRESETS = {
     gradientColor: "#ffb8dc",
     accentColor: "#ffb8dc",
     accentColorReset: false,
-    shelfIcon: "assets/kh_icon.png",
-    gamelistIcon: "assets/kh_icon.png",
-    appIcon: "assets/kh_app-icon.png",
-    appIconMonochrome: "assets/kh_app-icon-monochrome.png",
+    shelfIcon: "assets/branding/kh_icon.png",
+    gamelistIcon: "assets/branding/kh_icon.png",
+    appIcon: "assets/branding/app-icons/kh_app-icon.png",
+    appIconMonochrome: "assets/branding/app-icons/kh_app-icon-monochrome.png",
     bigLogo: true,
   },
 };
@@ -145,7 +146,7 @@ export function applySiteTheme(settings = {}, options = {}) {
   root.style.setProperty("--title-gradient-end", theme.mainColor);
   root.style.setProperty("--glow-primary", colorMix(themeColorBySource(theme, theme.glowPrimary), 0.22));
   root.style.setProperty("--glow-secondary", colorMix(themeColorBySource(theme, theme.glowSecondary), 0.14));
-  root.style.setProperty("--default-backdrop-image", theme.mode === "light" ? "url(\"assets/backdrop_light.png\")" : "url(\"assets/backdrop.png\")");
+  root.style.setProperty("--default-backdrop-image", theme.mode === "light" ? "url(\"assets/backgrounds/backdrop_light.png\")" : "url(\"assets/backgrounds/backdrop.png\")");
   root.style.setProperty("--custom-backdrop-image", theme.backgroundImage ? `url("${cssEscape(theme.backgroundImage)}")` : "var(--default-backdrop-image)");
   root.style.setProperty("--display-title-font", fontFamily(theme.accentFont));
   document.title = theme.title;
@@ -238,7 +239,7 @@ export function themeSettingsContent(settings = {}, translate = identityTranslat
         <div class="theme-owner-table">
           <div class="theme-owner-head"><span>${htmlEscape(translate("Owner"))}</span><span>${htmlEscape(translate("Main color"))}</span><span></span><span></span></div>
           <div data-owner-rows>${ownerRows.map((owner) => ownerRow(owner, translate)).join("")}</div>
-          <button class="ghost-button theme-owner-add-button" type="button" data-owner-add><span>${htmlEscape(translate("Add owner color"))}</span><span class="button-icon" aria-hidden="true"><svg class="plus-icon" viewBox="0 0 24 24"><path d="M12 5v14"></path><path d="M5 12h14"></path></svg></span></button>
+          <button class="ghost-button theme-owner-add-button" type="button" data-owner-add><span>${htmlEscape(translate("Add owner color"))}</span><span class="button-icon" aria-hidden="true">${svgAsset("icons/actions/plus")}</span></button>
         </div>
       </section>
     </div>
@@ -314,7 +315,7 @@ function renderThemeDialog(dialog, draft, settings, page, onSave, translate = id
         <div class="theme-owner-table">
           <div class="theme-owner-head"><span>${htmlEscape(translate("Owner"))}</span><span>${htmlEscape(translate("Main color"))}</span><span></span><span></span></div>
           <div data-owner-rows>${ownerRows.map((owner) => ownerRow(owner, translate)).join("")}</div>
-          <button class="ghost-button theme-owner-add-button" type="button" data-owner-add><span>${htmlEscape(translate("Add owner color"))}</span><span class="button-icon" aria-hidden="true"><svg class="plus-icon" viewBox="0 0 24 24"><path d="M12 5v14"></path><path d="M5 12h14"></path></svg></span></button>
+          <button class="ghost-button theme-owner-add-button" type="button" data-owner-add><span>${htmlEscape(translate("Add owner color"))}</span><span class="button-icon" aria-hidden="true">${svgAsset("icons/actions/plus")}</span></button>
         </div>
       </section>
       <div class="modal-actions"><button class="primary-button" type="submit">${htmlEscape(translate("Save"))}</button></div>
@@ -410,7 +411,7 @@ function glowSelect(name, value, translate = identityTranslate) {
     ["extra", "Extra Color"],
   ];
   const selected = options.find(([source]) => source === value) || options[0];
-  return `<div class="theme-glow-select" data-glow-select><input type="hidden" name="${name}" data-glow-value value="${selected[0]}"><button class="theme-glow-trigger" type="button" data-glow-trigger aria-haspopup="true" aria-expanded="false"><span class="theme-glow-swatch" data-glow-current-swatch aria-hidden="true"></span><span data-glow-current>${htmlEscape(translate(selected[1]))}</span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m7 10 5 5 5-5"></path></svg></button><div class="theme-glow-options" data-glow-options hidden>${options.map(([source, label]) => `<button class="theme-glow-option" type="button" role="menuitemradio" aria-checked="${source === selected[0]}" data-glow-option="${source}"><span class="theme-glow-swatch" data-glow-swatch aria-hidden="true"></span><span data-glow-option-label>${htmlEscape(translate(label))}</span></button>`).join("")}</div></div>`;
+  return `<div class="theme-glow-select" data-glow-select><input type="hidden" name="${name}" data-glow-value value="${selected[0]}"><button class="theme-glow-trigger" type="button" data-glow-trigger aria-haspopup="true" aria-expanded="false"><span class="theme-glow-swatch" data-glow-current-swatch aria-hidden="true"></span><span data-glow-current>${htmlEscape(translate(selected[1]))}</span>${svgAsset("icons/actions/glow-select")}</button><div class="theme-glow-options" data-glow-options hidden>${options.map(([source, label]) => `<button class="theme-glow-option" type="button" role="menuitemradio" aria-checked="${source === selected[0]}" data-glow-option="${source}"><span class="theme-glow-swatch" data-glow-swatch aria-hidden="true"></span><span data-glow-option-label>${htmlEscape(translate(label))}</span></button>`).join("")}</div></div>`;
 }
 
 function updateGlowPickerColors(root) {
@@ -549,7 +550,7 @@ function colorMix(hex, alpha) {
 }
 
 function defaultThemeIcon(kind, color, reset) {
-  const defaults = { gamelist: "assets/Icon.png", shelf: "assets/Icon_shelf.png", app: "assets/app-Icon.png" };
+  const defaults = { gamelist: "assets/branding/Icon.png", shelf: "assets/branding/Icon_shelf.png", app: "assets/branding/app-icons/app-Icon.png" };
   const fill = normalizeHex(color);
   if (reset || !fill) return defaults[kind] || defaults.gamelist;
   try {
@@ -565,8 +566,8 @@ function tintDefaultThemeIcons(settings, theme, page) {
   const jobs = [];
   const pageIconKey = page === "shelf" ? "shelfIcon" : "gamelistIcon";
   const pageKind = page === "shelf" ? "shelf" : "gamelist";
-  if (!custom[pageIconKey]) jobs.push({ kind: pageKind, source: pageKind === "shelf" ? "assets/Icon_shelf.png" : "assets/Icon.png", selector: "link[rel='icon']", brand: true });
-  if (page === "gamelist" && !custom.appIcon) jobs.push({ kind: "app", source: "assets/app-Icon.png", selector: "link[rel='apple-touch-icon']", manifest: true });
+  if (!custom[pageIconKey]) jobs.push({ kind: pageKind, source: pageKind === "shelf" ? "assets/branding/Icon_shelf.png" : "assets/branding/Icon.png", selector: "link[rel='icon']", brand: true });
+  if (page === "gamelist" && !custom.appIcon) jobs.push({ kind: "app", source: "assets/branding/app-icons/app-Icon.png", selector: "link[rel='apple-touch-icon']", manifest: true });
   jobs.forEach((job) => {
     tintIcon(job.source, theme.mainColor, job.kind).then((url) => {
       if (!url) return;

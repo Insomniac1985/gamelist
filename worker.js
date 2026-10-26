@@ -1,3 +1,4 @@
+import { organizedAssetPath } from "./asset-paths.js";
 import * as auth from "./functions/api/auth.js";
 import * as achievements from "./functions/api/achievements.js";
 import * as calendar from "./functions/api/calendar.js";
@@ -82,6 +83,11 @@ export default {
 
   async fetch(request, env, ctx) {
     const url = new URL(request.url);
+    const assetPath = organizedAssetPath(url.pathname);
+    if (assetPath !== url.pathname) {
+      url.pathname = assetPath;
+      return Response.redirect(url.toString(), 301);
+    }
     if (["/shelf", "/shelf/", "/shelf.html"].includes(url.pathname)) {
       url.pathname = "/";
       url.searchParams.delete("editor");
