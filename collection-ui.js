@@ -4836,6 +4836,7 @@ async function refreshShelfPsnTrophiesInBackground(game, remote, cacheKey, mode)
 
 function refreshShelfProjectedActivity(game) {
   updateShelfCardTrophyStrips(game.id);
+  updateShelfPhysicalProgressPills(game.id);
   renderGamelistModules();
 }
 function updateShelfCardTrophyStrips(gameId) {
@@ -4850,8 +4851,11 @@ function updateShelfCardTrophyStrips(gameId) {
 function updateAllShelfTrophyStrips() {
   state.gamelistGames.filter((game) => game.playing && !game.deletedAt).forEach((game) => updateShelfCardTrophyStrips(game.id));
 }
-function updateShelfPhysicalProgressPills() {
-  el.shelf.querySelectorAll("[data-id]").forEach((node) => {
+function updateShelfPhysicalProgressPills(gameId = "") {
+  const nodes = gameId
+    ? el.shelf.querySelectorAll(`[data-id="${CSS.escape(gameId)}"]`)
+    : el.shelf.querySelectorAll("[data-id]");
+  nodes.forEach((node) => {
     const game = state.games.find((item) => item.id === node.dataset.id);
     if (!game) return;
     node.querySelectorAll(".shelf-progress-pill").forEach((pill) => pill.remove());
