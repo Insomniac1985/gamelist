@@ -11635,6 +11635,7 @@ function steamAppIdFromUrl(value) {
 function storeLinksFor(game) {
   const links = storeLinksWithFallbacks(game);
   const hltbUrl = hltbUrlFor(game);
+  const igdbUrl = igdbUrlFor(game);
   const stores = [
     { key: "playstation", label: "PlayStation", cls: "store-playstation", icon: "assets/sites/playstation.png", provider: playStationStoreName() },
     { key: "nintendo", label: "Nintendo", cls: "store-nintendo", icon: "assets/sites/nintendo.png", provider: nintendoStoreName() },
@@ -11648,8 +11649,18 @@ function storeLinksFor(game) {
     .map((store) => ({ ...store, url: links[store.key] })),
     providers.length ? null : { label: "Wikipedia", url: wikipediaUrlFor(game), cls: "store-wikipedia", icon: "assets/sites/wikipedia.ico" },
     hltbUrl ? { label: "HowLongToBeat", url: hltbUrl, cls: "store-hltb", icon: "assets/sites/howlongtobeat.png" } : null,
+    igdbUrl ? { label: "IGDB", url: igdbUrl, cls: "store-igdb" } : null,
   ];
   return storeButtonsMarkup(buttons, escapeHtml);
+}
+
+function igdbUrlFor(game) {
+  try {
+    const url = new URL(String(game?.igdbUrl || ""));
+    return /^https?:$/.test(url.protocol) && /(^|\.)igdb\.com$/i.test(url.hostname) ? url.href : "";
+  } catch {
+    return "";
+  }
 }
 
 function storeLinksWithFallbacks(game) {
