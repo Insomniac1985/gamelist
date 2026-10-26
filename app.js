@@ -3585,14 +3585,14 @@ function finishedStatsBaseGames() {
 function renderCompletedStreamToggle() {
   renderStreamFilterToggle(el.playingStreamToggleButton, { hidden: !hasStreamGameInLog() });
   if (!el.completedStreamToggleButton) return;
-  renderStreamFilterToggle(el.completedStreamToggleButton, { hidden: !hasStreamGameInLog() });
+  renderStreamFilterToggle(el.completedStreamToggleButton, { hidden: !hasStreamGameInLog(), tooltip: false });
 }
 
 function hasStreamGameInLog() {
   return state.games.some((game) => !game.deletedAt && game.stream);
 }
 
-function renderStreamFilterToggle(button, { hidden = false } = {}) {
+function renderStreamFilterToggle(button, { hidden = false, tooltip = true } = {}) {
   if (!button) return;
   const mode = normalizeStreamFilterMode(state.completedStreamMode);
   button.hidden = hidden;
@@ -3601,7 +3601,10 @@ function renderStreamFilterToggle(button, { hidden = false } = {}) {
   button.classList.toggle("is-non-stream", mode === "nonstream");
   button.innerHTML = mode === "all" ? allGamesIcon() : mode === "stream" ? streamPlayIcon() : streamPlayOffIcon();
   const tooltip = tt("Filter between stream and non-stream games");
-  if (window.matchMedia("(min-width: 700px)").matches) {
+  if (!tooltip) {
+    button.removeAttribute("title");
+    button.removeAttribute("data-tooltip");
+  } else if (window.matchMedia("(min-width: 700px)").matches) {
     button.removeAttribute("title");
     button.dataset.tooltip = tooltip;
   } else {
