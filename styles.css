@@ -712,7 +712,6 @@ html.theme-font-mata {
 }
 
 .playing-section .card-list {
-  --playing-mask-left: 0px;
   --playing-mask-right: 0px;
   position: relative;
   z-index: 1;
@@ -723,20 +722,18 @@ html.theme-font-mata {
   padding: 4px 18px 8px 0;
   overflow-x: auto;
   overflow-y: hidden;
-  scroll-padding-left: 18px;
+  scroll-padding-left: 0;
   scroll-snap-type: x mandatory;
   scrollbar-width: none;
   -webkit-mask-image: linear-gradient(
     90deg,
-    transparent 0,
-    #000 var(--playing-mask-left),
+    #000 0,
     #000 calc(100% - var(--playing-mask-right)),
     transparent 100%
   );
   mask-image: linear-gradient(
     90deg,
-    transparent 0,
-    #000 var(--playing-mask-left),
+    #000 0,
     #000 calc(100% - var(--playing-mask-right)),
     transparent 100%
   );
@@ -744,10 +741,6 @@ html.theme-font-mata {
   mask-repeat: no-repeat;
   -webkit-mask-size: 100% 100%;
   mask-size: 100% 100%;
-}
-
-.playing-section.playing-at-end:not(.playing-at-start) .card-list {
-  --playing-mask-left: min(92px, 10vw);
 }
 
 .playing-section:not(.playing-at-end) .card-list {
@@ -786,7 +779,6 @@ html.theme-font-mata {
 }
 
 .playing-finished-list {
-  --finished-mask-left: 0px;
   --finished-mask-right: 0px;
   position: relative;
   z-index: 1;
@@ -799,15 +791,13 @@ html.theme-font-mata {
   scrollbar-width: none;
   -webkit-mask-image: linear-gradient(
     90deg,
-    transparent 0,
-    #000 var(--finished-mask-left),
+    #000 0,
     #000 calc(100% - var(--finished-mask-right)),
     transparent 100%
   );
   mask-image: linear-gradient(
     90deg,
-    transparent 0,
-    #000 var(--finished-mask-left),
+    #000 0,
     #000 calc(100% - var(--finished-mask-right)),
     transparent 100%
   );
@@ -815,11 +805,6 @@ html.theme-font-mata {
   mask-repeat: no-repeat;
   -webkit-mask-size: 100% 100%;
   mask-size: 100% 100%;
-}
-
-.playing-finished.finished-has-overflow.finished-at-end:not(.finished-at-start)
-  .playing-finished-list {
-  --finished-mask-left: min(58px, 13vw);
 }
 
 .playing-finished.finished-has-overflow:not(.finished-at-end)
@@ -17995,22 +17980,11 @@ html.theme-light .primary-button.stream-start-action:hover {
     grid-template-columns: 1fr;
     gap: 10px;
     padding-right: 10px;
-    scroll-padding-left: 10px;
-  }
-
-  .playing-section.playing-at-end:not(.playing-at-start) .card-list {
-    --playing-mask-left: 34px;
+    scroll-padding-left: 0;
   }
 
   .playing-section:not(.playing-at-end) .card-list {
     --playing-mask-right: 34px;
-  }
-
-  .playing-finished.finished-has-overflow.finished-at-end:not(
-      .finished-at-start
-    )
-    .playing-finished-list {
-    --finished-mask-left: 28px;
   }
 
   .playing-finished.finished-has-overflow:not(.finished-at-end)
