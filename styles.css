@@ -1084,8 +1084,8 @@ html.theme-gradient .goty-section .column-head h2 .trophy-icon {
 .goty-year-select .platform-logo-button .platform-logo-choice,
 .goty-year-select .platform-logo-option .platform-logo-choice,
 .completed-year-control .platform-logo-button .platform-logo-choice {
-  height: auto;
-  min-height: 0;
+  height: 100%;
+  min-height: 100%;
   align-items: center;
   transform: none;
 }
@@ -1094,10 +1094,17 @@ html.theme-gradient .goty-section .column-head h2 .trophy-icon {
 .goty-year-select .platform-logo-option .platform-logo-choice-label,
 .completed-year-control .platform-logo-button .platform-logo-choice-label {
   display: block;
+  align-self: center;
   height: auto;
   line-height: 1;
   margin: 0;
   transform: none;
+}
+
+.goty-year-select .platform-logo-option,
+.goty-year-select .platform-logo-button {
+  box-sizing: border-box;
+  align-items: center;
 }
 
 .goty-save-button,
@@ -2662,6 +2669,12 @@ body.goty-loading-active {
 }
 
 .playing-finished-tags .stream-pill .stream-play-icon {
+  width: 11px;
+  height: 11px;
+  flex-basis: 11px;
+}
+
+.playing-finished-game .playing-finished-tags .stream-pill .stream-play-icon {
   width: 11px;
   height: 11px;
   flex-basis: 11px;
