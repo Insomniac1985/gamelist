@@ -20302,6 +20302,12 @@ body:not(.can-edit):not(.shelf-page)
 }
 
 @media (max-width: 699px) {
+  #backlog .card-list.list-view .game-row .psn-progress-pill,
+  #upcoming .card-list.list-view .game-row .psn-progress-pill,
+  #wanted .card-list.list-view .game-row .psn-progress-pill {
+    display: none;
+  }
+
   .shelf-grid.list-view .game-row .psn-progress-pill {
     display: none;
   }
