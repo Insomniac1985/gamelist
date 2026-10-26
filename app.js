@@ -6911,11 +6911,11 @@ function sectionCountLabel(section, games, count) {
     ? sectionGames.filter((game) => game.dlc).length
     : 0;
   const expansionText = expansions
-    ? `<span class="section-expansion-count"> · ${escapeHtml(tt("{count} {item}", { count: expansions, item: tt(expansions === 1 ? "expansion" : "expansions") }))}</span>`
+    ? ` · ${escapeHtml(tt("{count} {item}", { count: expansions, item: tt(expansions === 1 ? "expansion" : "expansions") }))}`
     : "";
   return [
     preordered ? preorderCountPill(preordered, preorderSummary) : "",
-    `<span class="section-game-count">${gameCountText(count)}${expansionText}</span>`,
+    gameCountText(count) + expansionText,
   ].filter(Boolean).join("");
 }
 
