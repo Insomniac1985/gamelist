@@ -713,6 +713,7 @@ html.theme-font-mata {
 }
 
 .playing-section .card-list {
+  --playing-mask-left: 0px;
   --playing-mask-right: 0px;
   position: relative;
   z-index: 1;
@@ -728,13 +729,15 @@ html.theme-font-mata {
   scrollbar-width: none;
   -webkit-mask-image: linear-gradient(
     90deg,
-    #000 0,
+    transparent 0,
+    #000 var(--playing-mask-left),
     #000 calc(100% - var(--playing-mask-right)),
     transparent 100%
   );
   mask-image: linear-gradient(
     90deg,
-    #000 0,
+    transparent 0,
+    #000 var(--playing-mask-left),
     #000 calc(100% - var(--playing-mask-right)),
     transparent 100%
   );
@@ -742,6 +745,10 @@ html.theme-font-mata {
   mask-repeat: no-repeat;
   -webkit-mask-size: 100% 100%;
   mask-size: 100% 100%;
+}
+
+.playing-section:not(.playing-at-start) .card-list {
+  --playing-mask-left: 24px;
 }
 
 .playing-section:not(.playing-at-end) .card-list {
@@ -794,6 +801,7 @@ html.theme-font-mata {
 }
 
 .playing-finished-list {
+  --finished-mask-left: 0px;
   --finished-mask-right: 0px;
   position: relative;
   z-index: 1;
@@ -806,13 +814,15 @@ html.theme-font-mata {
   scrollbar-width: none;
   -webkit-mask-image: linear-gradient(
     90deg,
-    #000 0,
+    transparent 0,
+    #000 var(--finished-mask-left),
     #000 calc(100% - var(--finished-mask-right)),
     transparent 100%
   );
   mask-image: linear-gradient(
     90deg,
-    #000 0,
+    transparent 0,
+    #000 var(--finished-mask-left),
     #000 calc(100% - var(--finished-mask-right)),
     transparent 100%
   );
@@ -820,6 +830,11 @@ html.theme-font-mata {
   mask-repeat: no-repeat;
   -webkit-mask-size: 100% 100%;
   mask-size: 100% 100%;
+}
+
+.playing-finished.finished-has-overflow:not(.finished-at-start)
+  .playing-finished-list {
+  --finished-mask-left: 20px;
 }
 
 .playing-finished.finished-has-overflow:not(.finished-at-end)
@@ -17996,6 +18011,15 @@ html.theme-light .primary-button.stream-start-action:hover {
     gap: 10px;
     padding-right: 10px;
     scroll-padding-left: 0;
+  }
+
+  .playing-section:not(.playing-at-start) .card-list {
+    --playing-mask-left: 12px;
+  }
+
+  .playing-finished.finished-has-overflow:not(.finished-at-start)
+    .playing-finished-list {
+    --finished-mask-left: 10px;
   }
 
   .playing-section:not(.playing-at-end) .card-list {
