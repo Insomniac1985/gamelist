@@ -25117,7 +25117,7 @@ textarea {
   .completed > .column-head {
     grid-template-columns: minmax(0, 1fr) auto;
     align-items: end;
-    gap: 7px;
+    gap: 0 7px;
   }
   .completed > .column-head h2,
   html.theme-font-antique .completed > .column-head h2 {
@@ -25132,7 +25132,7 @@ textarea {
     flex-wrap: wrap;
     justify-self: end;
     column-gap: 7px;
-    row-gap: 5px;
+    row-gap: 2px;
     max-width: 174px;
   }
   .completed-head-actions #completedCount {
@@ -25141,6 +25141,10 @@ textarea {
     width: 100%;
     justify-items: end;
     text-align: right;
+    margin-bottom: 0 !important;
+    font-size: 13px !important;
+    font-weight: 760;
+    line-height: 1 !important;
   }
   .playing-section .playing-head-actions { gap: 5px 7px; }
   .playing-section .playing-head-actions > button {
