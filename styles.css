@@ -748,7 +748,7 @@ html.theme-font-mata {
 }
 
 .playing-section:not(.playing-at-start) .card-list {
-  --playing-mask-left: 24px;
+  --playing-mask-left: min(92px, 10vw);
 }
 
 .playing-section:not(.playing-at-end) .card-list {
@@ -834,7 +834,7 @@ html.theme-font-mata {
 
 .playing-finished.finished-has-overflow:not(.finished-at-start)
   .playing-finished-list {
-  --finished-mask-left: 20px;
+  --finished-mask-left: min(58px, 13vw);
 }
 
 .playing-finished.finished-has-overflow:not(.finished-at-end)
