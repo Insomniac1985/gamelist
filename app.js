@@ -224,7 +224,7 @@ const platinumMetaCache = loadPlatinumMetaCache();
 const initialSettings = loadLocalSettings();
 
 function defaultViewModeForDevice() {
-  return window.matchMedia?.("(max-width: 699px)")?.matches ? "list" : "grid";
+  return window.matchMedia?.("(max-width: 689px)")?.matches ? "list" : "grid";
 }
 
 function loadSharedViewMode() {
@@ -1134,7 +1134,7 @@ function bindEvents() {
   });
   let statsTouchStart = null;
   el.finishedStatsDialog?.addEventListener("touchstart", (event) => {
-    if (!window.matchMedia("(max-width: 699px)").matches || event.touches.length !== 1) {
+    if (!window.matchMedia("(max-width: 689px)").matches || event.touches.length !== 1) {
       statsTouchStart = null;
       return;
     }
@@ -1142,7 +1142,7 @@ function bindEvents() {
     statsTouchStart = { x: touch.clientX, y: touch.clientY };
   }, { passive: true });
   el.finishedStatsDialog?.addEventListener("touchend", (event) => {
-    if (!statsTouchStart || !window.matchMedia("(max-width: 699px)").matches) return;
+    if (!statsTouchStart || !window.matchMedia("(max-width: 689px)").matches) return;
     const touch = event.changedTouches[0];
     const dx = touch.clientX - statsTouchStart.x;
     const dy = touch.clientY - statsTouchStart.y;
@@ -1155,7 +1155,7 @@ function bindEvents() {
     el.finishedStatsDialog.classList.remove("has-mini-overlay");
     document.querySelector(".finished-stats-hover-float")?.remove();
     el.finishedStatsBody?.querySelector(".finished-stats-floating-source")?.classList.remove("finished-stats-floating-source");
-    if (window.matchMedia("(max-width: 699px)").matches) el.mobileDockAdd?.classList.add("stats-just-closed");
+    if (window.matchMedia("(max-width: 689px)").matches) el.mobileDockAdd?.classList.add("stats-just-closed");
     syncScrollLock();
   });
   window.addEventListener("scroll", () => {
@@ -1613,7 +1613,7 @@ function scheduleBackgroundRefreshes() {
 
 function syncDisplayMode() {
   const standalone = window.matchMedia("(display-mode: standalone)").matches || window.navigator.standalone === true;
-  const mobile = window.matchMedia("(max-width: 699px)").matches;
+  const mobile = window.matchMedia("(max-width: 689px)").matches;
   document.body.classList.toggle("mobile-app-mode", standalone && mobile);
   scheduleMobilePaintRefresh();
 }
@@ -3627,7 +3627,7 @@ function mobilePlayingCountText(count) {
 
 function updatePlayingCountText(count = visiblePlayingGames().length) {
   if (!el.playingCount) return;
-  el.playingCount.textContent = window.matchMedia("(max-width: 699px)").matches
+  el.playingCount.textContent = window.matchMedia("(max-width: 689px)").matches
     ? mobilePlayingCountText(count)
     : playingCountText(count);
 }
@@ -3701,7 +3701,7 @@ function renderStreamFilterToggle(button, { hidden = false, tooltip = true } = {
   if (!tooltip) {
     button.removeAttribute("title");
     button.removeAttribute("data-tooltip");
-  } else if (window.matchMedia("(min-width: 700px)").matches) {
+  } else if (window.matchMedia("(min-width: 690px)").matches) {
     button.removeAttribute("title");
     button.dataset.tooltip = tooltipText;
   } else {
@@ -3754,7 +3754,7 @@ function renderGameOfTheYear() {
   const categories = GAME_OF_YEAR_CATEGORIES;
   const candidateIds = new Set(candidates.map((game) => game.id));
   el.gotySection.hidden = false;
-  const mobileTitle = window.matchMedia("(max-width: 699px)").matches;
+  const mobileTitle = window.matchMedia("(max-width: 689px)").matches;
   const sectionTitle = mobileTitle
     ? `<span class="goty-title-label">${escapeHtml(tt("My GOTYs {year}", { year: "" }).trim())}</span><span class="goty-title-year">${escapeHtml(year)}</span>`
     : `<span>${escapeHtml(tt("My Games of the year {year}", { year }))}</span>`;
@@ -7015,7 +7015,7 @@ function renderMobileTabs() {
   mobileTabs?.style.setProperty("--mobile-tab-count", String(sections.length));
   mobileTabs?.style.setProperty("--mobile-tab-index", String(index));
   if (mobileTabs) {
-    mobileTabs.style.gridTemplateColumns = sections.includes("new") && window.matchMedia("(max-width: 699px)").matches ? `minmax(34px, 42px) repeat(${Math.max(1, sections.length - 1)}, minmax(0, 1fr))` : "";
+    mobileTabs.style.gridTemplateColumns = sections.includes("new") && window.matchMedia("(max-width: 689px)").matches ? `minmax(34px, 42px) repeat(${Math.max(1, sections.length - 1)}, minmax(0, 1fr))` : "";
     requestAnimationFrame(syncMobileTabIndicator);
   }
   el.board.style.setProperty("--mobile-section-count", String(sections.length));
@@ -7112,7 +7112,7 @@ function canSeeNewAdditions() {
 }
 
 function handleBoardSwipeStart(event) {
-  if (!window.matchMedia("(max-width: 699px)").matches) return;
+  if (!window.matchMedia("(max-width: 689px)").matches) return;
   const touch = event.changedTouches?.[0];
   if (!touch) return;
   state.mobileSwipeStart = { x: touch.clientX, y: touch.clientY };
@@ -7121,7 +7121,7 @@ function handleBoardSwipeStart(event) {
 function handleBoardSwipeEnd(event) {
   const start = state.mobileSwipeStart;
   state.mobileSwipeStart = null;
-  if (!start || !window.matchMedia("(max-width: 699px)").matches) return;
+  if (!start || !window.matchMedia("(max-width: 689px)").matches) return;
   const touch = event.changedTouches?.[0];
   if (!touch) return;
   const dx = touch.clientX - start.x;
@@ -7691,7 +7691,7 @@ function renderCompleted() {
 }
 
 function bindCompletedCoverPreviews(list) {
-  if (state.viewMode !== "list" || !window.matchMedia("(min-width: 700px) and (hover: hover) and (pointer: fine)").matches) return;
+  if (state.viewMode !== "list" || !window.matchMedia("(min-width: 690px) and (hover: hover) and (pointer: fine)").matches) return;
   list.querySelectorAll(".completed-cover-wrap:not([hidden])").forEach((wrap) => {
     const source = wrap.querySelector(".completed-cover");
     if (!source?.src) return;
@@ -8530,7 +8530,7 @@ function bindFinishedStatsMobileOverlays(body = el.finishedStatsBody, dialog = e
   body?.querySelectorAll("[data-stats-overlay-title]").forEach((node) => {
     if (node.closest("[data-stats-source=collection]")) return;
     node.addEventListener("click", (event) => {
-      if (!window.matchMedia("(max-width: 699px)").matches) return;
+      if (!window.matchMedia("(max-width: 689px)").matches) return;
       if (event.target.closest(".finished-stats-breakdown")) return;
       const breakdown = node.querySelector(".finished-stats-breakdown");
       if (!breakdown?.innerHTML.trim()) return;
@@ -8555,7 +8555,7 @@ function bindFinishedStatsDesktopOverlays(dialog = el.finishedStatsDialog, body 
     closeTimer = setTimeout(closeFloatingOverlay, 90);
   };
   const openFloatingContent = (sourceNode, content, className = "") => {
-    if (window.matchMedia("(max-width: 699px)").matches || !content.trim()) return;
+    if (window.matchMedia("(max-width: 689px)").matches || !content.trim()) return;
     clearTimeout(closeTimer);
     document.querySelector(".finished-stats-hover-float")?.remove();
     body.querySelectorAll(".finished-stats-floating-source").forEach((node) => {
@@ -9845,7 +9845,7 @@ function initMobileBrandOverlay() {
   const header = document.querySelector("body > .topbar");
   const dock = el.mobileActionDock;
   if (!header || !dock) return;
-  const mobile = window.matchMedia("(max-width: 699px)");
+  const mobile = window.matchMedia("(max-width: 689px)");
   let lastScroll = Math.max(0, window.scrollY);
   let scheduled = false;
   const setHidden = hidden => {

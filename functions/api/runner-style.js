@@ -69,7 +69,7 @@ export function runnerStyle({ maxWidth = "980px", settings = {}, page = "gamelis
     .lists{display:grid;grid-template-columns:1fr 1fr;gap:16px}
     ol{margin:0;padding-left:22px;display:grid;gap:6px}
     li{word-break:break-word}small{color:var(--muted)}
-    @media (max-width:699px){body{padding:18px 14px}.lists{grid-template-columns:1fr}h1{font-size:clamp(38px,14vw,58px)}}
+    @media (max-width:689px){body{padding:18px 14px}.lists{grid-template-columns:1fr}h1{font-size:clamp(38px,14vw,58px)}}
   </style>${runnerPlatformDropdownScript()}`;
 }
 
