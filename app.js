@@ -7454,7 +7454,9 @@ function rowPrimaryAction(game, section) {
   if (section === "new") {
     return `<button class="primary-button row-primary-action" type="button" title="${escapeHtml(tt("Play"))}" aria-label="${escapeHtml(tt("Play"))}">${playIcon()}<span>${escapeHtml(tt("Play"))}</span></button><button class="primary-button row-setup-action" type="button" title="${escapeHtml(tt("Setup"))}" aria-label="${escapeHtml(tt("Setup"))}">${forwardIcon()}<span>${escapeHtml(tt("Setup"))}</span></button>`;
   }
-  return `<button class="ghost-button row-primary-action row-backlog-action" type="button" title="${escapeHtml(tt("Backlog"))}" aria-label="${escapeHtml(tt("Backlog"))}">${forwardIcon()}<span>${escapeHtml(tt("Backlog"))}</span></button>`;
+  const collection = !(game.digital || game.dlc) || state.settings.shelfDigitalGames === true;
+  const label = collection ? "Collection" : "Backlog";
+  return `<button class="ghost-button row-primary-action row-backlog-action" type="button" title="${escapeHtml(tt(collection ? "Add to Collection" : "Add to Backlog"))}" aria-label="${escapeHtml(tt(collection ? "Add to Collection" : "Add to Backlog"))}">${collection ? collectionAddIcon() : forwardIcon()}<span>${escapeHtml(tt(label))}</span></button>`;
 }
 
 function backlogStreamAction(game) {
@@ -9177,7 +9179,10 @@ function cardFor(game, options = {}) {
       priceRefreshAction?.remove();
     }
     if (boughtAction) {
-      boughtAction.innerHTML = `${forwardIcon()}<span class="action-label">${escapeHtml(tt("Backlog"))}</span>`;
+      const collection = !(game.digital || game.dlc) || state.settings.shelfDigitalGames === true;
+      boughtAction.innerHTML = `${collection ? collectionAddIcon() : forwardIcon()}<span class="action-label">${escapeHtml(tt(collection ? "Collection" : "Backlog"))}</span>`;
+      boughtAction.title = tt(collection ? "Add to Collection" : "Add to Backlog");
+      boughtAction.setAttribute("aria-label", boughtAction.title);
       boughtAction.addEventListener("click", () => moveToBacklog(game.id));
     }
   }
@@ -11018,6 +11023,10 @@ function forwardIcon() {
   `;
 }
 
+function collectionAddIcon() {
+  return `<svg class="forward-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m14 6 6 6-6 6"></path><path d="M20 12H10a6 6 0 0 0-6 6"></path></svg>`;
+}
+
 function trophyIcon() {
   return `
     <svg class="trophy-icon" viewBox="0 0 24 24" aria-hidden="true">
@@ -12252,7 +12261,7 @@ async function openEditor(id = "") {
 function openGameAddFlow(options = {}) {
   const section = options.section || (["backlog", "upcoming", "wanted"].includes(state.mobileSection) ? state.mobileSection : "collection");
   const addToBacklog = section === "backlog" && !options.miniGamelistImport;
-  const collection = ["collection", "backlog"].includes(section) && !options.miniGamelistImport;
+  const collection = ["collection", "backlog"].includes(section);
   return openSharedAddGame({ ...options, addToBacklog, section: section === "collection" ? "backlog" : section, target: collection && !addToBacklog ? "shelf" : "gamelist", digital: options.digital ?? (state.mobileSection === "shelf" && collectionMedia === "digital" && state.settings.shelfDigitalGames === true), settings: state.settings }, {
     beforeOpen: pauseAllPlayingTrailers,
     afterSave: async result => {
@@ -12752,6 +12761,7 @@ function restoreCompletedToBacklog(id) {
   const game = getGame(id);
   if (!game) return;
   game.completedAt = "";
+  game.playing = false;
   game.platinum = false;
   game.section = "backlog";
   game.prices = [];

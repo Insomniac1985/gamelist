@@ -1071,8 +1071,7 @@ html.theme-gradient .goty-section .column-head h2 .trophy-icon {
   flex: 0 0 88px;
 }
 
-.goty-year-select .platform-logo-button,
-.completed-year-control .platform-logo-button {
+.goty-year-select .platform-logo-button {
   display: flex;
   align-items: center;
   height: 34px;
@@ -1082,22 +1081,27 @@ html.theme-gradient .goty-section .column-head h2 .trophy-icon {
 }
 
 .goty-year-select .platform-logo-button .platform-logo-choice,
-.goty-year-select .platform-logo-option .platform-logo-choice,
-.completed-year-control .platform-logo-button .platform-logo-choice {
-  height: auto;
-  min-height: 0;
+.goty-year-select .platform-logo-option .platform-logo-choice {
+  height: 100%;
+  min-height: 100%;
   align-items: center;
   transform: none;
 }
 
 .goty-year-select .platform-logo-button .platform-logo-choice-label,
-.goty-year-select .platform-logo-option .platform-logo-choice-label,
-.completed-year-control .platform-logo-button .platform-logo-choice-label {
+.goty-year-select .platform-logo-option .platform-logo-choice-label {
   display: block;
+  align-self: center;
   height: auto;
   line-height: 1;
   margin: 0;
   transform: none;
+}
+
+.goty-year-select .platform-logo-option,
+.goty-year-select .platform-logo-button {
+  box-sizing: border-box;
+  align-items: center;
 }
 
 .goty-save-button,
@@ -2662,6 +2666,12 @@ body.goty-loading-active {
 }
 
 .playing-finished-tags .stream-pill .stream-play-icon {
+  width: 11px;
+  height: 11px;
+  flex-basis: 11px;
+}
+
+.playing-finished-game .playing-finished-tags .stream-pill .stream-play-icon {
   width: 11px;
   height: 11px;
   flex-basis: 11px;
@@ -8899,6 +8909,7 @@ body:not(.can-edit) .game-card:focus-within .edit-action {
 }
 
 .completed-year-control .platform-logo-button {
+  box-sizing: border-box;
   display: flex;
   align-items: center;
   height: 34px;
@@ -8907,11 +8918,14 @@ body:not(.can-edit) .game-card:focus-within .edit-action {
   line-height: 1;
 }
 
-.completed-year-control .platform-logo-button .platform-logo-choice {
+.completed-year-control :is(.platform-logo-button, .platform-logo-option) .platform-logo-choice {
   display: flex;
   align-items: center;
-  height: 34px;
-  min-height: 34px;
+  align-self: center;
+  height: 100%;
+  min-height: 0;
+  margin: 0;
+  line-height: 1;
   transform: none;
 }
 
@@ -8919,10 +8933,12 @@ body:not(.can-edit) .game-card:focus-within .edit-action {
   margin-bottom: 0;
 }
 
-.completed-year-control .platform-logo-button .platform-logo-choice-label {
+.completed-year-control :is(.platform-logo-button, .platform-logo-option) .platform-logo-choice-label {
+  align-self: center;
   height: auto;
   line-height: 1;
   margin: 0;
+  transform: none;
   transform: none;
 }
 
@@ -10769,6 +10785,11 @@ body.theme-kash .finished-stats-kpi.is-completed:focus-visible strong {
   justify-content: space-between;
   flex-flow: column;
   height: 100%;
+  pointer-events: none;
+}
+
+.completed-row > .completed-actions > button {
+  pointer-events: auto;
 }
 
 .completed-row:hover {
@@ -11014,9 +11035,9 @@ body.theme-kash .playing-finished-game.completed-trophy-card:hover {
 
 .completed-platform .stream-pill .stream-play-icon {
   display: block;
-  width: 16px;
-  height: 16px;
-  flex: 0 0 16px;
+  width: 13px;
+  height: 13px;
+  flex: 0 0 13px;
 }
 
 .game-row .stream-pill {
@@ -11315,9 +11336,9 @@ body.theme-kash .playing-finished-game.completed-trophy-card:hover {
   }
 
   .completed-list.list-view .completed-platform .stream-pill .stream-play-icon {
-    width: 14px;
-    height: 14px;
-    flex-basis: 14px;
+    width: 13px;
+    height: 13px;
+    flex-basis: 13px;
   }
 
   .completed-list.list-view .completed-platform .psn-progress-pill {
@@ -11374,6 +11395,10 @@ dialog {
   background: transparent;
   border: 0;
   padding: 0;
+}
+
+dialog:not([open]) {
+  display: none !important;
 }
 
 @media (min-width: 700px) {
@@ -12117,7 +12142,7 @@ html.theme-light .settings-category-card {
 }
 
 @media (max-width: 699px) {
-  .settings-dialog {
+  .settings-dialog[open] {
     position: fixed;
     inset: 0;
     width: calc(100vw - 16px);
@@ -17783,9 +17808,9 @@ html.theme-light .primary-button.stream-start-action:hover {
   }
 
   .completed-platform .stream-pill .stream-play-icon {
-    width: 14px;
-    height: 14px;
-    flex-basis: 14px;
+    width: 13px;
+    height: 13px;
+    flex-basis: 13px;
   }
 
   .game-row .coop-pill,
@@ -22666,7 +22691,7 @@ body.mobile-app-mode .shelf-tabs button.active:hover {
 }
 
 #addGameForm:not(.gamelist-target-editor) .shelf-release-text-field,
-#addGameForm:not(.gamelist-target-editor) .shelf-gamelist-flag,
+#addGameForm:not(.gamelist-target-editor) .shelf-gamelist-flag:not(.shelf-gamelist-stream-field),
 #addGameForm:not(.gamelist-target-editor) .shelf-gamelist-length-field,
 #addGameForm:not(.gamelist-target-editor) .shelf-gamelist-preferred-store-field,
 #addGameForm:not(.gamelist-target-editor) .shelf-gamelist-status-field {
@@ -22820,6 +22845,34 @@ body.mobile-app-mode .shelf-tabs button.active:hover {
 
 #shelfGamelistPreorderStreamRow.has-collection-option.has-stream {
   grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+#shelfGamelistPreorderStreamRow.has-playing-option {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+#shelfGamelistPreorderStreamRow.has-playing-option.has-stream {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.shelf-gamelist-playing-field {
+  box-sizing: border-box;
+  min-height: 44px;
+  padding: 8px 12px;
+}
+
+#addGameForm.shelf-gamelist-import-mini #shelfGamelistListControls {
+  margin-bottom: 12px;
+}
+
+@media (max-width: 699px) {
+  #shelfGamelistPreorderStreamRow.has-playing-option.has-stream {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  #shelfGamelistPreorderStreamRow.has-playing-option.has-stream .shelf-add-collection-check {
+    grid-column: 1 / -1;
+  }
 }
 
 #addGameForm.combined-collection-editor .shelf-addition-field,
@@ -24553,10 +24606,9 @@ textarea {
 }
 
 #addGameForm.shelf-gamelist-import-mini .shelf-gamelist-import-summary,
-#addGameForm.shelf-gamelist-import-mini #shelfGamelistListControls,
 #addGameForm.shelf-gamelist-import-mini #shelfGamelistPlacement,
 #addGameForm.shelf-gamelist-import-mini .shelf-release-text-field,
-#addGameForm.shelf-gamelist-import-mini .shelf-gamelist-flag,
+#addGameForm.shelf-gamelist-import-mini .shelf-gamelist-flag:not(.shelf-gamelist-stream-field),
 #addGameForm.shelf-gamelist-import-mini .shelf-gamelist-length-field,
 #addGameForm.shelf-gamelist-import-mini .shelf-gamelist-preferred-store-field,
 #addGameForm.shelf-gamelist-import-mini .shelf-gamelist-status-field {

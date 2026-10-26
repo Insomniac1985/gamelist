@@ -224,6 +224,7 @@ const el = {
   gamelistCoop: document.querySelector("#shelfGamelistCoopInput"),
   gamelistMultiplayer: document.querySelector("#shelfGamelistMultiplayerInput"),
   gamelistStream: document.querySelector("#shelfGamelistStreamInput"),
+  gamelistPlaying: document.querySelector("#shelfGamelistPlayingInput"),
   gamelistLength: document.querySelector("#shelfGamelistLengthInput"),
   gamelistPreferredStore: document.querySelector("#shelfGamelistPreferredStoreInput"),
   gamelistStatuses: document.querySelector("#shelfGamelistStatusesInput"),
@@ -491,6 +492,7 @@ function bindEvents() {
       state.gamelistAddTarget = "gamelist";
       el.gamelistSection.value = button.dataset.gamelistSection;
       document.querySelector("#shelfAddCollectionInput").checked = false;
+      el.gamelistPlaying.checked = false;
       el.gamelistStream.checked = false;
     }
     syncShelfGamelistTargetMode();
@@ -511,13 +513,23 @@ function bindEvents() {
   el.gamelistPreferredStore.addEventListener("change", syncShelfGamelistStoreIcons);
   syncShelfGamelistStoreIcons();
   el.gamelistStream.addEventListener("change", () => {
-    syncShelfGamelistPreorderStreamLayout();
+    syncShelfGamelistTargetMode();
+  });
+  el.gamelistPlaying.addEventListener("change", () => {
+    if (el.gamelistPlaying.checked) {
+      document.querySelector("#shelfAddCollectionInput").checked = true;
+      state.gamelistSectionTouched = true;
+      el.gamelistSection.value = "backlog";
+      state.gamelistAddTarget = "gamelist";
+    }
+    syncShelfGamelistTargetMode();
   });
   document.querySelector("#shelfAddCollectionInput").addEventListener("change", () => {
     shelfNewGameTouchedFields.add("collection-choice");
     state.gamelistSectionTouched = true;
     el.gamelistSection.value = "backlog";
     state.gamelistAddTarget = document.querySelector("#shelfAddCollectionInput").checked ? "gamelist" : "shelf";
+    if (state.gamelistAddTarget === "shelf") el.gamelistPlaying.checked = false;
     syncShelfGamelistTargetMode();
   });
   syncShelfGamelistPreorderStreamLayout();
@@ -2123,6 +2135,7 @@ function openEditor(game = null, options = {}) {
   state.gamelistImportGameId = options.importGameId || "";
   state.gamelistSectionTouched = Boolean(options.section);
   document.querySelector("#shelfAddCollectionInput").checked = Boolean(options.addToBacklog);
+  el.gamelistPlaying.checked = false;
   state.autocompleteImport = Boolean(options.autocomplete && !options.miniGamelistImport);
   el.addDialog.classList.toggle("shelf-gamelist-import-mini", Boolean(options.miniGamelistImport));
   el.addForm.classList.toggle("shelf-gamelist-import-mini", Boolean(options.miniGamelistImport));
@@ -2166,6 +2179,7 @@ function openEditor(game = null, options = {}) {
   el.gamelistCoop.checked = Boolean(values.coop);
   el.gamelistMultiplayer.checked = Boolean(values.multiplayer || values.coop);
   el.gamelistStream.checked = Boolean(values.stream);
+  el.gamelistPlaying.checked = Boolean(options.addToBacklog && values.playing);
   syncShelfGamelistPreorderStreamLayout();
   el.gamelistLength.value = values.lengthHours ?? "";
   el.gamelistSection.value = options.section || "wanted";
@@ -2286,7 +2300,7 @@ function syncShelfGamelistTargetMode() {
   }
   el.gamelistPlacement.hidden = !active;
   el.gamelistListPicker.hidden = collectingInfo || Boolean(state.editingId && !state.gamelistImportGameId);
-  document.querySelector("#shelfGamelistListControls").hidden = collectingInfo || Boolean(state.editingId && !state.gamelistImportGameId);
+  document.querySelector("#shelfGamelistListControls").hidden = !collectingInfo && Boolean(state.editingId && !state.gamelistImportGameId);
   el.gamelistPreorderCheck.closest(".shelf-gamelist-preorder-row").hidden = !active;
   el.gamelistPreorderField.hidden = !active || !el.gamelistPreorderCheck.checked;
   el.gamelistPreorderField.closest(".shelf-gamelist-preorder-row")?.classList.toggle("has-preorder-store", active && el.gamelistPreorderCheck.checked);
@@ -2307,11 +2321,7 @@ function syncShelfGamelistTargetMode() {
       setShelfEditorTitle(title, titleText, shelfGamelistMobileTitleParts());
     }
     el.addForm.querySelector(".form-group h3").textContent = tt("Collecting Information");
-    const saveLabel = shelfCollectionEnabled()
-      ? (window.matchMedia("(max-width: 699px)").matches ? "Add game" : "Add to Backlog and Shelf")
-      : ["upcoming", "wanted"].includes(el.gamelistSection.value)
-        ? "Add game"
-        : "Add to Gamelist";
+    const saveLabel = collectionEditorLabels()?.button || "Add game";
     el.addForm.querySelectorAll("button[type='submit']").forEach((button) => { button.textContent = tt(saveLabel); });
     el.lookupLabelPhysical.textContent = tt("Search DB or IGDB URL");
     el.lookupInput.placeholder = tt("Type a game name or paste an IGDB page");
@@ -2322,11 +2332,11 @@ function syncShelfGamelistTargetMode() {
     if (eyebrow) eyebrow.textContent = tt("Game data");
     const game = state.games.find((item) => item.id === state.editingId);
     if (title) {
-      const titleText = tt(game?.pendingCollection ? "Add to Collection" : game ? "Edit game" : "Add game to Shelf");
-      setShelfEditorTitle(title, titleText, !game ? [tt("Add game"), tt("to Shelf")] : []);
+      const titleText = tt(collectionEditorLabels()?.title || (game ? "Edit game" : "Add to Collection"));
+      setShelfEditorTitle(title, titleText);
     }
     el.addForm.querySelector(".form-group h3").textContent = tt("Collecting Information");
-    el.addForm.querySelectorAll("button[type='submit']").forEach((button) => { button.textContent = game?.pendingCollection ? tt("Add to Collection") : game ? tt("Save") : tt("Add to Shelf"); });
+    el.addForm.querySelectorAll("button[type='submit']").forEach((button) => { button.textContent = tt(collectionEditorLabels()?.button || (game ? "Save" : "Add to Collection")); });
     el.lookupInput.placeholder = tt(el.addForm.dataset.digital === "true" ? "Type a game name or paste an IGDB page" : "Game name or PriceCharting page");
     el.gamelistSection.disabled = false;
   }
@@ -2366,10 +2376,28 @@ function syncShelfGamelistTargetIndicator() {
 }
 
 function shelfGamelistAddTitle() {
-  if (el.addForm.classList.contains("shelf-gamelist-import-mini")) return tt("Add collecting info");
+  const collectionLabels = collectionEditorLabels();
+  if (collectionLabels) return tt(collectionLabels.title);
   if (el.gamelistPreorderCheck.checked) return tt("Add a new preorder");
   if (el.gamelistSection.value === "upcoming") return tt("Add upcoming game");
   return tt(el.gamelistSection.value === "backlog" ? "Add game to Backlog" : "Add available game");
+}
+
+function collectionEditorLabels() {
+  const collectingInfo = el.addForm.classList.contains("shelf-gamelist-import-mini");
+  if (!collectingInfo && isGamelistProjectionTarget() && el.gamelistSection.value !== "backlog") return null;
+  if (!collectingInfo && state.editingId && !state.gamelistImportGameId && !state.games.find(game => game.id === state.editingId)?.pendingCollection) return null;
+  const backlog = document.querySelector("#shelfAddCollectionInput").checked;
+  const collection = !isGamelistProjectionTarget() || shelfCollectionEnabled();
+  if (backlog && el.gamelistPlaying.checked) {
+    const streaming = el.gamelistStream.checked;
+    return {
+      title: collection ? (streaming ? "Add to Collection and Start Streaming" : "Add to Collection and Start Playing") : (streaming ? "Add and Start Streaming" : "Add and Start Playing"),
+      button: streaming ? "Add and Start Streaming" : "Add and Start Playing",
+    };
+  }
+  const label = backlog ? (collection ? "Add to Collection and Backlog" : "Add to Backlog") : "Add to Collection";
+  return { title: label, button: label };
 }
 
 function setShelfEditorTitle(title, text, mobileLines = []) {
@@ -2383,6 +2411,7 @@ function setShelfEditorTitle(title, text, mobileLines = []) {
 }
 
 function shelfGamelistMobileTitleParts() {
+  if (collectionEditorLabels()) return [];
   if (isGamelistProjectionTarget() && el.gamelistSection.value === "backlog") return [tt("Add game"), tt("to Backlog")];
   if (isGamelistProjectionTarget() && el.gamelistSection.value === "upcoming") return [tt("Add game"), tt("to Radar")];
   if (isGamelistProjectionTarget() && el.gamelistSection.value === "wanted") return [tt("Add game"), tt("to Wishlist")];
@@ -2424,15 +2453,18 @@ function syncShelfGamelistPreorderStreamLayout() {
   });
   const field = document.querySelector(".shelf-add-collection-check");
   const input = document.querySelector("#shelfAddCollectionInput");
-  field.hidden = (isGamelistProjectionTarget() && el.gamelistSection.value !== "backlog") || el.addForm.classList.contains("shelf-gamelist-import-mini") || Boolean(state.editingId && !state.gamelistImportGameId);
-  input.disabled = el.digitalInput.checked && state.gamelistSettings.shelfDigitalGames !== true;
-  if (input.disabled) input.checked = false;
+  const collectingInfo = el.addForm.classList.contains("shelf-gamelist-import-mini");
+  field.hidden = (isGamelistProjectionTarget() && el.gamelistSection.value !== "backlog") || (!collectingInfo && Boolean(state.editingId && !state.gamelistImportGameId));
+  input.disabled = false;
+  el.gamelistPlaying.closest("label").hidden = field.hidden;
   const row = document.querySelector("#shelfGamelistPreorderStreamRow");
   row.classList.toggle("has-collection-option", !field.hidden);
+  row.classList.toggle("has-playing-option", !field.hidden);
   if (!field.hidden) {
     row.hidden = false;
     const streamField = el.gamelistStream.closest("label");
     streamField.hidden = !String(state.gamelistSettings.twitchUser || "").trim();
+    row.classList.toggle("has-stream", !streamField.hidden);
   }
   return result;
 }
@@ -2930,8 +2962,13 @@ function shelfGameFromEditor(existing = state.games.find((game) => game.id === s
 }
 
 async function saveShelfEditor() {
-  const existing = state.games.find((game) => game.id === state.editingId);
+  const collectionImport = el.addForm.classList.contains("shelf-gamelist-import-mini") && state.gamelistImportGameId;
+  const existing = state.games.find((game) => game.id === (collectionImport ? state.gamelistImportShelfId : state.editingId));
   const game = shelfGameFromEditor(existing);
+  if (collectionImport) {
+    game.id = existing?.id || `gamelist-${state.gamelistImportGameId}`;
+    game.gamelistId = state.gamelistImportGameId;
+  }
   if (!game.title) return false;
   if ((!existing || existing.pendingCollection) && !game.lengthHours) await fillShelfPlaytime(game);
   if (existing?.sourceRecord) state.overrides[game.id] = stripRuntimeFields(game);
@@ -2944,6 +2981,24 @@ async function saveShelfEditor() {
   if (!saved) {
     if (embeddedGameEditor) showToast(tt("Could not add the game to Shelf."), "error");
     return false;
+  }
+  if (collectionImport) {
+    // Once acquired for Collection only, remove the source from Radar or Wishlist.
+    // Save the collection first so a failed sync cannot lose the game.
+    state.gamelistImportShelfId = game.id;
+    const now = new Date().toISOString();
+    const nextGames = state.gamelistGames.map(item => item.id === state.gamelistImportGameId
+      ? { ...item, shelfId: game.id, owners: game.owners, trophyName: game.trophyName,
+        digital: game.digital, dlc: game.dlc, psPlus: game.psPlus, gamesWithGold: game.gamesWithGold,
+        deletedAt: now, editedAt: now, updatedAt: now }
+      : item);
+    try {
+      await persistGamelistData(nextGames, state.gamelistSettings);
+      state.gamelistGames = nextGames;
+    } catch (error) {
+      showToast(error?.message || tt("Gamelist data could not be synced"), "error");
+      return false;
+    }
   }
   rebuildGames();
   if (!embeddedGameEditor) renderAll();
@@ -3001,11 +3056,11 @@ async function saveGamelistTargetFromShelf() {
     emulator: shelfOnlyImport ? false : Boolean(el.gamelistEmulator.checked),
     coop: shelfOnlyImport ? false : Boolean(el.gamelistCoop.checked),
     multiplayer: shelfOnlyImport ? false : Boolean(el.gamelistMultiplayer.checked),
-    stream: shelfOnlyImport ? false : Boolean(el.gamelistStream.checked),
+    stream: Boolean(el.gamelistStream.checked),
     platinum: false,
-    playing: false,
+    playing: section === "backlog" && el.gamelistPlaying.checked,
     replayCount: 0,
-    startedAt: "",
+    startedAt: section === "backlog" && el.gamelistPlaying.checked ? existingImport?.startedAt || shelfTodayInputValue() : "",
     completedAt: "",
     genres: shelfOnlyImport ? [] : el.fields.genre.value.split(",").map((value) => value.trim()).filter(Boolean),
     trophyName: el.fields.trophyName.value.trim(),
