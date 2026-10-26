@@ -520,7 +520,7 @@ body.theme-big-logo .brand-mark {
 html.theme-font-pokemon {
   --display-title-size: clamp(36px, 3.6vw, 54px);
   --display-title-playing-size: clamp(34px, 4.2vw, 62px);
-  --display-title-line-height: 0.9;
+  --display-title-line-height: 0.9 !important;
 }
 
 html.theme-font-default {
@@ -552,11 +552,13 @@ html.theme-font-mata {
 }
 
 .shell {
+  --shell-inline-padding: clamp(18px, 4vw, 48px);
   display: grid;
   grid-template-columns: minmax(0, 1fr);
   width: 100%;
   margin: 0 auto;
-  padding: clamp(8px, 2vw, 24px) clamp(18px, 4vw, 48px) clamp(18px, 4vw, 48px);
+  padding: clamp(8px, 2vw, 24px) var(--shell-inline-padding)
+    clamp(18px, 4vw, 48px);
 }
 
 .shell > * {
@@ -712,6 +714,7 @@ html.theme-font-mata {
 }
 
 .playing-section .card-list {
+  --playing-mask-left: 0px;
   --playing-mask-right: 0px;
   position: relative;
   z-index: 1;
@@ -727,13 +730,15 @@ html.theme-font-mata {
   scrollbar-width: none;
   -webkit-mask-image: linear-gradient(
     90deg,
-    #000 0,
+    transparent 0,
+    #000 var(--playing-mask-left),
     #000 calc(100% - var(--playing-mask-right)),
     transparent 100%
   );
   mask-image: linear-gradient(
     90deg,
-    #000 0,
+    transparent 0,
+    #000 var(--playing-mask-left),
     #000 calc(100% - var(--playing-mask-right)),
     transparent 100%
   );
@@ -743,8 +748,29 @@ html.theme-font-mata {
   mask-size: 100% 100%;
 }
 
+.playing-section:not(.playing-at-start) .card-list {
+  --playing-mask-left: min(92px, 10vw);
+}
+
 .playing-section:not(.playing-at-end) .card-list {
   --playing-mask-right: min(92px, 10vw);
+}
+
+/* Let carousel content scroll through both shell gutters. */
+.shell > .playing-section .playing-panel {
+  overflow: visible;
+}
+
+.shell > .playing-section .playing-panel > .playing-list,
+.shell > .playing-section .playing-finished-list {
+  box-sizing: border-box;
+  width: calc(100% + 2 * var(--shell-inline-padding));
+  margin-left: calc(-1 * var(--shell-inline-padding));
+  margin-right: calc(-1 * var(--shell-inline-padding));
+  padding-left: var(--shell-inline-padding);
+  padding-right: var(--shell-inline-padding);
+  scroll-padding-left: var(--shell-inline-padding);
+  scroll-padding-right: var(--shell-inline-padding);
 }
 
 .playing-section .card-list::-webkit-scrollbar {
@@ -779,6 +805,7 @@ html.theme-font-mata {
 }
 
 .playing-finished-list {
+  --finished-mask-left: 0px;
   --finished-mask-right: 0px;
   position: relative;
   z-index: 1;
@@ -791,13 +818,15 @@ html.theme-font-mata {
   scrollbar-width: none;
   -webkit-mask-image: linear-gradient(
     90deg,
-    #000 0,
+    transparent 0,
+    #000 var(--finished-mask-left),
     #000 calc(100% - var(--finished-mask-right)),
     transparent 100%
   );
   mask-image: linear-gradient(
     90deg,
-    #000 0,
+    transparent 0,
+    #000 var(--finished-mask-left),
     #000 calc(100% - var(--finished-mask-right)),
     transparent 100%
   );
@@ -805,6 +834,11 @@ html.theme-font-mata {
   mask-repeat: no-repeat;
   -webkit-mask-size: 100% 100%;
   mask-size: 100% 100%;
+}
+
+.playing-finished.finished-has-overflow:not(.finished-at-start)
+  .playing-finished-list {
+  --finished-mask-left: min(58px, 13vw);
 }
 
 .playing-finished.finished-has-overflow:not(.finished-at-end)
@@ -17983,6 +18017,15 @@ html.theme-light .primary-button.stream-start-action:hover {
     scroll-padding-left: 0;
   }
 
+  .playing-section:not(.playing-at-start) .card-list {
+    --playing-mask-left: 12px;
+  }
+
+  .playing-finished.finished-has-overflow:not(.finished-at-start)
+    .playing-finished-list {
+    --finished-mask-left: 10px;
+  }
+
   .playing-section:not(.playing-at-end) .card-list {
     --playing-mask-right: 34px;
   }
@@ -18843,6 +18886,7 @@ html.theme-light .primary-button.stream-start-action:hover {
   }
 
   .shell {
+    --shell-inline-padding: 14px;
     padding: 14px;
   }
 
@@ -20746,7 +20790,7 @@ body:not(.can-edit):not(.shelf-page)
 
 html.theme-font-pokemon .shelf-intro h1 {
   font-size: clamp(52px, 7vw, 94px);
-  line-height: 0.78;
+  line-height: 0.78 !important;
   letter-spacing: 0;
 }
 
