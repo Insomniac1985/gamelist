@@ -6815,7 +6815,8 @@ function trophyTone(value) {
 }
 
 function renderStats() {
-  const active = filteredGames({ applyPreorder: false }).filter((game) => !game.completedAt && !game.dlc);
+  const activeWithExpansions = filteredGames({ applyPreorder: false }).filter((game) => !game.completedAt);
+  const active = activeWithExpansions.filter((game) => !game.dlc);
   const total = active.length;
   const currentYear = String(new Date().getFullYear());
   const listedCompleted = state.games.filter((game) => !game.deletedAt && Boolean(game.completedAt));
@@ -6861,7 +6862,7 @@ function renderStats() {
   });
   for (const [section, count] of Object.entries(counts)) {
     const node = document.querySelector(`#${section}Count`);
-    if (node) node.innerHTML = sectionCountLabel(section, active, count);
+    if (node) node.innerHTML = sectionCountLabel(section, activeWithExpansions, count);
   }
 }
 
@@ -6903,11 +6904,19 @@ function scrollToCompletedSection() {
 }
 
 function sectionCountLabel(section, games, count) {
-  const preorderSummary = preorderStoreSummary(games.filter((game) => game.section === section));
+  const sectionGames = games.filter((game) => game.section === section);
+  const preorderSummary = preorderStoreSummary(sectionGames);
   const preordered = preorderSummary.reduce((sum, [, storeCount]) => sum + storeCount, 0);
+  const expansions = ["backlog", "upcoming", "wanted"].includes(section)
+    ? sectionGames.filter((game) => game.dlc).length
+    : 0;
+  const expansionText = expansions
+    ? `<span class="section-expansion-count">· ${escapeHtml(tt("{count} {item}", { count: expansions, item: tt(expansions === 1 ? "expansion" : "expansions") }))}</span>`
+    : "";
   return [
     preordered ? preorderCountPill(preordered, preorderSummary) : "",
     gameCountText(count),
+    expansionText,
   ].filter(Boolean).join("");
 }
 

@@ -3600,6 +3600,12 @@ h3 {
   margin-right: 0;
 }
 
+.section-expansion-count {
+  color: var(--muted);
+  font-weight: 750;
+  white-space: nowrap;
+}
+
 .preorder-store-list {
   position: absolute;
   left: 50%;
@@ -25165,7 +25171,7 @@ textarea {
 
 @media (max-width: 699px) {
   .mobile-section-tabs button {
-    font-size: 12px;
+    font-size: 14px;
   }
   .completed > .column-head {
     grid-template-columns: minmax(0, 1fr) auto;
