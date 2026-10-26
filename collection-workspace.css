@@ -115,6 +115,16 @@ body[data-mobile-section="new"] #collectionLibrary:not([hidden]) + #new:not([hid
     align-items: center;
     justify-content: flex-end;
     gap: 6px;
+    flex-wrap: nowrap;
+    white-space: nowrap;
+  }
+}
+
+@media (max-width: 699px) {
+  #upcomingCount {
+    flex-direction: row;
+    align-items: center;
+    flex-wrap: nowrap;
     white-space: nowrap;
   }
 }

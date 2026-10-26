@@ -3601,9 +3601,11 @@ h3 {
 }
 
 .section-expansion-count {
+  display: inline-block;
   color: var(--muted);
-  font-weight: 750;
+  font-weight: 500;
   white-space: nowrap;
+  transform: translateY(2px);
 }
 
 .preorder-store-list {
