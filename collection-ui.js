@@ -4278,6 +4278,7 @@ function gamelistProjectionCard(game, options = {}) {
   const isReleaseDialog = Boolean(options.releaseDialog);
   const neutralReleaseCard = isReleaseDialog && Boolean(game.playing);
   const cover = coverUrl(game.cover || "") || platformFallback(game.platform);
+  const cardArt = !neutralReleaseCard && game.playing ? game.keyArt : cover;
   const owners = Array.isArray(game.owners) && game.owners.length ? game.owners : [state.gamelistSettings.defaultOwner || "User"];
   const visibleOwners = visibleShelfCardOwners(owners);
   const ownerClasses = visibleOwners.map((owner) => ` ${ownerCardColorClass(owner)}`).join("");
@@ -4285,10 +4286,10 @@ function gamelistProjectionCard(game, options = {}) {
   const card = createGameCardShell(document);
   card.dataset.gamelistId = game.id; card.setAttribute("role", "button"); card.tabIndex = 0;
   card.dataset.gamelistTitle = game.title || "";
-  card.className += ` has-art${neutralReleaseCard ? "" : " playing-card"}${ownerClasses}${game.digital ? " digital-card" : ""}${game.stream ? " stream-card" : ""}${shelfShowsCompletedTrophyStyle(game) ? " completed-trophy-card" : ""}`;
+  card.className += `${cardArt ? " has-art" : ""}${neutralReleaseCard ? "" : " playing-card"}${ownerClasses}${game.digital ? " digital-card" : ""}${game.stream ? " stream-card" : ""}${shelfShowsCompletedTrophyStyle(game) ? " completed-trophy-card" : ""}`;
   card.classList.toggle("shelf-release-card", isReleaseDialog);
   card.classList.toggle("has-key-art", Boolean(!neutralReleaseCard && game.keyArt));
-  card.style.setProperty("--card-art", `url('${escapeCss(!neutralReleaseCard && game.keyArt ? game.keyArt : cover)}')`);
+  if (cardArt) card.style.setProperty("--card-art", `url('${escapeCss(cardArt)}')`);
   const trailer = card.querySelector(".card-trailer"); const trailerUrl = !isReleaseDialog && !neutralReleaseCard && window.matchMedia("(min-width: 900px)").matches ? activityTrailerUrl(game.trailerUrl) : ""; if (trailerUrl) { card.classList.add("has-trailer"); trailer.dataset.src = trailerUrl; const toggle = card.querySelector(".trailer-toggle"); toggle.hidden = false; toggle.innerHTML = pauseTrailerIcon(); } else { trailer.remove(); card.querySelector(".trailer-toggle")?.remove(); }
   const image = card.querySelector(".cover-button img"); image.src = cover; image.alt = `${game.title} cover`; image.loading = "eager"; image.fetchPriority = "high"; image.decoding = "async"; bindCoverFrame(image);
   const title = card.querySelector("h3"); title.textContent = game.title; title.className = `${title.className.replace(/\bowner-[\w-]+/g, "").trim()} ${visibleOwners.map(ownerColorClass).join(" ")}`.trim(); title.classList.toggle("completed-achievements-title", shelfShowsCompletedTrophyStyle(game));

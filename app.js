@@ -9135,11 +9135,11 @@ function cardFor(game, options = {}) {
   img.decoding = "async";
   if (game.playing && !neutralReleaseCard && game.cover) upgradeCoverIfFast(img, game.cover, "playing");
   if (game.playing && !neutralReleaseCard && game.cover) img.addEventListener("load", schedulePlayingCardHeightSync, { once: true });
-  const cardArt = game.playing ? game.keyArt || game.cover : game.cover;
+  const cardArt = game.playing ? game.keyArt : game.cover;
   card.classList.toggle("has-art", Boolean(cardArt));
   card.classList.toggle("has-key-art", Boolean(game.playing && game.keyArt));
   if (cardArt) {
-    card.style.setProperty("--card-art", `url("${cssUrl(game.keyArt && game.playing ? game.keyArt : backgroundCoverUrl(cardArt))}")`);
+    card.style.setProperty("--card-art", `url("${cssUrl(game.playing ? cardArt : backgroundCoverUrl(cardArt))}")`);
     bindActivityCardParallax(card);
   }
   card.querySelector("h3").textContent = game.title;
