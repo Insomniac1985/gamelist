@@ -397,7 +397,7 @@ export function mountReleaseCalendar(container, options = {}) {
     }, true);
   }
   gesture.options = options;
-  const months = releaseCalendarMonths(6, options.offset || 0);
+  const months = releaseCalendarMonths(7, options.offset || 0);
   const releases = releaseGamesByDate(options.games || []);
   const today = localDateKey(new Date());
   const weekStart = normalizedWeekStart(options.weekStart);

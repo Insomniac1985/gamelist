@@ -25165,16 +25165,16 @@ textarea {
 
 @media (min-width: 1920px) {
   .completed-list:not(.list-view) {
-    grid-template-columns: repeat(5, minmax(0, 1fr));
+    grid-template-columns: repeat(6, minmax(0, 1fr));
   }
 
   .card-list:not(.list-view),
   .shelf-grid:not(.list-view) {
-    grid-template-columns: repeat(5, minmax(0, 1fr));
+    grid-template-columns: repeat(6, minmax(0, 1fr));
   }
 
   .release-months {
-    grid-template-columns: repeat(6, minmax(0, 1fr));
+    grid-template-columns: repeat(7, minmax(0, 1fr));
   }
 
   .release-month:nth-child(n + 5) {
