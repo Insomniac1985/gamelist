@@ -170,7 +170,6 @@
               await waitForDisplayFont(window.__initialTheme || {});
               return root.dataset.initialTheme;
             });
-        window.setTimeout(() => root.classList.remove("theme-booting"), 3500);
       })();
     </script>
     <link rel="preload" as="image" href="assets/branding/kh_icon.png">

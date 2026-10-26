@@ -628,6 +628,7 @@ async function init() {
   if (await maybeRenderGameOfTheYearExportPreview()) return;
   render();
   loginAnimation.start(state.settings.disableLoginAnimation);
+  document.documentElement.classList.remove("theme-booting");
   if (state.canEdit) {
     const warmEditor = () => warmSharedAddGame();
     if ("requestIdleCallback" in window) window.requestIdleCallback(warmEditor, { timeout: 2500 });
@@ -1946,7 +1947,6 @@ function render() {
   const libraryScrollAnchor = captureMobileLibraryScrollAnchor();
   applyTheme();
   applyLanguage();
-  document.documentElement.classList.remove("theme-booting");
   document.body.classList.toggle("can-edit", state.canEdit);
   const shabiiMainOwner = isShabiiMainOwner();
   document.body.classList.toggle("shabii-main-owner", shabiiMainOwner);

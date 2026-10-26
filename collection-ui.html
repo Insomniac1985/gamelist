@@ -161,7 +161,6 @@
               await waitForDisplayFont(window.__initialTheme || {});
               return root.dataset.initialTheme;
             });
-        window.setTimeout(() => root.classList.remove("theme-booting"), 3500);
       })();
     </script>
     <link rel="stylesheet" href="styles.css">
