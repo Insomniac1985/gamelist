@@ -1599,17 +1599,6 @@ html.theme-gradient .goty-section .column-head h2 .trophy-icon {
   gap: 6px;
 }
 
-.goty-stats-preview-navs::before {
-  align-self: center;
-  width: 4px;
-  height: 4px;
-  margin: 0 2px;
-  border-radius: 50%;
-  background: var(--muted);
-  content: "";
-  opacity: 0.8;
-}
-
 .finished-stats-top-games {
   margin-top: 4px;
 }
@@ -4778,25 +4767,10 @@ body.dialog-open .floating-edit-actions {
 }
 
 .order-control {
-  position: relative;
   display: grid;
   grid-template-columns: minmax(0, 1fr) var(--toolbar-control-height);
   gap: 6px;
   margin-bottom: 0;
-}
-
-.order-control:has(> .direction-toggle)::after {
-  position: absolute;
-  right: calc(var(--toolbar-control-height) + 2px);
-  bottom: calc(var(--toolbar-control-height) / 2);
-  width: 3px;
-  height: 3px;
-  border-radius: 50%;
-  background: var(--muted);
-  content: "";
-  opacity: 0.8;
-  transform: translate(50%, 50%);
-  pointer-events: none;
 }
 
 .order-control select {
@@ -15108,23 +15082,7 @@ body.theme-kash
 .platinum-order-control {
   display: flex;
   align-items: stretch;
-  gap: 8px;
-}
-
-.platinum-order-control::before {
-  align-self: center;
-  order: 1;
-  width: 4px;
-  height: 4px;
-  margin: 0 -2px;
-  border-radius: 50%;
-  background: var(--muted);
-  content: "";
-  opacity: 0.8;
-}
-
-.platinum-order-control > select {
-  order: 0;
+  gap: 6px;
 }
 
 .platinum-order-control select {
@@ -15136,15 +15094,10 @@ body.theme-kash
 }
 
 .platinum-order-control .direction-toggle {
-  order: 2;
   width: 34px;
   min-width: 34px;
   min-height: 34px;
   height: 34px;
-}
-
-.platinum-order-control .section-view-toggle {
-  order: 3;
 }
 
 .platinum-list {
