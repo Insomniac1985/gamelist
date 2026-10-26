@@ -25157,6 +25157,22 @@ textarea {
 
 .release-calendar { touch-action: pan-y; }
 
+@media (min-width: 1121px) and (max-width: 1499px) {
+  .card-list:not(.list-view),
+  .shelf-grid:not(.list-view),
+  .completed-list:not(.list-view) {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 1500px) and (max-width: 1919px) {
+  .card-list:not(.list-view),
+  .shelf-grid:not(.list-view),
+  .completed-list:not(.list-view) {
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+  }
+}
+
 @media (min-width: 1101px) and (max-width: 1919px) {
   .release-month:nth-child(n + 5) {
     display: none;
