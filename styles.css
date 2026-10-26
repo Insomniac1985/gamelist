@@ -3874,6 +3874,8 @@ body.dialog-open .scroll-top-button {
 .completed-stats-button:hover,
 .completed-stats-button:focus-visible,
 .edit-action:hover,
+.row-edit-action:hover,
+.row-edit-action:focus-visible,
 .completed-edit-action:hover,
 .history-edit-action:hover,
 .price-refresh-action:hover,
