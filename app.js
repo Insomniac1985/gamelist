@@ -3600,18 +3600,18 @@ function renderStreamFilterToggle(button, { hidden = false, tooltip = true } = {
   button.classList.toggle("is-all-games", mode === "all");
   button.classList.toggle("is-non-stream", mode === "nonstream");
   button.innerHTML = mode === "all" ? allGamesIcon() : mode === "stream" ? streamPlayIcon() : streamPlayOffIcon();
-  const tooltip = tt("Filter between stream and non-stream games");
+  const tooltipText = tt("Filter between stream and non-stream games");
   if (!tooltip) {
     button.removeAttribute("title");
     button.removeAttribute("data-tooltip");
   } else if (window.matchMedia("(min-width: 700px)").matches) {
     button.removeAttribute("title");
-    button.dataset.tooltip = tooltip;
+    button.dataset.tooltip = tooltipText;
   } else {
-    button.setAttribute("title", tooltip);
+    button.setAttribute("title", tooltipText);
     button.removeAttribute("data-tooltip");
   }
-  button.setAttribute("aria-label", tooltip);
+  button.setAttribute("aria-label", tooltipText);
   button.setAttribute("aria-pressed", mode === "all" ? "false" : "true");
 }
 
