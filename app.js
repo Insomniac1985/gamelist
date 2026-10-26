@@ -1067,6 +1067,25 @@ function bindEvents() {
   el.finishedStatsDialog?.addEventListener("click", (event) => {
     if (event.target === el.finishedStatsDialog) el.finishedStatsDialog.close();
   });
+  let statsTouchStart = null;
+  el.finishedStatsDialog?.addEventListener("touchstart", (event) => {
+    if (!window.matchMedia("(max-width: 699px)").matches || event.touches.length !== 1) {
+      statsTouchStart = null;
+      return;
+    }
+    const touch = event.touches[0];
+    statsTouchStart = { x: touch.clientX, y: touch.clientY };
+  }, { passive: true });
+  el.finishedStatsDialog?.addEventListener("touchend", (event) => {
+    if (!statsTouchStart || !window.matchMedia("(max-width: 699px)").matches) return;
+    const touch = event.changedTouches[0];
+    const dx = touch.clientX - statsTouchStart.x;
+    const dy = touch.clientY - statsTouchStart.y;
+    statsTouchStart = null;
+    if (Math.abs(dx) < 60 || Math.abs(dx) < Math.abs(dy) * 1.25) return;
+    if (dx < 0 && state.statsSource === "gamelist") changeStatsSource("collection");
+    else if (dx > 0 && state.statsSource === "collection") changeStatsSource("gamelist");
+  }, { passive: true });
   el.finishedStatsDialog?.addEventListener("close", () => {
     el.finishedStatsDialog.classList.remove("has-mini-overlay");
     document.querySelector(".finished-stats-hover-float")?.remove();
@@ -1159,9 +1178,7 @@ function bindEvents() {
   document.querySelector("#statsSourceSlider").addEventListener("click", event => {
     const button = event.target.closest("[data-stats-source-tab]");
     if (!button) return;
-    state.statsSource = button.dataset.statsSourceTab;
-    openUnifiedStatsYear("all");
-    if (state.statsSource === "collection") void ensureCollectionWorkspace().then(() => { if (el.finishedStatsDialog.open) openUnifiedStatsYear("all"); });
+    changeStatsSource(button.dataset.statsSourceTab);
   });
   el.finishedStatsYearSelect?.addEventListener("change", () => {
     renderFinishedStatsDialog(el.finishedStatsYearSelect.value || "all");
@@ -1392,6 +1409,12 @@ function bindEvents() {
     else el.fields.preorderStore.value = "";
     syncNewGameUpcomingSection();
     syncDialogPriceVisibility();
+  });
+  el.fields.section.addEventListener("change", () => {
+    if (el.fields.section.value === "wanted" && (el.preorderCheck?.checked || el.fields.preorderStore.value.trim())) {
+      el.fields.section.value = "upcoming";
+      syncStyledSelect(el.fields.section, { activeValue: null });
+    }
   });
   el.fields.preorderStore.addEventListener("change", () => {
     syncStoreInputIcon(el.fields.preorderStore, el.preorderStoreFieldIcon);
@@ -11395,6 +11418,7 @@ function normalizeGameRecord(game) {
   normalized.genres = unique((Array.isArray(normalized.genres) ? normalized.genres : []).map((genre) => String(genre || "").trim()).filter(Boolean));
   normalized.prices = Array.isArray(normalized.prices) ? normalized.prices : [];
   normalized.section = ["new", "backlog", "upcoming", "wanted"].includes(normalized.section) ? normalized.section : "wanted";
+  if (normalized.section === "wanted" && String(normalized.preorderStore || "").trim()) normalized.section = "upcoming";
   return normalized;
 }
 
@@ -12327,14 +12351,16 @@ async function saveCurrentFormGame() {
   const effectiveCompletedAt = completedAt || (platinum ? todayDate() : "");
   const playing = el.fields.playing.checked && !effectiveCompletedAt;
   const finishingSetup = existing?.section === "new" && state.finishSetupId === id;
+  const preorderStore = el.fields.preorderStore.value.trim();
   const requestedSection = !existing && newGameShouldBeUpcoming() ? "upcoming" : el.fields.section.value;
-  const section = playing || replayCount || finishingSetup ? "backlog" : requestedSection;
+  const section = playing || replayCount || finishingSetup
+    ? "backlog"
+    : preorderStore && requestedSection === "wanted" ? "upcoming" : requestedSection;
   const startedAt = el.fields.startedAt.value || (playing && !existing?.playing && !existing?.startedAt ? todayDate() : "");
   const trailerUrl = el.fields.trailerUrl.value.trim();
   const trailerUrlRemoved = !trailerUrl && Boolean(existing?.trailerUrl || existing?.trailerUrlRemoved);
   const releaseDate = el.fields.releaseDate.value;
   const releaseText = el.fields.releaseText.value.trim();
-  const preorderStore = el.fields.preorderStore.value.trim();
   const releaseTime = releaseDate ? new Date(`${releaseDate}T00:00:00`).getTime() : NaN;
   const today = new Date();
   today.setHours(0, 0, 0, 0);
@@ -13787,4 +13813,16 @@ function syncStatsSourceSlider() {
     button.classList.toggle("active", active);
     button.setAttribute("aria-pressed", String(active));
   });
+}
+
+function changeStatsSource(source) {
+  if (!["gamelist", "collection"].includes(source) || source === state.statsSource) return;
+  state.statsSource = source;
+  syncStatsSourceSlider();
+  openUnifiedStatsYear("all");
+  if (source === "collection") {
+    void ensureCollectionWorkspace().then(() => {
+      if (el.finishedStatsDialog.open && state.statsSource === "collection") openUnifiedStatsYear("all");
+    });
+  }
 }

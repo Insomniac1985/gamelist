@@ -2674,6 +2674,14 @@ body.goty-loading-active {
   color: var(--coop-accent) !important;
 }
 
+.playing-finished-tags .coop-pill .coop-icon,
+.playing-finished-tags .multiplayer-pill .coop-icon,
+.playing-finished-tags .multiplayer-pill .online-globe-icon {
+  width: 10px;
+  height: 10px;
+  flex-basis: 10px;
+}
+
 .playing-finished-tags .rating-score-star {
   display: inline-grid;
   place-items: center;
@@ -8940,9 +8948,13 @@ body:not(.can-edit) .game-card:focus-within .edit-action {
 .completed-stats-button,
 .completed-stream-toggle,
 .playing-stream-toggle {
+  box-sizing: border-box;
   width: 34px;
   height: 34px;
   min-width: 34px;
+  min-height: 34px;
+  flex: 0 0 34px;
+  aspect-ratio: 1;
   padding: 0;
   border-radius: 7px;
 }
@@ -9155,6 +9167,12 @@ body:not(.can-edit) .game-card:focus-within .edit-action {
   padding: 0 2px 6px;
   overflow: visible;
   overscroll-behavior: contain;
+}
+
+@media (max-width: 699px) {
+  .finished-stats-dialog {
+    touch-action: pan-y;
+  }
 }
 
 .finished-stats-kpis {
@@ -12100,9 +12118,15 @@ html.theme-light .settings-category-card {
 
 @media (max-width: 699px) {
   .settings-dialog {
+    position: fixed;
+    inset: 0;
     width: calc(100vw - 16px);
     max-width: calc(100vw - 16px);
+    height: calc(100dvh - 16px);
     max-height: calc(100dvh - 16px);
+    margin: auto;
+    display: grid;
+    place-items: center;
   }
   .settings-modal {
     max-height: calc(100dvh - 16px);
@@ -18428,7 +18452,7 @@ html.theme-light .primary-button.stream-start-action:hover {
     display: flex;
     flex-wrap: wrap;
     justify-content: flex-end;
-    align-items: end;
+    align-items: center;
     gap: 5px 10px;
     width: auto;
     min-width: 0;
@@ -18437,6 +18461,27 @@ html.theme-light .primary-button.stream-start-action:hover {
     margin-left: auto;
     height: auto;
     white-space: normal;
+  }
+
+  .completed-year-control .platform-logo-button {
+    box-sizing: border-box;
+  }
+
+  .completed-year-control .platform-logo-button .platform-logo-choice {
+    display: flex;
+    align-items: center;
+    align-self: center;
+    height: 100%;
+    min-height: 0;
+    line-height: 1;
+    transform: none;
+  }
+
+  .completed-year-control .platform-logo-button .platform-logo-choice-label {
+    align-self: center;
+    line-height: 1;
+    margin: 0;
+    transform: none;
   }
 
   .completed-head-actions > :not(#completedCount) {
@@ -23248,7 +23293,6 @@ textarea {
   margin-top: 14px;
 }
 
-.detail-guides,
 .detail-condition {
   padding-bottom: 14px;
   border-bottom: 1px solid var(--line);
