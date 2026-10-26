@@ -202,6 +202,7 @@ const STRINGS = {
     "Xbox Store URL": "URL de Xbox Store",
     "Trailer URL": "URL del tráiler",
     "Cover URL": "URL de la carátula",
+    "Currently Playing Key Art URL": "URL del arte de fondo al jugar",
     "PriceCharting Data": "Datos de PriceCharting",
     "Digital edition": "Edición digital",
     "Physical edition": "Edición física",

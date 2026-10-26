@@ -107,7 +107,6 @@ const state = {
   gamelistSettings: loadSharedSettings(),
   metadataLookupResults: [],
   pendingLengthHours: null,
-  pendingKeyArt: "",
   pendingTrailerUrl: "",
   trophyActivity: null,
   steamActivity: { achievements: [], games: [], completed: [], totalEarned: 0, sourceUrl: "" },
@@ -249,7 +248,7 @@ const el = {
     playstationUrl: document.querySelector("#playstationUrlInput"), nintendoUrl: document.querySelector("#nintendoUrlInput"),
     steamUrl: document.querySelector("#steamUrlInput"), xboxUrl: document.querySelector("#xboxUrlInput"), hltbUrl: document.querySelector("#hltbUrlInput"),
     publisher: document.querySelector("#publisherInput"), developer: document.querySelector("#developerInput"),
-    genre: document.querySelector("#genreInput"), cover: document.querySelector("#coverInput"), notes: document.querySelector("#notesInput"), description: document.querySelector("#shelfDescriptionInput"), igdbUrl: document.querySelector("#igdbUrlInput"),
+    genre: document.querySelector("#genreInput"), cover: document.querySelector("#coverInput"), keyArt: document.querySelector("#keyArtInput"), notes: document.querySelector("#notesInput"), description: document.querySelector("#shelfDescriptionInput"), igdbUrl: document.querySelector("#igdbUrlInput"),
   },
   conditionFields: { game: document.querySelector("#conditionGameInput"), manual: document.querySelector("#conditionManualInput"), box: document.querySelector("#conditionBoxInput"), other: document.querySelector("#conditionOtherInput"), sealed: document.querySelector("#conditionSealedInput") },
 
@@ -2157,7 +2156,6 @@ function openEditor(game = null, options = {}) {
   el.digitalInput.checked = digitalMode;
   syncShelfDigitalEditorMode(digitalMode);
   state.pendingLengthHours = roundApproximateHours(game?.lengthHours) || null;
-  state.pendingKeyArt = game?.keyArt || "";
   state.pendingTrailerUrl = game?.trailerUrl || "";
   state.lookupResults = [];
   el.lookupResults.classList.remove("loaded");
@@ -2812,7 +2810,7 @@ async function chooseLookupResult(event) {
     syncShelfDigitalEditorMode(true);
   }
   el.fields.cover.value = result.cover || "";
-  state.pendingKeyArt = result.keyArt || state.pendingKeyArt;
+  if (result.keyArt) el.fields.keyArt.value = result.keyArt;
   state.pendingTrailerUrl = result.trailerUrl || state.pendingTrailerUrl;
   syncShelfEditorCoverPreview();
   el.fields.releaseDate.value = result.releaseDate || "";
@@ -2856,7 +2854,7 @@ function bestGameMetadata(title) {
 
 function applyGameMetadata(result) {
   if (!result) return;
-  state.pendingKeyArt = result.keyArt || state.pendingKeyArt;
+  if (result.keyArt && !el.fields.keyArt.value) el.fields.keyArt.value = result.keyArt;
   state.pendingTrailerUrl = result.trailerUrl || state.pendingTrailerUrl;
   if (result.publisher && !el.fields.publisher.value) el.fields.publisher.value = result.publisher;
   if (result.developer && !el.fields.developer.value) el.fields.developer.value = result.developer;
@@ -2975,7 +2973,7 @@ function shelfGameFromEditor(existing = state.games.find((game) => game.id === s
     gamesWithGold: digitalMode && ["X360", "XOne"].includes(canonicalShelfPlatform(el.fields.platform.value)) && el.fields.gamesWithGold.checked,
     price: manualPrice, publisher: el.fields.publisher.value.trim(), developer: el.fields.developer.value.trim(),
     genre: el.fields.genre.value.trim(), cover: rawCoverUrl(el.fields.cover.value.trim()), notes: el.fields.notes.value.trim(),
-    keyArt: state.pendingKeyArt || existing?.keyArt || "",
+    keyArt: el.fields.keyArt.value.trim(),
     trailerUrl: state.pendingTrailerUrl || existing?.trailerUrl || "",
     owners: splitValues(el.fields.owners.value).map(canonicalOwner).filter(Boolean), category: existing?.category || "Game",
     releaseDate: el.fields.releaseDate.value, trophyName: el.fields.trophyName.value.trim(), websites: legacyWebsiteLinks(existing),
@@ -3101,7 +3099,7 @@ async function saveGamelistTargetFromShelf() {
     publisher: shelfOnlyImport ? "" : el.fields.publisher.value.trim(),
     igdbUrl: shelfOnlyImport ? "" : el.fields.igdbUrl.value.trim(),
     hltbUrl: shelfOnlyImport ? "" : el.fields.hltbUrl.value.trim(),
-    keyArt: state.pendingKeyArt || existingImport?.keyArt || "",
+    keyArt: el.fields.keyArt.value.trim(),
     trailerUrl: state.pendingTrailerUrl || existingImport?.trailerUrl || "",
     steamAppId: "",
     storeLinks: shelfOnlyImport ? {} : editorStoreLinks(),

@@ -574,6 +574,7 @@ const el = {
     xboxUrl: document.querySelector("#xboxUrlInput"),
     steamUrl: document.querySelector("#steamUrlInput"),
     cover: document.querySelector("#coverInput"),
+    keyArt: document.querySelector("#keyArtInput"),
     notes: document.querySelector("#notesInput"),
   },
   playingRatingGrid: document.querySelector("#playingRatingGrid"),
@@ -12260,7 +12261,7 @@ async function openEditor(id = "") {
   el.fields.igdbUrl.value = game.igdbUrl || "";
   el.fields.hltbUrl.value = game.hltbUrl || game.howLongToBeatUrl || "";
   el.fields.trailerUrl.value = game.trailerUrl || "";
-  state.editorKeyArt = game.keyArt || "";
+  el.fields.keyArt.value = game.keyArt || "";
   el.fields.playstationUrl.value = game.storeLinks?.playstation || "";
   el.fields.nintendoUrl.value = game.storeLinks?.nintendo || "";
   el.fields.xboxUrl.value = game.storeLinks?.xbox || "";
@@ -12474,7 +12475,7 @@ async function saveCurrentFormGame() {
       steam: el.fields.steamUrl.value.trim(),
     },
     cover: el.fields.cover.value.trim(),
-    keyArt: state.editorKeyArt || existing?.keyArt || "",
+    keyArt: el.fields.keyArt.value.trim(),
     notes: el.fields.notes ? el.fields.notes.value.trim() : existing?.notes || "",
     order: existing?.section === section ? existing.order : nextOrder(section),
     editedAt,
@@ -13119,7 +13120,7 @@ function applyLookup(result) {
   el.fields.igdbUrl.value = result.igdbUrl || el.fields.igdbUrl.value;
   el.fields.hltbUrl.value = normalizeGuideUrl(result.hltbUrl || result.howLongToBeatUrl) || hltbUrlFromId(result.hltbId || result.howLongToBeatId) || el.fields.hltbUrl.value;
   el.fields.trailerUrl.value = result.trailerUrl || el.fields.trailerUrl.value;
-  state.editorKeyArt = result.keyArt || state.editorKeyArt || "";
+  if (result.keyArt) el.fields.keyArt.value = result.keyArt;
   const links = normalizeStoreLinks(result.storeLinks);
   el.fields.playstationUrl.value = links.playstation || el.fields.playstationUrl.value;
   el.fields.nintendoUrl.value = links.nintendo || el.fields.nintendoUrl.value;
