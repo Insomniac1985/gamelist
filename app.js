@@ -704,7 +704,6 @@ function createLoginAnimation() {
       enabled = disabled !== true;
       refresh();
     },
-    refresh,
     setDisabled(disabled) {
       if (disabled !== true) return;
       enabled = false;
@@ -13724,7 +13723,6 @@ function ensureCollectionWorkspace() {
     } });
     syncCollectionWorkspace();
     renderMobileTabs();
-    loginAnimation.refresh();
   })().catch(error => {
     collectionLoad = null;
     document.querySelector("#collectionLibrary").textContent = tt("Could not load your collection.");
