@@ -248,6 +248,7 @@ let settingsDirty = false;
 let settingsSnapshot = null;
 let settingsExitDestination = "";
 let gameEditorDirty = false;
+let newGameEditorContentBaseline = "";
 
 const state = {
   games: [],
@@ -1533,14 +1534,18 @@ function bindEvents() {
   el.form.addEventListener("input", () => { gameEditorDirty = true; });
   el.form.addEventListener("change", () => { gameEditorDirty = true; });
   el.dialog.addEventListener("cancel", (event) => {
-    if (!gameEditorDirty) return;
+    if (!shouldConfirmGameEditorClose()) return;
     event.preventDefault();
     showGameEditorUnsavedDialog();
   });
   el.dialog.addEventListener("click", (event) => {
     if (event.target !== el.dialog) return;
-    event.preventDefault();
-    if (gameEditorDirty) showGameEditorUnsavedDialog();
+    if (shouldConfirmGameEditorClose()) {
+      event.preventDefault();
+      showGameEditorUnsavedDialog();
+    } else {
+      el.dialog.close();
+    }
   });
   document.querySelector("#editorUnsavedDialog [data-editor-unsaved-cancel]")?.addEventListener("click", () => document.querySelector("#editorUnsavedDialog").close());
   document.querySelector("#editorUnsavedDialog [data-editor-unsaved-save]")?.addEventListener("click", () => {
@@ -6888,8 +6893,8 @@ function sectionCountLabel(section, games, count) {
   const preorderSummary = preorderStoreSummary(games.filter((game) => game.section === section));
   const preordered = preorderSummary.reduce((sum, [, storeCount]) => sum + storeCount, 0);
   return [
-    gameCountText(count),
     preordered ? preorderCountPill(preordered, preorderSummary) : "",
+    gameCountText(count),
   ].filter(Boolean).join("");
 }
 
@@ -6906,7 +6911,7 @@ function preorderCountPill(count, summary) {
   const title = summary.map(([store, storeCount]) => `${store}: ${storeCount}`).join("\n");
   return `
     <span class="preorder-count-pill preorder-count-tooltip" tabindex="0" title="${escapeHtml(title)}">
-      ${shoppingBagIcon()}${escapeHtml(tt("{count} preordered", { count }))}
+      ${shoppingBagIcon()}${count} ${escapeHtml(tt(count === 1 ? "Preorder" : "Preorders"))}
       <span class="preorder-store-list" role="tooltip">${rows}</span>
     </span>
   `;
@@ -12265,6 +12270,7 @@ async function openEditor(id = "") {
   syncStyledSelect(el.fields.section, { activeValue: null });
   syncNewGameRequiredHighlights();
   gameEditorDirty = false;
+  newGameEditorContentBaseline = gameEditorContentSnapshot();
   pauseAllPlayingTrailers();
   el.dialog.showModal();
   syncScrollLock();
@@ -12354,11 +12360,22 @@ async function saveFromForm(event) {
 }
 
 function requestGameEditorClose() {
-  if (gameEditorDirty) {
+  if (shouldConfirmGameEditorClose()) {
     showGameEditorUnsavedDialog();
     return;
   }
   el.dialog.close();
+}
+
+function shouldConfirmGameEditorClose() {
+  return gameEditorDirty && (Boolean(state.editingId) || gameEditorContentSnapshot() !== newGameEditorContentBaseline);
+}
+
+function gameEditorContentSnapshot() {
+  return JSON.stringify([...el.form.querySelectorAll("input, textarea, select")]
+    .filter((field) => !["checkbox", "radio", "button", "submit", "reset"].includes(field.type))
+    .filter((field) => field.id !== "gameId" && field.id !== "sectionInput" && !field.matches(".list-field"))
+    .map((field) => [field.id || field.name, field.type, field.value]));
 }
 
 function showGameEditorUnsavedDialog() {

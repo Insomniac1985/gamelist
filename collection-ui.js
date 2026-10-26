@@ -144,6 +144,7 @@ const state = {
 };
 
 let shelfEditorDirty = false;
+let shelfNewGameContentBaseline = "";
 let shelfNewGameTouchedFields = new Set();
 
 const el = {
@@ -469,7 +470,7 @@ function bindEvents() {
   el.editDelete.addEventListener("click", deleteCurrentEditedGame);
   el.addDialog.addEventListener("click", (event) => { if (event.target === el.addDialog) requestShelfEditorClose(); });
   el.addDialog.addEventListener("cancel", (event) => {
-    if (!shelfEditorDirty) return;
+    if (!shouldConfirmShelfEditorClose()) return;
     event.preventDefault();
     showShelfEditorUnsavedDialog();
   });
@@ -2020,7 +2021,7 @@ function shelfPreorderCountPill(games) {
   const summary = [...counts.entries()].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0], undefined, { sensitivity: "base" }));
   const rows = summary.map(([store, count]) => `<span><strong>${escapeHtml(store)}</strong><em>${count}</em></span>`).join("");
   const title = summary.map(([store, count]) => `${store}: ${count}`).join("\n");
-  return `<span class="preorder-count-pill preorder-count-tooltip" tabindex="0" title="${escapeHtml(title)}">${shoppingBagIcon()}${escapeHtml(tt("{count} preordered", { count: games.length }))}<span class="preorder-store-list" role="tooltip">${rows}</span></span>`;
+  return `<span class="preorder-count-pill preorder-count-tooltip" tabindex="0" title="${escapeHtml(title)}">${shoppingBagIcon()}${games.length} ${escapeHtml(tt(games.length === 1 ? "Preorder" : "Preorders"))}<span class="preorder-store-list" role="tooltip">${rows}</span></span>`;
 }
 
 function visibleShelfCardOwners(owners = []) {
@@ -2219,6 +2220,7 @@ function openEditor(game = null, options = {}) {
   syncStyledSelects(el.addDialog, { activeValue: null });
   syncShelfEditorIcons();
   shelfEditorDirty = false;
+  shelfNewGameContentBaseline = shelfEditorContentSnapshot();
   openDialog(el.addDialog);
 }
 
@@ -2243,11 +2245,22 @@ function renderShelfGamelistImportSummary(game) {
 }
 
 function requestShelfEditorClose() {
-  if (shelfEditorDirty) {
+  if (shouldConfirmShelfEditorClose()) {
     showShelfEditorUnsavedDialog();
     return;
   }
   closeDialog(el.addDialog);
+}
+
+function shouldConfirmShelfEditorClose() {
+  return shelfEditorDirty && (Boolean(state.editingId) || shelfEditorContentSnapshot() !== shelfNewGameContentBaseline);
+}
+
+function shelfEditorContentSnapshot() {
+  return JSON.stringify([...el.addForm.querySelectorAll("input, textarea, select")]
+    .filter((field) => !["checkbox", "radio", "button", "submit", "reset"].includes(field.type))
+    .filter((field) => field.id !== "shelfGamelistSectionInput" && !field.matches(".shelf-gamelist-section, .list-field"))
+    .map((field) => [field.id || field.name, field.type, field.value]));
 }
 
 function showShelfEditorUnsavedDialog() {
@@ -2325,7 +2338,9 @@ function syncShelfGamelistTargetMode() {
     if (eyebrow) eyebrow.textContent = collectingInfo ? tt("Gamelist") : "GAME DATA";
     if (title) {
       const titleText = shelfGamelistAddTitle();
-      setShelfEditorTitle(title, titleText, shelfGamelistMobileTitleParts());
+      const labels = collectionEditorLabels();
+      const titleLines = labels?.titleLines?.map(line => tt(line)) || shelfGamelistMobileTitleParts();
+      setShelfEditorTitle(title, titleText, titleLines, Boolean(labels?.titleLines));
     }
     el.addForm.querySelector(".form-group h3").textContent = tt("Collecting Information");
     const saveLabel = collectionEditorLabels()?.button || "Add game";
@@ -2339,8 +2354,9 @@ function syncShelfGamelistTargetMode() {
     if (eyebrow) eyebrow.textContent = tt("Game data");
     const game = state.games.find((item) => item.id === state.editingId);
     if (title) {
-      const titleText = tt(collectionEditorLabels()?.title || (game ? "Edit game" : "Add to Collection"));
-      setShelfEditorTitle(title, titleText);
+      const labels = collectionEditorLabels();
+      const titleText = tt(labels?.title || (game ? "Edit game" : "Add to Collection"));
+      setShelfEditorTitle(title, titleText, labels?.titleLines?.map(line => tt(line)) || [], Boolean(labels?.titleLines));
     }
     el.addForm.querySelector(".form-group h3").textContent = tt("Collecting Information");
     el.addForm.querySelectorAll("button[type='submit']").forEach((button) => { button.textContent = tt(collectionEditorLabels()?.button || (game ? "Save" : "Add to Collection")); });
@@ -2399,19 +2415,21 @@ function collectionEditorLabels() {
   if (backlog && el.gamelistPlaying.checked) {
     const streaming = el.gamelistStream.checked;
     return {
-      title: collection ? (streaming ? "Add to Collection and Start Streaming" : "Add to Collection and Start Playing") : (streaming ? "Add and Start Streaming" : "Add and Start Playing"),
+      title: collection ? (streaming ? "Add to Collection and Start Streaming" : "Add to Collection and play") : (streaming ? "Add and Start Streaming" : "Add and Start Playing"),
+      titleLines: collection && !streaming ? ["Add to Collection", "and play"] : null,
       button: streaming ? "Add and Start Streaming" : "Add and Start Playing",
     };
   }
   const label = backlog ? (collection ? "Add to Collection and Backlog" : "Add to Backlog") : "Add to Collection";
-  return { title: label, button: label };
+  return { title: label, titleLines: backlog && collection ? ["Add to Collection", "and Backlog"] : null, button: label };
 }
 
-function setShelfEditorTitle(title, text, mobileLines = []) {
+function setShelfEditorTitle(title, text, mobileLines = [], forceTwoLine = false) {
   if (!title) return;
   title.classList.toggle("mobile-two-line-title", mobileLines.length === 2);
   title.classList.toggle("mobile-two-line-title-shelf", mobileLines.length === 2 && mobileLines[1] === tt("to Shelf"));
   title.classList.toggle("mobile-two-line-title-backlog", mobileLines.length === 2 && mobileLines[1] === tt("to Backlog"));
+  title.classList.toggle("collection-action-two-line-title", forceTwoLine && mobileLines.length === 2);
   title.innerHTML = mobileLines.length === 2
     ? `${escapeHtml(mobileLines[0])} <br class="mobile-title-break">${escapeHtml(mobileLines[1])}`
     : escapeHtml(text);
@@ -2432,8 +2450,10 @@ function syncShelfGamelistSectionButtons() {
   if (isGamelistProjectionTarget()) {
     const title = el.addForm.querySelector(".modal-head h2");
     if (title) {
+      const labels = collectionEditorLabels();
       const titleText = shelfGamelistAddTitle();
-      setShelfEditorTitle(title, titleText, shelfGamelistMobileTitleParts());
+      const titleLines = labels?.titleLines?.map(line => tt(line)) || shelfGamelistMobileTitleParts();
+      setShelfEditorTitle(title, titleText, titleLines, Boolean(labels?.titleLines));
     }
   }
 }

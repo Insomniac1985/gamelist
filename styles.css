@@ -3584,6 +3584,21 @@ h3 {
   cursor: help;
 }
 
+.column-head > span:has(.preorder-count-pill) {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: nowrap;
+  max-width: none;
+  margin-bottom: 0;
+  white-space: nowrap;
+}
+
+.column-head .preorder-count-pill {
+  margin-left: 0;
+  margin-right: 0;
+}
+
 .preorder-store-list {
   position: absolute;
   left: 50%;
@@ -16793,7 +16808,8 @@ html.theme-light .primary-button.stream-start-action:hover {
   }
 
   .column-head .preorder-count-pill {
-    margin-left: 4px;
+    margin-left: 0;
+    margin-right: 4px;
     margin-bottom: 0;
   }
 
@@ -19750,6 +19766,14 @@ body:not(.can-edit):not(.shelf-page)
 
 #addGameForm .mobile-title-break {
   display: none;
+}
+
+#addGameForm .modal-head h2.collection-action-two-line-title {
+  white-space: normal;
+}
+
+#addGameForm .modal-head h2.collection-action-two-line-title .mobile-title-break {
+  display: initial;
 }
 
 .shelf-gamelist-list-picker[hidden] {
@@ -25147,3 +25171,24 @@ textarea {
 }
 
 .release-calendar { touch-action: pan-y; }
+
+@media (min-width: 1101px) and (max-width: 1919px) {
+  .release-month:nth-child(n + 5) {
+    display: none;
+  }
+}
+
+@media (min-width: 1920px) {
+  .card-list:not(.list-view),
+  .shelf-grid:not(.list-view) {
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+  }
+
+  .release-months {
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+  }
+
+  .release-month:nth-child(n + 5) {
+    display: grid;
+  }
+}
