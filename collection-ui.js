@@ -195,6 +195,7 @@ const el = {
   mobileActionDock: document.querySelector("#mobileActionDock"), mobileDockUp: document.querySelector("#mobileDockUp"), mobileDockAdd: document.querySelector("#mobileDockAdd"), mobileDockSearch: document.querySelector("#mobileDockSearch"), mobileDockSettings: document.querySelector("#mobileDockSettings"), mobileDockStats: document.querySelector("#mobileDockStats"),
   detailDialog: document.querySelector("#detailDialog"),
   detailClose: document.querySelector("#detailClose"),
+  detailEdit: document.querySelector("#detailEdit"),
   detailTitle: document.querySelector("#detailTitle"),
   detailStudio: document.querySelector("#detailStudio"), detailMeta: document.querySelector("#detailMeta"),
   detailDates: document.querySelector("#detailDates"), detailDescription: document.querySelector("#detailDescription"),
@@ -461,6 +462,21 @@ function bindEvents() {
   el.tabs.addEventListener("touchstart", handleShelfSwipeStart, { passive: true });
   el.tabs.addEventListener("touchend", handleShelfSwipeEnd, { passive: true });
   el.detailClose.addEventListener("click", () => closeDialog(el.detailDialog));
+  el.detailEdit.addEventListener("click", () => {
+    const id = el.detailDialog.dataset.id;
+    if (!id) return;
+    if (el.detailDialog.dataset.projection === "true") {
+      closeDialog(el.detailDialog);
+      if (unifiedShelfScope?.editGame) unifiedShelfScope.editGame(id);
+      else openPreorderInGamelistEditor({ id });
+      return;
+    }
+    const game = state.games.find((item) => item.id === id);
+    if (game) {
+      closeDialog(el.detailDialog);
+      openEditor(game);
+    }
+  });
   el.detailDialog.addEventListener("click", (event) => { if (event.target === el.detailDialog) closeDialog(el.detailDialog); });
   el.detailTrophySort.addEventListener("change", renderGamelistDetailTrophyList);
   el.detailTrophyDirection.addEventListener("click", () => { state.gamelistDetailTrophyDirection = state.gamelistDetailTrophyDirection === "asc" ? "desc" : "asc"; renderGamelistDetailTrophyList(); });

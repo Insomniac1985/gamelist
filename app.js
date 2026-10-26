@@ -373,6 +373,7 @@ const el = {
   board: document.querySelector(".board"),
   detailDialog: document.querySelector("#detailDialog"),
   detailCloseButton: document.querySelector("#detailCloseButton"),
+  detailEditButton: document.querySelector("#detailEditButton"),
   historyDialog: document.querySelector("#historyDialog"),
   historyCloseButton: document.querySelector("#historyCloseButton"),
   historyYearTabs: document.querySelector("#historyYearTabs"),
@@ -1299,6 +1300,12 @@ function bindEvents() {
   });
   el.mobileDockUp?.addEventListener("click", () => el.scrollTopButton.click());
   el.detailCloseButton.addEventListener("click", () => el.detailDialog.close());
+  el.detailEditButton.addEventListener("click", () => {
+    const id = state.detailGameId;
+    if (!id) return;
+    el.detailDialog.close();
+    void openEditor(id);
+  });
   el.detailDialog.addEventListener("click", (event) => {
     if (event.target === el.detailDialog) el.detailDialog.close();
   });
@@ -9489,6 +9496,7 @@ function trailerEmbedUrl(value) {
 function openDetail(id, options = {}) {
   const game = getGame(id);
   if (!game) return;
+  state.detailGameId = game.id;
   pauseAllPlayingTrailers();
   state.detailReturnToHistory = Boolean(options.returnToHistory);
   const owners = ownerTags(game);
@@ -13713,7 +13721,7 @@ function ensureCollectionWorkspace() {
     stats.hidden = true;
     document.body.append(stats);
     slots.stats = stats;
-    collectionUI = await mountCollectionWorkspace({ slots, openGame: openDetail, openSettings: openSettingsDialog, mediaChanged: setCollectionMedia, viewChanged: mode => { state.viewMode = mode; saveSharedViewMode(mode); render(); }, clearFilters: () => {
+    collectionUI = await mountCollectionWorkspace({ slots, openGame: openDetail, editGame: id => openEditor(id), openSettings: openSettingsDialog, mediaChanged: setCollectionMedia, viewChanged: mode => { state.viewMode = mode; saveSharedViewMode(mode); render(); }, clearFilters: () => {
       Object.assign(state.filters, { query: "", platform: "all", tag: "all", region: "all", condition: "all", preordered: false });
       el.searchInput.value = "";
       render();

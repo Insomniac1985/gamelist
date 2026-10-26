@@ -13,7 +13,7 @@ export function mountCollectionWorkspace(options) {
   return workspacePromise ||= mount(options).catch(error => { workspacePromise = null; throw error; });
 }
 
-async function mount({ slots, changed, openGame, openSettings, mediaChanged, viewChanged, clearFilters }) {
+async function mount({ slots, changed, openGame, editGame, openSettings, mediaChanged, viewChanged, clearFilters }) {
   const [markup, ...styles] = await prepareCollectionWorkspace();
   const source = new DOMParser().parseFromString(markup, 'text/html');
   hydrateSvgAssets(source);
@@ -152,7 +152,7 @@ async function mount({ slots, changed, openGame, openSettings, mediaChanged, vie
     mediaChanged?.(media);
   };
   renderMedia();
-  window.__unifiedShelfScope = { document: scopeDocument, changed, openGame, openSettings, viewChanged, clearFilters, ready(value) { api = value; resolveReady(); } };
+  window.__unifiedShelfScope = { document: scopeDocument, changed, openGame, editGame, openSettings, viewChanged, clearFilters, ready(value) { api = value; resolveReady(); } };
   await import('./collection-ui.js');
   await ready;
   setMedia(media);

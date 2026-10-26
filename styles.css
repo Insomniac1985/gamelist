@@ -14643,6 +14643,17 @@ body.theme-kash
   z-index: 2;
 }
 
+.detail-edit {
+  position: absolute;
+  top: 12px;
+  right: 54px;
+  z-index: 2;
+}
+
+body:not(.can-edit) #detailEditButton {
+  display: none !important;
+}
+
 .detail-cover {
   align-self: start;
   aspect-ratio: 104 / 142;
