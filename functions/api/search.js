@@ -891,7 +891,7 @@ async function localizedDescription(title, fallback, language, alternateTitles =
     const metadata = await wikidataMetadata(candidate, language);
     if (metadata.description) return metadata.description;
   }
-  return cleanedFallback;
+  return "";
 }
 
 async function spanishWikipediaDescription(entity) {

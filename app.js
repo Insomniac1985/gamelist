@@ -704,7 +704,6 @@ function createLoginAnimation() {
       enabled = disabled !== true;
       refresh();
     },
-    refresh,
     setDisabled(disabled) {
       if (disabled !== true) return;
       enabled = false;
@@ -1093,7 +1092,7 @@ function bindEvents() {
       const home = document.querySelector("#settingsHome");
       if (home) home.hidden = true;
       const sectionTitle = button.querySelector(".settings-category-text strong")?.textContent.trim() || "Settings";
-      document.querySelector("#settingsDialogEyebrow").textContent = "Settings";
+      document.querySelector("#settingsDialogEyebrow").textContent = tt("Settings");
       document.querySelector("#settingsDialogTitle").hidden = true;
       document.querySelector("#settingsDialogSectionTitle").textContent = sectionTitle;
       document.querySelector("#settingsDialogBackTitle").hidden = false;
@@ -2103,8 +2102,8 @@ function openSettingsDialog() {
   const settingsHome = document.querySelector("#settingsHome");
   if (settingsHome) settingsHome.hidden = false;
   el.settingsDialog.classList.remove("has-settings-window");
-  document.querySelector("#settingsDialogEyebrow").textContent = "Site settings";
-  document.querySelector("#settingsDialogTitle").textContent = "Settings";
+  document.querySelector("#settingsDialogEyebrow").textContent = tt("Site settings");
+  document.querySelector("#settingsDialogTitle").textContent = tt("Settings");
   document.querySelector("#settingsDialogTitle").hidden = false;
   document.querySelector("#settingsDialogBackTitle").hidden = true;
   renderSettingsDialog();
@@ -2132,8 +2131,8 @@ function requestSettingsExit(destination) {
   settingsExitDestination = destination;
   const saveButton = document.querySelector("[data-settings-unsaved-save]");
   const discardButton = document.querySelector("[data-settings-unsaved-discard]");
-  if (saveButton) saveButton.textContent = destination === "back" ? "Go back and save" : "Close and save";
-  if (discardButton) discardButton.textContent = destination === "back" ? "Go back without saving" : "Close without saving";
+  if (saveButton) saveButton.textContent = tt(destination === "back" ? "Go back and save" : "Close and save");
+  if (discardButton) discardButton.textContent = tt(destination === "back" ? "Go back without saving" : "Close without saving");
   document.querySelector("#settingsUnsavedDialog")?.showModal();
 }
 
@@ -2147,7 +2146,7 @@ function finishSettingsExit(destination) {
   const home = document.querySelector("#settingsHome");
   if (home) home.hidden = false;
   el.settingsDialog.classList.remove("has-settings-window");
-  document.querySelector("#settingsDialogEyebrow").textContent = "Site settings";
+  document.querySelector("#settingsDialogEyebrow").textContent = tt("Site settings");
   document.querySelector("#settingsDialogTitle").hidden = false;
   document.querySelector("#settingsDialogBackTitle").hidden = true;
   el.settingsDialog.querySelector(".settings-modal")?.scrollTo({ top: 0 });
@@ -11635,6 +11634,7 @@ function steamAppIdFromUrl(value) {
 function storeLinksFor(game) {
   const links = storeLinksWithFallbacks(game);
   const hltbUrl = hltbUrlFor(game);
+  const igdbUrl = igdbUrlFor(game);
   const stores = [
     { key: "playstation", label: "PlayStation", cls: "store-playstation", icon: "assets/sites/playstation.png", provider: playStationStoreName() },
     { key: "nintendo", label: "Nintendo", cls: "store-nintendo", icon: "assets/sites/nintendo.png", provider: nintendoStoreName() },
@@ -11648,8 +11648,18 @@ function storeLinksFor(game) {
     .map((store) => ({ ...store, url: links[store.key] })),
     providers.length ? null : { label: "Wikipedia", url: wikipediaUrlFor(game), cls: "store-wikipedia", icon: "assets/sites/wikipedia.ico" },
     hltbUrl ? { label: "HowLongToBeat", url: hltbUrl, cls: "store-hltb", icon: "assets/sites/howlongtobeat.png" } : null,
+    igdbUrl ? { label: "IGDB", url: igdbUrl, cls: "store-igdb", icon: "assets/sites/igdb.svg" } : null,
   ];
   return storeButtonsMarkup(buttons, escapeHtml);
+}
+
+function igdbUrlFor(game) {
+  try {
+    const url = new URL(String(game?.igdbUrl || ""));
+    return /^https?:$/.test(url.protocol) && /(^|\.)igdb\.com$/i.test(url.hostname) ? url.href : "";
+  } catch {
+    return "";
+  }
 }
 
 function storeLinksWithFallbacks(game) {
@@ -13713,7 +13723,6 @@ function ensureCollectionWorkspace() {
     } });
     syncCollectionWorkspace();
     renderMobileTabs();
-    loginAnimation.refresh();
   })().catch(error => {
     collectionLoad = null;
     document.querySelector("#collectionLibrary").textContent = tt("Could not load your collection.");

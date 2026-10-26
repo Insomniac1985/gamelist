@@ -710,7 +710,7 @@
               <input id="coverInput" placeholder="https://...">
             </label>
             <label class="wide">
-              <span data-i18n="Currently Playing Key Art URL">Currently Playing Key Art URL</span>
+              <span data-i18n="Key Art URL">Key Art URL</span>
               <input id="keyArtInput" type="url" placeholder="https://images.igdb.com/igdb/image/upload/...">
             </label>
           </div>
@@ -971,7 +971,7 @@
         <div class="modal-head">
           <div>
             <p class="eyebrow" id="settingsDialogEyebrow" data-i18n="Site settings">Site settings</p>
-            <h2 class="settings-main-heading"><span id="settingsDialogTitle" data-i18n="Settings">Settings</span><button class="settings-main-back-title" id="settingsDialogBackTitle" type="button" data-settings-back aria-label="Go back" hidden><span class="settings-main-title-current"><span data-svg-asset="icons/settings/settings-main-back-glyph"></span><span id="settingsDialogSectionTitle"></span></span><span class="settings-main-title-hover"><span data-svg-asset="icons/settings/settings-main-back-glyph"></span>Go back</span></button></h2>
+            <h2 class="settings-main-heading"><span id="settingsDialogTitle" data-i18n="Settings">Settings</span><button class="settings-main-back-title" id="settingsDialogBackTitle" type="button" data-settings-back aria-label="Go back" data-i18n-aria-label="Go back" hidden><span class="settings-main-title-current"><span data-svg-asset="icons/settings/settings-main-back-glyph"></span><span id="settingsDialogSectionTitle"></span></span><span class="settings-main-title-hover"><span data-svg-asset="icons/settings/settings-main-back-glyph"></span><span data-i18n="Go back">Go back</span></span></button></h2>
           </div>
           <div class="modal-head-actions">
             <button class="primary-button modal-head-save" type="submit" data-i18n="Save">Save</button>
@@ -980,27 +980,27 @@
         </div>
 
         <div class="settings-home" id="settingsHome">
-          <p class="settings-home-copy">Choose what you’d like to manage.</p>
+          <p class="settings-home-copy" data-i18n="Choose what you’d like to manage.">Choose what you’d like to manage.</p>
           <div class="settings-category-grid">
             <button class="settings-category-card" type="button" data-settings-panel="design">
               <span class="settings-category-icon" aria-hidden="true"><span data-svg-asset="icons/actions/index-6"></span></span>
-              <span class="settings-category-text"><strong>Page design</strong><small>Layout, appearance, and preferences</small></span><span class="settings-category-arrow" aria-hidden="true"><span data-svg-asset="icons/actions/index-2"></span></span>
+              <span class="settings-category-text"><strong data-i18n="Page design">Page design</strong><small data-i18n="Layout, appearance, and preferences">Layout, appearance, and preferences</small></span><span class="settings-category-arrow" aria-hidden="true"><span data-svg-asset="icons/actions/index-2"></span></span>
             </button>
             <button class="settings-category-card" type="button" data-settings-panel="accounts">
               <span class="settings-category-icon" aria-hidden="true"><span data-svg-asset="icons/actions/index-5"></span></span>
-              <span class="settings-category-text"><strong>Accounts</strong><small>Connected services and sign out</small></span><span class="settings-category-arrow" aria-hidden="true"><span data-svg-asset="icons/actions/index-2"></span></span>
+              <span class="settings-category-text"><strong data-i18n="Accounts">Accounts</strong><small data-i18n="Connected services and sign out">Connected services and sign out</small></span><span class="settings-category-arrow" aria-hidden="true"><span data-svg-asset="icons/actions/index-2"></span></span>
             </button>
             <button class="settings-category-card" type="button" data-settings-panel="data">
               <span class="settings-category-icon" aria-hidden="true"><span data-svg-asset="icons/actions/index-4"></span></span>
-              <span class="settings-category-text"><strong>Your Data</strong><small>Import and export your collections</small></span><span class="settings-category-arrow" aria-hidden="true"><span data-svg-asset="icons/actions/index-2"></span></span>
+              <span class="settings-category-text"><strong data-i18n="Your Data">Your Data</strong><small data-i18n="Import and export your collections">Import and export your collections</small></span><span class="settings-category-arrow" aria-hidden="true"><span data-svg-asset="icons/actions/index-2"></span></span>
             </button>
             <button class="settings-category-card" type="button" data-settings-panel="dev" hidden>
               <span class="settings-category-icon" aria-hidden="true"><span data-svg-asset="icons/actions/index-3"></span></span>
-              <span class="settings-category-text"><strong>Dev Features</strong><small>Tools and experimental features</small></span><span class="settings-category-arrow" aria-hidden="true"><span data-svg-asset="icons/actions/index-2"></span></span>
+              <span class="settings-category-text"><strong data-i18n="Dev Features">Dev Features</strong><small data-i18n="Tools and experimental features">Tools and experimental features</small></span><span class="settings-category-arrow" aria-hidden="true"><span data-svg-asset="icons/actions/index-2"></span></span>
             </button>
           </div>
           <section class="settings-dev-home" id="settingsDevHome" hidden>
-            <h3>Dev Features</h3>
+            <h3 data-i18n="Dev Features">Dev Features</h3>
             <div class="settings-dev-links" id="settingsDevFeatures"></div>
           </section>
         </div>
@@ -1047,7 +1047,7 @@
           <div class="settings-store-list" id="settingsStores"></div>
           </section>
           <section class="settings-section settings-inline-theme-section">
-            <p class="eyebrow settings-customize-title">Customize Theme</p>
+            <p class="eyebrow settings-customize-title" data-i18n="Customize Theme">Customize Theme</p>
             <div id="settingsThemeEditor"></div>
           </section>
         </section>
@@ -1059,7 +1059,7 @@
           </label>
           <hr class="settings-account-separator">
           <div id="settingsAccountsMount"></div>
-          <button class="settings-logout-button" id="settingsLogoutButton" type="button"><span data-svg-asset="icons/actions/exit"></span> Log out of my account</button>
+          <button class="settings-logout-button" id="settingsLogoutButton" type="button"><span data-svg-asset="icons/actions/exit"></span><span data-i18n="Log out of my account">Log out of my account</span></button>
         </section>
 
         <section class="settings-window-panel settings-csv-section" data-settings-window="data" hidden>
@@ -1080,12 +1080,12 @@
       <article class="auth-modal glass settings-unsaved-modal">
         <div class="modal-head">
           <div>
-            <p class="eyebrow">Settings</p>
-            <h2>Are you sure?</h2>
+            <p class="eyebrow" data-i18n="Settings">Settings</p>
+            <h2 data-i18n="Are you sure?">Are you sure?</h2>
           </div>
-          <button class="icon-button" type="button" data-settings-unsaved-cancel aria-label="Go back to settings">×</button>
+          <button class="icon-button" type="button" data-settings-unsaved-cancel aria-label="Go back to settings" data-i18n-aria-label="Go back to settings">×</button>
         </div>
-        <p class="settings-unsaved-copy">You have unsaved changes.</p>
+        <p class="settings-unsaved-copy" data-i18n="You have unsaved changes.">You have unsaved changes.</p>
         <div class="modal-actions settings-unsaved-actions">
           <button class="ghost-button" type="button" data-settings-unsaved-save></button>
           <button class="primary-button" type="button" data-settings-unsaved-discard></button>
