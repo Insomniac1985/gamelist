@@ -23,7 +23,7 @@ body.collection-selected .board > .column { display: none !important; }
 }
 @media (max-width: 699px) {
   .mobile-section-tabs { grid-template-columns: repeat(var(--mobile-tab-count), minmax(62px, 1fr)) !important; }
-  .mobile-section-tabs button { font-size: 12px; padding-inline: 6px; }
+  .mobile-section-tabs button { font-size: 14px; padding-inline: 6px; }
   .mobile-section-tabs button:not([data-mobile-section="new"]) .label { display: inline; }
   #collectionMediaToggle { justify-content: flex-end; }
   #collectionLibrary { width: 100%; }
@@ -97,7 +97,7 @@ body[data-mobile-section="new"] #collectionLibrary:not([hidden]) + #new:not([hid
   .toolbar > .order-label { grid-column: 1 / span 3 !important; }
 }
 
-/* Radar keeps the preorder summary on its own line beneath the game count. */
+/* Keep Radar and Wishlist preorder summaries inline before their game counts on desktop. */
 #upcomingCount {
   display: flex;
   flex-direction: column;
@@ -106,6 +106,27 @@ body[data-mobile-section="new"] #collectionLibrary:not([hidden]) + #new:not([hid
 }
 #upcomingCount > .preorder-count-pill {
   margin: 0;
+}
+
+@media (min-width: 700px) {
+  #upcomingCount,
+  #wantedCount {
+    flex-direction: row;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 6px;
+    flex-wrap: nowrap;
+    white-space: nowrap;
+  }
+}
+
+@media (max-width: 699px) {
+  #upcomingCount {
+    flex-direction: row;
+    align-items: center;
+    flex-wrap: nowrap;
+    white-space: nowrap;
+  }
 }
 
 /* Reserve the same heading height, including space for Radar's preorder pill. */
