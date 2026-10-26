@@ -1582,6 +1582,7 @@ function bindEvents() {
     syncSectionTabsStickyOffset();
     syncGameAddTargetPicker();
   }, { passive: true });
+  window.matchMedia("(max-width: 689px)").addEventListener("change", renderStats);
   window.matchMedia("(display-mode: standalone)").addEventListener?.("change", syncDisplayMode);
 }
 
@@ -6910,12 +6911,13 @@ function sectionCountLabel(section, games, count) {
   const expansions = ["backlog", "upcoming", "wanted"].includes(section)
     ? sectionGames.filter((game) => game.dlc).length
     : 0;
-  const expansionText = expansions
-    ? `<span class="section-expansion-count"> · ${escapeHtml(tt("{count} {item}", { count: expansions, item: tt(expansions === 1 ? "expansion" : "expansions") }))}</span>`
+  const mobile = window.matchMedia("(max-width: 689px)").matches;
+  const expansionText = expansions && !mobile
+    ? ` · ${escapeHtml(tt("{count} {item}", { count: expansions, item: tt(expansions === 1 ? "expansion" : "expansions") }))}`
     : "";
   return [
     preordered ? preorderCountPill(preordered, preorderSummary) : "",
-    `<span class="section-game-count">${gameCountText(count)}${expansionText}</span>`,
+    gameCountText(count + (mobile ? expansions : 0)) + expansionText,
   ].filter(Boolean).join("");
 }
 
