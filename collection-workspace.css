@@ -23,7 +23,7 @@ body.collection-selected .board > .column { display: none !important; }
 }
 @media (max-width: 699px) {
   .mobile-section-tabs { grid-template-columns: repeat(var(--mobile-tab-count), minmax(62px, 1fr)) !important; }
-  .mobile-section-tabs button { font-size: 14px; padding-inline: 6px; }
+  .mobile-section-tabs button { font-size: 12px; padding-inline: 6px; }
   .mobile-section-tabs button:not([data-mobile-section="new"]) .label { display: inline; }
   #collectionMediaToggle { justify-content: flex-end; }
   #collectionLibrary { width: 100%; }

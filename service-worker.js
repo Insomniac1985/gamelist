@@ -1,4 +1,4 @@
-const CACHE_VERSION = "gamelist-cache-v636";
+const CACHE_VERSION = "gamelist-cache-v637";
 const STATIC_CACHE = `${CACHE_VERSION}:static`;
 const MEDIA_CACHE = `${CACHE_VERSION}:media`;
 const STATIC_ASSETS = [
@@ -21,16 +21,16 @@ const STATIC_ASSETS = [
   "/collection-ui.html",
   "/collection-ui.js",
   "/account-settings-ui.js",
-  "/assets/backdrop.png",
-  "/assets/backdrop_light.png",
-  "/assets/Icon.png",
-  "/assets/Icon_shelf.png",
-  "/assets/app-Icon.png",
-  "/assets/app-Icon-monochrome.png",
-  "/assets/app-Icon-bw.png",
-  "/assets/kh_icon.png",
-  "/assets/kh_app-icon.png",
-  "/assets/kh_app-icon-monochrome.png",
+  "/assets/backgrounds/backdrop.png",
+  "/assets/backgrounds/backdrop_light.png",
+  "/assets/branding/Icon.png",
+  "/assets/branding/Icon_shelf.png",
+  "/assets/branding/app-icons/app-Icon.png",
+  "/assets/branding/app-icons/app-Icon-monochrome.png",
+  "/assets/branding/app-icons/app-Icon-bw.png",
+  "/assets/branding/kh_icon.png",
+  "/assets/branding/app-icons/kh_app-icon.png",
+  "/assets/branding/app-icons/kh_app-icon-monochrome.png",
   "/assets/fonts/CascadiaCode.woff2",
   "/assets/fonts/Georgia-Bold.ttf",
   "/assets/fonts/pokemon-emerald.ttf",
@@ -78,6 +78,13 @@ const STATIC_ASSETS = [
   "/assets/stores/retroisland.png",
   "/assets/stores/square-enix-store.png",
   "/assets/stores/xtralife.ico",
+  "/svg-assets.js",
+  "/asset-paths.js",
+  "/assets/svg/catalog.svg",
+  "/assets/icons/navigation/dropdown-chevron-active.svg",
+  "/assets/icons/status/checkbox-check.svg",
+  "/assets/icons/navigation/dropdown-chevron-hover.svg",
+  "/assets/icons/navigation/dropdown-chevron.svg",
 ];
 const OPTIONAL_STATIC_ASSETS = [];
 

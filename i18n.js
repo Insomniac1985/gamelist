@@ -6,7 +6,7 @@ export const LANGUAGES = [
 const STRINGS = {
   "es-ES": {
     "Site settings": "Ajustes del sitio",
-    "Shelf settings": "Ajustes de Estantería",
+    "Shelf settings": "Ajustes de Colección",
     Settings: "Ajustes",
     "Show more": "Mostrar más",
     Save: "Guardar",
@@ -17,7 +17,7 @@ const STRINGS = {
     "Log in": "Iniciar sesión",
     Page: "Página",
     "Page Layout": "Diseño de página",
-    "Shelf page layout": "Diseño de página de Estantería",
+    "Shelf page layout": "Diseño de página de Colección",
     Details: "Detalles",
     "PlayStation account": "Cuenta de PlayStation",
     "Microsoft account": "Cuenta de Microsoft",
@@ -31,8 +31,8 @@ const STRINGS = {
     "CSV data": "Datos CSV",
     "Your data": "Tus datos",
     "Gamelist games": "Juegos de Gamelist",
-    "Shelf physical games": "Juegos físicos de Estantería",
-    "Shelf Digital Games": "Juegos digitales de Estantería",
+    "Shelf physical games": "Juegos físicos de Colección",
+    "Shelf Digital Games": "Juegos digitales de Colección",
     GOTY: "GOTY",
     "PSN LEVEL": "Nivel de PSN",
     Search: "Buscar",
@@ -69,7 +69,7 @@ const STRINGS = {
     Available: "Disponible",
     Drive: "Drive",
     Preorders: "Reservas",
-    Wishlist: "Lista de deseos",
+    Wishlist: "Deseados",
     Preorder: "Reserva",
     "Sync Wishlist": "Sincronizar lista de deseos",
     "Add Game To": "Añadir juego a",
@@ -82,7 +82,7 @@ const STRINGS = {
     Calendar: "Calendario",
     Highlights: "Resumen",
     Gamelist: "Juegos",
-    Shelf: "Estantería",
+    Shelf: "Colección",
     Showcase: "Escaparate",
     "New additions": "Nuevos juegos",
     "Physical games": "Juegos físicos",
@@ -94,8 +94,8 @@ const STRINGS = {
     "Last edit": "Última edición",
     "Last edit -": "Última edición -",
     "Gamelist by Shabii": "Gamelist por Shabii",
-    "Shelf by Shabii": "Estantería por Shabii",
-    "Shelf/Drive by Shabii": "Estantería/Drive por Shabii",
+    "Shelf by Shabii": "Colección por Shabii",
+    "Shelf/Drive by Shabii": "Colección/Drive por Shabii",
     "Fetch New Prices": "Actualizar precios",
     "Fetch New Data": "Actualizar datos",
     "Stop Editing": "Dejar de editar",
@@ -121,7 +121,7 @@ const STRINGS = {
     "Edit game": "Editar juego",
     "No description yet.": "Sin descripción todavía.",
     "No completed games tracked yet.": "Aún no hay juegos completados.",
-    "Nothing on this shelf": "No hay nada en la Estantería",
+    "Nothing on this shelf": "No hay nada en la Colección",
     "Show as list": "Ver como lista",
     "Show as grid": "Ver como cuadrícula",
     Stats: "Estadísticas",
@@ -170,7 +170,7 @@ const STRINGS = {
     Emulator: "Emulador",
     Coop: "Coop",
     "Games with Gold": "Games with Gold",
-    "Aproximate playtime": "Tiempo de juego aproximado",
+    "Aproximate playtime": "Tiempo aproximado",
     "Preordered Where": "Reservado en",
     "Preferred preorder store": "Tienda preferida para reservar",
     Owner: "Propietario",
@@ -310,7 +310,7 @@ const STRINGS = {
     "Switch to {format}": "Cambiar a {format}",
     "Track Digital Games": "Registrar juegos digitales",
     "Track Digital Games (Drive)": "Registrar juegos digitales (Drive)",
-    "Show Preorders on Shelf": "Mostrar reservas en Estantería",
+    "Show Preorders on Shelf": "Mostrar reservas en Colección",
     Export: "Exportar",
     Import: "Importar",
     "Sync games with Shelf": "Sincronizar juegos con Shelf",
@@ -319,8 +319,19 @@ const STRINGS = {
     "Prioratizes Finished Stream": "Priorizar terminados en stream",
     "Hide non stream playing": "Ocultar jugando que no sean stream",
     Sounds: "Sonidos",
+    "Enable sound for this session": "Activar sonido en esta sesión",
+    "Mute sound for this session": "Silenciar esta sesión",
+    "All your game collection": "Toda tu colección de juegos",
+    Platinum: "Platino",
+    "Role-playing (RPG)": "RPG",
+    "Turn-based strategy (TBS)": "Estrategia por turnos",
+    "Point-and-click": "Aventura gráfica",
+    "Hack and slash/Beat 'em up": "Hack and slash",
+    Gold: "Oro",
+    Silver: "Plata",
+    Bronze: "Bronce",
     "Disable login animation": "Desactivar animación de entrada",
-    "Show Shelf Prices": "Mostrar precios de Estantería",
+    "Show Shelf Prices": "Mostrar precios de Colección",
     "Dev features": "Funciones de desarrollo",
     "Mass add": "Añadir en masa",
     "Fill metadata": "Rellenar metadatos",
@@ -402,13 +413,15 @@ const STRINGS = {
     Released: "Lanzado",
     Started: "Empezado",
     Finished: "Terminado",
-    "Play Time": "Tiempo de juego",
+    "Play Time": "Tiempo",
     Releases: "Sale",
     Added: "Añadido",
     "Physical edition": "Edición física",
     "Add to Collection": "Añadir a colección",
     "Add to Collection and Backlog": "Añadir a colección y pendientes",
-    "Add to Collection and Start Playing": "Añadir a colección y empezar a jugar",
+    "Add to Collection and play": "Añadir a colección y jugar",
+    "and play": "y jugar",
+    "and Backlog": "y pendientes",
     "Add to Collection and Start Streaming": "Añadir a colección y empezar a emitir",
     "Add and Start Playing": "Añadir y empezar a jugar",
     "Add and Start Streaming": "Añadir y empezar a emitir",
@@ -455,7 +468,7 @@ const STRINGS = {
     Theme: "Tema",
     "Switch to {target}": "Cambiar a {target}",
     "Find {title} in {target}": "Buscar {title} en {target}",
-    "Aproximate playtime": "Tiempo de juego aproximado",
+    "Aproximate playtime": "Tiempo aproximado",
     "Physical / digital / emulator": "Físico / digital / emulador",
     "By year": "Por año",
     "By month": "Por mes",
@@ -607,7 +620,7 @@ const STRINGS = {
     Gradient: "Degradado",
     "Extra Color": "Color extra",
     "Gamelist icon": "Icono de Gamelist",
-    "Shelf icon": "Icono de Estantería",
+    "Shelf icon": "Icono de Colección",
     "Big logo": "Logo grande",
     "Game app icon": "Icono de la app",
     "Custom Background": "Fondo personalizado",
@@ -619,6 +632,8 @@ const STRINGS = {
   },
 };
 
+const CASE_INSENSITIVE_STRINGS = Object.fromEntries(Object.entries(STRINGS).map(([language, entries]) => [language, Object.fromEntries(Object.entries(entries).map(([key, value]) => [key.toLowerCase(), value]))]));
+
 export function normalizeLanguage(value) {
   return LANGUAGES.some((language) => language.value === value) ? value : "en";
 }
@@ -626,7 +641,7 @@ export function normalizeLanguage(value) {
 export function t(language, key, values = {}) {
   const normalized = normalizeLanguage(language);
   const label = ({ Upcoming: "Radar", Available: "Wishlist", "Available now": "Wishlist", "Add upcoming game": "Add game to Radar", "Add available game": "Add game to Wishlist" })[key] || key;
-  const template = STRINGS[normalized]?.[label] || label;
+  const template = STRINGS[normalized]?.[label] || CASE_INSENSITIVE_STRINGS[normalized]?.[String(label).toLowerCase()] || label;
   return Object.entries(values).reduce((text, [name, value]) => text.replaceAll(`{${name}}`, String(value)), template);
 }
 

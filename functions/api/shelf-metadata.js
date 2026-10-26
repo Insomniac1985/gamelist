@@ -141,6 +141,7 @@ function mergeIgdb(game, data, options) {
   setField(next, "description", data.description, options);
   setField(next, "igdbUrl", data.igdbUrl, options);
   setField(next, "trailerUrl", data.trailerUrl, options);
+  setField(next, "keyArt", data.keyArt, options);
   setField(next, "lengthHours", data.lengthHours, options);
   next.storeLinks = mergeStoreLinks(next.storeLinks, data.storeLinks, options);
   if (data.hltbId) next.hltbId = data.hltbId;

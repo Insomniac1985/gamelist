@@ -15,8 +15,8 @@ const css = `
 }
 .media-format-toggle > svg { fill:none; stroke:currentColor; stroke-width:2; stroke-linecap:round; stroke-linejoin:round; }
 .media-format-toggle > .media-format-all-icon {
-  background:#fff; -webkit-mask:url('/assets/Icon.png') center/contain no-repeat;
-  mask:url('/assets/Icon.png') center/contain no-repeat;
+  background:#fff; -webkit-mask:url('/assets/branding/Icon.png') center/contain no-repeat;
+  mask:url('/assets/branding/Icon.png') center/contain no-repeat;
 }
 `;
 

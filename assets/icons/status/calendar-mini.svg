@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" class="calendar-mini-icon" viewBox="0 0 24 24" aria-hidden="true">
+      <rect x="4" y="5.5" width="16" height="15" rx="3"></rect>
+      <path d="M8 3.5v4"></path>
+      <path d="M16 3.5v4"></path>
+      <path d="M4 10h16"></path>
+    </svg>

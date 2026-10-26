@@ -6,7 +6,7 @@
     <meta name="color-scheme" content="dark">
     <meta name="theme-color" content="#ff0039">
     <title>Gamelist shared collection UI</title>
-    <link rel="icon" type="image/png" href="assets/Icon_shelf.png">
+    <link rel="icon" type="image/png" href="assets/branding/Icon_shelf.png">
     <style>html.theme-booting body{visibility:hidden}</style>
     <script>
       if ("serviceWorker" in navigator) {
@@ -21,8 +21,8 @@
         if (window.parent !== window && new URLSearchParams(location.search).get("editor") === "1") root.classList.add("game-editor-embed");
         const settingsKey = "gamelist:settings:v1";
         const themes = {
-          shabii: { title: "Shabii's Shelf", icon: "assets/Icon_shelf.png", color: "#ff0039" },
-          kash: { title: "Kash's Shelf", icon: "assets/kh_icon.png", color: "#005cff" },
+          shabii: { title: "Shabii's Shelf", icon: "assets/branding/Icon_shelf.png", color: "#ff0039" },
+          kash: { title: "Kash's Shelf", icon: "assets/branding/kh_icon.png", color: "#005cff" },
         };
         const custom = (settings, fallbackKey) => {
           const theme = settings.customTheme || {};
@@ -188,7 +188,7 @@
 
     <header class="topbar shelf-topbar">
       <a class="brand" href="/?list=shelf" aria-label="Shabii's Shelf">
-        <img class="brand-mark" src="assets/Icon_shelf.png" alt="">
+        <img class="brand-mark" src="assets/branding/Icon_shelf.png" alt="">
         <span>Shabii's Shelf</span>
       </a>
       <button class="brand-version-chip" id="brandVersion" type="button" hidden>Version -</button>
@@ -206,30 +206,25 @@
       </script>
       <div class="top-actions">
         <button class="ghost-button" id="loginButton" type="button" title="Edit" aria-label="Edit" data-i18n-title="Edit" data-i18n-aria-label="Edit" hidden>
-          <svg class="pencil-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h4l11-11a2.8 2.8 0 0 0-4-4L4 16v4Z"></path><path d="M13.5 6.5l4 4"></path></svg>
+          <span data-svg-asset="icons/actions/pencil"></span>
         </button>
         <button class="icon-button" id="settingsButton" type="button" title="Settings" aria-label="Settings" data-i18n-title="Settings" data-i18n-aria-label="Settings" aria-busy="true" disabled hidden>
-          <svg class="settings-icon" viewBox="0 0 24 24" aria-hidden="true">
-            <path d="M4 6h10M18 6h2M4 12h2M10 12h10M4 18h10M18 18h2"></path>
-            <circle cx="16" cy="6" r="2"></circle>
-            <circle cx="8" cy="12" r="2"></circle>
-            <circle cx="16" cy="18" r="2"></circle>
-          </svg>
+          <span data-svg-asset="icons/settings/settings"></span>
         </button>
         <span class="top-actions-separator" aria-hidden="true"></span>
         <button class="ghost-button" id="fetchPricesButton" type="button" hidden>
-          <svg class="euro-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M19 5.5A7 7 0 0 0 8.2 7.1 7.4 7.4 0 0 0 7 12a7.4 7.4 0 0 0 1.2 4.9A7 7 0 0 0 19 18.5"></path><path d="M4 10h10"></path><path d="M4 14h10"></path></svg>
+          <span data-svg-asset="icons/actions/euro"></span>
           <span class="button-label">Fetch New Prices</span>
         </button>
         <button class="primary-button top-search-button" id="searchButton" type="button" title="Search" aria-label="Search" data-i18n-title="Search" data-i18n-aria-label="Search">
           <span class="button-icon" aria-hidden="true">
-            <svg class="search-icon" viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.5"></circle><path d="m16 16 4 4"></path></svg>
+            <span data-svg-asset="icons/navigation/search-3"></span>
           </span>
         </button>
         <button class="primary-button" id="addButton" type="button" hidden>
           <span class="button-label">Add Game</span>
           <span class="button-icon" aria-hidden="true">
-            <svg class="plus-icon" viewBox="0 0 24 24"><path d="M12 5v14"></path><path d="M5 12h14"></path></svg>
+            <span data-svg-asset="icons/actions/plus"></span>
           </span>
         </button>
         <script>
@@ -242,7 +237,7 @@
       <div class="shelf-modules" id="shelfModules">
         <section class="playing-section shelf-carousel-module" data-module="playing" hidden></section>
         <section class="shelf-favorites-section" data-module="favorites" hidden>
-          <div class="column-head"><div><h2 data-i18n="Showcase">Showcase</h2></div><button class="icon-button showcase-edit-button editor-only" id="showcaseEditButton" type="button" title="Edit Showcase" aria-label="Edit Showcase" data-i18n-title="Edit Showcase" data-i18n-aria-label="Edit Showcase"><svg class="pencil-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h4l11-11a2.8 2.8 0 0 0-4-4L4 16v4Z"></path><path d="M13.5 6.5l4 4"></path></svg></button></div>
+          <div class="column-head"><div><h2 data-i18n="Showcase">Showcase</h2></div><button class="icon-button showcase-edit-button editor-only" id="showcaseEditButton" type="button" title="Edit Showcase" aria-label="Edit Showcase" data-i18n-title="Edit Showcase" data-i18n-aria-label="Edit Showcase"><span data-svg-asset="icons/actions/pencil"></span></button></div>
           <div class="favorite-cover-row" id="favoriteGames"></div>
         </section>
         <section class="achievement-section shelf-trophy-module" data-module="trophies" hidden>
@@ -262,7 +257,7 @@
             <span class="search-field">
               <input id="searchInput" type="search" placeholder="Game, publisher, genre..." data-i18n-placeholder="Game, publisher, genre...">
               <kbd class="search-shortcut" aria-hidden="true">F</kbd>
-              <svg class="search-mobile-icon search-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.5"></circle><path d="m16 16 4 4"></path></svg>
+              <span data-svg-asset="icons/navigation/search-mobile"></span>
             </span>
           </label>
           <label>
@@ -291,7 +286,7 @@
             </select><button class="direction-toggle" id="sortDirectionButton" type="button" title="Sort ascending" aria-label="Sort ascending"></button></div>
           </label>
           <button class="icon-button view-toggle" id="viewToggleButton" type="button" title="Show as list" aria-label="Show as list">
-            <svg class="view-icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="6" height="6" rx="1"></rect><rect x="14" y="4" width="6" height="6" rx="1"></rect><rect x="4" y="14" width="6" height="6" rx="1"></rect><rect x="14" y="14" width="6" height="6" rx="1"></rect></svg>
+            <span data-svg-asset="icons/actions/view-4"></span>
           </button>
         </section>
 
@@ -320,32 +315,32 @@
     </footer>
 
     <button class="icon-button scroll-top-button" id="scrollTopButton" type="button" title="Back to top" aria-label="Back to top">
-      <svg class="scroll-top-icon" viewBox="0 0 24 24" aria-hidden="true"><polyline points="6 14 12 8 18 14"></polyline></svg>
+      <span data-svg-asset="icons/navigation/scroll-top"></span>
     </button>
     <button class="icon-button floating-action-button floating-search-button" id="floatingSearchButton" type="button" title="Search" aria-label="Search" data-i18n-title="Search" data-i18n-aria-label="Search">
-      <svg class="search-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.5"></circle><path d="m16 16 4 4"></path></svg>
+      <span data-svg-asset="icons/navigation/search-2"></span>
     </button>
     <div class="floating-edit-actions" id="floatingEditActions" aria-label="Quick actions">
-      <button class="icon-button floating-action-button" id="floatingAddButton" type="button" title="Add Game" aria-label="Add Game" data-i18n-title="Add Game" data-i18n-aria-label="Add Game"><svg class="plus-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14"></path><path d="M5 12h14"></path></svg></button>
+      <button class="icon-button floating-action-button" id="floatingAddButton" type="button" title="Add Game" aria-label="Add Game" data-i18n-title="Add Game" data-i18n-aria-label="Add Game"><span data-svg-asset="icons/actions/plus-3"></span></button>
     </div>
     <nav class="mobile-action-dock" id="mobileActionDock" aria-label="Quick actions">
       <button class="mobile-dock-action" id="mobileDockUp" type="button" title="Back to top" aria-label="Back to top">
-        <svg class="scroll-top-icon" viewBox="0 0 24 24" aria-hidden="true"><polyline points="6 14 12 8 18 14"></polyline></svg>
+        <span data-svg-asset="icons/navigation/scroll-top"></span>
       </button>
         <button class="mobile-dock-action" id="mobileDockSettings" type="button" title="Settings" aria-label="Settings" data-i18n-title="Settings" data-i18n-aria-label="Settings" aria-busy="true" disabled hidden>
-        <svg class="settings-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h10M18 6h2M4 12h2M10 12h10M4 18h10M18 18h2"></path><circle cx="16" cy="6" r="2"></circle><circle cx="8" cy="12" r="2"></circle><circle cx="16" cy="18" r="2"></circle></svg>
+        <span data-svg-asset="icons/settings/settings"></span>
         <span data-i18n="Settings">Settings</span>
       </button>
       <button class="mobile-dock-action" id="mobileDockStats" type="button" title="Shelf statistics" aria-label="Shelf statistics" data-i18n-title="Shelf statistics" data-i18n-aria-label="Shelf statistics">
-        <svg class="graph-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 19h16"></path><path d="M7 16V9"></path><path d="M12 16V5"></path><path d="M17 16v-4"></path></svg>
+        <span data-svg-asset="icons/actions/graph"></span>
         <span data-i18n="Check statistics">Check statistics</span>
       </button>
       <button class="mobile-dock-action" id="mobileDockSearch" type="button" title="Search" aria-label="Search" data-i18n-title="Search" data-i18n-aria-label="Search">
-        <svg class="search-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.5"></circle><path d="m16 16 4 4"></path></svg>
+        <span data-svg-asset="icons/navigation/search-2"></span>
         <span data-i18n="Search">Search</span>
       </button>
       <button class="mobile-dock-action" id="mobileDockAdd" type="button" aria-label="Add Game" data-i18n-aria-label="Add Game" hidden>
-        <svg class="plus-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"></path></svg>
+        <span data-svg-asset="icons/actions/plus-2"></span>
         <span data-i18n="Add Game">Add Game</span>
       </button>
     </nav>
@@ -365,9 +360,9 @@
             <p id="detailDescription"></p>
             <section class="detail-guides" id="detailGuides" hidden><h3 data-i18n="Guides">Guides</h3><div class="guide-links" id="detailGuideLinks"></div></section>
             <section class="detail-condition" id="detailConditionPanel"><h3 data-i18n="Collection condition">Collection condition</h3><div class="condition-grid" id="detailCondition"></div></section>
-            <section class="detail-price-panel" id="detailPricePanel"><div class="detail-section-head"><button class="detail-section-toggle" id="detailPriceToggle" type="button" aria-expanded="true" aria-controls="detailPriceContent"><span data-i18n="Collection value">Collection value</span><strong id="detailPriceHeadline"></strong></button><button class="icon-button detail-fetch-value-button editor-only" id="fetchValueButton" type="button" title="Fetch value" aria-label="Fetch value" data-i18n-title="Fetch value" data-i18n-aria-label="Fetch value"><svg class="euro-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M19 5.5A7 7 0 0 0 8.2 7.1 7.4 7.4 0 0 0 7 12a7.4 7.4 0 0 0 1.2 4.9A7 7 0 0 0 19 18.5"></path><path d="M4 10h10"></path><path d="M4 14h10"></path></svg></button></div><div class="detail-price-content" id="detailPriceContent"><div id="detailPriceSummary"></div><svg id="detailPriceGraph" class="price-history-graph" viewBox="0 0 600 150" role="img" aria-label="Collection value history" data-i18n-aria-label="Collection value history"></svg></div></section>
+            <section class="detail-price-panel" id="detailPricePanel"><div class="detail-section-head"><button class="detail-section-toggle" id="detailPriceToggle" type="button" aria-expanded="true" aria-controls="detailPriceContent"><span data-i18n="Collection value">Collection value</span><strong id="detailPriceHeadline"></strong></button><button class="icon-button detail-fetch-value-button editor-only" id="fetchValueButton" type="button" title="Fetch value" aria-label="Fetch value" data-i18n-title="Fetch value" data-i18n-aria-label="Fetch value"><span data-svg-asset="icons/actions/euro"></span></button></div><div class="detail-price-content" id="detailPriceContent"><div id="detailPriceSummary"></div><span data-svg-asset="charts/price-history-graph"></span></div></section>
             <section class="detail-store-price-panel" id="detailStorePricePanel"><div class="prices detail-prices detail-store-prices" id="detailStorePrices"></div></section>
-            <section class="detail-trophies" id="shelfDetailTrophies" hidden><div class="detail-trophies-head"><h3><svg class="trophy-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 4h8v4a4 4 0 0 1-8 0V4Z"></path><path d="M8 6H5a3 3 0 0 0 3 3"></path><path d="M16 6h3a3 3 0 0 1-3 3"></path><path d="M12 12v4"></path><path d="M9 20h6"></path><path d="M10 16h4v4h-4z"></path></svg><span id="shelfTrophyTitle">TROPHIES</span></h3><div class="detail-trophy-tools"><span id="shelfTrophyCount"></span><span class="detail-trophy-percent" id="shelfTrophyPercent"></span><select id="shelfTrophySort" aria-label="Sort trophies" data-i18n-aria-label="Sort trophies"><option value="order" data-i18n="Order">Order</option><option value="name" data-i18n="Name">Name</option><option value="completed" data-i18n="Completed">Completed</option></select><button class="direction-toggle" id="shelfTrophyDirection" type="button" title="Sort ascending" aria-label="Sort ascending"><svg class="sort-arrow-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 19V5m-7 7 7-7 7 7"></path></svg></button></div></div><div class="detail-trophy-scroller"><div class="detail-trophy-list" id="shelfTrophyList"></div></div></section>
+            <section class="detail-trophies" id="shelfDetailTrophies" hidden><div class="detail-trophies-head"><h3><span data-svg-asset="icons/status/trophy"></span><span id="shelfTrophyTitle">TROPHIES</span></h3><div class="detail-trophy-tools"><span id="shelfTrophyCount"></span><span class="detail-trophy-percent" id="shelfTrophyPercent"></span><select id="shelfTrophySort" aria-label="Sort trophies" data-i18n-aria-label="Sort trophies"><option value="order" data-i18n="Order">Order</option><option value="name" data-i18n="Name">Name</option><option value="completed" data-i18n="Completed">Completed</option></select><button class="direction-toggle" id="shelfTrophyDirection" type="button" title="Sort ascending" aria-label="Sort ascending"><span data-svg-asset="icons/navigation/sort-arrow-2"></span></button></div></div><div class="detail-trophy-scroller"><div class="detail-trophy-list" id="shelfTrophyList"></div></div></section>
           </div>
       </article>
     </dialog>
@@ -398,12 +393,12 @@
             <input id="lookupInput" type="search" placeholder="Game name or PriceCharting page" data-i18n-placeholder="Game name or PriceCharting page">
           </label>
           <button class="ghost-button icon-only-button" id="lookupButton" type="button" title="Fetch info" aria-label="Fetch info">
-            <svg class="search-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle><path d="M16.5 16.5 21 21"></path></svg>
-            <svg class="autocomplete-cone-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h16l-6.2 7.1v5.2L10.2 19v-6.9L4 5Z"></path><path d="m18.2 3 .6 1.8 1.8.6-1.8.6-.6 1.8-.6-1.8-1.8-.6 1.8-.6.6-1.8Z"></path></svg>
+            <span data-svg-asset="icons/navigation/search"></span>
+            <span data-svg-asset="icons/actions/autocomplete-cone"></span>
           </button>
           <label class="check-filter toggle-check form-check collection-check lookup-digital-check">
             <input id="shelfDigitalInput" type="checkbox">
-            <span class="check-label-with-icon"><svg class="download-badge-icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="4.5" width="14" height="15" rx="3"></rect><path d="M12 7.5v6.5"></path><path d="M9.5 11.8 12 14.3l2.5-2.5"></path><path d="M8.8 17h6.4"></path></svg><span data-i18n="Digital">Digital</span></span>
+            <span class="check-label-with-icon"><span data-svg-asset="icons/actions/download-badge"></span><span data-i18n="Digital">Digital</span></span>
           </label>
         </div>
         <div class="lookup-results" id="lookupResults"></div>
@@ -428,7 +423,7 @@
           <div class="shelf-gamelist-preorder-row" id="shelfGamelistPreorderRow">
             <label class="check-filter toggle-check shelf-gamelist-preorder-check">
               <input id="shelfGamelistPreorderCheck" type="checkbox">
-              <span class="check-label-with-icon"><svg class="shopping-bag-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M6.5 8.5h11l1 12h-13l1-12Z"></path><path d="M9 8.5V7a3 3 0 0 1 6 0v1.5"></path></svg><span data-i18n="Preorder">Preorder</span></span>
+              <span class="check-label-with-icon"><span data-svg-asset="icons/actions/shopping-bag"></span><span data-i18n="Preorder">Preorder</span></span>
             </label>
             <label class="shelf-gamelist-preorder-field" id="shelfGamelistPreorderField" hidden>
               <span class="icon-input store-icon-input">
@@ -437,8 +432,8 @@
               </span>
             </label>
           </div>
-          <label class="check-filter toggle-check shelf-add-collection-check" hidden><input id="shelfAddCollectionInput" type="checkbox"><span class="check-label-with-icon"><svg class="back-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M10 6 4 12l6 6"></path><path d="M4 12h10a6 6 0 0 1 6 6"></path></svg><span data-i18n="Add to backlog">Add to backlog</span></span></label>
-          <label class="check-filter toggle-check shelf-gamelist-playing-field" hidden><input id="shelfGamelistPlayingInput" type="checkbox"><span class="check-label-with-icon"><svg class="play-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m8 5 11 7-11 7V5Z"></path></svg><span data-i18n="Playing">Playing</span></span></label>
+          <label class="check-filter toggle-check shelf-add-collection-check" hidden><input id="shelfAddCollectionInput" type="checkbox"><span class="check-label-with-icon"><span data-svg-asset="icons/actions/back"></span><span data-i18n="Add to backlog">Add to backlog</span></span></label>
+          <label class="check-filter toggle-check shelf-gamelist-playing-field" hidden><input id="shelfGamelistPlayingInput" type="checkbox"><span class="check-label-with-icon"><span data-svg-asset="icons/actions/play-3"></span><span data-i18n="Playing">Playing</span></span></label>
           <label class="shelf-gamelist-flag shelf-gamelist-stream-field check-filter toggle-check stream-check" hidden><input id="shelfGamelistStreamInput" type="checkbox"><span data-i18n="Stream">Stream</span></label>
         </div>
         </div>
@@ -446,7 +441,7 @@
           <h3 data-i18n="Collecting Information">Collecting Information</h3>
           <div class="form-grid shelf-editor-grid unified-game-editor-grid">
             <div class="shelf-editor-cover-preview" role="img" aria-label="Game cover preview">
-              <img id="shelfEditorCoverPreview" class="is-placeholder" src="assets/Icon_shelf.png" alt="" aria-hidden="true">
+              <img id="shelfEditorCoverPreview" class="is-placeholder" src="assets/branding/Icon_shelf.png" alt="" aria-hidden="true">
             </div>
             <label class="shelf-title-field"><span data-i18n="Title">Title</span><input id="titleInput" required></label>
             <label class="shelf-console-field"><span data-i18n="Platform">Platform</span><span class="icon-input shelf-edit-icon-input"><span class="field-leading-icon shelf-platform-field-icon" aria-hidden="true"></span><input id="platformInput" list="shelfPlatformOptions"></span><datalist id="shelfPlatformOptions"></datalist></label>
@@ -465,8 +460,8 @@
             <label class="shelf-release-text-field"><span data-i18n="Release Text (Optional)">Release Text (Optional)</span><input id="shelfGamelistReleaseTextInput" placeholder="2026?, 18 June, TBA..." data-i18n-placeholder="2026?, 18 June, TBA..."></label>
             <label class="shelf-addition-field"><span data-i18n="Addition Date">Addition Date</span><input id="additionDateInput" type="date"></label>
             <label class="shelf-gamelist-flag shelf-gamelist-emulator-field check-filter toggle-check"><input id="shelfGamelistEmulatorInput" type="checkbox"><span>Emulator</span></label>
-            <label class="shelf-gamelist-flag shelf-gamelist-multiplayer-field check-filter toggle-check"><input id="shelfGamelistMultiplayerInput" type="checkbox"><span class="check-label-with-icon"><svg class="online-globe-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8"></circle><path d="M4 12h16"></path><path d="M12 4c2.1 2.2 3.2 4.8 3.2 8s-1.1 5.8-3.2 8"></path><path d="M12 4c-2.1 2.2-3.2 4.8-3.2 8s1.1 5.8 3.2 8"></path></svg><span data-i18n="Multiplayer">Multiplayer</span></span></label>
-            <label class="shelf-gamelist-flag shelf-gamelist-coop-field check-filter toggle-check"><input id="shelfGamelistCoopInput" type="checkbox"><span class="check-label-with-icon"><svg class="coop-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="8" cy="8" r="3"></circle><circle cx="16" cy="8" r="3"></circle><path d="M2.8 19c.4-4 2.1-6 5.2-6s4.8 2 5.2 6"></path><path d="M10.8 19c.4-4 2.1-6 5.2-6s4.8 2 5.2 6"></path></svg><span data-i18n="Coop">Coop</span></span></label>
+            <label class="shelf-gamelist-flag shelf-gamelist-multiplayer-field check-filter toggle-check"><input id="shelfGamelistMultiplayerInput" type="checkbox"><span class="check-label-with-icon"><span data-svg-asset="icons/status/online-globe"></span><span data-i18n="Multiplayer">Multiplayer</span></span></label>
+            <label class="shelf-gamelist-flag shelf-gamelist-coop-field check-filter toggle-check"><input id="shelfGamelistCoopInput" type="checkbox"><span class="check-label-with-icon"><span data-svg-asset="icons/status/coop"></span><span data-i18n="Coop">Coop</span></span></label>
             <span class="shelf-entitlement-grid-spacer" aria-hidden="true"></span>
             <label class="shelf-value-field"><span data-i18n="Estimated Value">Estimated Value</span><input id="priceInput" inputmode="decimal" placeholder="0.00"></label>
             <label class="shelf-gamelist-length-field"><span data-i18n="Aproximate playtime">Aproximate playtime</span><input id="shelfGamelistLengthInput" type="number" min="0" step="1" placeholder="Hours" data-i18n-placeholder="Hours"></label>
@@ -488,7 +483,7 @@
         <section class="form-group shelf-game-data-section">
           <h3 id="shelfGameDataHeading" data-i18n="Game Data" hidden>Game Data</h3>
           <details id="shelfGameDataDisclosure" open>
-          <summary class="shelf-game-data-toggle"><span data-i18n="Game Data">Game Data</span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m9 5 7 7-7 7"></path></svg></summary>
+          <summary class="shelf-game-data-toggle"><span data-i18n="Game Data">Game Data</span><span data-svg-asset="icons/actions/collection-ui"></span></summary>
           <div class="form-grid">
             <label><span data-i18n="Developer">Developer</span><input id="developerInput" placeholder="Studio" data-i18n-placeholder="Studio"></label>
             <label><span data-i18n="Publisher">Publisher</span><input id="publisherInput" placeholder="Company" data-i18n-placeholder="Company"></label>
@@ -517,7 +512,7 @@
         </section>
         <div class="modal-actions">
           <button class="danger-button icon-only-button edit-delete-button" id="editDeleteButton" type="button" title="Delete" aria-label="Delete" hidden>
-            <svg class="trash-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6h18"></path><path d="M8 6V4h8v2"></path><path d="M19 6l-1 14H6L5 6"></path><path d="M10 11v5"></path><path d="M14 11v5"></path></svg>
+            <span data-svg-asset="icons/actions/trash"></span>
           </button>
           <button class="primary-button modal-save-button" type="submit" data-i18n="Add to Shelf">Add to Shelf</button>
         </div>

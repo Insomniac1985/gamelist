@@ -9,8 +9,8 @@
     <meta name="apple-mobile-web-app-title" content="Gamelist">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <title>Shabii's Gamelist</title>
-    <link rel="icon" type="image/png" href="assets/Icon.png">
-    <link rel="apple-touch-icon" href="assets/app-Icon.png">
+    <link rel="icon" type="image/png" href="assets/branding/Icon.png">
+    <link rel="apple-touch-icon" href="assets/branding/app-icons/app-Icon.png">
     <link rel="manifest" href="manifest.webmanifest">
     <style>html.theme-booting body{visibility:hidden}</style>
     <script>
@@ -25,8 +25,8 @@
         const root = document.documentElement;
         const settingsKey = "gamelist:settings:v1";
         const themes = {
-          shabii: { title: "Shabii's Gamelist", shortName: "Gamelist", icon: "assets/Icon.png", appIcon: "assets/app-Icon.png", color: "#ff0039" },
-          kash: { title: "Kash's Gamelist", shortName: "Kash", icon: "assets/kh_icon.png", appIcon: "assets/kh_app-icon.png", color: "#005cff" },
+          shabii: { title: "Shabii's Gamelist", shortName: "Gamelist", icon: "assets/branding/Icon.png", appIcon: "assets/branding/app-icons/app-Icon.png", color: "#ff0039" },
+          kash: { title: "Kash's Gamelist", shortName: "Kash", icon: "assets/branding/kh_icon.png", appIcon: "assets/branding/app-icons/kh_app-icon.png", color: "#005cff" },
         };
         const custom = (settings, fallbackKey) => {
           const theme = settings.customTheme || {};
@@ -173,8 +173,8 @@
         window.setTimeout(() => root.classList.remove("theme-booting"), 3500);
       })();
     </script>
-    <link rel="preload" as="image" href="assets/kh_icon.png">
-    <link rel="preload" as="image" href="assets/kh_app-icon.png">
+    <link rel="preload" as="image" href="assets/branding/kh_icon.png">
+    <link rel="preload" as="image" href="assets/branding/app-icons/kh_app-icon.png">
     <link rel="preload" as="image" href="assets/platforms/playstation.png">
     <link rel="preload" as="image" href="assets/platforms/steam.png">
     <link rel="preload" as="image" href="assets/platforms/switch.png">
@@ -215,7 +215,7 @@
     <div class="backdrop"></div>
     <header class="topbar">
       <a class="brand" href="#backlog" aria-label="Shabii's Gamelist">
-        <img class="brand-mark" src="assets/Icon.png" alt="">
+        <img class="brand-mark" src="assets/branding/Icon.png" alt="">
         <span>Shabii's Gamelist</span>
       </a>
       <button class="brand-version-chip" id="brandVersion" type="button" hidden>Version -</button>
@@ -233,48 +233,27 @@
       </script>
       <div class="top-actions">
         <button class="icon-button" id="syncButton" type="button" title="Sync" aria-label="Sync">
-          <svg class="reload-icon" viewBox="0 0 24 24" aria-hidden="true">
-            <path d="M19 8.2A7.2 7.2 0 1 0 20.1 14"></path>
-            <path d="M19.2 3.8v4.8h-4.8"></path>
-          </svg>
+          <span data-svg-asset="icons/navigation/reload"></span>
         </button>
         <button class="ghost-button" id="loginButton" type="button" title="Add Game" aria-label="Add Game" data-i18n-title="Add Game" data-i18n-aria-label="Add Game" hidden>
-          <svg class="plus-icon" viewBox="0 0 24 24" aria-hidden="true">
-            <path d="M12 5v14"></path>
-            <path d="M5 12h14"></path>
-          </svg>
+          <span data-svg-asset="icons/actions/plus-3"></span>
         </button>
         <button class="icon-button" id="settingsButton" type="button" title="Settings" aria-label="Settings" data-i18n-title="Settings" data-i18n-aria-label="Settings" aria-busy="true" disabled hidden>
-          <svg class="settings-icon" viewBox="0 0 24 24" aria-hidden="true">
-            <path d="M4 6h10M18 6h2M4 12h2M10 12h10M4 18h10M18 18h2"></path>
-            <circle cx="16" cy="6" r="2"></circle>
-            <circle cx="8" cy="12" r="2"></circle>
-            <circle cx="16" cy="18" r="2"></circle>
-          </svg>
+          <span data-svg-asset="icons/settings/settings"></span>
         </button>
         <button class="ghost-button" id="fetchPricesButton" type="button" hidden>
-          <svg class="euro-icon" viewBox="0 0 24 24" aria-hidden="true">
-            <path d="M19 5.5A7 7 0 0 0 8.2 7.1 7.4 7.4 0 0 0 7 12a7.4 7.4 0 0 0 1.2 4.9A7 7 0 0 0 19 18.5"></path>
-            <path d="M4 10h10"></path>
-            <path d="M4 14h10"></path>
-          </svg>
+          <span data-svg-asset="icons/actions/euro"></span>
           <span class="button-label">Fetch New Prices</span>
         </button>
         <button class="primary-button" id="addButton" type="button" hidden>
           <span class="button-label">Add Game</span>
           <span class="button-icon" aria-hidden="true">
-            <svg class="plus-icon" viewBox="0 0 24 24">
-              <path d="M12 5v14"></path>
-              <path d="M5 12h14"></path>
-            </svg>
+            <span data-svg-asset="icons/actions/plus"></span>
           </span>
         </button>
         <button class="primary-button top-search-button" id="searchButton" type="button" title="Search" aria-label="Search" data-i18n-title="Search" data-i18n-aria-label="Search">
           <span class="button-icon" aria-hidden="true">
-            <svg class="search-icon" viewBox="0 0 24 24">
-              <circle cx="11" cy="11" r="6.5"></circle>
-              <path d="m16 16 4 4"></path>
-            </svg>
+            <span data-svg-asset="icons/navigation/search-3"></span>
           </span>
         </button>
         <script>
@@ -332,15 +311,13 @@
           <span class="search-field">
             <input id="searchInput" type="search" placeholder="Game, platform, store, status..." data-i18n-placeholder="Game, platform, store, status...">
             <kbd class="search-shortcut" aria-hidden="true">F</kbd>
-            <svg class="search-mobile-icon search-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.5"></circle><path d="m16 16 4 4"></path></svg>
+            <span data-svg-asset="icons/navigation/search-mobile"></span>
           </span>
+          <button class="icon-button local-sound-toggle" id="localSoundToggle" type="button" aria-label="Mute sound for this session" aria-pressed="true" hidden></button>
         </label>
         <label class="check-filter toggle-check toolbar-check">
           <input id="preorderedFilter" type="checkbox">
-          <svg class="shopping-bag-icon preordered-filter-icon" viewBox="0 0 24 24" aria-hidden="true">
-            <path d="M6.5 8.5h11l1 12h-13l1-12Z"></path>
-            <path d="M9 8.5V7a3 3 0 0 1 6 0v1.5"></path>
-          </svg>
+          <span data-svg-asset="icons/actions/shopping-bag-2"></span>
           <span data-i18n="Preorder">Preorder</span>
         </label>
         <label>
@@ -367,7 +344,7 @@
               <option value="region" data-i18n="Region">Region</option>
               <option value="value" data-i18n="Value">Value</option>
             </select>
-            <button class="direction-toggle" id="sortDirectionButton" type="button" title="Sort ascending" aria-label="Sort ascending"><svg class="sort-arrow-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 19V5m-7 7 7-7 7 7"></path></svg></button>
+            <button class="direction-toggle" id="sortDirectionButton" type="button" title="Sort ascending" aria-label="Sort ascending"><span data-svg-asset="icons/navigation/sort-arrow-2"></span></button>
           </div>
         </label>
         <div class="library-view-controls">
@@ -462,41 +439,33 @@
     </footer>
 
     <button class="icon-button scroll-top-button" id="scrollTopButton" type="button" title="Back to top" aria-label="Back to top">
-      <svg class="scroll-top-icon" viewBox="0 0 24 24" aria-hidden="true">
-        <polyline points="6 14 12 8 18 14"></polyline>
-      </svg>
+      <span data-svg-asset="icons/navigation/scroll-top"></span>
     </button>
     <div class="floating-edit-actions" id="floatingEditActions" aria-label="Quick actions">
       <button class="icon-button floating-action-button floating-search-button" id="floatingSearchButton" type="button" title="Search" aria-label="Search" data-i18n-title="Search" data-i18n-aria-label="Search">
-        <svg class="search-icon" viewBox="0 0 24 24" aria-hidden="true">
-          <circle cx="11" cy="11" r="6.5"></circle>
-          <path d="m16 16 4 4"></path>
-        </svg>
+        <span data-svg-asset="icons/navigation/search-2"></span>
       </button>
       <button class="icon-button floating-action-button" id="floatingAddButton" type="button" title="Add Game" aria-label="Add Game" data-i18n-title="Add Game" data-i18n-aria-label="Add Game">
-        <svg class="plus-icon" viewBox="0 0 24 24" aria-hidden="true">
-          <path d="M12 5v14"></path>
-          <path d="M5 12h14"></path>
-        </svg>
+        <span data-svg-asset="icons/actions/plus-3"></span>
       </button>
       <button class="icon-button floating-action-button" id="floatingStatsButton" type="button" title="Statistics" aria-label="Statistics"></button>
     </div>
     <nav class="mobile-action-dock" id="mobileActionDock" aria-label="Quick actions">
       <button class="mobile-dock-action" id="mobileDockUp" type="button" title="Back to top" aria-label="Back to top">
-        <svg class="scroll-top-icon" viewBox="0 0 24 24" aria-hidden="true"><polyline points="6 14 12 8 18 14"></polyline></svg>
+        <span data-svg-asset="icons/navigation/scroll-top"></span>
       </button>
         <button class="mobile-dock-action" id="mobileDockSettings" type="button" title="Settings" aria-label="Settings" data-i18n-title="Settings" data-i18n-aria-label="Settings" aria-busy="true" disabled hidden>
-        <svg class="settings-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h10M18 6h2M4 12h2M10 12h10M4 18h10M18 18h2"></path><circle cx="16" cy="6" r="2"></circle><circle cx="8" cy="12" r="2"></circle><circle cx="16" cy="18" r="2"></circle></svg>
+        <span data-svg-asset="icons/settings/settings"></span>
         <span data-i18n="Settings">Settings</span>
       </button>
       <button class="mobile-dock-action" id="mobileDockStats" type="button" title="Stats" aria-label="Finished games stats" data-i18n-title="Stats" data-i18n-aria-label="Finished games stats" hidden></button>
       <button class="mobile-dock-action mobile-dock-goty" id="mobileDockGoty" type="button" title="Games of the year" aria-label="Set up Games of the year" data-i18n-title="Games of the year" data-i18n-aria-label="Set up Games of the year" hidden></button>
       <button class="mobile-dock-action" id="mobileDockSearch" type="button" title="Search" aria-label="Search" data-i18n-title="Search" data-i18n-aria-label="Search">
-        <svg class="search-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.5"></circle><path d="m16 16 4 4"></path></svg>
+        <span data-svg-asset="icons/navigation/search-2"></span>
         <span data-i18n="Search">Search</span>
       </button>
       <button class="mobile-dock-action" id="mobileDockAdd" type="button" aria-label="Add Game" data-i18n-aria-label="Add Game" hidden>
-        <svg class="plus-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"></path></svg>
+        <span data-svg-asset="icons/actions/plus-2"></span>
         <span data-i18n="Add Game">Add Game</span>
       </button>
       <button class="mobile-dock-action" id="mobileDockEdit" type="button" title="Add Game" aria-label="Add Game" data-i18n-title="Add Game" data-i18n-aria-label="Add Game" hidden></button>
@@ -522,10 +491,7 @@
             <input id="lookupInput" type="search" placeholder="Type a game name or paste an IGDB page" data-i18n-placeholder="Type a game name or paste an IGDB page">
           </label>
           <button class="ghost-button icon-only-button" id="lookupButton" type="button" title="Search" aria-label="Search">
-            <svg class="search-icon" viewBox="0 0 24 24" aria-hidden="true">
-              <circle cx="11" cy="11" r="7"></circle>
-              <path d="M16.5 16.5 21 21"></path>
-            </svg>
+            <span data-svg-asset="icons/navigation/search"></span>
           </button>
         </div>
         <div class="lookup-results" id="lookupResults"></div>
@@ -550,7 +516,7 @@
         <div class="game-preorder-control">
           <label class="check-filter toggle-check game-preorder-check">
             <input id="gamePreorderCheck" type="checkbox">
-            <span class="check-label-with-icon"><svg class="shopping-bag-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M6.5 8.5h11l1 12h-13l1-12Z"></path><path d="M9 8.5V7a3 3 0 0 1 6 0v1.5"></path></svg><span data-i18n="Preorder">Preorder</span></span>
+            <span class="check-label-with-icon"><span data-svg-asset="icons/actions/shopping-bag"></span><span data-i18n="Preorder">Preorder</span></span>
           </label>
           <label class="preorder-store-field" id="gamePreorderStoreField" hidden>
             <span class="icon-input store-icon-input">
@@ -590,20 +556,13 @@
                 <input id="finishHoursInput" type="text" inputmode="numeric" placeholder="Hours" data-i18n-placeholder="Hours">
               </label>
               <button class="icon-button playtime-refresh-button" id="editorPlaytimeRefreshButton" type="button" title="Refresh playtime" aria-label="Refresh playtime" data-i18n-title="Refresh playtime" data-i18n-aria-label="Refresh playtime">
-                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 11a8.1 8.1 0 0 0-14.9-4L3 10"></path><path d="M3 4v6h6"></path><path d="M4 13a8.1 8.1 0 0 0 14.9 4L21 14"></path><path d="M21 20v-6h-6"></path></svg>
+                <span data-svg-asset="icons/actions/index"></span>
               </button>
             </div>
             <label class="check-filter toggle-check form-check playing-achievements-check">
               <input id="platinumInput" type="checkbox">
               <span class="achievement-check-icon" title="Completed achievements" aria-label="Completed achievements">
-                <svg class="trophy-icon" viewBox="0 0 24 24" aria-hidden="true">
-                  <path d="M8 4h8v4a4 4 0 0 1-8 0V4Z"></path>
-                  <path d="M8 6H5a3 3 0 0 0 3 3"></path>
-                  <path d="M16 6h3a3 3 0 0 1-3 3"></path>
-                  <path d="M12 12v4"></path>
-                  <path d="M9 20h6"></path>
-                  <path d="M10 16h4v4h-4z"></path>
-                </svg>
+                <span data-svg-asset="icons/status/trophy"></span>
               </span>
             </label>
             <div class="rating-section">
@@ -630,7 +589,7 @@
             </label>
             <label class="check-filter toggle-check form-check collection-check digital-check">
               <input id="digitalInput" type="checkbox">
-              <span class="check-label-with-icon"><svg class="download-badge-icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="4.5" width="14" height="15" rx="3"></rect><path d="M12 7.5v6.5"></path><path d="M9.5 11.8 12 14.3l2.5-2.5"></path><path d="M8.8 17h6.4"></path></svg><span data-i18n="Digital">Digital</span></span>
+              <span class="check-label-with-icon"><span data-svg-asset="icons/actions/download-badge"></span><span data-i18n="Digital">Digital</span></span>
             </label>
             <label class="list-field">
               <span data-i18n="List">List</span>
@@ -658,11 +617,11 @@
             </label>
             <label class="check-filter toggle-check form-check collection-check multiplayer-check">
               <input id="multiplayerInput" type="checkbox">
-              <span class="check-label-with-icon"><svg class="online-globe-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8"></circle><path d="M4 12h16"></path><path d="M12 4c2.1 2.2 3.2 4.8 3.2 8s-1.1 5.8-3.2 8"></path><path d="M12 4c-2.1 2.2-3.2 4.8-3.2 8s1.1 5.8 3.2 8"></path></svg><span data-i18n="Multiplayer">Multiplayer</span></span>
+              <span class="check-label-with-icon"><span data-svg-asset="icons/status/online-globe"></span><span data-i18n="Multiplayer">Multiplayer</span></span>
             </label>
             <label class="check-filter toggle-check form-check collection-check coop-check">
               <input id="coopInput" type="checkbox">
-              <span class="check-label-with-icon"><svg class="coop-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="8" cy="8" r="3"></circle><circle cx="16" cy="8" r="3"></circle><path d="M2.8 19c.4-4 2.1-6 5.2-6s4.8 2 5.2 6"></path><path d="M10.8 19c.4-4 2.1-6 5.2-6s4.8 2 5.2 6"></path></svg><span data-i18n="Coop">Coop</span></span>
+              <span class="check-label-with-icon"><span data-svg-asset="icons/status/coop"></span><span data-i18n="Coop">Coop</span></span>
             </label>
             <label class="check-filter toggle-check form-check entitlement-check psplus-check">
               <input id="psPlusInput" type="checkbox">
@@ -801,13 +760,7 @@
 
         <div class="modal-actions">
           <button class="danger-button icon-only-button" id="deleteButton" type="button" title="Delete" aria-label="Delete">
-            <svg class="trash-icon" viewBox="0 0 24 24" aria-hidden="true">
-              <path d="M3 6h18"></path>
-              <path d="M8 6V4h8v2"></path>
-              <path d="M19 6l-1 14H6L5 6"></path>
-              <path d="M10 11v5"></path>
-              <path d="M14 11v5"></path>
-            </svg>
+            <span data-svg-asset="icons/actions/trash"></span>
           </button>
           <button class="primary-button modal-save-button" id="gameDialogBottomSaveButton" type="submit" data-i18n="Save">Save</button>
         </div>
@@ -854,14 +807,7 @@
           <section class="detail-trophies" id="detailTrophies" hidden>
             <div class="detail-trophies-head">
               <h3>
-                <svg class="trophy-icon" viewBox="0 0 24 24" aria-hidden="true">
-                  <path d="M8 4h8v4a4 4 0 0 1-8 0V4Z"></path>
-                  <path d="M8 6H5a3 3 0 0 0 3 3"></path>
-                  <path d="M16 6h3a3 3 0 0 1-3 3"></path>
-                  <path d="M12 12v4"></path>
-                  <path d="M9 20h6"></path>
-                  <path d="M10 16h4v4h-4z"></path>
-                </svg>
+                <span data-svg-asset="icons/status/trophy"></span>
                 <span id="detailTrophyTitle">TROPHIES</span>
               </h3>
               <div class="detail-trophy-tools">
@@ -872,7 +818,7 @@
                   <option value="name" data-i18n="Name">Name</option>
                   <option value="completed" data-i18n="Completed">Completed</option>
                 </select>
-                <button class="direction-toggle" id="detailTrophyDirection" type="button" title="Sort ascending" aria-label="Sort ascending"><svg class="sort-arrow-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 19V5m-7 7 7-7 7 7"></path></svg></button>
+                <button class="direction-toggle" id="detailTrophyDirection" type="button" title="Sort ascending" aria-label="Sort ascending"><span data-svg-asset="icons/navigation/sort-arrow-2"></span></button>
               </div>
             </div>
             <div class="detail-trophy-scroller" id="detailTrophyScroller">
@@ -1022,7 +968,7 @@
         <div class="modal-head">
           <div>
             <p class="eyebrow" id="settingsDialogEyebrow" data-i18n="Site settings">Site settings</p>
-            <h2 class="settings-main-heading"><span id="settingsDialogTitle" data-i18n="Settings">Settings</span><button class="settings-main-back-title" id="settingsDialogBackTitle" type="button" data-settings-back aria-label="Go back" hidden><span class="settings-main-title-current"><svg class="settings-main-back-glyph" viewBox="0 0 24 24" aria-hidden="true"><path d="m15 18-6-6 6-6"/></svg><span id="settingsDialogSectionTitle"></span></span><span class="settings-main-title-hover"><svg class="settings-main-back-glyph" viewBox="0 0 24 24" aria-hidden="true"><path d="m15 18-6-6 6-6"/></svg>Go back</span></button></h2>
+            <h2 class="settings-main-heading"><span id="settingsDialogTitle" data-i18n="Settings">Settings</span><button class="settings-main-back-title" id="settingsDialogBackTitle" type="button" data-settings-back aria-label="Go back" hidden><span class="settings-main-title-current"><span data-svg-asset="icons/settings/settings-main-back-glyph"></span><span id="settingsDialogSectionTitle"></span></span><span class="settings-main-title-hover"><span data-svg-asset="icons/settings/settings-main-back-glyph"></span>Go back</span></button></h2>
           </div>
           <div class="modal-head-actions">
             <button class="primary-button modal-head-save" type="submit" data-i18n="Save">Save</button>
@@ -1034,20 +980,20 @@
           <p class="settings-home-copy">Choose what you’d like to manage.</p>
           <div class="settings-category-grid">
             <button class="settings-category-card" type="button" data-settings-panel="design">
-              <span class="settings-category-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 20h4l11-11a2.8 2.8 0 0 0-4-4L4 16v4Z"/><path d="M13.5 6.5l4 4"/><path d="M13 20h7"/></svg></span>
-              <span class="settings-category-text"><strong>Page design</strong><small>Layout, appearance, and preferences</small></span><span class="settings-category-arrow" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m9 5 7 7-7 7"/></svg></span>
+              <span class="settings-category-icon" aria-hidden="true"><span data-svg-asset="icons/actions/index-6"></span></span>
+              <span class="settings-category-text"><strong>Page design</strong><small>Layout, appearance, and preferences</small></span><span class="settings-category-arrow" aria-hidden="true"><span data-svg-asset="icons/actions/index-2"></span></span>
             </button>
             <button class="settings-category-card" type="button" data-settings-panel="accounts">
-              <span class="settings-category-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="10" cy="7" r="4"/><path d="M3 21v-2a5 5 0 0 1 5-5h4a5 5 0 0 1 5 5v2M19 8v6m3-3h-6"/></svg></span>
-              <span class="settings-category-text"><strong>Accounts</strong><small>Connected services and sign out</small></span><span class="settings-category-arrow" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m9 5 7 7-7 7"/></svg></span>
+              <span class="settings-category-icon" aria-hidden="true"><span data-svg-asset="icons/actions/index-5"></span></span>
+              <span class="settings-category-text"><strong>Accounts</strong><small>Connected services and sign out</small></span><span class="settings-category-arrow" aria-hidden="true"><span data-svg-asset="icons/actions/index-2"></span></span>
             </button>
             <button class="settings-category-card" type="button" data-settings-panel="data">
-              <span class="settings-category-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M6 3h9l4 4v14H6zM14 3v5h5M9 12h7M9 16h7"/></svg></span>
-              <span class="settings-category-text"><strong>Your Data</strong><small>Import and export your collections</small></span><span class="settings-category-arrow" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m9 5 7 7-7 7"/></svg></span>
+              <span class="settings-category-icon" aria-hidden="true"><span data-svg-asset="icons/actions/index-4"></span></span>
+              <span class="settings-category-text"><strong>Your Data</strong><small>Import and export your collections</small></span><span class="settings-category-arrow" aria-hidden="true"><span data-svg-asset="icons/actions/index-2"></span></span>
             </button>
             <button class="settings-category-card" type="button" data-settings-panel="dev" hidden>
-              <span class="settings-category-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m8 5-6 7 6 7M16 5l6 7-6 7M14 3l-4 18"/></svg></span>
-              <span class="settings-category-text"><strong>Dev Features</strong><small>Tools and experimental features</small></span><span class="settings-category-arrow" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m9 5 7 7-7 7"/></svg></span>
+              <span class="settings-category-icon" aria-hidden="true"><span data-svg-asset="icons/actions/index-3"></span></span>
+              <span class="settings-category-text"><strong>Dev Features</strong><small>Tools and experimental features</small></span><span class="settings-category-arrow" aria-hidden="true"><span data-svg-asset="icons/actions/index-2"></span></span>
             </button>
           </div>
           <section class="settings-dev-home" id="settingsDevHome" hidden>
@@ -1110,7 +1056,7 @@
           </label>
           <hr class="settings-account-separator">
           <div id="settingsAccountsMount"></div>
-          <button class="settings-logout-button" id="settingsLogoutButton" type="button"><svg class="exit-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M10 5H6.8A2.8 2.8 0 0 0 4 7.8v8.4A2.8 2.8 0 0 0 6.8 19H10"></path><path d="M14 8l4 4-4 4"></path><path d="M8 12h10"></path></svg> Log out of my account</button>
+          <button class="settings-logout-button" id="settingsLogoutButton" type="button"><span data-svg-asset="icons/actions/exit"></span> Log out of my account</button>
         </section>
 
         <section class="settings-window-panel settings-csv-section" data-settings-window="data" hidden>
@@ -1181,20 +1127,13 @@
               <input id="finishTimeInput" type="text" inputmode="numeric" placeholder="Hours" autofocus>
             </label>
             <button class="icon-button playtime-refresh-button" id="finishTimeRefreshButton" type="button" title="Refresh playtime" aria-label="Refresh playtime" data-i18n-title="Refresh playtime" data-i18n-aria-label="Refresh playtime">
-              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 11a8.1 8.1 0 0 0-14.9-4L3 10"></path><path d="M3 4v6h6"></path><path d="M4 13a8.1 8.1 0 0 0 14.9 4L21 14"></path><path d="M21 20v-6h-6"></path></svg>
+              <span data-svg-asset="icons/actions/index"></span>
             </button>
           </div>
           <label class="check-filter toggle-check form-check finish-trophy-check">
             <input id="finishPlatinumInput" type="checkbox">
             <span class="achievement-check-icon" title="Completed achievements" aria-label="Completed achievements">
-              <svg class="trophy-icon" viewBox="0 0 24 24" aria-hidden="true">
-                <path d="M8 4h8v4a4 4 0 0 1-8 0V4Z"></path>
-                <path d="M8 6H5a3 3 0 0 0 3 3"></path>
-                <path d="M16 6h3a3 3 0 0 1-3 3"></path>
-                <path d="M12 12v4"></path>
-                <path d="M9 20h6"></path>
-                <path d="M10 16h4v4h-4z"></path>
-              </svg>
+              <span data-svg-asset="icons/status/trophy"></span>
             </span>
           </label>
         </div>
@@ -1234,10 +1173,7 @@
               <div class="title-owners"></div>
             </div>
             <button class="icon-button edit-action" type="button" title="Edit" aria-label="Edit">
-              <svg class="pencil-icon" viewBox="0 0 24 24" aria-hidden="true">
-                <path d="M4 20h4l11-11a2.8 2.8 0 0 0-4-4L4 16v4Z"></path>
-                <path d="M13.5 6.5l4 4"></path>
-              </svg>
+              <span data-svg-asset="icons/actions/pencil"></span>
             </button>
           </div>
           <div class="studio-line"></div>
@@ -1249,31 +1185,15 @@
             <button class="primary-button bought-action" type="button">Backlog</button>
             <button class="primary-button complete-action" type="button">Finished</button>
             <button class="ghost-button backlog-action" type="button" title="Backlog" aria-label="Move back to backlog">
-              <svg class="back-icon" viewBox="0 0 24 24" aria-hidden="true">
-                <path d="M10 6 4 12l6 6"></path>
-                <path d="M4 12h10a6 6 0 0 1 6 6"></path>
-              </svg>
+              <span data-svg-asset="icons/actions/back"></span>
               <span class="action-label">Backlog</span>
             </button>
             <button class="ghost-button trophy-action" type="button" title="Completed" aria-label="Completed">
-              <svg class="trophy-icon" viewBox="0 0 24 24" aria-hidden="true">
-                <path d="M8 4h8v4a4 4 0 0 1-8 0V4Z"></path>
-                <path d="M8 6H5a3 3 0 0 0 3 3"></path>
-                <path d="M16 6h3a3 3 0 0 1-3 3"></path>
-                <path d="M12 12v4"></path>
-                <path d="M9 20h6"></path>
-                <path d="M10 16h4v4h-4z"></path>
-              </svg>
+              <span data-svg-asset="icons/status/trophy"></span>
             </button>
             <button class="ghost-button icon-only-button price-refresh-action" type="button" title="Prices" aria-label="Prices"></button>
             <button class="danger-button icon-only-button delete-action" type="button" title="Delete" aria-label="Delete">
-              <svg class="trash-icon" viewBox="0 0 24 24" aria-hidden="true">
-                <path d="M3 6h18"></path>
-                <path d="M8 6V4h8v2"></path>
-                <path d="M19 6l-1 14H6L5 6"></path>
-                <path d="M10 11v5"></path>
-                <path d="M14 11v5"></path>
-              </svg>
+              <span data-svg-asset="icons/actions/trash"></span>
             </button>
           </div>
         </div>

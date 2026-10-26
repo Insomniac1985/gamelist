@@ -1,3 +1,4 @@
+import { svgAsset, loadSvgAssets, hydrateSvgAssets } from "./svg-assets.js";
 import { bindCardHoverSounds, scrollWithSound, setSoundsDisabled } from "./card-hover-sound.js";
 import { renderBatchedList } from "./batched-list.js";
 import { embeddedGameEditor, connectEmbeddedGameEditor } from "./shared-add-game.js";
@@ -8,6 +9,8 @@ import { isPlayasiaStore, syncGameListControls, syncGameListSlider, syncCollecti
 
 const unifiedShelfScope = window.__unifiedShelfScope;
 const document = unifiedShelfScope?.document || window.document;
+await loadSvgAssets();
+hydrateSvgAssets(document);
 
 mountActivitySlider(document.querySelector("[data-module='playing']"), { title: "shelfPlayingTitle", count: "shelfPlayingCount", previous: "shelfPlayingPrev", next: "shelfPlayingNext", list: "playingCarousel", finished: "shelfPlayingFinished", finishedList: "finishedCarousel" });
 splitShelfPlayingModules();
@@ -33,8 +36,8 @@ const CURRENCY_OPTIONS = ["EUR", "USD", "GBP", "JPY"];
 const REGION_OPTIONS = ["ES", "IT", "IE", "FR", "PT", "JP", "MX", "US", "UK"];
 const MAX_PRICE_STORES = 5;
 const THEMES = {
-  shabii: { title: "Shabii's Shelf", icon: "assets/Icon_shelf.png", color: "#ff0039" },
-  kash: { title: "Kash's Shelf", icon: "assets/kh_icon.png", color: "#005cff" },
+  shabii: { title: "Shabii's Shelf", icon: "assets/branding/Icon_shelf.png", color: "#ff0039" },
+  kash: { title: "Kash's Shelf", icon: "assets/branding/kh_icon.png", color: "#005cff" },
 };
 const siteVersion = { version: "", updatedAt: "", notificationVersion: 0 };
 let updatesPopupLoadPromise = null;
@@ -104,6 +107,8 @@ const state = {
   gamelistSettings: loadSharedSettings(),
   metadataLookupResults: [],
   pendingLengthHours: null,
+  pendingKeyArt: "",
+  pendingTrailerUrl: "",
   trophyActivity: null,
   steamActivity: { achievements: [], games: [], completed: [], totalEarned: 0, sourceUrl: "" },
   xboxActivity: { achievements: [], games: [], completed: [], totalEarned: 0, sourceUrl: "" },
@@ -139,6 +144,7 @@ const state = {
 };
 
 let shelfEditorDirty = false;
+let shelfNewGameContentBaseline = "";
 let shelfNewGameTouchedFields = new Set();
 
 const el = {
@@ -464,7 +470,7 @@ function bindEvents() {
   el.editDelete.addEventListener("click", deleteCurrentEditedGame);
   el.addDialog.addEventListener("click", (event) => { if (event.target === el.addDialog) requestShelfEditorClose(); });
   el.addDialog.addEventListener("cancel", (event) => {
-    if (!shelfEditorDirty) return;
+    if (!shouldConfirmShelfEditorClose()) return;
     event.preventDefault();
     showShelfEditorUnsavedDialog();
   });
@@ -761,7 +767,7 @@ function shelfStatsMediaLabel(label) {
 
 function shelfStatsPieMarkup(counts, tone, games = []) {
   const total = counts.reduce((sum, item) => sum + item.count, 0);
-  if (!total) return `<svg viewBox="0 0 100 100" aria-hidden="true"><circle cx="50" cy="50" r="46" fill="rgba(255,255,255,.08)"></circle></svg>`;
+  if (!total) return `${svgAsset("charts/stats-pie-markup")}`;
   let cursor = 0;
   const segments = counts.map((item, index) => {
     const start = cursor;
@@ -770,12 +776,12 @@ function shelfStatsPieMarkup(counts, tone, games = []) {
     const point = (angle, radius = 46) => ({ x: 50 + radius * Math.cos((angle - 90) * Math.PI / 180), y: 50 + radius * Math.sin((angle - 90) * Math.PI / 180) });
     const sweep = cursor - start;
     const shape = sweep >= 359.99
-      ? `<circle class="finished-stats-pie-shape" cx="50" cy="50" r="46" fill="${escapeHtml(color)}" stroke="rgba(255,255,255,.22)" stroke-width="0.9"></circle>`
+      ? `${svgAsset("charts/finished-stats-pie-shape", [escapeHtml(color)])}`
       : (() => {
         const from = point(start);
         const to = point(cursor);
         const large = sweep > 180 ? 1 : 0;
-        return `<path class="finished-stats-pie-shape" d="M 50 50 L ${from.x.toFixed(3)} ${from.y.toFixed(3)} A 46 46 0 ${large} 1 ${to.x.toFixed(3)} ${to.y.toFixed(3)} Z" fill="${escapeHtml(color)}" stroke="rgba(255,255,255,.22)" stroke-width="0.9"></path>`;
+        return `${svgAsset("charts/finished-stats-pie-shape-2", [from.x.toFixed(3), from.y.toFixed(3), large, to.x.toFixed(3), to.y.toFixed(3), escapeHtml(color)])}`;
       })();
     const mid = point(start + sweep / 2, 34);
     const tipX = Math.max(16, Math.min(84, mid.x));
@@ -783,7 +789,7 @@ function shelfStatsPieMarkup(counts, tone, games = []) {
     const segmentGames = shelfStatsSegmentGames(item.label, tone, games);
     const percent = Math.round(item.count / total * 100);
     return {
-      shape: `<g class="finished-stats-pie-segment finished-stats-pie-segment-${index}" data-segment-label="${escapeHtml(item.label)}" style="--slice-opacity:${index % 2 ? 0.78 : 0.96}" tabindex="0">${shape}</g>`,
+      shape: `${svgAsset("charts/finished-stats-pie-segment-2", [index, escapeHtml(item.label), index % 2 ? 0.78 : 0.96, shape])}`,
       tip: `<div class="finished-stats-segment-tip finished-stats-segment-tip-${index}" style="--tip-x:${tipX.toFixed(2)}%;--tip-y:${tipY.toFixed(2)}%"><span class="finished-stats-segment-percent">${percent}%</span>${tone === "platform" ? platformBadge(item.label) : tone === "region" ? shelfStatsRegionBadge(item.label) : `<b>${escapeHtml(item.label)}</b>`}<span class="finished-stats-segment-count">${item.count}</span></div>`,
     };
   });
@@ -801,7 +807,7 @@ function shelfStatsPieMarkup(counts, tone, games = []) {
     .finished-stats-donut:has(.finished-stats-segment-tip-${index}:hover) .finished-stats-segment-tip-${index},
     .finished-stats-donut:has(.finished-stats-segment-tip-${index}:focus-within) .finished-stats-segment-tip-${index} { opacity: 1; transform: translate(-50%, -50%) scale(1); pointer-events: auto; }
   `).join("");
-  return `<svg viewBox="0 0 100 100" role="img" aria-label="${escapeHtml(tt("Stats breakdown"))}">${segments.map((segment) => segment.shape).join("")}</svg><div class="finished-stats-pie-tips">${segments.map((segment) => segment.tip).join("")}</div><style>${tipCss}</style>`;
+  return `${svgAsset("charts/shelf-stats-pie-markup", [escapeHtml(tt("Stats breakdown")), segments.map((segment) => segment.shape).join("")])}<div class="finished-stats-pie-tips">${segments.map((segment) => segment.tip).join("")}</div><style>${tipCss}</style>`;
 }
 
 function shelfStatsSegmentGames(label, tone, games) {
@@ -1220,8 +1226,8 @@ function renderChrome() {
   el.fetchPricesButton.innerHTML = `${currencyIcon()}<span class="button-label">${escapeHtml(tt("Fetch New Prices"))}</span>`;
   updateFetchPricesButtonStatus();
   el.login.innerHTML = state.canEdit
-    ? `<span class="button-icon" aria-hidden="true"><svg class="exit-icon" viewBox="0 0 24 24"><path d="M10 5H6.8A2.8 2.8 0 0 0 4 7.8v8.4A2.8 2.8 0 0 0 6.8 19H10"></path><path d="M14 8l4 4-4 4"></path><path d="M8 12h10"></path></svg></span>`
-    : `<svg class="pencil-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h4l11-11a2.8 2.8 0 0 0-4-4L4 16v4Z"></path><path d="M13.5 6.5l4 4"></path></svg>`;
+    ? `<span class="button-icon" aria-hidden="true">${svgAsset("icons/actions/exit-2")}</span>`
+    : `${svgAsset("icons/actions/pencil")}`;
   el.login.title = state.canEdit ? tt("Stop Editing") : tt("Edit");
   el.login.setAttribute("aria-label", el.login.title);
   el.login.hidden = state.canEdit;
@@ -1999,11 +2005,11 @@ function preorderPlaytimePill(game) {
 }
 
 function shoppingBagIcon() {
-  return `<svg class="shopping-bag-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M6.5 8.5h11l1 12h-13l1-12Z"></path><path d="M9 8.5V7a3 3 0 0 1 6 0v1.5"></path></svg>`;
+  return `${svgAsset("icons/actions/shopping-bag")}`;
 }
 
 function wishlistIcon() {
-  return `<svg class="wishlist-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1.1-1.1a5.5 5.5 0 0 0-7.8 7.8l1.1 1.1L12 21l7.8-7.5 1.1-1.1a5.5 5.5 0 0 0-.1-7.8Z"></path></svg>`;
+  return `${svgAsset("icons/actions/wishlist")}`;
 }
 
 function shelfPreorderCountPill(games) {
@@ -2015,7 +2021,7 @@ function shelfPreorderCountPill(games) {
   const summary = [...counts.entries()].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0], undefined, { sensitivity: "base" }));
   const rows = summary.map(([store, count]) => `<span><strong>${escapeHtml(store)}</strong><em>${count}</em></span>`).join("");
   const title = summary.map(([store, count]) => `${store}: ${count}`).join("\n");
-  return `<span class="preorder-count-pill preorder-count-tooltip" tabindex="0" title="${escapeHtml(title)}">${shoppingBagIcon()}${escapeHtml(tt("{count} preordered", { count: games.length }))}<span class="preorder-store-list" role="tooltip">${rows}</span></span>`;
+  return `<span class="preorder-count-pill preorder-count-tooltip" tabindex="0" title="${escapeHtml(title)}">${shoppingBagIcon()}${games.length} ${escapeHtml(tt(games.length === 1 ? "Preorder" : "Preorders"))}<span class="preorder-store-list" role="tooltip">${rows}</span></span>`;
 }
 
 function visibleShelfCardOwners(owners = []) {
@@ -2151,6 +2157,8 @@ function openEditor(game = null, options = {}) {
   el.digitalInput.checked = digitalMode;
   syncShelfDigitalEditorMode(digitalMode);
   state.pendingLengthHours = roundApproximateHours(game?.lengthHours) || null;
+  state.pendingKeyArt = game?.keyArt || "";
+  state.pendingTrailerUrl = game?.trailerUrl || "";
   state.lookupResults = [];
   el.lookupResults.classList.remove("loaded");
   el.lookupInput.closest(".lookup-row").hidden = false;
@@ -2212,6 +2220,7 @@ function openEditor(game = null, options = {}) {
   syncStyledSelects(el.addDialog, { activeValue: null });
   syncShelfEditorIcons();
   shelfEditorDirty = false;
+  shelfNewGameContentBaseline = shelfEditorContentSnapshot();
   openDialog(el.addDialog);
 }
 
@@ -2224,7 +2233,7 @@ function renderShelfGamelistImportSummary(game) {
   const fallback = coverUrl(game.cover || "") || platformFallback(game.platform);
   cover.src = fallback;
   cover.alt = game.title ? `${game.title} cover` : "";
-  cover.onerror = () => { cover.onerror = null; cover.src = "assets/Icon_shelf.png"; };
+  cover.onerror = () => { cover.onerror = null; cover.src = "assets/branding/Icon_shelf.png"; };
   summary.querySelector(".shelf-gamelist-import-title").textContent = game.title || "";
   const platformRegion = [platformDisplayName(game.platform), game.country || game.region || ""].filter(Boolean).join(" · ");
   summary.querySelector(".shelf-gamelist-import-platform").textContent = platformRegion;
@@ -2236,11 +2245,22 @@ function renderShelfGamelistImportSummary(game) {
 }
 
 function requestShelfEditorClose() {
-  if (shelfEditorDirty) {
+  if (shouldConfirmShelfEditorClose()) {
     showShelfEditorUnsavedDialog();
     return;
   }
   closeDialog(el.addDialog);
+}
+
+function shouldConfirmShelfEditorClose() {
+  return shelfEditorDirty && (Boolean(state.editingId) || shelfEditorContentSnapshot() !== shelfNewGameContentBaseline);
+}
+
+function shelfEditorContentSnapshot() {
+  return JSON.stringify([...el.addForm.querySelectorAll("input, textarea, select")]
+    .filter((field) => !["checkbox", "radio", "button", "submit", "reset"].includes(field.type))
+    .filter((field) => field.id !== "shelfGamelistSectionInput" && !field.matches(".shelf-gamelist-section, .list-field"))
+    .map((field) => [field.id || field.name, field.type, field.value]));
 }
 
 function showShelfEditorUnsavedDialog() {
@@ -2318,7 +2338,9 @@ function syncShelfGamelistTargetMode() {
     if (eyebrow) eyebrow.textContent = collectingInfo ? tt("Gamelist") : "GAME DATA";
     if (title) {
       const titleText = shelfGamelistAddTitle();
-      setShelfEditorTitle(title, titleText, shelfGamelistMobileTitleParts());
+      const labels = collectionEditorLabels();
+      const titleLines = labels?.titleLines?.map(line => tt(line)) || shelfGamelistMobileTitleParts();
+      setShelfEditorTitle(title, titleText, titleLines, Boolean(labels?.titleLines));
     }
     el.addForm.querySelector(".form-group h3").textContent = tt("Collecting Information");
     const saveLabel = collectionEditorLabels()?.button || "Add game";
@@ -2332,8 +2354,9 @@ function syncShelfGamelistTargetMode() {
     if (eyebrow) eyebrow.textContent = tt("Game data");
     const game = state.games.find((item) => item.id === state.editingId);
     if (title) {
-      const titleText = tt(collectionEditorLabels()?.title || (game ? "Edit game" : "Add to Collection"));
-      setShelfEditorTitle(title, titleText);
+      const labels = collectionEditorLabels();
+      const titleText = tt(labels?.title || (game ? "Edit game" : "Add to Collection"));
+      setShelfEditorTitle(title, titleText, labels?.titleLines?.map(line => tt(line)) || [], Boolean(labels?.titleLines));
     }
     el.addForm.querySelector(".form-group h3").textContent = tt("Collecting Information");
     el.addForm.querySelectorAll("button[type='submit']").forEach((button) => { button.textContent = tt(collectionEditorLabels()?.button || (game ? "Save" : "Add to Collection")); });
@@ -2392,19 +2415,21 @@ function collectionEditorLabels() {
   if (backlog && el.gamelistPlaying.checked) {
     const streaming = el.gamelistStream.checked;
     return {
-      title: collection ? (streaming ? "Add to Collection and Start Streaming" : "Add to Collection and Start Playing") : (streaming ? "Add and Start Streaming" : "Add and Start Playing"),
+      title: collection ? (streaming ? "Add to Collection and Start Streaming" : "Add to Collection and play") : (streaming ? "Add and Start Streaming" : "Add and Start Playing"),
+      titleLines: collection && !streaming ? ["Add to Collection", "and play"] : null,
       button: streaming ? "Add and Start Streaming" : "Add and Start Playing",
     };
   }
   const label = backlog ? (collection ? "Add to Collection and Backlog" : "Add to Backlog") : "Add to Collection";
-  return { title: label, button: label };
+  return { title: label, titleLines: backlog && collection ? ["Add to Collection", "and Backlog"] : null, button: label };
 }
 
-function setShelfEditorTitle(title, text, mobileLines = []) {
+function setShelfEditorTitle(title, text, mobileLines = [], forceTwoLine = false) {
   if (!title) return;
   title.classList.toggle("mobile-two-line-title", mobileLines.length === 2);
   title.classList.toggle("mobile-two-line-title-shelf", mobileLines.length === 2 && mobileLines[1] === tt("to Shelf"));
   title.classList.toggle("mobile-two-line-title-backlog", mobileLines.length === 2 && mobileLines[1] === tt("to Backlog"));
+  title.classList.toggle("collection-action-two-line-title", forceTwoLine && mobileLines.length === 2);
   title.innerHTML = mobileLines.length === 2
     ? `${escapeHtml(mobileLines[0])} <br class="mobile-title-break">${escapeHtml(mobileLines[1])}`
     : escapeHtml(text);
@@ -2425,8 +2450,10 @@ function syncShelfGamelistSectionButtons() {
   if (isGamelistProjectionTarget()) {
     const title = el.addForm.querySelector(".modal-head h2");
     if (title) {
+      const labels = collectionEditorLabels();
       const titleText = shelfGamelistAddTitle();
-      setShelfEditorTitle(title, titleText, shelfGamelistMobileTitleParts());
+      const titleLines = labels?.titleLines?.map(line => tt(line)) || shelfGamelistMobileTitleParts();
+      setShelfEditorTitle(title, titleText, titleLines, Boolean(labels?.titleLines));
     }
   }
 }
@@ -2735,7 +2762,7 @@ function lookupPublisherDateLine(result) {
 
 function lookupTagsLine(result) {
   const tags = [...new Set([...(result.genres || []), ...(result.tags || [])].filter(Boolean))]
-    .join(", ");
+    .map(tt).join(", ");
   const hours = Number(result?.lengthHours);
   const playtime = Number.isFinite(hours) && hours > 0
     ? tt("{count} hrs", { count: Number.isInteger(hours) ? String(hours) : String(Math.round(hours * 10) / 10) })
@@ -2777,7 +2804,7 @@ async function chooseLookupResult(event) {
   el.fields.platform.value = platformDisplayName(bestCollectionPlatform(result.platforms || [result.platform], el.fields.platform.value));
   el.fields.publisher.value = result.publisher || "";
   el.fields.developer.value = result.developer || "";
-  el.fields.genre.value = (result.genres || []).join(", ");
+  el.fields.genre.value = (result.genres || []).map(tt).join(", ");
   const isBaseMinecraft = String(result.title || "").trim().toLocaleLowerCase() === "minecraft";
   if (result.dlc && !isBaseMinecraft) {
     el.fields.dlc.checked = true;
@@ -2785,6 +2812,8 @@ async function chooseLookupResult(event) {
     syncShelfDigitalEditorMode(true);
   }
   el.fields.cover.value = result.cover || "";
+  state.pendingKeyArt = result.keyArt || state.pendingKeyArt;
+  state.pendingTrailerUrl = result.trailerUrl || state.pendingTrailerUrl;
   syncShelfEditorCoverPreview();
   el.fields.releaseDate.value = result.releaseDate || "";
   syncShelfGamelistSectionForTarget();
@@ -2827,9 +2856,11 @@ function bestGameMetadata(title) {
 
 function applyGameMetadata(result) {
   if (!result) return;
+  state.pendingKeyArt = result.keyArt || state.pendingKeyArt;
+  state.pendingTrailerUrl = result.trailerUrl || state.pendingTrailerUrl;
   if (result.publisher && !el.fields.publisher.value) el.fields.publisher.value = result.publisher;
   if (result.developer && !el.fields.developer.value) el.fields.developer.value = result.developer;
-  if ((result.genres || []).length && !el.fields.genre.value) el.fields.genre.value = result.genres.join(", ");
+  if ((result.genres || []).length && !el.fields.genre.value) el.fields.genre.value = result.genres.map(tt).join(", ");
   if (result.cover && !el.fields.cover.value) el.fields.cover.value = result.cover;
   syncShelfEditorCoverPreview();
   if (result.releaseDate && !el.fields.releaseDate.value) {
@@ -2911,7 +2942,7 @@ function estimatedPhysicalValue(data) {
 
 function renderPhysicalSelection(physical, fallbackTitle = "") {
   el.lookupResults.classList.add("loaded");
-  el.lookupResults.innerHTML = `<div class="lookup-selected physical-lookup-selected"><img src="${physical?.image ? escapeHtml(physical.image) : physical ? "https://www.pricecharting.com/images/favicon.ico" : "assets/Icon_shelf.png"}" alt=""><span>${physical ? `Using ${escapeHtml(physical.productName || fallbackTitle)}${physical.consoleName ? ` · ${escapeHtml(physical.consoleName)}` : ""}` : "Game information loaded."}</span></div>`;
+  el.lookupResults.innerHTML = `<div class="lookup-selected physical-lookup-selected"><img src="${physical?.image ? escapeHtml(physical.image) : physical ? "https://www.pricecharting.com/images/favicon.ico" : "assets/branding/Icon_shelf.png"}" alt=""><span>${physical ? `Using ${escapeHtml(physical.productName || fallbackTitle)}${physical.consoleName ? ` · ${escapeHtml(physical.consoleName)}` : ""}` : "Game information loaded."}</span></div>`;
 }
 
 function priceChartingPageUrl(value) { const match = String(value || "").trim().match(/^https:\/\/www\.pricecharting\.com\/(?:[a-z]{2}\/)?game\/[^?#]+/i); return match?.[0] || ""; }
@@ -2944,6 +2975,8 @@ function shelfGameFromEditor(existing = state.games.find((game) => game.id === s
     gamesWithGold: digitalMode && ["X360", "XOne"].includes(canonicalShelfPlatform(el.fields.platform.value)) && el.fields.gamesWithGold.checked,
     price: manualPrice, publisher: el.fields.publisher.value.trim(), developer: el.fields.developer.value.trim(),
     genre: el.fields.genre.value.trim(), cover: rawCoverUrl(el.fields.cover.value.trim()), notes: el.fields.notes.value.trim(),
+    keyArt: state.pendingKeyArt || existing?.keyArt || "",
+    trailerUrl: state.pendingTrailerUrl || existing?.trailerUrl || "",
     owners: splitValues(el.fields.owners.value).map(canonicalOwner).filter(Boolean), category: existing?.category || "Game",
     releaseDate: el.fields.releaseDate.value, trophyName: el.fields.trophyName.value.trim(), websites: legacyWebsiteLinks(existing),
     createdAt: shelfCreatedAtForDate(el.fields.additionDate.value, existing),
@@ -3068,7 +3101,8 @@ async function saveGamelistTargetFromShelf() {
     publisher: shelfOnlyImport ? "" : el.fields.publisher.value.trim(),
     igdbUrl: shelfOnlyImport ? "" : el.fields.igdbUrl.value.trim(),
     hltbUrl: shelfOnlyImport ? "" : el.fields.hltbUrl.value.trim(),
-    trailerUrl: "",
+    keyArt: state.pendingKeyArt || existingImport?.keyArt || "",
+    trailerUrl: state.pendingTrailerUrl || existingImport?.trailerUrl || "",
     steamAppId: "",
     storeLinks: shelfOnlyImport ? {} : editorStoreLinks(),
     owners: owners.length ? owners : [state.gamelistSettings.defaultOwner || "User"],
@@ -4254,7 +4288,8 @@ function gamelistProjectionCard(game, options = {}) {
   card.dataset.gamelistTitle = game.title || "";
   card.className += ` has-art${neutralReleaseCard ? "" : " playing-card"}${ownerClasses}${game.digital ? " digital-card" : ""}${game.stream ? " stream-card" : ""}${shelfShowsCompletedTrophyStyle(game) ? " completed-trophy-card" : ""}`;
   card.classList.toggle("shelf-release-card", isReleaseDialog);
-  card.style.setProperty("--card-art", `url('${escapeCss(cover)}')`);
+  card.classList.toggle("has-key-art", Boolean(!neutralReleaseCard && game.keyArt));
+  card.style.setProperty("--card-art", `url('${escapeCss(!neutralReleaseCard && game.keyArt ? game.keyArt : cover)}')`);
   const trailer = card.querySelector(".card-trailer"); const trailerUrl = !isReleaseDialog && !neutralReleaseCard && window.matchMedia("(min-width: 900px)").matches ? activityTrailerUrl(game.trailerUrl) : ""; if (trailerUrl) { card.classList.add("has-trailer"); trailer.dataset.src = trailerUrl; const toggle = card.querySelector(".trailer-toggle"); toggle.hidden = false; toggle.innerHTML = pauseTrailerIcon(); } else { trailer.remove(); card.querySelector(".trailer-toggle")?.remove(); }
   const image = card.querySelector(".cover-button img"); image.src = cover; image.alt = `${game.title} cover`; image.loading = "eager"; image.fetchPriority = "high"; image.decoding = "async"; bindCoverFrame(image);
   const title = card.querySelector("h3"); title.textContent = game.title; title.className = `${title.className.replace(/\bowner-[\w-]+/g, "").trim()} ${visibleOwners.map(ownerColorClass).join(" ")}`.trim(); title.classList.toggle("completed-achievements-title", shelfShowsCompletedTrophyStyle(game));
@@ -4295,7 +4330,7 @@ function gamelistProjectionCard(game, options = {}) {
 }
 
 function calendarMilestoneProjectionCard(game) {
-  const cover = coverUrl(game.cover || "") || "assets/Icon_shelf.png";
+  const cover = coverUrl(game.cover || "") || "assets/branding/Icon_shelf.png";
   const card = createGameCardShell(document);
   card.dataset.gamelistId = game.id || "";
   card.className += " calendar-milestone-card shelf-release-card";
@@ -4496,12 +4531,7 @@ function physicalDiskIcon(platformClassName = "") {
 
 function downloadBadgeIcon() {
   return `
-    <svg class="download-badge-icon" viewBox="0 0 24 24" aria-hidden="true">
-      <rect x="5" y="4.5" width="14" height="15" rx="3"></rect>
-      <path d="M12 7.5v6.5"></path>
-      <path d="M9.5 11.8 12 14.3l2.5-2.5"></path>
-      <path d="M8.8 17h6.4"></path>
-    </svg>
+    ${svgAsset("icons/actions/download-badge")}
   `;
 }
 function projectionChips(game, options = {}) {
@@ -4530,12 +4560,7 @@ function shelfReleaseDatePill(game, label) {
 
 function calendarMiniIcon() {
   return `
-    <svg class="calendar-mini-icon" viewBox="0 0 24 24" aria-hidden="true">
-      <rect x="4" y="5.5" width="16" height="15" rx="3"></rect>
-      <path d="M8 3.5v4"></path>
-      <path d="M16 3.5v4"></path>
-      <path d="M4 10h16"></path>
-    </svg>
+    ${svgAsset("icons/status/calendar-mini")}
   `;
 }
 
@@ -4564,15 +4589,15 @@ function streamBadge() {
 }
 
 function streamPlayIcon() {
-  return `<svg class="stream-play-icon twitch-filter-icon" viewBox="0 0 24 24" aria-hidden="true">${twitchLogoPath()}</svg>`;
+  return `${svgAsset("icons/brands/stream-play", [twitchLogoPath()])}`;
 }
 
 function twitchLogoPath() {
-  return `<path class="twitch-filter-logo-path" d="M6 0 1.7 4.3v15.4h5.1V24l4.3-4.3h3.4l7.8-7.7V0H6Zm14.6 11.1-3.4 3.4h-3.5l-3 3v-3H6.9V1.7h13.7v9.4ZM18 4.7v5.1h-1.7V4.7H18Zm-4.7 0v5.1h-1.7V4.7h1.7Z"></path>`;
+  return `${svgAsset("icons/brands/twitch-filter-logo-path")}`;
 }
 
 function onlineGlobeIcon() {
-  return `<svg class="online-globe-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8"></circle><path d="M4 12h16"></path><path d="M12 4c2.1 2.2 3.2 4.8 3.2 8s-1.1 5.8-3.2 8"></path><path d="M12 4c-2.1 2.2-3.2 4.8-3.2 8s1.1 5.8 3.2 8"></path></svg>`;
+  return `${svgAsset("icons/status/online-globe")}`;
 }
 
 function activityGameFor(game) {
@@ -4757,7 +4782,7 @@ function renderGamelistDetailTrophyList() {
   el.detailTrophyDirection.title = state.gamelistDetailTrophyDirection === "asc" ? "Sort ascending" : "Sort descending";
   el.detailTrophyDirection.setAttribute("aria-label", el.detailTrophyDirection.title);
   const tone = ["steam", "pc"].includes(normalize(shortPlatform(game?.platform))) ? "steam" : "";
-  el.detailTrophyList.innerHTML = trophies.length ? trophies.map((item) => `<article class="detail-trophy-card trophy-${tone || trophyTone(item.type || item.rarity)} ${item.earned ? "earned" : "missing"}"><img src="${escapeHtml(item.icon || platformLogo(game?.platform || "PS5"))}" alt=""><div><strong>${escapeHtml(item.title || "Achievement")}</strong><span>${escapeHtml([item.earned ? item.earnedAt || tt("Earned") : tt("Missing"), item.rarity].filter(Boolean).join(" · "))}</span>${item.description ? `<p>${escapeHtml(item.description)}</p>` : ""}</div></article>`).join("") : `<div class="detail-trophy-empty">No ${state.gamelistDetailTrophyKind === "TROPHIES" ? "trophies" : "achievements"} found for this game yet.</div>`;
+  el.detailTrophyList.innerHTML = trophies.length ? trophies.map((item) => `<article class="detail-trophy-card trophy-${tone || trophyTone(item.type || item.rarity)} ${item.earned ? "earned" : "missing"}"><img src="${escapeHtml(item.icon || platformLogo(game?.platform || "PS5"))}" alt=""><div><strong>${escapeHtml(item.title || "Achievement")}</strong><span>${escapeHtml([item.earned ? item.earnedAt || tt("Earned") : tt("Missing"), tt(item.rarity || "")].filter(Boolean).join(" · "))}</span>${item.description ? `<p>${escapeHtml(item.description)}</p>` : ""}</div></article>`).join("") : `<div class="detail-trophy-empty">No ${state.gamelistDetailTrophyKind === "TROPHIES" ? "trophies" : "achievements"} found for this game yet.</div>`;
 }
 function externalActivityFor(game) {
   const platform = normalize(shortPlatform(game.platform)); const title = game.trophyName || game.title;
@@ -4803,7 +4828,7 @@ async function refreshShelfPsnTrophiesInBackground(game, remote, cacheKey, mode)
     el.detailTrophyTitle.textContent = tt("TROPHIES");
     el.detailTrophyCount.textContent = "";
     el.detailTrophyPercent.innerHTML = total ? shelfProgressBadge({ progress, earned, total }, { includeIcon: false, separator: true }) : "";
-    el.detailTrophyList.innerHTML = trophies.map((item) => `<article class="detail-trophy-card trophy-${trophyTone(item.type || item.rarity)} ${item.earned ? "earned" : "missing"}"><img src="${escapeHtml(item.icon || "assets/platforms/playstation.png")}" alt=""><div><strong>${escapeHtml(item.title || "Trophy")}</strong><span>${escapeHtml([item.earned ? item.earnedAt || tt("Earned") : tt("Missing"), item.rarity].filter(Boolean).join(" · "))}</span>${item.description ? `<p>${escapeHtml(item.description)}</p>` : ""}</div></article>`).join("");
+    el.detailTrophyList.innerHTML = trophies.map((item) => `<article class="detail-trophy-card trophy-${trophyTone(item.type || item.rarity)} ${item.earned ? "earned" : "missing"}"><img src="${escapeHtml(item.icon || "assets/platforms/playstation.png")}" alt=""><div><strong>${escapeHtml(item.title || "Trophy")}</strong><span>${escapeHtml([item.earned ? item.earnedAt || tt("Earned") : tt("Missing"), tt(item.rarity || "")].filter(Boolean).join(" · "))}</span>${item.description ? `<p>${escapeHtml(item.description)}</p>` : ""}</div></article>`).join("");
   } catch {
     // Cached trophy data is already visible; background refresh is best-effort.
   }
@@ -5331,7 +5356,7 @@ function siteClass(value) {
   const label = normalize(linkLabel(value)).replace(/ /g, "-");
   return label === "howlongtobeat" ? "store-hltb" : label ? `store-${label}` : "";
 }
-function siteIcon(value) { const host = (() => { try { return new URL(value).hostname; } catch { return ""; } })(); if (host.includes("playstation")) return "assets/sites/playstation.png"; if (host.includes("nintendo")) return "assets/sites/nintendo.png"; if (host.includes("steam")) return "assets/sites/steam.png"; if (host.includes("howlongtobeat")) return "assets/sites/howlongtobeat.png"; return host ? `https://${host}/favicon.ico` : "assets/Icon.png"; }
+function siteIcon(value) { const host = (() => { try { return new URL(value).hostname; } catch { return ""; } })(); if (host.includes("playstation")) return "assets/sites/playstation.png"; if (host.includes("nintendo")) return "assets/sites/nintendo.png"; if (host.includes("steam")) return "assets/sites/steam.png"; if (host.includes("howlongtobeat")) return "assets/sites/howlongtobeat.png"; return host ? `https://${host}/favicon.ico` : "assets/branding/Icon.png"; }
 function renderSavedStorePrices(game) {
   const settings = normalizePriceSettings(state.gamelistSettings);
   const prices = Array.isArray(game.storePrices) && game.storePrices.length ? game.storePrices : placeholderStorePrices(settings);
@@ -5360,7 +5385,7 @@ function storePricesMarkup(prices, currency) {
 function placeholderStorePrices(settings = normalizePriceSettings(state.gamelistSettings)) {
   return settings.stores.map((store) => ({ store, price: "", numericPrice: null, url: "" }));
 }
-function storeIcon(store) { const normalizedStore = normalizeTag(store); if (isPlayasiaStore(store)) return "assets/stores/playasia.ico"; if (String(store).startsWith("Amazon")) return "assets/stores/amazon.ico"; if (store === "eBay") return "https://www.ebay.com/favicon.ico"; if (isKickstarterStore(store)) return "https://www.kickstarter.com/favicon.ico"; if (store === "Xtralife") return "assets/stores/xtralife.ico"; if (store === "GAME.es") return "assets/stores/game.ico"; if (store === "Retro Island NY") return "assets/stores/retroisland.png"; if (normalizedStore === "limitedrun" || normalizedStore === "limitedrungames" || normalizedStore === "lrg") return "assets/stores/limited-run-games.png"; if (["squareenix", "squareenixstore", "sqex", "sqexstore"].includes(normalizedStore.replace(/[^a-z0-9]/g, ""))) return "assets/stores/square-enix-store.png"; if (store === "GameStop") return "https://www.gamestop.com/favicon.ico"; if (store === "Walmart") return "https://www.walmart.com/favicon.ico"; if (String(store).startsWith("Nintendo")) return "assets/sites/nintendo.png"; if (String(store).startsWith("PlayStation")) return "assets/sites/playstation.png"; if (store === "Steam") return "assets/sites/steam.png"; if (store === "Xbox") return "assets/platforms/xbox.png"; return "assets/Icon.png"; }
+function storeIcon(store) { const normalizedStore = normalizeTag(store); if (isPlayasiaStore(store)) return "assets/stores/playasia.ico"; if (String(store).startsWith("Amazon")) return "assets/stores/amazon.ico"; if (store === "eBay") return "https://www.ebay.com/favicon.ico"; if (isKickstarterStore(store)) return "https://www.kickstarter.com/favicon.ico"; if (store === "Xtralife") return "assets/stores/xtralife.ico"; if (store === "GAME.es") return "assets/stores/game.ico"; if (store === "Retro Island NY") return "assets/stores/retroisland.png"; if (normalizedStore === "limitedrun" || normalizedStore === "limitedrungames" || normalizedStore === "lrg") return "assets/stores/limited-run-games.png"; if (["squareenix", "squareenixstore", "sqex", "sqexstore"].includes(normalizedStore.replace(/[^a-z0-9]/g, ""))) return "assets/stores/square-enix-store.png"; if (store === "GameStop") return "https://www.gamestop.com/favicon.ico"; if (store === "Walmart") return "https://www.walmart.com/favicon.ico"; if (String(store).startsWith("Nintendo")) return "assets/sites/nintendo.png"; if (String(store).startsWith("PlayStation")) return "assets/sites/playstation.png"; if (store === "Steam") return "assets/sites/steam.png"; if (store === "Xbox") return "assets/platforms/xbox.png"; return "assets/branding/Icon.png"; }
 function isKickstarterStore(store) { return ["kickstarter", "kickstater", "kicstarter", "kickstart"].includes(normalizeTag(store).replace(/[^a-z0-9]+/g, "")); }
 function renderPriceDetails(game) {
   const prices = game.collectionPrices || {};
@@ -5393,7 +5418,7 @@ function priceGraph(history, currency = "USD") {
   const values = history.map((item) => Number(item.value)).filter(Number.isFinite); const min = Math.min(...values); const max = Math.max(...values); const range = Math.max(1, max - min);
   const coords = values.map((value, index) => ({ x: values.length === 1 ? 300 : 24 + index * (552 / (values.length - 1)), y: values.length === 1 ? 75 : 126 - ((value - min) / range) * 102, value, date: history[index]?.date || "" }));
   const points = coords.map(({ x, y }) => `${x},${y}`).join(" ");
-  return `<line x1="24" y1="126" x2="576" y2="126" stroke="rgba(255,255,255,.14)"/><polyline points="${points}" fill="none" stroke="var(--accent)" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>${coords.map(({ x, y, value, date }) => { const tooltipX = Math.min(486, Math.max(12, x - 45)); const tooltipY = Math.max(10, y - 50); return `<g class="price-history-point"><circle cx="${x}" cy="${y}" r="12" fill="transparent"></circle><circle cx="${x}" cy="${y}" r="4" fill="var(--accent)"></circle><g class="price-history-tooltip" transform="translate(${tooltipX} ${tooltipY})"><rect width="102" height="38" rx="7"></rect><text x="10" y="15">${escapeHtml(date || "Unknown")}</text><text class="price-history-tooltip-price" x="10" y="30">${escapeHtml(formatMoney(value, currency))}</text></g></g>`; }).join("")}<text x="24" y="145" fill="rgba(255,255,255,.48)" font-size="10">${escapeHtml(history[0]?.date || "")}</text><text x="576" y="145" fill="rgba(255,255,255,.48)" font-size="10" text-anchor="end">${escapeHtml(history.at(-1)?.date || "")}</text>`;
+  return `${svgAsset("charts/price-graph-4")}${svgAsset("charts/price-graph-3", [points])}${coords.map(({ x, y, value, date }) => { const tooltipX = Math.min(486, Math.max(12, x - 45)); const tooltipY = Math.max(10, y - 50); return `${svgAsset("charts/price-history-point", [x, y, x, y, tooltipX, tooltipY, escapeHtml(date || "Unknown"), escapeHtml(formatMoney(value, currency))])}`; }).join("")}${svgAsset("charts/price-graph-2", [escapeHtml(history[0]?.date || "")])}${svgAsset("charts/price-graph", [escapeHtml(history.at(-1)?.date || "")])}`;
 }
 async function fetchCollectionValue() {
   if (!state.canEdit || !shelfPricesVisible()) return;
@@ -5462,7 +5487,7 @@ async function loadShelfTrophies(game) {
     const progress = external.total ? Math.round((external.earned / external.total) * 100) : 0;
     el.detailTrophyPercent.innerHTML = external.total ? shelfProgressBadge({ progress, earned: external.earned, total: external.total }, { includeIcon: false, separator: true }) : "";
     el.detailTrophyList.innerHTML = external.achievements.length
-      ? external.achievements.map((item) => `<article class="detail-trophy-card trophy-${trophyTone(item.type || item.rarity)} ${item.earned ? "earned" : "missing"}"><img src="${escapeHtml(item.icon || platformLogo(game.platform))}" alt=""><div><strong>${escapeHtml(item.title || "Achievement")}</strong><span>${escapeHtml([item.earned ? item.earnedAt || tt("Earned") : tt("Missing"), item.rarity].filter(Boolean).join(" · "))}</span>${item.description ? `<p>${escapeHtml(item.description)}</p>` : ""}</div></article>`).join("")
+      ? external.achievements.map((item) => `<article class="detail-trophy-card trophy-${trophyTone(item.type || item.rarity)} ${item.earned ? "earned" : "missing"}"><img src="${escapeHtml(item.icon || platformLogo(game.platform))}" alt=""><div><strong>${escapeHtml(item.title || "Achievement")}</strong><span>${escapeHtml([item.earned ? item.earnedAt || tt("Earned") : tt("Missing"), tt(item.rarity || "")].filter(Boolean).join(" · "))}</span>${item.description ? `<p>${escapeHtml(item.description)}</p>` : ""}</div></article>`).join("")
       : `<div class="detail-trophy-empty">No achievements found for this game yet.</div>`;
     return;
   }
@@ -5477,7 +5502,7 @@ async function loadShelfTrophies(game) {
       el.detailTrophyTitle.textContent = tt("TROPHIES");
       el.detailTrophyCount.textContent = "";
       el.detailTrophyPercent.innerHTML = "";
-      el.detailTrophyList.innerHTML = recent.map((item) => `<article class="detail-trophy-card trophy-${trophyTone(item.type || item.rarity)} ${item.earned ? "earned" : "missing"}"><img src="${escapeHtml(item.icon || "assets/platforms/playstation.png")}" alt=""><div><strong>${escapeHtml(item.title || "Trophy")}</strong><span>${escapeHtml([item.earned ? item.earnedAt || tt("Earned") : tt("Missing"), item.rarity].filter(Boolean).join(" · "))}</span>${item.description ? `<p>${escapeHtml(item.description)}</p>` : ""}</div></article>`).join("");
+      el.detailTrophyList.innerHTML = recent.map((item) => `<article class="detail-trophy-card trophy-${trophyTone(item.type || item.rarity)} ${item.earned ? "earned" : "missing"}"><img src="${escapeHtml(item.icon || "assets/platforms/playstation.png")}" alt=""><div><strong>${escapeHtml(item.title || "Trophy")}</strong><span>${escapeHtml([item.earned ? item.earnedAt || tt("Earned") : tt("Missing"), tt(item.rarity || "")].filter(Boolean).join(" · "))}</span>${item.description ? `<p>${escapeHtml(item.description)}</p>` : ""}</div></article>`).join("");
       return;
     }
     el.detailTrophies.hidden = true;
@@ -5496,7 +5521,7 @@ async function loadShelfTrophies(game) {
     el.detailTrophyTitle.textContent = tt("TROPHIES");
     el.detailTrophyCount.textContent = "";
     el.detailTrophyPercent.innerHTML = total ? shelfProgressBadge({ progress, earned, total }, { includeIcon: false, separator: true }) : "";
-    el.detailTrophyList.innerHTML = cachedTrophies.map((item) => `<article class="detail-trophy-card trophy-${trophyTone(item.type || item.rarity)} ${item.earned ? "earned" : "missing"}"><img src="${escapeHtml(item.icon || "assets/platforms/playstation.png")}" alt=""><div><strong>${escapeHtml(item.title || "Trophy")}</strong><span>${escapeHtml([item.earned ? item.earnedAt || tt("Earned") : tt("Missing"), item.rarity].filter(Boolean).join(" · "))}</span>${item.description ? `<p>${escapeHtml(item.description)}</p>` : ""}</div></article>`).join("");
+    el.detailTrophyList.innerHTML = cachedTrophies.map((item) => `<article class="detail-trophy-card trophy-${trophyTone(item.type || item.rarity)} ${item.earned ? "earned" : "missing"}"><img src="${escapeHtml(item.icon || "assets/platforms/playstation.png")}" alt=""><div><strong>${escapeHtml(item.title || "Trophy")}</strong><span>${escapeHtml([item.earned ? item.earnedAt || tt("Earned") : tt("Missing"), tt(item.rarity || "")].filter(Boolean).join(" · "))}</span>${item.description ? `<p>${escapeHtml(item.description)}</p>` : ""}</div></article>`).join("");
     refreshShelfPsnTrophiesInBackground(game, match, id, "shelf");
     return;
   }
@@ -5508,14 +5533,14 @@ async function loadShelfTrophies(game) {
     el.detailTrophyTitle.textContent = tt("TROPHIES");
     el.detailTrophyCount.textContent = "";
     el.detailTrophyPercent.innerHTML = "";
-    el.detailTrophyList.innerHTML = activityTrophies.map((item) => `<article class="detail-trophy-card trophy-${trophyTone(item.type || item.rarity)} ${item.earned ? "earned" : "missing"}"><img src="${escapeHtml(item.icon || "assets/platforms/playstation.png")}" alt=""><div><strong>${escapeHtml(item.title || "Trophy")}</strong><span>${escapeHtml([item.earned ? item.earnedAt || tt("Earned") : tt("Missing"), item.rarity].filter(Boolean).join(" · "))}</span>${item.description ? `<p>${escapeHtml(item.description)}</p>` : ""}</div></article>`).join("");
+    el.detailTrophyList.innerHTML = activityTrophies.map((item) => `<article class="detail-trophy-card trophy-${trophyTone(item.type || item.rarity)} ${item.earned ? "earned" : "missing"}"><img src="${escapeHtml(item.icon || "assets/platforms/playstation.png")}" alt=""><div><strong>${escapeHtml(item.title || "Trophy")}</strong><span>${escapeHtml([item.earned ? item.earnedAt || tt("Earned") : tt("Missing"), tt(item.rarity || "")].filter(Boolean).join(" · "))}</span>${item.description ? `<p>${escapeHtml(item.description)}</p>` : ""}</div></article>`).join("");
     refreshShelfPsnTrophiesInBackground(game, match, id, "shelf");
     return;
   }
   el.detailTrophyTitle.textContent = tt("TROPHIES");
   el.detailTrophyPercent.innerHTML = "";
   el.detailTrophies.hidden = false; el.detailTrophyList.innerHTML = `<span>Loading trophies…</span>`;
-  try { const params = achievementParams({ id, service: match.npServiceName || "trophy", user: state.gamelistSettings.psnUser || "" }); const response = await fetch(`/api/trophies?${params}`); const data = await response.json(); const trophies = data.trophies || []; const earned = trophies.filter((item) => item.earned).length; const total = trophies.length; const progress = total ? Math.round((earned / total) * 100) : 0; state.cardTrophies[id] = { loading: false, allTrophies: trophies, trophies: trophies.filter((item) => item.earned).sort((a, b) => Date.parse(b.rawEarnedAt || b.earnedAt || 0) - Date.parse(a.rawEarnedAt || a.earnedAt || 0)).slice(0, 3), earned, total }; refreshShelfProjectedActivity(game); el.detailTrophyCount.textContent = ""; el.detailTrophyPercent.innerHTML = total ? shelfProgressBadge({ progress, earned, total }, { includeIcon: false, separator: true }) : ""; el.detailTrophyList.innerHTML = trophies.map((item) => `<article class="detail-trophy-card trophy-${trophyTone(item.type)} ${item.earned ? "earned" : "missing"}"><img src="${escapeHtml(item.icon || "assets/platforms/playstation.png")}" alt=""><div><strong>${escapeHtml(item.title)}</strong><span>${escapeHtml([item.earned ? item.earnedAt || tt("Earned") : tt("Missing"), item.rarity].filter(Boolean).join(" · "))}</span>${item.description ? `<p>${escapeHtml(item.description)}</p>` : ""}</div></article>`).join(""); } catch { el.detailTrophies.hidden = true; }
+  try { const params = achievementParams({ id, service: match.npServiceName || "trophy", user: state.gamelistSettings.psnUser || "" }); const response = await fetch(`/api/trophies?${params}`); const data = await response.json(); const trophies = data.trophies || []; const earned = trophies.filter((item) => item.earned).length; const total = trophies.length; const progress = total ? Math.round((earned / total) * 100) : 0; state.cardTrophies[id] = { loading: false, allTrophies: trophies, trophies: trophies.filter((item) => item.earned).sort((a, b) => Date.parse(b.rawEarnedAt || b.earnedAt || 0) - Date.parse(a.rawEarnedAt || a.earnedAt || 0)).slice(0, 3), earned, total }; refreshShelfProjectedActivity(game); el.detailTrophyCount.textContent = ""; el.detailTrophyPercent.innerHTML = total ? shelfProgressBadge({ progress, earned, total }, { includeIcon: false, separator: true }) : ""; el.detailTrophyList.innerHTML = trophies.map((item) => `<article class="detail-trophy-card trophy-${trophyTone(item.type)} ${item.earned ? "earned" : "missing"}"><img src="${escapeHtml(item.icon || "assets/platforms/playstation.png")}" alt=""><div><strong>${escapeHtml(item.title)}</strong><span>${escapeHtml([item.earned ? item.earnedAt || tt("Earned") : tt("Missing"), tt(item.rarity || "")].filter(Boolean).join(" · "))}</span>${item.description ? `<p>${escapeHtml(item.description)}</p>` : ""}</div></article>`).join(""); } catch { el.detailTrophies.hidden = true; }
 }
 
 function shelfTrophyLookupGame(game) {
@@ -5541,20 +5566,20 @@ function shelfIsSteamAchievementGame(game) {
   const platform = normalize(shortPlatform(game?.platform || ""));
   return platform.includes("steam") || platform === "pc";
 }
-function pencilIcon() { return `<svg class="pencil-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h4l11-11a2.8 2.8 0 0 0-4-4L4 16v4Z"></path><path d="M13.5 6.5l4 4"></path></svg>`; }
-function trashIcon() { return `<svg class="trash-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6h18"></path><path d="M8 6V4h8v2"></path><path d="M19 6l-1 14H6L5 6"></path><path d="M10 11v5"></path><path d="M14 11v5"></path></svg>`; }
-function pauseTrailerIcon() { return `<svg class="pause-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5v14M16 5v14"></path></svg>`; }
-function playTrailerIcon() { return `<svg class="play-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m8 5 11 7-11 7Z"></path></svg>`; }
-function checkIcon() { return `<svg class="check-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5 9.5 17 19 7"></path></svg>`; }
-function backIcon() { return `<svg class="back-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M10 6 4 12l6 6"></path><path d="M4 12h10a6 6 0 0 1 6 6"></path></svg>`; }
-function forwardIcon() { return `<svg class="forward-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m10 6-6 6 6 6"></path><path d="M4 12h10a6 6 0 0 1 6 6"></path></svg>`; }
-function currencyIcon() { const currency = normalizePriceSettings(state.gamelistSettings).currency; if (currency === "USD") return `<svg class="dollar-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M16.8 7.2c-1.1-1-2.7-1.7-4.8-1.7-2.8 0-4.8 1.4-4.8 3.5 0 5.3 9.8 2.1 9.8 7 0 2.1-2 3.5-5 3.5-2.3 0-4.2-.8-5.4-2"></path><path d="M12 3v18"></path></svg>`; if (currency === "GBP") return `<svg class="pound-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 20h9"></path><path d="M7 13h8"></path><path d="M16.5 6.6A4.4 4.4 0 0 0 12.8 5C10.5 5 9 6.5 9 8.8V20"></path></svg>`; if (currency === "JPY") return `<svg class="yen-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 4l6 8 6-8"></path><path d="M12 12v8"></path><path d="M8 12h8"></path><path d="M8 16h8"></path></svg>`; return `<svg class="euro-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M19 5.5A7 7 0 0 0 8.2 7.1 7.4 7.4 0 0 0 7 12a7.4 7.4 0 0 0 1.2 4.9A7 7 0 0 0 19 18.5"></path><path d="M4 10h10"></path><path d="M4 14h10"></path></svg>`; }
-function trophyIcon() { return `<svg class="trophy-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 4h8v4a4 4 0 0 1-8 0V4Z"></path><path d="M8 6H5a3 3 0 0 0 3 3"></path><path d="M16 6h3a3 3 0 0 1-3 3"></path><path d="M12 12v4"></path><path d="M9 20h6"></path><path d="M10 16h4v4h-4z"></path></svg>`; }
-function coopIcon() { return `<svg class="coop-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="8" cy="8" r="3"></circle><circle cx="16" cy="8" r="3"></circle><path d="M2.8 19c.4-4 2.1-6 5.2-6s4.8 2 5.2 6"></path><path d="M10.8 19c.4-4 2.1-6 5.2-6s4.8 2 5.2 6"></path></svg>`; }
-function carouselArrowIcon(direction = "right") { return `<svg class="sort-arrow-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="${direction === "left" ? "M15.5 5.5 9 12l6.5 6.5" : "M8.5 5.5 15 12l-6.5 6.5"}"></path></svg>`; }
-function sortArrowIcon(desc = false) { return `<svg class="sort-arrow-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="${desc ? "M12 5v14m-7-7 7 7 7-7" : "M12 19V5m-7 7 7-7 7 7"}"></path></svg>`; }
-function linesIcon() { return `<svg class="view-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 7h14M5 12h14M5 17h14"></path></svg>`; }
-function gridIcon() { return `<svg class="view-icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="4.5" y="4.5" width="5.5" height="5.5"></rect><rect x="14" y="4.5" width="5.5" height="5.5"></rect><rect x="4.5" y="14" width="5.5" height="5.5"></rect><rect x="14" y="14" width="5.5" height="5.5"></rect></svg>`; }
+function pencilIcon() { return `${svgAsset("icons/actions/pencil")}`; }
+function trashIcon() { return `${svgAsset("icons/actions/trash")}`; }
+function pauseTrailerIcon() { return `${svgAsset("icons/actions/pause-2")}`; }
+function playTrailerIcon() { return `${svgAsset("icons/actions/play-2")}`; }
+function checkIcon() { return `${svgAsset("icons/actions/check-2")}`; }
+function backIcon() { return `${svgAsset("icons/actions/back")}`; }
+function forwardIcon() { return `${svgAsset("icons/actions/forward")}`; }
+function currencyIcon() { const currency = normalizePriceSettings(state.gamelistSettings).currency; if (currency === "USD") return `${svgAsset("icons/actions/dollar-2")}`; if (currency === "GBP") return `${svgAsset("icons/actions/pound")}`; if (currency === "JPY") return `${svgAsset("icons/actions/yen")}`; return `${svgAsset("icons/actions/euro")}`; }
+function trophyIcon() { return `${svgAsset("icons/status/trophy")}`; }
+function coopIcon() { return `${svgAsset("icons/status/coop")}`; }
+function carouselArrowIcon(direction = "right") { return `${svgAsset("icons/navigation/sort-arrow", [direction === "left" ? "M15.5 5.5 9 12l6.5 6.5" : "M8.5 5.5 15 12l-6.5 6.5"])}`; }
+function sortArrowIcon(desc = false) { return `${svgAsset("icons/navigation/sort-arrow", [desc ? "M12 5v14m-7-7 7 7 7-7" : "M12 19V5m-7 7 7-7 7 7"])}`; }
+function linesIcon() { return `${svgAsset("icons/actions/view-3")}`; }
+function gridIcon() { return `${svgAsset("icons/actions/view-2")}`; }
 function ownerBadge(owner) { return `<span class="owner-pill ${escapeHtml(ownerColorClass(owner))}">${escapeHtml(owner)}</span>`; }
 function canonicalOwner(owner) {
   const value = String(owner || "").trim();
@@ -5731,7 +5756,7 @@ function platformBadge(platform, options = {}) { const label = shortPlatform(pla
 function syncShelfEditorIcons() {
   const platform = canonicalShelfPlatform(el.fields.platform?.value || "");
   const logo = platform ? platformLogo(platform) : "";
-  setShelfEditorIcon(el.platformFieldIcon, logo && logo !== "assets/Icon_shelf.png" ? logo : "", platform);
+  setShelfEditorIcon(el.platformFieldIcon, logo && logo !== "assets/branding/Icon_shelf.png" ? logo : "", platform);
   syncShelfEntitlementEditor(platform);
 }
 function syncShelfEditorCoverPreview() {
@@ -5740,12 +5765,12 @@ function syncShelfEditorCoverPreview() {
   const source = rawCoverUrl(String(el.fields.cover?.value || "").trim());
   image.dataset.placeholderApplied = "";
   image.classList.toggle("is-placeholder", !source);
-  image.src = source || "assets/Icon_shelf.png";
+  image.src = source || "assets/branding/Icon_shelf.png";
   image.onerror = () => {
     if (image.dataset.placeholderApplied) return;
     image.dataset.placeholderApplied = "true";
     image.classList.add("is-placeholder");
-    image.src = "assets/Icon_shelf.png";
+    image.src = "assets/branding/Icon_shelf.png";
   };
 }
 function syncShelfEntitlementEditor(platform = canonicalShelfPlatform(el.fields.platform?.value || "")) {
@@ -5761,7 +5786,7 @@ function setShelfEditorIcon(slot, icon, title = "") {
   slot.title = icon ? title : "";
   slot.innerHTML = icon ? `<img src="${escapeHtml(icon)}" alt="" width="18" height="18" decoding="async">` : "";
 }
-function platformLogo(platform) { const value = normalize(shortPlatform(platform)); if (value === "wii") return "assets/platforms/wii.png"; if (value === "wii u" || value === "wiiu") return "assets/platforms/wiiu.png"; if (value === "n64") return "assets/platforms/n64.png"; if (value === "gc" || value.includes("gamecube")) return "assets/platforms/gc.png"; if (value === "nes") return "assets/platforms/nes.png"; if (value === "snes") return "assets/platforms/snes.png"; if (value === "ds") return "assets/platforms/nds.png"; if (value === "3ds") return "assets/platforms/3ds.png"; if (value === "gba") return "assets/platforms/gba.png"; if (value === "gbc") return "assets/platforms/gbc.png"; if (value === "gb") return "assets/platforms/gb.png"; if (value === "game gear") return "assets/platforms/gamegear.png"; if (value === "dc" || value.includes("dreamcast")) return "assets/platforms/dreamcast.png"; if (isSegaPlatform(value)) return "assets/platforms/sega.png"; if (value.includes("switch")) return "assets/platforms/switch.png"; if (value === "ps1" || value === "ps2") return "assets/platforms/playstation_retro.png"; if (value === "ps5") return "assets/platforms/playstation_modern.png"; if (value === "x360" || value === "xbox 360") return "assets/platforms/xbox360.png"; if (value === "xbox") return "assets/platforms/xbox_retro.png"; if (value.includes("xbox") || value === "xone") return "assets/platforms/xbox.png"; if (value.includes("steam") || value === "pc") return "assets/platforms/steam.png"; if (value.includes("ps") || value.includes("playstation") || value.includes("psp") || value.includes("vita")) return "assets/platforms/playstation.png"; return "assets/Icon_shelf.png"; }
+function platformLogo(platform) { const value = normalize(shortPlatform(platform)); if (value === "wii") return "assets/platforms/wii.png"; if (value === "wii u" || value === "wiiu") return "assets/platforms/wiiu.png"; if (value === "n64") return "assets/platforms/n64.png"; if (value === "gc" || value.includes("gamecube")) return "assets/platforms/gc.png"; if (value === "nes") return "assets/platforms/nes.png"; if (value === "snes") return "assets/platforms/snes.png"; if (value === "ds") return "assets/platforms/nds.png"; if (value === "3ds") return "assets/platforms/3ds.png"; if (value === "gba") return "assets/platforms/gba.png"; if (value === "gbc") return "assets/platforms/gbc.png"; if (value === "gb") return "assets/platforms/gb.png"; if (value === "game gear") return "assets/platforms/gamegear.png"; if (value === "dc" || value.includes("dreamcast")) return "assets/platforms/dreamcast.png"; if (isSegaPlatform(value)) return "assets/platforms/sega.png"; if (value.includes("switch")) return "assets/platforms/switch.png"; if (value === "ps1" || value === "ps2") return "assets/platforms/playstation_retro.png"; if (value === "ps5") return "assets/platforms/playstation_modern.png"; if (value === "x360" || value === "xbox 360") return "assets/platforms/xbox360.png"; if (value === "xbox") return "assets/platforms/xbox_retro.png"; if (value.includes("xbox") || value === "xone") return "assets/platforms/xbox.png"; if (value.includes("steam") || value === "pc") return "assets/platforms/steam.png"; if (value.includes("ps") || value.includes("playstation") || value.includes("psp") || value.includes("vita")) return "assets/platforms/playstation.png"; return "assets/branding/Icon_shelf.png"; }
 function platformClass(platform, options = {}) { const value = normalize(shortPlatform(platform)); const title = normalize(options.title); if (value === "wii") return "platform-wii"; if (value === "wii u" || value === "wiiu") return "platform-wiiu"; if (value === "n64") return "platform-n64"; if (value === "gc" || value.includes("gamecube")) return "platform-gamecube"; if (value === "nes") return "platform-nes"; if (value === "snes") return "platform-snes"; if (value === "ds") return "platform-ds"; if (value === "3ds") return "platform-3ds"; if (value === "gba") return "platform-gba"; if (value === "gbc") return "platform-gbc"; if (value === "gb") return "platform-gb"; if (value === "game gear") return "platform-gamegear"; if (value === "dc" || value.includes("dreamcast")) return "platform-dreamcast"; if (isSegaPlatform(value)) return "platform-sega"; if (value.includes("switch")) return "platform-nintendo"; if (value === "ps1") return "platform-playstation platform-ps1"; if (value === "ps3" && PS3_BLUE_PILL_TITLES.has(title)) return "platform-playstation platform-ps3-as-ps4"; if (value === "ps3") return "platform-playstation platform-ps3"; if (value === "ps5") return "platform-playstation platform-ps5"; if (value === "psp") return "platform-playstation platform-psp"; if (value === "x360" || value === "xbox 360") return "platform-xbox platform-xbox360"; if (value === "xbox") return "platform-xbox platform-xbox-retro"; if (value.includes("xbox") || value === "xone") return "platform-xbox"; if (value.includes("steam") || value === "pc") return "platform-pc"; if (value.includes("ps") || value.includes("playstation") || value.includes("psp") || value.includes("vita")) return "platform-playstation"; return "platform-generic"; }
 const PS3_BLUE_PILL_TITLES = new Set(["deception iv blood ties", "drakengard 3", "dynasty warriors 8 xtreme legends", "everybody dance 3", "lego hobbit", "mugen souls z", "murdered soul suspect", "rambo the video game", "sports pack vol 1", "the amazing spider man 2", "ultra street fighter iv", "watch dogs", "wolfenstein the new order"]);
 function isSegaPlatform(value) { return /\b(gen|genesis|mega drive|megadrive|sega|saturn|cd|32x|master system|game gear)\b/i.test(value); }
@@ -5838,7 +5863,7 @@ function shelfRatingScoreBadge(game) {
   const tone = score >= 9 ? "gold" : score >= 7 ? "high" : score >= 5 ? "mid" : "low";
   const label = score === 10 ? "10" : score.toFixed(1);
   const title = `${tt("Rating")}: ${label}/10`;
-  return `<span class="rating-score-pill rating-score-${tone}" title="${escapeHtml(title)}" aria-label="${escapeHtml(title)}"><span class="rating-score-star" aria-hidden="true"><svg class="rounded-star-icon" viewBox="0 0 24 24"><path d="M12 2.8 14.9 8.7l6.5.9-4.7 4.6 1.1 6.5L12 17.6l-5.8 3.1 1.1-6.5-4.7-4.6 6.5-.9L12 2.8Z"></path></svg></span>${label}</span>`;
+  return `<span class="rating-score-pill rating-score-${tone}" title="${escapeHtml(title)}" aria-label="${escapeHtml(title)}"><span class="rating-score-star" aria-hidden="true">${svgAsset("icons/status/rounded-star")}</span>${label}</span>`;
 }
 function normalize(value) { return String(value || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]+/g, " ").trim(); }
 function shortDescription(value, max = 260) { const text = String(value || "").trim(); return text.length > max ? `${text.slice(0, max - 1).trimEnd()}…` : text; }

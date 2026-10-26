@@ -95,7 +95,7 @@
   --title-gradient-end: var(--accent);
   --glow-primary: rgba(255, 0, 81, 0.22);
   --glow-secondary: rgba(0, 0, 255, 0.14);
-  --default-backdrop-image: url("assets/backdrop.png");
+  --default-backdrop-image: url("assets/backgrounds/backdrop.png");
   --custom-backdrop-image: var(--default-backdrop-image);
   --theme-control-bg:
     linear-gradient(
@@ -166,7 +166,7 @@ html.theme-light {
   --dim: #617086;
   --glow-primary: color-mix(in srgb, var(--accent) 18%, transparent);
   --glow-secondary: color-mix(in srgb, var(--accent-2) 16%, transparent);
-  --default-backdrop-image: url("assets/backdrop_light.png");
+  --default-backdrop-image: url("assets/backgrounds/backdrop_light.png");
   --theme-control-bg:
     linear-gradient(
       135deg,
@@ -403,7 +403,7 @@ body.theme-kash .backdrop {
     radial-gradient(circle at 78% 9%, rgba(0, 92, 255, 0.24), transparent 30%),
     radial-gradient(circle at 11% 84%, rgb(0 89 255 / 16%), transparent 34%),
     linear-gradient(120deg, rgba(255, 255, 255, 0.04), transparent 38%),
-    url(assets/backdrop.png) top left / auto repeat,
+    url(assets/backgrounds/backdrop.png) top left / auto repeat,
     #111723;
 }
 
@@ -613,8 +613,8 @@ html.theme-font-mata {
   width: 18px;
   height: 12px;
   background: var(--accent);
-  -webkit-mask: url("assets/shabii_logo.png") center / contain no-repeat;
-  mask: url("assets/shabii_logo.png") center / contain no-repeat;
+  -webkit-mask: url("assets/branding/shabii_logo.png") center / contain no-repeat;
+  mask: url("assets/branding/shabii_logo.png") center / contain no-repeat;
 }
 
 .hero {
@@ -3195,8 +3195,8 @@ button.achievement-kpi {
   width: 42px;
   height: 42px;
   background: var(--accent);
-  -webkit-mask: url("assets/Icon.png") center / contain no-repeat;
-  mask: url("assets/Icon.png") center / contain no-repeat;
+  -webkit-mask: url("assets/branding/Icon.png") center / contain no-repeat;
+  mask: url("assets/branding/Icon.png") center / contain no-repeat;
   filter: drop-shadow(
     0 0 12px color-mix(in srgb, var(--accent) 38%, transparent)
   );
@@ -3582,6 +3582,21 @@ h3 {
 
 .preorder-count-tooltip {
   cursor: help;
+}
+
+.column-head > span:has(.preorder-count-pill) {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: nowrap;
+  max-width: none;
+  margin-bottom: 0;
+  white-space: nowrap;
+}
+
+.column-head .preorder-count-pill {
+  margin-left: 0;
+  margin-right: 0;
 }
 
 .preorder-store-list {
@@ -4423,12 +4438,12 @@ body.dialog-open .floating-edit-actions {
   font-size: 14px;
   line-height: 1;
   background-color: rgba(255, 255, 255, 0.07);
-  background-image: url("data:image/svg+xml,%3Csvg width='14' height='14' viewBox='0 0 14 14' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M3.5 5.25 7 8.75l3.5-3.5' fill='none' stroke='%23f6f7fb' stroke-opacity='.78' stroke-width='1.7' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-image: url("/assets/icons/navigation/dropdown-chevron.svg");
   background-position: right 15px center;
   background-repeat: no-repeat;
   background-size: 14px 14px;
   background:
-    url("data:image/svg+xml,%3Csvg width='14' height='14' viewBox='0 0 14 14' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M3.5 5.25 7 8.75l3.5-3.5' fill='none' stroke='%23f6f7fb' stroke-opacity='.78' stroke-width='1.7' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E")
+    url("/assets/icons/navigation/dropdown-chevron.svg")
       right 15px center / 14px 14px no-repeat,
     rgba(255, 255, 255, 0.07);
   border: 1px solid rgba(255, 255, 255, 0.14);
@@ -4448,7 +4463,7 @@ body.dialog-open .floating-edit-actions {
   border-color: color-mix(in srgb, var(--accent) 68%, transparent);
   background-color: rgba(255, 255, 255, 0.07);
   background:
-    url("data:image/svg+xml,%3Csvg width='14' height='14' viewBox='0 0 14 14' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M3.5 5.25 7 8.75l3.5-3.5' fill='none' stroke='%23f6f7fb' stroke-opacity='.9' stroke-width='1.7' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E")
+    url("/assets/icons/navigation/dropdown-chevron-hover.svg")
       right 15px center / 14px 14px no-repeat,
     rgba(255, 255, 255, 0.07);
   box-shadow:
@@ -4712,7 +4727,7 @@ body.dialog-open .floating-edit-actions {
   border-color: color-mix(in srgb, var(--accent) 72%, transparent);
   background:
     center / 15px 15px no-repeat
-      url("data:image/svg+xml,%3Csvg width='15' height='15' viewBox='0 0 15 15' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M3.4 7.6 6.3 10.5 11.8 4.8' fill='none' stroke='%23fff' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E"),
+      url("/assets/icons/status/checkbox-check.svg"),
     var(--accent);
   box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.14);
 }
@@ -5049,7 +5064,7 @@ textarea:hover {
 
 select:hover {
   background:
-    url("data:image/svg+xml,%3Csvg width='14' height='14' viewBox='0 0 14 14' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M3.5 5.25 7 8.75l3.5-3.5' fill='none' stroke='%23f6f7fb' stroke-opacity='.9' stroke-width='1.7' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E")
+    url("/assets/icons/navigation/dropdown-chevron-hover.svg")
       right 15px center / 14px 14px no-repeat,
     rgba(255, 255, 255, 0.08);
   box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 8%, transparent);
@@ -5064,12 +5079,12 @@ select {
   text-overflow: ellipsis;
   white-space: nowrap;
   background-color: rgba(255, 255, 255, 0.07);
-  background-image: url("data:image/svg+xml,%3Csvg width='14' height='14' viewBox='0 0 14 14' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M3.5 5.25 7 8.75l3.5-3.5' fill='none' stroke='%23f6f7fb' stroke-opacity='.78' stroke-width='1.7' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-image: url("/assets/icons/navigation/dropdown-chevron.svg");
   background-position: right 15px center;
   background-repeat: no-repeat;
   background-size: 14px 14px;
   background:
-    url("data:image/svg+xml,%3Csvg width='14' height='14' viewBox='0 0 14 14' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M3.5 5.25 7 8.75l3.5-3.5' fill='none' stroke='%23f6f7fb' stroke-opacity='.78' stroke-width='1.7' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E")
+    url("/assets/icons/navigation/dropdown-chevron.svg")
       right 15px center / 14px 14px no-repeat,
     rgba(255, 255, 255, 0.07);
   transition:
@@ -5094,7 +5109,7 @@ select.is-active {
   color: #ffffff;
   border-color: color-mix(in srgb, var(--accent) 68%, transparent);
   background:
-    url("data:image/svg+xml,%3Csvg width='14' height='14' viewBox='0 0 14 14' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M3.5 5.25 7 8.75l3.5-3.5' fill='none' stroke='%23ffffff' stroke-opacity='.92' stroke-width='1.7' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E")
+    url("/assets/icons/navigation/dropdown-chevron-active.svg")
       right 15px center / 14px 14px no-repeat,
     linear-gradient(
       135deg,
@@ -13223,7 +13238,7 @@ html.theme-light .check-filter input[type="checkbox"]:checked,
 html.theme-light .stream-check input[type="checkbox"]:checked {
   background:
     center / 15px 15px no-repeat
-      url("data:image/svg+xml,%3Csvg width='15' height='15' viewBox='0 0 15 15' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M3.4 7.6 6.3 10.5 11.8 4.8' fill='none' stroke='%23fff' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E"),
+      url("/assets/icons/status/checkbox-check.svg"),
     var(--accent);
   border-color: color-mix(in srgb, var(--accent) 72%, rgba(17, 24, 39, 0.28));
   box-shadow: inset 0 0 0 3px rgba(255, 255, 255, 0.72);
@@ -16128,7 +16143,7 @@ html.theme-light .finish-trophy-check input[type="checkbox"]:checked {
   border-color: rgba(255, 233, 133, 0.82);
   background:
     center / 15px 15px no-repeat
-      url("data:image/svg+xml,%3Csvg width='15' height='15' viewBox='0 0 15 15' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M3.4 7.6 6.3 10.5 11.8 4.8' fill='none' stroke='%23fff' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E"),
+      url("/assets/icons/status/checkbox-check.svg"),
     #ffe985;
   box-shadow:
     inset 0 0 0 1px rgba(255, 255, 255, 0.28),
@@ -16194,7 +16209,7 @@ html.theme-light .primary-button.stream-start-action:hover {
   border-color: rgba(183, 116, 255, 0.72);
   background:
     center / 15px 15px no-repeat
-      url("data:image/svg+xml,%3Csvg width='15' height='15' viewBox='0 0 15 15' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M3.4 7.6 6.3 10.5 11.8 4.8' fill='none' stroke='%23fff' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E"),
+      url("/assets/icons/status/checkbox-check.svg"),
     #b774ff;
 }
 
@@ -16793,7 +16808,8 @@ html.theme-light .primary-button.stream-start-action:hover {
   }
 
   .column-head .preorder-count-pill {
-    margin-left: 4px;
+    margin-left: 0;
+    margin-right: 4px;
     margin-bottom: 0;
   }
 
@@ -19730,13 +19746,13 @@ body:not(.can-edit):not(.shelf-page)
 }
 
 .gamelist-target-logo {
-  -webkit-mask-image: url("assets/Icon.png");
-  mask-image: url("assets/Icon.png");
+  -webkit-mask-image: url("assets/branding/Icon.png");
+  mask-image: url("assets/branding/Icon.png");
 }
 
 .shelf-target-logo {
-  -webkit-mask-image: url("assets/Icon_shelf.png");
-  mask-image: url("assets/Icon_shelf.png");
+  -webkit-mask-image: url("assets/branding/Icon_shelf.png");
+  mask-image: url("assets/branding/Icon_shelf.png");
 }
 
 .shelf-gamelist-target-options button.active {
@@ -19750,6 +19766,14 @@ body:not(.can-edit):not(.shelf-page)
 
 #addGameForm .mobile-title-break {
   display: none;
+}
+
+#addGameForm .modal-head h2.collection-action-two-line-title {
+  white-space: normal;
+}
+
+#addGameForm .modal-head h2.collection-action-two-line-title .mobile-title-break {
+  display: initial;
 }
 
 .shelf-gamelist-list-picker[hidden] {
@@ -22486,7 +22510,7 @@ body.mobile-app-mode .shelf-tabs button.active:hover {
   border-color: #f7df69;
   background:
     center / 15px 15px no-repeat
-      url("data:image/svg+xml,%3Csvg width='15' height='15' viewBox='0 0 15 15' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M3.4 7.6 6.3 10.5 11.8 4.8' fill='none' stroke='%23fff' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E"),
+      url("/assets/icons/status/checkbox-check.svg"),
     linear-gradient(135deg, #ffe982, #c8920a);
   box-shadow:
     0 0 0 3px rgba(247, 223, 105, 0.12),
@@ -23356,7 +23380,7 @@ textarea {
   border-color: #f7df69;
   background:
     center / 15px 15px no-repeat
-      url("data:image/svg+xml,%3Csvg width='15' height='15' viewBox='0 0 15 15' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M3.4 7.6 6.3 10.5 11.8 4.8' fill='none' stroke='%23fff' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E"),
+      url("/assets/icons/status/checkbox-check.svg"),
     linear-gradient(135deg, #ffe982, #c8920a);
   box-shadow:
     0 0 0 3px rgba(247, 223, 105, 0.12),
@@ -25054,5 +25078,117 @@ textarea {
   .completed-list .completed-rating-breakdown,
   .completed-list .completed-platform .rating-score-pill {
     display: none !important;
+  }
+}
+
+/* Leave room for the descenders in the shared dropdown typeface. */
+.platform-logo-select :is(.platform-logo-button, .platform-logo-option) .platform-logo-choice-label {
+  line-height: 1.4;
+  padding-block: 1px;
+}
+
+.sound-icon {
+  width: 18px;
+  height: 18px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+@media (min-width: 700px) {
+  .toolbar > .search:has(.local-sound-toggle:not([hidden])) {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) var(--toolbar-control-height, 42px);
+    column-gap: 7px;
+  }
+  .toolbar > .search > span:first-child { grid-column: 1 / -1; }
+  .toolbar .local-sound-toggle {
+    width: var(--toolbar-control-height, 42px);
+    height: var(--toolbar-control-height, 42px);
+    align-self: end;
+  }
+}
+
+.game-card.playing-card.has-key-art::before {
+  inset: 0;
+  background: linear-gradient(90deg, rgba(7, 8, 12, .82), rgba(7, 8, 12, .42)), var(--card-art) center / cover no-repeat;
+  filter: none;
+  opacity: .6;
+}
+
+@media (max-width: 699px) {
+  .toolbar .local-sound-toggle { display: none !important; }
+  .mobile-section-tabs button { font-size: 12px; }
+  .completed > .column-head {
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: end;
+    gap: 7px;
+  }
+  .completed > .column-head h2,
+  html.theme-font-antique .completed > .column-head h2 {
+    width: min-content;
+    max-width: 100%;
+    font-size: clamp(15px, 4.6vw, 21px);
+    line-height: 1.12;
+    overflow-wrap: normal;
+  }
+  .completed .completed-head-actions {
+    width: auto;
+    flex-wrap: wrap;
+    justify-self: end;
+    column-gap: 7px;
+    row-gap: 5px;
+    max-width: 174px;
+  }
+  .completed-head-actions #completedCount {
+    order: -1;
+    flex: 0 0 100%;
+    width: 100%;
+    justify-items: end;
+    text-align: right;
+  }
+  .playing-section .playing-head-actions { gap: 5px 7px; }
+  .playing-section .playing-head-actions > button {
+    box-sizing: border-box;
+    width: 36px;
+    min-width: 36px;
+    max-width: 36px;
+    height: 36px;
+    min-height: 36px;
+    max-height: 36px;
+    flex: 0 0 36px;
+    padding: 0;
+  }
+  .playing-section .playing-head-actions > span { margin-bottom: 0; }
+  .playing-section .game-card.playing-card .card-actions { gap: 7px; }
+  .playing-section .game-card.playing-card.has-art::before {
+    display: block !important;
+  }
+  .playing-section .game-card.playing-card .card-trailer { display: none !important; }
+  :is(#gameDialog, #addDialog) :is(.editor-cover, .shelf-editor-cover-preview) { display: none !important; }
+}
+
+.release-calendar { touch-action: pan-y; }
+
+@media (min-width: 1101px) and (max-width: 1919px) {
+  .release-month:nth-child(n + 5) {
+    display: none;
+  }
+}
+
+@media (min-width: 1920px) {
+  .card-list:not(.list-view),
+  .shelf-grid:not(.list-view) {
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+  }
+
+  .release-months {
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+  }
+
+  .release-month:nth-child(n + 5) {
+    display: grid;
   }
 }

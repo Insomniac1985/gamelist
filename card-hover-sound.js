@@ -20,13 +20,26 @@ function readSoundsDisabled() {
   try { return JSON.parse(window.localStorage?.getItem("gamelist:settings:v1") || "{}")?.disableSounds === true; }
   catch { return false; }
 }
-let soundsDisabled = readSoundsDisabled();
+function readSessionMuted() {
+  try { return window.sessionStorage?.getItem("gamelist:sounds-muted") === "true"; }
+  catch { return false; }
+}
+let globalSoundsDisabled = readSoundsDisabled();
+let soundsDisabled = globalSoundsDisabled || readSessionMuted();
 let outputGain;
 export function setSoundsDisabled(disabled) {
-  const next = disabled === true;
+  globalSoundsDisabled = disabled === true;
+  const next = globalSoundsDisabled || readSessionMuted();
   if (soundsDisabled === next) return;
   soundsDisabled = next;
   if (outputGain) outputGain.gain.setValueAtTime(next ? 0 : 1, context.currentTime);
+  reportSound("audio-state");
+}
+
+export function setSessionSoundsEnabled(enabled) {
+  try { window.sessionStorage?.setItem("gamelist:sounds-muted", String(!enabled)); } catch { /* The current page can still be muted. */ }
+  soundsDisabled = globalSoundsDisabled || !enabled;
+  if (outputGain) outputGain.gain.setValueAtTime(soundsDisabled ? 0 : 1, context.currentTime);
   reportSound("audio-state");
 }
 window.addEventListener?.("storage", event => {
@@ -358,6 +371,7 @@ const hoverSelector = `${cardSelector}, button, a[href], [role="button"], .playi
 const discreteSliderSelector = "[data-calendar-shift], [data-stats-source-tab], [data-mobile-section], [data-game-target], [data-game-destination], [data-gamelist-target], [data-gamelist-section], [data-shelf-tab], .media-format-toggle, [role='tab']";
 
 function actionKind(control) {
+  if (control?.matches?.(`${cardSelector}, .completed-stream-toggle, .playing-stream-toggle, .local-sound-toggle`)) return null;
   if (["playing", "stream", "backlog", "complete", "delete", "add-game"].includes(control?.dataset?.soundAction)) return control.dataset.soundAction;
   const input = control?.matches?.("input") ? control : control?.control || control?.querySelector?.("input");
   const key = `${control?.id || ""} ${control?.className?.baseVal ?? control?.className ?? ""} ${control?.dataset?.action || ""} ${input?.id || ""}`;
@@ -425,8 +439,6 @@ export function bindCardHoverSounds(root) {
     if (!target || target.contains(event.relatedTarget) || target.matches(`:disabled, [aria-disabled='true'], [data-sound-preview], ${sliderButtonSelector}`)) return;
     if (target.control?.disabled) return;
     const kind = actionKind(target);
-    // Keep the Currently Playing card body silent while retaining its action cues.
-    if (!kind && target.closest(".playing-list, .playing-card")) return;
     if (target.matches(".goty-card-empty, .showcase-selected-slot.is-empty")) return;
     handledEvents.add(event);
     if (kind) playAction(kind, true);

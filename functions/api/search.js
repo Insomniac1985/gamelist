@@ -20,7 +20,7 @@ export async function onRequestGet({ request, env = {} }) {
   const cacheUrl = new URL("/api/search", url.origin);
   cacheUrl.searchParams.set("q", normalize(query));
   cacheUrl.searchParams.set("lang", language);
-  cacheUrl.searchParams.set("v", "4");
+  cacheUrl.searchParams.set("v", "6");
   if (lookup.igdbSlug) cacheUrl.searchParams.set("slug", lookup.igdbSlug);
   const cacheKey = new Request(cacheUrl.toString(), { method: "GET" });
   const cached = await cache.match(cacheKey);
@@ -118,7 +118,7 @@ export async function igdbLookup(rawQuery, credentials, language = "en") {
 
 async function igdbSearch(query, credentials, lookup = {}, language = "en", hltbLookupPromise = null) {
   const token = await getIgdbToken(credentials);
-  const fields = "fields name,slug,summary,storyline,first_release_date,cover.image_id,genres.name,game_type.type,parent_game.name,game_modes.name,multiplayer_modes.onlinecoop,multiplayer_modes.offlinecoop,multiplayer_modes.lancoop,multiplayer_modes.campaigncoop,multiplayer_modes.splitscreen,multiplayer_modes.splitscreenonline,multiplayer_modes.onlinemax,multiplayer_modes.offlinemax,hypes,total_rating,total_rating_count,alternative_names.name,alternative_names.comment,game_localizations.name,involved_companies.company.name,involved_companies.developer,involved_companies.publisher,platforms.name,release_dates.category,release_dates.date,release_dates.date_format,release_dates.human,release_dates.platform.name,release_dates.y,websites.url,websites.category,videos.name,videos.video_id;";
+  const fields = "fields name,slug,summary,storyline,first_release_date,cover.image_id,artworks.image_id,artworks.width,artworks.height,artworks.image_type.name,screenshots.image_id,genres.name,game_type.type,parent_game.name,game_modes.name,multiplayer_modes.onlinecoop,multiplayer_modes.offlinecoop,multiplayer_modes.lancoop,multiplayer_modes.campaigncoop,multiplayer_modes.splitscreen,multiplayer_modes.splitscreenonline,multiplayer_modes.onlinemax,multiplayer_modes.offlinemax,hypes,total_rating,total_rating_count,alternative_names.name,alternative_names.comment,game_localizations.name,involved_companies.company.name,involved_companies.developer,involved_companies.publisher,platforms.name,release_dates.category,release_dates.date,release_dates.date_format,release_dates.human,release_dates.platform.name,release_dates.y,websites.url,websites.category,videos.name,videos.video_id;";
   const slugBody = lookup.igdbSlug ? [
     fields,
     `where slug = "${escapeIgdbString(lookup.igdbSlug)}";`,
@@ -233,7 +233,7 @@ async function igdbResult(game, query, hltbResults, lookup = {}, language = "en"
   const release = bestIgdbRelease(game.release_dates) || igdbFirstReleaseDate(game.first_release_date);
   const score = textScore + igdbQualityScore(game, hltbMatch);
   const storeLinks = storeLinksFromWebsites(game.websites);
-  const description = fullDescription(game.summary || game.storyline || "");
+  const description = await localizedDescription(title, game.summary || game.storyline || "", language, (game.alternative_names || []).map(item => item.name));
   const gameType = String(game.game_type?.type || "").toLowerCase();
   const gameModes = (game.game_modes || []).map((mode) => String(mode?.name || "").toLowerCase());
   const multiplayerModes = game.multiplayer_modes || [];
@@ -249,6 +249,7 @@ async function igdbResult(game, query, hltbResults, lookup = {}, language = "en"
     releaseDate: release.date,
     releaseText: release.text,
     cover: igdbCover(game.cover?.image_id) || hltbMatch?.cover || "",
+    keyArt: igdbKeyArt(game),
     platform: firstPlatform((game.platforms || []).map((platform) => platform.name).join(", ")),
     platforms: (game.platforms || []).map((platform) => platform.name).filter(Boolean),
     genres: cleanGenreLabels((game.genres || []).map((genre) => genre.name).filter(Boolean), language),
@@ -272,6 +273,16 @@ function igdbRating(value) {
   const rating = Number(value);
   if (!Number.isFinite(rating) || rating <= 0) return null;
   return Math.round(rating);
+}
+
+function igdbKeyArt(game) {
+  const artworks = (game.artworks || []).filter(image => image.image_id && !/logo|icon/i.test(image.image_type?.name || ""));
+  artworks.sort((a, b) => {
+    const priority = image => (/key.?art/i.test(image.image_type?.name || "") ? 4 : 0) + (Number(image.width) > Number(image.height) ? 2 : 0);
+    return priority(b) - priority(a) || (b.width || 0) * (b.height || 0) - (a.width || 0) * (a.height || 0);
+  });
+  const image = artworks[0] || game.screenshots?.find(item => item.image_id);
+  return image ? `https://images.igdb.com/igdb/image/upload/t_1080p/${encodeURIComponent(image.image_id)}.jpg` : "";
 }
 
 function isDlcLookupResult(game, title) {
@@ -771,6 +782,11 @@ function cleanGenreLabels(genres, language = "en") {
     ["action role playing game", "Action RPG"],
     ["role playing video game", "RPG"],
     ["role playing game", "RPG"],
+    ["role playing rpg", "RPG"],
+    ["role playing", "RPG"],
+    ["turn based strategy tbs", "Turn Based Strategy"],
+    ["turn based strategy", "Turn Based Strategy"],
+    ["hack and slash beat em up", "Hack and Slash"],
     ["japanese role playing video game", "JRPG"],
     ["first person shooter", "FPS"],
     ["third person shooter", "Third Person Shooter"],
@@ -871,11 +887,11 @@ async function wikidataLabels(ids, language = "en") {
 async function localizedDescription(title, fallback, language, alternateTitles = []) {
   const cleanedFallback = fullDescription(fallback);
   if (language !== "es-ES") return cleanedFallback;
-  for (const candidate of uniqueSearchQueries([...alternateTitles, title])) {
+  for (const candidate of uniqueSearchQueries([title, ...alternateTitles]).slice(0, 3)) {
     const metadata = await wikidataMetadata(candidate, language);
     if (metadata.description) return metadata.description;
   }
-  return "";
+  return cleanedFallback;
 }
 
 async function spanishWikipediaDescription(entity) {

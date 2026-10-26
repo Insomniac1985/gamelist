@@ -1,3 +1,4 @@
+import { organizedAssetPath } from "./asset-paths.js";
 import { createReadStream, existsSync } from "node:fs";
 import { stat } from "node:fs/promises";
 import http from "node:http";
@@ -40,6 +41,7 @@ const localEnv = {
 };
 const types = {
   ".css": "text/css",
+  ".svg": "image/svg+xml",
   ".html": "text/html",
   ".js": "text/javascript",
   ".json": "application/json",
@@ -84,7 +86,7 @@ const server = http.createServer(async (req, res) => {
   if (url.pathname === "/api/repo-copies") return sendModule(res, repoCopies, req, url);
   if (url.pathname === "/api/sync") return sendJson(res, { games: [] });
   if (url.pathname === "/api/auth") return sendModule(res, auth, req, url);
-  return sendFile(res, url.pathname);
+  return sendFile(res, organizedAssetPath(url.pathname));
 });
 
 server.listen(port, "127.0.0.1", () => {

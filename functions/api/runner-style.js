@@ -9,12 +9,12 @@ export async function runnerThemeSettings(env) {
 export function runnerStyle({ maxWidth = "980px", settings = {}, page = "gamelist" } = {}) {
   const theme = resolveSiteTheme(settings, page);
   const titleFont = runnerFontFamily(theme.accentFont);
-  const defaultBackdrop = theme.mode === "light" ? "/assets/backdrop_light.png" : "/assets/backdrop.png";
+  const defaultBackdrop = theme.mode === "light" ? "/assets/backgrounds/backdrop_light.png" : "/assets/backgrounds/backdrop.png";
   const customBackdrop = theme.backgroundImage || defaultBackdrop;
   const titleColor = theme.gradient ? "transparent" : "var(--accent)";
   const titleBackground = theme.gradient ? `background:linear-gradient(135deg,var(--title-gradient-start),var(--title-gradient-end));-webkit-background-clip:text;background-clip:text;` : "";
   const titleTransform = theme.uppercaseTitles ? "uppercase" : "none";
-  const favicon = runnerAssetUrl(theme.icon || (page === "shelf" ? "assets/Icon_shelf.png" : "assets/Icon.png"));
+  const favicon = runnerAssetUrl(theme.icon || (page === "shelf" ? "assets/branding/Icon_shelf.png" : "assets/branding/Icon.png"));
   return `<link rel="icon" type="image/png" href="${htmlAttribute(favicon)}"><style>
     @font-face{font-family:"Cascadia Code";src:url("/assets/fonts/CascadiaCode.woff2") format("woff2");font-weight:200 700;font-style:normal;font-display:swap}
     @font-face{font-family:"Antique Olive Nord";src:url("/assets/fonts/AntiqueOliveNord.woff2") format("woff2");font-weight:800 950;font-style:normal;font-display:swap}
@@ -38,13 +38,13 @@ export function runnerStyle({ maxWidth = "980px", settings = {}, page = "gamelis
     .row>label,.control{display:grid;gap:6px;max-width:190px}
     label:has(input[type="checkbox"]){display:inline-flex;align-items:center;gap:8px;min-height:42px;max-width:none;padding:0 12px;color:var(--text);background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.14);border-radius:7px;text-transform:none}
     input:not([type="checkbox"]),select{height:42px;min-height:42px;min-width:0;padding:0 34px 0 11px;color:var(--text);font:inherit;font-size:14px;line-height:42px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.14);border-radius:7px;box-shadow:none}
-    select{appearance:none;background:rgba(255,255,255,.07) url("data:image/svg+xml,%3Csvg width='14' height='14' viewBox='0 0 14 14' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M3.5 5.25 7 8.75l3.5-3.5' fill='none' stroke='%23f6f7fb' stroke-opacity='.78' stroke-width='1.7' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") right 15px center/14px 14px no-repeat}
+    select{appearance:none;background:rgba(255,255,255,.07) url("/assets/icons/navigation/dropdown-chevron.svg") right 15px center/14px 14px no-repeat}
     input[type="number"]{width:82px;padding-right:11px}
     .native-runner-platform-select{display:none}
     .runner-platform-select{position:relative;width:100%;min-width:0}
     .runner-platform-select.is-open{z-index:20}
     .runner-platform-button,.runner-platform-option{width:100%;min-width:0;color:#f6f7fb;font:inherit;font-size:14px;line-height:1;text-align:left}
-    .runner-platform-button{display:grid;grid-template-columns:minmax(0,1fr);align-items:center;height:42px;min-height:42px;padding:0 34px 0 11px;background:url("data:image/svg+xml,%3Csvg width='14' height='14' viewBox='0 0 14 14' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M3.5 5.25 7 8.75l3.5-3.5' fill='none' stroke='%23f6f7fb' stroke-opacity='.78' stroke-width='1.7' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") right 15px center/14px 14px no-repeat,rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.14);border-radius:7px;cursor:pointer}
+    .runner-platform-button{display:grid;grid-template-columns:minmax(0,1fr);align-items:center;height:42px;min-height:42px;padding:0 34px 0 11px;background:url("/assets/icons/navigation/dropdown-chevron.svg") right 15px center/14px 14px no-repeat,rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.14);border-radius:7px;cursor:pointer}
     .runner-platform-button:hover,.runner-platform-button:focus-visible,.runner-platform-select.is-open .runner-platform-button{border-color:color-mix(in srgb,var(--accent) 68%,transparent);box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 12%,transparent);outline:none}
     .runner-platform-menu{position:absolute;left:0;right:auto;top:calc(100% + 6px);z-index:21;display:none;width:max-content;min-width:min(100%,150px);max-width:min(320px,calc(100vw - 32px));max-height:380px;padding:3px;overflow:auto;background-color:rgba(34,33,37,.96);background-image:linear-gradient(rgba(255,255,255,.018) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.018) 1px,transparent 1px);background-size:18px 18px;border:1px solid rgba(255,255,255,.14);border-radius:8px;box-shadow:0 18px 44px rgba(0,0,0,.42)}
     .runner-platform-select.is-open .runner-platform-menu{display:grid;gap:1px}
@@ -56,7 +56,7 @@ export function runnerStyle({ maxWidth = "980px", settings = {}, page = "gamelis
     .runner-platform-choice-icon img{display:block;max-width:22px;max-height:16px;object-fit:contain}
     .runner-platform-choice-label{display:block;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:inherit}
     input[type="checkbox"]{appearance:none;display:inline-grid;place-items:center;width:18px;height:18px;margin:0;border:1px solid rgba(255,255,255,.28);border-radius:5px;background:rgba(255,255,255,.08)}
-    input[type="checkbox"]:checked{border-color:color-mix(in srgb,var(--accent) 72%,transparent);background:center/15px 15px no-repeat url("data:image/svg+xml,%3Csvg width='15' height='15' viewBox='0 0 15 15' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M3.4 7.6 6.3 10.5 11.8 4.8' fill='none' stroke='%23fff' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E"),var(--accent)}
+    input[type="checkbox"]:checked{border-color:color-mix(in srgb,var(--accent) 72%,transparent);background:center/15px 15px no-repeat url("/assets/icons/status/checkbox-check.svg"),var(--accent)}
     button,a{display:inline-flex;align-items:center;justify-content:center;gap:7px;min-height:42px;padding:8px 12px;color:var(--text);font:inherit;font-weight:800;text-decoration:none;background:rgba(255,255,255,.08);border:1px solid transparent;border-radius:7px;cursor:pointer}
     button.primary{color:#fff;background:var(--accent);border-color:transparent;text-shadow:0 1px 8px rgba(0,0,0,.32);box-shadow:0 3px 24px color-mix(in srgb,var(--accent) 26%,transparent)}
     button:hover,a:hover,input:not([type="checkbox"]):hover,select:hover,label:has(input[type="checkbox"]):hover{border-color:color-mix(in srgb,var(--accent) 48%,transparent);box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 12%,transparent)}

@@ -1,3 +1,4 @@
+import { svgAsset } from "./svg-assets.js";
 export function normalizeSearchText(value) {
   return String(value || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]+/g, " ").trim();
 }
@@ -17,7 +18,7 @@ const CALENDAR_MILESTONES = [
     id: "milestone-gamelist-created",
     title: "Gamelist was created",
     releaseDate: "2026-06-10",
-    cover: "assets/Icon.png",
+    cover: "assets/branding/Icon.png",
     platform: "Gamelist",
     description: "A personal game tracker for backlog, releases, preorders, play history, and completion stats.",
     calendarMilestone: true,
@@ -26,7 +27,7 @@ const CALENDAR_MILESTONES = [
     id: "milestone-shelf-created",
     title: "Shelf was created",
     releaseDate: "2026-06-22",
-    cover: "assets/Icon_shelf.png",
+    cover: "assets/branding/Icon_shelf.png",
     platform: "Shelf",
     description: "A collection hub for physical and digital games, ownership details, prices, and library stats.",
     calendarMilestone: true,
@@ -54,7 +55,7 @@ export function bindModalTouchGuard() {
 
 export function createGameCardShell(doc = document) {
   const template = doc.createElement("template");
-  template.innerHTML = `<article class="game-card glass" draggable="false"><div class="card-trailer" aria-hidden="true"></div><button class="icon-button trailer-toggle" type="button" title="Pause trailer" aria-label="Pause trailer" hidden></button><button class="cover-button" type="button"><img alt=""></button><div class="game-main"><div class="title-line"><div class="title-wrap"><h3></h3><div class="title-owners"></div></div><button class="icon-button edit-action" type="button" title="Edit" aria-label="Edit"><svg class="pencil-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h4l11-11a2.8 2.8 0 0 0-4-4L4 16v4Z"></path><path d="M13.5 6.5l4 4"></path></svg></button></div><div class="studio-line"></div><div class="meta"></div><div class="play-dates"></div><div class="chips"></div><div class="card-trophies"></div></div><p class="notes"></p><div class="card-footer"><div class="prices"></div><div class="card-actions"><button class="primary-button bought-action" type="button">Backlog</button><button class="primary-button complete-action" type="button">Finished</button><button class="ghost-button backlog-action" type="button" title="Backlog" aria-label="Move back to backlog"><svg class="back-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M10 6 4 12l6 6"></path><path d="M4 12h10a6 6 0 0 1 6 6"></path></svg><span class="action-label">Backlog</span></button><button class="ghost-button trophy-action" type="button" title="Completed" aria-label="Completed"><svg class="trophy-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 4h8v4a4 4 0 0 1-8 0V4Z"></path><path d="M8 6H5a3 3 0 0 0 3 3"></path><path d="M16 6h3a3 3 0 0 1-3 3"></path><path d="M12 12v4"></path><path d="M9 20h6"></path><path d="M10 16h4v4h-4z"></path></svg></button><button class="ghost-button icon-only-button price-refresh-action" type="button" title="Prices" aria-label="Prices"></button><button class="danger-button icon-only-button delete-action" type="button" title="Delete" aria-label="Delete"><svg class="trash-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6h18"></path><path d="M8 6V4h8v2"></path><path d="M19 6l-1 14H6L5 6"></path><path d="M10 11v5"></path><path d="M14 11v5"></path></svg></button></div></div></article>`;
+  template.innerHTML = `<article class="game-card glass" draggable="false"><div class="card-trailer" aria-hidden="true"></div><button class="icon-button trailer-toggle" type="button" title="Pause trailer" aria-label="Pause trailer" hidden></button><button class="cover-button" type="button"><img alt=""></button><div class="game-main"><div class="title-line"><div class="title-wrap"><h3></h3><div class="title-owners"></div></div><button class="icon-button edit-action" type="button" title="Edit" aria-label="Edit">${svgAsset("icons/actions/pencil")}</button></div><div class="studio-line"></div><div class="meta"></div><div class="play-dates"></div><div class="chips"></div><div class="card-trophies"></div></div><p class="notes"></p><div class="card-footer"><div class="prices"></div><div class="card-actions"><button class="primary-button bought-action" type="button">Backlog</button><button class="primary-button complete-action" type="button">Finished</button><button class="ghost-button backlog-action" type="button" title="Backlog" aria-label="Move back to backlog">${svgAsset("icons/actions/back")}<span class="action-label">Backlog</span></button><button class="ghost-button trophy-action" type="button" title="Completed" aria-label="Completed">${svgAsset("icons/status/trophy")}</button><button class="ghost-button icon-only-button price-refresh-action" type="button" title="Prices" aria-label="Prices"></button><button class="danger-button icon-only-button delete-action" type="button" title="Delete" aria-label="Delete">${svgAsset("icons/actions/trash")}</button></div></div></article>`;
   return template.content.firstElementChild;
 }
 
@@ -145,16 +146,12 @@ export function mountTwitchPreview(list, username, enabled = true) {
     </div>
     <span class="twitch-preview-status">Checking stream…</span>
     <a class="twitch-preview-link" target="_blank" rel="noreferrer">
-      <svg class="twitch-preview-link-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
-        <path d="M6 0 1.7 4.3v15.4h5.1V24l4.3-4.3h3.4l7.8-7.7V0H6Zm14.6 11.1-3.4 3.4h-3.5l-3 3v-3H6.9V1.7h13.7v9.4ZM18 4.7v5.1h-1.7V4.7H18Zm-4.7 0v5.1h-1.7V4.7h1.7Z"/>
-      </svg>
+      ${svgAsset("icons/brands/twitch-preview-link")}
       <span>Watch ${escapeActivityText(channel)} on Twitch</span>
     </a>
     <button class="twitch-preview-toggle" type="button" aria-label="${hidden ? "Show stream preview" : "Hide stream preview"}" aria-pressed="${hidden ? "true" : "false"}">
       <span class="twitch-preview-eye-wrap">
-        <svg class="twitch-preview-eye" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
-          <path d="M12 5c5.2 0 8.8 4.2 10 7-1.2 2.8-4.8 7-10 7S3.2 14.8 2 12c1.2-2.8 4.8-7 10-7Zm0 2C8.1 7 5.3 9.8 4.2 12c1.1 2.2 3.9 5 7.8 5s6.7-2.8 7.8-5C18.7 9.8 15.9 7 12 7Zm0 2.2a2.8 2.8 0 1 1 0 5.6 2.8 2.8 0 0 1 0-5.6Z"/>
-        </svg>
+        ${svgAsset("icons/brands/twitch-preview-eye")}
       </span>
       <span class="twitch-preview-toggle-label">${hidden ? "Show stream" : "Hide stream"}</span>
     </button>
@@ -238,7 +235,7 @@ function setTwitchPreviewHidden(hidden) {
 }
 
 function twitchGlyphMarkup() {
-  return `<svg class="twitch-preview-logo-icon" viewBox="0 0 24 24" focusable="false"><path d="M6 0 1.7 4.3v15.4h5.1V24l4.3-4.3h3.4l7.8-7.7V0H6Zm14.6 11.1-3.4 3.4h-3.5l-3 3v-3H6.9V1.7h13.7v9.4ZM18 4.7v5.1h-1.7V4.7H18Zm-4.7 0v5.1h-1.7V4.7h1.7Z"/></svg>`;
+  return `${svgAsset("icons/brands/twitch-preview-logo")}`;
 }
 
 function cleanTwitchUsername(value) {
@@ -269,26 +266,26 @@ function finishedDateLineMarkup(value, escape) {
 }
 
 function finishedCalendarIcon() {
-  return `<svg class="playing-finished-date-icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="5.5" width="16" height="15" rx="3"></rect><path d="M8 3.5v4"></path><path d="M16 3.5v4"></path><path d="M4 10h16"></path></svg>`;
+  return `${svgAsset("icons/actions/playing-finished-date")}`;
 }
 
 function finishedClockIcon() {
-  return `<svg class="playing-finished-clock-icon" viewBox="0 0 24 24" aria-hidden="true" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.5"></circle><path d="M12 7.5V12l3.2 2"></path></svg>`;
+  return `${svgAsset("icons/status/playing-finished-clock")}`;
 }
 
 function finishedTrophyIcon() {
-  return `<svg class="playing-finished-progress-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 4h8v4a4 4 0 0 1-8 0V4Z"></path><path d="M8 6H5a3 3 0 0 0 3 3"></path><path d="M16 6h3a3 3 0 0 1-3 3"></path><path d="M12 12v4"></path><path d="M9 20h6"></path><path d="M10 16h4v4h-4z"></path></svg>`;
+  return `${svgAsset("icons/actions/playing-finished-progress")}`;
 }
 
 export function achievementCardMarkup({ index, tone, href, game, title, icon, meta, escape, localGame = "" }) {
   return `<a class="achievement-card ${index === 0 ? "latest" : ""} trophy-${escape(tone)}" href="${escape(href || "#")}" ${href && href !== "#" ? `target="_blank" rel="noreferrer"` : ""}${localGame ? ` data-achievement-game="${escape(localGame)}"` : ""}><img class="achievement-icon" src="${escape(icon)}" alt=""><div><strong>${escape(title)}</strong>${game ? `<span class="achievement-game-name">${escape(game)}</span>` : ""}<span class="achievement-card-meta playing-finished-tags">${meta}</span></div></a>`;
 }
 
-export function achievementDashboardMarkup({ completedCount, completedBreakdown = "", trophyTotal, trophyBreakdown = "", level, levelLabel, counts, sourceUrl, trophyIconHtml, barHeight, escape, completedLabel = "COMPLETED", trophiesLabel = "TROPHIES", showRarityGraph = true }) {
+export function achievementDashboardMarkup({ completedCount, completedBreakdown = "", trophyTotal, trophyBreakdown = "", level, levelLabel, counts, sourceUrl, trophyIconHtml, barHeight, escape, completedLabel = "COMPLETED", trophiesLabel = "TROPHIES", showRarityGraph = true, translate = value => value }) {
   const levelCard = levelLabel ? `<a class="achievement-kpi" href="${escape(sourceUrl)}" target="_blank" rel="noreferrer"><strong>${escape(String(level))}</strong><span>${levelLabel}</span></a>` : "";
   const rarityGraph = showRarityGraph ? `<div class="rarity-graph" aria-label="Trophy rarity graph">${counts.map(([type, count]) => {
     const value = Number(count) || 0;
-    return `<span class="rarity-bar rarity-${escape(type.toLowerCase())} ${value ? "" : "rarity-zero"}" title="${escape(`${type}: ${value}`)}"><em style="--bar:${barHeight(value, counts)}%"></em><small>${escape(type)}</small>${value ? `<strong>${escape(String(value))}</strong>` : ""}</span>`;
+    return `<span class="rarity-bar rarity-${escape(type.toLowerCase())} ${value ? "" : "rarity-zero"}" title="${escape(`${translate(type)}: ${value}`)}"><em style="--bar:${barHeight(value, counts)}%"></em><small>${escape(translate(type))}</small>${value ? `<strong>${escape(String(value))}</strong>` : ""}</span>`;
   }).join("")}</div>` : "";
   return `<div class="achievement-summary ${levelLabel ? "" : "achievement-summary-no-level"} ${!levelLabel && !showRarityGraph ? "achievement-summary-two-card" : ""}"><button class="achievement-kpi platinum-highlight ${completedCount ? "has-platinum" : ""}" type="button" data-action="platinums"><strong class="kpi-with-icon">${trophyIconHtml}${escape(String(completedCount))}</strong><span>${escape(completedLabel)}</span>${completedBreakdown}</button><a class="achievement-kpi trophy-kpi" href="${escape(sourceUrl)}" target="_blank" rel="noreferrer"><strong>${escape(String(trophyTotal))}</strong><span>${escape(trophiesLabel)}</span>${trophyBreakdown}</a>${levelCard}${rarityGraph}</div>`;
 }
@@ -348,6 +345,7 @@ export function achievementPanelMarkup({ psn = {}, steam = {}, xbox = {}, setupN
   };
   const psnLevel = psn.summary?.level || "";
   const dashboard = achievementDashboardMarkup({
+    translate,
     completedCount: completed,
     completedBreakdown: breakdown([[pcCompleted, completed, "PC"], [xboxCompleted, completed, "Xbox"], [psnCompleted, completed, "PlayStation"]]),
     trophyTotal: total,
@@ -366,9 +364,40 @@ export function achievementPanelMarkup({ psn = {}, steam = {}, xbox = {}, setupN
   return { sourceUrl, html: `${dashboard}${authNotice}<span class="achievement-subtitle trophy-subtitle">${escape(subtitle)}</span>${cards}` };
 }
 
+const calendarGestures = new WeakMap();
+
 export function mountReleaseCalendar(container, options = {}) {
   if (!container) return;
-  const months = releaseCalendarMonths(4, options.offset || 0);
+  let gesture = calendarGestures.get(container);
+  if (!gesture) {
+    gesture = { options, start: null, suppressClickUntil: 0 };
+    calendarGestures.set(container, gesture);
+    container.addEventListener("touchstart", event => {
+      if (event.touches.length !== 1) { gesture.start = null; return; }
+      const touch = event.touches[0];
+      gesture.start = { x: touch.clientX, y: touch.clientY };
+    }, { passive: true });
+    container.addEventListener("touchend", event => {
+      const start = gesture.start;
+      gesture.start = null;
+      const touch = event.changedTouches[0];
+      if (!start || !touch) return;
+      const dx = touch.clientX - start.x;
+      const dy = touch.clientY - start.y;
+      if (Math.abs(dx) < 40 || Math.abs(dx) < Math.abs(dy) * 1.3) return;
+      event.stopPropagation();
+      gesture.suppressClickUntil = performance.now() + 400;
+      gesture.options.onShift?.(dx < 0 ? 1 : -1);
+    }, { passive: true });
+    container.addEventListener("touchcancel", () => { gesture.start = null; }, { passive: true });
+    container.addEventListener("click", event => {
+      if (performance.now() >= gesture.suppressClickUntil) return;
+      event.preventDefault();
+      event.stopImmediatePropagation();
+    }, true);
+  }
+  gesture.options = options;
+  const months = releaseCalendarMonths(6, options.offset || 0);
   const releases = releaseGamesByDate(options.games || []);
   const today = localDateKey(new Date());
   const weekStart = normalizedWeekStart(options.weekStart);

@@ -1,4 +1,5 @@
 import { syncMediaFormatToggle } from "./media-format-toggle.js";
+import { hydrateSvgAssets } from "./svg-assets.js";
 /** Mount shared collection components inside the unified Gamelist shell. */
 let workspacePromise;
 let assetsPromise;
@@ -15,6 +16,7 @@ export function mountCollectionWorkspace(options) {
 async function mount({ slots, changed, openGame, openSettings, mediaChanged, viewChanged, clearFilters }) {
   const [markup, ...styles] = await prepareCollectionWorkspace();
   const source = new DOMParser().parseFromString(markup, 'text/html');
+  hydrateSvgAssets(source);
   source.querySelectorAll('script').forEach(node => node.remove());
   const surfaces = [];
   const css = styles.join('\n').replace(/\bhtml(?=[\s.#:[>])/g, '.shelf-page').replace(/\bbody(?=[\s.#:[>])/g, '.shelf-page');
@@ -35,6 +37,7 @@ async function mount({ slots, changed, openGame, openSettings, mediaChanged, vie
       .shelf-grid{gap:12px;align-items:stretch;grid-template-columns:repeat(3,minmax(0,1fr))}
       .shelf-grid.list-view{grid-template-columns:minmax(0,1fr);gap:8px}
       @media(max-width:1120px){.shelf-grid:not(.list-view){grid-template-columns:repeat(2,minmax(0,1fr))}}
+      @media(min-width:1920px){.shelf-grid:not(.list-view){grid-template-columns:repeat(5,minmax(0,1fr))}}
       @media(max-width:699px){.shelf-grid:not(.list-view){grid-template-columns:minmax(0,1fr)}.shelf-grid.list-view{gap:7px}}
       #shelfStats .stat[data-stat-action="completed"]{--stat-color:var(--accent);--stat-glow:color-mix(in srgb,var(--accent) 26%,transparent)}
       #shelfStats .stat-available{--stat-color:var(--accent-2);--stat-glow:color-mix(in srgb,var(--accent-2) 26%,transparent)}
