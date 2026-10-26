@@ -21,7 +21,7 @@ body.collection-selected .board > .column { display: none !important; }
 @media (min-width: 1301px) {
   .toolbar { grid-template-columns: minmax(180px, 2fr) auto repeat(2, minmax(100px, 1fr)) minmax(140px, 1fr) auto auto; }
 }
-@media (max-width: 699px) {
+@media (max-width: 689px) {
   .mobile-section-tabs { grid-template-columns: repeat(var(--mobile-tab-count), minmax(62px, 1fr)) !important; }
   .mobile-section-tabs button { font-size: 14px; padding-inline: 6px; }
   .mobile-section-tabs button:not([data-mobile-section="new"]) .label { display: inline; }
@@ -44,13 +44,13 @@ body.collection-selected .board > .column { display: none !important; }
   .toolbar { grid-template-columns: minmax(180px, 2fr) auto repeat(2,minmax(100px,1fr)) minmax(140px,1fr) auto; }
   .toolbar.collection-toolbar { grid-template-columns: minmax(180px,2fr) repeat(4,minmax(90px,1fr)) minmax(130px,1fr) auto; }
 }
-@media (min-width: 700px) and (max-width: 1000px) {
+@media (min-width: 690px) and (max-width: 1000px) {
   .toolbar { grid-template-columns: repeat(4,minmax(0,1fr)); }
   .toolbar > .search { grid-column: 1 / -1; }
   .toolbar > .order-label { grid-column: 1 / span 3; }
   .toolbar > .library-view-controls { grid-column: 4; }
 }
-@media (max-width: 699px) {
+@media (max-width: 689px) {
   .toolbar, .toolbar.collection-toolbar { grid-template-columns: minmax(0,1fr) auto !important; }
   .toolbar > label { grid-column: 1 / -1 !important; width: 100%; min-width: 0; }
   .toolbar > .order-label { grid-column: 1 !important; }
@@ -64,7 +64,7 @@ body.collection-selected .board > .column { display: none !important; }
 .stats-source-slider button { min-height: 42px; border: 0; border-radius: 7px; background: transparent; color: var(--muted); font: inherit; font-weight: 800; cursor: pointer; transition: background 160ms ease,color 160ms ease; }
 .stats-source-slider button.active { background: var(--accent); color: #fff; }
 .stats-source-slider button:not(.active):hover { background: color-mix(in srgb,var(--accent) 12%,transparent); color: var(--text); }
-@media (min-width: 700px) {
+@media (min-width: 690px) {
   #mobileDockStats, #mobileDockStats:hover, #mobileDockStats:focus, #mobileDockStats.is-active { width: 42px !important; min-width: 42px !important; max-width: 42px !important; flex: 0 0 42px !important; padding: 0 !important; }
   #mobileDockStats span { display: none !important; }
   #floatingStatsButton, #floatingStatsButton:hover { width: 48px; min-width: 48px; max-width: 48px; }
@@ -78,12 +78,12 @@ body.collection-selected .board > .column { display: none !important; }
 body[data-mobile-section="new"] #new > .column-head { display: none; }
 body[data-mobile-section="new"] #collectionLibrary:not([hidden]) + #new:not([hidden]) { margin-top: 12px; }
 .unified-new-head[hidden] { display: none !important; }
-@media (min-width: 700px) {
+@media (min-width: 690px) {
   .toolbar { position: sticky; top: calc(20px + 0px); }
 }
 
 /* At tablet widths let filters scroll away while library tabs stay pinned. */
-@media (min-width: 700px) and (max-width: 800px) {
+@media (min-width: 690px) and (max-width: 800px) {
   .toolbar,
   .toolbar.collection-toolbar {
     position: static;
@@ -91,7 +91,7 @@ body[data-mobile-section="new"] #collectionLibrary:not([hidden]) + #new:not([hid
 }
 
 #collectionKpis { margin-bottom: 0; }
-@media (min-width: 700px) and (max-width: 1000px) {
+@media (min-width: 690px) and (max-width: 1000px) {
   .toolbar > label { grid-column: auto !important; }
   .toolbar > .search { grid-column: 1 / -1 !important; }
   .toolbar > .order-label { grid-column: 1 / span 3 !important; }
@@ -108,7 +108,7 @@ body[data-mobile-section="new"] #collectionLibrary:not([hidden]) + #new:not([hid
   margin: 0;
 }
 
-@media (min-width: 700px) {
+@media (min-width: 690px) {
   #upcomingCount,
   #wantedCount {
     flex-direction: row;
@@ -120,7 +120,7 @@ body[data-mobile-section="new"] #collectionLibrary:not([hidden]) + #new:not([hid
   }
 }
 
-@media (max-width: 699px) {
+@media (max-width: 689px) {
   #upcomingCount {
     flex-direction: row;
     align-items: center;
@@ -139,12 +139,12 @@ body[data-mobile-section="new"] #collectionLibrary:not([hidden]) + #new:not([hid
   min-height: var(--library-heading-min-height);
 }
 
-@media (max-width: 699px) {
+@media (max-width: 689px) {
   .mobile-section-tabs { margin-bottom: 6px; }
   .board { margin-top: 0; }
 }
 
-@media (max-width: 699px) {
+@media (max-width: 689px) {
   .card-list .status-pill,
   .shelf-grid .status-pill { display: none !important; }
 }
@@ -170,7 +170,7 @@ body[data-mobile-section="new"] #collectionLibrary:not([hidden]) + #new:not([hid
   padding: 0;
 }
 /* Desktop filters use two rows instead of a full-width search row. */
-@media (min-width: 700px) {
+@media (min-width: 690px) {
   .toolbar, .toolbar.collection-toolbar {
     grid-template-columns: repeat(4, minmax(0, 1fr));
   }
@@ -194,7 +194,7 @@ body[data-mobile-section="new"] #collectionLibrary:not([hidden]) + #new:not([hid
 }
 
 /* Mobile branding floats behind the controls instead of taking up page space. */
-@media (max-width: 699px) {
+@media (max-width: 689px) {
   body > .topbar {
     position: fixed;
     inset: auto auto calc(max(6px, env(safe-area-inset-bottom)) + var(--mobile-control-height, 68px) - 8px) 50%;
@@ -262,7 +262,7 @@ body[data-mobile-section="new"] #collectionLibrary:not([hidden]) + #new:not([hid
 }
 
 /* Give search more room while keeping Preorder at its compact desktop width. */
-@media (min-width: 700px) {
+@media (min-width: 690px) {
   .toolbar:not(.collection-toolbar) {
     grid-template-columns: minmax(0, 1fr) 132px minmax(0, 1fr) calc(var(--toolbar-control-height) * 2 + 6px);
   }
@@ -274,7 +274,7 @@ body[data-mobile-section="new"] #collectionLibrary:not([hidden]) + #new:not([hid
   .toolbar:not(.collection-toolbar) > .library-view-controls { grid-column: 4; grid-row: 2; }
 }
 
-@media (min-width: 700px) {
+@media (min-width: 690px) {
   .toolbar.collection-toolbar {
     grid-template-columns: repeat(3, minmax(0, 1fr)) minmax(150px, 1.15fr) calc(var(--toolbar-control-height) * 2 + 6px);
   }
@@ -323,7 +323,7 @@ body[data-mobile-section="new"] #collectionLibrary:not([hidden]) + #new:not([hid
 }
 
 /* Fill every allocated filter cell; only icon controls keep a fixed width. */
-@media (min-width: 700px) {
+@media (min-width: 690px) {
   .toolbar { justify-items: stretch; grid-auto-flow: row dense; }
   .toolbar > label,
   .toolbar .search-field,
@@ -340,7 +340,7 @@ body[data-mobile-section="new"] #collectionLibrary:not([hidden]) + #new:not([hid
 }
 
 /* Keep tablet filters and view controls on two rows in both list contexts. */
-@media (min-width: 700px) and (max-width: 800px) {
+@media (min-width: 690px) and (max-width: 800px) {
   .toolbar,
   .toolbar.collection-toolbar {
     grid-template-columns:

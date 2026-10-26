@@ -111,7 +111,7 @@ function observeTwitchPreviewSize(list, card) {
 }
 
 function syncTwitchPreviewPlacement() {
-  const mobile = window.matchMedia("(max-width: 699px)").matches;
+  const mobile = window.matchMedia("(max-width: 689px)").matches;
   document.querySelectorAll(".playing-panel > .playing-list").forEach((list) => {
     const panel = list.parentElement;
     const preview = list.querySelector(":scope > .twitch-preview-card")

@@ -72,7 +72,7 @@ const GAME_OF_YEAR_CATEGORIES = [
 ];
 
 function defaultViewModeForDevice() {
-  return window.matchMedia?.("(max-width: 699px)")?.matches ? "list" : "grid";
+  return window.matchMedia?.("(max-width: 689px)")?.matches ? "list" : "grid";
 }
 
 function loadSharedViewMode() {
@@ -576,7 +576,7 @@ function bindEvents() {
   el.fields.country.addEventListener("change", syncShelfEditorIcons);
   el.fields.cover.addEventListener("input", syncShelfEditorCoverPreview);
   el.fields.cover.addEventListener("change", syncShelfEditorCoverPreview);
-  window.matchMedia("(min-width: 700px)").addEventListener("change", () => syncShelfGamelistTargetMode());
+  window.matchMedia("(min-width: 690px)").addEventListener("change", () => syncShelfGamelistTargetMode());
   el.lookupButton.addEventListener("click", lookupGame);
   el.digitalInput.addEventListener("change", () => {
     if (!el.digitalInput.checked) {
@@ -878,7 +878,7 @@ function bindShelfStatsHoverDetails() {
     closeTimer = window.setTimeout(close, 110);
   };
   const open = (anchor, content, title = "") => {
-    if (window.matchMedia("(max-width: 699px)").matches || !content.trim()) return;
+    if (window.matchMedia("(max-width: 689px)").matches || !content.trim()) return;
     window.clearTimeout(closeTimer);
     close();
     anchor.classList.add("finished-stats-floating-source");
@@ -946,7 +946,7 @@ function bindShelfStatsHoverDetails() {
     removers.forEach((remove) => remove());
   };
   const onMobileTap = (event) => {
-    if (!window.matchMedia("(max-width: 699px)").matches) return;
+    if (!window.matchMedia("(max-width: 689px)").matches) return;
     const segment = event.target.closest(".finished-stats-pie-segment");
     if (segment && body.contains(segment)) {
       if (unifiedShelfScope && !segment.closest("[data-stats-source=collection]")) return;
@@ -1328,7 +1328,7 @@ function applyLanguage() {
 
 function syncDisplayMode() {
   const standalone = window.matchMedia("(display-mode: standalone)").matches || window.navigator.standalone === true;
-  const mobile = window.matchMedia("(max-width: 699px)").matches;
+  const mobile = window.matchMedia("(max-width: 689px)").matches;
   document.body.classList.toggle("mobile-app-mode", standalone && mobile);
   scheduleMobilePaintRefresh();
 }
@@ -1837,7 +1837,7 @@ function setShelfTab(tab) {
 
 function handleShelfSwipeStart(event) {
   if (unifiedShelfScope) return;
-  if (!window.matchMedia("(max-width: 699px)").matches || el.tabs.hidden) return;
+  if (!window.matchMedia("(max-width: 689px)").matches || el.tabs.hidden) return;
   const touch = event.changedTouches?.[0];
   if (!touch) return;
   state.shelfSwipeStart = { x: touch.clientX, y: touch.clientY };
@@ -1847,7 +1847,7 @@ function handleShelfSwipeEnd(event) {
   if (unifiedShelfScope) return;
   const start = state.shelfSwipeStart;
   state.shelfSwipeStart = null;
-  if (!start || !window.matchMedia("(max-width: 699px)").matches || el.tabs.hidden) return;
+  if (!start || !window.matchMedia("(max-width: 689px)").matches || el.tabs.hidden) return;
   const touch = event.changedTouches?.[0];
   if (!touch) return;
   const dx = touch.clientX - start.x;
@@ -2325,7 +2325,7 @@ function syncShelfGamelistTargetMode() {
   el.addForm.classList.toggle("gamelist-target-wishlist", target === "wishlist");
   el.addForm.classList.toggle("gamelist-target-preorder", target === "preorder");
   const digitalToggle = el.digitalInput.closest(".lookup-digital-check");
-  const desktopLayout = window.matchMedia("(min-width: 700px)").matches;
+  const desktopLayout = window.matchMedia("(min-width: 690px)").matches;
   if (active || desktopLayout) {
     digitalToggle.classList.add("gamelist-target-digital-field");
     el.addForm.querySelector(".shelf-editor-grid").insertBefore(digitalToggle, el.gamelistPlacement);
@@ -4287,7 +4287,7 @@ function slidePlaying(direction) { slideHorizontalCarousel(el.playingCarousel, d
 function updatePlayingControls() { const state = horizontalCarouselState(el.playingCarousel); const section = el.playingCarousel.closest(".playing-section"); section?.classList.toggle("playing-at-start", state.atStart); section?.classList.toggle("playing-at-end", state.atEnd); el.playingPrev.hidden = !state.overflow; el.playingNext.hidden = !state.overflow; el.playingPrev.disabled = state.atStart; el.playingNext.disabled = state.atEnd; }
 function updateFinishedControls() { const max = Math.max(0, el.finishedCarousel.scrollWidth - el.finishedCarousel.clientWidth - 1); const overflow = max > 2; el.playingFinished.classList.toggle("finished-has-overflow", overflow); el.playingFinished.classList.toggle("finished-at-start", !overflow || el.finishedCarousel.scrollLeft <= 2); el.playingFinished.classList.toggle("finished-at-end", !overflow || el.finishedCarousel.scrollLeft >= max); }
 function schedulePlayingCardHeightSync() { cancelAnimationFrame(state.playingHeightFrame); state.playingHeightFrame = requestAnimationFrame(() => { state.playingHeightFrame = requestAnimationFrame(equalizeMobilePlayingCards); }); }
-function equalizeMobilePlayingCards() { state.playingHeightFrame = 0; el.playingCarousel.style.removeProperty("--mobile-playing-card-height"); if (!window.matchMedia("(max-width: 699px)").matches) return; const cards = [...el.playingCarousel.querySelectorAll(".game-card.playing-card")]; if (!cards.length) return; const height = Math.ceil(Math.max(...cards.map((card) => card.scrollHeight), 252)); el.playingCarousel.style.setProperty("--mobile-playing-card-height", `${height}px`); }
+function equalizeMobilePlayingCards() { state.playingHeightFrame = 0; el.playingCarousel.style.removeProperty("--mobile-playing-card-height"); if (!window.matchMedia("(max-width: 689px)").matches) return; const cards = [...el.playingCarousel.querySelectorAll(".game-card.playing-card")]; if (!cards.length) return; const height = Math.ceil(Math.max(...cards.map((card) => card.scrollHeight), 252)); el.playingCarousel.style.setProperty("--mobile-playing-card-height", `${height}px`); }
 function scheduleShelfTrailerUpdate() { if (state.playingTrailerFrame) return; state.playingTrailerFrame = requestAnimationFrame(() => { state.playingTrailerFrame = 0; if (document.hidden || document.body.classList.contains("dialog-open")) return; syncFocusedActivityTrailer(el.playingCarousel, escapeHtml); }); }
 function gamelistProjectionCard(game, options = {}) {
   if (game.calendarMilestone) return calendarMilestoneProjectionCard(game);
@@ -5706,7 +5706,7 @@ function syncCoverFrame(image) {
   const frame = image.closest(".cover-button, .detail-cover");
   if (!frame) return;
   const isDetailCover = frame.classList.contains("detail-cover");
-  const detailCap = window.matchMedia?.("(max-width: 699px)").matches ? 335 : 255;
+  const detailCap = window.matchMedia?.("(max-width: 689px)").matches ? 335 : 255;
   const viewportCap = Math.max(90, (unifiedShelfScope ? window.innerWidth : document.documentElement.clientWidth) - 28);
   const width = isDetailCover ? Math.round(Math.min(detailCap, viewportCap)) : Math.round(Math.min(180, Math.max(72, 142 * ratio)));
   const renderedHeight = Math.round(width / ratio);
