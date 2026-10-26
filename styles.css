@@ -23435,7 +23435,9 @@ textarea {
 }
 
 .detail-condition {
+  padding-top: 14px;
   padding-bottom: 14px;
+  border-top: 1px solid var(--line);
   border-bottom: 1px solid var(--line);
 }
 
