@@ -3709,7 +3709,7 @@ function renderStreamFilterToggle(button, { hidden = false, tooltip = true } = {
 function renderPlayingFinished() {
   const games = finishedGamesForCurrentView()
     .sort((a, b) => String(b.completedAt).localeCompare(String(a.completedAt)) || stringCompare(a.title, b.title))
-    .slice(0, 10);
+    .slice(0, 15);
   el.playingFinished.hidden = (state.settings.hiddenSections || []).includes("latestFinished") || !games.length;
   el.playingFinishedList.innerHTML = games.map((game) => {
     const achievementProgress = achievementProgressForGame(game);
