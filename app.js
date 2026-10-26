@@ -11649,7 +11649,7 @@ function storeLinksFor(game) {
     .map((store) => ({ ...store, url: links[store.key] })),
     providers.length ? null : { label: "Wikipedia", url: wikipediaUrlFor(game), cls: "store-wikipedia", icon: "assets/sites/wikipedia.ico" },
     hltbUrl ? { label: "HowLongToBeat", url: hltbUrl, cls: "store-hltb", icon: "assets/sites/howlongtobeat.png" } : null,
-    igdbUrl ? { label: "IGDB", url: igdbUrl, cls: "store-igdb" } : null,
+    igdbUrl ? { label: "IGDB", url: igdbUrl, cls: "store-igdb", icon: "assets/sites/igdb.svg" } : null,
   ];
   return storeButtonsMarkup(buttons, escapeHtml);
 }
