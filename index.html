@@ -170,7 +170,6 @@
               await waitForDisplayFont(window.__initialTheme || {});
               return root.dataset.initialTheme;
             });
-        window.setTimeout(() => root.classList.remove("theme-booting"), 3500);
       })();
     </script>
     <link rel="preload" as="image" href="assets/branding/kh_icon.png">
@@ -241,6 +240,7 @@
         <button class="icon-button" id="settingsButton" type="button" title="Settings" aria-label="Settings" data-i18n-title="Settings" data-i18n-aria-label="Settings" aria-busy="true" disabled hidden>
           <span data-svg-asset="icons/settings/settings"></span>
         </button>
+        <button class="icon-button local-sound-toggle" id="localSoundToggle" type="button" aria-label="Mute sound for this session" aria-pressed="true" hidden></button>
         <button class="ghost-button" id="fetchPricesButton" type="button" hidden>
           <span data-svg-asset="icons/actions/euro"></span>
           <span class="button-label">Fetch New Prices</span>
@@ -313,7 +313,6 @@
             <kbd class="search-shortcut" aria-hidden="true">F</kbd>
             <span data-svg-asset="icons/navigation/search-mobile"></span>
           </span>
-          <button class="icon-button local-sound-toggle" id="localSoundToggle" type="button" aria-label="Mute sound for this session" aria-pressed="true" hidden></button>
         </label>
         <label class="check-filter toggle-check toolbar-check">
           <input id="preorderedFilter" type="checkbox">
@@ -709,6 +708,10 @@
             <label class="wide">
               <span data-i18n="Cover URL">Cover URL</span>
               <input id="coverInput" placeholder="https://...">
+            </label>
+            <label class="wide">
+              <span data-i18n="Currently Playing Key Art URL">Currently Playing Key Art URL</span>
+              <input id="keyArtInput" type="url" placeholder="https://images.igdb.com/igdb/image/upload/...">
             </label>
           </div>
         </section>

@@ -1,5 +1,5 @@
 import { svgAsset, loadSvgAssets, hydrateSvgAssets } from "./svg-assets.js";
-import { bindCardHoverSounds, scrollWithSound, setSoundsDisabled } from "./card-hover-sound.js";
+import { bindCardHoverSounds, playUiSound, scrollWithSound, setSoundsDisabled } from "./card-hover-sound.js";
 import { renderBatchedList } from "./batched-list.js";
 import { embeddedGameEditor, connectEmbeddedGameEditor } from "./shared-add-game.js";
 import { normalizeSearchText, bindModalTouchGuard, createGameCardShell, bindActivityCardParallax, mountActivitySlider, mountTwitchPreview, mountReleaseCalendar, finishedGameMarkup, achievementCardMarkup, achievementDashboardMarkup, achievementPanelMarkup, completedCardMarkup, horizontalCarouselState, syncViewModeButton, slideHorizontalCarousel, comparePlayingGames, timeBadgeMarkup, guideLinksMarkup, storeButtonsMarkup, activityTrailerUrl, preloadPausedActivityTrailers, syncFocusedActivityTrailer, activityReleaseStatus, activityCoverOverride, activityLocalGameForTitle, activityTitleMatchScore, activityAllowsPsnCardTrophies, formatFooterDate, formatFooterDateTime, formatFooterShortDate, confirmGameDelete } from "./activity-ui.js";
@@ -107,7 +107,6 @@ const state = {
   gamelistSettings: loadSharedSettings(),
   metadataLookupResults: [],
   pendingLengthHours: null,
-  pendingKeyArt: "",
   pendingTrailerUrl: "",
   trophyActivity: null,
   steamActivity: { achievements: [], games: [], completed: [], totalEarned: 0, sourceUrl: "" },
@@ -249,7 +248,7 @@ const el = {
     playstationUrl: document.querySelector("#playstationUrlInput"), nintendoUrl: document.querySelector("#nintendoUrlInput"),
     steamUrl: document.querySelector("#steamUrlInput"), xboxUrl: document.querySelector("#xboxUrlInput"), hltbUrl: document.querySelector("#hltbUrlInput"),
     publisher: document.querySelector("#publisherInput"), developer: document.querySelector("#developerInput"),
-    genre: document.querySelector("#genreInput"), cover: document.querySelector("#coverInput"), notes: document.querySelector("#notesInput"), description: document.querySelector("#shelfDescriptionInput"), igdbUrl: document.querySelector("#igdbUrlInput"),
+    genre: document.querySelector("#genreInput"), cover: document.querySelector("#coverInput"), keyArt: document.querySelector("#keyArtInput"), notes: document.querySelector("#notesInput"), description: document.querySelector("#shelfDescriptionInput"), igdbUrl: document.querySelector("#igdbUrlInput"),
   },
   conditionFields: { game: document.querySelector("#conditionGameInput"), manual: document.querySelector("#conditionManualInput"), box: document.querySelector("#conditionBoxInput"), other: document.querySelector("#conditionOtherInput"), sealed: document.querySelector("#conditionSealedInput") },
 
@@ -1175,6 +1174,7 @@ function renderReleaseCalendar() {
     locale: currentLanguage(),
     translate: tt,
     onShift: (value) => {
+      playUiSound("swipe", { direction: value });
       state.releaseCalendarOffset += value;
       renderReleaseCalendar();
     },
@@ -2157,7 +2157,6 @@ function openEditor(game = null, options = {}) {
   el.digitalInput.checked = digitalMode;
   syncShelfDigitalEditorMode(digitalMode);
   state.pendingLengthHours = roundApproximateHours(game?.lengthHours) || null;
-  state.pendingKeyArt = game?.keyArt || "";
   state.pendingTrailerUrl = game?.trailerUrl || "";
   state.lookupResults = [];
   el.lookupResults.classList.remove("loaded");
@@ -2812,7 +2811,7 @@ async function chooseLookupResult(event) {
     syncShelfDigitalEditorMode(true);
   }
   el.fields.cover.value = result.cover || "";
-  state.pendingKeyArt = result.keyArt || state.pendingKeyArt;
+  if (result.keyArt) el.fields.keyArt.value = result.keyArt;
   state.pendingTrailerUrl = result.trailerUrl || state.pendingTrailerUrl;
   syncShelfEditorCoverPreview();
   el.fields.releaseDate.value = result.releaseDate || "";
@@ -2856,7 +2855,7 @@ function bestGameMetadata(title) {
 
 function applyGameMetadata(result) {
   if (!result) return;
-  state.pendingKeyArt = result.keyArt || state.pendingKeyArt;
+  if (result.keyArt && !el.fields.keyArt.value) el.fields.keyArt.value = result.keyArt;
   state.pendingTrailerUrl = result.trailerUrl || state.pendingTrailerUrl;
   if (result.publisher && !el.fields.publisher.value) el.fields.publisher.value = result.publisher;
   if (result.developer && !el.fields.developer.value) el.fields.developer.value = result.developer;
@@ -2975,7 +2974,7 @@ function shelfGameFromEditor(existing = state.games.find((game) => game.id === s
     gamesWithGold: digitalMode && ["X360", "XOne"].includes(canonicalShelfPlatform(el.fields.platform.value)) && el.fields.gamesWithGold.checked,
     price: manualPrice, publisher: el.fields.publisher.value.trim(), developer: el.fields.developer.value.trim(),
     genre: el.fields.genre.value.trim(), cover: rawCoverUrl(el.fields.cover.value.trim()), notes: el.fields.notes.value.trim(),
-    keyArt: state.pendingKeyArt || existing?.keyArt || "",
+    keyArt: el.fields.keyArt.value.trim(),
     trailerUrl: state.pendingTrailerUrl || existing?.trailerUrl || "",
     owners: splitValues(el.fields.owners.value).map(canonicalOwner).filter(Boolean), category: existing?.category || "Game",
     releaseDate: el.fields.releaseDate.value, trophyName: el.fields.trophyName.value.trim(), websites: legacyWebsiteLinks(existing),
@@ -3101,7 +3100,7 @@ async function saveGamelistTargetFromShelf() {
     publisher: shelfOnlyImport ? "" : el.fields.publisher.value.trim(),
     igdbUrl: shelfOnlyImport ? "" : el.fields.igdbUrl.value.trim(),
     hltbUrl: shelfOnlyImport ? "" : el.fields.hltbUrl.value.trim(),
-    keyArt: state.pendingKeyArt || existingImport?.keyArt || "",
+    keyArt: el.fields.keyArt.value.trim(),
     trailerUrl: state.pendingTrailerUrl || existingImport?.trailerUrl || "",
     steamAppId: "",
     storeLinks: shelfOnlyImport ? {} : editorStoreLinks(),
@@ -4187,7 +4186,7 @@ function isStorageQuotaError(error) {
 function bindTextureParallax() { if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return; let frame = 0; window.addEventListener("pointermove", (event) => { if (event.pointerType === "touch" || frame) return; frame = requestAnimationFrame(() => { frame = 0; const x = ((event.clientX / window.innerWidth) - .5) * -14; const y = ((event.clientY / window.innerHeight) - .5) * -14; document.documentElement.style.setProperty("--grid-x", `${x.toFixed(2)}px`); document.documentElement.style.setProperty("--grid-y", `${y.toFixed(2)}px`); }); }, { passive: true }); }
 function renderGamelistModules() {
   const playing = state.gamelistGames.filter((game) => game.playing && !game.deletedAt).sort(comparePlayingGames);
-  const finished = state.gamelistGames.filter((game) => game.completedAt && !game.deletedAt).sort((a, b) => String(b.completedAt).localeCompare(String(a.completedAt)) || String(a.title || "").localeCompare(String(b.title || ""), undefined, { sensitivity: "base" })).slice(0, 10);
+  const finished = state.gamelistGames.filter((game) => game.completedAt && !game.deletedAt).sort((a, b) => String(b.completedAt).localeCompare(String(a.completedAt)) || String(a.title || "").localeCompare(String(b.title || ""), undefined, { sensitivity: "base" })).slice(0, 15);
   el.playingTitle.textContent = currentlyPlayingTitle(playing);
   el.playingCarousel.innerHTML = playing.map(gamelistProjectionCard).join("");
   const twitchCard = mountTwitchPreview(el.playingCarousel, state.gamelistSettings.twitchUser, playing.some((game) => game.stream));
@@ -4279,6 +4278,7 @@ function gamelistProjectionCard(game, options = {}) {
   const isReleaseDialog = Boolean(options.releaseDialog);
   const neutralReleaseCard = isReleaseDialog && Boolean(game.playing);
   const cover = coverUrl(game.cover || "") || platformFallback(game.platform);
+  const cardArt = !neutralReleaseCard && game.playing ? game.keyArt : cover;
   const owners = Array.isArray(game.owners) && game.owners.length ? game.owners : [state.gamelistSettings.defaultOwner || "User"];
   const visibleOwners = visibleShelfCardOwners(owners);
   const ownerClasses = visibleOwners.map((owner) => ` ${ownerCardColorClass(owner)}`).join("");
@@ -4286,10 +4286,10 @@ function gamelistProjectionCard(game, options = {}) {
   const card = createGameCardShell(document);
   card.dataset.gamelistId = game.id; card.setAttribute("role", "button"); card.tabIndex = 0;
   card.dataset.gamelistTitle = game.title || "";
-  card.className += ` has-art${neutralReleaseCard ? "" : " playing-card"}${ownerClasses}${game.digital ? " digital-card" : ""}${game.stream ? " stream-card" : ""}${shelfShowsCompletedTrophyStyle(game) ? " completed-trophy-card" : ""}`;
+  card.className += `${cardArt ? " has-art" : ""}${neutralReleaseCard ? "" : " playing-card"}${ownerClasses}${game.digital ? " digital-card" : ""}${game.stream ? " stream-card" : ""}${shelfShowsCompletedTrophyStyle(game) ? " completed-trophy-card" : ""}`;
   card.classList.toggle("shelf-release-card", isReleaseDialog);
   card.classList.toggle("has-key-art", Boolean(!neutralReleaseCard && game.keyArt));
-  card.style.setProperty("--card-art", `url('${escapeCss(!neutralReleaseCard && game.keyArt ? game.keyArt : cover)}')`);
+  if (cardArt) card.style.setProperty("--card-art", `url('${escapeCss(cardArt)}')`);
   const trailer = card.querySelector(".card-trailer"); const trailerUrl = !isReleaseDialog && !neutralReleaseCard && window.matchMedia("(min-width: 900px)").matches ? activityTrailerUrl(game.trailerUrl) : ""; if (trailerUrl) { card.classList.add("has-trailer"); trailer.dataset.src = trailerUrl; const toggle = card.querySelector(".trailer-toggle"); toggle.hidden = false; toggle.innerHTML = pauseTrailerIcon(); } else { trailer.remove(); card.querySelector(".trailer-toggle")?.remove(); }
   const image = card.querySelector(".cover-button img"); image.src = cover; image.alt = `${game.title} cover`; image.loading = "eager"; image.fetchPriority = "high"; image.decoding = "async"; bindCoverFrame(image);
   const title = card.querySelector("h3"); title.textContent = game.title; title.className = `${title.className.replace(/\bowner-[\w-]+/g, "").trim()} ${visibleOwners.map(ownerColorClass).join(" ")}`.trim(); title.classList.toggle("completed-achievements-title", shelfShowsCompletedTrophyStyle(game));

@@ -574,6 +574,7 @@ const el = {
     xboxUrl: document.querySelector("#xboxUrlInput"),
     steamUrl: document.querySelector("#steamUrlInput"),
     cover: document.querySelector("#coverInput"),
+    keyArt: document.querySelector("#keyArtInput"),
     notes: document.querySelector("#notesInput"),
   },
   playingRatingGrid: document.querySelector("#playingRatingGrid"),
@@ -627,6 +628,7 @@ async function init() {
   if (await maybeRenderGameOfTheYearExportPreview()) return;
   render();
   loginAnimation.start(state.settings.disableLoginAnimation);
+  document.documentElement.classList.remove("theme-booting");
   if (state.canEdit) {
     const warmEditor = () => warmSharedAddGame();
     if ("requestIdleCallback" in window) window.requestIdleCallback(warmEditor, { timeout: 2500 });
@@ -1945,7 +1947,6 @@ function render() {
   const libraryScrollAnchor = captureMobileLibraryScrollAnchor();
   applyTheme();
   applyLanguage();
-  document.documentElement.classList.remove("theme-booting");
   document.body.classList.toggle("can-edit", state.canEdit);
   const shabiiMainOwner = isShabiiMainOwner();
   document.body.classList.toggle("shabii-main-owner", shabiiMainOwner);
@@ -2014,6 +2015,12 @@ function currentLanguage() {
 function renderLocalSoundToggle() {
   const button = document.querySelector("#localSoundToggle");
   if (!button) return;
+  const topActions = document.querySelector(".topbar > .top-actions");
+  const settingsButton = topActions?.querySelector("#settingsButton");
+  if (topActions && button.parentElement !== topActions) {
+    if (settingsButton) settingsButton.after(button);
+    else topActions.prepend(button);
+  }
   button.hidden = state.settings.disableSounds;
   const muted = getSoundStatus().disabled;
   button.setAttribute("aria-pressed", String(!muted));
@@ -3702,7 +3709,7 @@ function renderStreamFilterToggle(button, { hidden = false, tooltip = true } = {
 function renderPlayingFinished() {
   const games = finishedGamesForCurrentView()
     .sort((a, b) => String(b.completedAt).localeCompare(String(a.completedAt)) || stringCompare(a.title, b.title))
-    .slice(0, 10);
+    .slice(0, 15);
   el.playingFinished.hidden = (state.settings.hiddenSections || []).includes("latestFinished") || !games.length;
   el.playingFinishedList.innerHTML = games.map((game) => {
     const achievementProgress = achievementProgressForGame(game);
@@ -6925,6 +6932,7 @@ function renderReleaseCalendar() {
     locale: currentLanguage(),
     translate: tt,
     onShift: (value) => {
+      playUiSound("swipe", { direction: value });
       state.releaseCalendarOffset += value;
       renderReleaseCalendar();
     },
@@ -9127,11 +9135,11 @@ function cardFor(game, options = {}) {
   img.decoding = "async";
   if (game.playing && !neutralReleaseCard && game.cover) upgradeCoverIfFast(img, game.cover, "playing");
   if (game.playing && !neutralReleaseCard && game.cover) img.addEventListener("load", schedulePlayingCardHeightSync, { once: true });
-  const cardArt = game.playing ? game.keyArt || game.cover : game.cover;
+  const cardArt = game.playing ? game.keyArt : game.cover;
   card.classList.toggle("has-art", Boolean(cardArt));
   card.classList.toggle("has-key-art", Boolean(game.playing && game.keyArt));
   if (cardArt) {
-    card.style.setProperty("--card-art", `url("${cssUrl(game.keyArt && game.playing ? game.keyArt : backgroundCoverUrl(cardArt))}")`);
+    card.style.setProperty("--card-art", `url("${cssUrl(game.playing ? cardArt : backgroundCoverUrl(cardArt))}")`);
     bindActivityCardParallax(card);
   }
   card.querySelector("h3").textContent = game.title;
@@ -12254,7 +12262,7 @@ async function openEditor(id = "") {
   el.fields.igdbUrl.value = game.igdbUrl || "";
   el.fields.hltbUrl.value = game.hltbUrl || game.howLongToBeatUrl || "";
   el.fields.trailerUrl.value = game.trailerUrl || "";
-  state.editorKeyArt = game.keyArt || "";
+  el.fields.keyArt.value = game.keyArt || "";
   el.fields.playstationUrl.value = game.storeLinks?.playstation || "";
   el.fields.nintendoUrl.value = game.storeLinks?.nintendo || "";
   el.fields.xboxUrl.value = game.storeLinks?.xbox || "";
@@ -12468,7 +12476,7 @@ async function saveCurrentFormGame() {
       steam: el.fields.steamUrl.value.trim(),
     },
     cover: el.fields.cover.value.trim(),
-    keyArt: state.editorKeyArt || existing?.keyArt || "",
+    keyArt: el.fields.keyArt.value.trim(),
     notes: el.fields.notes ? el.fields.notes.value.trim() : existing?.notes || "",
     order: existing?.section === section ? existing.order : nextOrder(section),
     editedAt,
@@ -13113,7 +13121,7 @@ function applyLookup(result) {
   el.fields.igdbUrl.value = result.igdbUrl || el.fields.igdbUrl.value;
   el.fields.hltbUrl.value = normalizeGuideUrl(result.hltbUrl || result.howLongToBeatUrl) || hltbUrlFromId(result.hltbId || result.howLongToBeatId) || el.fields.hltbUrl.value;
   el.fields.trailerUrl.value = result.trailerUrl || el.fields.trailerUrl.value;
-  state.editorKeyArt = result.keyArt || state.editorKeyArt || "";
+  if (result.keyArt) el.fields.keyArt.value = result.keyArt;
   const links = normalizeStoreLinks(result.storeLinks);
   el.fields.playstationUrl.value = links.playstation || el.fields.playstationUrl.value;
   el.fields.nintendoUrl.value = links.nintendo || el.fields.nintendoUrl.value;
