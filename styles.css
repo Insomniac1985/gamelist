@@ -14695,6 +14695,10 @@ body:not(.can-edit) #detailEditButton {
   border-top: 1px solid var(--line);
 }
 
+#detailTrophies {
+  padding-top: 8px;
+}
+
 .detail-condition.price-panel-hidden:not([hidden]) ~ .detail-trophies {
   border-top: 0;
 }
