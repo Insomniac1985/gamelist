@@ -2014,6 +2014,12 @@ function currentLanguage() {
 function renderLocalSoundToggle() {
   const button = document.querySelector("#localSoundToggle");
   if (!button) return;
+  const topActions = document.querySelector(".topbar > .top-actions");
+  const settingsButton = topActions?.querySelector("#settingsButton");
+  if (topActions && button.parentElement !== topActions) {
+    if (settingsButton) settingsButton.after(button);
+    else topActions.prepend(button);
+  }
   button.hidden = state.settings.disableSounds;
   const muted = getSoundStatus().disabled;
   button.setAttribute("aria-pressed", String(!muted));
