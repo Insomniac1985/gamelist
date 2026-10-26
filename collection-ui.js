@@ -1,5 +1,5 @@
 import { svgAsset, loadSvgAssets, hydrateSvgAssets } from "./svg-assets.js";
-import { bindCardHoverSounds, scrollWithSound, setSoundsDisabled } from "./card-hover-sound.js";
+import { bindCardHoverSounds, playUiSound, scrollWithSound, setSoundsDisabled } from "./card-hover-sound.js";
 import { renderBatchedList } from "./batched-list.js";
 import { embeddedGameEditor, connectEmbeddedGameEditor } from "./shared-add-game.js";
 import { normalizeSearchText, bindModalTouchGuard, createGameCardShell, bindActivityCardParallax, mountActivitySlider, mountTwitchPreview, mountReleaseCalendar, finishedGameMarkup, achievementCardMarkup, achievementDashboardMarkup, achievementPanelMarkup, completedCardMarkup, horizontalCarouselState, syncViewModeButton, slideHorizontalCarousel, comparePlayingGames, timeBadgeMarkup, guideLinksMarkup, storeButtonsMarkup, activityTrailerUrl, preloadPausedActivityTrailers, syncFocusedActivityTrailer, activityReleaseStatus, activityCoverOverride, activityLocalGameForTitle, activityTitleMatchScore, activityAllowsPsnCardTrophies, formatFooterDate, formatFooterDateTime, formatFooterShortDate, confirmGameDelete } from "./activity-ui.js";
@@ -1174,6 +1174,7 @@ function renderReleaseCalendar() {
     locale: currentLanguage(),
     translate: tt,
     onShift: (value) => {
+      playUiSound("swipe", { direction: value });
       state.releaseCalendarOffset += value;
       renderReleaseCalendar();
     },

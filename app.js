@@ -6932,6 +6932,7 @@ function renderReleaseCalendar() {
     locale: currentLanguage(),
     translate: tt,
     onShift: (value) => {
+      playUiSound("swipe", { direction: value });
       state.releaseCalendarOffset += value;
       renderReleaseCalendar();
     },
