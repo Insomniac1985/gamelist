@@ -552,11 +552,12 @@ html.theme-font-mata {
 }
 
 .shell {
+  --shell-inline-padding: clamp(18px, 4vw, 48px);
   display: grid;
   grid-template-columns: minmax(0, 1fr);
   width: 100%;
   margin: 0 auto;
-  padding: clamp(8px, 2vw, 24px) clamp(18px, 4vw, 48px) clamp(18px, 4vw, 48px);
+  padding: clamp(8px, 2vw, 24px) var(--shell-inline-padding) clamp(18px, 4vw, 48px);
 }
 
 .shell > * {
@@ -745,6 +746,20 @@ html.theme-font-mata {
 
 .playing-section:not(.playing-at-end) .card-list {
   --playing-mask-right: min(92px, 10vw);
+}
+
+/* Let carousel content scroll through the shell's left gutter. */
+.shell > .playing-section .playing-panel {
+  overflow: visible;
+}
+
+.shell > .playing-section .playing-panel > .playing-list,
+.shell > .playing-section .playing-finished-list {
+  box-sizing: border-box;
+  width: calc(100% + var(--shell-inline-padding));
+  margin-left: calc(-1 * var(--shell-inline-padding));
+  padding-left: var(--shell-inline-padding);
+  scroll-padding-left: var(--shell-inline-padding);
 }
 
 .playing-section .card-list::-webkit-scrollbar {
@@ -18843,6 +18858,7 @@ html.theme-light .primary-button.stream-start-action:hover {
   }
 
   .shell {
+    --shell-inline-padding: 14px;
     padding: 14px;
   }
 
