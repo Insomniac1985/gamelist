@@ -755,7 +755,7 @@ html.theme-font-mata {
   --playing-mask-right: min(92px, 10vw);
 }
 
-/* Let carousel content scroll through the shell's left gutter. */
+/* Let carousel content scroll through both shell gutters. */
 .shell > .playing-section .playing-panel {
   overflow: visible;
 }
@@ -763,10 +763,13 @@ html.theme-font-mata {
 .shell > .playing-section .playing-panel > .playing-list,
 .shell > .playing-section .playing-finished-list {
   box-sizing: border-box;
-  width: calc(100% + var(--shell-inline-padding));
+  width: calc(100% + 2 * var(--shell-inline-padding));
   margin-left: calc(-1 * var(--shell-inline-padding));
+  margin-right: calc(-1 * var(--shell-inline-padding));
   padding-left: var(--shell-inline-padding);
+  padding-right: var(--shell-inline-padding);
   scroll-padding-left: var(--shell-inline-padding);
+  scroll-padding-right: var(--shell-inline-padding);
 }
 
 .playing-section .card-list::-webkit-scrollbar {
