@@ -39,7 +39,7 @@ function physicalProviders(stores, region, currency) {
     }
     if (store === "eBay") return { store: "eBay", search: (q) => ebaySearchUrl(q, region), lookup: lookupLinkOnly };
     if (store === "Xtralife") return { store: "Xtralife", search: (q) => `https://www.xtralife.com/buscar/${encodeURIComponent(q)}`, lookup: lookupXtralife };
-    if (store === "GAME.es") return { store: "GAME.es", search: (q) => `https://www.game.es/buscar/${encodeURIComponent(q)}`, lookup: lookupGameEs };
+    if (store === "GAME.es") return { store: "GAME.es", search: (q) => `https://www.game.es/resultados?search=${encodeURIComponent(q)}`, lookup: lookupGameEs };
     if (store === "Retro Island NY") return { store: "Retro Island NY", search: (q) => retroIslandSearchUrl(q, region, currency), lookup: lookupRetroIslandNy };
     if (store === "GameStop") return { store: "GameStop", search: gamestopSearchUrl, lookup: lookupGameStop };
     if (store === "Walmart") return { store: "Walmart", search: walmartSearchUrl, lookup: lookupWalmart };
@@ -551,47 +551,45 @@ function parseGeneric(html, title) {
 }
 
 async function lookupGameEs(title, platform, query) {
-  const payload = {
-    Head: retailTitle(query),
-    Page: 0,
-    Order: 7,
-    CategoryFilter: [],
-    Category: null,
-    SKU: null,
-  };
-  const response = await fetch("https://www.game.es/api/search", {
-    method: "POST",
+  const searchUrl = `https://www.game.es/resultados?search=${encodeURIComponent(retailTitle(query))}`;
+  const response = await fetch(searchUrl, {
     headers: {
-      "Accept": "application/json",
+      "Accept": "text/html,application/xhtml+xml",
       "Accept-Language": "es-ES,es;q=0.9,en;q=0.6",
-      "Content-Type": "application/json; charset=utf-8",
       "Origin": "https://www.game.es",
-      "Referer": `https://www.game.es/buscar/${encodeURIComponent(query)}`,
+      "Referer": searchUrl,
       "User-Agent": "Mozilla/5.0 (compatible; GameList/1.0)",
     },
-    body: JSON.stringify(payload),
   });
   if (!response.ok) throw new Error("GAME search failed");
-  const data = await response.json();
-  const products = Array.isArray(data.Products) ? data.Products : [];
-  const match = bestProduct(products.map(gameEsProduct), title, platform);
+  const html = await response.text();
+  const match = parseGameEsResults(html, title, platform);
   return match || { price: "", matchedTitle: "" };
 }
 
-function gameEsProduct(product) {
-  const offers = Array.isArray(product.Offers) ? product.Offers : [];
-  const offer = offers
-    .filter((entry) => Number.isFinite(Number(entry.SellPrice)))
-    .sort((a, b) => Number(a.SellPrice) - Number(b.SellPrice))[0];
-  const price = offer ? euro(Number(offer.SellPrice)) : "";
-  const navigation = product.Navigation ? `https://www.game.es/${String(product.Navigation).replace(/^\/+/, "")}` : "";
-  return {
-    title: product.Name || "",
-    platform: product.FamilyName || product.Family || (product.Platforms || []).map((entry) => entry.Name).join(" "),
-    price,
-    matchedTitle: product.Name || "",
-    url: navigation || "",
-  };
+function parseGameEsResults(html, title, platform) {
+  const anchors = [...html.matchAll(/<a\b(?=[^>]*\bclass="[^"]*__infoContent")(?=[^>]*\bhref="([^"]+)")[^>]*>([\s\S]*?)<\/a>/gi)];
+  const products = anchors.map((anchor, index) => {
+    const info = anchor[2] || "";
+    const segmentEnd = anchors[index + 1]?.index ?? Math.min(html.length, anchor.index + 7000);
+    const segment = html.slice(anchor.index, segmentEnd);
+    const titleMatch = info.match(/<h3\b[^>]*class="[^"]*__title"[^>]*>([\s\S]*?)<\/h3>/i);
+    const platformMatch = info.match(/<p\b[^>]*class="[^"]*__allPlatforms"[^>]*>([\s\S]*?)<\/p>/i);
+    const priceStart = segment.indexOf("__priceSection");
+    const priceDivider = segment.indexOf("__priceDivider", priceStart);
+    const priceHtml = priceStart < 0 ? "" : segment.slice(priceStart, priceDivider < 0 ? priceStart + 3000 : priceDivider);
+    const prices = [...priceHtml.matchAll(/(\d{1,3}(?:\.\d{3})*(?:,\d{2})|\d+(?:,\d{2})?)\s*(?:€|\u20ac)/g)];
+    const matchedTitle = decodeHtml((titleMatch?.[1] || "").replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim());
+    const rawPath = decodeHtml(anchor[1] || "");
+    return {
+      title: matchedTitle,
+      platform: decodeHtml((platformMatch?.[1] || "").replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim()),
+      price: prices.length ? `${prices.at(-1)[1]} \u20ac` : "",
+      matchedTitle,
+      url: /^https?:\/\//i.test(rawPath) ? rawPath : `https://www.game.es/${rawPath.replace(/^\/+/, "")}`,
+    };
+  }).filter((product) => product.title);
+  return bestProduct(products, title, platform);
 }
 
 async function lookupXtralife(title, platform, query) {
