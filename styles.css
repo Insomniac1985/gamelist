@@ -18540,7 +18540,7 @@ html.theme-light .primary-button.stream-start-action:hover {
 @media (width <= 689px) {
   .completed > .column-head {
     display: grid;
-    grid-template-columns: minmax(0, 1fr);
+    grid-template-columns: minmax(0, 200px);
     gap: 10px;
   }
 
