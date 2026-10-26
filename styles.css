@@ -9222,6 +9222,10 @@ body:not(.can-edit) .game-card:focus-within .edit-action {
   .finished-stats-kpis.is-grid-3 {
     grid-template-columns: repeat(3, minmax(0, 1fr));
   }
+
+  #gotyStatsPreviewBody > .finished-stats-kpis:not(.is-grid-3) {
+    grid-template-columns: repeat(auto-fit, minmax(min(200px, 100%), 1fr));
+  }
 }
 
 .finished-stats-kpi,
