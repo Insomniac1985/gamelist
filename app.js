@@ -101,6 +101,7 @@ const DEFAULT_SETTINGS = {
   streamFilterPriority: "all",
   prioritizeFinishedStream: false,
   hideNonStreamPlaying: false,
+  disableLoginAnimation: false,
   disableSounds: false,
   hideShelf: false,
   forceCacheOnLoad: false,
@@ -577,6 +578,8 @@ const el = {
 renderRatingInputs(el.playingRatingGrid, "edit");
 renderRatingInputs(el.finishRatingGrid, "finish");
 
+const loginAnimation = createLoginAnimation();
+
 init();
 
 async function init() {
@@ -619,6 +622,7 @@ async function init() {
 
   if (await maybeRenderGameOfTheYearExportPreview()) return;
   render();
+  loginAnimation.start(state.settings.disableLoginAnimation);
   if (state.canEdit) {
     const warmEditor = () => warmSharedAddGame();
     if ("requestIdleCallback" in window) window.requestIdleCallback(warmEditor, { timeout: 2500 });
@@ -650,6 +654,55 @@ async function init() {
   refreshAchievements();
   scheduleBackgroundRefreshes();
   maybeShowUpdatesPopup();
+}
+
+function createLoginAnimation() {
+  const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+  const animated = new WeakSet();
+  const running = new Set();
+  let started = false;
+  let enabled = false;
+  const cancel = () => {
+    running.forEach(animation => animation.cancel());
+    running.clear();
+  };
+  reducedMotion.addEventListener("change", event => { if (event.matches) cancel(); });
+  const refresh = () => {
+    if (!started || !enabled || reducedMotion.matches) return;
+    const components = [...document.querySelectorAll(
+      ".topbar, main.shell > :not(.board), .board > .column, .board > #collectionLibrary, .board > .unified-new-head, .site-footer, .mobile-action-dock, .floating-edit-actions, .floating-search-button, .scroll-top-button"
+    )].filter(element => !animated.has(element) && !element.hidden && element.getBoundingClientRect().height > 0);
+    components.sort((a, b) => a.getBoundingClientRect().top - b.getBoundingClientRect().top);
+    components.forEach((element, index) => {
+      animated.add(element);
+      const animation = element.animate([
+        { opacity: 0, translate: "0 12px" },
+        { opacity: 1, translate: "0 0" },
+      ], {
+        duration: 420,
+        delay: Math.min(index * 35, 210),
+        easing: "cubic-bezier(0.2, 0.7, 0.2, 1)",
+        fill: "backwards",
+      });
+      running.add(animation);
+      const finish = () => { running.delete(animation); animation.cancel(); };
+      animation.finished.then(finish, () => running.delete(animation));
+    });
+  };
+  return {
+    start(disabled) {
+      if (started) return;
+      started = true;
+      enabled = disabled !== true;
+      refresh();
+    },
+    refresh,
+    setDisabled(disabled) {
+      if (disabled !== true) return;
+      enabled = false;
+      cancel();
+    },
+  };
 }
 
 function isShabiiMainOwner() {
@@ -1723,6 +1776,7 @@ function normalizeSettings(settings = {}) {
     streamFilterPriority: streamFilterPriorityForSettings(settings),
     prioritizeFinishedStream: streamFilterPriorityForSettings(settings) === "stream",
     hideNonStreamPlaying: settings.hideNonStreamPlaying === true,
+    disableLoginAnimation: settings.disableLoginAnimation === true,
     disableSounds: settings.disableSounds === true,
     hideShelf: settings.hideShelf === true,
     forceCacheOnLoad: settings.forceCacheOnLoad === true,
@@ -1959,6 +2013,7 @@ let appliedThemeKey;
 function applyTheme() {
   const settings = normalizeSettings(state.settings);
   setSoundsDisabled(settings.disableSounds);
+  loginAnimation.setDisabled(settings.disableLoginAnimation);
   const key = JSON.stringify(settings);
   if (key === appliedThemeKey) return;
   appliedThemeKey = key;
@@ -2658,6 +2713,7 @@ function renderSettingsDialog() {
     settingsWeekStartItem(),
     settingsPrioritizeFinishedStreamItem(),
     settingsHideNonStreamPlayingItem(),
+    settingsVisibilityToggle("disable-login-animation", "Disable login animation", state.settings.disableLoginAnimation),
     settingsVisibilityToggle("sounds", "Sounds", !state.settings.disableSounds),
   ].join("");
   el.settingsThemeEditor.innerHTML = themeSettingsContent(state.settings, tt);
@@ -3446,6 +3502,7 @@ async function saveSettingsFromForm(event, { close = true } = {}) {
     streamFilterPriority: normalizeStreamFilterMode(el.settingsDialog.querySelector("[data-stream-filter-priority]")?.value),
     prioritizeFinishedStream: normalizeStreamFilterMode(el.settingsDialog.querySelector("[data-stream-filter-priority]")?.value) === "stream",
     hideNonStreamPlaying: el.settingsDialog.querySelector("[data-hide-non-stream-playing]")?.checked === true,
+    disableLoginAnimation: el.settingsDialog.querySelector("[data-disable-login-animation]")?.checked === true,
     disableSounds: el.settingsDialog.querySelector("[data-sounds]")?.checked === false,
     hideShelf: el.settingsDialog.querySelector("[data-shelf]")?.checked === false,
     weekStart: normalizeWeekStart(el.settingsDialog.querySelector("[data-week-start]")?.value || state.settings.weekStart),
@@ -3453,6 +3510,7 @@ async function saveSettingsFromForm(event, { close = true } = {}) {
     gotyAlwaysShow: document.querySelector("#settingsGotyAlwaysShow")?.checked === true,
   });
   setSoundsDisabled(state.settings.disableSounds);
+  loginAnimation.setDisabled(state.settings.disableLoginAnimation);
   state.completedStreamMode = streamFilterPriorityForSettings(state.settings);
   persistLocalSettings();
   await persistCloud();
@@ -7170,7 +7228,9 @@ function syncStyledSelect(select, options = {}) {
     });
   });
   control.addEventListener("keydown", (event) => {
-    if (event.key !== "Escape") return;
+    if (event.key !== "Escape" || !control.classList.contains("is-open")) return;
+    event.preventDefault();
+    event.stopPropagation();
     control.classList.remove("is-open");
     button?.setAttribute("aria-expanded", "false");
     button?.focus();
@@ -7741,6 +7801,7 @@ function finishedStatsYears() {
 
 function renderFinishedStatsDialog(year = "all", { preserveAll = true } = {}) {
   const scope = String(year || "all");
+  syncStyledSelect(el.finishedStatsYearSelect, { activeValue: null });
   const games = finishedStatsGames(scope);
   const completed = finishedStatsCompleted(scope);
   el.finishedStatsBrow.textContent = scope === "all" ? tt("All-time statistics") : tt("YEARLY STATISTICS");
@@ -13671,6 +13732,7 @@ function ensureCollectionWorkspace() {
     } });
     syncCollectionWorkspace();
     renderMobileTabs();
+    loginAnimation.refresh();
   })().catch(error => {
     collectionLoad = null;
     document.querySelector("#collectionLibrary").textContent = tt("Could not load your collection.");
