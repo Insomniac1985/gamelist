@@ -2672,9 +2672,9 @@ body.goty-loading-active {
 }
 
 .playing-finished-game .playing-finished-tags .stream-pill .stream-play-icon {
-  width: 11px;
-  height: 11px;
-  flex-basis: 11px;
+  width: 9px;
+  height: 9px;
+  flex: 0 0 9px;
 }
 
 .playing-finished-tags .coop-pill span,
@@ -9320,6 +9320,17 @@ body:not(.can-edit) .game-card:focus-within .edit-action {
   height: 34px;
   min-height: 34px;
   padding: 5px 30px 5px 10px;
+}
+
+#finishedStatsYearPicker .platform-logo-select {
+  --dropdown-control-height: 34px;
+  width: 92px;
+}
+
+#finishedStatsYearPicker .platform-logo-choice {
+  height: 100%;
+  min-height: 0;
+  margin: 0;
 }
 
 .finished-stats-year-picker .sr-only {
@@ -18473,17 +18484,27 @@ html.theme-light .primary-button.stream-start-action:hover {
 }
 
 @media (width <= 699px) {
+  .completed > .column-head {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 10px;
+  }
+
+  .completed > .column-head h2 {
+    overflow-wrap: anywhere;
+  }
+
   .completed-head-actions {
     display: flex;
-    flex-wrap: wrap;
+    flex-wrap: nowrap;
     justify-content: flex-end;
     align-items: center;
     gap: 5px 10px;
-    width: auto;
+    width: 100%;
     min-width: 0;
     max-width: 100%;
     flex: 0 0 auto;
-    margin-left: auto;
+    margin-left: 0;
     height: auto;
     white-space: normal;
   }
@@ -18515,20 +18536,20 @@ html.theme-light .primary-button.stream-start-action:hover {
 
   #completedCount {
     display: grid;
-    order: -1;
-    flex: 0 0 100%;
-    grid-template-columns: max-content;
-    justify-content: end;
-    justify-items: end;
+    order: 0;
+    flex: 1 1 auto;
+    grid-template-columns: minmax(0, 1fr);
+    justify-content: start;
+    justify-items: start;
     align-content: center;
     gap: 2px;
-    width: 100%;
-    min-width: max-content;
+    width: auto;
+    min-width: 0;
     margin-bottom: 0;
     line-height: 1;
-    text-align: right;
+    text-align: left;
     white-space: normal;
-    line-height: 9px !important;
+    line-height: 1.2 !important;
     margin-bottom: 1px !important;
     font-size: 13px !important;
   }
@@ -20201,15 +20222,24 @@ body:not(.can-edit):not(.shelf-page)
     .card-list:not(.list-view)
     .game-card:not(.playing-card)
     .card-actions
+    > button {
+    height: 36px;
+    min-height: 36px;
+    max-height: 36px;
+  }
+  #backlog
+    .card-list:not(.list-view)
+    .game-card:not(.playing-card)
+    .card-actions
     > .delete-action {
     box-sizing: border-box;
-    width: 48px;
-    min-width: 48px;
-    max-width: 48px;
-    height: 48px;
-    min-height: 48px;
-    max-height: 48px;
-    flex: 0 0 48px;
+    width: 36px;
+    min-width: 36px;
+    max-width: 36px;
+    height: 36px;
+    min-height: 36px;
+    max-height: 36px;
+    flex: 0 0 36px;
     aspect-ratio: 1;
     padding: 0;
   }
@@ -20219,8 +20249,8 @@ body:not(.can-edit):not(.shelf-page)
     .card-actions
     > .delete-action
     svg {
-    width: 20px;
-    height: 20px;
+    width: 18px;
+    height: 18px;
   }
 }
 
