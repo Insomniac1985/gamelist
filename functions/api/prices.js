@@ -578,13 +578,22 @@ function parseGameEsResults(html, title, platform) {
     const priceStart = segment.indexOf("__priceSection");
     const priceDivider = segment.indexOf("__priceDivider", priceStart);
     const priceHtml = priceStart < 0 ? "" : segment.slice(priceStart, priceDivider < 0 ? priceStart + 3000 : priceDivider);
-    const prices = [...priceHtml.matchAll(/(\d{1,3}(?:\.\d{3})*(?:,\d{2})|\d+(?:,\d{2})?)\s*(?:€|\u20ac)/g)];
+    const isReservationPrice = /Precio de la reserva/i.test(priceHtml);
+    let priceSource = priceHtml;
+    if (isReservationPrice) {
+      const finalPriceStart = segment.indexOf("__finalPriceBlock", priceDivider < 0 ? priceStart : priceDivider);
+      const footerStart = segment.indexOf("__footer", finalPriceStart);
+      priceSource = finalPriceStart < 0
+        ? ""
+        : segment.slice(finalPriceStart, footerStart < 0 ? finalPriceStart + 1200 : footerStart);
+    }
+    const prices = [...priceSource.matchAll(/(\d{1,3}(?:\.\d{3})*(?:,\d{2})|\d+(?:,\d{2})?)\s*(?:€|\u20ac)/g)];
     const matchedTitle = decodeHtml((titleMatch?.[1] || "").replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim());
     const rawPath = decodeHtml(anchor[1] || "");
     return {
       title: matchedTitle,
       platform: decodeHtml((platformMatch?.[1] || "").replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim()),
-      price: prices.length ? `${prices.at(-1)[1]} \u20ac` : "",
+      price: prices.length ? `${isReservationPrice ? prices[0][1] : prices.at(-1)[1]} \u20ac` : "",
       matchedTitle,
       url: /^https?:\/\//i.test(rawPath) ? rawPath : `https://www.game.es/${rawPath.replace(/^\/+/, "")}`,
     };
