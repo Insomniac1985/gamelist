@@ -3359,7 +3359,7 @@ button.achievement-kpi {
 }
 
 .eyebrow {
-  display: none !important;
+  visibility: hidden !important;
 }
 
 h1,
@@ -19857,17 +19857,17 @@ body:not(.can-edit):not(.shelf-page)
   }
 
   #addGameForm.gamelist-target-editor .shelf-title-field {
-    grid-column: 2 / span 6;
+    grid-column: 2 / span 5;
     grid-row: 1;
   }
 
   #addGameForm.gamelist-target-editor .shelf-console-field {
-    grid-column: 8 / span 4;
+    grid-column: 7 / span 4;
     grid-row: 1;
   }
 
   #addGameForm.gamelist-target-editor .gamelist-target-digital-field {
-    grid-column: 12 / span 2;
+    grid-column: 11 / span 3;
     grid-row: 1;
     align-self: end;
     min-width: 0;
@@ -24557,15 +24557,15 @@ textarea {
   }
 
   #addGameForm.gamelist-target-editor .shelf-title-field {
-    grid-column: 2 / span 6;
+    grid-column: 2 / span 5;
     grid-row: 1;
   }
   #addGameForm.gamelist-target-editor .shelf-console-field {
-    grid-column: 8 / span 4;
+    grid-column: 7 / span 4;
     grid-row: 1;
   }
   #addGameForm.gamelist-target-editor .gamelist-target-digital-field {
-    grid-column: 12 / span 2;
+    grid-column: 11 / span 3;
     grid-row: 1;
   }
   #addGameForm.gamelist-target-editor .shelf-release-field {
