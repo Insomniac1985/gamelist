@@ -3358,6 +3358,10 @@ button.achievement-kpi {
   text-transform: uppercase;
 }
 
+.eyebrow {
+  visibility: hidden !important;
+}
+
 h1,
 h2,
 h3,
@@ -19853,17 +19857,17 @@ body:not(.can-edit):not(.shelf-page)
   }
 
   #addGameForm.gamelist-target-editor .shelf-title-field {
-    grid-column: 2 / span 6;
+    grid-column: 2 / span 5;
     grid-row: 1;
   }
 
   #addGameForm.gamelist-target-editor .shelf-console-field {
-    grid-column: 8 / span 4;
+    grid-column: 7 / span 4;
     grid-row: 1;
   }
 
   #addGameForm.gamelist-target-editor .gamelist-target-digital-field {
-    grid-column: 12 / span 2;
+    grid-column: 11 / span 3;
     grid-row: 1;
     align-self: end;
     min-width: 0;
@@ -23064,11 +23068,6 @@ body.mobile-app-mode .shelf-tabs button.active:hover {
       var(--collection-extra-row) + var(--collection-owner-offset)
     ) !important;
   }
-  #addGameForm.gamelist-target-editor.digital-tracking-disabled
-    .shelf-editor-grid.unified-game-editor-grid
-    > .shelf-console-field {
-    grid-column: 14 / span 12;
-  }
 }
 
 @media (max-width: 689px) {
@@ -24553,15 +24552,15 @@ textarea {
   }
 
   #addGameForm.gamelist-target-editor .shelf-title-field {
-    grid-column: 2 / span 6;
+    grid-column: 2 / span 5;
     grid-row: 1;
   }
   #addGameForm.gamelist-target-editor .shelf-console-field {
-    grid-column: 8 / span 4;
+    grid-column: 7 / span 4;
     grid-row: 1;
   }
   #addGameForm.gamelist-target-editor .gamelist-target-digital-field {
-    grid-column: 12 / span 2;
+    grid-column: 11 / span 3;
     grid-row: 1;
   }
   #addGameForm.gamelist-target-editor .shelf-release-field {
@@ -24918,6 +24917,21 @@ textarea {
 }
 
 @media (max-width: 689px) {
+  #addGameForm.gamelist-target-editor .shelf-editor-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  #addGameForm.gamelist-target-editor .shelf-editor-grid > :not(.shelf-editor-cover-preview) {
+    grid-column: 1 / -1 !important;
+    grid-row: auto;
+  }
+
+  #addGameForm.gamelist-target-editor .shelf-editor-grid > .shelf-editor-cover-preview {
+    grid-column: 1 / -1;
+    grid-row: auto;
+    width: min(160px, 100%);
+  }
+
   /* Shelf follows the shared markup: DLC, subscription, then release details. */
   #addGameForm.gamelist-target-editor .shelf-entitlement-field {
     order: 11;
