@@ -3448,6 +3448,15 @@ h3 {
   line-height: 1.2;
 }
 
+@media (min-width: 690px) {
+  .column-head h2,
+  .modal-head h2,
+  .detail-body h2,
+  .shelf-intro h1 {
+    margin-bottom: 8px;
+  }
+}
+
 .stats {
   display: grid;
   grid-template-columns: repeat(4, minmax(82px, 1fr));

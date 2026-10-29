@@ -2431,12 +2431,12 @@ function collectionEditorLabels() {
     const streaming = el.gamelistStream.checked;
     return {
       title: collection ? (streaming ? "Add to Collection and Start Streaming" : "Add to Collection and play") : (streaming ? "Add and Start Streaming" : "Add and Start Playing"),
-      titleLines: collection && !streaming ? ["Add to Collection", "and play"] : null,
+      titleLines: collection && !streaming ? ["Add to", "Collection and play"] : null,
       button: streaming ? "Add and Start Streaming" : "Add and Start Playing",
     };
   }
   const label = backlog ? (collection ? "Add to Collection and Backlog" : "Add to Backlog") : "Add to Collection";
-  return { title: label, titleLines: backlog && collection ? ["Add to Collection", "and Backlog"] : null, button: label };
+  return { title: label, titleLines: backlog && collection ? ["Add to", "Collection and Backlog"] : null, button: label };
 }
 
 function setShelfEditorTitle(title, text, mobileLines = [], forceTwoLine = false) {
