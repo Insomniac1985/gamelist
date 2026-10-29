@@ -23068,11 +23068,6 @@ body.mobile-app-mode .shelf-tabs button.active:hover {
       var(--collection-extra-row) + var(--collection-owner-offset)
     ) !important;
   }
-  #addGameForm.gamelist-target-editor.digital-tracking-disabled
-    .shelf-editor-grid.unified-game-editor-grid
-    > .shelf-console-field {
-    grid-column: 14 / span 12;
-  }
 }
 
 @media (max-width: 689px) {
