@@ -22936,7 +22936,7 @@ body.mobile-app-mode .shelf-tabs button.active:hover {
 }
 
 #addGameForm #shelfGamelistTargetPicker,
-#addGameForm.digital-tracking-disabled .lookup-digital-check {
+#addGameForm.digital-tracking-disabled:not(.gamelist-target-editor) .lookup-digital-check {
   display: none !important;
 }
 
