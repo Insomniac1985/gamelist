@@ -7600,7 +7600,7 @@ body.theme-kash .game-card.stream-card.completed-trophy-card {
 
 .playtime-date-pill.live-playtime-pill.is-expanded .live-playtime-expanded {
   position: static;
-  margin-top: 2px;
+  margin-top: 0;
   opacity: 1;
   transform: none;
 }
@@ -7651,7 +7651,7 @@ body.theme-kash .game-card.stream-card.completed-trophy-card {
     )
     .live-playtime-expanded {
     position: static;
-    margin-top: 2px;
+    margin-top: 0;
     opacity: 1;
     transform: none;
   }
@@ -25425,7 +25425,9 @@ textarea {
 .shelf-return-action svg { width: 18px; height: 18px; flex-shrink: 0; }
 
 /* Fill Shelf cards with the same 36px action controls as the other lists. */
-.shelf-page .shelf-grid .game-card .card-actions:has(> .shelf-lend-action) {
+.shelf-page .shelf-grid .game-card .card-actions:has(> .shelf-add-backlog-action) {
+  display: flex;
+  flex-wrap: nowrap;
   justify-self: stretch;
   align-items: stretch;
   width: 100%;
@@ -25438,7 +25440,7 @@ textarea {
   min-height: 36px;
   max-height: 36px;
 }
-.shelf-page .shelf-grid .game-card .card-actions:has(> .shelf-lend-action) > :is(.shelf-lend-action, .shelf-add-backlog-action) {
+.shelf-page .shelf-grid .game-card .card-actions:has(> .shelf-add-backlog-action) > :is(.shelf-lend-action, .shelf-add-backlog-action) {
   flex: 1 1 auto;
   width: auto;
   padding-block: 6px;
