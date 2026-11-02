@@ -1,9 +1,9 @@
-﻿import assert from 'node:assert/strict';
+import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import vm from 'node:vm';
 
 const source = readFileSync(new URL('../collection-ui.js', import.meta.url), 'utf8');
-const lending = source.slice(source.indexOf('function lentBadge('), source.indexOf('function visibleShelfCardOwners('));
+const lending = source.slice(source.indexOf('function canLendShelfGame('), source.indexOf('function visibleShelfCardOwners('));
 let dialog;
 let saveSucceeds = true;
 let renders = 0;
@@ -11,7 +11,12 @@ const state = { canEdit: true, additions: [{ id: 'one', title: 'Test game' }], o
 const escapeHtml = value => String(value).replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('"', '&quot;');
 const context = vm.createContext({
   state, Map, Date, String,
+  isDigitalShelfGame: game => Boolean(game?.digital || game?.dlc),
+  isPendingCollectionGame: game => Boolean(game?.pendingCollection),
+  svgAsset: name => `<svg data-asset="${name}"></svg>`,
   escapeHtml,
+  coverUrl: value => value,
+  platformFallback: () => "/platform.png",
   tt: (value, args = {}) => value.replace(/\{(\w+)\}/g, (_, key) => args[key]),
   ownerColorClass: name => `owner-color-${name.toLowerCase()}`,
   canonicalOwner: value => value.trim(),
@@ -44,8 +49,11 @@ assert.equal(dialog.open, false);
 assert.equal(renders, 1);
 assert.match(context.lentBadge(state.additions[0]), /Lent to Judy/);
 assert.match(context.lendButton(state.additions[0]), /data-action="returned"/);
+assert.match(context.lendButton(state.additions[0]), /icons\/actions\/forward-2/);
+assert.match(context.lendButton(state.additions[0]), /Get back/);
 const pill = context.shelfLentCountPill([state.additions[0], { lentTo: 'Judy' }, { lentTo: '<Alex>' }]);
 assert.match(pill, /3 Lent/);
+assert.match(pill, /icons\/actions\/lend-hand/);
 assert.match(pill, /<strong>Judy<\/strong><em>2<\/em>/);
 assert.match(pill, /&lt;Alex>/);
 context.openLendingDialog(state.additions[0]);
@@ -67,4 +75,14 @@ assert.equal(state.additions[0].lentTo, '', 'Failed saves must restore the previ
 assert.equal(dialog.error.hidden, false);
 assert.equal(dialog.submit.disabled, false);
 assert.equal(dialog.open, true);
+for (const excluded of [{ digital: true }, { dlc: true }, { pendingCollection: true }, { preorderProjection: true }, { wishlistProjection: true }, { _gamelistProjection: true }]) {
+  const game = { id: 'excluded', title: 'Not a physical Shelf game', lentTo: 'Judy', ...excluded };
+  assert.equal(context.lendButton(game), '');
+  assert.equal(context.lentBadge(game), '');
+  assert.equal(context.shelfLentCountPill([game]), '');
+  const previousDialog = dialog;
+  context.openLendingDialog(game);
+  assert.equal(dialog, previousDialog, 'Excluded games must not open a lending dialog');
+}
+assert.match(context.lendButton({ id: 'physical' }), /icons\/actions\/lend-hand/);
 console.log('Shelf lending checks passed.');

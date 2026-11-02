@@ -3602,7 +3602,7 @@ h3 {
     color-mix(in srgb, var(--preorder-accent) 18%, transparent);
 }
 
-.preorder-count-pill .shopping-bag-icon {
+.preorder-count-pill :is(.shopping-bag-icon, .lend-hand-icon) {
   width: 13px;
   height: 13px;
   flex: 0 0 auto;
@@ -25339,3 +25339,20 @@ textarea {
 .shelf-grid .shelf-lend-action { flex: 0 0 auto; white-space: nowrap; }
 .shelf-grid .game-row-actions-bottom:has(.shelf-lend-action) { display: flex; flex-wrap: wrap; gap: 6px; }
 .lent-badge { max-width: 100%; overflow-wrap: anywhere; }
+
+.shelf-lent-field[hidden] { display: none; }
+.shelf-lend-action svg {
+  width: 18px;
+  height: 18px;
+  flex: 0 0 18px;
+  stroke: currentColor;
+}
+
+.shelf-lending-modal .modal-head { justify-content: space-between; align-items: flex-start; }
+.shelf-lending-modal .modal-head h2 { min-width: 0; margin: 0; }
+.shelf-lending-modal .modal-head > button { flex: 0 0 auto; margin-left: auto; }
+.shelf-lending-game { display: flex; align-items: center; gap: 14px; margin-bottom: 16px; }
+.shelf-lending-game strong { min-width: 0; overflow-wrap: anywhere; }
+.shelf-lending-cover { width: 64px; height: 88px; flex: 0 0 64px; object-fit: contain; border-radius: 5px; background: var(--panel); }
+.shelf-lending-modal > label { gap: 4px; }
+.shelf-lending-modal > label > span { margin-bottom: 0; }

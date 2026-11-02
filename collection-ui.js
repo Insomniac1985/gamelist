@@ -1744,7 +1744,7 @@ function renderLibrary() {
   if (state.filters.tab === "preorders") {
     el.count.innerHTML = shelfPreorderCountPill(games);
   } else {
-    el.count.innerHTML = `${escapeHtml(tt("{count} {item}", { count: games.length, item: games.length === 1 ? tt("game") : tt("games") }))}${state.filters.tab === "shelf" ? shelfLentCountPill(games) : ""}`;
+    el.count.innerHTML = `${state.filters.tab === "shelf" ? shelfLentCountPill(games) : ""}${escapeHtml(tt("{count} {item}", { count: games.length, item: games.length === 1 ? tt("game") : tt("games") }))}`;
   }
   el.libraryTitle.textContent = state.filters.tab === "preorders" ? tt("Preorders") : state.filters.tab === "wishlist" ? tt("Wishlist") : state.filters.tab === "new" ? tt("New additions") : state.filters.tab === "drive" ? tt("Drive") : tt("Shelf");
   el.shelf.classList.toggle("list-view", state.viewMode === "list");
@@ -1925,7 +1925,7 @@ function gameCard(game, options = {}) {
   const studio = [game.developer, game.publisher && game.publisher !== game.developer ? game.publisher : ""].filter(Boolean).join(" / ");
   const owners = game.owners || [];
   const visibleOwners = visibleShelfCardOwners(owners);
-  const ownerClasses = game.lentTo ? ` lent-card ${ownerCardColorClass(game.lentTo)}` : visibleOwners.map((owner) => ` ${ownerCardColorClass(owner)}`).join("");
+  const ownerClasses = canLendShelfGame(game) && game.lentTo ? ` lent-card ${ownerCardColorClass(game.lentTo)}` : visibleOwners.map((owner) => ` ${ownerCardColorClass(owner)}`).join("");
   const tags = visibleShelfTags(game, syncedProjection ? (game.genres || []).slice(0, 4) : [...(game.tags || []), game.category && game.category !== "Game" ? game.category : "", ...String(game.genre || "").split(",")]);
   const condition = conditionLabel(game);
   const card = createGameCardShell(document);
@@ -1987,7 +1987,7 @@ function gameRow(game) {
   const studio = [game.developer, game.publisher && game.publisher !== game.developer ? game.publisher : ""].filter(Boolean).join(" / ");
   const owners = game.owners || [];
   const visibleOwners = visibleShelfCardOwners(owners);
-  const ownerClasses = game.lentTo ? ` lent-card ${ownerCardColorClass(game.lentTo)}` : visibleOwners.map((owner) => ` ${ownerCardColorClass(owner)}`).join("");
+  const ownerClasses = canLendShelfGame(game) && game.lentTo ? ` lent-card ${ownerCardColorClass(game.lentTo)}` : visibleOwners.map((owner) => ` ${ownerCardColorClass(owner)}`).join("");
   const tags = visibleShelfTags(game, syncedProjection ? (game.genres || []).slice(0, 4) : [...(game.tags || []), game.category && game.category !== "Game" ? game.category : "", ...String(game.genre || "").split(",")]);
   const description = game.description || "";
   const actions = syncedProjection ? `<div class="game-row-actions-top"><button class="icon-button row-edit-action" data-action="edit-preorder" type="button" title="Edit" aria-label="Edit">${pencilIcon()}</button><button class="icon-button danger-button row-delete-action" data-action="delete-preorder" type="button" title="Delete" aria-label="Delete">${trashIcon()}</button></div><div class="game-row-actions-bottom"><button class="primary-button" data-action="${wishlistProjection ? "add-wishlist-backlog" : "accept-preorder"}" type="button">${forwardIcon()}<span>${escapeHtml(tt("Backlog"))}</span></button></div>` : isPendingCollectionGame(game) ? `<div class="game-row-actions-top"><button class="primary-button add-collection-action" data-action="add-collection" type="button">Add to Collection</button></div><div class="game-row-actions-bottom"><button class="icon-button danger-button row-delete-action" data-action="delete" type="button" title="Delete" aria-label="Delete">${trashIcon()}</button></div>` : `<div class="game-row-actions-top"><button class="icon-button row-edit-action" data-action="edit" type="button" title="Edit" aria-label="Edit">${pencilIcon()}</button><button class="icon-button danger-button row-delete-action" data-action="delete" type="button" title="Delete" aria-label="Delete">${trashIcon()}</button></div><div class="game-row-actions-bottom">${lendButton(game)}<button class="ghost-button shelf-add-backlog-action" data-action="add-backlog" type="button">${backIcon()}<span class="shelf-backlog-desktop-label">${escapeHtml(tt("Backlog from Collection"))}</span><span class="shelf-backlog-mobile-label">${escapeHtml(tt("Add to Backlog"))}</span></button></div>`;
@@ -2041,17 +2041,24 @@ function shelfPreorderCountPill(games) {
   return `<span class="preorder-count-pill preorder-count-tooltip" tabindex="0" title="${escapeHtml(title)}">${shoppingBagIcon()}${games.length} ${escapeHtml(tt(games.length === 1 ? "Preorder" : "Preorders"))}<span class="preorder-store-list" role="tooltip">${rows}</span></span>`;
 }
 
+function canLendShelfGame(game) {
+  return Boolean(game) && !isDigitalShelfGame(game) && !isPendingCollectionGame(game)
+    && !game.preorderProjection && !game.wishlistProjection && !game._gamelistProjection;
+}
+
 function lentBadge(game) {
-  return game.lentTo ? `<span class="owner-pill lent-badge ${escapeHtml(ownerColorClass(game.lentTo))}">${escapeHtml(tt("Lent to {name}", { name: game.lentTo }))}</span>` : "";
+  return canLendShelfGame(game) && game.lentTo ? `<span class="owner-pill lent-badge ${escapeHtml(ownerColorClass(game.lentTo))}">${escapeHtml(tt("Lent to {name}", { name: game.lentTo }))}</span>` : "";
 }
 
 function lendButton(game) {
-  return `<button class="ghost-button shelf-lend-action editor-only" data-action="${game.lentTo ? "returned" : "lend"}" type="button">${escapeHtml(tt(game.lentTo ? "Returned" : "Lend"))}</button>`;
+  if (!canLendShelfGame(game)) return "";
+  return `<button class="ghost-button shelf-lend-action editor-only" data-action="${game.lentTo ? "returned" : "lend"}" type="button">${game.lentTo ? svgAsset("icons/actions/forward-2") : svgAsset("icons/actions/lend-hand")}<span>${escapeHtml(tt(game.lentTo ? "Get back" : "Lend"))}</span></button>`;
 }
 
 function shelfLentCountPill(games) {
   const counts = new Map();
   games.forEach(game => {
+    if (!canLendShelfGame(game)) return;
     const name = String(game.lentTo || "").trim();
     if (name) counts.set(name, (counts.get(name) || 0) + 1);
   });
@@ -2060,15 +2067,17 @@ function shelfLentCountPill(games) {
   const count = summary.reduce((total, [, value]) => total + value, 0);
   const rows = summary.map(([name, value]) => `<span><strong>${escapeHtml(name)}</strong><em>${value}</em></span>`).join("");
   const title = summary.map(([name, value]) => `${name}: ${value}`).join("\n");
-  return `<span class="preorder-count-pill preorder-count-tooltip lent-count-pill" tabindex="0" title="${escapeHtml(title)}">${count} ${escapeHtml(tt("Lent"))}<span class="preorder-store-list" role="tooltip">${rows}</span></span>`;
+  return `<span class="preorder-count-pill preorder-count-tooltip lent-count-pill" tabindex="0" title="${escapeHtml(title)}">${svgAsset("icons/actions/lend-hand")}${count} ${escapeHtml(tt("Lent"))}<span class="preorder-store-list" role="tooltip">${rows}</span></span>`;
 }
 
 function openLendingDialog(game) {
+  if (!state.canEdit || !canLendShelfGame(game)) return;
   const returning = Boolean(game.lentTo);
   const dialog = document.createElement("dialog");
   dialog.className = "shelf-lending-dialog";
   dialog.setAttribute("aria-labelledby", "shelfLendingTitle");
-  dialog.innerHTML = `<form class="modal glass shelf-lending-modal"><div class="modal-head"><h2 id="shelfLendingTitle">${escapeHtml(tt(returning ? "Returned" : "Lend"))}</h2><button class="icon-button" type="button" data-cancel aria-label="${escapeHtml(tt("Close"))}">&times;</button></div><p>${escapeHtml(game.title)}</p>${returning ? `<p>${escapeHtml(tt("Confirm that {name} has returned this game.", { name: game.lentTo }))}</p>` : `<label><span>${escapeHtml(tt("Lent to"))}</span><input name="borrower" maxlength="120" required autocomplete="off" placeholder="${escapeHtml(tt("Borrower name"))}"></label>`}<p class="shelf-lending-error" role="alert" hidden></p><div class="modal-actions"><button class="ghost-button" type="button" data-cancel>${escapeHtml(tt("Cancel"))}</button><button class="primary-button" type="submit">${escapeHtml(tt(returning ? "Confirm" : "Lend"))}</button></div></form>`;
+  const cover = coverUrl(game.cover || "") || platformFallback(game.platform);
+  dialog.innerHTML = `<form class="modal glass shelf-lending-modal"><div class="modal-head"><h2 id="shelfLendingTitle">${escapeHtml(tt(returning ? "Get back" : "Lend"))}</h2><button class="icon-button" type="button" data-cancel aria-label="${escapeHtml(tt("Close"))}">&times;</button></div><div class="shelf-lending-game"><img class="shelf-lending-cover" src="${escapeHtml(cover)}" alt="${escapeHtml(game.title)} cover" decoding="async"><strong>${escapeHtml(game.title)}</strong></div>${returning ? `<p>${escapeHtml(tt("Confirm that {name} has returned this game.", { name: game.lentTo }))}</p>` : `<label><span>${escapeHtml(tt("Lent to"))}</span><input name="borrower" maxlength="120" required autocomplete="off" placeholder="${escapeHtml(tt("Borrower name"))}"></label>`}<p class="shelf-lending-error" role="alert" hidden></p><div class="modal-actions"><button class="ghost-button" type="button" data-cancel>${escapeHtml(tt("Cancel"))}</button><button class="primary-button" type="submit">${escapeHtml(tt(returning ? "Confirm" : "Lend"))}</button></div></form>`;
   document.body.append(dialog);
   dialog.querySelectorAll("[data-cancel]").forEach(button => button.addEventListener("click", () => closeDialog(dialog)));
   dialog.addEventListener("close", () => { dialog.remove(); document.body.classList.toggle("dialog-open", document.querySelector("dialog[open]") !== null); }, { once: true });
@@ -2383,6 +2392,9 @@ function syncShelfGamelistTargetMode() {
   const active = isGamelistProjectionTarget();
   const collectingInfo = el.addForm.classList.contains("shelf-gamelist-import-mini");
   const combined = shelfCollectionEnabled() && !collectingInfo;
+  const showLending = !active && !el.digitalInput.checked;
+  el.fields.lentTo.closest(".shelf-lent-field").hidden = !showLending;
+  el.fields.lentTo.disabled = !showLending;
   el.addForm.classList.toggle("combined-collection-editor", combined);
   el.addForm.classList.toggle("gamelist-target-editor", active && !collectingInfo);
   el.addForm.classList.toggle("gamelist-target-wishlist", target === "wishlist");
@@ -3055,7 +3067,7 @@ function shelfGameFromEditor(existing = state.games.find((game) => game.id === s
     genre: el.fields.genre.value.trim(), cover: rawCoverUrl(el.fields.cover.value.trim()), notes: el.fields.notes.value.trim(),
     keyArt: el.fields.keyArt.value.trim(),
     trailerUrl: state.pendingTrailerUrl || existing?.trailerUrl || "",
-    lentTo: canonicalOwner(el.fields.lentTo.value.trim()),
+    lentTo: digitalMode ? "" : canonicalOwner(el.fields.lentTo.value.trim()),
     owners: splitValues(el.fields.owners.value).map(canonicalOwner).filter(Boolean), category: existing?.category || "Game",
     releaseDate: el.fields.releaseDate.value, trophyName: el.fields.trophyName.value.trim(), websites: legacyWebsiteLinks(existing),
     createdAt: shelfCreatedAtForDate(el.fields.additionDate.value, existing),
@@ -4361,7 +4373,7 @@ function gamelistProjectionCard(game, options = {}) {
   const cardArt = !neutralReleaseCard && game.playing ? game.keyArt : cover;
   const owners = Array.isArray(game.owners) && game.owners.length ? game.owners : [state.gamelistSettings.defaultOwner || "User"];
   const visibleOwners = visibleShelfCardOwners(owners);
-  const ownerClasses = game.lentTo ? ` lent-card ${ownerCardColorClass(game.lentTo)}` : visibleOwners.map((owner) => ` ${ownerCardColorClass(owner)}`).join("");
+  const ownerClasses = canLendShelfGame(game) && game.lentTo ? ` lent-card ${ownerCardColorClass(game.lentTo)}` : visibleOwners.map((owner) => ` ${ownerCardColorClass(owner)}`).join("");
   const studio = [game.developer, game.publisher].filter(Boolean).join(" / ");
   const card = createGameCardShell(document);
   card.dataset.gamelistId = game.id; card.setAttribute("role", "button"); card.tabIndex = 0;

@@ -7,6 +7,7 @@ const STRINGS = {
   "es-ES": {
     "Lend": "Prestar",
     "Returned": "Devuelto",
+    "Get back": "Recuperar",
     "Lent": "Prestados",
     "Lent to": "Prestado a",
     "Lent to {name}": "Prestado a {name}",
