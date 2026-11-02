@@ -25427,3 +25427,30 @@ textarea {
   background: linear-gradient(color-mix(in srgb, var(--accent) 20%, transparent), color-mix(in srgb, var(--accent) 20%, transparent)), var(--bg);
 }
 .shelf-return-action svg { width: 18px; height: 18px; flex-shrink: 0; }
+
+/* Fill Shelf cards with the same 36px action controls as the other lists. */
+.shelf-page .shelf-grid .game-card .card-actions:has(> .shelf-lend-action) {
+  justify-self: stretch;
+  align-items: stretch;
+  width: 100%;
+  max-width: 100%;
+  gap: 8px;
+}
+.shelf-page .shelf-grid .game-card .card-actions:has(> .shelf-lend-action) > button {
+  box-sizing: border-box;
+  height: 36px;
+  min-height: 36px;
+  max-height: 36px;
+}
+.shelf-page .shelf-grid .game-card .card-actions:has(> .shelf-lend-action) > :is(.shelf-lend-action, .shelf-add-backlog-action) {
+  flex: 1 1 auto;
+  width: auto;
+  padding-block: 6px;
+}
+.shelf-page .shelf-grid .game-card .card-actions:has(> .shelf-lend-action) > .shelf-card-delete-action {
+  flex: 0 0 36px;
+  width: 36px;
+  min-width: 36px;
+  max-width: 36px;
+  padding: 0;
+}

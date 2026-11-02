@@ -158,10 +158,25 @@ async function mount({ slots, changed, openGame, editGame, openSettings, mediaCh
   await import('./collection-ui.js');
   await ready;
   setMedia(media);
+  const syncLibraryHeading = () => {
+    const reference = document.querySelector('#backlog > .column-head');
+    const heading = queryAll('#shelfLibraryTitle')[0];
+    if (!reference || !heading) return;
+    const copy = (target, source, properties) => {
+      const computed = getComputedStyle(source);
+      properties.forEach(property => target.style.setProperty(property, computed.getPropertyValue(property)));
+    };
+    copy(heading.closest('.column-head'), reference, ['padding', 'margin', 'min-height', 'align-items', 'gap']);
+    copy(heading, reference.querySelector('h2'), ['font-family', 'font-size', 'font-weight', 'line-height', 'letter-spacing', 'margin']);
+    copy(heading.parentElement, reference.querySelector('h2').parentElement, ['font-size', 'line-height']);
+  };
   const syncTheme = () => {
     const classes = [...document.body.classList, ...document.documentElement.classList].filter(name => name.startsWith('theme-') || ['can-edit', 'mobile-app-mode'].includes(name));
     surfaces.forEach(({ body, ownerStyle }) => { const ownerCss = document.querySelector('#customOwnerColorStyles')?.textContent || ''; if (ownerStyle.textContent !== ownerCss) ownerStyle.textContent = ownerCss; body.lang = document.documentElement.lang; body.className = ['shelf-page', ...classes, ...(body.classList.contains('dialog-open') ? ['dialog-open'] : [])].join(' '); });
+    syncLibraryHeading();
   };
+  window.addEventListener('resize', syncLibraryHeading);
+  document.fonts?.ready.then(syncLibraryHeading);
   new MutationObserver(syncTheme).observe(document.body, { attributes: true, attributeFilter: ['class'] });
   new MutationObserver(syncTheme).observe(document.documentElement, { attributes: true, attributeFilter: ['class', 'lang'] });
   new MutationObserver(syncTheme).observe(document.head, { childList: true, subtree: true, characterData: true });
