@@ -43,6 +43,9 @@ const context = vm.createContext({
   },
 });
 vm.runInContext(lending, context);
+const physicalMeta = context.physicalShelfIdentityMeta({ title: 'Test game', platform: 'PS5', country: 'UK' });
+assert.ok(physicalMeta.indexOf('region-flag') < physicalMeta.indexOf('PS5'));
+assert.ok(physicalMeta.indexOf('PS5') < physicalMeta.indexOf('Complete'));
 assert.equal(context.shelfLentCountPill(state.additions), '');
 assert.match(context.lendButton(state.additions[0]), /data-action="lend"/);
 context.openLendingDialog(state.additions[0]);

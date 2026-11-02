@@ -25385,9 +25385,7 @@ textarea {
   #addGameForm .shelf-lending-fields { grid-template-columns: minmax(0, 1fr); gap: 12px; }
 }
 
-.shelf-lending-info { display: grid; gap: 10px; min-width: 0; }
-.shelf-lending-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
-.shelf-lending-meta > * { flex-shrink: 0; }
+.shelf-lending-info { display: flex; flex-direction: column; align-items: flex-start; min-width: 0; }
 
 /* Lending actions share a single row instead of inheriting fixed button widths. */
 .shelf-grid .game-card .card-actions > .shelf-lend-action,
