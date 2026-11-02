@@ -3602,7 +3602,7 @@ h3 {
     color-mix(in srgb, var(--preorder-accent) 18%, transparent);
 }
 
-.preorder-count-pill .shopping-bag-icon {
+.preorder-count-pill :is(.shopping-bag-icon, .lend-hand-icon) {
   width: 13px;
   height: 13px;
   flex: 0 0 auto;
@@ -3630,6 +3630,7 @@ h3 {
 .column-head .preorder-count-pill {
   margin-left: 0;
   margin-right: 0;
+  margin-bottom: 0;
 }
 
 .preorder-store-list {
@@ -25313,4 +25314,73 @@ textarea {
   .completed-list:not(.list-view) {
     grid-template-columns: repeat(6, minmax(0, 1fr));
   }
+}
+
+/* Shelf lending shares owner colors and the preorder count layout. */
+.lent-count-pill {
+  --preorder-accent: #b4ed32;
+  --preorder-accent-text: #152000;
+}
+.shelf-grid :is(.game-card, .game-row).lent-card {
+  background: repeating-linear-gradient(135deg, color-mix(in srgb, var(--lent-color, var(--accent)) 14%, transparent) 0 6px, transparent 6px 12px), var(--panel) !important;
+  border-color: color-mix(in srgb, var(--lent-color, var(--accent)) 36%, transparent);
+}
+.shelf-lending-fields, .shelf-lending-fields > label, .shelf-lending-modal > label {
+  display: grid;
+  gap: 8px;
+  min-width: 0;
+}
+.shelf-lending-fields { align-self: start; }
+.shelf-lending-fields input { width: 100%; min-width: 0; box-sizing: border-box; }
+.shelf-lending-dialog { width: min(440px, calc(100vw - 32px)); }
+.shelf-lending-modal { width: 100%; box-sizing: border-box; }
+.shelf-lending-modal > p { overflow-wrap: anywhere; }
+.shelf-lending-error { color: var(--danger, #ff7777); }
+.shelf-grid .game-card .card-actions:has(.shelf-lend-action) { display: flex; flex-wrap: wrap; gap: 6px; }
+.shelf-grid .shelf-lend-action { flex: 0 0 auto; white-space: nowrap; }
+.shelf-grid .game-row-actions-bottom:has(.shelf-lend-action) { display: flex; flex-wrap: wrap; gap: 6px; }
+.lent-badge { max-width: 100%; overflow-wrap: anywhere; }
+
+.shelf-lent-field[hidden] { display: none; }
+.shelf-lend-action svg {
+  width: 18px;
+  height: 18px;
+  flex: 0 0 18px;
+  stroke: currentColor;
+}
+
+.shelf-lending-modal .modal-head { justify-content: space-between; align-items: flex-start; }
+.shelf-lending-modal .modal-head h2 { min-width: 0; margin: 0; }
+.shelf-lending-modal .modal-head > button { flex: 0 0 auto; margin-left: auto; }
+.shelf-lending-game { display: flex; align-items: center; gap: 14px; margin-bottom: 16px; }
+.shelf-lending-game strong { min-width: 0; overflow-wrap: anywhere; }
+.shelf-lending-cover { width: 64px; height: 88px; flex: 0 0 64px; object-fit: contain; border-radius: 5px; background: var(--panel); }
+.shelf-lending-modal > label { gap: 4px; }
+.shelf-lending-modal > label > span { margin-bottom: 0; }
+
+/* Keep Shelf ownership, borrower and achievement inputs on the same baseline. */
+#addGameForm .shelf-lending-fields > label,
+#addGameForm .shelf-achievement-search-field {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  gap: 6px;
+  min-width: 0;
+}
+#addGameForm .shelf-lending-fields > label > span,
+#addGameForm .shelf-achievement-search-field > span { margin-bottom: 0; }
+#addGameForm .shelf-lending-fields input,
+#addGameForm .shelf-achievement-search-field input { height: 44px; min-height: 44px; box-sizing: border-box; }
+#addGameForm .shelf-lending-fields > .shelf-lent-field[hidden] { display: none; }
+@media (min-width: 690px) {
+  #addGameForm .shelf-lending-fields:has(> .shelf-lent-field:not([hidden])) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+    align-self: end;
+    align-items: end;
+  }
+  #addGameForm .shelf-achievement-search-field { align-self: end; }
+}
+@media (max-width: 689px) {
+  #addGameForm .shelf-lending-fields { grid-template-columns: minmax(0, 1fr); gap: 12px; }
 }
