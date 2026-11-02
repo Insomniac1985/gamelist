@@ -25321,7 +25321,7 @@ textarea {
   --preorder-accent: #b4ed32;
   --preorder-accent-text: #152000;
 }
-.shelf-grid :is(.game-card, .game-row).lent-card {
+:is(.game-card, .game-row).lent-card {
   background: repeating-linear-gradient(135deg, color-mix(in srgb, var(--lent-color, var(--accent)) 14%, transparent) 0 6px, transparent 6px 12px), var(--panel) !important;
   border-color: color-mix(in srgb, var(--lent-color, var(--accent)) 36%, transparent);
 }
@@ -25412,3 +25412,18 @@ textarea {
     font-size: 11px;
   }
 }
+
+/* Opaque controls keep the lending stripes behind their surfaces. */
+:is(.game-card, .game-row).lent-card :is(.card-actions, .game-row-actions) button,
+.game-card.lent-card .edit-action {
+  position: relative;
+  z-index: 1;
+  background: linear-gradient(rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.08)), var(--bg);
+}
+:is(.game-card, .game-row).lent-card :is(.card-actions, .game-row-actions) .danger-button {
+  background: linear-gradient(rgba(255, 111, 133, 0.12), rgba(255, 111, 133, 0.12)), var(--bg);
+}
+:is(.game-card, .game-row).lent-card :is(.card-actions, .game-row-actions) button:hover {
+  background: linear-gradient(color-mix(in srgb, var(--accent) 20%, transparent), color-mix(in srgb, var(--accent) 20%, transparent)), var(--bg);
+}
+.shelf-return-action svg { width: 18px; height: 18px; flex-shrink: 0; }

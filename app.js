@@ -7515,6 +7515,7 @@ function rowFor(game, section, options = {}) {
   row.tabIndex = 0;
   row.setAttribute("aria-label", `Open ${game.title}`);
   applyOwnerCardClasses(row, owners);
+  applyBacklogLendingStyle(row, game);
   row.classList.toggle("digital-card", Boolean(game.digital));
   row.classList.toggle("stream-card", Boolean(game.stream));
   row.innerHTML = `
@@ -7561,6 +7562,7 @@ function rowFor(game, section, options = {}) {
 }
 
 function rowPrimaryAction(game, section) {
+  if (section === "backlog" && lentCollectionRecordFor(game)) return `<button class="ghost-button row-primary-action shelf-return-action" type="button" title="${escapeHtml(tt("Get back"))}" aria-label="${escapeHtml(tt("Get back"))}">${collectionAddIcon()}<span>${escapeHtml(tt("Get back"))}</span></button>`;
   if (section === "backlog") return `<button class="primary-button row-primary-action" type="button" title="${escapeHtml(tt("Play"))}" aria-label="${escapeHtml(tt("Play"))}">${playIcon()}<span>${escapeHtml(tt("Play"))}</span></button>${backlogStreamAction(game)}`;
   if (section === "new") {
     return `<button class="primary-button row-primary-action" type="button" title="${escapeHtml(tt("Play"))}" aria-label="${escapeHtml(tt("Play"))}">${playIcon()}<span>${escapeHtml(tt("Play"))}</span></button><button class="primary-button row-setup-action" type="button" title="${escapeHtml(tt("Setup"))}" aria-label="${escapeHtml(tt("Setup"))}">${forwardIcon()}<span>${escapeHtml(tt("Setup"))}</span></button>`;
@@ -7571,6 +7573,7 @@ function rowPrimaryAction(game, section) {
 }
 
 function backlogStreamAction(game) {
+  if (lentCollectionRecordFor(game)) return "";
   if (!state.canEdit || !cleanTwitchUser(state.settings.twitchUser) || game.playing || game.completedAt) return "";
   return `<button class="primary-button stream-start-action" type="button" title="${escapeHtml(tt("Stream"))}" aria-label="${escapeHtml(tt("Stream"))}">${playIcon()}<span>${escapeHtml(tt("Stream"))}</span></button>`;
 }
@@ -9126,6 +9129,7 @@ function cardFor(game, options = {}) {
   card.dataset.owner = statuses.join(" ");
   card.draggable = !options.staticCard && manualDragEnabled() && ["backlog", "upcoming", "wanted"].includes(displaySection);
   applyOwnerCardClasses(card, owners);
+  applyBacklogLendingStyle(card, game);
   card.classList.toggle("digital-card", Boolean(game.digital));
   card.classList.toggle("playing-card", Boolean(game.playing) && !neutralReleaseCard);
   card.classList.toggle("stream-card", Boolean(game.stream));
@@ -9254,11 +9258,16 @@ function cardFor(game, options = {}) {
       deleteAction?.remove();
     } else backlogAction?.remove();
     if (completeAction) {
-      completeAction.innerHTML = game.playing
-        ? `${checkIcon()}<span class="action-label">${escapeHtml(tt("Finished"))}</span>`
-        : `${playIcon()}<span class="action-label">${escapeHtml(tt("Play"))}</span>`;
+      const lent = lentCollectionRecordFor(game);
+      completeAction.innerHTML = lent
+        ? `${collectionAddIcon()}<span class="action-label">${escapeHtml(tt("Get back"))}</span>`
+        : game.playing
+          ? `${checkIcon()}<span class="action-label">${escapeHtml(tt("Finished"))}</span>`
+          : `${playIcon()}<span class="action-label">${escapeHtml(tt("Play"))}</span>`;
+      completeAction.classList.toggle("shelf-return-action", Boolean(lent));
       completeAction.addEventListener("click", () => {
-        if (game.playing) completeGame(game.id);
+        if (lentCollectionRecordFor(game)) void returnLentBacklogGame(game);
+        else if (game.playing) completeGame(game.id);
         else startPlaying(game.id);
       });
       if (displaySection === "backlog") {
@@ -12610,6 +12619,7 @@ function startPlaying(id, { stream = false } = {}) {
   if (!state.canEdit) return;
   const game = getGame(id);
   if (!game || game.completedAt) return;
+  if (lentCollectionRecordFor(game)) { void returnLentBacklogGame(game); return; }
   if (isShelfNewAddition(game)) game.acceptedFromShelfAt = new Date().toISOString();
   if (["upcoming", "wanted", "new"].includes(game.section)) game.backlogAddedAt = new Date().toISOString();
   game.section = "backlog";
@@ -13872,6 +13882,27 @@ function collectionRecords() {
 function collectionRecordFor(game) {
   collectionRecords();
   return collectionRecordSnapshot.byId.get(game.shelfId) || collectionRecordSnapshot.byGamelist.get(game.id);
+}
+
+function lentCollectionRecordFor(game) {
+  if (!game || game.section !== "backlog" || game.digital || game.dlc) return null;
+  const record = collectionRecordFor(game);
+  return record && !record.digital && !record.dlc && !record.pendingCollection && String(record.lentTo || "").trim() ? record : null;
+}
+
+function applyBacklogLendingStyle(node, game) {
+  const record = lentCollectionRecordFor(game);
+  if (!record) return;
+  node.classList.remove(...[...node.classList].filter(name => name.startsWith("owner-color-card-")));
+  node.classList.add("lent-card", ownerCardColorClass(record.lentTo));
+}
+
+async function returnLentBacklogGame(game) {
+  if (!state.canEdit) return;
+  const record = lentCollectionRecordFor(game);
+  if (!record) return;
+  await ensureCollectionWorkspace();
+  collectionUI?.returnLentGame(record.id);
 }
 
 function collectionRecordValue(game) {

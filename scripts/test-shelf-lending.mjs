@@ -95,3 +95,37 @@ for (const excluded of [{ digital: true }, { dlc: true }, { pendingCollection: t
 }
 assert.match(context.lendButton({ id: 'physical' }), /icons\/actions\/lend-hand/);
 console.log('Shelf lending checks passed.');
+const appSource = readFileSync(new URL('../app.js', import.meta.url), 'utf8');
+const shelfRecord = { id: 'shelf-one', gamelistId: 'list-one', lentTo: 'Judy' };
+let returnedId;
+const backlogContext = vm.createContext({
+  state: { canEdit: true, settings: {} },
+  collectionData: { games: [shelfRecord] },
+  collectionUI: { returnLentGame: id => { returnedId = id; } },
+  ensureCollectionWorkspace: async () => {},
+  ownerCardColorClass: name => `owner-color-card-${name.toLowerCase()}`,
+  escapeHtml, tt: value => value,
+  collectionAddIcon: () => '<svg class="collection-arrow"></svg>',
+  playIcon: () => '<svg class="play-icon"></svg>',
+  backlogStreamAction: () => '',
+});
+vm.runInContext(appSource.slice(appSource.indexOf('let collectionRecordSnapshot = null;'), appSource.indexOf('function collectionRecordValue(')), backlogContext);
+vm.runInContext(appSource.slice(appSource.indexOf('function rowPrimaryAction('), appSource.indexOf('function backlogStreamAction(')), backlogContext);
+const backlogGame = { id: 'list-one', section: 'backlog' };
+assert.equal(backlogContext.lentCollectionRecordFor(backlogGame).id, 'shelf-one');
+assert.match(backlogContext.rowPrimaryAction(backlogGame, 'backlog'), /Get back/);
+assert.doesNotMatch(backlogContext.rowPrimaryAction(backlogGame, 'backlog'), /play-icon/);
+assert.equal(backlogContext.lentCollectionRecordFor({ ...backlogGame, digital: true }), null);
+assert.equal(backlogContext.lentCollectionRecordFor({ ...backlogGame, section: 'wanted' }), null);
+assert.equal(backlogContext.lentCollectionRecordFor({ id: 'unlinked', section: 'backlog' }), null);
+const classes = new Set(['game-card', 'owner-color-card-original']);
+backlogContext.applyBacklogLendingStyle({ classList: { [Symbol.iterator]: () => classes.values(), remove: (...names) => names.forEach(name => classes.delete(name)), add: (...names) => names.forEach(name => classes.add(name)) } }, backlogGame);
+assert.ok(classes.has('lent-card'));
+assert.ok(classes.has('owner-color-card-judy'));
+assert.ok(!classes.has('owner-color-card-original'));
+await backlogContext.returnLentBacklogGame(backlogGame);
+assert.equal(returnedId, 'shelf-one');
+shelfRecord.lentTo = '';
+assert.equal(backlogContext.lentCollectionRecordFor(backlogGame), null);
+assert.match(backlogContext.rowPrimaryAction(backlogGame, 'backlog'), /play-icon/);
+console.log('Linked Backlog lending checks passed.');

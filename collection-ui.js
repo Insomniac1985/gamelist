@@ -6049,6 +6049,10 @@ function initUnifiedShelf() {
       return count;
     },
     select(tab, media = "all") { state.filters.tab = normalizedShelfTab(tab); state.unifiedMedia = media; renderUnifiedShelf(); },
+    returnLentGame(id) {
+      const game = state.games.find(item => item.id === id);
+      if (game?.lentTo) openLendingDialog(game);
+    },
     search: scrollToShelfSearch,
     view(mode) { state.viewMode = mode; renderUnifiedShelf(); },
     visibleCount() { return filteredGames().length; },
