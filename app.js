@@ -8,7 +8,7 @@ import { normalizeSearchText, bindModalTouchGuard, createGameCardShell, bindActi
 import { applySiteTheme, normalizeThemeSettings, ownerCardColorClass, ownerColorClass, themeSettingsContent, bindThemeSettingsContent, readThemeSettingsContent } from "./theme-system.js";
 import { applyDocumentTranslations, languageOptions, normalizeLanguage, t } from "./i18n.js";
 import { accountSettingsMarkup } from "./account-settings-ui.js";
-import { isPlayasiaStore, syncGameListControls, syncGameListSlider, syncStoreFieldIcon, SHELF_COUNTRIES, preventImplicitGameSubmit } from "./game-editor-controls.js";
+import { isMainOwnerGame, isPlayasiaStore, syncGameListControls, syncGameListSlider, syncStoreFieldIcon, SHELF_COUNTRIES, preventImplicitGameSubmit } from "./game-editor-controls.js";
 
 await loadSvgAssets();
 hydrateSvgAssets(document);
@@ -13902,7 +13902,7 @@ function collectionRecordFor(game) {
 function lentCollectionRecordFor(game) {
   if (!game || game.section !== "backlog" || game.digital || game.dlc) return null;
   const record = collectionRecordFor(game);
-  return record && !record.digital && !record.dlc && !record.pendingCollection && String(record.lentTo || "").trim() ? record : null;
+  return record && isMainOwnerGame(record, state.settings.defaultOwner) && !record.digital && !record.dlc && !record.pendingCollection && String(record.lentTo || "").trim() ? record : null;
 }
 
 function backlogLentBadge(game) {

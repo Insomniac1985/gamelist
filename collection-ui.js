@@ -5,7 +5,7 @@ import { embeddedGameEditor, connectEmbeddedGameEditor } from "./shared-add-game
 import { normalizeSearchText, bindModalTouchGuard, createGameCardShell, bindActivityCardParallax, mountActivitySlider, mountTwitchPreview, mountReleaseCalendar, finishedGameMarkup, achievementCardMarkup, achievementDashboardMarkup, achievementPanelMarkup, completedCardMarkup, horizontalCarouselState, syncViewModeButton, slideHorizontalCarousel, comparePlayingGames, timeBadgeMarkup, guideLinksMarkup, storeButtonsMarkup, activityTrailerUrl, preloadPausedActivityTrailers, syncFocusedActivityTrailer, activityReleaseStatus, activityCoverOverride, activityLocalGameForTitle, activityTitleMatchScore, activityAllowsPsnCardTrophies, formatFooterDate, formatFooterDateTime, formatFooterShortDate, confirmGameDelete } from "./activity-ui.js";
 import { applySiteTheme, normalizeThemeSettings, ownerCardColorClass, ownerColorClass } from "./theme-system.js";
 import { applyDocumentTranslations, normalizeLanguage, t } from "./i18n.js";
-import { isPlayasiaStore, syncGameListControls, syncGameListSlider, syncCollectionCondition, syncStoreFieldIcon, SHELF_COUNTRIES, preventImplicitGameSubmit } from "./game-editor-controls.js";
+import { isMainOwnerGame, isPlayasiaStore, syncGameListControls, syncGameListSlider, syncCollectionCondition, syncStoreFieldIcon, SHELF_COUNTRIES, preventImplicitGameSubmit } from "./game-editor-controls.js";
 
 const unifiedShelfScope = window.__unifiedShelfScope;
 const document = unifiedShelfScope?.document || window.document;
@@ -575,6 +575,7 @@ function bindEvents() {
   el.fields.releaseDate.addEventListener("input", syncShelfGamelistSectionForTarget);
   el.fields.releaseDate.addEventListener("change", syncShelfGamelistSectionForTarget);
   el.fields.country.addEventListener("change", syncShelfEditorIcons);
+  el.fields.owners.addEventListener("input", syncShelfLendingField);
   el.fields.cover.addEventListener("input", syncShelfEditorCoverPreview);
   el.fields.cover.addEventListener("change", syncShelfEditorCoverPreview);
   window.matchMedia("(min-width: 690px)").addEventListener("change", () => syncShelfGamelistTargetMode());
@@ -2042,7 +2043,7 @@ function shelfPreorderCountPill(games) {
 }
 
 function canLendShelfGame(game) {
-  return Boolean(game) && !isDigitalShelfGame(game) && !isPendingCollectionGame(game)
+  return Boolean(game) && isMainOwnerGame(game, state.gamelistSettings.defaultOwner) && !isDigitalShelfGame(game) && !isPendingCollectionGame(game)
     && !game.preorderProjection && !game.wishlistProjection && !game._gamelistProjection;
 }
 
@@ -2089,7 +2090,7 @@ function openLendingDialog(game) {
   dialog.setAttribute("aria-labelledby", "shelfLendingTitle");
   const cover = coverUrl(game.cover || "") || platformFallback(game.platform);
   const meta = physicalShelfIdentityMeta(game);
-  dialog.innerHTML = `<form class="modal glass shelf-lending-modal"><div class="modal-head"><h2 id="shelfLendingTitle">${escapeHtml(tt(returning ? "Get back" : "Lend"))}</h2><button class="icon-button" type="button" data-cancel aria-label="${escapeHtml(tt("Close"))}">&times;</button></div><div class="shelf-lending-game"><img class="shelf-lending-cover" src="${escapeHtml(cover)}" alt="${escapeHtml(game.title)} cover" decoding="async"><div class="shelf-lending-info"><strong>${escapeHtml(game.title)}</strong><div class="meta">${meta}</div></div></div>${returning ? `<p>${escapeHtml(tt("Confirm that {name} has returned this game.", { name: game.lentTo }))}</p>` : `<label><span>${escapeHtml(tt("Lent to"))}</span><input name="borrower" maxlength="120" required autocomplete="off" placeholder="${escapeHtml(tt("Borrower name"))}"></label>`}<p class="shelf-lending-error" role="alert" hidden></p><div class="modal-actions"><button class="ghost-button" type="button" data-cancel>${escapeHtml(tt("Cancel"))}</button><button class="primary-button" type="submit">${escapeHtml(tt(returning ? "Confirm" : "Lend"))}</button></div></form>`;
+  dialog.innerHTML = `<form class="modal glass shelf-lending-modal"><div class="modal-head"><h2 id="shelfLendingTitle">${escapeHtml(tt(returning ? "Get back" : "Lend"))}</h2><button class="icon-button" type="button" data-cancel aria-label="${escapeHtml(tt("Close"))}">&times;</button></div><div class="shelf-lending-game"><img class="shelf-lending-cover" src="${escapeHtml(cover)}" alt="${escapeHtml(game.title)} cover" decoding="async"><div class="shelf-lending-info"><strong>${escapeHtml(game.title)}</strong>${game.publisher ? `<div class="studio-line"><span>${escapeHtml(game.publisher)}</span></div>` : ""}<div class="meta">${meta}</div></div></div>${returning ? `<p>${escapeHtml(tt("Confirm that {name} has returned this game.", { name: game.lentTo }))}</p>` : `<label><span>${escapeHtml(tt("Lent to"))}</span><input name="borrower" maxlength="120" required autocomplete="off" placeholder="${escapeHtml(tt("Borrower name"))}"></label>`}<p class="shelf-lending-error" role="alert" hidden></p><div class="modal-actions"><button class="ghost-button" type="button" data-cancel>${escapeHtml(tt("Cancel"))}</button><button class="primary-button" type="submit">${escapeHtml(tt(returning ? "Confirm" : "Lend"))}</button></div></form>`;
   document.body.append(dialog);
   dialog.querySelectorAll("[data-cancel]").forEach(button => button.addEventListener("click", () => closeDialog(dialog)));
   dialog.addEventListener("close", () => { dialog.remove(); document.body.classList.toggle("dialog-open", document.querySelector("dialog[open]") !== null); }, { once: true });
@@ -2399,14 +2400,19 @@ function shelfCollectionEnabled() {
     && (el.addForm.classList.contains("shelf-gamelist-import-mini") || document.querySelector("#shelfAddCollectionInput").checked);
 }
 
+function syncShelfLendingField() {
+  const show = !isGamelistProjectionTarget() && !el.digitalInput.checked
+    && isMainOwnerGame({ owners: splitValues(el.fields.owners.value) }, state.gamelistSettings.defaultOwner);
+  el.fields.lentTo.closest(".shelf-lent-field").hidden = !show;
+  el.fields.lentTo.disabled = !show;
+}
+
 function syncShelfGamelistTargetMode() {
   const target = state.gamelistAddTarget;
   const active = isGamelistProjectionTarget();
   const collectingInfo = el.addForm.classList.contains("shelf-gamelist-import-mini");
   const combined = shelfCollectionEnabled() && !collectingInfo;
-  const showLending = !active && !el.digitalInput.checked;
-  el.fields.lentTo.closest(".shelf-lent-field").hidden = !showLending;
-  el.fields.lentTo.disabled = !showLending;
+  syncShelfLendingField();
   el.addForm.classList.toggle("combined-collection-editor", combined);
   el.addForm.classList.toggle("gamelist-target-editor", active && !collectingInfo);
   el.addForm.classList.toggle("gamelist-target-wishlist", target === "wishlist");
@@ -3079,7 +3085,7 @@ function shelfGameFromEditor(existing = state.games.find((game) => game.id === s
     genre: el.fields.genre.value.trim(), cover: rawCoverUrl(el.fields.cover.value.trim()), notes: el.fields.notes.value.trim(),
     keyArt: el.fields.keyArt.value.trim(),
     trailerUrl: state.pendingTrailerUrl || existing?.trailerUrl || "",
-    lentTo: digitalMode ? "" : canonicalOwner(el.fields.lentTo.value.trim()),
+    lentTo: digitalMode ? "" : isMainOwnerGame({ owners: splitValues(el.fields.owners.value) }, state.gamelistSettings.defaultOwner) ? canonicalOwner(el.fields.lentTo.value.trim()) : existing?.lentTo || "",
     owners: splitValues(el.fields.owners.value).map(canonicalOwner).filter(Boolean), category: existing?.category || "Game",
     releaseDate: el.fields.releaseDate.value, trophyName: el.fields.trophyName.value.trim(), websites: legacyWebsiteLinks(existing),
     createdAt: shelfCreatedAtForDate(el.fields.additionDate.value, existing),

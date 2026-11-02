@@ -1,16 +1,17 @@
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import vm from 'node:vm';
+import { isMainOwnerGame } from '../game-editor-controls.js';
 
 const source = readFileSync(new URL('../collection-ui.js', import.meta.url), 'utf8');
 const lending = source.slice(source.indexOf('function canLendShelfGame('), source.indexOf('function visibleShelfCardOwners('));
 let dialog;
 let saveSucceeds = true;
 let renders = 0;
-const state = { canEdit: true, additions: [{ id: 'one', title: 'Test game' }], overrides: {} };
+const state = { canEdit: true, gamelistSettings: { defaultOwner: "User" }, additions: [{ id: 'one', title: 'Test game' }], overrides: {} };
 const escapeHtml = value => String(value).replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('"', '&quot;');
 const context = vm.createContext({
-  state, Map, Date, String,
+  state, Map, Date, String, isMainOwnerGame,
   isDigitalShelfGame: game => Boolean(game?.digital || game?.dlc),
   isPendingCollectionGame: game => Boolean(game?.pendingCollection),
   svgAsset: name => `<svg data-asset="${name}"></svg>`,
@@ -102,6 +103,7 @@ const appSource = readFileSync(new URL('../app.js', import.meta.url), 'utf8');
 const shelfRecord = { id: 'shelf-one', gamelistId: 'list-one', lentTo: 'Judy' };
 let returnedId;
 const backlogContext = vm.createContext({
+  isMainOwnerGame,
   state: { canEdit: true, settings: {} },
   collectionData: { games: [shelfRecord] },
   collectionUI: { returnLentGame: id => { returnedId = id; } },
@@ -150,3 +152,14 @@ backlogContext.applyCommittedCollectionChange({ shelf: { games: [{ ...shelfRecor
 assert.equal(backlogContext.lentCollectionRecordFor(justSavedGames[0]), null);
 assert.match(backlogContext.rowPrimaryAction(justSavedGames[0], 'backlog'), /play-icon/);
 console.log('Immediate Shelf-to-Backlog updates passed.');
+
+assert.equal(isMainOwnerGame({ owners: ['Judy'] }, 'User'), false);
+assert.equal(isMainOwnerGame({ owners: [' user '] }, 'User'), true);
+assert.equal(isMainOwnerGame({ owners: [] }, 'User'), true);
+assert.equal(isMainOwnerGame({ owners: ['Judy', 'User'] }, 'User'), true);
+assert.equal(context.lendButton({ owners: ['Judy'] }), '');
+assert.equal(context.lentBadge({ owners: ['Judy'], lentTo: 'Alex' }), '');
+assert.equal(context.shelfLentCountPill([{ owners: ['Judy'], lentTo: 'Alex' }]), '');
+backlogContext.applyCommittedCollectionChange({ shelf: { games: [{ ...shelfRecord, owners: ['Judy'], lentTo: 'Alex' }] } });
+assert.equal(backlogContext.lentCollectionRecordFor(justSavedGames[0]), null);
+console.log('Main-owner lending restrictions passed.');

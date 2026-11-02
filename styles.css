@@ -25463,8 +25463,9 @@ textarea {
 }
 #backlog .card-list:not(.list-view) .game-card.has-trailer .title-line { padding-right: 86px; }
 
-@media (max-width: 689px) {
-  .shelf-grid.list-view .game-row-actions .shelf-lend-action {
+/* Keep list lending actions compact until the full desktop layout. */
+@media (max-width: 1919px) {
+  .shelf-grid.list-view .game-row .game-row-actions .game-row-actions-bottom > .shelf-lend-action {
     box-sizing: border-box;
     width: 32px;
     min-width: 32px;
@@ -25477,5 +25478,21 @@ textarea {
     padding: 0;
     gap: 0;
   }
-  .shelf-grid.list-view .game-row-actions .shelf-lend-action > span { display: none; }
+  .shelf-grid.list-view .game-row .game-row-actions .game-row-actions-bottom > .shelf-lend-action > span { display: none; }
+}
+
+@media (max-width: 689px) {
+  .card-list.list-view .game-row .game-row-actions .game-row-actions-bottom > .shelf-return-action {
+    box-sizing: border-box;
+    width: 32px;
+    min-width: 32px;
+    max-width: 32px;
+    height: 32px;
+    min-height: 32px;
+    max-height: 32px;
+    flex: 0 0 32px;
+    padding: 0;
+    gap: 0;
+  }
+  .card-list.list-view .game-row .game-row-actions .game-row-actions-bottom > .shelf-return-action > span { display: none; }
 }
