@@ -25496,3 +25496,42 @@ textarea {
   }
   .card-list.list-view .game-row .game-row-actions .game-row-actions-bottom > .shelf-return-action > span { display: none; }
 }
+
+@media (max-width: 689px) {
+  .shelf-grid.list-view .game-row .game-row-actions-bottom:has(> .shelf-lend-action) {
+    display: flex;
+    flex-wrap: nowrap;
+    align-items: center;
+    justify-content: flex-end;
+    width: 100%;
+    min-width: 0;
+    gap: 4px;
+  }
+  .shelf-grid.list-view .game-row .game-row-actions-bottom:has(> .shelf-lend-action) > .shelf-add-backlog-action {
+    box-sizing: border-box;
+    flex: 1 1 0;
+    width: auto !important;
+    min-width: 0;
+    height: 32px;
+    min-height: 32px;
+    max-height: 32px;
+    padding: 5px 7px;
+    gap: 4px;
+    font-size: 10px;
+  }
+}
+
+/* Radar and Wishlist list actions use a shared control height. */
+:is(#upcoming, #wanted) .card-list.list-view .game-row-actions {
+  --list-action-height: 36px;
+}
+:is(#upcoming, #wanted) .card-list.list-view .game-row-actions :is(.row-edit-action, .row-delete-action, .row-backlog-action) {
+  box-sizing: border-box;
+  height: var(--list-action-height);
+  min-height: var(--list-action-height);
+  max-height: var(--list-action-height);
+  padding-block: 0;
+}
+@media (max-width: 689px) {
+  :is(#upcoming, #wanted) .card-list.list-view .game-row-actions { --list-action-height: 32px; }
+}
