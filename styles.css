@@ -25467,13 +25467,13 @@ textarea {
 @media (max-width: 1919px) {
   .shelf-grid.list-view .game-row .game-row-actions .game-row-actions-bottom > .shelf-lend-action {
     box-sizing: border-box;
-    width: 32px;
-    min-width: 32px;
-    max-width: 32px;
-    height: 32px;
-    min-height: 32px;
-    max-height: 32px;
-    flex: 0 0 32px;
+    width: var(--list-icon-size, 36px);
+    min-width: var(--list-icon-size, 36px);
+    max-width: var(--list-icon-size, 36px);
+    height: var(--list-icon-size, 36px);
+    min-height: var(--list-icon-size, 36px);
+    max-height: var(--list-icon-size, 36px);
+    flex: 0 0 var(--list-icon-size, 36px);
     aspect-ratio: 1;
     padding: 0;
     gap: 0;
@@ -25481,16 +25481,16 @@ textarea {
   .shelf-grid.list-view .game-row .game-row-actions .game-row-actions-bottom > .shelf-lend-action > span { display: none; }
 }
 
-@media (max-width: 689px) {
+@media (max-width: 1919px) {
   .card-list.list-view .game-row .game-row-actions .game-row-actions-bottom > .shelf-return-action {
     box-sizing: border-box;
-    width: 32px;
-    min-width: 32px;
-    max-width: 32px;
-    height: 32px;
-    min-height: 32px;
-    max-height: 32px;
-    flex: 0 0 32px;
+    width: var(--list-icon-size, 36px);
+    min-width: var(--list-icon-size, 36px);
+    max-width: var(--list-icon-size, 36px);
+    height: var(--list-icon-size, 36px);
+    min-height: var(--list-icon-size, 36px);
+    max-height: var(--list-icon-size, 36px);
+    flex: 0 0 var(--list-icon-size, 36px);
     padding: 0;
     gap: 0;
   }
@@ -25541,4 +25541,20 @@ textarea {
   height: 18px;
   flex: 0 0 18px;
   stroke: currentColor;
+}
+
+/* List lending controls follow the same desktop/mobile sizes as Edit and Delete. */
+@media (max-width: 689px) {
+  :is(.shelf-grid, .card-list).list-view .game-row-actions { --list-icon-size: 32px; }
+}
+
+/* On desktop, keep returning a lent game ahead of adding it to Backlog. */
+@media (min-width: 690px) {
+  .shelf-grid .card-actions > .shelf-lend-action[data-action="lend"],
+  .shelf-grid.list-view .game-row-actions-bottom > .shelf-lend-action[data-action="lend"] { order: 1; }
+  .shelf-grid .card-actions > .shelf-add-backlog-action,
+  .shelf-grid.list-view .game-row-actions-bottom > .shelf-add-backlog-action { order: 0; }
+  .shelf-grid .card-actions > .shelf-lend-action[data-action="returned"],
+  .shelf-grid.list-view .game-row-actions-bottom > .shelf-lend-action[data-action="returned"] { order: -1; }
+  .shelf-grid .card-actions > .shelf-card-delete-action { order: 2; }
 }
