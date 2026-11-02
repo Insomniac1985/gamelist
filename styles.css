@@ -25432,7 +25432,7 @@ textarea {
   max-width: 100%;
   gap: 8px;
 }
-.shelf-page .shelf-grid .game-card .card-actions:has(> .shelf-lend-action) > button {
+.shelf-page .shelf-grid .game-card .card-actions:has(> .shelf-add-backlog-action) > button {
   box-sizing: border-box;
   height: 36px;
   min-height: 36px;
@@ -25443,7 +25443,7 @@ textarea {
   width: auto;
   padding-block: 6px;
 }
-.shelf-page .shelf-grid .game-card .card-actions:has(> .shelf-lend-action) > .shelf-card-delete-action {
+.shelf-page .shelf-grid .game-card .card-actions:has(> .shelf-add-backlog-action) > .shelf-card-delete-action {
   flex: 0 0 36px;
   width: 36px;
   min-width: 36px;
@@ -25558,3 +25558,5 @@ textarea {
   .shelf-grid.list-view .game-row-actions-bottom > .shelf-lend-action[data-action="returned"] { order: -1; }
   .shelf-grid .card-actions > .shelf-card-delete-action { order: 2; }
 }
+
+.shelf-page .shelf-grid .game-card .card-actions > .shelf-add-backlog-action { padding-block: 6px; }
