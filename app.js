@@ -7525,7 +7525,7 @@ function rowFor(game, section, options = {}) {
     </span>
     <div class="game-row-identity">
       <strong class="${game.platinum ? "completed-achievements-title" : ""} ${ownerTitleClasses(owners)}" tabindex="0">${escapeHtml(game.title)}</strong>
-      <span class="game-row-studio-line">${visibleOwnerTags(game).map(ownerBadge).join("")}${studioText(game) ? `<span class="game-row-studio-text">${escapeHtml(studioText(game))}</span>` : ""}</span>
+      <span class="game-row-studio-line">${backlogLentBadge(game)}${visibleOwnerTags(game).map(ownerBadge).join("")}${studioText(game) ? `<span class="game-row-studio-text">${escapeHtml(studioText(game))}</span>` : ""}</span>
     </div>
     <div class="game-row-core">${rowCoreStats(game)}</div>
     <div class="game-row-tags">${rowTags(game).join("")}</div>
@@ -9169,7 +9169,7 @@ function cardFor(game, options = {}) {
   titleOwners.innerHTML = "";
   titleOwners.hidden = true;
   const studioLine = card.querySelector(".studio-line");
-  studioLine.innerHTML = `${visibleOwnerTags(game).map(ownerBadge).join("")}${studioText(game) ? `<span>${escapeHtml(studioText(game))}</span>` : ""}`;
+  studioLine.innerHTML = `${backlogLentBadge(game)}${visibleOwnerTags(game).map(ownerBadge).join("")}${studioText(game) ? `<span>${escapeHtml(studioText(game))}</span>` : ""}`;
   studioLine.hidden = !studioLine.innerHTML;
   card.querySelector(".meta").innerHTML = metaFor(game, {
     includePsn: neutralReleaseCard || !game.playing,
@@ -9521,7 +9521,7 @@ function openDetail(id, options = {}) {
   const owners = ownerTags(game);
   el.detailTitle.textContent = game.title;
   el.detailTitle.className = `${el.detailTitle.className.replace(/\bowner-[\w-]+/g, "").trim()} ${ownerTitleClasses(owners)}`.trim();
-  el.detailStudio.innerHTML = `${visibleOwnerTags(game).map(ownerBadge).join("")}${studioText(game) ? `<span>${escapeHtml(studioText(game))}</span>` : ""}`;
+  el.detailStudio.innerHTML = `${backlogLentBadge(game)}${visibleOwnerTags(game).map(ownerBadge).join("")}${studioText(game) ? `<span>${escapeHtml(studioText(game))}</span>` : ""}`;
   el.detailStudio.hidden = !el.detailStudio.innerHTML;
   el.detailMeta.innerHTML = metaFor(game, { includePsn: false, includeOwners: false, includeAdded: false }).join("");
 
@@ -13732,6 +13732,19 @@ function refreshCollectionData() {
   return collectionRefresh;
 }
 
+function applyCommittedCollectionChange(change) {
+  if (!change || (!change.shelf && !Array.isArray(change.games))) return false;
+  if (change.shelf) {
+    collectionData = change.shelf;
+    collectionDataSignature = JSON.stringify(collectionData);
+  }
+  if (Array.isArray(change.games)) {
+    state.games = normalizeGameRecords(change.games);
+    persistLocal(false);
+  }
+  return true;
+}
+
 function ensureCollectionWorkspace() {
   if (collectionLoad) return collectionLoad;
   collectionLoad = (async () => {
@@ -13745,8 +13758,10 @@ function ensureCollectionWorkspace() {
       Object.assign(state.filters, { query: "", platform: "all", tag: "all", region: "all", condition: "all", preordered: false });
       el.searchInput.value = "";
       render();
-    }, changed: async () => {
-      await Promise.all([refreshCollectionData(), pullCloudData()]);
+    }, changed: async change => {
+      if (!applyCommittedCollectionChange(change)) {
+        await Promise.all([refreshCollectionData(), pullCloudData()]);
+      }
       render();
     } });
     syncCollectionWorkspace();
@@ -13888,6 +13903,11 @@ function lentCollectionRecordFor(game) {
   if (!game || game.section !== "backlog" || game.digital || game.dlc) return null;
   const record = collectionRecordFor(game);
   return record && !record.digital && !record.dlc && !record.pendingCollection && String(record.lentTo || "").trim() ? record : null;
+}
+
+function backlogLentBadge(game) {
+  const record = lentCollectionRecordFor(game);
+  return record ? `<span class="owner-pill lent-badge ${escapeHtml(ownerColorClass(record.lentTo))}">${escapeHtml(tt("Lent to {name}", { name: record.lentTo }))}</span>` : "";
 }
 
 function applyBacklogLendingStyle(node, game) {

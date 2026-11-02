@@ -104,7 +104,8 @@ const backlogContext = vm.createContext({
   collectionUI: { returnLentGame: id => { returnedId = id; } },
   ensureCollectionWorkspace: async () => {},
   ownerCardColorClass: name => `owner-color-card-${name.toLowerCase()}`,
-  escapeHtml, tt: value => value,
+  escapeHtml, tt: (value, args = {}) => value.replace(/\{(\w+)\}/g, (_, key) => args[key]),
+  ownerColorClass: name => `owner-color-${name.toLowerCase()}`,
   collectionAddIcon: () => '<svg class="collection-arrow"></svg>',
   playIcon: () => '<svg class="play-icon"></svg>',
   backlogStreamAction: () => '',
@@ -113,6 +114,7 @@ vm.runInContext(appSource.slice(appSource.indexOf('let collectionRecordSnapshot 
 vm.runInContext(appSource.slice(appSource.indexOf('function rowPrimaryAction('), appSource.indexOf('function backlogStreamAction(')), backlogContext);
 const backlogGame = { id: 'list-one', section: 'backlog' };
 assert.equal(backlogContext.lentCollectionRecordFor(backlogGame).id, 'shelf-one');
+assert.match(backlogContext.backlogLentBadge(backlogGame), /Lent to Judy/);
 assert.match(backlogContext.rowPrimaryAction(backlogGame, 'backlog'), /Get back/);
 assert.doesNotMatch(backlogContext.rowPrimaryAction(backlogGame, 'backlog'), /play-icon/);
 assert.equal(backlogContext.lentCollectionRecordFor({ ...backlogGame, digital: true }), null);
@@ -127,5 +129,21 @@ await backlogContext.returnLentBacklogGame(backlogGame);
 assert.equal(returnedId, 'shelf-one');
 shelfRecord.lentTo = '';
 assert.equal(backlogContext.lentCollectionRecordFor(backlogGame), null);
+assert.equal(backlogContext.backlogLentBadge(backlogGame), '');
 assert.match(backlogContext.rowPrimaryAction(backlogGame, 'backlog'), /play-icon/);
 console.log('Linked Backlog lending checks passed.');
+backlogContext.normalizeGameRecords = games => games;
+backlogContext.persistLocal = () => {};
+backlogContext.collectionDataSignature = '';
+vm.runInContext(appSource.slice(appSource.indexOf('function applyCommittedCollectionChange('), appSource.indexOf('function ensureCollectionWorkspace(')), backlogContext);
+assert.equal(backlogContext.applyCommittedCollectionChange(), false);
+const justSavedGames = [{ id: 'new-backlog', section: 'backlog', shelfId: 'shelf-one' }];
+assert.equal(backlogContext.applyCommittedCollectionChange({ games: justSavedGames }), true);
+assert.equal(backlogContext.state.games[0].id, 'new-backlog', 'Shelf additions must update the main game list immediately');
+const savedShelf = { games: [{ ...shelfRecord, lentTo: 'Alex' }] };
+assert.equal(backlogContext.applyCommittedCollectionChange({ shelf: savedShelf }), true);
+assert.equal(backlogContext.lentCollectionRecordFor(justSavedGames[0]).lentTo, 'Alex', 'Saved lending data must invalidate the linked Shelf lookup immediately');
+backlogContext.applyCommittedCollectionChange({ shelf: { games: [{ ...shelfRecord, lentTo: '' }] } });
+assert.equal(backlogContext.lentCollectionRecordFor(justSavedGames[0]), null);
+assert.match(backlogContext.rowPrimaryAction(justSavedGames[0], 'backlog'), /play-icon/);
+console.log('Immediate Shelf-to-Backlog updates passed.');

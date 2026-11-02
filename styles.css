@@ -25416,8 +25416,6 @@ textarea {
 /* Opaque controls keep the lending stripes behind their surfaces. */
 :is(.game-card, .game-row).lent-card :is(.card-actions, .game-row-actions) button,
 .game-card.lent-card .edit-action {
-  position: relative;
-  z-index: 1;
   background: linear-gradient(rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.08)), var(--bg);
 }
 :is(.game-card, .game-row).lent-card :is(.card-actions, .game-row-actions) .danger-button {
@@ -25454,3 +25452,15 @@ textarea {
   max-width: 36px;
   padding: 0;
 }
+
+/* The edit control must not stretch Backlog's title row when hidden. */
+#backlog .card-list:not(.list-view) .game-card:not(.playing-card) .title-line {
+  padding-right: 42px;
+  grid-template-columns: minmax(0, 1fr);
+}
+#backlog .card-list:not(.list-view) .game-card:not(.playing-card) .title-line > .edit-action {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+}
+#backlog .card-list:not(.list-view) .game-card.has-trailer .title-line { padding-right: 86px; }

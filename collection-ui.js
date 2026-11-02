@@ -3332,6 +3332,7 @@ async function addShelfGameToGamelist(game, { section = "backlog" } = {}) {
     const response = await fetch("/api/sync", { method: "PUT", headers: { "Content-Type": "application/json", "x-edit-password": password }, body: JSON.stringify({ games: nextGames, settings: data.settings || state.gamelistSettings }) });
     if (!response.ok) throw new Error("Could not add this game to Gamelist.");
     state.gamelistGames = nextGames;
+    unifiedShelfScope?.changed({ games: nextGames });
     renderGamelistModules();
     showToast(section === "backlog" ? "Added to Gamelist Backlog." : "Added to Gamelist New additions.");
     return true;
@@ -3446,7 +3447,7 @@ async function persistShelf(options = {}) {
     }
     state.updatedAt = data.updatedAt || new Date().toISOString();
     removeLocalStorageItem(LOCAL_DRAFT_KEY);
-    unifiedShelfScope?.changed();
+    unifiedShelfScope?.changed({ shelf: { ...payload, updatedAt: state.updatedAt } });
     return true;
   } catch {
     state.updatedAt = new Date().toISOString();
