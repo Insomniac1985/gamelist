@@ -31,6 +31,8 @@ async function mount({ slots, changed, openGame, editGame, openSettings, mediaCh
       .shelf-page .highlights-section{margin:0!important}
       .shelf-library{min-width:0;background:transparent;border:0;box-shadow:none;padding:0}
       .shelf-library>.column-head{margin:0;padding:0 2px 12px;justify-content:space-between;box-sizing:border-box;min-height:var(--library-heading-min-height,68px)}
+      .shelf-library>.column-head>#resultCount{margin-bottom:7px}
+      .shelf-library>.column-head>#resultCount:has(.preorder-count-pill){margin-bottom:5.5px}
       :host([data-list="new"]) .shelf-library>.column-head{display:none}
       .shelf-page.theme-uppercase-titles .shelf-library>.column-head h2{text-transform:uppercase}
       .shelf-page.theme-gradient .shelf-library>.column-head h2{background:linear-gradient(135deg,var(--title-gradient-start,var(--accent)),var(--title-gradient-end,var(--accent)));background-clip:text;-webkit-background-clip:text}
@@ -156,10 +158,25 @@ async function mount({ slots, changed, openGame, editGame, openSettings, mediaCh
   await import('./collection-ui.js');
   await ready;
   setMedia(media);
+  const syncLibraryHeading = () => {
+    const reference = document.querySelector('#backlog > .column-head');
+    const heading = queryAll('#shelfLibraryTitle')[0];
+    if (!reference || !heading) return;
+    const copy = (target, source, properties) => {
+      const computed = getComputedStyle(source);
+      properties.forEach(property => target.style.setProperty(property, computed.getPropertyValue(property)));
+    };
+    copy(heading.closest('.column-head'), reference, ['padding', 'margin', 'min-height', 'align-items', 'gap']);
+    copy(heading, reference.querySelector('h2'), ['font-family', 'font-size', 'font-weight', 'line-height', 'letter-spacing', 'margin']);
+    copy(heading.parentElement, reference.querySelector('h2').parentElement, ['font-size', 'line-height']);
+  };
   const syncTheme = () => {
     const classes = [...document.body.classList, ...document.documentElement.classList].filter(name => name.startsWith('theme-') || ['can-edit', 'mobile-app-mode'].includes(name));
     surfaces.forEach(({ body, ownerStyle }) => { const ownerCss = document.querySelector('#customOwnerColorStyles')?.textContent || ''; if (ownerStyle.textContent !== ownerCss) ownerStyle.textContent = ownerCss; body.lang = document.documentElement.lang; body.className = ['shelf-page', ...classes, ...(body.classList.contains('dialog-open') ? ['dialog-open'] : [])].join(' '); });
+    syncLibraryHeading();
   };
+  window.addEventListener('resize', syncLibraryHeading);
+  document.fonts?.ready.then(syncLibraryHeading);
   new MutationObserver(syncTheme).observe(document.body, { attributes: true, attributeFilter: ['class'] });
   new MutationObserver(syncTheme).observe(document.documentElement, { attributes: true, attributeFilter: ['class', 'lang'] });
   new MutationObserver(syncTheme).observe(document.head, { childList: true, subtree: true, characterData: true });

@@ -808,3 +808,8 @@ body[data-mobile-section="new"]
     display: block;
   }
 }
+
+/* Count tooltips must escape the mobile board and overlap the sticky list tabs. */
+@media (max-width: 689px) {
+  .board { overflow: visible; }
+}

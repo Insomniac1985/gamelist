@@ -131,3 +131,10 @@ export function preventImplicitGameSubmit(event) {
     event.preventDefault();
   }
 }
+
+/** Empty ownership uses the site's main owner, as it does on game cards. */
+export function isMainOwnerGame(game, mainOwner = "User") {
+  const key = value => String(value || "").trim().toLocaleLowerCase();
+  const owners = Array.isArray(game?.owners) ? game.owners.filter(owner => key(owner)) : [];
+  return !owners.length || owners.some(owner => key(owner) === key(mainOwner || "User"));
+}

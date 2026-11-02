@@ -8,7 +8,7 @@ import { normalizeSearchText, bindModalTouchGuard, createGameCardShell, bindActi
 import { applySiteTheme, normalizeThemeSettings, ownerCardColorClass, ownerColorClass, themeSettingsContent, bindThemeSettingsContent, readThemeSettingsContent } from "./theme-system.js";
 import { applyDocumentTranslations, languageOptions, normalizeLanguage, t } from "./i18n.js";
 import { accountSettingsMarkup } from "./account-settings-ui.js";
-import { isPlayasiaStore, syncGameListControls, syncGameListSlider, syncStoreFieldIcon, SHELF_COUNTRIES, preventImplicitGameSubmit } from "./game-editor-controls.js";
+import { isMainOwnerGame, isPlayasiaStore, syncGameListControls, syncGameListSlider, syncStoreFieldIcon, SHELF_COUNTRIES, preventImplicitGameSubmit } from "./game-editor-controls.js";
 
 await loadSvgAssets();
 hydrateSvgAssets(document);
@@ -7515,6 +7515,7 @@ function rowFor(game, section, options = {}) {
   row.tabIndex = 0;
   row.setAttribute("aria-label", `Open ${game.title}`);
   applyOwnerCardClasses(row, owners);
+  applyBacklogLendingStyle(row, game);
   row.classList.toggle("digital-card", Boolean(game.digital));
   row.classList.toggle("stream-card", Boolean(game.stream));
   row.innerHTML = `
@@ -7524,7 +7525,7 @@ function rowFor(game, section, options = {}) {
     </span>
     <div class="game-row-identity">
       <strong class="${game.platinum ? "completed-achievements-title" : ""} ${ownerTitleClasses(owners)}" tabindex="0">${escapeHtml(game.title)}</strong>
-      <span class="game-row-studio-line">${visibleOwnerTags(game).map(ownerBadge).join("")}${studioText(game) ? `<span class="game-row-studio-text">${escapeHtml(studioText(game))}</span>` : ""}</span>
+      <span class="game-row-studio-line">${backlogLentBadge(game)}${visibleOwnerTags(game).map(ownerBadge).join("")}${studioText(game) ? `<span class="game-row-studio-text">${escapeHtml(studioText(game))}</span>` : ""}</span>
     </div>
     <div class="game-row-core">${rowCoreStats(game)}</div>
     <div class="game-row-tags">${rowTags(game).join("")}</div>
@@ -7561,6 +7562,7 @@ function rowFor(game, section, options = {}) {
 }
 
 function rowPrimaryAction(game, section) {
+  if (section === "backlog" && lentCollectionRecordFor(game)) return `<button class="ghost-button row-primary-action shelf-return-action" type="button" title="${escapeHtml(tt("Get back"))}" aria-label="${escapeHtml(tt("Get back"))}">${collectionAddIcon()}<span>${escapeHtml(tt("Get back"))}</span></button>`;
   if (section === "backlog") return `<button class="primary-button row-primary-action" type="button" title="${escapeHtml(tt("Play"))}" aria-label="${escapeHtml(tt("Play"))}">${playIcon()}<span>${escapeHtml(tt("Play"))}</span></button>${backlogStreamAction(game)}`;
   if (section === "new") {
     return `<button class="primary-button row-primary-action" type="button" title="${escapeHtml(tt("Play"))}" aria-label="${escapeHtml(tt("Play"))}">${playIcon()}<span>${escapeHtml(tt("Play"))}</span></button><button class="primary-button row-setup-action" type="button" title="${escapeHtml(tt("Setup"))}" aria-label="${escapeHtml(tt("Setup"))}">${forwardIcon()}<span>${escapeHtml(tt("Setup"))}</span></button>`;
@@ -7571,6 +7573,7 @@ function rowPrimaryAction(game, section) {
 }
 
 function backlogStreamAction(game) {
+  if (lentCollectionRecordFor(game)) return "";
   if (!state.canEdit || !cleanTwitchUser(state.settings.twitchUser) || game.playing || game.completedAt) return "";
   return `<button class="primary-button stream-start-action" type="button" title="${escapeHtml(tt("Stream"))}" aria-label="${escapeHtml(tt("Stream"))}">${playIcon()}<span>${escapeHtml(tt("Stream"))}</span></button>`;
 }
@@ -9126,6 +9129,7 @@ function cardFor(game, options = {}) {
   card.dataset.owner = statuses.join(" ");
   card.draggable = !options.staticCard && manualDragEnabled() && ["backlog", "upcoming", "wanted"].includes(displaySection);
   applyOwnerCardClasses(card, owners);
+  applyBacklogLendingStyle(card, game);
   card.classList.toggle("digital-card", Boolean(game.digital));
   card.classList.toggle("playing-card", Boolean(game.playing) && !neutralReleaseCard);
   card.classList.toggle("stream-card", Boolean(game.stream));
@@ -9165,7 +9169,7 @@ function cardFor(game, options = {}) {
   titleOwners.innerHTML = "";
   titleOwners.hidden = true;
   const studioLine = card.querySelector(".studio-line");
-  studioLine.innerHTML = `${visibleOwnerTags(game).map(ownerBadge).join("")}${studioText(game) ? `<span>${escapeHtml(studioText(game))}</span>` : ""}`;
+  studioLine.innerHTML = `${backlogLentBadge(game)}${visibleOwnerTags(game).map(ownerBadge).join("")}${studioText(game) ? `<span>${escapeHtml(studioText(game))}</span>` : ""}`;
   studioLine.hidden = !studioLine.innerHTML;
   card.querySelector(".meta").innerHTML = metaFor(game, {
     includePsn: neutralReleaseCard || !game.playing,
@@ -9254,11 +9258,16 @@ function cardFor(game, options = {}) {
       deleteAction?.remove();
     } else backlogAction?.remove();
     if (completeAction) {
-      completeAction.innerHTML = game.playing
-        ? `${checkIcon()}<span class="action-label">${escapeHtml(tt("Finished"))}</span>`
-        : `${playIcon()}<span class="action-label">${escapeHtml(tt("Play"))}</span>`;
+      const lent = lentCollectionRecordFor(game);
+      completeAction.innerHTML = lent
+        ? `${collectionAddIcon()}<span class="action-label">${escapeHtml(tt("Get back"))}</span>`
+        : game.playing
+          ? `${checkIcon()}<span class="action-label">${escapeHtml(tt("Finished"))}</span>`
+          : `${playIcon()}<span class="action-label">${escapeHtml(tt("Play"))}</span>`;
+      completeAction.classList.toggle("shelf-return-action", Boolean(lent));
       completeAction.addEventListener("click", () => {
-        if (game.playing) completeGame(game.id);
+        if (lentCollectionRecordFor(game)) void returnLentBacklogGame(game);
+        else if (game.playing) completeGame(game.id);
         else startPlaying(game.id);
       });
       if (displaySection === "backlog") {
@@ -9512,7 +9521,7 @@ function openDetail(id, options = {}) {
   const owners = ownerTags(game);
   el.detailTitle.textContent = game.title;
   el.detailTitle.className = `${el.detailTitle.className.replace(/\bowner-[\w-]+/g, "").trim()} ${ownerTitleClasses(owners)}`.trim();
-  el.detailStudio.innerHTML = `${visibleOwnerTags(game).map(ownerBadge).join("")}${studioText(game) ? `<span>${escapeHtml(studioText(game))}</span>` : ""}`;
+  el.detailStudio.innerHTML = `${backlogLentBadge(game)}${visibleOwnerTags(game).map(ownerBadge).join("")}${studioText(game) ? `<span>${escapeHtml(studioText(game))}</span>` : ""}`;
   el.detailStudio.hidden = !el.detailStudio.innerHTML;
   el.detailMeta.innerHTML = metaFor(game, { includePsn: false, includeOwners: false, includeAdded: false }).join("");
 
@@ -12610,6 +12619,7 @@ function startPlaying(id, { stream = false } = {}) {
   if (!state.canEdit) return;
   const game = getGame(id);
   if (!game || game.completedAt) return;
+  if (lentCollectionRecordFor(game)) { void returnLentBacklogGame(game); return; }
   if (isShelfNewAddition(game)) game.acceptedFromShelfAt = new Date().toISOString();
   if (["upcoming", "wanted", "new"].includes(game.section)) game.backlogAddedAt = new Date().toISOString();
   game.section = "backlog";
@@ -13722,6 +13732,19 @@ function refreshCollectionData() {
   return collectionRefresh;
 }
 
+function applyCommittedCollectionChange(change) {
+  if (!change || (!change.shelf && !Array.isArray(change.games))) return false;
+  if (change.shelf) {
+    collectionData = change.shelf;
+    collectionDataSignature = JSON.stringify(collectionData);
+  }
+  if (Array.isArray(change.games)) {
+    state.games = normalizeGameRecords(change.games);
+    persistLocal(false);
+  }
+  return true;
+}
+
 function ensureCollectionWorkspace() {
   if (collectionLoad) return collectionLoad;
   collectionLoad = (async () => {
@@ -13735,8 +13758,10 @@ function ensureCollectionWorkspace() {
       Object.assign(state.filters, { query: "", platform: "all", tag: "all", region: "all", condition: "all", preordered: false });
       el.searchInput.value = "";
       render();
-    }, changed: async () => {
-      await Promise.all([refreshCollectionData(), pullCloudData()]);
+    }, changed: async change => {
+      if (!applyCommittedCollectionChange(change)) {
+        await Promise.all([refreshCollectionData(), pullCloudData()]);
+      }
       render();
     } });
     syncCollectionWorkspace();
@@ -13872,6 +13897,32 @@ function collectionRecords() {
 function collectionRecordFor(game) {
   collectionRecords();
   return collectionRecordSnapshot.byId.get(game.shelfId) || collectionRecordSnapshot.byGamelist.get(game.id);
+}
+
+function lentCollectionRecordFor(game) {
+  if (!game || game.section !== "backlog" || game.digital || game.dlc) return null;
+  const record = collectionRecordFor(game);
+  return record && isMainOwnerGame(record, state.settings.defaultOwner) && !record.digital && !record.dlc && !record.pendingCollection && String(record.lentTo || "").trim() ? record : null;
+}
+
+function backlogLentBadge(game) {
+  const record = lentCollectionRecordFor(game);
+  return record ? `<span class="owner-pill lent-badge ${escapeHtml(ownerColorClass(record.lentTo))}">${escapeHtml(tt("Lent to {name}", { name: record.lentTo }))}</span>` : "";
+}
+
+function applyBacklogLendingStyle(node, game) {
+  const record = lentCollectionRecordFor(game);
+  if (!record) return;
+  node.classList.remove(...[...node.classList].filter(name => name.startsWith("owner-color-card-")));
+  node.classList.add("lent-card", ownerCardColorClass(record.lentTo));
+}
+
+async function returnLentBacklogGame(game) {
+  if (!state.canEdit) return;
+  const record = lentCollectionRecordFor(game);
+  if (!record) return;
+  await ensureCollectionWorkspace();
+  collectionUI?.returnLentGame(record.id);
 }
 
 function collectionRecordValue(game) {

@@ -25321,7 +25321,7 @@ textarea {
   --preorder-accent: #b4ed32;
   --preorder-accent-text: #152000;
 }
-.shelf-grid :is(.game-card, .game-row).lent-card {
+:is(.game-card, .game-row).lent-card {
   background: repeating-linear-gradient(135deg, color-mix(in srgb, var(--lent-color, var(--accent)) 14%, transparent) 0 6px, transparent 6px 12px), var(--panel) !important;
   border-color: color-mix(in srgb, var(--lent-color, var(--accent)) 36%, transparent);
 }
@@ -25336,7 +25336,7 @@ textarea {
 .shelf-lending-modal { width: 100%; box-sizing: border-box; }
 .shelf-lending-modal > p { overflow-wrap: anywhere; }
 .shelf-lending-error { color: var(--danger, #ff7777); }
-.shelf-grid .game-card .card-actions:has(.shelf-lend-action) { display: flex; flex-wrap: wrap; gap: 6px; }
+.shelf-grid .game-card .card-actions:has(.shelf-lend-action) { display: flex; flex-wrap: nowrap; align-items: center; gap: 6px; width: 100%; min-width: 0; }
 .shelf-grid .shelf-lend-action { flex: 0 0 auto; white-space: nowrap; }
 .shelf-grid .game-row-actions-bottom:has(.shelf-lend-action) { display: flex; flex-wrap: wrap; gap: 6px; }
 .lent-badge { max-width: 100%; overflow-wrap: anywhere; }
@@ -25383,4 +25383,116 @@ textarea {
 }
 @media (max-width: 689px) {
   #addGameForm .shelf-lending-fields { grid-template-columns: minmax(0, 1fr); gap: 12px; }
+}
+
+.shelf-lending-info { display: flex; flex-direction: column; align-items: flex-start; min-width: 0; }
+
+/* Lending actions share a single row instead of inheriting fixed button widths. */
+.shelf-grid .game-card .card-actions > .shelf-lend-action,
+.shelf-grid .game-card .card-actions > .shelf-add-backlog-action {
+  width: auto;
+  min-width: 0;
+  flex: 0 1 auto;
+  white-space: nowrap;
+}
+@media (max-width: 689px) {
+  .shelf-grid .game-card .card-actions:has(.shelf-lend-action) > :is(.shelf-lend-action, .shelf-add-backlog-action) {
+    padding-inline: 8px;
+    gap: 5px;
+    font-size: 12px;
+  }
+}
+@media (max-width: 380px) {
+  .shelf-grid .game-card .card-actions:has(.shelf-lend-action) { gap: 4px; }
+  .shelf-grid .game-card .card-actions:has(.shelf-lend-action) > :is(.shelf-lend-action, .shelf-add-backlog-action) {
+    padding-inline: 6px;
+    gap: 4px;
+    font-size: 11px;
+  }
+}
+
+/* Opaque controls keep the lending stripes behind their surfaces. */
+:is(.game-card, .game-row).lent-card :is(.card-actions, .game-row-actions) button,
+.game-card.lent-card .edit-action {
+  background: linear-gradient(rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.08)), var(--bg);
+}
+:is(.game-card, .game-row).lent-card :is(.card-actions, .game-row-actions) .danger-button {
+  background: linear-gradient(rgba(255, 111, 133, 0.12), rgba(255, 111, 133, 0.12)), var(--bg);
+}
+:is(.game-card, .game-row).lent-card :is(.card-actions, .game-row-actions) button:hover {
+  background: linear-gradient(color-mix(in srgb, var(--accent) 20%, transparent), color-mix(in srgb, var(--accent) 20%, transparent)), var(--bg);
+}
+.shelf-return-action svg { width: 18px; height: 18px; flex-shrink: 0; }
+
+/* Fill Shelf cards with the same 36px action controls as the other lists. */
+.shelf-page .shelf-grid .game-card .card-actions:has(> .shelf-lend-action) {
+  justify-self: stretch;
+  align-items: stretch;
+  width: 100%;
+  max-width: 100%;
+  gap: 8px;
+}
+.shelf-page .shelf-grid .game-card .card-actions:has(> .shelf-lend-action) > button {
+  box-sizing: border-box;
+  height: 36px;
+  min-height: 36px;
+  max-height: 36px;
+}
+.shelf-page .shelf-grid .game-card .card-actions:has(> .shelf-lend-action) > :is(.shelf-lend-action, .shelf-add-backlog-action) {
+  flex: 1 1 auto;
+  width: auto;
+  padding-block: 6px;
+}
+.shelf-page .shelf-grid .game-card .card-actions:has(> .shelf-lend-action) > .shelf-card-delete-action {
+  flex: 0 0 36px;
+  width: 36px;
+  min-width: 36px;
+  max-width: 36px;
+  padding: 0;
+}
+
+/* The edit control must not stretch Backlog's title row when hidden. */
+#backlog .card-list:not(.list-view) .game-card:not(.playing-card) .title-line {
+  padding-right: 42px;
+  grid-template-columns: minmax(0, 1fr);
+}
+#backlog .card-list:not(.list-view) .game-card:not(.playing-card) .title-line > .edit-action {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+}
+#backlog .card-list:not(.list-view) .game-card.has-trailer .title-line { padding-right: 86px; }
+
+/* Keep list lending actions compact until the full desktop layout. */
+@media (max-width: 1919px) {
+  .shelf-grid.list-view .game-row .game-row-actions .game-row-actions-bottom > .shelf-lend-action {
+    box-sizing: border-box;
+    width: 32px;
+    min-width: 32px;
+    max-width: 32px;
+    height: 32px;
+    min-height: 32px;
+    max-height: 32px;
+    flex: 0 0 32px;
+    aspect-ratio: 1;
+    padding: 0;
+    gap: 0;
+  }
+  .shelf-grid.list-view .game-row .game-row-actions .game-row-actions-bottom > .shelf-lend-action > span { display: none; }
+}
+
+@media (max-width: 689px) {
+  .card-list.list-view .game-row .game-row-actions .game-row-actions-bottom > .shelf-return-action {
+    box-sizing: border-box;
+    width: 32px;
+    min-width: 32px;
+    max-width: 32px;
+    height: 32px;
+    min-height: 32px;
+    max-height: 32px;
+    flex: 0 0 32px;
+    padding: 0;
+    gap: 0;
+  }
+  .card-list.list-view .game-row .game-row-actions .game-row-actions-bottom > .shelf-return-action > span { display: none; }
 }
