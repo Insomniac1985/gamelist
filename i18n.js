@@ -5,6 +5,14 @@ export const LANGUAGES = [
 
 const STRINGS = {
   "es-ES": {
+    "Lend": "Prestar",
+    "Returned": "Devuelto",
+    "Lent": "Prestados",
+    "Lent to": "Prestado a",
+    "Lent to {name}": "Prestado a {name}",
+    "Borrower name": "Nombre de la persona",
+    "Confirm that {name} has returned this game.": "Confirma que {name} ha devuelto este juego.",
+    "Could not save lending status. Please try again.": "No se pudo guardar el préstamo. Inténtalo de nuevo.",
     "Site settings": "Ajustes del sitio",
     "Page design": "Diseño de página",
     "Layout, appearance, and preferences": "Distribución, apariencia y preferencias",

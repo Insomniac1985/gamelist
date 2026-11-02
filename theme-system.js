@@ -492,6 +492,10 @@ function applyOwnerStyle(ownerColors) {
         background: linear-gradient(135deg, ${fill}, ${faint} 42%, rgba(255, 255, 255, 0.05)),  rgb(255 255 255 / 1%) !important;
         border-color: ${border} !important;
       }
+      .lent-card.owner-color-card-${slug} {
+        --lent-color: ${color};
+        background: repeating-linear-gradient(135deg, ${colorMix(color, 0.14)} 0 6px, transparent 6px 12px), linear-gradient(135deg, ${fill}, ${faint} 42%, rgba(255, 255, 255, 0.05)), rgb(255 255 255 / 1%) !important;
+      }
       .owner-color-card-${slug}:hover {
         border-color: color-mix(in srgb, var(--accent) 50%, transparent) !important;
       }

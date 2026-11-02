@@ -25314,3 +25314,28 @@ textarea {
     grid-template-columns: repeat(6, minmax(0, 1fr));
   }
 }
+
+/* Shelf lending shares owner colors and the preorder count layout. */
+.lent-count-pill {
+  --preorder-accent: #b4ed32;
+  --preorder-accent-text: #152000;
+}
+.shelf-grid :is(.game-card, .game-row).lent-card {
+  background: repeating-linear-gradient(135deg, color-mix(in srgb, var(--lent-color, var(--accent)) 14%, transparent) 0 6px, transparent 6px 12px), var(--panel) !important;
+  border-color: color-mix(in srgb, var(--lent-color, var(--accent)) 36%, transparent);
+}
+.shelf-lending-fields, .shelf-lending-fields > label, .shelf-lending-modal > label {
+  display: grid;
+  gap: 8px;
+  min-width: 0;
+}
+.shelf-lending-fields { align-self: start; }
+.shelf-lending-fields input { width: 100%; min-width: 0; box-sizing: border-box; }
+.shelf-lending-dialog { width: min(440px, calc(100vw - 32px)); }
+.shelf-lending-modal { width: 100%; box-sizing: border-box; }
+.shelf-lending-modal > p { overflow-wrap: anywhere; }
+.shelf-lending-error { color: var(--danger, #ff7777); }
+.shelf-grid .game-card .card-actions:has(.shelf-lend-action) { display: flex; flex-wrap: wrap; gap: 6px; }
+.shelf-grid .shelf-lend-action { flex: 0 0 auto; white-space: nowrap; }
+.shelf-grid .game-row-actions-bottom:has(.shelf-lend-action) { display: flex; flex-wrap: wrap; gap: 6px; }
+.lent-badge { max-width: 100%; overflow-wrap: anywhere; }

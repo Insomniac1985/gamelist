@@ -243,6 +243,7 @@ const el = {
     dlc: document.querySelector("#dlcInput"),
     psPlus: document.querySelector("#psPlusInput"), gamesWithGold: document.querySelector("#gamesWithGoldInput"),
     owners: document.querySelector("#ownersInput"),
+    lentTo: document.querySelector("#lentToInput"),
     releaseDate: document.querySelector("#releaseDateInput"), additionDate: document.querySelector("#additionDateInput"), trophyName: document.querySelector("#trophyNameInput"),
     upc: document.querySelector("#upcInput"), sku: document.querySelector("#skuInput"), asin: document.querySelector("#asinInput"),
     epid: document.querySelector("#epidInput"), pricechartingId: document.querySelector("#pricechartingIdInput"),
@@ -1743,7 +1744,7 @@ function renderLibrary() {
   if (state.filters.tab === "preorders") {
     el.count.innerHTML = shelfPreorderCountPill(games);
   } else {
-    el.count.textContent = tt("{count} {item}", { count: games.length, item: games.length === 1 ? tt("game") : tt("games") });
+    el.count.innerHTML = `${escapeHtml(tt("{count} {item}", { count: games.length, item: games.length === 1 ? tt("game") : tt("games") }))}${state.filters.tab === "shelf" ? shelfLentCountPill(games) : ""}`;
   }
   el.libraryTitle.textContent = state.filters.tab === "preorders" ? tt("Preorders") : state.filters.tab === "wishlist" ? tt("Wishlist") : state.filters.tab === "new" ? tt("New additions") : state.filters.tab === "drive" ? tt("Drive") : tt("Shelf");
   el.shelf.classList.toggle("list-view", state.viewMode === "list");
@@ -1872,7 +1873,7 @@ function filteredGamesForShelfTab(tab) {
   const normalizedTab = normalizedShelfTab(tab);
   const source = normalizedTab === "preorders" ? syncedPreorderGames() : normalizedTab === "wishlist" ? syncedWishlistGames() : visibleShelfGames();
   return source.filter((game) => {
-    const haystack = normalizeSearchText(`${game.title} ${game.platform} ${game.publisher} ${game.developer} ${game.genre} ${(game.genres || []).join(" ")} ${game.description} ${game.notes} ${game.preorderStore} ${(game.tags || []).join(" ")} ${(game.owners || []).join(" ")}`);
+    const haystack = normalizeSearchText(`${game.title} ${game.platform} ${game.publisher} ${game.developer} ${game.genre} ${(game.genres || []).join(" ")} ${game.description} ${game.notes} ${game.preorderStore} ${(game.tags || []).join(" ")} ${(game.owners || []).join(" ")} ${game.lentTo || ""}`);
     return !game.deletedAt
       && (!unifiedShelfScope || !state.unifiedMedia || state.unifiedMedia === "all" || (state.unifiedMedia === "digital") === isDigitalShelfGame(game))
       && (state.filters.platform === "all" || game.platform === state.filters.platform)
@@ -1886,7 +1887,7 @@ function filteredGamesForShelfTab(tab) {
 function filteredShelfStatsGames(options = {}) {
   const driveMode = Boolean(options.drive);
   return visibleShelfGames().filter((game) => {
-    const haystack = normalizeSearchText(`${game.title} ${game.platform} ${game.publisher} ${game.developer} ${game.genre} ${game.notes} ${(game.tags || []).join(" ")} ${(game.owners || []).join(" ")}`);
+    const haystack = normalizeSearchText(`${game.title} ${game.platform} ${game.publisher} ${game.developer} ${game.genre} ${game.notes} ${(game.tags || []).join(" ")} ${(game.owners || []).join(" ")} ${game.lentTo || ""}`);
     return !game.deletedAt
       && (!unifiedShelfScope || state.gamelistSettings.shelfDigitalGames === true || !isDigitalShelfGame(game))
       && (!unifiedShelfScope || !state.unifiedMedia || state.unifiedMedia === "all" || (state.unifiedMedia === "digital") === isDigitalShelfGame(game))
@@ -1924,7 +1925,7 @@ function gameCard(game, options = {}) {
   const studio = [game.developer, game.publisher && game.publisher !== game.developer ? game.publisher : ""].filter(Boolean).join(" / ");
   const owners = game.owners || [];
   const visibleOwners = visibleShelfCardOwners(owners);
-  const ownerClasses = visibleOwners.map((owner) => ` ${ownerCardColorClass(owner)}`).join("");
+  const ownerClasses = game.lentTo ? ` lent-card ${ownerCardColorClass(game.lentTo)}` : visibleOwners.map((owner) => ` ${ownerCardColorClass(owner)}`).join("");
   const tags = visibleShelfTags(game, syncedProjection ? (game.genres || []).slice(0, 4) : [...(game.tags || []), game.category && game.category !== "Game" ? game.category : "", ...String(game.genre || "").split(",")]);
   const condition = conditionLabel(game);
   const card = createGameCardShell(document);
@@ -1949,7 +1950,7 @@ function gameCard(game, options = {}) {
   const edit = card.querySelector(".edit-action");
   if (syncedProjection) edit.dataset.action = "edit-preorder"; else edit.dataset.action = "edit";
   const studioText = studio || game.genre || tt(digitalGame || (syncedProjection && isDigitalShelfGame(game)) ? "Digital edition" : "Physical edition");
-  card.querySelector(".studio-line").innerHTML = `${visibleOwners.map(ownerBadge).join("")}<span>${escapeHtml(studioText)}</span>`;
+  card.querySelector(".studio-line").innerHTML = `${lentBadge(game)}${visibleOwners.map(ownerBadge).join("")}<span>${escapeHtml(studioText)}</span>`;
   card.querySelector(".meta").innerHTML = (syncedProjection
     ? `${platformBadge(game.platform, { title: game.title })}${mediaFormatBadge(game)}${dlcBadge(game)}${entitlementBadge(game)}${preorderPlaytimePill(game)}`
     : digitalGame ? `${platformBadge(game.platform, { title: game.title })}${mediaFormatBadge(game)}${dlcBadge(game)}${entitlementBadge(game)}${shelfProgressPill(game)}`
@@ -1961,7 +1962,7 @@ function gameCard(game, options = {}) {
   card.querySelector(".chips").innerHTML = tags.map((tag) => `<span class="chip genre">${escapeHtml(tag)}</span>`).join("");
   card.querySelector(".card-trophies").remove();
   const deleteLabel = escapeHtml(tt("Delete"));
-  card.querySelector(".card-actions").innerHTML = syncedProjection ? `<button class="primary-button bought-action editor-only" data-action="${wishlistProjection ? "add-wishlist-backlog" : "accept-preorder"}" type="button">${forwardIcon()}<span>${escapeHtml(tt("Backlog"))}</span></button><button class="ghost-button icon-only-button price-refresh-action editor-only" data-action="show-preorder-prices" type="button" title="${escapeHtml(tt("Prices"))}" aria-label="${escapeHtml(tt("Prices"))}">${currencyIcon()}</button><button class="danger-button icon-only-button delete-action shelf-card-delete-action editor-only" data-action="delete-preorder" type="button" title="${deleteLabel}" aria-label="${deleteLabel}">${trashIcon()}</button>` : isPendingCollectionGame(game) ? `<button class="primary-button add-collection-action editor-only" data-action="add-collection" type="button">${escapeHtml(tt("Add to Collection"))}</button><button class="danger-button icon-only-button shelf-card-delete-action editor-only" data-action="delete" type="button" title="${deleteLabel}" aria-label="${deleteLabel}">${trashIcon()}</button>` : `<button class="ghost-button shelf-add-backlog-action editor-only" data-action="add-backlog" type="button">${backIcon()}<span class="shelf-backlog-desktop-label">${escapeHtml(tt("Backlog from Collection"))}</span><span class="shelf-backlog-mobile-label">${escapeHtml(tt("Add to Backlog"))}</span></button><button class="danger-button icon-only-button shelf-card-delete-action editor-only" data-action="delete" type="button" title="${deleteLabel}" aria-label="${deleteLabel}">${trashIcon()}</button>`;
+  card.querySelector(".card-actions").innerHTML = syncedProjection ? `<button class="primary-button bought-action editor-only" data-action="${wishlistProjection ? "add-wishlist-backlog" : "accept-preorder"}" type="button">${forwardIcon()}<span>${escapeHtml(tt("Backlog"))}</span></button><button class="ghost-button icon-only-button price-refresh-action editor-only" data-action="show-preorder-prices" type="button" title="${escapeHtml(tt("Prices"))}" aria-label="${escapeHtml(tt("Prices"))}">${currencyIcon()}</button><button class="danger-button icon-only-button delete-action shelf-card-delete-action editor-only" data-action="delete-preorder" type="button" title="${deleteLabel}" aria-label="${deleteLabel}">${trashIcon()}</button>` : isPendingCollectionGame(game) ? `<button class="primary-button add-collection-action editor-only" data-action="add-collection" type="button">${escapeHtml(tt("Add to Collection"))}</button><button class="danger-button icon-only-button shelf-card-delete-action editor-only" data-action="delete" type="button" title="${deleteLabel}" aria-label="${deleteLabel}">${trashIcon()}</button>` : `${lendButton(game)}<button class="ghost-button shelf-add-backlog-action editor-only" data-action="add-backlog" type="button">${backIcon()}<span class="shelf-backlog-desktop-label">${escapeHtml(tt("Backlog from Collection"))}</span><span class="shelf-backlog-mobile-label">${escapeHtml(tt("Add to Backlog"))}</span></button><button class="danger-button icon-only-button shelf-card-delete-action editor-only" data-action="delete" type="button" title="${deleteLabel}" aria-label="${deleteLabel}">${trashIcon()}</button>`;
   const prices = card.querySelector(".prices");
   if (syncedProjection && priceProvidersForGame(game).length) {
     card.classList.add("has-price-footer");
@@ -1986,17 +1987,17 @@ function gameRow(game) {
   const studio = [game.developer, game.publisher && game.publisher !== game.developer ? game.publisher : ""].filter(Boolean).join(" / ");
   const owners = game.owners || [];
   const visibleOwners = visibleShelfCardOwners(owners);
-  const ownerClasses = visibleOwners.map((owner) => ` ${ownerCardColorClass(owner)}`).join("");
+  const ownerClasses = game.lentTo ? ` lent-card ${ownerCardColorClass(game.lentTo)}` : visibleOwners.map((owner) => ` ${ownerCardColorClass(owner)}`).join("");
   const tags = visibleShelfTags(game, syncedProjection ? (game.genres || []).slice(0, 4) : [...(game.tags || []), game.category && game.category !== "Game" ? game.category : "", ...String(game.genre || "").split(",")]);
   const description = game.description || "";
-  const actions = syncedProjection ? `<div class="game-row-actions-top"><button class="icon-button row-edit-action" data-action="edit-preorder" type="button" title="Edit" aria-label="Edit">${pencilIcon()}</button><button class="icon-button danger-button row-delete-action" data-action="delete-preorder" type="button" title="Delete" aria-label="Delete">${trashIcon()}</button></div><div class="game-row-actions-bottom"><button class="primary-button" data-action="${wishlistProjection ? "add-wishlist-backlog" : "accept-preorder"}" type="button">${forwardIcon()}<span>${escapeHtml(tt("Backlog"))}</span></button></div>` : isPendingCollectionGame(game) ? `<div class="game-row-actions-top"><button class="primary-button add-collection-action" data-action="add-collection" type="button">Add to Collection</button></div><div class="game-row-actions-bottom"><button class="icon-button danger-button row-delete-action" data-action="delete" type="button" title="Delete" aria-label="Delete">${trashIcon()}</button></div>` : `<div class="game-row-actions-top"><button class="icon-button row-edit-action" data-action="edit" type="button" title="Edit" aria-label="Edit">${pencilIcon()}</button><button class="icon-button danger-button row-delete-action" data-action="delete" type="button" title="Delete" aria-label="Delete">${trashIcon()}</button></div><div class="game-row-actions-bottom"><button class="ghost-button shelf-add-backlog-action" data-action="add-backlog" type="button">${backIcon()}<span class="shelf-backlog-desktop-label">${escapeHtml(tt("Backlog from Collection"))}</span><span class="shelf-backlog-mobile-label">${escapeHtml(tt("Add to Backlog"))}</span></button></div>`;
+  const actions = syncedProjection ? `<div class="game-row-actions-top"><button class="icon-button row-edit-action" data-action="edit-preorder" type="button" title="Edit" aria-label="Edit">${pencilIcon()}</button><button class="icon-button danger-button row-delete-action" data-action="delete-preorder" type="button" title="Delete" aria-label="Delete">${trashIcon()}</button></div><div class="game-row-actions-bottom"><button class="primary-button" data-action="${wishlistProjection ? "add-wishlist-backlog" : "accept-preorder"}" type="button">${forwardIcon()}<span>${escapeHtml(tt("Backlog"))}</span></button></div>` : isPendingCollectionGame(game) ? `<div class="game-row-actions-top"><button class="primary-button add-collection-action" data-action="add-collection" type="button">Add to Collection</button></div><div class="game-row-actions-bottom"><button class="icon-button danger-button row-delete-action" data-action="delete" type="button" title="Delete" aria-label="Delete">${trashIcon()}</button></div>` : `<div class="game-row-actions-top"><button class="icon-button row-edit-action" data-action="edit" type="button" title="Edit" aria-label="Edit">${pencilIcon()}</button><button class="icon-button danger-button row-delete-action" data-action="delete" type="button" title="Delete" aria-label="Delete">${trashIcon()}</button></div><div class="game-row-actions-bottom">${lendButton(game)}<button class="ghost-button shelf-add-backlog-action" data-action="add-backlog" type="button">${backIcon()}<span class="shelf-backlog-desktop-label">${escapeHtml(tt("Backlog from Collection"))}</span><span class="shelf-backlog-mobile-label">${escapeHtml(tt("Add to Backlog"))}</span></button></div>`;
   const mobilePreorderTag = game.preorderStore ? mobilePreorderProjectionChip(game.preorderStore) : "";
   const core = syncedProjection
     ? `${platformBadge(game.platform, { title: game.title })}${mediaFormatBadge(game)}${dlcBadge(game)}${entitlementBadge(game)}${preorderPlaytimePill(game)}${preorderProjection ? shelfReleaseDatePill(game, "Releases") : wishlistProjection ? shelfReleaseDatePill(game, "Released") : ""}${mobilePreorderTag}`
     : digitalGame ? `${platformBadge(game.platform, { title: game.title })}${mediaFormatBadge(game)}${dlcBadge(game)}${entitlementBadge(game)}${shelfProgressPill(game)}${mobilePreorderTag}`
     : `<span class="region-flag" title="${escapeHtml(game.country)}">${flagIcon(game.country)}</span>${platformBadge(game.platform, { title: game.title })}${conditionBadge(conditionLabel(game))}${missingCollectionPriceBadge(game)}${shelfProgressPill(game)}${mobilePreorderTag}`;
   const prices = syncedProjection ? gamelistPreorderPrices(game) : "";
-  return `<article class="game-row${preorderProjection ? " preorder-projection-row" : ""}${wishlistProjection ? " wishlist-projection-row" : ""}${syncedProjection ? " synced-projection-row" : ""}${ownerClasses}" data-id="${escapeHtml(game.id)}" role="button" tabindex="0" aria-label="${escapeHtml(`Open ${game.title}`)}"><span class="game-row-cover-wrap"><img class="game-row-cover" src="${escapeHtml(cover)}" alt="" loading="lazy" decoding="async"><img class="game-row-cover-preview" src="${escapeHtml(cover)}" alt="" loading="lazy" decoding="async" aria-hidden="true"></span><div class="game-row-identity"><strong class="${visibleOwners.map(ownerColorClass).join(" ")}">${escapeHtml(game.title)}</strong>${visibleOwners.length || studio ? `<span class="game-row-studio-line">${visibleOwners.map(ownerBadge).join("")}${studio ? `<span>${escapeHtml(studio)}</span>` : ""}</span>` : ""}</div><div class="game-row-core">${core}</div><div class="game-row-tags">${game.preorderStore ? preorderProjectionChip(game.preorderStore) : ""}${tags.map((tag) => `<span class="chip genre">${escapeHtml(tag)}</span>`).join("")}</div>${prices ? `<div class="game-row-prices">${prices}</div>` : ""}${description ? `<div class="game-row-description${syncedProjection ? "" : " shelf-row-description"}">${escapeHtml(description)}</div>` : ""}<div class="game-row-actions">${actions}</div></article>`;
+  return `<article class="game-row${preorderProjection ? " preorder-projection-row" : ""}${wishlistProjection ? " wishlist-projection-row" : ""}${syncedProjection ? " synced-projection-row" : ""}${ownerClasses}" data-id="${escapeHtml(game.id)}" role="button" tabindex="0" aria-label="${escapeHtml(`Open ${game.title}`)}"><span class="game-row-cover-wrap"><img class="game-row-cover" src="${escapeHtml(cover)}" alt="" loading="lazy" decoding="async"><img class="game-row-cover-preview" src="${escapeHtml(cover)}" alt="" loading="lazy" decoding="async" aria-hidden="true"></span><div class="game-row-identity"><strong class="${visibleOwners.map(ownerColorClass).join(" ")}">${escapeHtml(game.title)}</strong>${game.lentTo || visibleOwners.length || studio ? `<span class="game-row-studio-line">${lentBadge(game)}${visibleOwners.map(ownerBadge).join("")}${studio ? `<span>${escapeHtml(studio)}</span>` : ""}</span>` : ""}</div><div class="game-row-core">${core}</div><div class="game-row-tags">${game.preorderStore ? preorderProjectionChip(game.preorderStore) : ""}${tags.map((tag) => `<span class="chip genre">${escapeHtml(tag)}</span>`).join("")}</div>${prices ? `<div class="game-row-prices">${prices}</div>` : ""}${description ? `<div class="game-row-description${syncedProjection ? "" : " shelf-row-description"}">${escapeHtml(description)}</div>` : ""}<div class="game-row-actions">${actions}</div></article>`;
 }
 
 function gamelistPreorderPrices(game) {
@@ -2040,6 +2041,67 @@ function shelfPreorderCountPill(games) {
   return `<span class="preorder-count-pill preorder-count-tooltip" tabindex="0" title="${escapeHtml(title)}">${shoppingBagIcon()}${games.length} ${escapeHtml(tt(games.length === 1 ? "Preorder" : "Preorders"))}<span class="preorder-store-list" role="tooltip">${rows}</span></span>`;
 }
 
+function lentBadge(game) {
+  return game.lentTo ? `<span class="owner-pill lent-badge ${escapeHtml(ownerColorClass(game.lentTo))}">${escapeHtml(tt("Lent to {name}", { name: game.lentTo }))}</span>` : "";
+}
+
+function lendButton(game) {
+  return `<button class="ghost-button shelf-lend-action editor-only" data-action="${game.lentTo ? "returned" : "lend"}" type="button">${escapeHtml(tt(game.lentTo ? "Returned" : "Lend"))}</button>`;
+}
+
+function shelfLentCountPill(games) {
+  const counts = new Map();
+  games.forEach(game => {
+    const name = String(game.lentTo || "").trim();
+    if (name) counts.set(name, (counts.get(name) || 0) + 1);
+  });
+  if (!counts.size) return "";
+  const summary = [...counts].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]));
+  const count = summary.reduce((total, [, value]) => total + value, 0);
+  const rows = summary.map(([name, value]) => `<span><strong>${escapeHtml(name)}</strong><em>${value}</em></span>`).join("");
+  const title = summary.map(([name, value]) => `${name}: ${value}`).join("\n");
+  return `<span class="preorder-count-pill preorder-count-tooltip lent-count-pill" tabindex="0" title="${escapeHtml(title)}">${count} ${escapeHtml(tt("Lent"))}<span class="preorder-store-list" role="tooltip">${rows}</span></span>`;
+}
+
+function openLendingDialog(game) {
+  const returning = Boolean(game.lentTo);
+  const dialog = document.createElement("dialog");
+  dialog.className = "shelf-lending-dialog";
+  dialog.setAttribute("aria-labelledby", "shelfLendingTitle");
+  dialog.innerHTML = `<form class="modal glass shelf-lending-modal"><div class="modal-head"><h2 id="shelfLendingTitle">${escapeHtml(tt(returning ? "Returned" : "Lend"))}</h2><button class="icon-button" type="button" data-cancel aria-label="${escapeHtml(tt("Close"))}">&times;</button></div><p>${escapeHtml(game.title)}</p>${returning ? `<p>${escapeHtml(tt("Confirm that {name} has returned this game.", { name: game.lentTo }))}</p>` : `<label><span>${escapeHtml(tt("Lent to"))}</span><input name="borrower" maxlength="120" required autocomplete="off" placeholder="${escapeHtml(tt("Borrower name"))}"></label>`}<p class="shelf-lending-error" role="alert" hidden></p><div class="modal-actions"><button class="ghost-button" type="button" data-cancel>${escapeHtml(tt("Cancel"))}</button><button class="primary-button" type="submit">${escapeHtml(tt(returning ? "Confirm" : "Lend"))}</button></div></form>`;
+  document.body.append(dialog);
+  dialog.querySelectorAll("[data-cancel]").forEach(button => button.addEventListener("click", () => closeDialog(dialog)));
+  dialog.addEventListener("close", () => { dialog.remove(); document.body.classList.toggle("dialog-open", document.querySelector("dialog[open]") !== null); }, { once: true });
+  dialog.querySelector("form").addEventListener("submit", async event => {
+    event.preventDefault();
+    if (!state.canEdit) return;
+    const input = dialog.querySelector("input");
+    const lentTo = returning ? "" : canonicalOwner(input.value.trim());
+    if (!returning && !lentTo) { input.value = ""; input.reportValidity(); return; }
+    const submit = dialog.querySelector("[type=submit]");
+    submit.disabled = true;
+    const previousAdditions = state.additions;
+    const previousOverrides = state.overrides;
+    const updated = { ...game, lentTo, updatedAt: new Date().toISOString() };
+    if (game.sourceRecord) state.overrides = { ...state.overrides, [game.id]: stripRuntimeFields(updated) };
+    else state.additions = state.additions.map(item => item.id === game.id ? stripRuntimeFields(updated) : item);
+    const saved = await persistShelf();
+    if (!saved) {
+      state.additions = previousAdditions;
+      state.overrides = previousOverrides;
+      const error = dialog.querySelector("[role=alert]");
+      error.textContent = tt("Could not save lending status. Please try again.");
+      error.hidden = false;
+      submit.disabled = false;
+      return;
+    }
+    rebuildGames();
+    renderAll();
+    closeDialog(dialog);
+  });
+  openDialog(dialog);
+}
+
 function visibleShelfCardOwners(owners = []) {
   const defaultOwner = state.gamelistSettings.defaultOwner || "User";
   return owners.filter((owner) => owner !== defaultOwner);
@@ -2075,6 +2137,7 @@ function handleShelfClick(event) {
   if (!game) return;
   if (action === "edit") state.canEdit ? openEditor(game) : openAuth();
   else if (action === "add-collection") state.canEdit ? openEditor(game) : openAuth();
+  else if (action === "lend" || action === "returned") state.canEdit ? openLendingDialog(game) : openAuth();
   else if (action === "add-backlog") state.canEdit ? addShelfGameToGamelist(game, { section: "backlog" }) : openAuth();
   else if (action === "accept-preorder") state.canEdit ? acceptSyncedPreorder(game) : openAuth();
   else if (action === "add-wishlist-backlog") state.canEdit ? addSyncedWishlistToBacklog(game) : openAuth();
@@ -2105,7 +2168,7 @@ function openDetails(game) {
   el.detailTitle.innerHTML = `<span>${escapeHtml(game.title)}</span>${missingPriceTag}`;
   el.detailTitle.className = `${el.detailTitle.className.replace(/\bowner-[\w-]+/g, "").replace(/\bhas-missing-price\b/g, "").trim()} ${(game.owners || []).map(ownerColorClass).join(" ")} ${missingPriceTag ? "has-missing-price" : ""}`.trim();
   const detailStudio = [game.developer, game.publisher && game.publisher !== game.developer ? game.publisher : ""].filter(Boolean).join(" / ");
-  el.detailStudio.innerHTML = `${visibleShelfCardOwners(game.owners || []).map(ownerBadge).join("")}${detailStudio ? `<span>${escapeHtml(detailStudio)}</span>` : ""}`;
+  el.detailStudio.innerHTML = `${lentBadge(game)}${visibleShelfCardOwners(game.owners || []).map(ownerBadge).join("")}${detailStudio ? `<span>${escapeHtml(detailStudio)}</span>` : ""}`;
   el.detailStudio.hidden = !el.detailStudio.innerHTML;
   const digitalGame = isDigitalShelfGame(game);
   el.detailMeta.innerHTML = `${!digitalGame && game.country ? `<span class="region-flag" title="${escapeHtml(game.country)}">${flagIcon(game.country)}</span>` : ""}${platformBadge(game.platform, { title: game.title })}${digitalGame ? `${mediaFormatBadge(game)}${dlcBadge(game)}${entitlementBadge(game)}` : ""}`;
@@ -2992,6 +3055,7 @@ function shelfGameFromEditor(existing = state.games.find((game) => game.id === s
     genre: el.fields.genre.value.trim(), cover: rawCoverUrl(el.fields.cover.value.trim()), notes: el.fields.notes.value.trim(),
     keyArt: el.fields.keyArt.value.trim(),
     trailerUrl: state.pendingTrailerUrl || existing?.trailerUrl || "",
+    lentTo: canonicalOwner(el.fields.lentTo.value.trim()),
     owners: splitValues(el.fields.owners.value).map(canonicalOwner).filter(Boolean), category: existing?.category || "Game",
     releaseDate: el.fields.releaseDate.value, trophyName: el.fields.trophyName.value.trim(), websites: legacyWebsiteLinks(existing),
     createdAt: shelfCreatedAtForDate(el.fields.additionDate.value, existing),
@@ -3934,7 +3998,7 @@ function renderShowcasePicker() {
 function filteredShowcaseGames() {
   const filters = state.showcaseFilters;
   return ownedShelfGames().filter((game) => {
-    const haystack = normalizeSearchText(`${game.title} ${game.platform} ${game.publisher} ${game.developer} ${game.genre} ${game.notes} ${(game.tags || []).join(" ")} ${(game.owners || []).join(" ")}`);
+    const haystack = normalizeSearchText(`${game.title} ${game.platform} ${game.publisher} ${game.developer} ${game.genre} ${game.notes} ${(game.tags || []).join(" ")} ${(game.owners || []).join(" ")} ${game.lentTo || ""}`);
     return (filters.platform === "all" || game.platform === filters.platform)
       && (filters.region === "all" || game.country === filters.region)
       && (filters.category === "all" || [...String(game.genre || "").split(","), ...(game.genres || [])].map((value) => value.trim()).includes(filters.category))
@@ -4235,7 +4299,7 @@ function openGamelistDetails(sourceGame) {
   el.detailTitle.textContent = game.title;
   el.detailTitle.className = `${el.detailTitle.className.replace(/\bowner-[\w-]+/g, "").trim()} ${owners.map(ownerColorClass).join(" ")}`.trim();
   const detailStudio = [game.developer, game.publisher].filter(Boolean).join(" / ");
-  el.detailStudio.innerHTML = `${visibleOwners.map(ownerBadge).join("")}${detailStudio ? `<span>${escapeHtml(detailStudio)}</span>` : ""}`;
+  el.detailStudio.innerHTML = `${lentBadge(game)}${visibleOwners.map(ownerBadge).join("")}${detailStudio ? `<span>${escapeHtml(detailStudio)}</span>` : ""}`;
   el.detailStudio.hidden = !el.detailStudio.textContent;
   el.detailMeta.innerHTML = `${platformBadge(game.platform, { title: game.title })}${mediaFormatBadge(game)}${dlcBadge(game)}${entitlementBadge(game)}${preorderPlaytimePill(game)}`;
   el.detailDates.innerHTML = [
@@ -4297,7 +4361,7 @@ function gamelistProjectionCard(game, options = {}) {
   const cardArt = !neutralReleaseCard && game.playing ? game.keyArt : cover;
   const owners = Array.isArray(game.owners) && game.owners.length ? game.owners : [state.gamelistSettings.defaultOwner || "User"];
   const visibleOwners = visibleShelfCardOwners(owners);
-  const ownerClasses = visibleOwners.map((owner) => ` ${ownerCardColorClass(owner)}`).join("");
+  const ownerClasses = game.lentTo ? ` lent-card ${ownerCardColorClass(game.lentTo)}` : visibleOwners.map((owner) => ` ${ownerCardColorClass(owner)}`).join("");
   const studio = [game.developer, game.publisher].filter(Boolean).join(" / ");
   const card = createGameCardShell(document);
   card.dataset.gamelistId = game.id; card.setAttribute("role", "button"); card.tabIndex = 0;
