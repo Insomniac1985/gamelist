@@ -15,6 +15,10 @@ const context = vm.createContext({
   isPendingCollectionGame: game => Boolean(game?.pendingCollection),
   svgAsset: name => `<svg data-asset="${name}"></svg>`,
   escapeHtml,
+  platformBadge: platform => `<span>${platform || 'PS5'}</span>`,
+  flagIcon: country => `<img alt="${country}">`,
+  conditionBadge: condition => `<span>${condition}</span>`,
+  conditionLabel: () => 'Complete',
   coverUrl: value => value,
   platformFallback: () => "/platform.png",
   tt: (value, args = {}) => value.replace(/\{(\w+)\}/g, (_, key) => args[key]),
@@ -48,6 +52,10 @@ assert.equal(state.additions[0].lentTo, 'Judy');
 assert.equal(dialog.open, false);
 assert.equal(renders, 1);
 assert.match(context.lentBadge(state.additions[0]), /Lent to Judy/);
+assert.match(context.shelfLendingSearchText(state.additions[0]), /lent borrow borrowed Judy/);
+assert.equal(context.shelfLendingSearchText({ lentTo: '' }), '');
+assert.equal(context.shelfLendingSearchText({ lentTo: '  ' }), '');
+assert.equal(context.shelfLendingSearchText({ lentTo: 'Judy', digital: true }), '');
 assert.match(context.lendButton(state.additions[0]), /data-action="returned"/);
 assert.match(context.lendButton(state.additions[0]), /icons\/actions\/forward-2/);
 assert.match(context.lendButton(state.additions[0]), /Get back/);
@@ -60,6 +68,7 @@ context.openLendingDialog(state.additions[0]);
 assert.equal(state.additions[0].lentTo, 'Judy', 'Opening return confirmation must not clear the borrower');
 await dialog.form.submit({ preventDefault() {} });
 assert.equal(state.additions[0].lentTo, '');
+assert.equal(context.shelfLendingSearchText(state.additions[0]), '', 'Returned games must stop matching lending keywords');
 assert.equal(context.shelfLentCountPill(state.additions), '');
 const sourceGame = { id: 'imported', title: 'Imported game', sourceRecord: true };
 context.openLendingDialog(sourceGame);

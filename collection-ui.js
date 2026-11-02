@@ -1873,7 +1873,7 @@ function filteredGamesForShelfTab(tab) {
   const normalizedTab = normalizedShelfTab(tab);
   const source = normalizedTab === "preorders" ? syncedPreorderGames() : normalizedTab === "wishlist" ? syncedWishlistGames() : visibleShelfGames();
   return source.filter((game) => {
-    const haystack = normalizeSearchText(`${game.title} ${game.platform} ${game.publisher} ${game.developer} ${game.genre} ${(game.genres || []).join(" ")} ${game.description} ${game.notes} ${game.preorderStore} ${(game.tags || []).join(" ")} ${(game.owners || []).join(" ")} ${game.lentTo || ""}`);
+    const haystack = normalizeSearchText(`${game.title} ${game.platform} ${game.publisher} ${game.developer} ${game.genre} ${(game.genres || []).join(" ")} ${game.description} ${game.notes} ${game.preorderStore} ${(game.tags || []).join(" ")} ${(game.owners || []).join(" ")} ${shelfLendingSearchText(game)}`);
     return !game.deletedAt
       && (!unifiedShelfScope || !state.unifiedMedia || state.unifiedMedia === "all" || (state.unifiedMedia === "digital") === isDigitalShelfGame(game))
       && (state.filters.platform === "all" || game.platform === state.filters.platform)
@@ -1887,7 +1887,7 @@ function filteredGamesForShelfTab(tab) {
 function filteredShelfStatsGames(options = {}) {
   const driveMode = Boolean(options.drive);
   return visibleShelfGames().filter((game) => {
-    const haystack = normalizeSearchText(`${game.title} ${game.platform} ${game.publisher} ${game.developer} ${game.genre} ${game.notes} ${(game.tags || []).join(" ")} ${(game.owners || []).join(" ")} ${game.lentTo || ""}`);
+    const haystack = normalizeSearchText(`${game.title} ${game.platform} ${game.publisher} ${game.developer} ${game.genre} ${game.notes} ${(game.tags || []).join(" ")} ${(game.owners || []).join(" ")} ${shelfLendingSearchText(game)}`);
     return !game.deletedAt
       && (!unifiedShelfScope || state.gamelistSettings.shelfDigitalGames === true || !isDigitalShelfGame(game))
       && (!unifiedShelfScope || !state.unifiedMedia || state.unifiedMedia === "all" || (state.unifiedMedia === "digital") === isDigitalShelfGame(game))
@@ -2046,6 +2046,12 @@ function canLendShelfGame(game) {
     && !game.preorderProjection && !game.wishlistProjection && !game._gamelistProjection;
 }
 
+function shelfLendingSearchText(game) {
+  return canLendShelfGame(game) && String(game.lentTo || "").trim()
+    ? `lent borrow borrowed ${game.lentTo}`
+    : "";
+}
+
 function lentBadge(game) {
   return canLendShelfGame(game) && game.lentTo ? `<span class="owner-pill lent-badge ${escapeHtml(ownerColorClass(game.lentTo))}">${escapeHtml(tt("Lent to {name}", { name: game.lentTo }))}</span>` : "";
 }
@@ -2077,7 +2083,8 @@ function openLendingDialog(game) {
   dialog.className = "shelf-lending-dialog";
   dialog.setAttribute("aria-labelledby", "shelfLendingTitle");
   const cover = coverUrl(game.cover || "") || platformFallback(game.platform);
-  dialog.innerHTML = `<form class="modal glass shelf-lending-modal"><div class="modal-head"><h2 id="shelfLendingTitle">${escapeHtml(tt(returning ? "Get back" : "Lend"))}</h2><button class="icon-button" type="button" data-cancel aria-label="${escapeHtml(tt("Close"))}">&times;</button></div><div class="shelf-lending-game"><img class="shelf-lending-cover" src="${escapeHtml(cover)}" alt="${escapeHtml(game.title)} cover" decoding="async"><strong>${escapeHtml(game.title)}</strong></div>${returning ? `<p>${escapeHtml(tt("Confirm that {name} has returned this game.", { name: game.lentTo }))}</p>` : `<label><span>${escapeHtml(tt("Lent to"))}</span><input name="borrower" maxlength="120" required autocomplete="off" placeholder="${escapeHtml(tt("Borrower name"))}"></label>`}<p class="shelf-lending-error" role="alert" hidden></p><div class="modal-actions"><button class="ghost-button" type="button" data-cancel>${escapeHtml(tt("Cancel"))}</button><button class="primary-button" type="submit">${escapeHtml(tt(returning ? "Confirm" : "Lend"))}</button></div></form>`;
+  const meta = `${platformBadge(game.platform, { title: game.title })}${game.country ? `<span class="region-flag" title="${escapeHtml(game.country)}">${flagIcon(game.country)}</span>` : ""}${conditionBadge(conditionLabel(game))}`;
+  dialog.innerHTML = `<form class="modal glass shelf-lending-modal"><div class="modal-head"><h2 id="shelfLendingTitle">${escapeHtml(tt(returning ? "Get back" : "Lend"))}</h2><button class="icon-button" type="button" data-cancel aria-label="${escapeHtml(tt("Close"))}">&times;</button></div><div class="shelf-lending-game"><img class="shelf-lending-cover" src="${escapeHtml(cover)}" alt="${escapeHtml(game.title)} cover" decoding="async"><div class="shelf-lending-info"><strong>${escapeHtml(game.title)}</strong><div class="shelf-lending-meta">${meta}</div></div></div>${returning ? `<p>${escapeHtml(tt("Confirm that {name} has returned this game.", { name: game.lentTo }))}</p>` : `<label><span>${escapeHtml(tt("Lent to"))}</span><input name="borrower" maxlength="120" required autocomplete="off" placeholder="${escapeHtml(tt("Borrower name"))}"></label>`}<p class="shelf-lending-error" role="alert" hidden></p><div class="modal-actions"><button class="ghost-button" type="button" data-cancel>${escapeHtml(tt("Cancel"))}</button><button class="primary-button" type="submit">${escapeHtml(tt(returning ? "Confirm" : "Lend"))}</button></div></form>`;
   document.body.append(dialog);
   dialog.querySelectorAll("[data-cancel]").forEach(button => button.addEventListener("click", () => closeDialog(dialog)));
   dialog.addEventListener("close", () => { dialog.remove(); document.body.classList.toggle("dialog-open", document.querySelector("dialog[open]") !== null); }, { once: true });
@@ -4010,7 +4017,7 @@ function renderShowcasePicker() {
 function filteredShowcaseGames() {
   const filters = state.showcaseFilters;
   return ownedShelfGames().filter((game) => {
-    const haystack = normalizeSearchText(`${game.title} ${game.platform} ${game.publisher} ${game.developer} ${game.genre} ${game.notes} ${(game.tags || []).join(" ")} ${(game.owners || []).join(" ")} ${game.lentTo || ""}`);
+    const haystack = normalizeSearchText(`${game.title} ${game.platform} ${game.publisher} ${game.developer} ${game.genre} ${game.notes} ${(game.tags || []).join(" ")} ${(game.owners || []).join(" ")} ${shelfLendingSearchText(game)}`);
     return (filters.platform === "all" || game.platform === filters.platform)
       && (filters.region === "all" || game.country === filters.region)
       && (filters.category === "all" || [...String(game.genre || "").split(","), ...(game.genres || [])].map((value) => value.trim()).includes(filters.category))
