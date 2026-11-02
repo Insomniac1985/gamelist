@@ -25535,3 +25535,10 @@ textarea {
 @media (max-width: 689px) {
   :is(#upcoming, #wanted) .card-list.list-view .game-row-actions { --list-action-height: 32px; }
 }
+
+.shelf-lending-modal .modal-actions .primary-button > svg {
+  width: 18px;
+  height: 18px;
+  flex: 0 0 18px;
+  stroke: currentColor;
+}
