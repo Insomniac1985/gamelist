@@ -2062,7 +2062,8 @@ function lentBadge(game) {
 
 function lendButton(game) {
   if (!canLendShelfGame(game)) return "";
-  return `<button class="ghost-button shelf-lend-action editor-only" data-action="${game.lentTo ? "returned" : "lend"}" type="button">${game.lentTo ? svgAsset("icons/actions/forward-2") : svgAsset("icons/actions/lend-hand")}<span>${escapeHtml(tt(game.lentTo ? "Get back" : "Lend"))}</span></button>`;
+  const label = escapeHtml(tt(game.lentTo ? "Get back" : "Lend"));
+  return `<button class="ghost-button shelf-lend-action editor-only" data-action="${game.lentTo ? "returned" : "lend"}" type="button" title="${label}" aria-label="${label}">${game.lentTo ? svgAsset("icons/actions/forward-2") : svgAsset("icons/actions/lend-hand")}<span>${escapeHtml(tt(game.lentTo ? "Get back" : "Lend"))}</span></button>`;
 }
 
 function shelfLentCountPill(games) {
