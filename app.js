@@ -1,10 +1,13 @@
 import { svgAsset, loadSvgAssets, hydrateSvgAssets } from "./svg-assets.js";
 import { bindCardHoverSounds, playRatingSound, playUiSound, scrollWithSound, setSoundsDisabled, setSessionSoundsEnabled, getSoundStatus } from "./card-hover-sound.js";
-import { renderBatchedList, stopBatchedList } from "./batched-list.js";
+import { renderBatchedList, stopBatchedList, reorderVisibleItems } from "./batched-list.js";
+import { createDataPatch, applyDataPatch, hasDataPatch, shelfShape, gamelistShape } from "./data-patch.js";
+import { fetchCollectionJson, invalidateCollectionCache, readLocalGames, saveLocalGames } from "./collection-cache.js";
+import { createSearchCache } from "./search-cache.js";
 import { syncMediaFormatToggle } from "./media-format-toggle.js";
 import { mountCollectionWorkspace, prepareCollectionWorkspace } from "./collection-workspace.js";
 import { openSharedAddGame, warmSharedAddGame } from "./shared-add-game.js";
-import { normalizeSearchText, bindModalTouchGuard, createGameCardShell, bindActivityCardParallax, mountActivitySlider, mountTwitchPreview, mountReleaseCalendar, finishedGameMarkup, achievementCardMarkup, achievementDashboardMarkup, achievementPanelMarkup, completedCardMarkup, horizontalCarouselState, syncViewModeButton, slideHorizontalCarousel, comparePlayingGames, finishedDurationText, timeBadgeMarkup, guideLinksMarkup, storeButtonsMarkup, activityTrailerUrl, activityTrailerFrameMarkup, preloadPausedActivityTrailers, activityReleaseStatus, activityCoverOverride, activityAllowsPsnCardTrophies, formatFooterDate, formatFooterDateTime, formatFooterShortDate, confirmGameDelete } from "./activity-ui.js";
+import { normalizeSearchText, bindModalTouchGuard, createGameCardShell, bindActivityCardParallax, mountActivitySlider, mountTwitchPreview, mountReleaseCalendar, finishedGameMarkup, achievementCardMarkup, achievementDashboardMarkup, achievementPanelMarkup, completedCardMarkup, horizontalCarouselState, syncViewModeButton, slideHorizontalCarousel, comparePlayingGames, timeBadgeMarkup, guideLinksMarkup, storeButtonsMarkup, activityTrailerUrl, activityTrailerFrameMarkup, preloadPausedActivityTrailers, activityReleaseStatus, activityCoverOverride, activityAllowsPsnCardTrophies, formatFooterDate, formatFooterDateTime, formatFooterShortDate, confirmGameDelete } from "./activity-ui.js";
 import { applySiteTheme, normalizeThemeSettings, ownerCardColorClass, ownerColorClass, themeSettingsContent, bindThemeSettingsContent, readThemeSettingsContent } from "./theme-system.js";
 import { applyDocumentTranslations, languageOptions, normalizeLanguage, t } from "./i18n.js";
 import { accountSettingsMarkup } from "./account-settings-ui.js";
@@ -632,8 +635,10 @@ async function init() {
   document.documentElement.classList.remove("theme-booting");
   if (state.canEdit) {
     const warmEditor = () => warmSharedAddGame();
-    if ("requestIdleCallback" in window) window.requestIdleCallback(warmEditor, { timeout: 2500 });
-    else window.setTimeout(warmEditor, 500);
+    for (const button of [el.addButton, el.floatingAddButton, el.mobileDockAdd]) {
+      button?.addEventListener("pointerenter", warmEditor, { once: true });
+      button?.addEventListener("focus", warmEditor, { once: true });
+    }
   }
   void refreshPlayingCardPlaytime();
   void refreshPlayingKeyArt();
@@ -1200,15 +1205,15 @@ function bindEvents() {
   el.platformFilter.addEventListener("change", (event) => {
     state.filters.platform = event.target.value;
     state.completedVisiblePages = 1;
-    render();
+    renderFilteredWorkspace();
   });
   el.tagFilter.addEventListener("change", (event) => {
     state.filters.tag = event.target.value;
     state.completedVisiblePages = 1;
-    render();
+    renderFilteredWorkspace();
   });
-  document.querySelector("#collectionRegionFilter").addEventListener("change", event => { state.filters.region = event.target.value; render(); });
-  document.querySelector("#collectionConditionFilter").addEventListener("change", event => { state.filters.condition = event.target.value; render(); });
+  document.querySelector("#collectionRegionFilter").addEventListener("change", event => { state.filters.region = event.target.value; renderFilteredWorkspace(); });
+  document.querySelector("#collectionConditionFilter").addEventListener("change", event => { state.filters.condition = event.target.value; renderFilteredWorkspace(); });
   el.sortFilter.addEventListener("change", (event) => {
     state.sortTouched = true;
     state.filters.sort = event.target.value;
@@ -1676,21 +1681,14 @@ function initRenderSettling() {
 async function loadData() {
   state.settings = loadLocalSettings();
   state.completedStreamMode = streamFilterPriorityForSettings(state.settings);
-  const saved = localStorage.getItem(STORAGE_KEY) || localStorage.getItem(LEGACY_STORAGE_KEY);
-  if (saved) {
-    state.games = normalizeGameRecords(JSON.parse(saved));
-    persistLocal(false);
-    return;
-  }
-  state.games = [];
+  state.games = normalizeGameRecords(await readLocalGames(STORAGE_KEY, LEGACY_STORAGE_KEY));
   persistLocal(false);
 }
 
 async function pullCloudData() {
   try {
-    const response = await fetch("/api/sync");
-    if (!response.ok) return false;
-    const data = await response.json();
+    const data = await fetchCollectionJson("/api/sync");
+    cloudSnapshot = structuredClone({ games: data.games || [], settings: data.settings || {} });
     let changed = false;
     if (data.settings && typeof data.settings === "object") {
       const nextSettings = normalizeSettings(data.settings);
@@ -1702,7 +1700,7 @@ async function pullCloudData() {
         changed = true;
       }
     }
-    if (Array.isArray(data.games) && data.games.length) {
+    if (Array.isArray(data.games) && (data.games.length || data.updatedAt)) {
       const nextGames = normalizeGameRecords(data.games);
       if (JSON.stringify(nextGames) !== JSON.stringify(state.games)) {
         state.games = nextGames;
@@ -1719,7 +1717,7 @@ async function pullCloudData() {
 
 function persistLocal(shouldRender = true) {
   state.games = normalizeGameRecords(state.games);
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(state.games));
+  void saveLocalGames(STORAGE_KEY, state.games);
   persistLocalSettings();
   if (shouldRender) render();
 }
@@ -1927,26 +1925,62 @@ function syncMobileDockGoty() {
   syncStatsShortcut();
 }
 
-async function persistCloud() {
+let cloudSnapshot = null;
+let cloudSaveQueue = Promise.resolve();
+function persistCloud() {
+  const task = cloudSaveQueue.then(persistCloudNow);
+  cloudSaveQueue = task.catch(() => false);
+  return task;
+}
+async function persistCloudNow() {
   const password = sessionStorage.getItem(`${SESSION_KEY}:password`) || "";
   try {
-    await fetch("/api/sync", {
+    const payload = { games: state.games, settings: state.settings };
+    // UI defaults must not turn a one-game edit into a migration of every record.
+    const comparison = cloudSnapshot ? { games: normalizeGameRecords(structuredClone(cloudSnapshot.games)), settings: normalizeSettings(structuredClone(cloudSnapshot.settings)) } : null;
+    const patch = cloudSnapshot ? createDataPatch(cloudSnapshot, payload, gamelistShape, comparison) : null;
+    if (patch && !hasDataPatch(patch)) return true;
+    const response = await fetch("/api/sync", {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",
         "x-edit-password": password,
       },
-      body: JSON.stringify({ games: state.games, settings: state.settings }),
+      body: JSON.stringify(patch ? { patch } : payload),
     });
-  } catch {
-    // Local-only mode is expected before Cloudflare hosting.
+    if (!response.ok) {
+      const error = await response.json().catch(() => ({}));
+      throw new Error(error.error || "Could not save changes.");
+    }
+    cloudSnapshot = patch ? applyDataPatch(cloudSnapshot, patch, gamelistShape) : structuredClone(payload);
+    void invalidateCollectionCache("/api/sync");
+    return true;
+  } catch (error) {
+    showToast(error.message || "Could not save changes.", "error");
+    return false;
   }
 }
 
 let searchRenderTimer;
 function scheduleSearchRender() {
   window.clearTimeout(searchRenderTimer);
-  searchRenderTimer = window.setTimeout(render, 100);
+  searchRenderTimer = window.setTimeout(renderFilteredWorkspace, 100);
+}
+
+function renderFilteredWorkspace() {
+  window.clearTimeout(searchRenderTimer);
+  // Shelf has its own counts and renderer; unrelated modules keep their nodes.
+  if (state.mobileSection === "shelf" && collectionUI) {
+    syncMobileSectionToResults();
+    if (state.mobileSection !== "shelf") { render(); return; }
+    syncCollectionWorkspace();
+    renderMobileTabs();
+    el.platformFilter.classList.toggle("is-active", state.filters.platform !== "all");
+    el.tagFilter.classList.toggle("is-active", state.filters.tag !== "all");
+    scheduleRenderSettle("filters");
+    return;
+  }
+  render();
 }
 
 function render() {
@@ -7448,6 +7482,9 @@ function renderSection(section) {
     return;
   }
   renderBatchedList(list, games, {
+    batchSize: 100,
+    itemVersion: game => JSON.stringify([game, collectionRecordFor(game)]),
+    contextKey: JSON.stringify([state.viewMode, state.canEdit, state.settings, manualDragEnabled(), todayDate(), state.psnActivity, state.steamActivity, state.xboxActivity]),
     resetKey: JSON.stringify([section, state.viewMode, state.filters, collectionMedia]),
     loadMoreLabel: tt("Show more"),
     createItem: (game, index) => state.viewMode === "list"
@@ -9073,6 +9110,7 @@ function activeGames() {
   return state.games.filter((game) => !game.completedAt && !game.deletedAt);
 }
 
+const mainSearchText = createSearchCache(normalizeSearchText);
 function filteredGames(options = {}) {
   const { applyPreorder = true } = options;
   return state.games.filter((game) => {
@@ -9082,7 +9120,7 @@ function filteredGames(options = {}) {
     const collected = collectionRecordFor(game);
     if (state.filters.region !== "all" && !(game.digital || game.dlc) && collected?.country !== state.filters.region) return false;
     if (state.filters.condition !== "all" && !collectionConditionMatches(collected, state.filters.condition)) return false;
-    const haystack = [
+    const haystack = state.filters.query ? [
       game.title,
       game.platform,
       game.description,
@@ -9105,9 +9143,9 @@ function filteredGames(options = {}) {
       ...(game.statuses || []),
       ...(game.tags || []),
       ...(game.owners || []),
-    ].join(" ");
-    const tagText = [...(game.genres || []), ...gameStatuses(game), canonicalStatus(game.preorderStore), canonicalStatus(game.preferredStore)].filter(Boolean);
-    return (!state.filters.query || normalizeSearchText(haystack).includes(state.filters.query))
+    ].join(" ") : "";
+    const tagText = state.filters.tag === "all" ? [] : [...(game.genres || []), ...gameStatuses(game), canonicalStatus(game.preorderStore), canonicalStatus(game.preferredStore)].filter(Boolean);
+    return (!state.filters.query || mainSearchText(game, haystack).includes(state.filters.query))
       && (state.filters.platform === "all" || platformFilterGroup(game.platform) === state.filters.platform)
       && (state.filters.tag === "all" || tagText.includes(state.filters.tag))
       && (!applyPreorder || !state.filters.preordered || Boolean(game.preorderStore));
@@ -9504,7 +9542,7 @@ async function refreshPlayingKeyArt() {
       card.classList.add("has-art", "has-key-art");
       card.style.setProperty("--card-art", `url("${cssUrl(result.keyArt)}")`);
     });
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(state.games));
+    void saveLocalGames(STORAGE_KEY, state.games);
   }));
 }
 
@@ -12328,8 +12366,23 @@ function openGameAddFlow(options = {}) {
   return openSharedAddGame({ ...options, addToBacklog, section: section === "collection" ? "backlog" : section, target: collection && !addToBacklog ? "shelf" : "gamelist", digital: options.digital ?? (state.mobileSection === "shelf" && collectionMedia === "digital" && state.settings.shelfDigitalGames === true), settings: state.settings }, {
     beforeOpen: pauseAllPlayingTrailers,
     afterSave: async result => {
-      await Promise.all([pullCloudData(), refreshCollectionData()]);
-      render();
+      if (result.target === "shelf" && result.change?.patch && collectionData) {
+        try {
+          collectionData = { ...applyDataPatch(collectionData, result.change.patch, shelfShape), updatedAt: result.change.updatedAt };
+          collectionDataSignature = "";
+          void invalidateCollectionCache("/api/shelf");
+          if (result.change.linked) await pullCloudData();
+          syncCollectionWorkspace();
+          renderFilters();
+          renderMobileTabs();
+        } catch {
+          await Promise.all([pullCloudData(), refreshCollectionData()]);
+          render();
+        }
+      } else {
+        await Promise.all([pullCloudData(), refreshCollectionData()]);
+        render();
+      }
       showToast(tt(result.target === "shelf" ? "Added to Shelf." : "Added to Gamelist."));
     },
     afterClose: syncScrollLock,
@@ -12395,6 +12448,7 @@ async function saveFromForm(event) {
   event.preventDefault();
   const existing = state.games.find((game) => game.id === el.fields.id.value);
   const game = await saveCurrentFormGame();
+  if (!game) return;
   gameEditorDirty = false;
   state.finishSetupId = "";
   el.dialog.close();
@@ -12521,7 +12575,7 @@ async function saveCurrentFormGame() {
   };
   if (game.section === "backlog") game.prices = [];
   await normalizeGameBeforeSave(game);
-  upsertGame(game);
+  if (!await upsertGame(game)) return null;
   el.fields.id.value = game.id;
   el.fields.section.value = game.section;
   syncDialogPriceVisibility();
@@ -12569,7 +12623,7 @@ function upsertGame(game) {
   if (index >= 0) state.games[index] = game;
   else state.games.push(game);
   persistLocal();
-  persistCloud();
+  return persistCloud();
 }
 
 function markGameEdited(game, timestamp = new Date().toISOString()) {
@@ -12885,6 +12939,8 @@ function nextOrder(section) {
 
 function setupDrag(list, items) {
   items.forEach((item) => {
+    if (item.dataset.dragBound === "true") return;
+    item.dataset.dragBound = "true";
     item.addEventListener("dragstart", () => {
       state.draggingId = item.dataset.id;
       item.classList.add("dragging");
@@ -12919,13 +12975,12 @@ function saveSectionOrder(list) {
   const editedAt = new Date().toISOString();
   let changed = false;
   const visibleIds = [...list.querySelectorAll(".game-card, .game-row")].map(item => item.dataset.id);
-  const visible = new Set(visibleIds);
   const section = list.dataset.section;
-  const remaining = state.games.filter(game => !game.deletedAt
+  const ordered = state.games.filter(game => !game.deletedAt
     && (section === "new" ? isNewAdditionGame(game) : game.section === section)
-    && !game.completedAt && !game.playing && !visible.has(game.id)
+    && !game.completedAt && !game.playing
   ).sort((a, b) => compareGames(a, b, section));
-  [...visibleIds.map(getGame), ...remaining].forEach((game, index) => {
+  reorderVisibleItems(ordered, visibleIds).forEach((game, index) => {
     if (!game || game.order === index) return;
     game.order = index;
     markGameEdited(game, editedAt);
@@ -13485,6 +13540,7 @@ async function refreshCurrentPrices() {
   const title = el.fields.title.value.trim();
   if (!title) return;
   const savedGame = await saveCurrentFormGame();
+  if (!savedGame) return;
   gameEditorDirty = false;
   if (!shouldFetchPricesForGame(savedGame)) return;
   el.pricesButton.textContent = tt("Refreshing...");
@@ -13719,9 +13775,7 @@ let defaultCollectionListApplied = false;
 function refreshCollectionData() {
   if (collectionRefresh) return collectionRefresh;
   collectionRefresh = (async () => {
-    const response = await fetch("/api/shelf", { cache: "no-store" });
-    if (!response.ok) throw new Error("Could not load your collection.");
-    const data = await response.json();
+    const data = await fetchCollectionJson("/api/shelf");
     const signature = JSON.stringify(data);
     if (signature !== collectionDataSignature) {
       collectionData = data;
@@ -13761,8 +13815,15 @@ function ensureCollectionWorkspace() {
     }, changed: async change => {
       if (!applyCommittedCollectionChange(change)) {
         await Promise.all([refreshCollectionData(), pullCloudData()]);
+        render();
+      } else if (change.shelf && !change.games) {
+        syncCollectionWorkspace();
+        renderFilters();
+        renderMobileTabs();
+        if (state.mobileSection !== "shelf") renderSection(state.mobileSection);
+      } else {
+        render();
       }
-      render();
     } });
     syncCollectionWorkspace();
     renderMobileTabs();

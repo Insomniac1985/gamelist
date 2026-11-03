@@ -1,4 +1,5 @@
 /** Host the shared game editor used by the unified Gamelist and collection. */
+import { fetchCollectionJson } from "./collection-cache.js";
 export const embeddedGameEditor = window.parent !== window && new URLSearchParams(location.search).get("editor") === "1";
 
 let editorHost;
@@ -31,7 +32,7 @@ export function warmSharedAddGame() {
       if (editor.session) frame.contentWindow.postMessage({ type: "game-editor:open", options: editor.session.options }, location.origin);
     }
     if (event.data?.type === "game-editor:closed") finish({ saved: false });
-    if (event.data?.type === "game-editor:saved") finish({ saved: true, target: event.data.target });
+    if (event.data?.type === "game-editor:saved") finish({ saved: true, target: event.data.target, change: event.data.change });
   });
   host.addEventListener("cancel", event => {
     event.preventDefault();
@@ -57,7 +58,7 @@ export function openSharedAddGame(options = {}, lifecycle = {}) {
   return promise;
 }
 
-export function connectEmbeddedGameEditor({ dialog, form, requestClose, open, applyData, saveShelf, saveGamelist, onLoadError }) {
+export function connectEmbeddedGameEditor({ dialog, form, requestClose, open, applyData, saveShelf, saveGamelist, savedChange, onLoadError }) {
   if (!embeddedGameEditor) return;
   let dataReady = Promise.resolve(false);
   let loadId = 0;
@@ -66,11 +67,7 @@ export function connectEmbeddedGameEditor({ dialog, form, requestClose, open, ap
   const loadCurrentData = async () => {
     const currentLoad = ++loadId;
     try {
-      const read = async endpoint => {
-        const response = await fetch(endpoint, { cache: "no-store" });
-        if (!response.ok) throw new Error("Could not load current game data.");
-        return response.json();
-      };
+      const read = fetchCollectionJson;
       const [shelf, gamelist] = await Promise.all([read("/api/shelf"), read("/api/sync")]);
       if (!Array.isArray(shelf.games) || !Array.isArray(gamelist.games) || currentLoad !== loadId) return false;
       applyData({ shelf, gamelist });
@@ -98,22 +95,27 @@ export function connectEmbeddedGameEditor({ dialog, form, requestClose, open, ap
       requestClose();
     }
   });
+  let saving = false;
   form.addEventListener("submit", async event => {
     event.preventDefault();
     event.stopImmediatePropagation();
-    const generation = loadId;
-    if (!await dataReady) {
+    if (saving) return;
+    saving = true;
+    try {
+      const generation = loadId;
+      if (!await dataReady) {
+        if (!dialog.open || generation !== loadId) return;
+        onLoadError?.();
+        dataReady = loadCurrentData();
+        return;
+      }
       if (!dialog.open || generation !== loadId) return;
-      onLoadError?.();
-      dataReady = loadCurrentData();
-      return;
-    }
-    if (!dialog.open || generation !== loadId) return;
-    const destination = form.querySelector('[data-gamelist-target].active')?.dataset.gamelistTarget || "shelf";
-    const saved = await (destination === "gamelist" ? saveGamelist() : saveShelf());
-    if (!saved || !dialog.open || generation !== loadId) return;
-    window.parent.postMessage({ type: "game-editor:saved", target: destination }, location.origin);
-    dialog.close();
+      const destination = form.querySelector('[data-gamelist-target].active')?.dataset.gamelistTarget || "shelf";
+      const saved = await (destination === "gamelist" ? saveGamelist() : saveShelf());
+      if (!saved || !dialog.open || generation !== loadId) return;
+      window.parent.postMessage({ type: "game-editor:saved", target: destination, change: destination === "shelf" ? savedChange?.() : null }, location.origin);
+      dialog.close();
+    } finally { saving = false; }
   });
   dialog.addEventListener("close", () => window.parent.postMessage({ type: "game-editor:closed" }, location.origin));
   dataReady = loadCurrentData();

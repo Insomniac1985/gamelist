@@ -1,5 +1,13 @@
 const lists = new WeakMap();
 
+export function reorderVisibleItems(items, visibleIds) {
+  const byId = new Map(items.map(item => [item.id, item]));
+  const visible = new Set(visibleIds);
+  const reordered = visibleIds.map(id => byId.get(id)).filter(Boolean);
+  let index = 0;
+  return items.map(item => visible.has(item.id) ? reordered[index++] : item);
+}
+
 export function stopBatchedList(list) {
   lists.get(list)?.dispose();
   lists.delete(list);
@@ -9,12 +17,14 @@ export function stopBatchedList(list) {
 export function renderBatchedList(list, items, {
   createItem, resetKey, batchSize = 200, loadMoreLabel = "Show more",
   beforeAppend = () => {}, afterAppend = () => {}, canLoad = () => true,
+  itemKey = item => item?.id ?? item, itemVersion = item => item,
+  contextKey = "",
 } = {}) {
   const previous = lists.get(list);
+  const reusable = previous?.contextKey === contextKey ? previous.nodes || new Map() : new Map();
   const initialCount = previous?.resetKey === resetKey
     ? Math.max(batchSize, previous.shown) : batchSize;
   stopBatchedList(list);
-  list.replaceChildren();
   const doc = list.ownerDocument;
   const view = doc.defaultView;
   const more = doc.createElement("button");
@@ -26,6 +36,8 @@ export function renderBatchedList(list, items, {
   let disposed = false;
   const controller = {
     resetKey,
+    contextKey,
+    nodes: new Map(),
     shown: 0,
     dispose() {
       disposed = true;
@@ -43,18 +55,34 @@ export function renderBatchedList(list, items, {
   }
 
   function appendBatch(count = batchSize) {
-    if (disposed || !canLoad()) return;
+    if (disposed || controller.shown > 0 && !canLoad()) return;
     observer?.disconnect();
     const end = Math.min(items.length, controller.shown + count);
-    const fragment = doc.createDocumentFragment();
+    const initial = controller.shown === 0;
     const nodes = [];
     for (let index = controller.shown; index < end; index++) {
-      const node = createItem(items[index], index);
+      const item = items[index];
+      const key = itemKey(item);
+      const version = itemVersion(item);
+      const cached = reusable.get(key);
+      const node = cached?.version === version ? cached.node : createItem(item, index);
+      controller.nodes.set(key, { node, version });
       nodes.push(node);
-      fragment.append(node);
     }
-    beforeAppend(fragment);
-    list.insertBefore(fragment, more.parentNode === list ? more : null);
+    if (initial) {
+      const wanted = new Set(nodes);
+      for (const node of [...list.children]) if (!wanted.has(node)) node.remove();
+      nodes.forEach((node, index) => {
+        if (list.children[index] !== node) list.insertBefore(node, list.children[index] || null);
+      });
+      reusable.clear();
+      beforeAppend(list);
+    } else {
+      const fragment = doc.createDocumentFragment();
+      nodes.forEach(node => fragment.append(node));
+      beforeAppend(fragment);
+      list.insertBefore(fragment, more.parentNode === list ? more : null);
+    }
     controller.shown = end;
     if (end < items.length) {
       if (!more.parentNode) list.append(more);
