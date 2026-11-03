@@ -62,6 +62,7 @@ function collectionPriceKey(game) {
 function conditionLabel(game) {
   if (conditionValue(game, "sealed")) return "Sealed";
   if (conditionValue(game, "game") && conditionValue(game, "box")) return conditionValue(game, "manual") || conditionValue(game, "other") ? "Complete +" : "Complete";
+  if (conditionValue(game, "game") && conditionValue(game, "manual")) return "Loose +";
   return "Loose";
 }
 

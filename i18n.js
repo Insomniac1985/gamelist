@@ -491,6 +491,7 @@ const STRINGS = {
     Complete: "Completo",
     "Complete +": "Completo +",
     Loose: "Suelto",
+    "Loose +": "Suelto +",
     Sealed: "Precintado",
     Game: "Juego",
     Manual: "Manual",
