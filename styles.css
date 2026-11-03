@@ -22106,6 +22106,9 @@ body.mobile-app-mode.shelf-page .shelf-grid.list-view .game-row-cover-preview {
 .condition-loose {
   color: #ff6f85;
 }
+.condition-loose-plus {
+  color: #ff805e;
+}
 .play-status {
   color: #f7df69;
 }
@@ -23784,6 +23787,10 @@ textarea {
 .condition-pill.condition-loose {
   color: #ff7188;
   background: rgba(255, 91, 118, 0.1);
+}
+.condition-pill.condition-loose-plus {
+  color: #ff805e;
+  background: rgba(255, 128, 94, 0.1);
 }
 .condition-pill.condition-complete {
   color: #79f2ce;

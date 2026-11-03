@@ -55,6 +55,7 @@ function conditionLabel(game = {}) {
   if (parts.length >= 4) return "Complete +";
   if (game.game && game.box && game.manual) return "Complete";
   if (game.game && game.box) return "Game + Box";
+  if (game.game && game.manual) return "Loose +";
   if (game.game) return "Loose";
   return "";
 }

@@ -2143,7 +2143,7 @@ function projectionOwnerCardClass(game) {
   return owners.map(ownerCardColorClass).join(" ");
 }
 
-function conditionBadge(condition) { const tone = condition === "Complete +" ? "complete-plus" : normalize(condition).replace(/ /g, "-"); return `<span class="condition-pill condition-${tone}"><img src="assets/platforms/disk.png" alt="" width="18" height="18"><span>${escapeHtml(tt(condition))}</span></span>`; }
+function conditionBadge(condition) { const tone = condition === "Complete +" ? "complete-plus" : condition === "Loose +" ? "loose-plus" : normalize(condition).replace(/ /g, "-"); return `<span class="condition-pill condition-${tone}"><img src="assets/platforms/disk.png" alt="" width="18" height="18"><span>${escapeHtml(tt(condition))}</span></span>`; }
 function missingCollectionPriceBadge(game, variant = "") {
   if (!state.canEdit || !shelfPricesVisible() || isDigitalShelfGame(game) || collectionValueFor(game) > 0) return "";
   const currency = normalizePriceSettings(state.gamelistSettings).currency;
@@ -5127,6 +5127,7 @@ function conditionValue(game, key) {
 function conditionLabel(game) {
   if (conditionValue(game, "sealed")) return "Sealed";
   if (conditionValue(game, "game") && conditionValue(game, "box")) return conditionValue(game, "manual") || conditionValue(game, "other") ? "Complete +" : "Complete";
+  if (conditionValue(game, "game") && conditionValue(game, "manual")) return "Loose +";
   return "Loose";
 }
 function syncConditionInputs(changed) {
@@ -5931,7 +5932,7 @@ function canonicalShelfPlatform(value) {
 function regionName(country) { if (country === "United States of America") return "US"; if (country === "United Kingdom") return "UK"; return country; }
 function regionFor(country) { if (country === "Japan") return "Japan"; if (country === "Taiwan") return "Taiwan"; if (country === "United States of America") return "USA"; if (["United Kingdom", "Spain", "Italy", "France", "Germany", "Europe"].includes(country)) return country === "Spain" ? "Spain" : "Europe"; return country || "Other"; }
 function countValues(values) { const map = new Map(); values.filter(Boolean).forEach((value) => map.set(value, (map.get(value) || 0) + 1)); return [...map.entries()].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0])); }
-function conditionMatches(game, condition) { const label = conditionLabel(game).toLowerCase(); if (condition === "all") return true; if (condition === "complete") return label === "complete"; if (condition === "complete-plus") return label === "complete +"; if (condition === "loose") return label === "loose"; if (condition === "sealed") return label === "sealed"; return true; }
+function conditionMatches(game, condition) { const label = conditionLabel(game).toLowerCase(); if (condition === "all") return true; if (condition === "complete") return label === "complete"; if (condition === "complete-plus") return label === "complete +"; if (condition === "loose") return label === "loose"; if (condition === "loose-plus") return label === "loose +"; if (condition === "sealed") return label === "sealed"; return true; }
 function sorter(type) { const direction = state.filters.direction === "desc" ? -1 : 1; if (type === "custom") return (a, b) => direction * ((a.order ?? Number.MAX_SAFE_INTEGER) - (b.order ?? Number.MAX_SAFE_INTEGER) || a.title.localeCompare(b.title)); if (type === "title" || type === "name") return (a, b) => direction * a.title.localeCompare(b.title); if (type === "added") return (a, b) => direction * (new Date(a.createdAt || 0) - new Date(b.createdAt || 0)); if (type === "value") return (a, b) => direction * (collectionValueFor(a) - collectionValueFor(b)); if (["time", "playtime"].includes(type)) return (a,b) => direction * ((Number(a.lengthHours) || 0) - (Number(b.lengthHours) || 0) || a.title.localeCompare(b.title)); if (type === "rating") return (a,b) => direction * ((Number(a.igdbRating) || 0) - (Number(b.igdbRating) || 0) || a.title.localeCompare(b.title)); if (type === "region") return (a, b) => direction * (a.country.localeCompare(b.country) || a.title.localeCompare(b.title)); return (a, b) => direction * (a.platform.localeCompare(b.platform) || a.title.localeCompare(b.title)); }
 function uniqueSorted(values) { return [...new Set(values.filter(Boolean))].sort((a, b) => String(a).localeCompare(String(b), undefined, { sensitivity: "base" })); }
 function orderedPlatforms(values) { return [...values].sort((a, b) => platformOrderRank(a) - platformOrderRank(b) || platformDisplayName(a).localeCompare(platformDisplayName(b), undefined, { sensitivity: "base" })); }

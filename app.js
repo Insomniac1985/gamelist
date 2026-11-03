@@ -13928,7 +13928,7 @@ async function returnLentBacklogGame(game) {
 function collectionRecordValue(game) {
   const record = collectionRecordFor(game);
   if (!record) return 0;
-  const key = collectionConditionMatches(record, "sealed") ? "sealed" : collectionConditionMatches(record, "loose") ? "loose" : "complete";
+  const key = collectionConditionMatches(record, "sealed") ? "sealed" : collectionConditionMatches(record, "loose") || collectionConditionMatches(record, "loose-plus") ? "loose" : "complete";
   return Number(record.collectionPrices?.[key] ?? record.price) || 0;
 }
 
@@ -13937,7 +13937,7 @@ function collectionConditionMatches(game, condition) {
   if (game.digital || game.dlc) return true;
   const old = String(game.ownership || "").toLowerCase();
   const value = key => typeof game[key] === "boolean" ? game[key] : key === "game" ? true : key === "box" ? /cib|boxed|new/.test(old) : key === "manual" ? /cib/.test(old) : key === "other" ? /\+/.test(old) : /new|sealed/.test(old);
-  const label = value("sealed") ? "sealed" : value("game") && value("box") ? value("manual") || value("other") ? "complete-plus" : "complete" : "loose";
+  const label = value("sealed") ? "sealed" : value("game") && value("box") ? value("manual") || value("other") ? "complete-plus" : "complete" : value("game") && value("manual") ? "loose-plus" : "loose";
   return condition === "all" || label === condition;
 }
 
