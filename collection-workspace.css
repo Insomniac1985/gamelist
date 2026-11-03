@@ -442,6 +442,9 @@ body[data-mobile-section="new"]
 
 /* Mobile branding floats behind the controls instead of taking up page space. */
 @media (max-width: 689px) {
+  .shell > .playing-section {
+    z-index: 20;
+  }
   body > .topbar {
     position: fixed;
     inset: auto auto

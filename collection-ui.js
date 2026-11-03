@@ -1,6 +1,9 @@
 import { svgAsset, loadSvgAssets, hydrateSvgAssets } from "./svg-assets.js";
 import { bindCardHoverSounds, playUiSound, scrollWithSound, setSoundsDisabled } from "./card-hover-sound.js";
 import { renderBatchedList } from "./batched-list.js";
+import { createDataPatch, applyDataPatch, hasDataPatch, shelfShape } from "./data-patch.js";
+import { fetchCollectionJson, invalidateCollectionCache } from "./collection-cache.js";
+import { createSearchCache } from "./search-cache.js";
 import { embeddedGameEditor, connectEmbeddedGameEditor } from "./shared-add-game.js";
 import { normalizeSearchText, bindModalTouchGuard, createGameCardShell, bindActivityCardParallax, mountActivitySlider, mountTwitchPreview, mountReleaseCalendar, finishedGameMarkup, achievementCardMarkup, achievementDashboardMarkup, achievementPanelMarkup, completedCardMarkup, horizontalCarouselState, syncViewModeButton, slideHorizontalCarousel, comparePlayingGames, timeBadgeMarkup, guideLinksMarkup, storeButtonsMarkup, activityTrailerUrl, preloadPausedActivityTrailers, syncFocusedActivityTrailer, activityReleaseStatus, activityCoverOverride, activityLocalGameForTitle, activityTitleMatchScore, activityAllowsPsnCardTrophies, formatFooterDate, formatFooterDateTime, formatFooterShortDate, confirmGameDelete } from "./activity-ui.js";
 import { applySiteTheme, normalizeThemeSettings, ownerCardColorClass, ownerColorClass } from "./theme-system.js";
@@ -143,6 +146,15 @@ const state = {
 };
 
 let shelfEditorDirty = false;
+let shelfSnapshot = null;
+let shelfSavedChange = null;
+let shelfSaveQueue = Promise.resolve();
+const shelfSearchText = createSearchCache(normalizeSearchText);
+let shelfFilterCache = new Map();
+let shelfFilterInputs = [];
+function captureShelfSnapshot(data) {
+  shelfSnapshot = structuredClone({ sourceGames: data.sourceGames || [], games: data.games || [], overrides: data.overrides || {}, layout: data.layout || null, favoriteGameIds: data.favoriteGameIds || [] });
+}
 let shelfNewGameContentBaseline = "";
 let shelfNewGameTouchedFields = new Set();
 
@@ -290,6 +302,7 @@ function initEmbeddedAddGame() {
     requestClose: requestShelfEditorClose,
     applyData: applyEmbeddedEditorData,
     saveShelf: saveShelfEditor,
+    savedChange: () => shelfSavedChange,
     saveGamelist: saveGamelistTargetFromShelf,
     onLoadError: () => showToast(tt("Could not load current game data. Please try again."), "error"),
     open: options => {
@@ -333,6 +346,8 @@ function initEmbeddedAddGame() {
 }
 
 function applyEmbeddedEditorData({ shelf: shelfData, gamelist: gamelistData }) {
+  captureShelfSnapshot(shelfData);
+  shelfSavedChange = null;
   state.sourceGames = shelfData.sourceGames || [];
   state.additions = shelfData.games;
   state.overrides = shelfData.overrides || {};
@@ -392,7 +407,12 @@ function bindEvents() {
     }
     scrollToShelfLibrary();
   });
-  el.search.addEventListener("input", () => { state.filters.query = normalizeSearchText(el.search.value); renderFilteredShelf(); });
+  let searchTimer;
+  el.search.addEventListener("input", () => {
+    state.filters.query = normalizeSearchText(el.search.value);
+    window.clearTimeout(searchTimer);
+    searchTimer = window.setTimeout(renderFilteredShelf, 100);
+  });
   el.platform.addEventListener("change", () => { state.filters.platform = el.platform.value; renderFilteredShelf(); });
   el.region.addEventListener("change", () => { state.filters.region = el.region.value; renderFilteredShelf(); });
   el.condition.addEventListener("change", () => { state.filters.condition = el.condition.value; renderFilteredShelf(); });
@@ -1289,10 +1309,11 @@ async function syncShelfNow() {
   if (el.syncButton) el.syncButton.disabled = true;
   try {
     const [shelfData, gamelistData] = await Promise.all([
-      fetch("/api/shelf", { cache: "no-store" }).then((response) => response.ok ? response.json() : null),
-      fetch(state.canEdit ? "/api/sync" : "/api/sync?shelfProjections=1", { cache: "no-store" }).then((response) => response.ok ? response.json() : null),
+      fetchCollectionJson("/api/shelf"),
+      fetchCollectionJson(state.canEdit ? "/api/sync" : "/api/sync?shelfProjections=1"),
     ]);
     if (shelfData) {
+      captureShelfSnapshot(shelfData);
       state.sourceGames = shelfData.sourceGames || [];
       state.additions = shelfData.games || [];
       state.overrides = shelfData.overrides || {};
@@ -1760,20 +1781,20 @@ function renderLibrary() {
     state.unifiedCardCache ||= new Map();
   }
   renderBatchedList(el.shelf, games, {
+    batchSize: 100,
+    itemKey: game => `${state.viewMode}:${game.id}`,
+    itemVersion: game => JSON.stringify(game),
+    contextKey: unifiedShelfScope ? state.unifiedCardCache : JSON.stringify([state.viewMode, state.canEdit, state.gamelistSettings]),
     resetKey: JSON.stringify([state.viewMode, state.filters, state.unifiedMedia]),
     loadMoreLabel: tt("Show more"),
     createItem: (game, index) => {
-      const key = `${state.viewMode}:${game.id}`;
-      let node = unifiedShelfScope ? state.unifiedCardCache.get(key) : null;
-      if (!node) {
-        if (state.viewMode === "list") {
-          const template = document.createElement("template");
-          template.innerHTML = gameRow(game);
-          node = template.content.firstElementChild;
-          node.querySelectorAll(".game-row-cover").forEach(bindRowCoverFrame);
-        } else node = gameCard(game, { imagePriority: index < 6 ? "eager" : "lazy" });
-        if (unifiedShelfScope) state.unifiedCardCache.set(key, node);
-      }
+      let node;
+      if (state.viewMode === "list") {
+        const template = document.createElement("template");
+        template.innerHTML = gameRow(game);
+        node = template.content.firstElementChild;
+        node.querySelectorAll(".game-row-cover").forEach(bindRowCoverFrame);
+      } else node = gameCard(game, { imagePriority: index < 6 ? "eager" : "lazy" });
       node.hidden = false;
       return node;
     },
@@ -1870,11 +1891,21 @@ function filteredGames() {
   return filteredGamesForShelfTab(state.filters.tab);
 }
 
+function refreshShelfFilterCache() {
+  const inputs = [state.games, state.gamelistGames, state.canEdit, state.gamelistSettings.shelfDigitalGames, state.gamelistSettings.defaultOwner];
+  if (inputs.some((value, index) => value !== shelfFilterInputs[index])) {
+    shelfFilterInputs = inputs;
+    shelfFilterCache.clear();
+  }
+}
 function filteredGamesForShelfTab(tab) {
+  refreshShelfFilterCache();
+  const cacheKey = JSON.stringify([tab, state.filters, state.unifiedMedia]);
+  if (shelfFilterCache.has(cacheKey)) return shelfFilterCache.get(cacheKey);
   const normalizedTab = normalizedShelfTab(tab);
   const source = normalizedTab === "preorders" ? syncedPreorderGames() : normalizedTab === "wishlist" ? syncedWishlistGames() : visibleShelfGames();
-  return source.filter((game) => {
-    const haystack = normalizeSearchText(`${game.title} ${game.platform} ${game.publisher} ${game.developer} ${game.genre} ${(game.genres || []).join(" ")} ${game.description} ${game.notes} ${game.preorderStore} ${(game.tags || []).join(" ")} ${(game.owners || []).join(" ")} ${shelfLendingSearchText(game)}`);
+  const result = source.filter((game) => {
+    const haystack = state.filters.query ? shelfSearchText(game, `${game.title} ${game.platform} ${game.publisher} ${game.developer} ${game.genre} ${(game.genres || []).join(" ")} ${game.description} ${game.notes} ${game.preorderStore} ${(game.tags || []).join(" ")} ${(game.owners || []).join(" ")} ${shelfLendingSearchText(game)}`) : "";
     return !game.deletedAt
       && (!unifiedShelfScope || !state.unifiedMedia || state.unifiedMedia === "all" || (state.unifiedMedia === "digital") === isDigitalShelfGame(game))
       && (state.filters.platform === "all" || game.platform === state.filters.platform)
@@ -1884,11 +1915,17 @@ function filteredGamesForShelfTab(tab) {
       && (normalizedTab === "preorders" ? game.preorderProjection : normalizedTab === "wishlist" ? game.wishlistProjection : normalizedTab === "new" ? isPendingCollectionGame(game) : normalizedTab === "drive" ? !isPendingCollectionGame(game) && isDigitalShelfGame(game) : !isPendingCollectionGame(game) && (!isDigitalShelfGame(game) || unifiedShelfScope && state.gamelistSettings.shelfDigitalGames === true))
       && (!state.filters.query || haystack.includes(state.filters.query));
   }).sort(sorter(state.filters.sort));
+  if (shelfFilterCache.size >= 16) shelfFilterCache.clear();
+  shelfFilterCache.set(cacheKey, result);
+  return result;
 }
 function filteredShelfStatsGames(options = {}) {
+  refreshShelfFilterCache();
   const driveMode = Boolean(options.drive);
-  return visibleShelfGames().filter((game) => {
-    const haystack = normalizeSearchText(`${game.title} ${game.platform} ${game.publisher} ${game.developer} ${game.genre} ${game.notes} ${(game.tags || []).join(" ")} ${(game.owners || []).join(" ")} ${shelfLendingSearchText(game)}`);
+  const cacheKey = JSON.stringify(["stats", driveMode, state.filters, state.unifiedMedia]);
+  if (shelfFilterCache.has(cacheKey)) return shelfFilterCache.get(cacheKey);
+  const result = visibleShelfGames().filter((game) => {
+    const haystack = state.filters.query ? shelfSearchText(game, `${game.title} ${game.platform} ${game.publisher} ${game.developer} ${game.genre} ${(game.genres || []).join(" ")} ${game.description} ${game.notes} ${game.preorderStore} ${(game.tags || []).join(" ")} ${(game.owners || []).join(" ")} ${shelfLendingSearchText(game)}`) : "";
     return !game.deletedAt
       && (!unifiedShelfScope || state.gamelistSettings.shelfDigitalGames === true || !isDigitalShelfGame(game))
       && (!unifiedShelfScope || !state.unifiedMedia || state.unifiedMedia === "all" || (state.unifiedMedia === "digital") === isDigitalShelfGame(game))
@@ -1898,6 +1935,9 @@ function filteredShelfStatsGames(options = {}) {
       && (state.filters.category === "all" || [...String(game.genre || "").split(","), ...(game.genres || [])].map((value) => value.trim()).includes(state.filters.category))
       && (!state.filters.query || haystack.includes(state.filters.query));
   });
+  if (shelfFilterCache.size >= 16) shelfFilterCache.clear();
+  shelfFilterCache.set(cacheKey, result);
+  return result;
 }
 function isPendingCollectionGame(game) { return Boolean(game?.pendingCollection); }
 function isDigitalShelfGame(game) { return Boolean(game?.digital || game?.dlc); }
@@ -3113,14 +3153,18 @@ async function saveShelfEditor() {
   }
   if (!game.title) return false;
   if ((!existing || existing.pendingCollection) && !game.lengthHours) await fillShelfPlaytime(game);
-  if (existing?.sourceRecord) state.overrides[game.id] = stripRuntimeFields(game);
+  const previousAdditions = state.additions;
+  const previousOverrides = state.overrides;
+  if (existing?.sourceRecord) state.overrides = { ...state.overrides, [game.id]: stripRuntimeFields(game) };
   else {
     const index = state.additions.findIndex((item) => item.id === game.id);
-    if (index >= 0) state.additions[index] = stripRuntimeFields(game);
-    else state.additions.unshift(stripRuntimeFields(game));
+    if (index >= 0) state.additions = state.additions.map((item, position) => position === index ? stripRuntimeFields(game) : item);
+    else state.additions = [stripRuntimeFields(game), ...state.additions];
   }
   const saved = await persistShelf();
   if (!saved) {
+    state.additions = previousAdditions;
+    state.overrides = previousOverrides;
     if (embeddedGameEditor) showToast(tt("Could not add the game to Shelf."), "error");
     return false;
   }
@@ -3143,7 +3187,7 @@ async function saveShelfEditor() {
     }
   }
   rebuildGames();
-  if (!embeddedGameEditor) renderAll();
+  if (!embeddedGameEditor && !unifiedShelfScope) renderAll();
   shelfEditorDirty = false;
   if (!embeddedGameEditor) closeDialog(el.addDialog);
   return true;
@@ -3430,9 +3474,11 @@ function nextShelfReplayCount(games) {
 
 async function deleteGame(game) {
   if (!await confirmGameDelete(game?.title)) return false;
-  if (game.sourceRecord) state.overrides[game.id] = { ...(state.overrides[game.id] || {}), deletedAt: new Date().toISOString() };
+  const previousAdditions = state.additions;
+  const previousOverrides = state.overrides;
+  if (game.sourceRecord) state.overrides = { ...state.overrides, [game.id]: { ...(state.overrides[game.id] || {}), deletedAt: new Date().toISOString() } };
   else state.additions = state.additions.filter((item) => item.id !== game.id);
-  await persistShelf();
+  if (!await persistShelf()) { state.additions = previousAdditions; state.overrides = previousOverrides; return false; }
   rebuildGames();
   renderAll();
   closeDialog(el.detailDialog);
@@ -3441,13 +3487,25 @@ async function deleteGame(game) {
   return true;
 }
 
-async function persistShelf(options = {}) {
+function persistShelf(options = {}) {
+  const task = shelfSaveQueue.then(() => persistShelfNow(options));
+  shelfSaveQueue = task.catch(() => false);
+  return task;
+}
+async function persistShelfNow(options = {}) {
   const payload = { sourceGames: state.sourceGames.map(stripRuntimeFields), games: state.additions.map(stripRuntimeFields), overrides: state.overrides, layout: state.layout, favoriteGameIds: normalizeFavoriteGameIds(state.favoriteGameIds) };
-  trySetLocalStorageItem(LOCAL_DRAFT_KEY, JSON.stringify(payload));
+  const patch = shelfSnapshot ? createDataPatch(shelfSnapshot, payload, shelfShape) : null;
+  if (patch && !hasDataPatch(patch)) return true;
+  const body = JSON.stringify(patch ? { patch } : payload);
+  // Recovery for normal edits stores only the small change set.
+  trySetLocalStorageItem(LOCAL_DRAFT_KEY, body);
   try {
     const password = sessionStorage.getItem(`${SESSION_KEY}:password`) || "";
-    const response = await fetch("/api/shelf", { method: "PUT", headers: { "Content-Type": "application/json", "x-edit-password": password }, body: JSON.stringify(payload) });
-    if (!response.ok) throw new Error("Save failed");
+    const response = await fetch("/api/shelf", { method: "PUT", headers: { "Content-Type": "application/json", "x-edit-password": password }, body });
+    if (!response.ok) {
+      const error = await response.json().catch(() => ({}));
+      throw new Error(error.error || "Save failed");
+    }
     const data = await response.json();
     if (options.verifyFavorites) {
       const expected = normalizeFavoriteGameIds(options.verifyFavorites);
@@ -3457,11 +3515,17 @@ async function persistShelf(options = {}) {
       if (JSON.stringify(savedIds) !== JSON.stringify(expected)) throw new Error("Showcase save verification failed");
     }
     state.updatedAt = data.updatedAt || new Date().toISOString();
+    if (patch) shelfSnapshot = applyDataPatch(shelfSnapshot, patch, shelfShape);
+    else captureShelfSnapshot(payload);
+    const linkedFields = new Set(["owners", "trophyName", "psPlus", "gamesWithGold"]);
+    shelfSavedChange = patch ? { patch, updatedAt: state.updatedAt, linked: patch.records.some(change => change.collection === "games" && (change.create || change.fields?.some(field => linkedFields.has(field.key)))) } : null;
+    void invalidateCollectionCache("/api/shelf");
+    if (!patch || shelfSavedChange.linked) void invalidateCollectionCache("/api/sync");
     removeLocalStorageItem(LOCAL_DRAFT_KEY);
     unifiedShelfScope?.changed({ shelf: { ...payload, updatedAt: state.updatedAt } });
     return true;
-  } catch {
-    state.updatedAt = new Date().toISOString();
+  } catch (error) {
+    showToast(error.message || tt("Save failed"), "error");
     return false;
   }
 }
@@ -6026,9 +6090,9 @@ function initUnifiedShelf() {
       state.unifiedMedia = data.media || "all";
       state.viewMode = data.view || "grid";
       state.layout = normalizeLayout(data.shelf.layout || state.layout);
-      if (sourceChanged) rebuildGames();
+      if (sourceChanged) { captureShelfSnapshot(data.shelf); rebuildGames(); }
       if (sourceChanged || settingsChanged || listChanged || authChanged) {
-        state.unifiedCardCache = new Map();
+        if (settingsChanged || listChanged || authChanged) state.unifiedCardCache = new Map();
         state.unifiedRevision = (state.unifiedRevision || 0) + 1;
         state.favoriteGameIds = shelfFavoriteIdsFromSources(data.shelf, { settings: data.settings });
         renderFavorites();
@@ -6038,13 +6102,15 @@ function initUnifiedShelf() {
         const accountKey = achievementSettingsKey(state.gamelistSettings);
         if (state.unifiedAchievementKey !== accountKey) {
           state.unifiedAchievementKey = accountKey;
-          void loadTrophyActivity().then(() => {
+          const loadActivity = () => loadTrophyActivity().then(() => {
             state.unifiedCardCache = new Map();
             state.unifiedRevision = (state.unifiedRevision || 0) + 1;
             renderLibrary();
             const current = state.games.find(game => game.id === el.detailDialog.dataset.id);
             if (current && el.detailDialog.open) void loadShelfTrophies(current);
           }).catch(() => {});
+          if ("requestIdleCallback" in window) window.requestIdleCallback(loadActivity, { timeout: 2000 });
+          else window.setTimeout(loadActivity, 250);
         }
       }
       document.body.classList.toggle("can-edit", state.canEdit);

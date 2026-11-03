@@ -1,4 +1,6 @@
 import { isEditorRequest } from "./editor-auth.js";
+import { applyDataPatch, PatchConflict, gamelistShape } from "../../data-patch.js";
+import { conditionalJson } from "./conditional-json.js";
 
 const KV_KEY = "gamelist-data";
 
@@ -36,7 +38,7 @@ export async function onRequestGet({ request, env }) {
   if (new URL(request.url).searchParams.get("settings") === "1") {
     return json({ settings: data?.settings || {} });
   }
-  return json(data || { games: [] });
+  return conditionalJson(request, data || { games: [] });
 }
 
 function publicStorePrices(value) {
@@ -53,7 +55,13 @@ export async function onRequestPut({ request, env }) {
   if (!await isEditorRequest(request, env)) {
     return json({ error: "Unauthorized" }, 401);
   }
-  const body = await request.json().catch(() => null);
+  let body = await request.json().catch(() => null);
+  const patch = body?.patch;
+  if (patch) {
+    const previous = await env.GAMELIST.get(KV_KEY, "json") || { games: [], settings: {} };
+    try { body = { ...applyDataPatch(previous, patch, gamelistShape), ...(body.collectionGame ? { collectionGame: body.collectionGame } : {}) }; }
+    catch (error) { return json({ error: error.message }, error instanceof PatchConflict ? 409 : 400); }
+  }
   if (body?.settingsOnly === true && body.settings && typeof body.settings === "object") {
     const previous = await env.GAMELIST.get(KV_KEY, "json") || { games: [] };
     await env.GAMELIST.put(KV_KEY, JSON.stringify({
@@ -80,7 +88,10 @@ export async function onRequestPut({ request, env }) {
     settings: { ...(body.settings && typeof body.settings === "object" ? body.settings : {}), shelfSync: true },
     updatedAt: new Date().toISOString(),
   }));
-  await syncBacklogGamesToShelf(env, body.games, collectionGame);
+  const linkedFields = new Set(["owners", "trophyName", "digital", "dlc", "psPlus", "gamesWithGold", "shelfId", "deletedAt", "section"]);
+  if (!patch || collectionGame || patch.records.some(change => change.create || change.fields?.some(field => linkedFields.has(field.key)))) {
+    await syncBacklogGamesToShelf(env, body.games, collectionGame);
+  }
   return json({ ok: true });
 }
 

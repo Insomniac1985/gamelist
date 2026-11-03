@@ -1,21 +1,30 @@
 import { isEditorRequest } from "./editor-auth.js";
+import { applyDataPatch, PatchConflict, shelfShape } from "../../data-patch.js";
+import { conditionalJson } from "./conditional-json.js";
 
 const KV_KEY = "shelf-data";
 
-export async function onRequestGet({ env }) {
+export async function onRequestGet({ request, env }) {
   if (!env.GAMELIST) return json({ sourceGames: [], games: [], overrides: {}, layout: null, favoriteGameIds: [] });
   const [shelf, list] = await Promise.all([
     env.GAMELIST.get(KV_KEY, "json"),
     env.GAMELIST.get("gamelist-data", "json"),
   ]);
-  return json(withEffectiveFavoriteGameIds(shelf || { sourceGames: [], games: [], overrides: {}, layout: null, favoriteGameIds: [] }, list));
+  return conditionalJson(request, withEffectiveFavoriteGameIds(shelf || { sourceGames: [], games: [], overrides: {}, layout: null, favoriteGameIds: [] }, list));
 }
 
 export async function onRequestPut({ request, env }) {
   if (!env.GAMELIST) return json({ error: "Missing GAMELIST KV binding" }, 501);
   if (!env.EDIT_PASSWORD) return json({ error: "Missing EDIT_PASSWORD secret" }, 503);
   if (!await isEditorRequest(request, env)) return json({ error: "Unauthorized" }, 401);
-  const body = await request.json().catch(() => null);
+  let body = await request.json().catch(() => null);
+  let previous;
+  const patch = body?.patch;
+  if (patch) {
+    previous = await env.GAMELIST.get(KV_KEY, "json") || { sourceGames: [], games: [], overrides: {}, layout: null, favoriteGameIds: [] };
+    try { body = applyDataPatch(previous, patch, shelfShape); }
+    catch (error) { return json({ error: error.message }, error instanceof PatchConflict ? 409 : 400); }
+  }
   if (body?.favoriteGameIdsOnly === true) {
     if (!validFavoriteGameIds(body.favoriteGameIds)) return json({ error: "Expected { favoriteGameIds: [] }" }, 400);
     const existing = await env.GAMELIST.get(KV_KEY, "json") || {};
@@ -35,7 +44,7 @@ export async function onRequestPut({ request, env }) {
   if (!body || !Array.isArray(body.games) || !body.overrides || typeof body.overrides !== "object") {
     return json({ error: "Expected { games: [], overrides: {} }" }, 400);
   }
-  const existing = await env.GAMELIST.get(KV_KEY, "json") || {};
+  const existing = previous || await env.GAMELIST.get(KV_KEY, "json") || {};
   const sourceGames = Array.isArray(body.sourceGames) ? body.sourceGames : (Array.isArray(existing.sourceGames) ? existing.sourceGames : []);
   const data = {
     sourceGames,
@@ -46,8 +55,11 @@ export async function onRequestPut({ request, env }) {
     updatedAt: new Date().toISOString(),
   };
   await env.GAMELIST.put(KV_KEY, JSON.stringify(data));
-  await saveShowcaseFavoriteSettings(env, data.favoriteGameIds);
-  await syncLinkedShelfGamesToGamelist(env, body.games);
+  if (!patch || patch.fields.some(field => field.key === "favoriteGameIds")) await saveShowcaseFavoriteSettings(env, data.favoriteGameIds);
+  const linkedFields = new Set(["owners", "trophyName", "psPlus", "gamesWithGold"]);
+  if (!patch || patch.records.some(change => change.collection === "games" && (change.create || change.fields?.some(field => linkedFields.has(field.key))))) {
+    await syncLinkedShelfGamesToGamelist(env, body.games);
+  }
   return json({ ok: true, updatedAt: data.updatedAt, favoriteGameIds: data.favoriteGameIds });
 }
 
@@ -111,6 +123,7 @@ function withEffectiveFavoriteGameIds(shelf, list) {
 async function saveShowcaseFavoriteSettings(env, favoriteGameIds) {
   const list = await env.GAMELIST.get("gamelist-data", "json") || { games: [], settings: {} };
   const settings = list.settings && typeof list.settings === "object" ? list.settings : {};
+  if (JSON.stringify(settings.shelfShowcaseFavoriteGameIds || []) === JSON.stringify(favoriteGameIds)) return;
   await env.GAMELIST.put("gamelist-data", JSON.stringify({
     ...list,
     games: Array.isArray(list.games) ? list.games : [],

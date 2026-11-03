@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import vm from "node:vm";
 import { readFile } from "node:fs/promises";
 import { onRequestPut as putGamelist } from "../functions/api/sync.js";
 import { onRequestPut as putShelf, onRequestDelete as deleteShelf } from "../functions/api/shelf.js";
@@ -16,13 +17,33 @@ const [appSource, shelfSource, shelfCss, shelfHtml, sharedCss, appHtml, collecti
   readFile(new URL("../theme-system.js", import.meta.url), "utf8"),
   readFile(new URL("../service-worker.js", import.meta.url), "utf8"),
 ]);
+// Exercise the actual page helpers: recorded playtime, followed by completion date.
+for (const [source, helper] of [[appSource, "finishedDateText"], [shelfSource, "finishedProjectionDateText"]]) {
+  const functions = ["finishHoursValue", "finishHoursText", helper].map(name => {
+    const start = source.indexOf("function " + name + "(");
+    assert.ok(start >= 0, name + " must exist");
+    const end = source.indexOf("\n}", start);
+    return source.slice(start, end + 2);
+  }).join("\n");
+  const context = vm.createContext({ formatLongDate: value => value || "" });
+  vm.runInContext(functions, context);
+  for (const [game, expected] of [
+    [{ finishHours: 32, completedAt: "2026-11-03" }, "32 hrs \u00b7 2026-11-03"],
+    [{ finishHours: 1, completedAt: "2026-11-03" }, "1 hr \u00b7 2026-11-03"],
+    [{ startedAt: "2026-01-01", completedAt: "2026-11-03" }, "2026-11-03"],
+    [{ finishHours: 8 }, "8 hrs"],
+    [{ finishHours: 0 }, ""],
+  ]) assert.equal(context[helper](game), expected, helper + " must use recorded completion hours and date");
+  assert.ok(source.includes("dateText: " + helper + "(game)"), "Finished cards must use the tested date helper");
+}
+console.log("Finished date display checks passed (hours, singular/plural, missing values, no calendar-duration substitution).");
 assert.equal(typeof shelfCss, "string", "Collection rules must be included in styles.css");
 assert.doesNotMatch(shelfHtml, /id="(?:layoutDialog|shelfSettingsUnsavedDialog)"/, "Collection must use the main settings dialog");
 assert.doesNotMatch(appHtml + shelfHtml, /id="mobileDockSwitch"/, "Retired page-switch controls must not be rendered");
 assert.doesNotMatch(appSource + shelfSource, /function initPagePullTransition|PULL_NAVIGATION_KEY/, "Retired page-switch handlers must not be loaded");
 for (const source of [appSource, shelfSource]) {
   assert.match(source, /from "\.\/activity-ui\.js"/);
-  for (const sharedBehavior of ["createGameCardShell", "bindActivityCardParallax", "finishedGameMarkup", "achievementCardMarkup", "achievementDashboardMarkup", "completedCardMarkup", "comparePlayingGames", "finishedDurationText", "activityTrailerUrl", "activityReleaseStatus"]) {
+  for (const sharedBehavior of ["createGameCardShell", "bindActivityCardParallax", "finishedGameMarkup", "achievementCardMarkup", "achievementDashboardMarkup", "completedCardMarkup", "comparePlayingGames", "activityTrailerUrl", "activityReleaseStatus"]) {
     assert.match(source, new RegExp(`\\b${sharedBehavior}\\b`), `${sharedBehavior} must remain shared between Gamelist and Shelf`);
   }
   assert.match(source, /function showToast\(message, tone = "info"\)/, "Main and Shelf must expose the shared toast-style notification helper");
@@ -67,7 +88,6 @@ assert.match(shelfSource, /el\.addButton\.hidden = false/, "Shelf must keep Add 
 assert.match(shelfSource, /function openEditor\(game = null\) \{\s*if \(!state\.canEdit\) return openAuth\(\)/, "Shelf Add Game must request login while logged out");
 assert.doesNotMatch(shelfSource, /toggle\.classList\.add\("edit-action-slot"\)/, "Shelf must keep Main's playing-card pause position");
 assert.doesNotMatch(shelfSource, /querySelector\("\.edit-action"\)\.classList\.add\("trailer-secondary-action"\)/, "Shelf must keep Main's playing-card edit position");
-assert.match(shelfSource, /dateText: \[formatLongDate\(game\.completedAt\), finishedDurationText\(game\.startedAt, game\.completedAt\)\]/, "Shelf finished carousel must use Main's date and duration format");
 assert.doesNotMatch(shelfCss, /\.playing-finished/, "Shelf must use Main's finished-carousel CSS without local overrides");
 assert.doesNotMatch(shelfCss, /achievement-(?:section|panel|summary|kpi|card)|rarity-graph|trophy-subtitle/, "Shelf must use Main's achievement component CSS without local overrides");
 assert.match(shelfHtml, /<dialog id="shelfCompletedDialog" class="platinum-dialog">\s*<article class="platinum-modal glass">/, "Shelf completed popup must use Main's dialog component classes");
