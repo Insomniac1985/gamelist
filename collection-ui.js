@@ -3174,9 +3174,19 @@ async function saveShelfEditor() {
     state.gamelistImportShelfId = game.id;
     const now = new Date().toISOString();
     const nextGames = state.gamelistGames.map(item => item.id === state.gamelistImportGameId
-      ? { ...item, shelfId: game.id, owners: game.owners, trophyName: game.trophyName,
-        digital: game.digital, dlc: game.dlc, psPlus: game.psPlus, gamesWithGold: game.gamesWithGold,
-        deletedAt: now, editedAt: now, updatedAt: now }
+      ? {
+        ...item,
+        shelfId: game.id,
+        owners: game.owners,
+        trophyName: game.trophyName,
+        digital: game.digital,
+        dlc: game.dlc,
+        psPlus: game.psPlus,
+        gamesWithGold: game.gamesWithGold,
+        ...(["upcoming", "wanted"].includes(item.section) ? { deletedAt: now } : {}),
+        editedAt: now,
+        updatedAt: now,
+      }
       : item);
     try {
       await persistGamelistData(nextGames, state.gamelistSettings);
