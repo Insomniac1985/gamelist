@@ -4198,6 +4198,16 @@ body.dialog-open .floating-edit-actions {
     0 0 20px color-mix(in srgb, var(--preorder-accent) 12%, transparent);
 }
 
+.release-day.today.has-preorder {
+  background: var(--accent-2);
+  border-color: var(--accent-2);
+  box-shadow: 0 8px 20px color-mix(in srgb, var(--accent-2) 22%, transparent);
+}
+
+.release-day.today.has-preorder > span {
+  color: #1b1000;
+}
+
 .release-day.today > span {
   position: relative;
   color: var(--accent-2);
@@ -14000,6 +14010,16 @@ html.theme-light .preorder-count-pill {
   border-color: color-mix(in srgb, var(--preorder-accent) 34%, #000000);
   box-shadow: 0 8px 18px
     color-mix(in srgb, var(--preorder-accent) 16%, transparent);
+}
+
+html.theme-light .release-day.today.has-preorder {
+  background: var(--accent-2);
+  border-color: var(--accent-2);
+  box-shadow: 0 8px 20px color-mix(in srgb, var(--accent-2) 22%, transparent);
+}
+
+html.theme-light .release-day.today.has-preorder > span {
+  color: #1b1000 !important;
 }
 
 html.theme-light .stat-release {

@@ -3174,9 +3174,19 @@ async function saveShelfEditor() {
     state.gamelistImportShelfId = game.id;
     const now = new Date().toISOString();
     const nextGames = state.gamelistGames.map(item => item.id === state.gamelistImportGameId
-      ? { ...item, shelfId: game.id, owners: game.owners, trophyName: game.trophyName,
-        digital: game.digital, dlc: game.dlc, psPlus: game.psPlus, gamesWithGold: game.gamesWithGold,
-        deletedAt: now, editedAt: now, updatedAt: now }
+      ? {
+        ...item,
+        shelfId: game.id,
+        owners: game.owners,
+        trophyName: game.trophyName,
+        digital: game.digital,
+        dlc: game.dlc,
+        psPlus: game.psPlus,
+        gamesWithGold: game.gamesWithGold,
+        ...(["upcoming", "wanted"].includes(item.section) ? { deletedAt: now } : {}),
+        editedAt: now,
+        updatedAt: now,
+      }
       : item);
     try {
       await persistGamelistData(nextGames, state.gamelistSettings);
@@ -5348,7 +5358,16 @@ function websiteLinks(game) {
     providers.includes("Steam") ? links.steam : "",
     providers.includes("Xbox") ? links.xbox : "",
     links.hltb,
+    igdbSiteUrlFor(game),
   ].filter(Boolean);
+}
+function igdbSiteUrlFor(game) {
+  try {
+    const url = new URL(String(game?.igdbUrl || ""));
+    return /^https?:$/.test(url.protocol) && /(^|\.)igdb\.com$/i.test(url.hostname) ? url.href : "";
+  } catch {
+    return "";
+  }
 }
 function storeLinkButtons(game, links = websiteLinks(game)) {
   const buttons = links.map((link) => ({ label: linkLabel(link), url: link, cls: siteClass(link), icon: siteIcon(link) }));
@@ -5536,7 +5555,7 @@ function siteClass(value) {
   const label = normalize(linkLabel(value)).replace(/ /g, "-");
   return label === "howlongtobeat" ? "store-hltb" : label ? `store-${label}` : "";
 }
-function siteIcon(value) { const host = (() => { try { return new URL(value).hostname; } catch { return ""; } })(); if (host.includes("playstation")) return "assets/sites/playstation.png"; if (host.includes("nintendo")) return "assets/sites/nintendo.png"; if (host.includes("steam")) return "assets/sites/steam.png"; if (host.includes("howlongtobeat")) return "assets/sites/howlongtobeat.png"; return host ? `https://${host}/favicon.ico` : "assets/branding/Icon.png"; }
+function siteIcon(value) { const host = (() => { try { return new URL(value).hostname; } catch { return ""; } })(); if (host.includes("playstation")) return "assets/sites/playstation.png"; if (host.includes("nintendo")) return "assets/sites/nintendo.png"; if (host.includes("steam")) return "assets/sites/steam.png"; if (host.includes("howlongtobeat")) return "assets/sites/howlongtobeat.png"; if (/(^|\.)igdb\.com$/i.test(host)) return "assets/sites/igdb.svg"; return host ? `https://${host}/favicon.ico` : "assets/branding/Icon.png"; }
 function renderSavedStorePrices(game) {
   const settings = normalizePriceSettings(state.gamelistSettings);
   const prices = Array.isArray(game.storePrices) && game.storePrices.length ? game.storePrices : placeholderStorePrices(settings);
