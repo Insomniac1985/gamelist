@@ -4191,14 +4191,20 @@ body.dialog-open .floating-edit-actions {
 
 .release-day.has-preorder {
   color: var(--preorder-accent-text);
-  background: var(--accent-2);
+  background: var(--preorder-accent);
   border-color: transparent;
   box-shadow:
-    0 8px 20px color-mix(in srgb, var(--accent-2) 22%, transparent),
-    0 0 20px color-mix(in srgb, var(--accent-2) 12%, transparent);
+    0 8px 20px color-mix(in srgb, var(--preorder-accent) 22%, transparent),
+    0 0 20px color-mix(in srgb, var(--preorder-accent) 12%, transparent);
 }
 
-.release-day.has-preorder > span {
+.release-day.today.has-preorder {
+  background: var(--accent-2);
+  border-color: var(--accent-2);
+  box-shadow: 0 8px 20px color-mix(in srgb, var(--accent-2) 22%, transparent);
+}
+
+.release-day.today.has-preorder > span {
   color: #1b1000;
 }
 
@@ -14000,13 +14006,19 @@ html.theme-light .release-day.has-preorder,
 html.theme-light .preorder-badge,
 html.theme-light .preorder-count-pill {
   color: var(--preorder-accent-text) !important;
-  background: var(--accent-2);
-  border-color: color-mix(in srgb, var(--accent-2) 34%, #000000);
+  background: var(--preorder-accent);
+  border-color: color-mix(in srgb, var(--preorder-accent) 34%, #000000);
   box-shadow: 0 8px 18px
-    color-mix(in srgb, var(--accent-2) 16%, transparent);
+    color-mix(in srgb, var(--preorder-accent) 16%, transparent);
 }
 
-html.theme-light .release-day.has-preorder > span {
+html.theme-light .release-day.today.has-preorder {
+  background: var(--accent-2);
+  border-color: var(--accent-2);
+  box-shadow: 0 8px 20px color-mix(in srgb, var(--accent-2) 22%, transparent);
+}
+
+html.theme-light .release-day.today.has-preorder > span {
   color: #1b1000 !important;
 }
 
