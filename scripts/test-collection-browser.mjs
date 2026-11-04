@@ -52,6 +52,7 @@ const metrics = [];
 try {
   for (const count of [500, 2000, 5000]) {
     const games = Array.from({length:count}, (_,i) => ({id:`s-${i}`, title:`Shelf Game ${String(i).padStart(5,'0')}`, platform:i%2?'PS5':'Switch', genre:'Adventure', game:true, manual:i%3===0, box:i%3!==0, sealed:false, other:false, notes:'', owners:['Tester'], description:'Description. '.repeat(80), createdAt:'2026-01-01T00:00:00Z', updatedAt:'2026-01-01T00:00:00Z', cover:origin+'/assets/platforms/playstation.png'}));
+    games[0].notes = 'Gold/Shiny Day One Edition';
     values.set('shelf-data', JSON.stringify({games,sourceGames:[],overrides:{},layout:null,favoriteGameIds:[]}));
     const mainGames = games.map((game, index) => ({...game,id:`g-${index}`,title:`Backlog Game ${String(index).padStart(5,'0')}`,section:'backlog',order:index,digital:true,playing:index===0,genres:['Adventure'],storeLinks:{},releaseDate:'2020-01-01',igdbUrl:'https://www.igdb.com/games/test',developer:'Test studio',publisher:'Test publisher'}));
     values.set('gamelist-data', JSON.stringify({games:mainGames, settings:{defaultOwner:'Tester', defaultList:'shelf', disableLoginAnimation:true, shelfDigitalGames:true, language:'en', shelfShowcaseFavoriteGameIds:[]}}));
@@ -68,6 +69,40 @@ try {
     const loadMs = Date.now()-start;
     await page.waitForTimeout(400);
     assert.equal(await cards.count(),100);
+    if (count === 500) {
+      await cards.first().locator('.cover-button').click();
+      const details = page.locator('#detailDialog[open]');
+      await details.waitFor({state:'visible'});
+      for (const width of [1024, 768, 390]) {
+        await page.setViewportSize({width,height:900});
+        const layout = await details.evaluate(dialog => {
+          const title = dialog.querySelector('#detailTitle');
+          title.innerHTML = '<span>The Legend of Zelda: Ocarina of Time</span>';
+          const range = document.createRange();
+          range.selectNodeContents(title);
+          const buttons = [...dialog.querySelectorAll('.detail-edit,.detail-close')].map(button => button.getBoundingClientRect());
+          const overlap = [...range.getClientRects()].some(text => buttons.some(button => text.left < button.right && text.right > button.left && text.top < button.bottom && text.bottom > button.top));
+          const note = dialog.querySelector('#detailNote');
+          const description = dialog.querySelector('#detailDescription');
+          const condition = dialog.querySelector('.detail-condition');
+          const trophies = dialog.querySelector('.detail-trophies');
+          trophies.hidden = true;
+          const noTrophyBorder = getComputedStyle(condition).borderBottomWidth;
+          trophies.hidden = false;
+          const trophyBorder = getComputedStyle(trophies).borderTopWidth;
+          trophies.hidden = true;
+          return {overlap, gap:description.getBoundingClientRect().top - note.getBoundingClientRect().bottom, noteLeft:getComputedStyle(note).borderTopLeftRadius, noTrophyBorder, trophyBorder};
+        });
+        assert.equal(layout.overlap, false, `Title clears both buttons at ${width}px`);
+        assert.ok(layout.gap >= 12, `Note leaves space before description at ${width}px`);
+        assert.equal(layout.noteLeft, '0px');
+        assert.equal(layout.noTrophyBorder, '0px');
+        assert.equal(layout.trophyBorder, '1px');
+        if (width === 1024) await page.screenshot({path:path.join(process.env.TEMP || root,'gamelist-detail-spacing.png')});
+      }
+      await details.locator('#detailClose').click();
+      await page.setViewportSize({width:1440,height:1000});
+    }
     await cards.first().evaluate(node => { window.__firstScrolledCard = node; });
     await page.locator('#collectionLibrary .list-load-more').scrollIntoViewIfNeeded();
     await page.waitForFunction(() => document.querySelector('#collectionLibrary').shadowRoot.querySelectorAll('.game-card').length >= 200);
