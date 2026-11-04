@@ -86,11 +86,13 @@ try {
           const description = dialog.querySelector('#detailDescription');
           const condition = dialog.querySelector('.detail-condition');
           const trophies = dialog.querySelector('.detail-trophies');
+          condition.classList.add('price-panel-hidden');
           trophies.hidden = true;
           const noTrophyBorder = getComputedStyle(condition).borderBottomWidth;
           trophies.hidden = false;
           const trophyBorder = getComputedStyle(trophies).borderTopWidth;
           trophies.hidden = true;
+          condition.classList.remove('price-panel-hidden');
           return {overlap, gap:description.getBoundingClientRect().top - note.getBoundingClientRect().bottom, noteLeft:getComputedStyle(note).borderTopLeftRadius, noTrophyBorder, trophyBorder};
         });
         assert.equal(layout.overlap, false, `Title clears both buttons at ${width}px`);

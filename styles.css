@@ -14752,15 +14752,12 @@ body:not(.can-edit) #detailEditButton {
 
 .detail-trophies {
   margin-top: 10px;
+  padding-top: 8px;
   border-top: 1px solid var(--line);
 }
 
 #detailTrophies {
   padding-top: 8px;
-}
-
-.detail-condition.price-panel-hidden:not([hidden]) ~ .detail-trophies {
-  border-top: 0;
 }
 
 .detail-trophies-head {
@@ -23745,12 +23742,13 @@ textarea {
   margin: 0;
 }
 .shelf-card-notes {
-  min-height: calc(1.45em + 20px);
+  min-height: calc(1.4em + 16px);
+  max-height: calc(2.8em + 16px);
   padding: 8px 10px;
   color: color-mix(in srgb, var(--text) 84%, var(--muted));
   border-left: 3px solid var(--accent);
   border-radius: 0 8px 8px 0;
-  background: rgba(0, 0, 0, 0.26);
+  background: rgba(255, 255, 255, 0.05);
   backdrop-filter: blur(18px) saturate(130%);
   -webkit-backdrop-filter: blur(18px) saturate(130%);
   font-size: 11px;
