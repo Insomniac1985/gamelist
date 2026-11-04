@@ -11493,6 +11493,7 @@ dialog:not([open]) {
 
 #detailDialog {
   width: min(980px, calc(100vw - 24px));
+  border-radius: 12px;
 }
 
 #historyDialog {
@@ -11787,7 +11788,7 @@ body.dialog-open .toolbar {
     var(--grid-x) var(--grid-y),
     var(--grid-x) var(--grid-y),
     center;
-  border-radius: 8px;
+  border-radius: 12px;
   backdrop-filter: blur(8px) saturate(1.08);
 }
 
@@ -14729,11 +14730,17 @@ body:not(.can-edit) #detailEditButton {
 
 .detail-body {
   min-width: 0;
-  padding-right: 34px;
 }
 
 .detail-body h2 {
   margin-bottom: 4px;
+  overflow-wrap: anywhere;
+}
+
+@media (min-width: 690px) {
+  .detail-body h2 {
+    padding-right: 84px;
+  }
 }
 
 .detail-body #detailDescription {
@@ -22309,13 +22316,15 @@ body.mobile-app-mode.shelf-page .shelf-grid.list-view .game-row-cover-preview {
 }
 
 .detail-note {
-  margin-top: 16px;
-  padding: 12px;
+  margin-top: 12px;
+  padding: 8px 10px;
   color: var(--muted);
   border-left: 3px solid var(--accent);
-  border-radius: 0 7px 7px 0;
+  border-radius: 8px;
   background: rgba(255, 255, 255, 0.05);
-  line-height: 1.55;
+  font-size: 13px;
+  line-height: 1.45;
+  overflow-wrap: anywhere;
 }
 
 .physical-id-grid {

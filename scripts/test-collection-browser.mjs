@@ -123,11 +123,15 @@ try {
       assert.equal(JSON.parse(values.get('shelf-data')).games.find(game => game.id === id).notes,'Unsaved retry');
       await page.setViewportSize({width:390,height:844});
       const layers = await page.evaluate(() => ({
-        playing: Number(getComputedStyle(document.querySelector('#playingSection')).zIndex),
+        playing: Number(getComputedStyle(document.querySelector('#playingSection .playing-current')).zIndex),
+        section: getComputedStyle(document.querySelector('#playingSection')).zIndex,
         title: Number(getComputedStyle(document.querySelector('body > .topbar')).zIndex),
+        gradient: Number(getComputedStyle(document.body, '::after').zIndex),
         dock: Number(getComputedStyle(document.querySelector('.mobile-action-dock')).zIndex),
       }));
-      assert.ok(layers.playing > layers.title, 'Currently Playing must stay above the mobile branding gradient');
+      assert.ok(layers.playing > layers.gradient, 'Currently Playing must stay above the mobile branding gradient');
+      assert.equal(layers.section, 'auto', 'The Playing section must let the gradient cover Last Finished cards independently');
+      assert.ok(layers.title > layers.playing, 'Mobile branding must stay above Currently Playing');
       assert.ok(layers.dock >= layers.playing, 'Mobile controls must remain above Currently Playing');
       await page.locator('#collectionConditionFilter').selectOption('loose-plus',{force:true});
       await page.waitForFunction(() => {

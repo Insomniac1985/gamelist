@@ -440,9 +440,10 @@ body[data-mobile-section="new"]
   }
 }
 
-/* Mobile branding floats behind the controls instead of taking up page space. */
+/* Keep the mobile gradient below cards and the branding above them. */
 @media (max-width: 689px) {
-  .shell > .playing-section {
+  .shell > .playing-section .playing-current {
+    position: relative;
     z-index: 20;
   }
   body > .topbar {
@@ -453,7 +454,7 @@ body[data-mobile-section="new"]
           var(--mobile-control-height, 68px) - 8px
       )
       50%;
-    z-index: 19;
+    z-index: 21;
     display: grid;
     grid-template-columns: minmax(0, 1fr) auto auto;
     align-items: center;
@@ -479,10 +480,19 @@ body[data-mobile-section="new"]
       filter 220ms ease;
   }
   body > .topbar::before {
+    content: none;
+  }
+  body::after {
     content: "";
-    position: absolute;
-    z-index: -1;
-    inset: -112px -14px -18px;
+    position: fixed;
+    z-index: 19;
+    left: 50%;
+    bottom: calc(max(6px, env(safe-area-inset-bottom)) + var(--mobile-control-height, 68px) - 18px);
+    width: calc(95% + 28px);
+    height: 190px;
+    transform: translateX(-50%) scale(1.35);
+    opacity: 1;
+    transition: opacity 220ms ease;
     pointer-events: none;
     background:
       radial-gradient(circle at 78% 9%, var(--glow-primary), transparent 30%),
@@ -551,8 +561,13 @@ body[data-mobile-section="new"]
     filter: blur(4px);
     pointer-events: none;
   }
+  body:has(> .topbar.is-scroll-hidden)::after,
+  body.dialog-open::after {
+    opacity: 0;
+  }
   @media (prefers-reduced-motion: reduce) {
-    body > .topbar {
+    body > .topbar,
+    body::after {
       transition: opacity 100ms linear;
     }
   }
