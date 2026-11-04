@@ -14752,15 +14752,12 @@ body:not(.can-edit) #detailEditButton {
 
 .detail-trophies {
   margin-top: 10px;
+  padding-top: 8px;
   border-top: 1px solid var(--line);
 }
 
 #detailTrophies {
   padding-top: 8px;
-}
-
-.detail-condition.price-panel-hidden:not([hidden]) ~ .detail-trophies {
-  border-top: 0;
 }
 
 .detail-trophies-head {
@@ -22317,10 +22314,11 @@ body.mobile-app-mode.shelf-page .shelf-grid.list-view .game-row-cover-preview {
 
 .detail-note {
   margin-top: 12px;
+  margin-bottom: 12px;
   padding: 8px 10px;
   color: var(--muted);
   border-left: 3px solid var(--accent);
-  border-radius: 8px;
+  border-radius: 0 8px 8px 0;
   background: rgba(255, 255, 255, 0.05);
   font-size: 13px;
   line-height: 1.45;
@@ -23515,7 +23513,6 @@ textarea {
   padding-top: 14px;
   padding-bottom: 14px;
   border-top: 1px solid var(--line);
-  border-bottom: 1px solid var(--line);
 }
 
 .detail-guides[hidden] {
@@ -23745,12 +23742,13 @@ textarea {
   margin: 0;
 }
 .shelf-card-notes {
-  min-height: calc(1.45em + 20px);
-  padding: 10px 12px;
+  min-height: calc(1.4em + 16px);
+  max-height: calc(2.8em + 16px);
+  padding: 8px 10px;
   color: color-mix(in srgb, var(--text) 84%, var(--muted));
   border-left: 3px solid var(--accent);
-  border-radius: 0 6px 6px 0;
-  background: rgba(0, 0, 0, 0.26);
+  border-radius: 0 8px 8px 0;
+  background: rgba(255, 255, 255, 0.05);
   backdrop-filter: blur(18px) saturate(130%);
   -webkit-backdrop-filter: blur(18px) saturate(130%);
   font-size: 11px;

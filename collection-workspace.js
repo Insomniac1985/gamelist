@@ -19,7 +19,7 @@ async function mount({ slots, changed, openGame, editGame, openSettings, mediaCh
   hydrateSvgAssets(source);
   source.querySelectorAll('script').forEach(node => node.remove());
   const surfaces = [];
-  const css = styles.join('\n').replace(/\bhtml(?=[\s.#:[>])/g, '.shelf-page').replace(/\bbody(?=[\s.#:[>])/g, '.shelf-page');
+  const css = styles.join('\n').replace(/(?<![\w-])html(?=[\s.#:[>])/g, '.shelf-page').replace(/(?<![\w-])body(?=[\s.#:[>])/g, '.shelf-page');
   const surfaceCss = css + `\n:host{display:block;min-width:0} :host([hidden]){display:none!important}
       .shelf-page{background:transparent;min-height:0;margin:0;padding:0;overflow:visible;color:inherit}
       .shelf-page>.topbar,.shelf-page>.backdrop,.shelf-page>.site-footer,.shelf-page>.mobile-action-dock,
