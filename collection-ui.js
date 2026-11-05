@@ -2953,12 +2953,6 @@ async function chooseLookupResult(event) {
   el.fields.publisher.value = result.publisher || "";
   el.fields.developer.value = result.developer || "";
   el.fields.genre.value = (result.genres || []).map(tt).join(", ");
-  const isBaseMinecraft = String(result.title || "").trim().toLocaleLowerCase() === "minecraft";
-  if (result.dlc && !isBaseMinecraft) {
-    el.fields.dlc.checked = true;
-    el.digitalInput.checked = true;
-    syncShelfDigitalEditorMode(true);
-  }
   el.fields.cover.value = result.cover || "";
   if (result.keyArt) el.fields.keyArt.value = result.keyArt;
   state.pendingTrailerUrl = result.trailerUrl || state.pendingTrailerUrl;
