@@ -2586,7 +2586,7 @@ function collectionEditorLabels() {
     };
   }
   const label = backlog ? (collection ? "Add to Collection and Backlog" : "Add to Backlog") : "Add to Collection";
-  return { title: label, titleLines: backlog && collection ? ["Add to", "Collection and Backlog"] : null, button: label };
+  return { title: label, titleLines: ["Add to", backlog ? (collection ? "Collection and Backlog" : "Backlog") : "Collection"], button: label };
 }
 
 function setShelfEditorTitle(title, text, mobileLines = [], forceTwoLine = false) {

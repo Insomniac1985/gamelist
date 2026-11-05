@@ -7184,8 +7184,6 @@ function syncMobileSectionToResults() {
     || state.filters.tag !== "all"
     || state.filters.preordered
     || state.filters.lent
-    || state.filters.region !== "all"
-    || state.filters.condition !== "all"
     || collectionMedia !== "all";
   if (!hasActiveFilter || ["shelf", "new"].includes(state.mobileSection)) return;
   const sections = state.filters.preordered ? mobileSections().filter((section) => section !== "new").sort((a, b) => ["upcoming", "backlog", "wanted"].indexOf(a) - ["upcoming", "backlog", "wanted"].indexOf(b)) : mobileSections();
@@ -9126,9 +9124,6 @@ function filteredGames(options = {}) {
     if (state.filters.lent && !lentCollectionRecordFor(game)) return false;
     if (collectionMedia !== "all" && (collectionMedia === "digital") !== Boolean(game.digital || game.dlc)) return false;
     if (game.section === "new" && !canSeeNewAdditions()) return false;
-    const collected = collectionRecordFor(game);
-    if (state.filters.region !== "all" && !(game.digital || game.dlc) && collected?.country !== state.filters.region) return false;
-    if (state.filters.condition !== "all" && !collectionConditionMatches(collected, state.filters.condition)) return false;
     const haystack = state.filters.query ? [
       game.title,
       game.platform,

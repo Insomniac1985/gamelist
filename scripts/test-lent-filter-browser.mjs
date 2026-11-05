@@ -49,7 +49,7 @@ await new Promise(resolve => server.listen(0, '127.0.0.1', resolve));
 const origin = `http://127.0.0.1:${server.address().port}`;
 const browser = await playwright.chromium.launch({headless:true, ...(process.env.CHROME_PATH ? {executablePath:process.env.CHROME_PATH} : {channel:'chrome'})});
 try {
- const shelf=[{id:'lent',title:'Lent physical game',platform:'Switch',owners:['Judy'],lentTo:'Alex',game:true,box:true},{id:'owned',title:'Owned physical game',platform:'Switch',game:true,box:true}];
+ const shelf=[{id:'lent',title:'Lent physical game',platform:'Switch',country:'Spain',owners:['Judy'],lentTo:'Alex',game:true,box:true},{id:'owned',title:'Owned physical game',platform:'Switch',country:'Japan',game:true,box:false}];
  values.set('shelf-data',JSON.stringify({games:shelf,sourceGames:[],overrides:{},favoriteGameIds:[]}));
  const games=[{id:'linked',title:'Lent Backlog',platform:'Switch',section:'backlog',shelfId:'lent',owners:['Judy']},{id:'other',title:'Other Backlog',platform:'Switch',section:'backlog'},{id:'radar',title:'Radar Game',platform:'PS5',section:'upcoming'},{id:'wish',title:'Wishlist Game',platform:'PS5',section:'wanted'}];
  values.set('gamelist-data',JSON.stringify({games,settings:{defaultOwner:'Tester',disableLoginAnimation:true,shelfDigitalGames:true,language:'en'}}));
@@ -127,6 +127,30 @@ try {
  await page.locator('#lentFilter').check();
  assert.equal(await page.locator('#backlog .game-card').count(),1);
  assert.match(await page.locator('#backlog .game-card h3').textContent(),/Lent Backlog/);
+ await page.locator('#lentFilter').uncheck();
+ await page.locator('button[data-mobile-section="shelf"]').click();
+ const shelfCount=async count=>page.waitForFunction(count=>document.querySelector('#collectionLibrary').shadowRoot.querySelectorAll('.game-card').length===count,count);
+ await page.locator('#collectionRegionFilter').selectOption('Spain',{force:true});
+ await shelfCount(1);
+ await page.locator('#collectionConditionFilter').selectOption('sealed',{force:true});
+ await shelfCount(0);
+ for (const [section,count] of [['backlog',2],['upcoming',1],['wanted',1]]) {
+  await page.locator(`button[data-mobile-section="${section}"]`).click();
+  assert.equal(await page.locator(`#${section} .game-card`).count(),count,'Shelf filters must not hide '+section+' games');
+  assert.equal(await page.locator('body').getAttribute('data-mobile-section'),section,'Shelf filters must not switch the selected list');
+ }
+ await page.locator('button[data-mobile-section="shelf"]').click();
+ assert.equal(await page.locator('#collectionRegionFilter').inputValue(),'Spain','Shelf region is retained');
+ assert.equal(await page.locator('#collectionConditionFilter').inputValue(),'sealed','Shelf condition is retained');
+ await shelfCount(0);
+ await page.locator('#collectionConditionFilter').selectOption('complete',{force:true});
+ await shelfCount(1);
+ assert.match(await page.locator('#collectionLibrary .game-card h3').textContent(),/Lent physical/);
+ await page.locator('#collectionRegionFilter').selectOption('Japan',{force:true});
+ await shelfCount(0);
+ await page.locator('#collectionConditionFilter').selectOption('loose',{force:true});
+ await shelfCount(1);
+ assert.match(await page.locator('#collectionLibrary .game-card h3').textContent(),/Owned physical/);
  assert.deepEqual(errors,[]);
  console.log('Lent filtering and one/two-row toolbar fit passed in all four views at 690–2560px.');
 } finally {await browser.close();await new Promise(resolve=>server.close(resolve));}

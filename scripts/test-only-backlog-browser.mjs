@@ -50,7 +50,7 @@ const origin = `http://127.0.0.1:${server.address().port}`;
 const browser = await playwright.chromium.launch({headless:true, ...(process.env.CHROME_PATH ? {executablePath:process.env.CHROME_PATH} : {channel:'chrome'})});
 try {
  values.set('shelf-data', JSON.stringify({games:[],sourceGames:[],overrides:{},layout:null,favoriteGameIds:[]}));
- values.set('gamelist-data', JSON.stringify({games:[],settings:{defaultOwner:'Tester',language:'en',shelfDigitalGames:true,disableLoginAnimation:true,twitchUser:'tester'}}));
+ values.set('gamelist-data', JSON.stringify({games:[],settings:{defaultOwner:'Tester',language:'en',shelfDigitalGames:true,disableLoginAnimation:true,twitchUser:process.env.TEST_TWITCH_USER ?? 'tester'}}));
  const context = await browser.newContext({viewport:{width:1024,height:1000},serviceWorkers:'block'});
  await context.addInitScript(()=>{sessionStorage.setItem('gamelist-editor','true');sessionStorage.setItem('gamelist-editor:password','test');});
  const page=await context.newPage();
@@ -60,8 +60,14 @@ try {
  await page.waitForFunction(()=>document.body.classList.contains('can-edit') && !document.documentElement.classList.contains('theme-booting')); await page.locator('#addButton').first().click({force:true});
  const editor=page.frameLocator('.shared-add-game-host iframe'); const dialog=editor.locator('#addDialog');
  await dialog.waitFor({state:'visible'});
+ await page.setViewportSize({width:390,height:1000});
+ const heading=dialog.locator('.modal-head h2');
+ const headingLineHeight=await heading.evaluate(node=>getComputedStyle(node).lineHeight);
  await editor.locator('#shelfOnlyBacklogInput').check();
+ assert.equal(await heading.evaluate(node=>getComputedStyle(node).lineHeight),headingLineHeight,'Add to Backlog matches the combined heading line spacing');
  await editor.locator('#shelfAddCollectionInput').uncheck();
+ assert.equal(await heading.evaluate(node=>getComputedStyle(node).lineHeight),headingLineHeight,'Add to Collection matches the combined heading line spacing');
+ await page.setViewportSize({width:1024,height:1000});
  assert.equal(await editor.locator('.shelf-only-backlog-check').isVisible(),false,'Only Backlog is hidden without Add to backlog');
  assert.equal(await editor.locator('#shelfOnlyBacklogInput').isChecked(),false,'Clear Only Backlog when disabling Add to backlog');
  await editor.locator('#shelfAddCollectionInput').check();
@@ -75,8 +81,9 @@ try {
   assert.ok(only.x>=add.x+add.width,'Backlog checkboxes do not overlap');
   if (width >= 690) {
    assert.ok(playing.y>=add.y+add.height,'Playing stays on the second desktop row');
-   assert.ok(Math.abs(playing.y-stream.y)<1,'Stream shares the second desktop row');
+   if(stream.width) assert.ok(Math.abs(playing.y-stream.y)<1,'Stream shares the second desktop row');
   }
+  if(!stream.width) assert.ok(Math.abs(playing.width-(only.x+only.width-add.x))<1,'Playing fills the lower row without Stream at '+width);
  }
  await page.setViewportSize({width:1024,height:1000});
  await editor.locator('#shelfOnlyBacklogInput').check();

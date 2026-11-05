@@ -23076,6 +23076,10 @@ body.mobile-app-mode .shelf-tabs button.active:hover {
   }
 }
 
+#shelfGamelistPreorderStreamRow.has-playing-option:not(.has-stream) .shelf-gamelist-playing-field {
+  grid-column: 1 / -1;
+}
+
 #addGameForm.shelf-gamelist-import-mini #shelfGamelistListControls {
   margin-bottom: 12px;
 }
