@@ -5,6 +5,7 @@ export const LANGUAGES = [
 
 const STRINGS = {
   "es-ES": {
+    "Only Backlog": "Solo Backlog",
     "Lend": "Prestar",
     "Returned": "Devuelto",
     "Get back": "Recuperar",
