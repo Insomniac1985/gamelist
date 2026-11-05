@@ -43,26 +43,33 @@ export async function onRequestPost({ request, env }) {
   const candidates = [
     ...sourceGames.map((game, index) => ({ kind: "source", index, game: { ...game, ...(overrides[game.id] || {}) } })),
     ...games.map((game, index) => ({ kind: "game", index, game })),
-  ].filter(({ game }) => game?.title && (body.all || ids.has(game.id)) && (options.includePending || !game.pendingCollection));
+  ].filter(({ game }) => game?.title && !game.deletedAt && (body.all || ids.has(game.id)) && (options.includePending || !game.pendingCollection));
 
   const selected = candidates.slice(0, options.limit);
   let updated = 0;
   const errors = [];
+  const results = [];
 
   for (const item of selected) {
     try {
-      const hydrated = await hydrateGame(item.game, options, settings, env, language);
-      if (!changed(item.game, hydrated)) continue;
+      const { game: hydrated, providers } = await hydrateGame(item.game, options, settings, env, language);
+      const fields = Object.keys(hydrated).filter((key) => key !== "updatedAt" && JSON.stringify(item.game[key]) !== JSON.stringify(hydrated[key]));
+      const failures = providers.filter((provider) => provider.status === "error");
+      for (const failure of failures) errors.push({ id: item.game.id, title: item.game.title, error: `${failure.source}: ${failure.error}` });
+      results.push({ id: item.game.id, title: item.game.title, status: fields.length ? "updated" : failures.length ? "error" : providers.some(provider => provider.status === "matched") ? "unchanged" : "no_match", fields, providers });
+      if (!fields.length) continue;
       updated += 1;
       if (item.kind === "source") overrides[item.game.id] = stripRuntimeFields(hydrated);
       else games[item.index] = stripRuntimeFields(hydrated);
     } catch (error) {
       errors.push({ id: item.game.id, title: item.game.title, error: error?.message || "Metadata unavailable" });
+      results.push({ id: item.game.id, title: item.game.title, status: "error", fields: [], providers: [] });
     }
   }
 
   const now = new Date().toISOString();
-  await env.GAMELIST.put(KV_KEY, JSON.stringify({
+  if (updated) await env.GAMELIST.put(KV_KEY, JSON.stringify({
+    ...data,
     sourceGames,
     games,
     overrides,
@@ -71,45 +78,58 @@ export async function onRequestPost({ request, env }) {
     updatedAt: now,
   }));
 
-  return json({ ok: true, processed: selected.length, updated, errors, remaining: Math.max(0, candidates.length - selected.length), updatedAt: now });
+  return json({ ok: true, processed: selected.length, updated, unchanged: selected.length - updated, results, errors, remaining: Math.max(0, candidates.length - selected.length), updatedAt: updated ? now : data.updatedAt || null });
 }
 
 async function hydrateGame(game, options, settings, env, language) {
   let next = { ...game };
+  const physicalEnabled = options.pricecharting && !game.digital && !game.dlc;
   const [igdb, physical] = await Promise.allSettled([
     options.igdb ? fetchGameMetadata(next, env, language) : null,
-    options.pricecharting ? fetchPhysicalMetadata(next, settings, env) : null,
+    physicalEnabled ? fetchPhysicalMetadata(next, settings, env) : null,
   ]);
   if (igdb.status === "fulfilled" && igdb.value) next = mergeIgdb(next, igdb.value, options);
   if (physical.status === "fulfilled" && physical.value) next = mergePhysical(next, physical.value, options);
   next.updatedAt = changed(game, next) ? new Date().toISOString() : game.updatedAt;
-  return next;
+  const providers = [["IGDB", options.igdb, igdb], ["PriceCharting", physicalEnabled, physical]]
+    .filter(([, enabled]) => enabled)
+    .map(([source, , result]) => ({ source, status: result.status === "rejected" ? "error" : result.value ? "matched" : "no_match", ...(result.status === "rejected" ? { error: result.reason?.message || "Lookup failed" } : {}) }));
+  return { game: next, providers };
 }
 
 async function fetchGameMetadata(game, env, language) {
-  for (const query of metadataQueries(game.title)) {
+  let lastError;
+  for (const query of [...new Set([game.igdbUrl, ...metadataQueries(game.title)].filter(Boolean))]) {
     const url = new URL("https://local/api/search");
     url.searchParams.set("q", query);
     url.searchParams.set("lang", language);
     const response = await searchMetadata({ request: new Request(url), env });
-    const data = response.ok ? await response.json() : { results: [] };
-    const result = bestTitleMatch(game.title, data.results || []);
+    const data = await response.json();
+    if (!response.ok || data.error) lastError = new Error(data.error || `Lookup returned HTTP ${response.status}`);
+    const result = (data.results || []).find((result) => result.igdbUrl && result.igdbUrl === game.igdbUrl && query === game.igdbUrl)
+      || bestTitleMatch(game.title, data.results || []);
     if (result) return result;
   }
+  if (lastError) throw lastError;
   return null;
 }
 
 async function fetchPhysicalMetadata(game, settings, env) {
-  const direct = await fetchCollectionPriceData(game, settings, env).catch(() => null);
+  let directError;
+  const direct = await fetchCollectionPriceData(game, settings, env).catch((error) => { directError = error; return null; });
   if (direct) return direct;
   const result = await findPhysicalResult(game, settings, env);
-  if (!result) return null;
-  return fetchCollectionPriceData({ ...game, pricechartingId: result.url || result.productId || "" }, settings, env).catch(() => null);
+  if (!result) {
+    if (directError) throw directError;
+    return null;
+  }
+  return fetchCollectionPriceData({ ...game, pricechartingId: result.url || result.productId || "" }, settings, env);
 }
 
 async function fetchCollectionPriceData(game, settings, env) {
   const response = await collectionPrice({ request: new Request(`https://local/api/collection-price?${collectionPriceParams(game, settings)}`), env });
   const data = await response.json();
+  if (!response.ok) throw new Error(data.error || `Lookup returned HTTP ${response.status}`);
   return response.ok && !data.error && hasPriceValue(data) ? data : null;
 }
 
@@ -121,7 +141,8 @@ async function findPhysicalResult(game, settings, env) {
       const params = new URLSearchParams({ mode: "search", title, region: game.country || game.region || settings.region, currency: settings.currency });
       if (platform) params.set("platform", platform);
       const response = await collectionPrice({ request: new Request(`https://local/api/collection-price?${params}`), env });
-      const data = response.ok ? await response.json() : { results: [] };
+      const data = await response.json();
+      if (!response.ok || data.error) throw new Error(data.error || `Lookup returned HTTP ${response.status}`);
       results.push(...(data.results || []));
     }
   }
@@ -142,8 +163,8 @@ function mergeIgdb(game, data, options) {
   setField(next, "igdbUrl", data.igdbUrl, options);
   setField(next, "trailerUrl", data.trailerUrl, options);
   setField(next, "keyArt", data.keyArt, options);
-  setField(next, "lengthHours", data.lengthHours, options);
-  next.storeLinks = mergeStoreLinks(next.storeLinks, data.storeLinks, options);
+  if (Number(data.lengthHours) > 0 && (options.overwrite || !(Number(next.lengthHours) > 0))) next.lengthHours = Number(data.lengthHours);
+  if (Object.keys(data.storeLinks || {}).length) next.storeLinks = mergeStoreLinks(next.storeLinks, data.storeLinks, options);
   if (data.hltbId) next.hltbId = data.hltbId;
   if (data.igdbId) next.igdbId = data.igdbId;
   return next;
@@ -173,8 +194,8 @@ function mergePhysical(game, data, options) {
 }
 
 function setField(target, key, value, { overwrite }) {
-  if (value == null || value === "") return;
-  if (overwrite || target[key] == null || target[key] === "" || (Array.isArray(target[key]) && !target[key].length)) target[key] = value;
+  if (value == null || (typeof value === "string" && !value.trim())) return;
+  if (overwrite || target[key] == null || (typeof target[key] === "string" && !target[key].trim()) || (Array.isArray(target[key]) && !target[key].length)) target[key] = value;
 }
 
 function mergeStoreLinks(existing, incoming, options) {
@@ -194,7 +215,7 @@ function mergeCollectionPrices(existing, incoming, options) {
 
 function metadataQueries(title) {
   const plain = String(title || "").trim();
-  const withoutBrackets = plain.replace(/\s*[\[(][^\])]*(?:edition|collector|collectors|limited|special|deluxe|agent|day one|steelbook)[^\])]*[\])]\s*/gi, " ").trim();
+  const withoutBrackets = plain.replace(/\s*[\[(][^\])]*(?:edition|collector|collectors|limited|special|deluxe|agent|day one|steelbook|bonus disc|playstation hits)[^\])]*[\])]\s*/gi, " ").trim();
   const withoutEdition = withoutBrackets.replace(/\s+(?:special|collector'?s?|limited|deluxe|complete|ultimate|definitive|premium|gold|standard|day one|steelbook)(?:\s+\w+){0,3}\s+edition\s*$/i, "").trim();
   return [...new Set([plain, withoutBrackets, withoutEdition].filter(Boolean))];
 }
@@ -321,7 +342,7 @@ function runnerHtml(settings = {}) {
       <label><input id="igdb" type="checkbox" checked> IGDB</label>
       <label><input id="pricecharting" type="checkbox" checked> PriceCharting</label>
       <label><input id="pending" type="checkbox"> Include pending</label>
-      <label><input id="without-picture" type="checkbox"> Missing data only</label>
+      <label><input id="without-picture" type="checkbox" checked> Missing data only</label>
       <button class="primary" id="start" type="button">Fill missing metadata</button>
       <a href="/?list=shelf">Back to Shelf</a>
     </div>
@@ -357,9 +378,10 @@ function runnerHtml(settings = {}) {
     const matchesPlatform = (game) => platform.value === "all" || platformKey(game.platform) === platform.value;
     const isDigital = (game) => Boolean(game.digital || game.dlc);
     const matchesMedia = (game) => media.value === "all" || (media.value === "digital" ? isDigital(game) : !isDigital(game));
+    const shelfGames = (shelf) => [...(shelf.sourceGames || []).map((game) => ({ ...game, ...(shelf.overrides?.[game.id] || {}) })), ...(shelf.games || [])].filter((game) => !game.deletedAt);
     async function hydratePlatforms() {
       const shelf = await fetch("/api/shelf", { cache: "no-store" }).then((response) => readJson(response, "GET /api/shelf"));
-      const games = [...(shelf.sourceGames || []), ...(shelf.games || [])];
+      const games = shelfGames(shelf);
       const platforms = [...new Map(games
         .map((game) => [platformKey(game.platform), platformLabel(game.platform)])
         .filter(([key]) => key)).entries()]
@@ -368,21 +390,23 @@ function runnerHtml(settings = {}) {
       return shelf;
     }
     hydratePlatforms().catch((error) => line("Could not load platforms: " + (error.message || error)));
-    const missingIgdb = (game) => !game.cover || !game.releaseDate || !game.publisher || !game.developer || !game.genre || !game.description || !game.igdbUrl;
+    const missingIgdb = (game) => ["cover", "releaseDate", "publisher", "developer", "genre", "description", "igdbUrl"].some((key) => !String(game[key] || "").trim()) || !(Number(game.lengthHours) > 0);
     const missingPrice = (game) => {
       const prices = game.collectionPrices || {};
-      return !game.pricechartingId || !game.collectionProductUrl || !Number(game.price) || !Object.values(prices).some((value) => Number(value) > 0);
+      const priceKey = game.sealed ? "sealed" : game.game && game.box ? "complete" : "loose";
+      return !game.pricechartingId || !game.collectionProductUrl || !(Number(game.price) > 0) || !(Number(prices[priceKey]) > 0);
     };
     start.addEventListener("click", async () => {
       start.disabled = true;
       log.textContent = "";
+      bar.style.width = "0%";
       try {
         if (!igdb.checked && !pricecharting.checked) throw new Error("Choose IGDB, PriceCharting, or both.");
         const shelf = await fetch("/api/shelf", { cache: "no-store" }).then((response) => readJson(response, "GET /api/shelf"));
-        const games = [...(shelf.sourceGames || []), ...(shelf.games || [])];
+        const games = shelfGames(shelf);
         const queue = games
-          .filter((game) => game.title && (pending.checked || !game.pendingCollection) && matchesPlatform(game) && matchesMedia(game) && (!withoutPicture.checked || !String(game.cover || "").trim()))
-          .map((game) => ({ game, needsIgdb: igdb.checked && missingIgdb(game), needsPrice: pricecharting.checked && missingPrice(game) }))
+          .filter((game) => game.title && (pending.checked || !game.pendingCollection) && matchesPlatform(game) && matchesMedia(game))
+          .map((game) => ({ game, needsIgdb: igdb.checked && (!withoutPicture.checked || missingIgdb(game)), needsPrice: pricecharting.checked && !isDigital(game) && (!withoutPicture.checked || missingPrice(game)) }))
           .filter((item) => item.needsIgdb || item.needsPrice);
         const ids = queue.map((item) => item.game.id);
         if (!ids.length) { line("No Shelf games are missing the selected metadata for the selected platform."); return; }
@@ -411,6 +435,14 @@ function runnerHtml(settings = {}) {
           errors.push(...(data.errors || []));
           bar.style.width = Math.round(Math.min(ids.length, index + batch.length) / ids.length * 100) + "%";
           line("Batch " + (Math.floor(index / size) + 1) + ": processed " + (data.processed || 0) + ", updated " + (data.updated || 0) + ", errors " + ((data.errors || []).length) + ".");
+          for (const result of data.results || []) {
+            const detail = result.fields.length ? "updated " + result.fields.join(", ") : result.status === "unchanged" ? "no new values found; existing values kept" : result.status === "no_match" ? "no matching metadata found" : "lookup failed";
+            line("- " + result.title + ": " + detail);
+            for (const provider of result.providers || []) {
+              if (provider.status === "error") line("  " + provider.source + ": " + provider.error);
+              else if (provider.status === "no_match") line("  " + provider.source + ": no match");
+            }
+          }
           await sleep(600);
         }
         line("Done. Updated " + updated + " game" + (updated === 1 ? "" : "s") + ".");

@@ -23007,6 +23007,20 @@ body.mobile-app-mode .shelf-tabs button.active:hover {
   padding: 8px 12px;
 }
 
+.shelf-only-backlog-check {
+  box-sizing: border-box;
+  min-height: 44px;
+  padding: 8px 12px;
+}
+
+#shelfGamelistPreorderStreamRow.has-playing-option.has-only-backlog-option {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+#shelfGamelistPreorderStreamRow.has-playing-option.has-only-backlog-option.has-stream {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
 #shelfGamelistPreorderStreamRow.has-collection-option {
   grid-template-columns: minmax(0, 1fr);
 }
@@ -23029,16 +23043,62 @@ body.mobile-app-mode .shelf-tabs button.active:hover {
   padding: 8px 12px;
 }
 
+@media (min-width: 690px) {
+  #shelfGamelistPreorderStreamRow.has-playing-option,
+  #shelfGamelistPreorderStreamRow.has-playing-option.has-stream,
+  #shelfGamelistPreorderStreamRow.has-playing-option.has-only-backlog-option,
+  #shelfGamelistPreorderStreamRow.has-playing-option.has-only-backlog-option.has-stream {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  #shelfGamelistPreorderStreamRow.has-playing-option .shelf-add-collection-check {
+    grid-column: 1 / -1;
+    grid-row: 1;
+  }
+
+  #shelfGamelistPreorderStreamRow.has-only-backlog-option .shelf-add-collection-check {
+    grid-column: 1;
+  }
+
+  #shelfGamelistPreorderStreamRow.has-only-backlog-option .shelf-only-backlog-check {
+    grid-column: 2;
+    grid-row: 1;
+  }
+
+  #shelfGamelistPreorderStreamRow.has-playing-option .shelf-gamelist-playing-field {
+    grid-column: 1;
+    grid-row: 2;
+  }
+
+  #shelfGamelistPreorderStreamRow.has-playing-option .shelf-gamelist-stream-field {
+    grid-column: 2;
+    grid-row: 2;
+  }
+}
+
+#shelfGamelistPreorderStreamRow.has-playing-option:not(.has-stream) .shelf-gamelist-playing-field {
+  grid-column: 1 / -1;
+}
+
 #addGameForm.shelf-gamelist-import-mini #shelfGamelistListControls {
   margin-bottom: 12px;
 }
 
 @media (max-width: 689px) {
+  #shelfGamelistPreorderStreamRow.has-playing-option.has-only-backlog-option,
+  #shelfGamelistPreorderStreamRow.has-playing-option.has-only-backlog-option.has-stream {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  #shelfGamelistPreorderStreamRow.has-playing-option.has-only-backlog-option .shelf-add-collection-check {
+    grid-column: auto;
+  }
+
   #shelfGamelistPreorderStreamRow.has-playing-option.has-stream {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
-  #shelfGamelistPreorderStreamRow.has-playing-option.has-stream
+  #shelfGamelistPreorderStreamRow.has-playing-option.has-stream:not(.has-only-backlog-option)
     .shelf-add-collection-check {
     grid-column: 1 / -1;
   }
