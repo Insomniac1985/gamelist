@@ -853,8 +853,8 @@ body[data-mobile-section="new"]
     grid-template-areas: "search status platform platform" "category order order view";
   }
   .toolbar.collection-toolbar {
-    grid-template-columns: repeat(2, minmax(0, 1fr)) 100px repeat(3, minmax(0, 1fr)) 90px;
-    grid-template-areas: "search search status platform platform category category" "region region condition condition order order view";
+    grid-template-columns: calc((100% - 360px) / 1.65) minmax(70px, 1fr) minmax(100px, 1fr) minmax(160px, 1.2fr) 90px;
+    grid-template-areas: "search search status platform platform" "category region condition order view";
   }
   .toolbar.glass > .search { grid-area: search !important; }
   .toolbar.glass > .toolbar-status-filters { grid-area: status !important; }
@@ -865,13 +865,22 @@ body[data-mobile-section="new"]
   .toolbar.glass > .order-label { grid-area: order !important; }
   .toolbar.glass > .library-view-controls { grid-area: view !important; }
 }
+@media (min-width: 690px) and (max-width: 800px) {
+  .toolbar.collection-toolbar {
+    grid-template-columns: calc((100% - 354px) / 1.65) minmax(70px, 1fr) minmax(100px, 1fr) minmax(160px, 1.2fr) 90px;
+  }
+}
 @media (min-width: 1301px) {
+  .toolbar {
+    --toolbar-category-width: clamp(130px, 14vw, 220px);
+    --toolbar-platform-width: clamp(90px, 9vw, 160px);
+  }
   .toolbar:not(.collection-toolbar) {
-    grid-template-columns: minmax(180px, 2.05fr) 240px minmax(90px, .65fr) minmax(130px, .9fr) minmax(190px, .75fr) 90px;
+    grid-template-columns: minmax(180px, 2.05fr) 240px var(--toolbar-platform-width) var(--toolbar-category-width) minmax(190px, .75fr) 90px;
     grid-template-areas: "search status platform category order view";
   }
   .toolbar.collection-toolbar {
-    grid-template-columns: minmax(100px, .8fr) 100px minmax(140px, 1.45fr) repeat(3, minmax(110px, .85fr)) minmax(190px, .9fr) 90px;
+    grid-template-columns: minmax(100px, 1.6fr) 100px var(--toolbar-platform-width) var(--toolbar-category-width) minmax(90px, .6fr) minmax(110px, .85fr) minmax(150px, .7fr) 90px;
     grid-template-areas: "search status platform category region condition order view";
   }
 }
@@ -881,3 +890,17 @@ body[data-mobile-section="new"]
 .toolbar .toolbar-status-filters > label:has(#preorderedFilter) { width: 132px !important; }
 .toolbar .toolbar-status-filters > label:has(#lentFilter) { width: 100px !important; }
 .toolbar .toolbar-status-filters svg { width: 16px; height: 16px; min-width: 16px; flex: 0 0 16px; }
+
+@media (max-width: 689px) {
+  .toolbar > .toolbar-status-filters {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 132px), 1fr));
+    width: 100%;
+  }
+
+  .toolbar .toolbar-status-filters > label:has(:is(#preorderedFilter, #lentFilter)) {
+    grid-column: auto !important;
+    width: 100% !important;
+    min-width: 0;
+  }
+}

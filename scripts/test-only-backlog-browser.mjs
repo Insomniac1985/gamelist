@@ -66,12 +66,17 @@ try {
  assert.equal(await editor.locator('#shelfOnlyBacklogInput').isChecked(),false,'Clear Only Backlog when disabling Add to backlog');
  await editor.locator('#shelfAddCollectionInput').check();
  assert.equal(await editor.locator('.shelf-only-backlog-check').isVisible(),true,'Show Only Backlog when Add to backlog is checked');
-  for (const width of [1024,390]) {
+  for (const width of [1024,1440,390]) {
   await page.setViewportSize({width,height:1000});
-  const add=await editor.locator('.shelf-add-collection-check').boundingBox();
-  const only=await editor.locator('.shelf-only-backlog-check').boundingBox();
+  const {add,only,playing,stream}=await editor.locator('#shelfGamelistPreorderStreamRow').evaluate(row=>Object.fromEntries([
+   ['add','.shelf-add-collection-check'],['only','.shelf-only-backlog-check'],['playing','.shelf-gamelist-playing-field'],['stream','.shelf-gamelist-stream-field'],
+  ].map(([key,selector])=>{const r=row.querySelector(selector).getBoundingClientRect();return [key,{x:r.x,y:r.y,width:r.width,height:r.height}];})));
   assert.ok(Math.abs(add.y-only.y)<1,'Only Backlog stays next to Add to backlog at '+width);
   assert.ok(only.x>=add.x+add.width,'Backlog checkboxes do not overlap');
+  if (width >= 690) {
+   assert.ok(playing.y>=add.y+add.height,'Playing stays on the second desktop row');
+   assert.ok(Math.abs(playing.y-stream.y)<1,'Stream shares the second desktop row');
+  }
  }
  await page.setViewportSize({width:1024,height:1000});
  await editor.locator('#shelfOnlyBacklogInput').check();

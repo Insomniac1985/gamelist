@@ -59,11 +59,29 @@ try {
  await page.goto(origin+'/?list=backlog',{waitUntil:'domcontentloaded'});
  await page.waitForFunction(()=>!document.documentElement.classList.contains('theme-booting'));
  await page.locator('#collectionLibrary .game-card').first().waitFor({state:'attached'});
+ const categoryWidths=new Map();
+ const platformWidths=new Map();
  for(const section of ['backlog','upcoming','wanted','shelf']) {
   await page.locator(`button[data-mobile-section="${section}"]`).click();
   assert.equal(await page.locator('#lentFilter').isVisible(),true,'Lent available in '+section);
   for(const width of [690,768,1024,1300,1301,1440,1920]) {
    await page.setViewportSize({width,height:1000});
+   const category=await page.locator('.toolbar').first().locator('label:has(#tagFilter)').boundingBox();
+   if(section==='backlog') categoryWidths.set(width,category.width);
+   const platform=await page.locator('.toolbar').first().locator('label:has(#platformFilter)').boundingBox();
+   if(section==='backlog') platformWidths.set(width,platform.width);
+   if(section==='shelf') {
+    if(width>=1301) {
+     assert.ok(Math.abs(platform.width-platformWidths.get(width))<1,'Shelf Platform matches Backlog in one row');
+     const search=await page.locator('.toolbar').first().locator('.search').boundingBox();
+     assert.ok(search.width>platform.width,'Shelf Search gets more width than Platform');
+    }
+    assert.ok(Math.abs(category.width-categoryWidths.get(width))<1,'Shelf Category matches Backlog at '+width+': '+category.width+' vs '+categoryWidths.get(width));
+    if(width<=1300) {
+     const search=await page.locator('.toolbar').first().locator('.search').boundingBox();
+     assert.ok(category.y>=search.y+search.height,'Shelf Category is on the second row');
+    }
+   }
    if (['backlog','shelf'].includes(section) && [768,1440].includes(width)) await page.locator('.toolbar').first().screenshot({path:path.join(process.env.TEMP || root,'gamelist-toolbar-'+section+'-'+width+'.png')});
    const layout=await page.locator('.toolbar').first().evaluate(toolbar=>{
     const bounds=toolbar.getBoundingClientRect();
@@ -74,6 +92,20 @@ try {
    for(let a=0;a<layout.cells.length;a++) for(let b=a+1;b<layout.cells.length;b++) {const x=layout.cells[a],y=layout.cells[b];assert.ok(!(x.left<y.right-1&&x.right>y.left+1&&x.top<y.bottom-1&&x.bottom>y.top+1),JSON.stringify({section,width,overlap:[x,y]}));}
    const rows=new Set(layout.cells.map(c=>Math.round(c.bottom)));
    assert.equal(rows.size,width>=1301?1:2,JSON.stringify({section,width,rows:[...rows],layout}));
+  }
+  for (const width of [280,320,390,540,689]) {
+   await page.setViewportSize({width,height:1000});
+   const group=await page.locator('.toolbar-status-filters').boundingBox();
+   const lent=await page.locator('#lentFilter').locator('..').boundingBox();
+   const preorder=await page.locator('#preorderedFilter').locator('..').boundingBox();
+   if(preorder && group.width>=272) {
+    assert.ok(Math.abs(lent.width-preorder.width)<1,'Mobile toggles have equal halves');
+    assert.ok(Math.abs(lent.y-preorder.y)<1,'Mobile toggles share a row when they fit');
+    assert.ok(Math.abs(lent.width+preorder.width+8-group.width)<1,'Mobile halves fill the row');
+   } else {
+    assert.ok(Math.abs(lent.width-group.width)<1,'Mobile toggle fills the row');
+    if(preorder) assert.ok(lent.y>=preorder.y+preorder.height,'Narrow screens stack full-width toggles');
+   }
   }
  }
  await page.locator('#lentFilter').check();
