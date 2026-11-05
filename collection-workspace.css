@@ -867,7 +867,18 @@ body[data-mobile-section="new"]
 }
 @media (min-width: 690px) and (max-width: 800px) {
   .toolbar.collection-toolbar {
+    --shelf-status-gap: 8px;
     grid-template-columns: calc((100% - 354px) / 1.65) minmax(70px, 1fr) minmax(100px, 1fr) minmax(160px, 1.2fr) 90px;
+  }
+}
+/* Let Search use the space beside the single Shelf toggle on two-row toolbars. */
+@media (min-width: 690px) and (max-width: 1300px) {
+  .toolbar.collection-toolbar > .search {
+    grid-column: 1 / 4 !important;
+    width: calc(100% - 100px - var(--shelf-status-gap, 10px));
+  }
+  .toolbar.collection-toolbar > .toolbar-status-filters {
+    justify-self: end;
   }
 }
 @media (min-width: 1301px) {

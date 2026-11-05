@@ -89,6 +89,10 @@ try {
     assert.ok(Math.abs(category.width-categoryWidths.get(width))<1,'Shelf Category matches Backlog at '+width+': '+category.width+' vs '+categoryWidths.get(width));
     if(width<=1300) {
      const search=await page.locator('.toolbar').first().locator('.search').boundingBox();
+     const lent=await page.locator('#lentFilter').locator('..').boundingBox();
+     const gap=width<=800?8:10;
+     assert.ok(Math.abs(lent.x-search.x-search.width-gap)<1,'Shelf Search has the standard gap before Lent');
+     assert.ok(Math.abs(platform.x-lent.x-lent.width-gap)<1,'Shelf Lent has the standard gap before Platform');
      assert.ok(category.y>=search.y+search.height,'Shelf Category is on the second row');
     }
    }
