@@ -278,6 +278,7 @@ const state = {
   mobileSection: "backlog",
   mobileSwipeStart: null,
   completedYear: "all",
+  completedYearSelected: false,
   completedStreamMode: streamFilterPriorityForSettings(initialSettings),
   completedVisiblePages: 1,
   gotyYear: String(new Date().getFullYear()),
@@ -1250,7 +1251,7 @@ function bindEvents() {
   });
   el.completedYearFilter?.addEventListener("change", handleCompletedYearChange);
   el.completedStreamToggleButton?.addEventListener("click", cycleCompletedStreamMode);
-  el.completedStatsButton?.addEventListener("click", () => openFinishedStatsDialog(state.completedYear || "all", { streamMode: state.completedStreamMode }));
+  el.completedStatsButton?.addEventListener("click", () => openFinishedStatsDialog(state.completedYearSelected ? state.completedYear : undefined, { streamMode: state.completedStreamMode }));
   document.querySelector("#statsSourceSlider").addEventListener("click", event => {
     const button = event.target.closest("[data-stats-source-tab]");
     if (!button) return;
@@ -1869,7 +1870,7 @@ function shouldUseGotyStatsShortcut() {
     && !gameOfTheYearIsSetUp();
 }
 
-function openStatsOrGameOfTheYear({ year = "all", streamMode = "all", yearPicker = true } = {}) {
+function openStatsOrGameOfTheYear({ year = state.completedYearSelected ? state.completedYear : undefined, streamMode = "all", yearPicker = true } = {}) {
   if (shouldUseGotyStatsShortcut()) {
     void openGameOfTheYearDialogWithAutofillLoading(currentGameOfTheYear(), { force: true, autoPick: true });
     return;
@@ -7839,6 +7840,7 @@ function latestGameUpdateDate() {
 }
 
 function handleCompletedYearChange(event) {
+  state.completedYearSelected = true;
   state.completedYear = event.target.value || "all";
   state.completedVisiblePages = 1;
   renderCompleted();
@@ -7866,11 +7868,26 @@ function completedCountForSelectedYear() {
   };
 }
 
-function openFinishedStatsDialog(year = "all", { yearPicker = false, streamMode = "all" } = {}) {
+const finishedStatsDetailBuilders = new Map();
+let deferFinishedStatsDetails = false;
+
+function deferredFinishedStatsDetail(build) {
+  const id = String(finishedStatsDetailBuilders.size);
+  finishedStatsDetailBuilders.set(id, build);
+  return `<span data-stats-deferred-detail="${id}"></span>`;
+}
+
+function materializeFinishedStatsDetails(node) {
+  node?.querySelectorAll("[data-stats-deferred-detail]").forEach(placeholder => {
+    const build = finishedStatsDetailBuilders.get(placeholder.dataset.statsDeferredDetail);
+    if (build) placeholder.outerHTML = build();
+  });
+}
+
+function openFinishedStatsDialog(year = String(new Date().getFullYear()), { yearPicker = false, streamMode = "all" } = {}) {
   state.finishedStatsStreamMode = normalizeStreamFilterMode(streamMode);
   const years = finishedStatsYears();
-  const singleYearStats = false;
-  const selectedYear = singleYearStats && String(year || "all") === "all" ? years[0] : String(year || "all");
+  const selectedYear = String(year || new Date().getFullYear());
   const showYearPicker = true;
   el.finishedStatsDialog.classList.toggle("from-achievements", yearPicker);
   el.finishedStatsYearPicker.hidden = !showYearPicker;
@@ -7893,7 +7910,8 @@ function openUnifiedStatsYear(year) {
 }
 
 function finishedStatsYears() {
-  return state.statsSource === "collection" ? collectionUI?.years() || [] : completedYears(finishedStatsBaseGames());
+  const years = state.statsSource === "collection" ? collectionUI?.years() || [] : completedYears(finishedStatsBaseGames());
+  return [...new Set([String(new Date().getFullYear()), ...years])].sort((a, b) => Number(b) - Number(a));
 }
 
 function renderFinishedStatsDialog(year = "all", { preserveAll = true } = {}) {
@@ -7908,7 +7926,13 @@ function renderFinishedStatsDialog(year = "all", { preserveAll = true } = {}) {
     : statsMode === "nonstream"
       ? (scope === "all" ? tt("Non-stream games") : tt("Non-stream games {year}", { year: scope }))
       : (scope === "all" ? tt("Finished games") : tt("Finished {year}", { year: scope }));
-  el.finishedStatsBody.innerHTML = games.length || completed.length ? finishedStatsMarkup(scope, games, completed) : "";
+  finishedStatsDetailBuilders.clear();
+  deferFinishedStatsDetails = true;
+  try {
+    el.finishedStatsBody.innerHTML = state.statsSource !== "collection" && (games.length || completed.length) ? finishedStatsMarkup(scope, games, completed) : "";
+  } finally {
+    deferFinishedStatsDetails = false;
+  }
   if (state.statsSource === "collection") {
     el.finishedStatsBody.innerHTML = "";
     mergeCollectionStats(scope);
@@ -8334,9 +8358,6 @@ function statsMonthBars(games, counts, scopeYear = "") {
   return order.map((label, index) => {
     const count = byLabel.get(label) || 0;
     const overlayTitle = fullMonthName(label);
-    const monthGames = games
-      .filter((game) => monthShortName(game.completedAt) === label)
-      .sort((a, b) => String(a.completedAt || "").localeCompare(String(b.completedAt || "")) || stringCompare(a.title, b.title));
     const activeGames = statsGamesActiveInMonth(activityGames, label, scopeYear);
     const displayGames = activeGames.map((game) => ({ ...game, statsMonthCarry: monthShortName(game.completedAt) !== label }));
     const edgeClass = index === 0 ? " is-start-edge" : (index === order.length - 1 ? " is-end-edge" : "");
@@ -8463,6 +8484,7 @@ function statsGameListSort(a, b) {
 }
 
 function statsGameList(games) {
+  if (deferFinishedStatsDetails && games.length) return deferredFinishedStatsDetail(() => statsGameList(games));
   const orderedGames = [...games].sort((a, b) => Number(Boolean(a.statsMonthCarry)) - Number(Boolean(b.statsMonthCarry)) || statsGameListSort(a, b));
   const firstCarryIndex = orderedGames.findIndex((game) => game.statsMonthCarry);
   return orderedGames.map((game, index) => {
@@ -8484,6 +8506,7 @@ function statsGameList(games) {
 }
 
 function statsPlaytimeGameList(games, limit = Infinity) {
+  if (deferFinishedStatsDetails && games.length) return deferredFinishedStatsDetail(() => statsPlaytimeGameList(games, limit));
   return [...games]
     .filter((game) => statsPlaytimeHours(game) > 0)
     .sort((a, b) => statsPlaytimeHours(b) - statsPlaytimeHours(a) || stringCompare(a.title, b.title))
@@ -8580,6 +8603,7 @@ function bindFinishedStatsMobileOverlays(body = el.finishedStatsBody, dialog = e
       if (!window.matchMedia("(max-width: 689px)").matches) return;
       if (event.target.closest(".finished-stats-breakdown")) return;
       const breakdown = node.querySelector(".finished-stats-breakdown");
+      materializeFinishedStatsDetails(breakdown);
       if (!breakdown?.innerHTML.trim()) return;
       event.preventDefault();
       event.stopPropagation();
@@ -8642,6 +8666,7 @@ function bindFinishedStatsDesktopOverlays(dialog = el.finishedStatsDialog, body 
   };
   const openFloatingOverlay = (node) => {
     const breakdown = node.querySelector(".finished-stats-breakdown");
+    materializeFinishedStatsDetails(breakdown);
     if (!breakdown?.innerHTML.trim()) return;
     openFloatingContent(node, breakdown.innerHTML);
   };
@@ -8661,7 +8686,10 @@ function bindFinishedStatsDesktopOverlays(dialog = el.finishedStatsDialog, body 
       const tip = index ? donut.querySelector(`.finished-stats-segment-tip-${index}`) : null;
       const games = tip?.querySelector(".finished-stats-segment-games");
       if (!tip || !games?.innerHTML.trim()) return;
-      const openSegmentOverlay = () => openFloatingContent(tip, games.innerHTML, "is-segment-float");
+      const openSegmentOverlay = () => {
+        materializeFinishedStatsDetails(games);
+        openFloatingContent(tip, games.innerHTML, "is-segment-float");
+      };
       segment.addEventListener("mouseenter", openSegmentOverlay);
       segment.addEventListener("mouseleave", scheduleClose);
       segment.addEventListener("focusin", openSegmentOverlay);
@@ -8707,6 +8735,7 @@ function finishedStatsMiniTitle(value) {
 }
 
 function statsCompletedGameList(items) {
+  if (deferFinishedStatsDetails && items.length) return deferredFinishedStatsDetail(() => statsCompletedGameList(items));
   return statsGameList(items.map((item) => ({
     id: item.gameId || item.id || item.title,
     title: item.title,
@@ -8824,9 +8853,11 @@ function gameStatsTags(game) {
   return unique(tags).length ? unique(tags).map(localizedTagLabel) : [tt("Uncategorized")];
 }
 
+const statsMonthFormatter = new Intl.DateTimeFormat("en-US", { month: "short" });
+
 function monthShortName(value) {
   const date = new Date(`${dateOnly(value)}T00:00:00`);
-  return Number.isNaN(date.getTime()) ? "Unknown" : new Intl.DateTimeFormat("en-US", { month: "short" }).format(date);
+  return Number.isNaN(date.getTime()) ? "Unknown" : statsMonthFormatter.format(date);
 }
 
 function fullMonthName(value) {
