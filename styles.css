@@ -25487,12 +25487,14 @@ textarea {
   padding: 0;
 }
 
-/* The edit control must not stretch Backlog's title row when hidden. */
-#backlog .card-list:not(.list-view) .game-card:not(.playing-card) .title-line {
+/* Keep edit controls from stretching single-line card titles. */
+#backlog .card-list:not(.list-view) .game-card:not(.playing-card) .title-line,
+.shelf-grid:not(.list-view) .game-card .title-line {
   padding-right: 42px;
   grid-template-columns: minmax(0, 1fr);
 }
-#backlog .card-list:not(.list-view) .game-card:not(.playing-card) .title-line > .edit-action {
+#backlog .card-list:not(.list-view) .game-card:not(.playing-card) .title-line > .edit-action,
+.shelf-grid:not(.list-view) .game-card .title-line > .edit-action {
   position: absolute;
   top: 10px;
   right: 10px;
