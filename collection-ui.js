@@ -1922,6 +1922,7 @@ function filteredGamesForShelfTab(tab) {
     const haystack = state.filters.query ? shelfSearchText(game, `${game.title} ${game.platform} ${game.publisher} ${game.developer} ${game.genre} ${(game.genres || []).join(" ")} ${game.description} ${game.notes} ${game.preorderStore} ${(game.tags || []).join(" ")} ${(game.owners || []).join(" ")} ${shelfLendingSearchText(game)}`) : "";
     return !game.deletedAt
       && (!unifiedShelfScope || !state.unifiedMedia || state.unifiedMedia === "all" || (state.unifiedMedia === "digital") === isDigitalShelfGame(game))
+      && (!state.filters.lent || canLendShelfGame(game) && Boolean(String(game.lentTo || "").trim()))
       && (state.filters.platform === "all" || game.platform === state.filters.platform)
       && (["drive", "preorders", "wishlist"].includes(normalizedTab) || unifiedShelfScope && isDigitalShelfGame(game) || state.filters.region === "all" || game.country === state.filters.region)
       && (["drive", "preorders", "wishlist"].includes(normalizedTab) || unifiedShelfScope && isDigitalShelfGame(game) || conditionMatches(game, state.filters.condition))
@@ -1943,6 +1944,7 @@ function filteredShelfStatsGames(options = {}) {
     return !game.deletedAt
       && (!unifiedShelfScope || state.gamelistSettings.shelfDigitalGames === true || !isDigitalShelfGame(game))
       && (!unifiedShelfScope || !state.unifiedMedia || state.unifiedMedia === "all" || (state.unifiedMedia === "digital") === isDigitalShelfGame(game))
+      && (!state.filters.lent || canLendShelfGame(game) && Boolean(String(game.lentTo || "").trim()))
       && (state.filters.platform === "all" || game.platform === state.filters.platform)
       && (driveMode || unifiedShelfScope && isDigitalShelfGame(game) || state.filters.region === "all" || game.country === state.filters.region)
       && (driveMode || unifiedShelfScope && isDigitalShelfGame(game) || conditionMatches(game, state.filters.condition))
@@ -2646,7 +2648,7 @@ function syncShelfGamelistPreorderStreamLayout() {
   const collectingInfo = el.addForm.classList.contains("shelf-gamelist-import-mini");
   field.hidden = (isGamelistProjectionTarget() && el.gamelistSection.value !== "backlog") || (!collectingInfo && Boolean(state.editingId && !state.gamelistImportGameId));
   const onlyBacklogField = document.querySelector(".shelf-only-backlog-check");
-  onlyBacklogField.hidden = field.hidden || collectingInfo || Boolean(state.gamelistImportShelfId);
+  onlyBacklogField.hidden = field.hidden || !input.checked || collectingInfo || Boolean(state.gamelistImportShelfId);
   input.disabled = false;
   el.gamelistPlaying.closest("label").hidden = field.hidden;
   const row = document.querySelector("#shelfGamelistPreorderStreamRow");
@@ -6225,6 +6227,7 @@ function roundApproximateHours(value) {
   return Number.isFinite(hours) && hours > 0 ? Math.ceil(hours) : 0;
 }
 function applyUnifiedFilters(filters) {
+  state.filters.lent = Boolean(filters.lent);
   state.filters.query = filters.query || "";
   state.filters.platform = filters.platform && filters.platform !== "all" ? canonicalShelfPlatform(filters.platform) : "all";
   state.filters.category = filters.tag || "all";

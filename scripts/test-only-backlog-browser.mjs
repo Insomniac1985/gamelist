@@ -60,6 +60,12 @@ try {
  await page.waitForFunction(()=>document.body.classList.contains('can-edit') && !document.documentElement.classList.contains('theme-booting')); await page.locator('#addButton').first().click({force:true});
  const editor=page.frameLocator('.shared-add-game-host iframe'); const dialog=editor.locator('#addDialog');
  await dialog.waitFor({state:'visible'});
+ await editor.locator('#shelfOnlyBacklogInput').check();
+ await editor.locator('#shelfAddCollectionInput').uncheck();
+ assert.equal(await editor.locator('.shelf-only-backlog-check').isVisible(),false,'Only Backlog is hidden without Add to backlog');
+ assert.equal(await editor.locator('#shelfOnlyBacklogInput').isChecked(),false,'Clear Only Backlog when disabling Add to backlog');
+ await editor.locator('#shelfAddCollectionInput').check();
+ assert.equal(await editor.locator('.shelf-only-backlog-check').isVisible(),true,'Show Only Backlog when Add to backlog is checked');
   for (const width of [1024,390]) {
   await page.setViewportSize({width,height:1000});
   const add=await editor.locator('.shelf-add-collection-check').boundingBox();
@@ -74,6 +80,7 @@ try {
   assert.equal(await editor.locator('#shelfOnlyBacklogInput').isChecked(),false,'Clear when switching lists');
   assert.equal(await editor.locator('.shelf-only-backlog-check').isVisible(),false,'Only offered for Backlog');
   await editor.locator('[data-gamelist-section="collection"]').click();
+  await editor.locator('#shelfAddCollectionInput').check();
   await editor.locator('#shelfOnlyBacklogInput').check();
  }
  assert.equal(await editor.locator('#shelfAddCollectionInput').isChecked(),true);

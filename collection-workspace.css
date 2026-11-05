@@ -831,3 +831,53 @@ body[data-mobile-section="new"]
 @media (max-width: 689px) {
   .board { overflow: visible; }
 }
+
+/* Keep the shared status toggles together in both toolbar layouts. */
+.toolbar > .toolbar-status-filters {
+  display: flex;
+  align-items: flex-end;
+  align-self: end;
+  gap: 8px;
+  min-width: 0;
+}
+.toolbar .toolbar-status-filters > .toolbar-check {
+  width: auto;
+  flex: 0 0 auto;
+  box-sizing: border-box;
+  padding-inline: 8px;
+  white-space: nowrap;
+}
+@media (min-width: 690px) {
+  .toolbar:not(.collection-toolbar) {
+    grid-template-columns: minmax(0, 1fr) 240px minmax(0, .65fr) 90px;
+    grid-template-areas: "search status platform platform" "category order order view";
+  }
+  .toolbar.collection-toolbar {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) 100px repeat(3, minmax(0, 1fr)) 90px;
+    grid-template-areas: "search search status platform platform category category" "region region condition condition order order view";
+  }
+  .toolbar.glass > .search { grid-area: search !important; }
+  .toolbar.glass > .toolbar-status-filters { grid-area: status !important; }
+  .toolbar.glass > label:has(#platformFilter) { grid-area: platform !important; }
+  .toolbar.glass > label:has(#tagFilter) { grid-area: category !important; }
+  .toolbar.glass > label:has(#collectionRegionFilter) { grid-area: region !important; }
+  .toolbar.glass > label:has(#collectionConditionFilter) { grid-area: condition !important; }
+  .toolbar.glass > .order-label { grid-area: order !important; }
+  .toolbar.glass > .library-view-controls { grid-area: view !important; }
+}
+@media (min-width: 1301px) {
+  .toolbar:not(.collection-toolbar) {
+    grid-template-columns: minmax(180px, 2.05fr) 240px minmax(90px, .65fr) minmax(130px, .9fr) minmax(190px, .75fr) 90px;
+    grid-template-areas: "search status platform category order view";
+  }
+  .toolbar.collection-toolbar {
+    grid-template-columns: minmax(100px, .8fr) 100px minmax(140px, 1.45fr) repeat(3, minmax(110px, .85fr)) minmax(190px, .9fr) 90px;
+    grid-template-areas: "search status platform category region condition order view";
+  }
+}
+@media (max-width: 689px) {
+  .toolbar > .toolbar-status-filters { grid-column: 1 / -1; }
+}
+.toolbar .toolbar-status-filters > label:has(#preorderedFilter) { width: 132px !important; }
+.toolbar .toolbar-status-filters > label:has(#lentFilter) { width: 100px !important; }
+.toolbar .toolbar-status-filters svg { width: 16px; height: 16px; min-width: 16px; flex: 0 0 16px; }

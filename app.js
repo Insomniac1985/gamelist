@@ -265,7 +265,7 @@ const state = {
   cardPlaytime: {},
   platinumCoverCache: loadPlatinumCoverCache(),
   settings: initialSettings,
-  filters: { query: "", platform: "all", tag: "all", region: "all", condition: "all", sort: mainSortForDefault(initialSettings.defaultOrder), direction: ["added", "value", "rating"].includes(mainSortForDefault(initialSettings.defaultOrder)) ? "desc" : "asc", preordered: false },
+  filters: { query: "", platform: "all", tag: "all", region: "all", condition: "all", sort: mainSortForDefault(initialSettings.defaultOrder), direction: ["added", "value", "rating"].includes(mainSortForDefault(initialSettings.defaultOrder)) ? "desc" : "asc", preordered: false, lent: false },
   sortTouched: false,
   viewMode: loadSharedViewMode(),
   editingId: "",
@@ -351,6 +351,7 @@ const el = {
   sortDirectionButton: document.querySelector("#sortDirectionButton"),
   viewToggleButton: document.querySelector("#viewToggleButton"),
   preorderedFilter: document.querySelector("#preorderedFilter"),
+  lentFilter: document.querySelector("#lentFilter"),
   completedCount: document.querySelector("#completedCount"),
   completedYearControl: document.querySelector("#completedYearControl"),
   completedYearFilter: document.querySelector("#completedYearFilter"),
@@ -1242,6 +1243,11 @@ function bindEvents() {
     state.completedVisiblePages = 1;
     render();
   });
+  el.lentFilter.addEventListener("change", (event) => {
+    state.filters.lent = event.target.checked;
+    state.completedVisiblePages = 1;
+    render();
+  });
   el.completedYearFilter?.addEventListener("change", handleCompletedYearChange);
   el.completedStreamToggleButton?.addEventListener("click", cycleCompletedStreamMode);
   el.completedStatsButton?.addEventListener("click", () => openFinishedStatsDialog(state.completedYear || "all", { streamMode: state.completedStreamMode }));
@@ -2040,6 +2046,7 @@ function render() {
   renderViewToggle();
   applyPageOrder();
   el.preorderedFilter.checked = state.filters.preordered;
+  el.lentFilter.checked = state.filters.lent;
   el.platformFilter.classList.toggle("is-active", state.filters.platform !== "all");
   el.tagFilter.classList.toggle("is-active", state.filters.tag !== "all");
   updateScrollTopButton();
@@ -7176,6 +7183,7 @@ function syncMobileSectionToResults() {
     || state.filters.platform !== "all"
     || state.filters.tag !== "all"
     || state.filters.preordered
+    || state.filters.lent
     || state.filters.region !== "all"
     || state.filters.condition !== "all"
     || collectionMedia !== "all";
@@ -7505,7 +7513,7 @@ function manualDragEnabled() {
     && !state.filters.query
     && state.filters.platform === "all"
     && state.filters.tag === "all"
-    && !state.filters.preordered;
+    && !state.filters.preordered && !state.filters.lent;
 }
 
 function emptyGamesMarkup(query) {
@@ -9115,6 +9123,7 @@ function filteredGames(options = {}) {
   const { applyPreorder = true } = options;
   return state.games.filter((game) => {
     if (game.deletedAt) return false;
+    if (state.filters.lent && !lentCollectionRecordFor(game)) return false;
     if (collectionMedia !== "all" && (collectionMedia === "digital") !== Boolean(game.digital || game.dlc)) return false;
     if (game.section === "new" && !canSeeNewAdditions()) return false;
     const collected = collectionRecordFor(game);
@@ -13803,7 +13812,7 @@ function ensureCollectionWorkspace() {
     document.body.append(stats);
     slots.stats = stats;
     collectionUI = await mountCollectionWorkspace({ slots, openGame: openDetail, editGame: id => openEditor(id), openSettings: openSettingsDialog, mediaChanged: setCollectionMedia, viewChanged: mode => { state.viewMode = mode; saveSharedViewMode(mode); render(); }, clearFilters: () => {
-      Object.assign(state.filters, { query: "", platform: "all", tag: "all", region: "all", condition: "all", preordered: false });
+      Object.assign(state.filters, { query: "", platform: "all", tag: "all", region: "all", condition: "all", preordered: false, lent: false });
       el.searchInput.value = "";
       render();
     }, changed: async change => {
