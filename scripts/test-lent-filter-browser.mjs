@@ -64,12 +64,22 @@ try {
  for(const section of ['backlog','upcoming','wanted','shelf']) {
   await page.locator(`button[data-mobile-section="${section}"]`).click();
   assert.equal(await page.locator('#lentFilter').isVisible(),true,'Lent available in '+section);
-  for(const width of [690,768,1024,1300,1301,1440,1920]) {
+  for(const width of [690,768,1024,1300,1301,1440,1600,1920,2560]) {
    await page.setViewportSize({width,height:1000});
    const category=await page.locator('.toolbar').first().locator('label:has(#tagFilter)').boundingBox();
    if(section==='backlog') categoryWidths.set(width,category.width);
    const platform=await page.locator('.toolbar').first().locator('label:has(#platformFilter)').boundingBox();
    if(section==='backlog') platformWidths.set(width,platform.width);
+   if(width>=1600) {
+    assert.ok(platform.width>160,'Platform expands on full-width screens');
+    assert.ok(category.width>220,'Category expands on full-width screens');
+    const order=await page.locator('.toolbar').first().locator('.order-label').boundingBox();
+    assert.ok(Math.abs(order.width-(section==='shelf'?150:190))<1,'Order stays compact on full-width screens');
+    if(section==='shelf') {
+     const condition=await page.locator('.toolbar').first().locator('label:has(#collectionConditionFilter)').boundingBox();
+     assert.ok(Math.abs(condition.width-110)<1,'Condition stays compact on full-width screens');
+    }
+   }
    if(section==='shelf') {
     if(width>=1301) {
      assert.ok(Math.abs(platform.width-platformWidths.get(width))<1,'Shelf Platform matches Backlog in one row');
@@ -118,5 +128,5 @@ try {
  assert.equal(await page.locator('#backlog .game-card').count(),1);
  assert.match(await page.locator('#backlog .game-card h3').textContent(),/Lent Backlog/);
  assert.deepEqual(errors,[]);
- console.log('Lent filtering and one/two-row toolbar fit passed in all four views at 690–1920px.');
+ console.log('Lent filtering and one/two-row toolbar fit passed in all four views at 690–2560px.');
 } finally {await browser.close();await new Promise(resolve=>server.close(resolve));}

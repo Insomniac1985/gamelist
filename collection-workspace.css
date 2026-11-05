@@ -884,6 +884,18 @@ body[data-mobile-section="new"]
     grid-template-areas: "search status platform category region condition order view";
   }
 }
+@media (min-width: 1600px) {
+  .toolbar {
+    --toolbar-platform-width: clamp(160px, 14vw, 360px);
+    --toolbar-category-width: clamp(220px, 20vw, 500px);
+  }
+  .toolbar:not(.collection-toolbar) {
+    grid-template-columns: minmax(180px, 1fr) 240px var(--toolbar-platform-width) var(--toolbar-category-width) 190px 90px;
+  }
+  .toolbar.collection-toolbar {
+    grid-template-columns: minmax(100px, 1fr) 100px var(--toolbar-platform-width) var(--toolbar-category-width) 90px 110px 150px 90px;
+  }
+}
 @media (max-width: 689px) {
   .toolbar > .toolbar-status-filters { grid-column: 1 / -1; }
 }
