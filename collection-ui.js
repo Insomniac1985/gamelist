@@ -2509,7 +2509,7 @@ function syncShelfGamelistTargetMode() {
     }
     el.addForm.querySelector(".form-group h3").textContent = tt("Collecting Information");
     const saveLabel = collectionEditorLabels()?.button || "Add game";
-    el.addForm.querySelectorAll("button[type='submit']").forEach((button) => { button.textContent = tt(saveLabel); });
+    el.addForm.querySelectorAll("button[type='submit']").forEach((button) => { setShelfSubmitLabel(button, saveLabel); });
     el.lookupLabelPhysical.textContent = tt("Search DB or IGDB URL");
     el.lookupInput.placeholder = tt("Type a game name or paste an IGDB page");
     syncShelfGamelistSectionForTarget();
@@ -2524,7 +2524,7 @@ function syncShelfGamelistTargetMode() {
       setShelfEditorTitle(title, titleText, labels?.titleLines?.map(line => tt(line)) || [], Boolean(labels?.titleLines));
     }
     el.addForm.querySelector(".form-group h3").textContent = tt("Collecting Information");
-    el.addForm.querySelectorAll("button[type='submit']").forEach((button) => { button.textContent = tt(collectionEditorLabels()?.button || (game ? "Save" : "Add to Collection")); });
+    el.addForm.querySelectorAll("button[type='submit']").forEach((button) => { setShelfSubmitLabel(button, collectionEditorLabels()?.button || (game ? "Save" : "Add to Collection")); });
     el.lookupInput.placeholder = tt(el.addForm.dataset.digital === "true" ? "Type a game name or paste an IGDB page" : "Game name or PriceCharting page");
     el.gamelistSection.disabled = false;
   }
@@ -2569,6 +2569,14 @@ function shelfGamelistAddTitle() {
   if (el.gamelistPreorderCheck.checked) return tt("Add a new preorder");
   if (el.gamelistSection.value === "upcoming") return tt("Add upcoming game");
   return tt(el.gamelistSection.value === "backlog" ? "Add game to Backlog" : "Add available game");
+}
+
+function setShelfSubmitLabel(button, label) {
+  if (label === "Add to Collection and Backlog") {
+    button.innerHTML = `<span class="shelf-submit-desktop-label">${escapeHtml(tt(label))}</span><span class="shelf-submit-mobile-label">${escapeHtml(tt("Add game"))}</span>`;
+  } else {
+    button.textContent = tt(label);
+  }
 }
 
 function collectionEditorLabels() {

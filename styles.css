@@ -6490,8 +6490,8 @@ body.theme-kash .game-card.stream-card.completed-trophy-card {
   border-radius: 5px;
 }
 
-.playing-finished-game.owner-card-judy strong,
-.completed-row.owner-card-judy strong {
+.playing-finished-game.owner-card-judy > div > strong,
+.completed-row.owner-card-judy .completed-identity > strong {
   color: var(--judy);
 }
 
@@ -6501,10 +6501,10 @@ body.theme-kash .game-card.stream-card.completed-trophy-card {
   box-shadow: 0 0 20px rgba(255, 158, 210, 0.12);
 }
 
-.playing-finished-game.owner-card-jordi strong,
-.playing-finished-game.owner-card-cage strong,
-.completed-row.owner-card-jordi strong,
-.completed-row.owner-card-cage strong {
+.playing-finished-game.owner-card-jordi > div > strong,
+.playing-finished-game.owner-card-cage > div > strong,
+.completed-row.owner-card-jordi .completed-identity > strong,
+.completed-row.owner-card-cage .completed-identity > strong {
   color: var(--jordi);
 }
 
