@@ -499,8 +499,8 @@ function applyOwnerStyle(ownerColors) {
       .owner-color-card-${slug}:hover {
         border-color: color-mix(in srgb, var(--accent) 50%, transparent) !important;
       }
-      .playing-finished-game.owner-color-card-${slug} strong,
-      .completed-row.owner-color-card-${slug} strong { color: ${color} !important; }
+      .playing-finished-game.owner-color-card-${slug} > div > strong,
+      .completed-row.owner-color-card-${slug} .completed-identity > strong { color: ${color} !important; }
     `;
   }).join("\n");
 }

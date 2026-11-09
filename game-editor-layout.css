@@ -304,3 +304,17 @@ html.game-editor-embed #addDialog::backdrop { background: transparent; backdrop-
     border-radius: 0;
   }
 }
+
+.shelf-submit-mobile-label {
+  display: none;
+}
+
+@media (max-width: 689px) {
+  .shelf-submit-desktop-label {
+    display: none;
+  }
+
+  .shelf-submit-mobile-label {
+    display: inline;
+  }
+}
