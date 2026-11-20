@@ -3973,7 +3973,7 @@ function gameOfTheYearStatsPreviewMarkup(year, games = [], playtimeGames = gameO
       <section class="goty-stats-preview-playtime">
         ${topGamesCarouselHeaderMarkup(normalizedMode, "goty")}
         <div class="goty-stats-preview-strip">
-          <div class="goty-stats-preview-list">${topGames.map((game) => gameOfTheYearStatsPreviewCard(game, normalizedMode)).join("")}</div>
+          <div class="goty-stats-preview-list">${topGames.map((game) => gameOfTheYearStatsPreviewCard(game, normalizedMode, year)).join("")}</div>
         </div>
       </section>
     ` : ""}
@@ -3989,15 +3989,19 @@ function gameOfTheYearStatsPreviewMarkup(year, games = [], playtimeGames = gameO
   `;
 }
 
-function gameOfTheYearStatsPreviewCard(game, mode = "time") {
+function gameOfTheYearStatsPreviewCard(game, mode = "time", year = "") {
   const cover = coverDisplayUrl(game.cover || "") || platformLogo(game.platform || "PS5");
+  const gameYear = releaseYear(game);
+  const yearBadge = year && gameYear && gameYear !== String(year)
+    ? `<span class="goty-choice-year">${escapeHtml(gameYear)}</span>`
+    : "";
   const hours = statsPlaytimeHours(game);
   const normalizedMode = normalizeTopGamesCarouselMode(mode);
   const lowerPill = normalizedMode === "grade" ? ratingScoreBadge(game) : `<span class="goty-stats-preview-time" style="${escapeHtml(timePillStyle(hours))}">${clockIcon()}<span>${escapeHtml(formatPlaytimeTotal(hours))}</span></span>`;
   const playModeBadge = game.coop ? coopBadge() : (game.multiplayer ? multiplayerBadge() : "");
   return `
     <article class="goty-stats-preview-card">
-      <span class="goty-choice-cover"><img src="${escapeHtml(cover)}" alt="" loading="lazy" decoding="async"></span>
+      <span class="goty-choice-cover"><img src="${escapeHtml(cover)}" alt="" loading="lazy" decoding="async">${yearBadge}</span>
       <span class="goty-choice-title">
         <strong data-full-title="${escapeHtml(game.title)}">${escapeHtml(game.title)}</strong>
         <span class="goty-stats-preview-badges">${platformBadge(game.platform)}</span>
@@ -4632,19 +4636,22 @@ function gameOfTheYearExportPlatformListMarkup(games = []) {
   const platforms = countBy(games, statsPlatformLabel);
   if (!platforms.length) return "";
   const hoursByPlatform = new Map();
+  const completedByPlatform = new Map();
   games.forEach((game) => {
     const platform = statsPlatformLabel(game);
     hoursByPlatform.set(platform, (hoursByPlatform.get(platform) || 0) + totalPlaytimeHours([game]));
+    if (game.platinum) completedByPlatform.set(platform, (completedByPlatform.get(platform) || 0) + 1);
   });
   return `
     <div class="goty-export-item goty-export-platform-item">
-      <article class="goty-export-platform-card">
-        <div class="goty-export-platform-head"><span>${escapeHtml(tt("Platform"))}</span><span>${escapeHtml(tt("Games played"))}</span><span>${escapeHtml(tt("Playtime"))}</span></div>
+      <article class="goty-export-platform-card ${completedByPlatform.size ? "has-completed" : ""}">
+        <div class="goty-export-platform-head"><span>${escapeHtml(tt("Platform"))}</span><span>${escapeHtml(tt("Games played"))}</span>${completedByPlatform.size ? `<span>${escapeHtml(tt("Completed"))}</span>` : ""}<span>${escapeHtml(tt("Playtime"))}</span></div>
         <div class="goty-export-platform-list" style="--platform-count:${platforms.length}">
           ${platforms.map((item) => `
             <div class="goty-export-platform-row">
               ${platformBadge(item.label)}
               <strong>${item.count}</strong>
+              ${completedByPlatform.size ? `<strong class="goty-export-platform-completed">${completedByPlatform.has(item.label) ? `${trophyIcon()}${completedByPlatform.get(item.label)}` : ""}</strong>` : ""}
               <span>${escapeHtml(formatPlaytimeTotal(hoursByPlatform.get(item.label)) || "0 HRS")}</span>
             </div>
           `).join("")}
@@ -5062,10 +5069,10 @@ function gameOfTheYearExportCss({ theme, main, accent, gradient, bg, glowPrimary
       position: relative;
       box-sizing: border-box;
       display: grid;
-      grid-template-columns: 198px minmax(0, 1fr);
-      gap: 16px;
+      grid-template-columns: 210px minmax(0, 1fr);
+      gap: 12px;
       width: 435px;
-      padding: 20px;
+      padding: 12px 20px 12px 12px;
       overflow: hidden;
       background:
         linear-gradient(135deg, ${theme.mode === "light" ? "rgba(255,255,255,.36)" : "rgba(255,255,255,.035)"}, transparent 58%),
@@ -5113,6 +5120,13 @@ function gameOfTheYearExportCss({ theme, main, accent, gradient, bg, glowPrimary
       font: 900 11px/1.2 ${bodyFont};
       text-transform: uppercase;
     }
+    .goty-export-platform-card.has-completed .goty-export-platform-head,
+    .goty-export-platform-card.has-completed .goty-export-platform-row {
+      grid-template-columns: minmax(0, 1fr) 100px 64px 92px;
+    }
+    .goty-export-platform-card.has-completed .goty-export-platform-head {
+      font-size: 10px;
+    }
     .goty-export-platform-head > :not(:first-child),
     .goty-export-platform-row > :not(:first-child) {
       text-align: right;
@@ -5137,6 +5151,21 @@ function gameOfTheYearExportCss({ theme, main, accent, gradient, bg, glowPrimary
       color: ${accent};
       white-space: nowrap;
     }
+    .goty-export-platform-completed {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 5px;
+      color: #ffe985;
+    }
+    .goty-export-platform-completed .trophy-icon {
+      width: 15px;
+      height: 15px;
+      flex: 0 0 15px;
+      fill: none;
+      stroke: currentColor;
+      stroke-width: 2;
+    }
     .goty-export-card-bg {
       position: absolute;
       inset: -32px;
@@ -5159,13 +5188,13 @@ function gameOfTheYearExportCss({ theme, main, accent, gradient, bg, glowPrimary
       position: relative;
       z-index: 1;
       align-self: start;
-      width: 198px;
-      height: 262px;
+      width: 210px;
+      height: 278px;
       filter: drop-shadow(0 12px 16px ${theme.mode === "light" ? "rgba(18,24,36,.16)" : "rgba(0,0,0,.34)"});
     }
     .goty-export-cover {
-      width: 198px;
-      height: 262px;
+      width: 210px;
+      height: 278px;
       object-fit: cover;
       border-radius: 12px;
     }
@@ -5182,6 +5211,7 @@ function gameOfTheYearExportCss({ theme, main, accent, gradient, bg, glowPrimary
       flex-direction: column;
       align-items: flex-start;
       min-width: 0;
+      padding-top: 8px;
       padding-bottom: 30px;
       text-align: left;
     }
@@ -5378,8 +5408,9 @@ function gameOfTheYearExportCss({ theme, main, accent, gradient, bg, glowPrimary
       border: 1px solid ${line};
       border-radius: 7px;
     }
-    .goty-export-poster .platform-nintendo { background: rgba(255,59,69,.18); border-color: rgba(255,59,69,.38); }
+    .goty-export-poster .platform-nintendo { background: rgba(255,0,1,.18); border-color: rgba(255,0,1,.38); }
     .goty-export-poster .platform-playstation { background: rgb(111 120 255 / 22%); border-color: rgb(75 73 225 / 86%); }
+    .goty-export-poster .platform-playstation.platform-ps4 { background: rgba(0,67,255,.18); border-color: rgba(0,67,255,.52); }
     .goty-export-poster .platform-playstation.platform-ps5 { background: #ffffff; border-color: rgba(180,186,198,.72); }
     .goty-export-poster .platform-playstation.platform-ps5 .platform-label { color: #05070b; }
     .goty-export-poster .platform-playstation.platform-ps3,
@@ -5401,8 +5432,9 @@ function gameOfTheYearExportCss({ theme, main, accent, gradient, bg, glowPrimary
     .goty-export-poster .platform-sega,
     .goty-export-poster .platform-gamegear { background: rgba(42,112,224,.22); border-color: rgba(90,167,255,.42); }
     .goty-export-poster .platform-dreamcast { background: rgba(255,132,45,.2); border-color: rgba(255,173,95,.4); }
-    .goty-export-poster .platform-nintendo .platform-label { color: #ff3b45; }
+    .goty-export-poster .platform-nintendo .platform-label { color: #ff0001; }
     .goty-export-poster .platform-playstation .platform-label { color: #7d8cff; }
+    .goty-export-poster .platform-playstation.platform-ps4 .platform-label { color: #0043ff; }
     .goty-export-poster .platform-playstation.platform-ps3 .platform-label,
     .goty-export-poster .platform-playstation.platform-psp .platform-label,
     .goty-export-poster .platform-pc .platform-label,
@@ -11198,6 +11230,7 @@ function platformClass(platform, options = {}) {
   if (value === "ps1") return "platform-playstation platform-ps1";
   if (value === "ps3" && PS3_BLUE_PILL_TITLES.has(title)) return "platform-playstation platform-ps3-as-ps4";
   if (value === "ps3") return "platform-playstation platform-ps3";
+  if (value === "ps4") return "platform-playstation platform-ps4";
   if (value === "ps5") return "platform-playstation platform-ps5";
   if (value === "psp") return "platform-playstation platform-psp";
   if (/\bps\d*\b/.test(value) || value.includes("playstation") || value.includes("psp") || value.includes("vita")) return "platform-playstation";
