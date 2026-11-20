@@ -4657,7 +4657,6 @@ function gameOfTheYearExportPlatformListMarkup(games = []) {
         <div class="goty-export-platform-head"><span>${escapeHtml(tt("Platform"))}</span>${completedByPlatform.size ? `<span aria-hidden="true"></span>` : ""}<span>${escapeHtml(tt("Played"))}</span><span>${escapeHtml(tt("Playtime"))}</span></div>
         <div class="goty-export-platform-list" style="--platform-count:${platforms.length}">
           ${groups.map((group) => `<div class="goty-export-platform-group ${group.length > 1 ? "is-paired" : ""}" style="--group-count:${group.length};grid-row:span ${group.length}">
-          ${group.length > 1 ? `<div class="goty-export-platform-group-title"><strong>${group.some((item) => item.label === "Switch") ? "Nintendo Switch" : "PlayStation"}</strong><span class="goty-export-platform-share">${Math.round(group.reduce((sum, item) => sum + item.count, 0) / games.length * 1000) / 10}%</span></div>` : ""}
           ${group.map((item) => `
             <div class="goty-export-platform-row">
               <div class="goty-export-platform-name">${platformBadge(item.label)}<span class="goty-export-platform-share">${Math.round(item.count / games.length * 1000) / 10}%</span></div>
@@ -5134,10 +5133,15 @@ function gameOfTheYearExportCss({ theme, main, accent, gradient, bg, glowPrimary
     }
     .goty-export-platform-card.has-completed .goty-export-platform-head,
     .goty-export-platform-card.has-completed .goty-export-platform-row {
-      grid-template-columns: minmax(0, 1fr) 44px 36px 84px;
+      grid-template-columns: minmax(0, 1fr) 44px 24px 84px;
     }
     .goty-export-platform-card.has-completed .goty-export-platform-head {
       font-size: 10px;
+    }
+    .goty-export-platform-head > :nth-last-child(2) {
+      justify-self: end;
+      width: max-content;
+      white-space: nowrap;
     }
     .goty-export-platform-head > :not(:first-child),
     .goty-export-platform-row > :not(:first-child) {
@@ -5171,16 +5175,6 @@ function gameOfTheYearExportCss({ theme, main, accent, gradient, bg, glowPrimary
       left: -2px;
       width: 2px;
       background: ${line};
-    }
-    .goty-export-platform-group.is-paired {
-      grid-template-rows: 20px repeat(var(--group-count), minmax(0, 1fr));
-    }
-    .goty-export-platform-group-title {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      color: ${text};
-      font: 800 11px/1 ${bodyFont};
     }
     .goty-export-platform-group.is-paired .goty-export-platform-name {
       padding-left: 6px;
