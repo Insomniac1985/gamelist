@@ -4635,6 +4635,15 @@ function gameOfTheYearExportTopStatsMarkup(year, games = []) {
 function gameOfTheYearExportPlatformListMarkup(games = []) {
   const platforms = countBy(games, statsPlatformLabel);
   if (!platforms.length) return "";
+  const groupedPlatforms = new Map();
+  platforms.forEach((item) => {
+    const family = ["Switch", "Switch 2"].includes(item.label) ? "switch"
+      : ["PS4", "PS5"].includes(item.label) ? "playstation" : item.label;
+    if (!groupedPlatforms.has(family)) groupedPlatforms.set(family, []);
+    groupedPlatforms.get(family).push(item);
+  });
+  const groups = [...groupedPlatforms.values()].sort((a, b) =>
+    b.reduce((sum, item) => sum + item.count, 0) - a.reduce((sum, item) => sum + item.count, 0));
   const hoursByPlatform = new Map();
   const completedByPlatform = new Map();
   games.forEach((game) => {
@@ -4645,16 +4654,18 @@ function gameOfTheYearExportPlatformListMarkup(games = []) {
   return `
     <div class="goty-export-item goty-export-platform-item">
       <article class="goty-export-platform-card ${completedByPlatform.size ? "has-completed" : ""}">
-        <div class="goty-export-platform-head"><span>${escapeHtml(tt("Platform"))}</span><span>${escapeHtml(tt("Games played"))}</span>${completedByPlatform.size ? `<span>${escapeHtml(tt("Completed"))}</span>` : ""}<span>${escapeHtml(tt("Playtime"))}</span></div>
+        <div class="goty-export-platform-head"><span>${escapeHtml(tt("Platform"))}</span>${completedByPlatform.size ? `<span aria-hidden="true"></span>` : ""}<span>${escapeHtml(tt("Played"))}</span><span>${escapeHtml(tt("Playtime"))}</span></div>
         <div class="goty-export-platform-list" style="--platform-count:${platforms.length}">
-          ${platforms.map((item) => `
+          ${groups.map((group) => `<div class="goty-export-platform-group ${group.length > 1 ? "is-paired" : ""}" style="--group-count:${group.length};grid-row:span ${group.length}">
+          ${group.length > 1 ? `<div class="goty-export-platform-group-title"><strong>${group.some((item) => item.label === "Switch") ? "Nintendo Switch" : "PlayStation"}</strong><span class="goty-export-platform-share">${Math.round(group.reduce((sum, item) => sum + item.count, 0) / games.length * 1000) / 10}%</span></div>` : ""}
+          ${group.map((item) => `
             <div class="goty-export-platform-row">
-              ${platformBadge(item.label)}
-              <strong>${item.count}</strong>
+              <div class="goty-export-platform-name">${platformBadge(item.label)}<span class="goty-export-platform-share">${Math.round(item.count / games.length * 1000) / 10}%</span></div>
               ${completedByPlatform.size ? `<strong class="goty-export-platform-completed">${completedByPlatform.has(item.label) ? `${trophyIcon()}${completedByPlatform.get(item.label)}` : ""}</strong>` : ""}
+              <strong>${item.count}</strong>
               <span>${escapeHtml(formatPlaytimeTotal(hoursByPlatform.get(item.label)) || "0 HRS")}</span>
             </div>
-          `).join("")}
+          `).join("")}</div>`).join("")}
         </div>
       </article>
     </div>
@@ -5111,18 +5122,19 @@ function gameOfTheYearExportCss({ theme, main, accent, gradient, bg, glowPrimary
     .goty-export-platform-head,
     .goty-export-platform-row {
       display: grid;
-      grid-template-columns: minmax(0, 1fr) 100px 92px;
+      grid-template-columns: minmax(0, 1fr) 52px 84px;
       align-items: center;
-      gap: 10px;
+      gap: 8px;
     }
     .goty-export-platform-head {
+      padding-left: 10px;
       color: ${muted};
       font: 900 11px/1.2 ${bodyFont};
       text-transform: uppercase;
     }
     .goty-export-platform-card.has-completed .goty-export-platform-head,
     .goty-export-platform-card.has-completed .goty-export-platform-row {
-      grid-template-columns: minmax(0, 1fr) 100px 64px 92px;
+      grid-template-columns: minmax(0, 1fr) 44px 36px 84px;
     }
     .goty-export-platform-card.has-completed .goty-export-platform-head {
       font-size: 10px;
@@ -5143,9 +5155,46 @@ function gameOfTheYearExportCss({ theme, main, accent, gradient, bg, glowPrimary
       color: ${text};
       font: 800 16px/1 ${bodyFont};
     }
-    .goty-export-platform-row > .platform-badge {
-      justify-self: start;
-      max-width: 100%;
+    .goty-export-platform-group {
+      position: relative;
+      display: grid;
+      grid-template-rows: repeat(var(--group-count), minmax(0, 1fr));
+      min-height: 0;
+      padding-left: 8px;
+      border-left: 2px solid transparent;
+    }
+    .goty-export-platform-group.is-paired::before {
+      content: "";
+      position: absolute;
+      top: 4px;
+      bottom: 4px;
+      left: -2px;
+      width: 2px;
+      background: ${line};
+    }
+    .goty-export-platform-group.is-paired {
+      grid-template-rows: 20px repeat(var(--group-count), minmax(0, 1fr));
+    }
+    .goty-export-platform-group-title {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: ${text};
+      font: 800 11px/1 ${bodyFont};
+    }
+    .goty-export-platform-group.is-paired .goty-export-platform-name {
+      padding-left: 6px;
+    }
+    .goty-export-platform-name {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      min-width: 0;
+    }
+    .goty-export-platform-share {
+      color: ${muted};
+      font: 800 11px/1 ${bodyFont};
+      white-space: nowrap;
     }
     .goty-export-platform-row > span {
       color: ${accent};
