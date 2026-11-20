@@ -4154,9 +4154,9 @@ function renderGameOfTheYearPicker(games, picks) {
         </div>
       </div>
       <div class="goty-choice-strip">
-        ${selectedGame ? `<div class="goty-choice-selected">${gameOfTheYearChoiceCard(selectedGame, true)}</div>` : ""}
+        ${selectedGame ? `<div class="goty-choice-selected">${gameOfTheYearChoiceCard(selectedGame, true, false, year)}</div>` : ""}
         <div class="goty-choice-list">
-          ${choices.map((game) => gameOfTheYearChoiceCard(game, false, pickedElsewhere.has(game.id))).join("")}
+          ${choices.map((game) => gameOfTheYearChoiceCard(game, false, pickedElsewhere.has(game.id), year)).join("")}
         </div>
       </div>
     </section>
@@ -4323,11 +4323,15 @@ function showGameOfTheYearCallout(year) {
   requestAnimationFrame(() => callout.classList.add("visible"));
 }
 
-function gameOfTheYearChoiceCard(game, selected, unavailable = false) {
+function gameOfTheYearChoiceCard(game, selected, unavailable = false, year = currentGameOfTheYear()) {
   const cover = coverDisplayUrl(game.cover || "") || platformLogo(game.platform || "PS5");
+  const gameYear = releaseYear(game);
+  const yearBadge = gameYear && gameYear !== String(year)
+    ? `<span class="goty-choice-year">${escapeHtml(gameYear)}</span>`
+    : "";
   return `
     <button class="goty-choice-card ${selected ? "is-selected" : ""} ${unavailable ? "is-unavailable" : ""}" type="button" data-game-id="${escapeHtml(game.id)}" data-title="${escapeHtml(game.title)}" ${unavailable ? "disabled aria-disabled=\"true\"" : ""}>
-      <span class="goty-choice-cover"><img src="${escapeHtml(cover)}" alt="" loading="lazy" decoding="async"></span>
+      <span class="goty-choice-cover"><img src="${escapeHtml(cover)}" alt="" loading="lazy" decoding="async">${yearBadge}</span>
       <span class="goty-choice-title"><strong data-full-title="${escapeHtml(game.title)}">${escapeHtml(game.title)}</strong>${platformBadge(game.platform)}</span>
     </button>
   `;
