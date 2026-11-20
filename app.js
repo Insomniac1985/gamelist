@@ -4657,9 +4657,9 @@ function gameOfTheYearExportPlatformListMarkup(games = []) {
         <div class="goty-export-platform-head"><span>${escapeHtml(tt("Platform"))}</span>${completedByPlatform.size ? `<span aria-hidden="true"></span>` : ""}<span>${escapeHtml(tt("Played"))}</span><span>${escapeHtml(tt("Playtime"))}</span></div>
         <div class="goty-export-platform-list" style="--platform-count:${platforms.length}">
           ${groups.map((group) => `<div class="goty-export-platform-group ${group.length > 1 ? "is-paired" : ""}" style="--group-count:${group.length};grid-row:span ${group.length}">
-          ${group.map((item) => `
+          ${group.map((item, index) => `
             <div class="goty-export-platform-row">
-              <div class="goty-export-platform-name">${platformBadge(item.label)}<span class="goty-export-platform-share">${Math.round(item.count / games.length * 1000) / 10}%</span></div>
+              <div class="goty-export-platform-name">${platformBadge(item.label)}${index === 0 ? `<span class="goty-export-platform-share">${Math.round(group.reduce((sum, platform) => sum + platform.count, 0) / games.length * 1000) / 10}%</span>` : ""}</div>
               ${completedByPlatform.size ? `<strong class="goty-export-platform-completed">${completedByPlatform.has(item.label) ? `${trophyIcon()}${completedByPlatform.get(item.label)}` : ""}</strong>` : ""}
               <strong>${item.count}</strong>
               <span>${escapeHtml(formatPlaytimeTotal(hoursByPlatform.get(item.label)) || "0 HRS")}</span>
