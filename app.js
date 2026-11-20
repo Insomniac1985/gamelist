@@ -45,8 +45,8 @@ const GAME_OF_YEAR_CATEGORIES = [
   ["fun", "MOST FUN"],
   ["singleplayer", "FAVORITE SINGLEPLAYER"],
   ["multiplayer", "FAVORITE MULTIPLAYER"],
-  ["soundtrack", "FAVORITE SOUNDTRACK"],
   ["indie", "FAVORITE INDIE"],
+  ["soundtrack", "FAVORITE SOUNDTRACK"],
   ["surprise", "BIGGEST SURPRISE"],
   ["disappointment", "BIGGEST DISAPPOINTMENT"],
 ];
@@ -3811,7 +3811,7 @@ function renderGameOfTheYear() {
     const playtime = formatPlaytimeTotal(totalPlaytimeHours(statsGames)).toLowerCase();
     el.gotyYearCount.textContent = [
       tt("{count} games played", { count }),
-      playtime ? tt("{playtime} total year playtime", { playtime }) : "",
+      playtime ? tt("{playtime} year playtime", { playtime }) : "",
     ].filter(Boolean).join(" · ");
   }
   const canEditCurrent = state.canEdit && year === currentGameOfTheYear();
@@ -3964,7 +3964,7 @@ function gameOfTheYearStatsPreviewMarkup(year, games = [], playtimeGames = gameO
   const topGames = showTopGamesCarousel ? finishedStatsTopGames(games, normalizedMode) : [];
   const kpis = [
     statsKpiCard(tt("Games played"), games.length, statsGameList(games), { tone: "finished" }),
-    totalPlaytime ? statsKpiCard(tt("Total year playtime"), formatPlaytimeTotal(totalPlaytime), statsPlaytimeGameList(playtimeGames), { tone: "playtime", valueHtml: playtimeKpiValue(totalPlaytime) }) : "",
+    totalPlaytime ? statsKpiCard(tt("Year playtime"), formatPlaytimeTotal(totalPlaytime), statsPlaytimeGameList(playtimeGames), { tone: "playtime", valueHtml: playtimeKpiValue(totalPlaytime) }) : "",
     completed.length ? statsKpiCard(tt("Completed games"), completed.length, statsCompletedGameList(completed), { tone: "completed", icon: trophyIcon() }) : "",
     coopGames.length ? statsKpiCard(tt("CoOp games"), coopGames.length, statsGameList(coopGames), { tone: "coop", icon: coopIcon() }) : "",
   ].filter(Boolean);
@@ -4621,7 +4621,7 @@ function gameOfTheYearExportTopStatsMarkup(year, games = []) {
   const playtime = playtimeKpiValue(playtimeHours) || `${clockIcon()}<span class="playtime-kpi-value">0</span><span class="playtime-kpi-unit">HRS</span>`;
   return `
     <section class="goty-export-top-kpis has-playtime ${completed.length ? "has-completed" : ""} ${coopGames.length ? "has-coop" : ""}">
-      <article class="goty-export-small-kpi goty-export-playtime-kpi"><strong>${playtime}</strong><span>${escapeHtml(tt("Total year playtime"))}</span></article>
+      <article class="goty-export-small-kpi goty-export-playtime-kpi"><strong>${playtime}</strong><span>${escapeHtml(tt("Year playtime"))}</span></article>
       <article class="goty-export-small-kpi goty-export-total-kpi"><strong>${games.length}</strong><span>${escapeHtml(tt("Games played"))}</span></article>
       ${completed.length ? `<article class="goty-export-small-kpi goty-export-completed-kpi"><strong>${trophyIcon()}${completed.length}</strong><span>${escapeHtml(tt("Completed games"))}</span></article>` : ""}
       <span class="goty-export-kpi-separator" aria-hidden="true"></span>
@@ -4657,9 +4657,9 @@ function gameOfTheYearExportPlatformListMarkup(games = []) {
         <div class="goty-export-platform-head"><span>${escapeHtml(tt("Platform"))}</span>${completedByPlatform.size ? `<span aria-hidden="true"></span>` : ""}<span>${escapeHtml(tt("Played"))}</span><span>${escapeHtml(tt("Playtime"))}</span></div>
         <div class="goty-export-platform-list" style="--platform-count:${platforms.length}">
           ${groups.map((group) => `<div class="goty-export-platform-group ${group.length > 1 ? "is-paired" : ""}" style="--group-count:${group.length};grid-row:span ${group.length}">
-          ${group.map((item) => `
+          ${group.map((item, index) => `
             <div class="goty-export-platform-row">
-              <div class="goty-export-platform-name">${platformBadge(item.label)}<span class="goty-export-platform-share">${Math.round(item.count / games.length * 1000) / 10}%</span></div>
+              <div class="goty-export-platform-name">${platformBadge(item.label)}${index === 0 ? `<span class="goty-export-platform-share">${Math.round(group.reduce((sum, platform) => sum + platform.count, 0) / games.length * 1000) / 10}%</span>` : ""}</div>
               ${completedByPlatform.size ? `<strong class="goty-export-platform-completed">${completedByPlatform.has(item.label) ? `${trophyIcon()}${completedByPlatform.get(item.label)}` : ""}</strong>` : ""}
               <strong>${item.count}</strong>
               <span>${escapeHtml(formatPlaytimeTotal(hoursByPlatform.get(item.label)) || "0 HRS")}</span>
@@ -8058,7 +8058,7 @@ function finishedStatsMarkup(year, games, completed) {
   const kpiCards = [
     statsKpiCard(tt("Finished games"), finishedGames.length, showYearlyDetail ? statsGameList(finishedGames) : "", { tone: "finished" }),
     expansions.length ? statsKpiCard(tt("Expansions finished"), expansions.length, statsGameList(expansions), { tone: "finished" }) : "",
-    showPlaytimeKpi ? statsKpiCard(tt("Total year playtime"), playtimeTotal, statsPlaytimeGameList(playtimeGames), { tone: "playtime", valueHtml: playtimeKpiValue(playtimeHours) }) : "",
+    showPlaytimeKpi ? statsKpiCard(tt("Year playtime"), playtimeTotal, statsPlaytimeGameList(playtimeGames), { tone: "playtime", valueHtml: playtimeKpiValue(playtimeHours) }) : "",
     statsKpiCard(tt("Completed games"), completed.length, showYearlyDetail ? statsCompletedGameList(completed) : "", { action: "completed", tone: "completed", icon: trophyIcon() }),
     streamed.length ? statsKpiCard(tt("Streamed games"), streamed.length, showYearlyDetail ? statsGameList(streamed) : "", { tone: "streamed" }) : "",
     coopGames.length ? statsKpiCard(tt("CoOp games"), coopGames.length, statsGameList(coopGames), { tone: "coop", icon: coopIcon() }) : "",
