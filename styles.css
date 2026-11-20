@@ -1103,7 +1103,9 @@ html.theme-gradient .goty-section .column-head h2 .trophy-icon {
 .goty-year-select .platform-logo-button .platform-logo-choice,
 .goty-year-select .platform-logo-option .platform-logo-choice {
   height: 100%;
-  min-height: 100%;
+  min-height: 0;
+  margin: 0;
+  align-self: center;
   align-items: center;
   transform: none;
 }
@@ -9282,6 +9284,14 @@ body:not(.can-edit) .game-card:focus-within .edit-action {
 }
 
 @media (min-width: 690px) {
+  #gotyStatsPreviewBody {
+    align-content: start;
+  }
+
+  #gotyStatsPreviewBody > .finished-stats-kpis > .finished-stats-kpi {
+    align-content: center;
+  }
+
   .finished-stats-kpis.is-grid-3 {
     grid-template-columns: repeat(3, minmax(0, 1fr));
   }
