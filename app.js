@@ -3973,7 +3973,7 @@ function gameOfTheYearStatsPreviewMarkup(year, games = [], playtimeGames = gameO
       <section class="goty-stats-preview-playtime">
         ${topGamesCarouselHeaderMarkup(normalizedMode, "goty")}
         <div class="goty-stats-preview-strip">
-          <div class="goty-stats-preview-list">${topGames.map((game) => gameOfTheYearStatsPreviewCard(game, normalizedMode)).join("")}</div>
+          <div class="goty-stats-preview-list">${topGames.map((game) => gameOfTheYearStatsPreviewCard(game, normalizedMode, year)).join("")}</div>
         </div>
       </section>
     ` : ""}
@@ -3989,15 +3989,19 @@ function gameOfTheYearStatsPreviewMarkup(year, games = [], playtimeGames = gameO
   `;
 }
 
-function gameOfTheYearStatsPreviewCard(game, mode = "time") {
+function gameOfTheYearStatsPreviewCard(game, mode = "time", year = "") {
   const cover = coverDisplayUrl(game.cover || "") || platformLogo(game.platform || "PS5");
+  const gameYear = releaseYear(game);
+  const yearBadge = year && gameYear && gameYear !== String(year)
+    ? `<span class="goty-choice-year">${escapeHtml(gameYear)}</span>`
+    : "";
   const hours = statsPlaytimeHours(game);
   const normalizedMode = normalizeTopGamesCarouselMode(mode);
   const lowerPill = normalizedMode === "grade" ? ratingScoreBadge(game) : `<span class="goty-stats-preview-time" style="${escapeHtml(timePillStyle(hours))}">${clockIcon()}<span>${escapeHtml(formatPlaytimeTotal(hours))}</span></span>`;
   const playModeBadge = game.coop ? coopBadge() : (game.multiplayer ? multiplayerBadge() : "");
   return `
     <article class="goty-stats-preview-card">
-      <span class="goty-choice-cover"><img src="${escapeHtml(cover)}" alt="" loading="lazy" decoding="async"></span>
+      <span class="goty-choice-cover"><img src="${escapeHtml(cover)}" alt="" loading="lazy" decoding="async">${yearBadge}</span>
       <span class="goty-choice-title">
         <strong data-full-title="${escapeHtml(game.title)}">${escapeHtml(game.title)}</strong>
         <span class="goty-stats-preview-badges">${platformBadge(game.platform)}</span>
@@ -4579,28 +4583,28 @@ function gameOfTheYearExportMarkup({ owner, year, rows, statsGames, theme, logo,
     </header>
     ${gameOfTheYearExportTopStatsMarkup(year, statsGames)}
     <main class="goty-export-grid">
-      ${gameOfTheYearExportGridItems(rows, statsGames)}
+      ${gameOfTheYearExportGridItems(rows, statsGames, year)}
     </main>
     ${gameOfTheYearExportBottomStatsMarkup(statsGames, year)}
     <footer>${footerLines.map((line) => `<span>${escapeHtml(line)}</span>`).join("")}</footer>
   </div>`;
 }
 
-function gameOfTheYearExportGridItems(rows = [], statsGames = []) {
+function gameOfTheYearExportGridItems(rows = [], statsGames = [], year = currentGameOfTheYear()) {
   const shifted = rows.length < GAME_OF_YEAR_CATEGORIES.length;
   if (!shifted) {
     return `
-      ${rows.slice(0, 4).map((row, index) => gameOfTheYearExportCard({ ...row, index })).join("")}
-      ${gameOfTheYearExportPlatformChartMarkup(statsGames)}
-      ${rows.slice(4).map((row, offset) => gameOfTheYearExportCard({ ...row, index: offset + 4 })).join("")}
+      ${rows.slice(0, 4).map((row, index) => gameOfTheYearExportCard({ ...row, year, index })).join("")}
+      ${gameOfTheYearExportPlatformListMarkup(statsGames)}
+      ${rows.slice(4).map((row, offset) => gameOfTheYearExportCard({ ...row, year, index: offset + 4 })).join("")}
     `;
   }
   const topRows = rows.slice(0, 3);
   const bottomRows = rows.slice(3);
   return `
-    ${topRows.map((row, index) => gameOfTheYearExportCard({ ...row, index, gridColumn: index + 2, gridRow: 1 })).join("")}
-    ${gameOfTheYearExportPlatformChartMarkup(statsGames)}
-    ${bottomRows.map((row, index) => gameOfTheYearExportCard({ ...row, index: index + 3, gridColumn: index + 2, gridRow: 2 })).join("")}
+    ${topRows.map((row, index) => gameOfTheYearExportCard({ ...row, year, index, gridColumn: index + 2, gridRow: 1 })).join("")}
+    ${gameOfTheYearExportPlatformListMarkup(statsGames)}
+    ${bottomRows.map((row, index) => gameOfTheYearExportCard({ ...row, year, index: index + 3, gridColumn: index + 2, gridRow: 2 })).join("")}
   `;
 }
 
@@ -4617,8 +4621,8 @@ function gameOfTheYearExportTopStatsMarkup(year, games = []) {
   const playtime = playtimeKpiValue(playtimeHours) || `${clockIcon()}<span class="playtime-kpi-value">0</span><span class="playtime-kpi-unit">HRS</span>`;
   return `
     <section class="goty-export-top-kpis has-playtime ${completed.length ? "has-completed" : ""} ${coopGames.length ? "has-coop" : ""}">
-      <article class="goty-export-small-kpi goty-export-total-kpi"><strong>${games.length}</strong><span>${escapeHtml(tt("Games played"))}</span></article>
       <article class="goty-export-small-kpi goty-export-playtime-kpi"><strong>${playtime}</strong><span>${escapeHtml(tt("Total year playtime"))}</span></article>
+      <article class="goty-export-small-kpi goty-export-total-kpi"><strong>${games.length}</strong><span>${escapeHtml(tt("Games played"))}</span></article>
       ${completed.length ? `<article class="goty-export-small-kpi goty-export-completed-kpi"><strong>${trophyIcon()}${completed.length}</strong><span>${escapeHtml(tt("Completed games"))}</span></article>` : ""}
       <span class="goty-export-kpi-separator" aria-hidden="true"></span>
       <article class="goty-export-small-kpi goty-export-new-kpi"><strong>${yearGames.length}</strong><span>${escapeHtml(tt("New releases"))}</span></article>
@@ -4628,73 +4632,43 @@ function gameOfTheYearExportTopStatsMarkup(year, games = []) {
   `;
 }
 
-function gameOfTheYearExportPlatformChartMarkup(games = []) {
+function gameOfTheYearExportPlatformListMarkup(games = []) {
   const platforms = countBy(games, statsPlatformLabel);
-  const total = platforms.reduce((sum, item) => sum + item.count, 0);
-  if (!total) return "";
-  let cursor = 0;
-  let previousColor = "";
-  const segments = platforms.map((item, index) => {
-    const start = cursor;
-    const sweep = (item.count / total) * 360;
-    cursor += sweep;
-    const color = platformStatsBarColor(item.label, index, previousColor);
-    previousColor = platformStatsColor(item.label, index);
-    return gameOfTheYearExportPlatformSegment(item, index, start, cursor, color, total);
+  if (!platforms.length) return "";
+  const groupedPlatforms = new Map();
+  platforms.forEach((item) => {
+    const family = ["Switch", "Switch 2"].includes(item.label) ? "switch"
+      : ["PS4", "PS5"].includes(item.label) ? "playstation" : item.label;
+    if (!groupedPlatforms.has(family)) groupedPlatforms.set(family, []);
+    groupedPlatforms.get(family).push(item);
+  });
+  const groups = [...groupedPlatforms.values()].sort((a, b) =>
+    b.reduce((sum, item) => sum + item.count, 0) - a.reduce((sum, item) => sum + item.count, 0));
+  const hoursByPlatform = new Map();
+  const completedByPlatform = new Map();
+  games.forEach((game) => {
+    const platform = statsPlatformLabel(game);
+    hoursByPlatform.set(platform, (hoursByPlatform.get(platform) || 0) + totalPlaytimeHours([game]));
+    if (game.platinum) completedByPlatform.set(platform, (completedByPlatform.get(platform) || 0) + 1);
   });
   return `
     <div class="goty-export-item goty-export-platform-item">
-      <article class="goty-export-platform-card">
-        <div class="goty-export-platform-chart">
-          ${svgAsset("charts/goty-export-platform-pie", [segments.map((segment) => segment.shape).join("")])}
-          ${gameOfTheYearExportPlatformLabels(segments)}
+      <article class="goty-export-platform-card ${completedByPlatform.size ? "has-completed" : ""}">
+        <div class="goty-export-platform-head"><span>${escapeHtml(tt("Platform"))}</span>${completedByPlatform.size ? `<span aria-hidden="true"></span>` : ""}<span>${escapeHtml(tt("Played"))}</span><span>${escapeHtml(tt("Playtime"))}</span></div>
+        <div class="goty-export-platform-list" style="--platform-count:${platforms.length}">
+          ${groups.map((group) => `<div class="goty-export-platform-group ${group.length > 1 ? "is-paired" : ""}" style="--group-count:${group.length};grid-row:span ${group.length}">
+          ${group.map((item) => `
+            <div class="goty-export-platform-row">
+              <div class="goty-export-platform-name">${platformBadge(item.label)}<span class="goty-export-platform-share">${Math.round(item.count / games.length * 1000) / 10}%</span></div>
+              ${completedByPlatform.size ? `<strong class="goty-export-platform-completed">${completedByPlatform.has(item.label) ? `${trophyIcon()}${completedByPlatform.get(item.label)}` : ""}</strong>` : ""}
+              <strong>${item.count}</strong>
+              <span>${escapeHtml(formatPlaytimeTotal(hoursByPlatform.get(item.label)) || "0 HRS")}</span>
+            </div>
+          `).join("")}</div>`).join("")}
         </div>
       </article>
     </div>
   `;
-}
-
-function gameOfTheYearExportPlatformSegment(item, index, startDeg, endDeg, color, total) {
-  const sweep = Math.max(0.01, endDeg - startDeg);
-  const start = polarPoint(110, 110, 96, startDeg - 90);
-  const end = polarPoint(110, 110, 96, endDeg - 90);
-  const label = polarPoint(50, 50, 50, startDeg + sweep / 2 - 90);
-  const labelShift = gameOfTheYearExportPlatformLabelShift(item.label);
-  const shape = sweep >= 359.99
-    ? `${svgAsset("charts/goty-export-platform-slice", [escapeHtml(color)])}`
-    : `${svgAsset("charts/goty-export-platform-slice-2", [start.x.toFixed(3), start.y.toFixed(3), sweep > 180 ? 1 : 0, end.x.toFixed(3), end.y.toFixed(3), escapeHtml(color)])}`;
-  return {
-    shape,
-    item,
-    index,
-    left: clampNumber(label.x + labelShift.x, 9, 91),
-    top: clampNumber(label.y + labelShift.y, 7, 93),
-  };
-}
-
-function gameOfTheYearExportPlatformLabelShift(platform) {
-  const value = canonicalPlatform(platform);
-  if (value === "Switch 2") return { x: 0, y: -7 };
-  if (value === "PS2") return { x: 0, y: -6 };
-  return { x: 0, y: 0 };
-}
-
-function gameOfTheYearExportPlatformLabels(segments) {
-  const minGap = segments.length > 6 ? 8 : 11;
-  const labels = segments.map((segment) => ({ ...segment })).sort((a, b) => a.top - b.top);
-  labels.forEach((label, index) => {
-    if (!index) return;
-    label.top = Math.max(label.top, labels[index - 1].top + minGap);
-  });
-  const overflow = Math.max(0, (labels.at(-1)?.top || 0) - 98);
-  if (overflow) labels.forEach((label) => {
-    label.top = Math.max(2, label.top - overflow);
-  });
-  const byIndex = new Map(labels.map((label) => [label.index, label]));
-  return segments.map((segment) => {
-    const label = byIndex.get(segment.index) || segment;
-    return `<span class="goty-export-platform-label goty-export-platform-label-${segment.index}" style="--label-x:${label.left.toFixed(2)}%;--label-y:${label.top.toFixed(2)}%">${platformBadge(segment.item.label, segment.item.count)}</span>`;
-  }).join("");
 }
 
 function gameOfTheYearExportBottomStatsMarkup(games = [], year = "") {
@@ -4725,11 +4699,13 @@ function gameOfTheYearExportMonthCounts(games, year = "") {
   });
 }
 
-function gameOfTheYearExportCard({ label, game, coverSrc, index, gridColumn = "", gridRow = "" }) {
+function gameOfTheYearExportCard({ label, game, coverSrc, index, year = currentGameOfTheYear(), gridColumn = "", gridRow = "" }) {
   const cover = coverSrc || "";
   const progress = achievementProgressForGame(game);
   const progressCount = progress && progress.provider !== "steam" ? canvasProgressCount(progress.label) : "";
   const playtime = gameOfTheYearPlaytime(game);
+  const gameYear = releaseYear(game);
+  const olderYear = gameYear && Number(gameYear) < Number(year) ? gameYear : "";
   const developer = game.developer || "";
   const publisher = game.publisher || "";
   const studioLine = [developer, publisher && publisher !== developer ? publisher : ""].filter(Boolean).join(" / ") || tt("Finished game");
@@ -4741,7 +4717,7 @@ function gameOfTheYearExportCard({ label, game, coverSrc, index, gridColumn = ""
   return `
     <div class="goty-export-item ${index >= 4 ? "is-bottom" : ""} ${index === 4 ? "is-bottom-start" : ""}"${positionStyle ? ` style="${escapeHtml(positionStyle)}"` : ""}>
       <strong class="goty-export-category">${escapeHtml(label)}</strong>
-      <article class="goty-export-card">
+      <article class="goty-export-card ${game.platinum ? "is-completed" : ""}">
         ${cover ? `<img class="goty-export-card-bg" src="${escapeHtml(cover)}" alt="" />` : ""}
         <div class="goty-export-cover-wrap">${cover ? `<img class="goty-export-cover" src="${escapeHtml(cover)}" alt="" />` : `<span class="goty-export-cover goty-export-cover-fallback"></span>`}</div>
         <div class="goty-export-info">
@@ -4758,7 +4734,10 @@ function gameOfTheYearExportCard({ label, game, coverSrc, index, gridColumn = ""
             ${tags.map((tag) => `<span class="goty-export-pill goty-export-tag">${escapeHtml(tt(tag))}</span>`).join("")}
           </div>
         </div>
-        ${playtime ? `<span class="goty-export-playtime" style="${escapeHtml(timePillStyle(playtime.hours))}"><small>${escapeHtml(tt("Play Time"))}</small><strong>${escapeHtml(playtime.text)}</strong></span>` : ""}
+        ${playtime || olderYear ? `<div class="goty-export-card-meta">
+          ${olderYear ? `<span class="goty-export-release-year">${escapeHtml(olderYear)}</span>` : ""}
+          ${playtime ? `<span class="goty-export-playtime" style="${escapeHtml(timePillStyle(playtime.hours))}"><small>${escapeHtml(tt("Play Time"))}</small><strong>${escapeHtml(playtime.text)}</strong></span>` : ""}
+        </div>` : ""}
       </article>
     </div>`;
 }
@@ -4849,20 +4828,20 @@ function gameOfTheYearExportCss({ theme, main, accent, gradient, bg, glowPrimary
       top: 50px;
       right: 78px;
       display: grid;
-      grid-template-columns: 142px 168px 24px repeat(2, 120px);
+      grid-template-columns: 168px 142px 24px repeat(2, 120px);
       gap: 10px;
       width: 614px;
     }
     .goty-export-top-kpis.has-coop:not(.has-completed) {
-      grid-template-columns: 142px 168px 24px repeat(3, 120px);
+      grid-template-columns: 168px 142px 24px repeat(3, 120px);
       width: 744px;
     }
     .goty-export-top-kpis.has-completed {
-      grid-template-columns: 142px 168px 168px 24px repeat(2, 120px);
+      grid-template-columns: 168px 142px 168px 24px repeat(2, 120px);
       width: 792px;
     }
     .goty-export-top-kpis.has-completed.has-coop {
-      grid-template-columns: 142px 168px 168px 24px repeat(3, 120px);
+      grid-template-columns: 168px 142px 168px 24px repeat(3, 120px);
       width: 922px;
     }
     .goty-export-small-kpi,
@@ -5100,10 +5079,10 @@ function gameOfTheYearExportCss({ theme, main, accent, gradient, bg, glowPrimary
       position: relative;
       box-sizing: border-box;
       display: grid;
-      grid-template-columns: 198px minmax(0, 1fr);
-      gap: 16px;
+      grid-template-columns: 210px minmax(0, 1fr);
+      gap: 12px;
       width: 435px;
-      padding: 20px;
+      padding: 12px 20px 12px 12px;
       overflow: hidden;
       background:
         linear-gradient(135deg, ${theme.mode === "light" ? "rgba(255,255,255,.36)" : "rgba(255,255,255,.035)"}, transparent 58%),
@@ -5111,6 +5090,13 @@ function gameOfTheYearExportCss({ theme, main, accent, gradient, bg, glowPrimary
       border: 1px solid ${line};
       border-radius: 12px;
       box-shadow: inset 0 1px 0 ${theme.mode === "light" ? "rgba(255,255,255,.5)" : "rgba(255,255,255,.08)"};
+    }
+    .goty-export-card.is-completed {
+      border-color: #ffe985;
+      box-shadow: inset 0 0 0 1px rgba(255,233,133,.22);
+    }
+    .goty-export-card.is-completed .goty-export-info h2 {
+      color: #ffe985;
     }
     .goty-export-item.is-bottom-start {
       grid-column: 2;
@@ -5121,57 +5107,107 @@ function gameOfTheYearExportCss({ theme, main, accent, gradient, bg, glowPrimary
       overflow: visible;
     }
     .goty-export-platform-card {
-      position: relative;
-      grid-row: 1 / -1;
+      grid-row: 2;
       box-sizing: border-box;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
       width: 435px;
-      height: 338px;
-      overflow: visible;
-      background: unset;
-      border: unset;
-      border-radius: 12px;
-      box-shadow: none;
+      height: 304px;
+      padding: 16px 20px;
+      background: none;
+      border: 0;
     }
-    .goty-export-platform-card::after {
+    .goty-export-platform-head,
+    .goty-export-platform-row {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 52px 84px;
+      align-items: center;
+      gap: 8px;
+    }
+    .goty-export-platform-head {
+      padding-left: 10px;
+      color: ${muted};
+      font: 900 11px/1.2 ${bodyFont};
+      text-transform: uppercase;
+    }
+    .goty-export-platform-card.has-completed .goty-export-platform-head,
+    .goty-export-platform-card.has-completed .goty-export-platform-row {
+      grid-template-columns: minmax(0, 1fr) 44px 24px 84px;
+    }
+    .goty-export-platform-card.has-completed .goty-export-platform-head {
+      font-size: 10px;
+    }
+    .goty-export-platform-head > :nth-last-child(2) {
+      justify-self: end;
+      width: max-content;
+      white-space: nowrap;
+    }
+    .goty-export-platform-head > :not(:first-child),
+    .goty-export-platform-row > :not(:first-child) {
+      text-align: right;
+    }
+    .goty-export-platform-list {
+      display: grid;
+      grid-template-rows: repeat(var(--platform-count), minmax(0, 1fr));
+      flex: 1;
+      min-height: 0;
+    }
+    .goty-export-platform-row {
+      min-height: 0;
+      border-top: 1px solid ${line};
+      color: ${text};
+      font: 800 16px/1 ${bodyFont};
+    }
+    .goty-export-platform-group {
+      position: relative;
+      display: grid;
+      grid-template-rows: repeat(var(--group-count), minmax(0, 1fr));
+      min-height: 0;
+      padding-left: 8px;
+      border-left: 2px solid transparent;
+    }
+    .goty-export-platform-group.is-paired::before {
       content: "";
       position: absolute;
-      inset: 0;
-      background: none;
-      pointer-events: none;
+      top: 4px;
+      bottom: 4px;
+      left: -2px;
+      width: 2px;
+      background: ${line};
     }
-    .goty-export-platform-chart {
-      position: relative;
-      z-index: 1;
-      width: 100%;
-      height: 100%;
-      margin-top: 15px;
-      overflow: visible;
+    .goty-export-platform-group.is-paired .goty-export-platform-name {
+      padding-left: 6px;
     }
-    .goty-export-platform-pie {
-      position: absolute;
-      left: 50%;
-      top: 50%;
-      width: 312px;
-      height: 312px;
-      filter: drop-shadow(0 18px 24px ${theme.mode === "light" ? "rgba(18,24,36,.16)" : "rgba(0,0,0,.34)"});
-      transform: translate(-50%, -50%);
+    .goty-export-platform-name {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      min-width: 0;
     }
-    .goty-export-platform-slice {
-      stroke: rgba(255,255,255,.28);
-      stroke-width: 1.4;
+    .goty-export-platform-share {
+      color: ${muted};
+      font: 800 11px/1 ${bodyFont};
+      white-space: nowrap;
     }
-    .goty-export-platform-label {
-      position: absolute;
-      left: var(--label-x);
-      top: var(--label-y);
-      z-index: 5;
-      transform: translate(-50%, -50%);
+    .goty-export-platform-row > span {
+      color: ${accent};
+      white-space: nowrap;
     }
-    .goty-export-platform-label .platform-badge {
-      max-width: none;
-      min-height: 24px;
-      transform: scale(0.95);
-      box-shadow: 0 8px 18px rgba(0,0,0,.24);
+    .goty-export-platform-completed {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 5px;
+      color: #ffe985;
+    }
+    .goty-export-platform-completed .trophy-icon {
+      width: 15px;
+      height: 15px;
+      flex: 0 0 15px;
+      fill: none;
+      stroke: currentColor;
+      stroke-width: 2;
     }
     .goty-export-card-bg {
       position: absolute;
@@ -5195,13 +5231,13 @@ function gameOfTheYearExportCss({ theme, main, accent, gradient, bg, glowPrimary
       position: relative;
       z-index: 1;
       align-self: start;
-      width: 198px;
-      height: 262px;
+      width: 210px;
+      height: 278px;
       filter: drop-shadow(0 12px 16px ${theme.mode === "light" ? "rgba(18,24,36,.16)" : "rgba(0,0,0,.34)"});
     }
     .goty-export-cover {
-      width: 198px;
-      height: 262px;
+      width: 210px;
+      height: 278px;
       object-fit: cover;
       border-radius: 12px;
     }
@@ -5218,6 +5254,7 @@ function gameOfTheYearExportCss({ theme, main, accent, gradient, bg, glowPrimary
       flex-direction: column;
       align-items: flex-start;
       min-width: 0;
+      padding-top: 8px;
       padding-bottom: 30px;
       text-align: left;
     }
@@ -5324,11 +5361,30 @@ function gameOfTheYearExportCss({ theme, main, accent, gradient, bg, glowPrimary
       border-color: rgba(145,70,255,.42);
       background: rgba(145,70,255,.13);
     }
-    .goty-export-playtime {
+    .goty-export-card-meta {
       position: absolute;
       right: 14px;
       bottom: 13px;
       z-index: 2;
+      display: flex;
+      align-items: stretch;
+      gap: 6px;
+    }
+    .goty-export-release-year {
+      box-sizing: border-box;
+      display: flex;
+      align-items: center;
+      height: 31px;
+      padding: 0 8px;
+      color: ${text};
+      background: rgba(255,255,255,.08);
+      border: 1px solid ${line};
+      border-radius: 7px;
+      font: 820 12px/1 ${bodyFont};
+    }
+    .goty-export-playtime {
+      position: relative;
+      height: 31px;
       box-sizing: border-box;
       display: grid;
       gap: 1px;
@@ -5395,8 +5451,9 @@ function gameOfTheYearExportCss({ theme, main, accent, gradient, bg, glowPrimary
       border: 1px solid ${line};
       border-radius: 7px;
     }
-    .goty-export-poster .platform-nintendo { background: rgba(255,59,69,.18); border-color: rgba(255,59,69,.38); }
+    .goty-export-poster .platform-nintendo { background: rgba(255,0,1,.18); border-color: rgba(255,0,1,.38); }
     .goty-export-poster .platform-playstation { background: rgb(111 120 255 / 22%); border-color: rgb(75 73 225 / 86%); }
+    .goty-export-poster .platform-playstation.platform-ps4 { background: rgba(0,67,255,.18); border-color: rgba(0,67,255,.52); }
     .goty-export-poster .platform-playstation.platform-ps5 { background: #ffffff; border-color: rgba(180,186,198,.72); }
     .goty-export-poster .platform-playstation.platform-ps5 .platform-label { color: #05070b; }
     .goty-export-poster .platform-playstation.platform-ps3,
@@ -5418,8 +5475,9 @@ function gameOfTheYearExportCss({ theme, main, accent, gradient, bg, glowPrimary
     .goty-export-poster .platform-sega,
     .goty-export-poster .platform-gamegear { background: rgba(42,112,224,.22); border-color: rgba(90,167,255,.42); }
     .goty-export-poster .platform-dreamcast { background: rgba(255,132,45,.2); border-color: rgba(255,173,95,.4); }
-    .goty-export-poster .platform-nintendo .platform-label { color: #ff3b45; }
+    .goty-export-poster .platform-nintendo .platform-label { color: #ff0001; }
     .goty-export-poster .platform-playstation .platform-label { color: #7d8cff; }
+    .goty-export-poster .platform-playstation.platform-ps4 .platform-label { color: #0043ff; }
     .goty-export-poster .platform-playstation.platform-ps3 .platform-label,
     .goty-export-poster .platform-playstation.platform-psp .platform-label,
     .goty-export-poster .platform-pc .platform-label,
@@ -11215,6 +11273,7 @@ function platformClass(platform, options = {}) {
   if (value === "ps1") return "platform-playstation platform-ps1";
   if (value === "ps3" && PS3_BLUE_PILL_TITLES.has(title)) return "platform-playstation platform-ps3-as-ps4";
   if (value === "ps3") return "platform-playstation platform-ps3";
+  if (value === "ps4") return "platform-playstation platform-ps4";
   if (value === "ps5") return "platform-playstation platform-ps5";
   if (value === "psp") return "platform-playstation platform-psp";
   if (/\bps\d*\b/.test(value) || value.includes("playstation") || value.includes("psp") || value.includes("vita")) return "platform-playstation";

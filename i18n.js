@@ -435,6 +435,7 @@ const STRINGS = {
     "Games of the year {year}": "Juegos del año {year}",
     "{count} {item} played": "{count} {item} jugados",
     "Games played": "Juegos jugados",
+    Played: "Jugados",
     "Older games": "Juegos anteriores",
     "Coop games": "Juegos coop",
     Download: "Descargar",
